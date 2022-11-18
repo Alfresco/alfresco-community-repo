@@ -33,7 +33,11 @@ git status
 git --no-pager diff pom.xml
 git add pom.xml
 
-if git status --untracked-files=no --porcelain | grep -q '^' ; then
+if [[ "${TRAVIS_COMMIT_MESSAGE}" =~ \[force[^\]]*\] ]]; then
+  FORCE_TOKEN=$(echo "${TRAVIS_COMMIT_MESSAGE}" | sed "s|^.*\(\[force[^]]*\]\).*$|\1|g")
+  git commit --allow-empty -m "${FORCE_TOKEN} Update upstream version to ${VERSION}"
+  git push
+elif git status --untracked-files=no --porcelain | grep -q '^' ; then
   git commit -m "Update upstream version to ${VERSION}"
   git push
 else

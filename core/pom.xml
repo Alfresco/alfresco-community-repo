@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo</artifactId>
-      <version>14.37-SNAPSHOT</version>
+      <version>20.19-SNAPSHOT</version>
    </parent>
 
    <dependencies>
@@ -54,9 +54,9 @@
          <classifier>asl</classifier>
       </dependency>
       <dependency>
-         <groupId>log4j</groupId>
-         <artifactId>log4j</artifactId>
-         <version>1.2.17</version>
+         <groupId>ch.qos.reload4j</groupId>
+         <artifactId>reload4j</artifactId>
+         <version>1.2.18.3</version>
       </dependency>
       <dependency>
          <groupId>org.json</groupId>
@@ -114,7 +114,7 @@
       <!-- Test only dependencies, as popped up while running mvn test -->
       <dependency>
          <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
+         <artifactId>slf4j-reload4j</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -128,14 +128,18 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>commons-dbcp</groupId>
-         <artifactId>commons-dbcp</artifactId>
+         <groupId>org.apache.commons</groupId>
+         <artifactId>commons-dbcp2</artifactId>
          <scope>test</scope>
       </dependency>
    </dependencies>
 
    <build>
       <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+         </plugin>
          <plugin>
             <artifactId>maven-jar-plugin</artifactId>
             <executions>

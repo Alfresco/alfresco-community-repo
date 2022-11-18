@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +43,6 @@ import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -272,11 +272,31 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         }
     }
 
-    @Experimental
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, String> getStorageProperties(String contentUrl)
     {
         return getTenantContentStore().getStorageProperties(contentUrl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
+    {
+        return getTenantContentStore().requestSendContentToArchive(contentUrl, archiveParams);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
+    {
+        return getTenantContentStore().requestRestoreContentFromArchive(contentUrl, restoreParams);
     }
 
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);

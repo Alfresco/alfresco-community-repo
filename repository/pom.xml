@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>14.37-SNAPSHOT</version>
+        <version>20.19-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -46,6 +46,10 @@
                     <groupId>com.sun.mail</groupId>
                     <artifactId>javax.mail</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -68,8 +72,13 @@
         </dependency>
 
         <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-dbcp2</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
@@ -117,7 +126,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>68.2</version>
+            <version>72.1</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -133,7 +142,7 @@
         <dependency>
             <groupId>org.mozilla</groupId>
             <artifactId>rhino</artifactId>
-            <version>1.7.13</version>
+            <version>1.7.14</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -194,24 +203,6 @@
             <version>${dependency.maven-artifact.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.schlichtherle.truezip</groupId>
-            <artifactId>truezip-driver-zip</artifactId>
-            <version>${dependency.truezip.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.schlichtherle.truezip</groupId>
-            <artifactId>truezip-file</artifactId>
-            <version>${dependency.truezip.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.sun.pdfview</groupId>
             <artifactId>pdfrenderer</artifactId>
             <version>0.9.1-patched</version>
@@ -232,7 +223,7 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <artifactId>slf4j-reload4j</artifactId>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
@@ -245,7 +236,7 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
-            <version>2.3.20-alfresco-patched-20200421</version>
+            <version>2.3.31-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
@@ -274,7 +265,7 @@
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
             <artifactId>FastInfoset</artifactId>
-            <version>2.0.0</version>
+            <version>2.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.htmlparser</groupId>
@@ -309,8 +300,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
-            <artifactId>ooxml-schemas</artifactId>
-            <version>${dependency.ooxml-schemas.version}</version>
+            <artifactId>poi-ooxml-lite</artifactId>
+            <version>${dependency.poi-ooxml-lite.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -383,7 +374,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.2.6</version>
+            <version>6.4.0</version>
         </dependency>
 
         <!-- GData -->
@@ -422,12 +413,12 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.3.0</version>
+            <version>3.5.10</version>
         </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
-            <version>1.2.5</version>
+            <version>2.0.7</version>
         </dependency>
 
         <!-- Activiti -->
@@ -665,7 +656,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring</artifactId>
+            <artifactId>camel-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring-xml</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -696,6 +691,16 @@
             <artifactId>camel-mock</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Netty non-transitive dependencies declared for depending projects usage in conjunction with Camel's other transitive netty dependencies -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-handler-proxy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-tcnative-classes</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-client</artifactId>
@@ -718,7 +723,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-transform-model</artifactId>
-            <version>${dependency.alfresco-transform-model.version}</version>
+            <version>${dependency.alfresco-transform-core.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -738,9 +743,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-transform-model</artifactId>
-            <version>${dependency.alfresco-transform-model.version}</version>
+            <version>${dependency.alfresco-transform-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -805,7 +815,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.7</version>
+            <version>1.9.9.1</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
@@ -983,21 +993,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-                    <organizationName>Alfresco Software Limited</organizationName>
-                    <failOnMissingHeader>true</failOnMissingHeader>
-                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-                    <licenseResolver>classpath://alfresco</licenseResolver>
-                    <licenseName>${licenseName}</licenseName>
-                    <roots>
-                        <root>src</root>
-                    </roots>
-                    <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.jsp</include>
-                    </includes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>check-licenses</id>
@@ -1005,6 +1000,21 @@
                         <goals>
                             <goal>check-file-header</goal>
                         </goals>
+                        <configuration>
+                            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                            <organizationName>Alfresco Software Limited</organizationName>
+                            <failOnMissingHeader>true</failOnMissingHeader>
+                            <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                            <licenseResolver>classpath://alfresco</licenseResolver>
+                            <licenseName>${licenseName}</licenseName>
+                            <roots>
+                                <root>src</root>
+                            </roots>
+                            <includes>
+                                <include>**/*.java</include>
+                                <include>**/*.jsp</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>
@@ -1016,16 +1026,6 @@
                 </dependencies>
             </plugin>
         </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>2.0.0</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
 </project>

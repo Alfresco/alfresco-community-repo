@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,15 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.action.Action;
@@ -64,6 +67,9 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     
     /** Indicated whether the action is public or internal (default <tt>true</tt>) */
     protected boolean publicAction = true;
+
+    /** List of action access restrictions (default <tt>empty list</tt> */
+    protected List<ActionAccessRestriction> actionAccessRestrictions = new ArrayList<>();
     
     /** List of types and aspects for which this action is applicable */
     protected Set<QName> applicableTypes = new HashSet<QName>();
@@ -79,7 +85,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
      */
     public void init()
     {
-        if (this.publicAction == true)
+        if (this.publicAction)
         {
             this.runtimeActionService.registerActionExecuter(this);
         }
@@ -109,7 +115,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set whether the action is public or not.
      * 
@@ -118,6 +124,19 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     public void setPublicAction(boolean publicAction)
     {
         this.publicAction = publicAction;
+    }
+
+    /**
+     * Set action access restrictions
+     *
+     * @param actionAccessRestrictions
+     */
+    public void setActionAccessRestrictions(List<ActionAccessRestriction> actionAccessRestrictions) {
+        this.actionAccessRestrictions = actionAccessRestrictions;
+    }
+
+    public List<ActionAccessRestriction> getActionAccessRestrictions() {
+        return actionAccessRestrictions;
     }
 
     /**
@@ -270,6 +289,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         if ( !nodeIsLockedForThisUser)
         {
             // Execute the implementation
+            verifyActionAccessRestrictions(action);
             executeImpl(action, actionedUponNodeRef);
         }
         else
@@ -281,6 +301,13 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
                              ") is locked.");
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void verifyActionAccessRestrictions(Action action) {
+        actionAccessRestrictions.forEach(ar -> ar.verifyAccessRestriction(action));
     }
     
     /**

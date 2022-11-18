@@ -2,5 +2,5 @@
 <properties>
     <!-- This property, when set, will hide the start up warnings of tika for libraries are missing. -->
     <!-- See https://issues.apache.org/jira/browse/TIKA-2490 -->
-    <service-loader initializableProblemHandler="ignore"/>
+    <service-loader loadErrorHandler="warn" initializableProblemHandler="ignore"/>
 </properties>

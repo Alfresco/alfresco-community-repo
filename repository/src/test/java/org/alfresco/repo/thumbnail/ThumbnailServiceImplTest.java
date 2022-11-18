@@ -495,6 +495,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         params.put("aspect-name", ContentModel.ASPECT_GEN_CLASSIFIABLE);
         Rule rule = new Rule();
         rule.setRuleType(RuleType.INBOUND);
+        rule.setTitle("Rule name");
         Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME, params);
         ActionCondition condition = this.actionService.createActionCondition(NoConditionEvaluator.NAME, null);
         action.addActionCondition(condition);

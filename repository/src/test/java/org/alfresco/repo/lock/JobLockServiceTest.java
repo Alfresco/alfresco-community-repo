@@ -25,6 +25,13 @@
  */
 package org.alfresco.repo.lock;
 
+import static java.time.Duration.of;
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.time.temporal.ChronoUnit.SECONDS;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.domain.locks.LockDAO;
@@ -36,8 +43,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.TestHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -508,7 +515,6 @@ public class JobLockServiceTest extends TestCase
     public void testGetLockWithCallbackNullCallback()   { runGetLockWithCallback(1); }
     public void testGetLockWithCallbackShortTTL()       { runGetLockWithCallback(2); }
     public void testGetLockWithCallbackLocked()         { runGetLockWithCallback(3); }
-    @Category(FrequentlyFailingTests.class) // ACS-2243
     public void testGetLockWithCallbackNormal()         { runGetLockWithCallback(4); }
     
     public void runGetLockWithCallback(int t)
@@ -528,7 +534,7 @@ public class JobLockServiceTest extends TestCase
         { 
             QName        lockName   = t==0 ? null : lockA;
             TestCallback callback   = t==1 ? null : new TestCallback();
-            long         timeToLive = t==2 ? 1    : 50; 
+            long         timeToLive = t==2 ? 1    : 500;
 
             if (t==3) 
             {
@@ -542,21 +548,23 @@ public class JobLockServiceTest extends TestCase
             if (t<4) fail("expected getLock to fail");
             
             if (callback == null) throw new IllegalStateException();
-            
-            assertEquals(false,callback.released);
-            assertEquals(0,callback.isActiveCount);
-            
-            Thread.sleep(40);
-            
-            assertEquals(false,callback.released);
-            assertEquals(1,callback.isActiveCount);
-            
+
+            TestHelper.waitForMethodToFinish(of(100, MILLIS), () -> {
+                assertEquals(false,callback.released);
+                assertEquals(0,callback.getIsActiveCount());
+            }, AssertionFailedError.class);
+
+            TestHelper.waitForMethodToFinish(of(1, SECONDS), () -> {
+                assertEquals(false, callback.released);
+                assertEquals(1, callback.getIsActiveCount());
+            }, AssertionFailedError.class);
+
             callback.isActive = false;
-            
-            Thread.sleep(1000); // need to make this quite long to account for slow database updates
-            
-            assertEquals(true,callback.released);
-            assertEquals(2,callback.isActiveCount);
+
+            TestHelper.waitForMethodToFinish(of(2, SECONDS), () -> {
+                assertEquals(true, callback.released);
+                assertEquals(2, callback.getIsActiveCount());
+            }, AssertionFailedError.class);
         }
         catch (IllegalArgumentException e)
         {            
@@ -616,15 +624,15 @@ public class JobLockServiceTest extends TestCase
     
     private class TestCallback implements JobLockRefreshCallback
     {
-        public volatile long isActiveCount;
+        public volatile AtomicInteger isActiveCounter = new AtomicInteger();
         public volatile boolean released;
         public volatile boolean isActive = true;
 
         @Override
         public boolean isActive()
         {
-            isActiveCount++;
-            logger.debug("TestCallback.isActive => "+isActive+" ("+isActiveCount+")");
+            final int currentIsActiveCount = isActiveCounter.incrementAndGet();
+            logger.debug("TestCallback.isActive => "+isActive+" ("+currentIsActiveCount+")");
             return isActive;
         }
 
@@ -633,6 +641,11 @@ public class JobLockServiceTest extends TestCase
         {
             logger.debug("TestCallback.lockReleased");
             released = true;
+        }
+
+        public int getIsActiveCount()
+        {
+            return isActiveCounter.get();
         }
     }    
 }

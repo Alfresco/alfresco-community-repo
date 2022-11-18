@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,6 +28,7 @@ package org.alfresco.rest.framework.tests.core;
 import static org.mockito.Mockito.mock;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
@@ -43,29 +44,38 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class ParamsExtender extends Params
 {
 
-    private ParamsExtender(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams)
+    private ParamsExtender(String entityId, String relationshipId, String relationship2Id, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams)
     {
-        super(null,entityId, relationshipId, null, passedIn, stream, addressedProperty, recognizedParams, null, mock(WebScriptRequest.class));
+        super(null,entityId, relationshipId, relationship2Id, passedIn, stream, addressedProperty, recognizedParams, null, mock(WebScriptRequest.class));
     }
     
     public static Params valueOf(Map<String, BeanPropertiesFilter> rFilter, String entityId)
     {
-        return new ParamsExtender(entityId, null, null, null, null, new Params.RecognizedParams(null, null, null, rFilter, null, null, null, null, false));
+        return new ParamsExtender(entityId, null, null, null, null, null, new Params.RecognizedParams(null, null, null, rFilter, null, null, null, null, false));
     }
 
     public static Params valueOf(boolean includeSource, String entityId)
     {
-        return new ParamsExtender(entityId, null, null, null, null, new Params.RecognizedParams(null, null, null, null, null, null, null, null, includeSource));
+        return new ParamsExtender(entityId, null, null, null, null, null, new Params.RecognizedParams(null, null, null, null, null, null, null, null, includeSource));
     }
 
     public static Params valueOf(Paging paging, String entityId)
     {
-        return new ParamsExtender(entityId, null, null, null, null, new Params.RecognizedParams(null, paging, null, null, null, null, null, null, false));
+        return new ParamsExtender(entityId, null, null, null, null, null, new Params.RecognizedParams(null, paging, null, null, null, null, null, null, false));
     }
 
     public static Params valueOf(Map<String, String[]> params)
     {
-        return new ParamsExtender(null, null, null, null, null, new Params.RecognizedParams(params, null, null, null, null, null, null, null, false));
+        return new ParamsExtender(null, null, null, null, null, null, new Params.RecognizedParams(params, null, null, null, null, null, null, null, false));
     }
 
+    public static Params valueOf(Paging paging, String entityId, String relationshipId, String relationship2Id)
+    {
+        return new ParamsExtender(entityId, relationshipId, relationship2Id, null, null, null, new Params.RecognizedParams(null, paging, null, null, null, null, null, null, false));
+    }
+
+    public static Params valueOf(Paging paging, String entityId, String relationshipId, String relationship2Id, List<String> include)
+    {
+        return new ParamsExtender(entityId, relationshipId, relationship2Id, null, null, null, new Params.RecognizedParams(null, paging, null, null, include, null, null, null, false));
+    }
 }

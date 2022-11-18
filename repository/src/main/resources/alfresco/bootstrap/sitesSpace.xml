@@ -33,9 +33,12 @@
                      <view:properties>
                         <cm:description></cm:description>
                         <cm:name>extensions</cm:name>
+                        <cm:isIndexed>false</cm:isIndexed>
+                        <cm:isContentIndexed>false</cm:isContentIndexed>
                      </view:properties>
                      <view:aspects>
                         <sys:hidden/>
+                        <cm:indexControl/>
                     </view:aspects>
                   </cm:folder>
                </cm:contains>
@@ -50,9 +53,12 @@
                      <view:properties>
                         <cm:description></cm:description>
                         <cm:name>module-deployments</cm:name>
+                        <cm:isIndexed>false</cm:isIndexed>
+                        <cm:isContentIndexed>false</cm:isContentIndexed>
                      </view:properties>
                      <view:aspects>
                         <sys:hidden/>
+                        <cm:indexControl/>
                     </view:aspects>
                   </cm:folder>
                </cm:contains>

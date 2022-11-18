@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.VersionOptions;
@@ -33,6 +34,7 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -1081,6 +1083,50 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             setRequestContext(user1);
             deleteNode(f1Id, true, 204);
         }
+    }
+
+    @Test
+    public void testRequestVersionsContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        // create *empty* text file - as of now, versioning is not enabled by default
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String docId = documentResp.getId();
+        assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+
+        int majorVersion = 1;
+        int minorVersion = 0;
+
+        String content = "The quick brown fox jumps over the lazy dog ";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("comment", "my version ");
+
+        documentResp = updateTextFile(docId, content, params);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNotNull(documentResp.getProperties());
+        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+
+        final String contentNodeId = documentResp.getId();
+
+        // Check the upload response
+        assertNotNull(documentResp.getProperties());
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        ContentInfo contentInfo = documentResp.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        HttpResponse dauResponse = post(getRequestVersionDirectAccessUrl(contentNodeId, majorVersion+"."+minorVersion), null, null, null, null, 501);
     }
 
     /**

@@ -32,7 +32,7 @@ import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.Before;
 import org.junit.Test;
 

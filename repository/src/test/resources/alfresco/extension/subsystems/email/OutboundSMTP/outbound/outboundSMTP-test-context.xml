@@ -5,6 +5,9 @@
    <!-- This bean, which should only be used during Unit Tests, overrides the "mail" bean such that
         it sets the testMode to true. -->
     <bean id="mail" class="org.alfresco.util.email.ExtendedMailActionExecutor" parent="action-executer">
+        <property name="actionAccessRestrictions">
+            <ref bean="adminActionAccessRestriction"/>
+        </property>
         <property name="queueName" value="outboundMail"/>
         <property name="mailService">
             <ref bean="mailService"></ref>

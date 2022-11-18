@@ -21,7 +21,7 @@ package org.alfresco.util.transaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Exception wraps {@link java.util.NoSuchElementException} from {@link org.apache.commons.dbcp.BasicDataSource}
+ * Exception wraps {@link java.util.NoSuchElementException} from {@link org.apache.commons.dbcp2.BasicDataSource}
  * 
  * @author alex.mukha
  * @since 4.1.9

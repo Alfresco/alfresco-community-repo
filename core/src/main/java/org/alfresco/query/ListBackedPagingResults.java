@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2022 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.query;
 
 import java.util.Collections;
@@ -55,7 +56,7 @@ public class ListBackedPagingResults<R> implements PagingResults<R>
         }
         
         this.results = Collections.unmodifiableList(
-                list.subList(start, end));
+                list.subList(Math.min(start, end), end));
         this.size = list.size();
         this.hasMore = ! (list.size() == end);
     }

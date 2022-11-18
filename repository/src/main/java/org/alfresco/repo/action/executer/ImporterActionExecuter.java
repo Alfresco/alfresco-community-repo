@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -64,6 +64,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.utils.InputStreamStatistics;
 
 /**
  * Importer action executor
@@ -80,9 +81,11 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private static final int BUFFER_SIZE = 16384;
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String TEMP_FILE_SUFFIX_ACP = ".acp";
-    
+
+    private long ratioThreshold;
+    private long uncompressedBytesLimit = -1L;
     private boolean highByteZip = false;
-    
+
     /**
      * The importer service
      */
@@ -160,6 +163,36 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
+     * @param ratioThreshold the compression ratio threshold for Zip bomb detection
+     */
+    public void setRatioThreshold(long ratioThreshold)
+    {
+        this.ratioThreshold = ratioThreshold;
+    }
+
+    /**
+     * This method sets a value for the uncompressed bytes limit. If the string does not {@link Long#parseLong(String) parse} to a
+     * java long.
+     *
+     * @param limit a String representing a valid Java long.
+     */
+    public void setUncompressedBytesLimit(String limit)
+    {
+        // A string parameter is used here in order to not to require end users to provide a value for the limit in a property
+        // file. This results in the empty string being injected to this method.
+        long longLimit = -1L;
+        try
+        {
+            longLimit = Long.parseLong(limit);
+        }
+        catch (NumberFormatException ignored)
+        {
+            // Intentionally empty
+        }
+        this.uncompressedBytesLimit = longLimit;
+    }
+
+    /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
@@ -229,7 +262,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        {
                            // TODO: improve this code to directly pipe the zip stream output into the repo objects - 
                            //       to remove the need to expand to the filesystem first?
-                           extractFile(zipFile, tempDir.getPath());
+                           extractFile(zipFile, tempDir.getPath(), new ZipBombProtection(ratioThreshold, uncompressedBytesLimit));
                            importDirectory(tempDir.getPath(), importDest);
                        }
                        finally
@@ -338,14 +371,26 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_ENCODING, DataTypeDefinition.TEXT, 
               false, getParamDisplayLabel(PARAM_ENCODING)));
     }
-    
+
     /**
      * Extract the file and folder structure of a ZIP file into the specified directory
-     * 
+     *
      * @param archive       The ZIP archive to extract
      * @param extractDir    The directory to extract into
      */
     public static void extractFile(ZipFile archive, String extractDir)
+    {
+        extractFile(archive, extractDir, ExtractionProgressTracker.NONE);
+    }
+
+    /**
+     * Extract the file and folder structure of a ZIP file into the specified directory using a progress tracker
+     *
+     * @param archive       The ZIP archive to extract
+     * @param extractDir    The directory to extract into
+     * @param tracker       The extraction progress tracker to check against during the extraction process
+     */
+    public static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
     {
         String fileName;
         String destFileName;
@@ -353,6 +398,9 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
         extractDir = extractDir + File.separator;
         try
         {
+            long totalCompressedBytesCount = 0;
+            long totalUncompressedBytesCount = 0;
+            tracker.reportProgress(0, 0);
             for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements();)
             {
                 ZipArchiveEntry entry = e.nextElement();
@@ -374,15 +422,21 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                         File parentFile = new File(parent);
                         if (!parentFile.exists()) parentFile.mkdirs();
                     }
-                    InputStream in = new BufferedInputStream(archive.getInputStream(entry), BUFFER_SIZE);
-                    OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE);
-                    int count;
-                    while ((count = in.read(buffer)) != -1)
+
+                    try (InputStream zis = archive.getInputStream(entry);
+                         InputStream in = new BufferedInputStream(zis, BUFFER_SIZE);
+                         OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE))
                     {
-                        out.write(buffer, 0, count);
+                        final InputStreamStatistics entryStats = (InputStreamStatistics) zis;
+                        int count;
+                        while ((count = in.read(buffer)) != -1)
+                        {
+                            tracker.reportProgress(totalCompressedBytesCount + entryStats.getCompressedCount(), totalUncompressedBytesCount + entryStats.getUncompressedCount());
+                            out.write(buffer, 0, count);
+                        }
+                        totalCompressedBytesCount += entryStats.getCompressedCount();
+                        totalUncompressedBytesCount += entryStats.getUncompressedCount();
                     }
-                    in.close();
-                    out.close();
                 }
                 else
                 {
@@ -431,5 +485,52 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
             // delete provided directory
             dir.delete();
         }
+    }
+
+    private static class ZipBombProtection implements ExtractionProgressTracker
+    {
+        private final long ratioThreshold;
+        private final long uncompressedBytesLimit;
+
+        private ZipBombProtection(long ratioThreshold, long uncompressedBytesLimit)
+        {
+            this.ratioThreshold = ratioThreshold;
+            this.uncompressedBytesLimit = uncompressedBytesLimit;
+        }
+
+        @Override
+        public void reportProgress(long compressedBytesCount, long uncompressedBytesCount)
+        {
+            if (compressedBytesCount <= 0 || uncompressedBytesCount <= 0)
+            {
+                return;
+            }
+
+            long ratio = uncompressedBytesCount / compressedBytesCount;
+
+            if (ratio > ratioThreshold)
+            {
+                throw new AlfrescoRuntimeException("Unexpected compression ratio detected (" + ratio + "%). Possible zip bomb attack. Breaking the extraction process.");
+            }
+
+            if (uncompressedBytesLimit > 0 && uncompressedBytesCount > uncompressedBytesLimit)
+            {
+                throw new AlfrescoRuntimeException("Uncompressed bytes limit exceeded (" + uncompressedBytesCount + "). Possible zip bomb attack. Breaking the extraction process.");
+            }
+        }
+    }
+
+    private interface ExtractionProgressTracker
+    {
+        void reportProgress(long compressedBytesCount, long uncompressedBytesCount);
+
+        ExtractionProgressTracker NONE = new ExtractionProgressTracker()
+        {
+            @Override
+            public void reportProgress(long compressedBytesCount, long uncompressedBytesCount)
+            {
+                // intentionally do nothing
+            }
+        };
     }
 }

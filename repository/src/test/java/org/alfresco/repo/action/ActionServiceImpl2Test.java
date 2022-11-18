@@ -430,7 +430,7 @@ public class ActionServiceImpl2Test
         {
             public Void execute() throws Throwable
             {
-                assertEquals("Gym class featuring a brown fox and lazy dog",
+                assertEquals("Pangram, fox, dog, Gym class featuring a brown fox and lazy dog",
                         nodeService.getProperty(testNode, ContentModel.PROP_DESCRIPTION));
                 return null;
             }

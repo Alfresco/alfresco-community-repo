@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="alfresco.node.select">
+
+    <select id="select_Deleted_NodesByTxnCommitTime" parameterType="TransactionQuery" fetchSize="-2147483648" resultType="java.lang.Long">
+        select
+            node.id
+        from
+            alf_node node
+                join alf_transaction txn on (node.transaction_id = txn.id)
+        where
+            node.type_qname_id = #{typeQNameId}
+        <![CDATA[and commit_time_ms < #{maxCommitTime}]]>
+    </select>
+
+    <select id="select_Txns_UnusedByTxnCommitTime" parameterType="TransactionQuery" fetchSize="-2147483648" resultType="java.lang.Long">
+        select
+            id
+        from alf_transaction
+        where not exists
+            (
+           select 1
+           from
+               alf_node node
+           where
+               node.transaction_id = alf_transaction.id
+            )
+      <![CDATA[and commit_time_ms <= #{maxCommitTime}]]>
+    </select>
+
+</mapper>

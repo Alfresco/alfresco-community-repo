@@ -198,4 +198,15 @@ public class UnlockFileTests extends WebDavTest
                 .then().unlock()
                     .and().assertThat().hasStatus(HttpStatus.NO_CONTENT.value()).and().assertThat().isUnlocked();
     }
+
+    @TestRail(section={TestGroup.PROTOCOLS, TestGroup.WEBDAV}, executionType= ExecutionType.SANITY,
+            description ="Checks no existent file is not locked (and status 404)")
+    @Test(groups = {TestGroup.PROTOCOLS, TestGroup.WEBDAV, TestGroup.SANITY})
+    public void checkLockStatusForNonExistentFile() throws Exception
+    {
+        testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN, content);
+        webDavProtocol.authenticateUser(dataUser.getAdminUser()).
+                usingResource(testFile).
+                assertThat().isUnlocked().assertThat().hasStatus(HttpStatus.NOT_FOUND.value());
+    }
 }

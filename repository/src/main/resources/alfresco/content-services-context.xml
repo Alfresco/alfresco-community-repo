@@ -164,6 +164,9 @@
       <property name="systemWideDirectUrlConfig" >
          <ref bean="systemWideDirectUrlConfig" />
       </property>
+      <property name="nonAttachContentTypes">
+         <value>${content.nonAttach.mimetypes}</value>
+      </property>
    </bean>
    
    <bean id="contentService" parent="baseContentService">

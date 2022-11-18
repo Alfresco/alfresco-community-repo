@@ -155,6 +155,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
                 <entry key="org.alfresco.repo.security.authority.UnknownAuthorityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.repo.security.permissions.AccessDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
+                <entry key="org.alfresco.repo.action.access.ActionAccessException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.service.cmr.lock.NodeLockedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
@@ -175,6 +176,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException" value="503" />
                 <entry key="org.alfresco.service.cmr.dictionary.InvalidTypeException" value="409" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.ArchivedContentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_PRECONDITION_FAILED}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.RestoreInProgressException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
             </map>
         </property>
     </bean>
@@ -509,19 +511,6 @@
         </property>
     </bean>
 
-    <bean id="nodes.nonAttachContentTypes" class="org.springframework.beans.factory.config.SetFactoryBean">
-        <property name="sourceSet">
-            <set>
-                <value>application/pdf</value>
-                <value>image/jpeg</value>
-                <value>image/gif</value>
-                <value>image/png</value>
-                <value>image/tiff</value>
-                <value>image/bmp</value>
-            </set>
-        </property>
-    </bean>
-
     <bean id="nodes.personLookupProperties" class="org.springframework.beans.factory.config.SetFactoryBean">
         <property name="sourceSet">
             <set>
@@ -542,7 +531,7 @@
         <property name="quickShareLinks" ref="QuickShareLinks"/>
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
         <property name="personLookupProperties" ref="nodes.personLookupProperties"/>
         <property name="poster" ref="activitiesPoster" />
         <property name="smartStore" ref="smartStore"/>
@@ -565,8 +554,11 @@
     <bean id="downloads" class="org.alfresco.rest.api.impl.DownloadsImpl">
         <property name="downloadService" ref="DownloadService"/>
         <property name="nodeService" ref="NodeService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="moduleService" ref="ModuleService"/>
         <property name="nodes" ref="Nodes" />
         <property name="permissionService" ref="permissionService"/>
+        <property name="archiveCheckLimit" value="${download.archiveCheckLimit}"/>
     </bean>
 
     <bean id="actions" class="org.alfresco.rest.api.impl.ActionsImpl">
@@ -575,6 +567,7 @@
         <property name="namespaceService" ref="NamespaceService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="prefixResolver" ref="namespaceService"/>
+        <property name="actionParameterConverter" ref="actionParameterConverter"/>
     </bean>
     <bean id="Actions" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces" value="org.alfresco.rest.api.Actions"/>
@@ -592,7 +585,23 @@
     <bean class="org.alfresco.rest.api.actions.ActionExecutionsEntityResource">
         <property name="actions" ref="Actions"/>
     </bean>
-    
+    <bean class="org.alfresco.rest.api.actions.ActionParameterConstraintsEntityResource">
+        <constructor-arg name="actions" ref="Actions"/>
+    </bean>
+
+    <!--    action parameter validators start here -->
+    <bean id="actionParameterConstraintsValidator" class="org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator">
+        <constructor-arg name="actions" ref="Actions"/>
+    </bean>
+    <bean id="actionNodeParameterValidator" class="org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator">
+        <constructor-arg name="actions" ref="Actions"/>
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
+        <constructor-arg name="nodes" ref="Nodes"/>
+        <constructor-arg name="permissionService" ref="PermissionService"/>
+    </bean>
+
+    <!--    action parameter validators end here-->
+
     <bean id="Downloads" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Downloads</value>
@@ -606,6 +615,26 @@
             </list>
         </property>
     </bean>
+
+    <bean id="contentStorageInformation" class="org.alfresco.rest.api.impl.ContentStorageInformationImpl">
+        <constructor-arg name="contentService" ref="ContentService"/>
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
+    </bean>
+
+    <bean id="ContentStorageInformation" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.ContentStorageInformation</value>
+        </property>
+        <property name="target">
+            <ref bean="contentStorageInformation" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
     <bean id="deletedNodes" class="org.alfresco.rest.api.impl.DeletedNodesImpl">
         <property name="nodes" ref="Nodes" />
         <property name="nodeService" ref="NodeService" />
@@ -839,6 +868,133 @@
         </property>
     </bean>
 
+    <bean id="nodeValidator" class="org.alfresco.rest.api.impl.rules.NodeValidator">
+        <property name="nodes" ref="Nodes" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="ruleService" ref="RuleService" />
+        <property name="nodeService" ref="NodeService"/>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.rules.NodeRulesRelation">
+        <property name="rules" ref="Rules" />
+    </bean>
+
+    <bean id="ruleSetLoader" class="org.alfresco.rest.api.impl.rules.RuleSetLoader">
+        <property name="nodeService" ref="NodeService" />
+        <property name="ruleService" ref="RuleService" />
+    </bean>
+
+    <bean id="ruleSets" class="org.alfresco.rest.api.impl.rules.RuleSetsImpl">
+        <property name="ruleSetLoader" ref="ruleSetLoader" />
+        <property name="validator" ref="nodeValidator" />
+        <property name="ruleService" ref="RuleService" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="runtimeRuleService" ref="ruleService"/>
+    </bean>
+
+    <bean id="RuleSets" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.RuleSets" />
+        <property name="target" ref="ruleSets" />
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ruleLoader" class="org.alfresco.rest.api.impl.rules.RuleLoader">
+        <property name="ruleService" ref="RuleService" />
+        <property name="nodeValidator" ref="nodeValidator" />
+        <property name="ruleMapper" ref="ruleMapper"/>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.rules.NodeRuleSetsRelation">
+        <property name="ruleSets" ref="RuleSets" />
+    </bean>
+
+    <bean id="actionParameterConverter" class="org.alfresco.rest.api.impl.rules.ActionParameterConverter">
+        <constructor-arg name="actionService" ref="ActionService"/>
+        <constructor-arg name="dictionaryService" ref="DictionaryService"/>
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
+        <constructor-arg name="permissionService" ref="PermissionService" />
+        <constructor-arg name="nodes" ref="Nodes"/>
+    </bean>
+
+    <bean id="actionPermissionValidator" class="org.alfresco.rest.api.impl.rules.ActionPermissionValidator">
+        <constructor-arg name="runtimeActionService" ref="actionService"/>
+    </bean>
+
+    <bean id="rules" class="org.alfresco.rest.api.impl.rules.RulesImpl">
+        <property name="actionService" ref="ActionService"/>
+        <property name="validator" ref="nodeValidator"/>
+        <property name="ruleService" ref="RuleService" />
+        <property name="ruleLoader" ref="ruleLoader"/>
+        <property name="actionPermissionValidator" ref="actionPermissionValidator"/>
+        <property name="ruleMapper" ref="ruleMapper"/>
+    </bean>
+
+    <bean id="Rules" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.Rules"/>
+        <property name="target" ref="rules"/>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.rules.NodeRuleSetLinksRelation">
+        <constructor-arg name="ruleSets" ref="RuleSets" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.rules.NodeRuleExecutionsRelation">
+        <constructor-arg name="rules" ref="Rules" />
+    </bean>
+
+    <bean id="ruleSettings" class="org.alfresco.rest.api.impl.rules.RuleSettingsImpl">
+        <property name="validator" ref="nodeValidator" />
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="RuleSettings" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.RuleSettings" />
+        <property name="target" ref="ruleSettings" />
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.rules.NodeRuleSettingsRelation">
+        <property name="ruleSettings" ref="RuleSettings" />
+    </bean>
+
+    <bean id="simpleConditionMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper">
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
+        <constructor-arg name="nodes" ref="Nodes"/>
+    </bean>
+    <bean id="compositeConditionMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleCompositeConditionModelMapper">
+        <constructor-arg name="simpleConditionMapper" ref="simpleConditionMapper"/>
+    </bean>
+
+    <bean id="actionMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleActionModelMapper">
+        <constructor-arg name="parameterConverter" ref="actionParameterConverter"/>
+        <constructor-arg name="actionValidators">
+            <list>
+                <ref bean="actionParameterConstraintsValidator"/>
+                <ref bean="actionNodeParameterValidator"/>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="ruleMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleModelMapper">
+        <constructor-arg name="compositeConditionMapper" ref="compositeConditionMapper"/>
+        <constructor-arg name="actionMapper" ref="actionMapper"/>
+        <constructor-arg name="nodes" ref="Nodes"/>
+        <constructor-arg name="actionParameterConverter" ref="actionParameterConverter"/>
+    </bean>
+
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="supported">
@@ -977,7 +1133,16 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
-    
+
+    <bean class="org.alfresco.rest.api.nodes.NodeStorageInfoRelation">
+        <constructor-arg name="storageInformation" ref="ContentStorageInformation" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeVersionsStorageInfoRelation">
+        <constructor-arg name="storageInformation" ref="ContentStorageInformation" />
+        <constructor-arg name="nodeVersions" ref="nodeVersionsRelation" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
 
     <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation" parent="baseNodeRelation"/>
@@ -1115,7 +1280,7 @@
         <property name="version"            value="1.0"/>
         <property name="cmisVersion"        value="1.0"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
     </bean>
 
     <bean   id="cmisAtomPubDispatcher1.1" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
@@ -1127,7 +1292,7 @@
         <property name="version"            value="1.1"/>
         <property name="cmisVersion"        value="1.1"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
     </bean>
 
     <bean   id="cmisBrowserDispatcher1.1" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
@@ -1139,7 +1304,7 @@
         <property name="version"            value="1.1"/>
         <property name="cmisVersion"        value="1.1"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
         <property name="allowUnsecureCallbackJSONP" value="${allow.unsecure.callback.jsonp}"/>
     </bean>
 
@@ -1432,6 +1597,7 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeVersionRenditionsRelation">
         <property name="renditions" ref="Renditions" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkRenditionsRelation">

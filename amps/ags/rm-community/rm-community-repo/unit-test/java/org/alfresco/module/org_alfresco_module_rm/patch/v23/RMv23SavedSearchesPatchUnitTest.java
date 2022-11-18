@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,8 +30,8 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v23;
 import static java.util.Arrays.asList;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_SAVED_SEARCH;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

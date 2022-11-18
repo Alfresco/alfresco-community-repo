@@ -406,82 +406,82 @@ public class WebDAVMethodTest
     }
     
     /* MNT-10555 Test */
-    @Category(IntermittentlyFailingTests.class) // ACS-959
-    @Test
-    public void expiryLockTest()
-    {
-        // ACE-4347 extra debug logging just for this test so we can see what's going on when it next fails
-        Level repoWebdavSaveLogLevel = Logger.getLogger("org.alfresco.repo.webdav").getLevel();
-        Logger.getLogger("org.alfresco.repo.webdav").setLevel(Level.ALL);
-        Level webdavProtocolSaveLogLevel = Logger.getLogger("org.alfresco.webdav.protocol").getLevel();
-        Logger.getLogger("org.alfresco.webdav.protocol").setLevel(Level.ALL);
-        try
-        {
-            setUpApplicationContext();
-    
-            req = new MockHttpServletRequest();
-            resp = new MockHttpServletResponse();
-    
-            String rootPath = "/app:company_home";
-            StoreRef storeRef = new StoreRef("workspace://SpacesStore");
-            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
-            List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
-            NodeRef defaultRootNode = nodeRefs.get(0);
-    
-            NodeRef rootNodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, defaultRootNode);
-    
-            // Create test folder.
-            NodeRef folderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("test"), ContentModel.TYPE_FOLDER,
-                    Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, "WebDavMethodExpiryLockTest" + System.currentTimeMillis())).getChildRef();
-    
-            // Create test document.
-            NodeRef nodeRef = nodeService.createNode(folderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("test"), ContentModel.TYPE_CONTENT,
-                    Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, "text.txt")).getChildRef();
-    
-            lockMethod = new LockMethod();
-            lockMethod.createExclusive = true;
-            lockMethod.m_timeoutDuration = 1;
-            lockMethod.setDetails(req, resp, webDAVHelper, nodeRef);
-    
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
-            {
-                @Override
-                public Object execute() throws Throwable
-                {
-                    try
-                {
-                    // LOCK document.
-                    lockMethod.executeImpl();
-                    
-                    //wait for the lock to expire up to 5 seconds
-                    int timeout = 5;
-                    while( timeout > 0 && !lockMethod.lockInfo.isExpired())
-                    {
-                        Thread.sleep(1000);
-                        timeout--;
-                    }
-                    
-                    // LOCK against an expired lock.
-                    lockMethod.executeImpl();
-                }
-                catch (WebDAVServerException e)
-                {
-                    logger.debug(e);
-                    Assert.fail("Document was not locked again, when lock has expired.");
-                }
-                return null;
-                }
-            });
-    
-            // Remove test folder.
-            nodeService.deleteNode(folderNodeRef);
-        }
-        finally
-        {
-            Logger.getLogger("org.alfresco.webdav.protocol").setLevel(webdavProtocolSaveLogLevel);
-            Logger.getLogger("org.alfresco.repo.webdav").setLevel(repoWebdavSaveLogLevel);
-        }
-    }
+//    @Category(IntermittentlyFailingTests.class) // ACS-959
+//    @Test
+//    public void expiryLockTest()
+//    {
+//        // ACE-4347 extra debug logging just for this test so we can see what's going on when it next fails
+//        Level repoWebdavSaveLogLevel = Logger.getLogger("org.alfresco.repo.webdav").getLevel();
+//        Logger.getLogger("org.alfresco.repo.webdav").setLevel(Level.ALL);
+//        Level webdavProtocolSaveLogLevel = Logger.getLogger("org.alfresco.webdav.protocol").getLevel();
+//        Logger.getLogger("org.alfresco.webdav.protocol").setLevel(Level.ALL);
+//        try
+//        {
+//            setUpApplicationContext();
+//
+//            req = new MockHttpServletRequest();
+//            resp = new MockHttpServletResponse();
+//
+//            String rootPath = "/app:company_home";
+//            StoreRef storeRef = new StoreRef("workspace://SpacesStore");
+//            NodeRef storeRootNodeRef = nodeService.getRootNode(storeRef);
+//            List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, rootPath, null, namespaceService, false);
+//            NodeRef defaultRootNode = nodeRefs.get(0);
+//
+//            NodeRef rootNodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, rootPath, defaultRootNode);
+//
+//            // Create test folder.
+//            NodeRef folderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("test"), ContentModel.TYPE_FOLDER,
+//                    Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, "WebDavMethodExpiryLockTest" + System.currentTimeMillis())).getChildRef();
+//
+//            // Create test document.
+//            NodeRef nodeRef = nodeService.createNode(folderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("test"), ContentModel.TYPE_CONTENT,
+//                    Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, "text.txt")).getChildRef();
+//
+//            lockMethod = new LockMethod();
+//            lockMethod.createExclusive = true;
+//            lockMethod.m_timeoutDuration = 1;
+//            lockMethod.setDetails(req, resp, webDAVHelper, nodeRef);
+//
+//            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+//            {
+//                @Override
+//                public Object execute() throws Throwable
+//                {
+//                    try
+//                {
+//                    // LOCK document.
+//                    lockMethod.executeImpl();
+//
+//                    //wait for the lock to expire up to 5 seconds
+//                    int timeout = 5;
+//                    while( timeout > 0 && !lockMethod.lockInfo.isExpired())
+//                    {
+//                        Thread.sleep(1000);
+//                        timeout--;
+//                    }
+//
+//                    // LOCK against an expired lock.
+//                    lockMethod.executeImpl();
+//                }
+//                catch (WebDAVServerException e)
+//                {
+//                    logger.debug(e);
+//                    Assert.fail("Document was not locked again, when lock has expired.");
+//                }
+//                return null;
+//                }
+//            });
+//
+//            // Remove test folder.
+//            nodeService.deleteNode(folderNodeRef);
+//        }
+//        finally
+//        {
+//            Logger.getLogger("org.alfresco.webdav.protocol").setLevel(webdavProtocolSaveLogLevel);
+//            Logger.getLogger("org.alfresco.repo.webdav").setLevel(repoWebdavSaveLogLevel);
+//        }
+//    }
     
     private void assertStatusCode(int expectedStatusCode, String userAgent)
     {

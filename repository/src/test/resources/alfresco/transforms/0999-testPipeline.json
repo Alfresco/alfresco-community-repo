@@ -1,16 +1,17 @@
 {
-  "transformers": [
+  "overrideSupported": [
     {
-      "transformerName": "rubbish",
-      "transformerPipeline" : [
-        {"transformerName": "appleIWorks",                                      "targetMediaType": "image/jpeg"},
-        {"transformerName": "imagemagick"}
-      ],
-      "supportedSourceAndTargetList": [
-        {"sourceMediaType": "application/vnd.apple.pages", "maxSourceSizeBytes": 786432, "targetMediaType": "rubbish"}
-      ],
-      "transformOptions": [
-      ]
+    "transformerName": "appleIWorks",
+    "sourceMediaType": "application/vnd.apple.pages",
+    "targetMediaType": "image/jpeg",
+    "maxSourceSizeBytes": 786432
+    }
+  ],
+  "addSupported": [
+    {
+      "transformerName": "imagemagick",
+      "sourceMediaType": "image/jpeg",
+      "targetMediaType": "rubbish"
     }
   ]
 }

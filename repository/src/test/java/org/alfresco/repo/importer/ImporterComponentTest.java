@@ -113,6 +113,31 @@ public class ImporterComponentTest extends BaseSpringTest
         importerService.importView(testReader, location, null, new ImportTimerProgress());
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, storeRef));
     }
+
+    @Test
+    public void testImportNotIndexedSubfolder() throws Exception
+    {
+        InputStream test = getClass().getClassLoader().getResourceAsStream(
+            "org/alfresco/repo/importer/import_not_indexed_subfolder.xml");
+
+        try (InputStreamReader testReader = new InputStreamReader(test, "UTF-8"))
+        {
+            Location location = new Location(storeRef);
+            importerService.importView(testReader, location, null, new ImportTimerProgress());
+            NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+            NodeRef testParentFolderRef = nodeService.getChildAssocs(rootNodeRef).get(0).getChildRef();
+            NodeRef testSubfolderRef = nodeService.getChildAssocs(testParentFolderRef).get(0).getChildRef();
+
+            assertFalse("The node's isIndexed property should be false.",
+                DefaultTypeConverter.INSTANCE.convert(Boolean.class,
+                    nodeService.getProperty(testSubfolderRef, ContentModel.PROP_IS_INDEXED)));
+            assertFalse("The node's isContentIndexed property should be false.",
+                DefaultTypeConverter.INSTANCE.convert(Boolean.class,
+                    nodeService.getProperty(testSubfolderRef, ContentModel.PROP_IS_CONTENT_INDEXED)));
+            assertTrue("The node should be marked with the indexControl aspect.",
+                nodeService.getAspects(testSubfolderRef).contains(ContentModel.ASPECT_INDEX_CONTROL));
+        }
+    }
     
     @Test
     public void testImportWithAuditableProperties() throws Exception

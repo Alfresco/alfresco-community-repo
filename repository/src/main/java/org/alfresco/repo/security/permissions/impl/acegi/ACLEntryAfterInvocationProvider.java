@@ -25,27 +25,15 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import net.sf.acegisecurity.AccessDeniedException;
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
-
 import org.alfresco.opencmis.search.CMISResultSet;
+import org.alfresco.repo.search.SearchEngineResultSet;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
-import org.alfresco.repo.search.impl.solr.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;
@@ -71,6 +59,17 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Enforce permission after the method call
@@ -276,8 +275,8 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             {
                 return decide(authentication, object, config, (ChildAssociationRef) returnedObject);
             }
-            else if (SolrJSONResultSet.class.isAssignableFrom(returnedObject.getClass()) &&
-                        (!anyDenyDenies || (!postProcessDenies && ((SolrJSONResultSet)returnedObject).getProcessedDenies())))
+            else if (SearchEngineResultSet.class.isAssignableFrom(returnedObject.getClass()) &&
+                        (!anyDenyDenies || (!postProcessDenies && ((SearchEngineResultSet)returnedObject).getProcessedDenies())))
             {
                 return returnedObject;
             }

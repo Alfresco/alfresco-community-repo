@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -420,23 +420,74 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         return deleted;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    @Experimental
-    public Map<String, String> getStorageProperties(String contentUrl) {
+    public Map<String, String> getStorageProperties(String contentUrl)
+    {
         ContentStore contentStore = selectReadStore(contentUrl);
 
-        if (contentStore == null) {
-            if (logger.isTraceEnabled()) {
-                logger.trace("Storage properties not found for content URL: " + contentUrl);
-            }
+        if (contentStore == null)
+        {
+            logNoContentStore(contentUrl);
             return Collections.emptyMap();
         }
-        if (logger.isTraceEnabled()) {
-            logger.trace("Getting storage properties from store: \n" +
+        final String message = "Getting storage properties from store: ";
+        logExecution(contentUrl, contentStore, message);
+
+        return contentStore.getStorageProperties(contentUrl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
+    {
+        final ContentStore contentStore = selectReadStore(contentUrl);
+        if (contentStore == null)
+        {
+            logNoContentStore(contentUrl);
+            return ContentStore.super.requestSendContentToArchive(contentUrl, archiveParams);
+        }
+        final String message = "Sending content to archive: ";
+        logExecution(contentUrl, contentStore, message);
+        return contentStore.requestSendContentToArchive(contentUrl, archiveParams);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
+    {
+        final ContentStore contentStore = selectReadStore(contentUrl);
+        if (contentStore == null)
+        {
+            logNoContentStore(contentUrl);
+            return ContentStore.super.requestRestoreContentFromArchive(contentUrl, restoreParams);
+        }
+        final String message = "Restoring content from archive: ";
+        logExecution(contentUrl, contentStore, message);
+        return ContentStore.super.requestRestoreContentFromArchive(contentUrl, restoreParams);
+    }
+
+    private void logExecution(final String contentUrl, final ContentStore contentStore, final String message)
+    {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace(message + "\n" +
                     "   Content URL: " + contentUrl + "\n" +
                     "   Store:       " + contentStore);
         }
+    }
 
-        return contentStore.getStorageProperties(contentUrl);
+    private void logNoContentStore(String contentUrl)
+    {
+        if (logger.isTraceEnabled())
+        {
+            logger.trace("Content Store not found for content URL: " + contentUrl);
+        }
     }
 }

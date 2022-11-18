@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,8 +30,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 import static java.util.Collections.emptyMap;
 
 import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.lenient;

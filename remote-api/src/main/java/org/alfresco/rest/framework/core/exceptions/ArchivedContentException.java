@@ -25,15 +25,12 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-import org.alfresco.service.Experimental;
-
 /**
  * Thrown when the content is archived and not readily accessible.
  * Status is <i>Precondition Failed</i> client error = 412.
  *
  * @author David Edwards
  */
-@Experimental
 public class ArchivedContentException  extends  ApiException
 {
 

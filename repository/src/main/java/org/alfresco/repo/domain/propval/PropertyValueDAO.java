@@ -377,4 +377,6 @@ public interface PropertyValueDAO
     void cleanupUnusedValues();
 
     void cleanupUnusedValuesV2();
+
+    void cleanupUnusedValuesV3();
 }

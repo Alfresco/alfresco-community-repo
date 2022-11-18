@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,7 +33,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,6 +44,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
@@ -50,12 +55,7 @@ import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.MLText;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -68,6 +68,7 @@ import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -82,6 +83,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.InputStreamContent;
 import org.springframework.transaction.annotation.Transactional;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
@@ -95,6 +97,7 @@ public class ExporterComponentTest extends BaseSpringTest
     private FileFolderService fileFolderService;
     private CategoryService categoryService;
     private TransactionService transactionService;
+    private ContentService contentService;
     private StoreRef storeRef;
     private AuthenticationComponent authenticationComponent;
     private PermissionServiceSPI permissionService;
@@ -112,6 +115,7 @@ public class ExporterComponentTest extends BaseSpringTest
         categoryService = (CategoryService) applicationContext.getBean("categoryService");     
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         permissionService = (PermissionServiceSPI) applicationContext.getBean("permissionService");
+        contentService = (ContentService) applicationContext.getBean("contentService");
 
         this.authenticationService = (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
         this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
@@ -151,9 +155,7 @@ public class ExporterComponentTest extends BaseSpringTest
         OutputStream output = new FileOutputStream(tempFile);
         ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
         parameters.setExportFrom(location);
-//        parameters.setExcludeAspects(new QName[] { ContentModel.ASPECT_AUDITABLE });
-//        parameters.setExcludeChildAssocs(new QName[] { ContentModel.ASSOC_CONTAINS });
-        
+
         File acpFile = TempFileProvider.createTempFile("alf", ACPExportPackageHandler.ACP_EXTENSION);
         File dataFile = new File("test");
         File contentDir = new File("test");
@@ -162,6 +164,81 @@ public class ExporterComponentTest extends BaseSpringTest
         acpHandler.setExportAsFolders(true);
         exporterService.exportView(acpHandler, parameters, testProgress);
         output.close();
+
+
+    }
+
+    @Test
+    public void testExportWithChunkedList()
+            throws Exception
+    {
+        TestProgress testProgress = new TestProgress();
+        Location location = new Location(storeRef);
+
+        String testFile = "_testFile";
+        int numberOfNodesToExport = 20;
+        // now export
+        location.setPath("/system");
+        File tempFile = TempFileProvider.createTempFile("xmlexporttest", ".xml");
+        OutputStream output = new FileOutputStream(tempFile);
+        ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
+        parameters.setExportFrom(location);
+
+        File acpFile = TempFileProvider.createTempFile("alf", ACPExportPackageHandler.ACP_EXTENSION);
+        File dataFile = new File("test");
+        File contentDir = new File("test");
+        ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(new FileOutputStream(acpFile), dataFile, contentDir, null);
+        acpHandler.setNodeService(nodeService);
+        acpHandler.setExportAsFolders(true);
+        NodeRef nodeRef = (location == null) ? null : location.getNodeRef();
+        if (nodeRef == null)
+        {
+            // If a specific node has not been provided, default to the root
+            nodeRef = nodeService.getRootNode(location.getStoreRef());
+        }
+        NodeRef[] childRefs = new NodeRef[numberOfNodesToExport];
+
+        for (int i = 0; i < numberOfNodesToExport; i++)
+        {
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ContentModel.PROP_NAME, this.getClass() + testFile + i);
+            childRefs[i] = nodeService.createNode(nodeRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, props).getChildRef();
+        }
+        parameters.getExportFrom().setNodeRefs(childRefs);
+        parameters.setCrawlSelf(true);
+        exporterService.setExportChunkSize("3");
+        exporterService.exportView(acpHandler, parameters, testProgress);
+        output.close();
+        ZipFile zipFile = new ZipFile(acpFile.getAbsolutePath());
+
+        Enumeration<? extends ZipEntry> entries = zipFile.entries();
+        int numberOfExportedNodes = 0;
+        while(entries.hasMoreElements()){
+            ZipEntry entry = entries.nextElement();
+            InputStream stream = zipFile.getInputStream(entry);
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    stream, StandardCharsets.UTF_8));) {
+
+                String line;
+
+                while ((line = br.readLine()) != null) {
+
+                    if(line.contains(testFile)){
+                        numberOfExportedNodes++;
+                    }
+                }
+            }
+            stream.close();
+        }
+        zipFile.close();
+
+        assertEquals(numberOfNodesToExport, numberOfExportedNodes);
+
+        parameters.getExportFrom().setNodeRefs(null);
+        for (int i = 0; i < numberOfNodesToExport; i++)
+        {
+            nodeService.deleteNode(childRefs[i]);
+        }
     }
 
     /**

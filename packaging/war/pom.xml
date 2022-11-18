@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-packaging</artifactId>
-        <version>14.37-SNAPSHOT</version>
+        <version>20.19-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -144,7 +144,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.4</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <phase>validate</phase>
@@ -198,21 +198,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-                    <organizationName>Alfresco Software Limited</organizationName>
-                    <failOnMissingHeader>true</failOnMissingHeader>
-                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-                    <licenseResolver>classpath://alfresco</licenseResolver>
-                    <licenseName>${licenseName}</licenseName>
-                    <roots>
-                        <root>src</root>
-                    </roots>
-                    <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.jsp</include>
-                    </includes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>check-licenses</id>
@@ -220,6 +205,21 @@
                         <goals>
                             <goal>check-file-header</goal>
                         </goals>
+                        <configuration>
+                            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                            <organizationName>Alfresco Software Limited</organizationName>
+                            <failOnMissingHeader>true</failOnMissingHeader>
+                            <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                            <licenseResolver>classpath://alfresco</licenseResolver>
+                            <licenseName>${licenseName}</licenseName>
+                            <roots>
+                                <root>src</root>
+                            </roots>
+                            <includes>
+                                <include>**/*.java</include>
+                                <include>**/*.jsp</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>
@@ -240,11 +240,6 @@
                     <configuration>
                         <source>${maven.build.sourceVersion}</source>
                     </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>1.13</version>
                 </plugin>
             </plugins>
         </pluginManagement>

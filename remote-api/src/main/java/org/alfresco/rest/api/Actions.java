@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,10 +27,14 @@
 package org.alfresco.rest.api;
 
 
+import java.util.List;
+
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface Actions
@@ -45,7 +49,12 @@ public interface Actions
     {
         NAME,
         TITLE
-    };
+    }
     
     Action executeAction(Action action, Parameters parameters);
+
+    @Experimental
+    ActionParameterConstraint getActionConstraint(String constraintName);
+    @Experimental
+    ActionDefinition getRuleActionDefinitionById(String actionDefinitionId);
 }

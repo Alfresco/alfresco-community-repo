@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -52,7 +52,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -76,7 +75,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,7 +85,6 @@ import static org.mockito.Mockito.when;
  * 
  * @author Glen Johnson
  */
-@Category(LuceneTests.class)
 public class PersonServiceTest extends BaseWebScriptTest
 {    
     private MutableAuthenticationService authenticationService;
@@ -340,7 +338,7 @@ public class PersonServiceTest extends BaseWebScriptTest
 
         // Ensure that the REST call with no filter will always be routed to a DB canned query rather than a FTS
         // (see ALF-18876 for details)
-        String filter = "*%20[hint:useCQ]";
+        String filter = "*";
 
         Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
         JSONObject res = new JSONObject(response.getContentAsString());
@@ -386,7 +384,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 0 +
                         "&pageSize=" + 6
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         JSONObject res = new JSONObject(response.getContentAsString());
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 6, peopleAsc.length());
@@ -398,7 +395,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 0 +
                         "&pageSize=" + 2
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -416,7 +412,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 2 +
                         "&pageSize=" + 2
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -434,7 +429,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 4 +
                         "&pageSize=" + 2
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -452,7 +446,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 3 +
                         "&pageSize=" + 5
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 3, peopleAsc.length());
@@ -476,6 +469,7 @@ public class PersonServiceTest extends BaseWebScriptTest
     public void testGetPeopleSorting() throws Exception
     {
         String filter = GUID.generate();
+        String filterByJob = "jobtitle:job";
         String usernameA = filter + "-aaa-";
         String usernameB = filter + "-BBB-";
         String usernameC = filter + "-ccc-";
@@ -496,12 +490,17 @@ public class PersonServiceTest extends BaseWebScriptTest
         addUserUsageContent(usernameD, 50);
         userUsageTrackingComponent.execute();
 
+        //check sorting for CQ
         checkSorting(filter, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filter, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_JOBTITLE, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_EMAIL, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_QUOTA, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_USAGE, usernameA, usernameB, usernameC, usernameD);
+
+        //since CQ search only sorts by fullname and username test the other sorts by filtering for a job which bypasses CQ (MNT 22905)
+        checkSorting(filterByJob, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_JOBTITLE, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_EMAIL, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_QUOTA, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_USAGE, usernameA, usernameB, usernameC, usernameD);
     }
 
     private void checkSorting(String filter, String sortBy, String... usernames) throws Exception
@@ -519,7 +518,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&filter=" + filter +
                         "&dir=" + ASC_DIR
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         JSONObject res = new JSONObject(response.getContentAsString());
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleAsc.length());
@@ -530,7 +528,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&filter=" + filter +
                         "&dir=" + DESC_DIR
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         JSONArray peopleDesc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleDesc.length());
@@ -541,7 +538,11 @@ public class PersonServiceTest extends BaseWebScriptTest
             assertEquals(peopleAsc.getJSONObject(i).getString("userName"),
                     peopleDesc.getJSONObject(peopleAsc.length() - i - 1).getString("userName"));
         }
+        assertCorrectSort(sortBy, peopleAsc);
+    }
 
+    private void assertCorrectSort(String sortBy, JSONArray peopleAsc)
+    {
         // Check Asc sorting for each field
         for (int i = 0; i < peopleAsc.length() - 1; i++)
         {
@@ -765,7 +766,52 @@ public class PersonServiceTest extends BaseWebScriptTest
         createPerson(userName, "myTitle", "", "myLastName", "myOrganisation",
                         "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
                         Status.STATUS_BAD_REQUEST);        
-    }  
+    }
+
+    public void testUserNameCaseSensitivityCQ() throws Exception
+    {
+        String upperCaseUserName = "PersonServiceTest.MixedCaseUser";
+        String lowerCaseUserName = upperCaseUserName.toLowerCase();
+        // Create a new person
+
+        String currentUser = this.authenticationComponent.getCurrentUserName();
+        try
+        {
+            /**
+             *  simulate cloud with lower case user names
+             */
+            createPerson(lowerCaseUserName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                    "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                    Status.STATUS_OK);
+
+            String adminUser = this.authenticationComponent.getSystemUserName();
+            this.authenticationComponent.setCurrentUser(adminUser);
+            personService.setCreateMissingPeople(false);
+
+            //try with canned query
+            String filter = "PerSOnSerVIceTest.MixEDCasEUseR";
+            assertPersonIsFound(filter);
+
+            filter = "MyFiRsTnAmE";
+            assertPersonIsFound(filter);
+
+            filter = "MyLaStNaMe";
+            assertPersonIsFound(filter);
+        }
+        finally
+        {
+            this.authenticationComponent.setCurrentUser(currentUser);
+        }
+    }
+
+    private void assertPersonIsFound(String filter) throws Exception
+    {
+        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
+        JSONObject res = new JSONObject(response.getContentAsString());
+        int peopleFound = res.getJSONArray("people").length();
+        assertTrue("No people found", peopleFound > 0);
+    }
+
     /**
      * 
      * @throws Exception

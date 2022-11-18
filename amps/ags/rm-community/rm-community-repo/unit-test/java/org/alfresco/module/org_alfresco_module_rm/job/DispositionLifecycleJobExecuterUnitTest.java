@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -170,7 +170,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         executer.executeImpl();
 
         // then
-
+        verify(mockedNodeService, times(2)).getPrimaryParent(any(NodeRef.class));
         // ensure the query is executed and closed
         verifyQueryTimes(2);
 
@@ -206,7 +206,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         executer.executeImpl();
 
         // then
-
+        verify(mockedNodeService, times(1)).getPrimaryParent(any(NodeRef.class));
         // ensure the query is executed and closed
         verifyQueryTimes(1);
 
@@ -262,11 +262,11 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // ensure each node is process correctly
         // node1
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        verify(mockedNodeService, times(1)).getPrimaryParent(node1);
+        verify(mockedNodeService, times(3)).getPrimaryParent(node1);
         verify(mockedRecordsManagementActionService, times(1)).executeRecordsManagementAction(eq(parent), eq(CUTOFF), anyMap());
         // node2
         verify(mockedNodeService, times(1)).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        verify(mockedNodeService, times(1)).getPrimaryParent(node2);
+        verify(mockedNodeService, times(3)).getPrimaryParent(node2);
         verify(mockedRecordsManagementActionService, times(1)).executeRecordsManagementAction(eq(parent), eq(RETAIN), anyMap());
 
         // ensure no more interactions
@@ -329,7 +329,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // call the service
         executer.executeImpl();
 
-        // check the loop iterated trough all the elements
+        // check the loop iterated through all the elements
         verify(mockedNodeService).exists(node1);
         verify(mockedNodeService).exists(node2);
         verify(mockedNodeService).exists(node3);

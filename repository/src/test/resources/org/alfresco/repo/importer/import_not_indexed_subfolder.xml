@@ -1,0 +1,25 @@
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0">
+   <cm:folder view:childName="cm:test-parent-folder">
+      <view:properties>
+         <cm:description>Test Parent Folder</cm:description>
+         <cm:name>test-parent-folder</cm:name>
+      </view:properties>
+      <view:aspects>
+         <sys:hidden />
+      </view:aspects>
+      <cm:contains>
+         <cm:folder view:childName="cm:test-not-indexed-subfolder">
+            <view:properties>
+               <cm:description>Test Subfolder</cm:description>
+               <cm:name>test-not-indexed-subfolder</cm:name>
+               <cm:isIndexed>false</cm:isIndexed>
+               <cm:isContentIndexed>false</cm:isContentIndexed>
+            </view:properties>
+            <view:aspects>
+               <sys:hidden />
+               <cm:indexControl />
+            </view:aspects>
+         </cm:folder>
+      </cm:contains>
+   </cm:folder>
+</view:view>

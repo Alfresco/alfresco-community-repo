@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -713,6 +713,7 @@ public class CustomModelsImpl implements CustomModels
         try
         {
             NodeRef nodeRef = customModelService.createDownloadNode(modelName, withForm);
+            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, modelName + DownloadsImpl.DEFAULT_ARCHIVE_EXTENSION);
             return new CustomModelDownload(nodeRef);
         }
         catch (Exception ex)

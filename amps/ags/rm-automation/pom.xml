@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-parent</artifactId>
-      <version>14.37-SNAPSHOT</version>
+      <version>20.19-SNAPSHOT</version>
    </parent>
 
    <modules>
@@ -36,6 +36,16 @@
                </suiteXmlFiles>
                <skipTests>${skip.automationtests}</skipTests>
             </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>third-party-licenses</id>
+                  <phase>none</phase>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

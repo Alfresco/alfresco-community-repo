@@ -64,8 +64,8 @@
         </property>
         <!-- Query collections should be loaded on demand using this component - once loaded thay are available for use -->
     </bean>
-    
-    <bean id="search.fts.alfresco.switching" class="org.alfresco.repo.search.impl.solr.DbOrIndexSwitchingQueryLanguage" >
+
+    <bean id="base.search.fts.alfresco.switching" abstract="true" class="org.alfresco.repo.search.impl.DbOrIndexSwitchingQueryLanguage">
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />
@@ -80,12 +80,16 @@
         <property name="indexQueryLanguage">
             <ref bean="search.fts.alfresco.index" />
         </property>
-        <property name="queryConsistency">
-            <value>${solr.query.fts.queryConsistency}</value>
-        </property>
+
+        <property name="queryConsistency" value="${query.fts.queryConsistency}"/>
+        <property name="solrQueryConsistency" value="${solr.query.fts.queryConsistency}"/>
+
+        <!-- Deprecated -->
+        <property name="hybridEnabled" value="${query.hybrid.enabled}"/>
+        <property name="solrHybridEnabled" value="${solr.query.hybrid.enabled}"/> 
+
         <property name="searchDao" ref="searchDAO"/>
-        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
-    </bean> 
+    </bean>
 
     <bean id="search.fts.alfresco.db" class="org.alfresco.repo.search.impl.solr.DbAftsQueryLanguage" >
         <property name="dictionaryService" ref="dictionaryService" />

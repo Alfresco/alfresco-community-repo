@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -114,11 +114,11 @@ public class RecordsAPI extends BaseAPI
     /**
      * Reject the record given as parameter
      *
-     * @param user the user declaring the document as record
-     * @param password the user's password
+     * @param user               the user declaring the document as record
+     * @param password           the user's password
      * @param expectedStatusCode The expected return status code.
-     * @param recordName the record name
-     * @param reason reject reason
+     * @param recordName         the record name
+     * @param reason             reject reason
      * @return The HTTP Response.
      * @throws AssertionError If the expectedStatusCode was not returned.
      */
@@ -129,8 +129,8 @@ public class RecordsAPI extends BaseAPI
         JSONObject requestParams = new JSONObject();
         requestParams.put("name", "reject");
         requestParams.put("nodeRef", recNodeRef);
-        requestParams.put("params",new JSONObject()
-                    .put("reason",reason));
+        requestParams.put("params", new JSONObject()
+                .put("reason", reason));
 
         return doPostJsonRequest(user, password, expectedStatusCode, requestParams, RM_ACTIONS_API);
     }
@@ -221,6 +221,7 @@ public class RecordsAPI extends BaseAPI
      * Uploads an electronic record
      * <p>
      * eg. of usage for creating record directly in Unfiled Records : uploadElectronicRecord(getAdminName(), getAdminPassword(), recordPropertiesStringMap, UNFILED_RECORDS_BREADCRUMB, DocumentType.HTML)
+     *
      * @param username   the username
      * @param password   the password
      * @param properties a map of record properties and their values
@@ -241,6 +242,7 @@ public class RecordsAPI extends BaseAPI
      * <li>eg. of usage in the case in which the record is inside a folder in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
      * <li>eg. of usage in the case in which the record is created directly in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "");
      * </ul>
+     *
      * @param username     user's username
      * @param password     its password
      * @param recordName   the record name
@@ -267,7 +269,7 @@ public class RecordsAPI extends BaseAPI
      * @param recordName the String with which the record name starts
      * @return the record object in case it exists, null otherwise
      */
-    private CmisObject getRecord(String username, String password, String folderName, String recordName)
+    public CmisObject getRecord(String username, String password, String folderName, String recordName)
     {
         for (CmisObject record : contentService.getFolderObject(contentService.getCMISSession(username, password), RM_SITE_ID, folderName).getChildren())
         {
@@ -328,9 +330,9 @@ public class RecordsAPI extends BaseAPI
     /**
      * Hide in place record
      *
-     * @param user         the user
-     * @param password     the user's password
-     * @param nodeId     the in place record node id
+     * @param user     the user
+     * @param password the user's password
+     * @param nodeId   the in place record node id
      * @return The HTTP Response.
      */
     public HttpResponse hideRecord(String user, String password, String nodeId)
@@ -343,6 +345,7 @@ public class RecordsAPI extends BaseAPI
 
         return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
+
 
     /**
      * Retrieves the record's nodeRef
@@ -357,4 +360,25 @@ public class RecordsAPI extends BaseAPI
     {
         return getNodeRefSpacesStore() + getItemNodeRef(username, password, recordPath + "/" + recordName);
     }
+
+    /**
+     * Reopens the record given as parameter
+     *
+     * @param user       the user declaring the document as record
+     * @param password   the user's password
+     * @param recordName the record name
+     * @return The HTTP Response.
+     */
+
+    public HttpResponse reOpenRecord(String user, String password, String recordName)
+    {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
+
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", "undeclareRecord");
+        requestParams.put("nodeRef", recNodeRef);
+
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+    }
+
 }

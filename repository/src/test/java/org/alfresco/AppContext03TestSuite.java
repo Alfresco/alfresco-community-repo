@@ -84,6 +84,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.node.archive.ArchiveAndRestoreTest.class,
     org.alfresco.repo.node.db.DbNodeServiceImplTest.class,
     org.alfresco.repo.node.cleanup.TransactionCleanupTest.class,
+    org.alfresco.repo.node.cleanup.DeletedNodeBatchCleanupTest.class,
     org.alfresco.repo.node.db.DbNodeServiceImplPropagationTest.class,
 })
 public class AppContext03TestSuite

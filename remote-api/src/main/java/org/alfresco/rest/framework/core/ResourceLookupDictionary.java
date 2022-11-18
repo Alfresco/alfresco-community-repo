@@ -121,8 +121,8 @@ public class ResourceLookupDictionary implements ResourceLocator
                     return resource;
                 }
             }
-            logger.warn("Unable to locate resource resource for :"+entityResource+" "+relationResource==null?"":relationResource+" "+property==null?"":property);
-            throw new NotFoundException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource+" "+property==null?"":property));
+            logger.warn("Unable to locate resource for: "+entityResource+" "+relationResource==null ? "" : relationResource+" "+property==null ? "" : property);
+            throw new NotFoundException("Unable to locate resource for: "+entityResource+" "+(relationResource==null ? "" : relationResource+" "+property==null ? "" : property));
         }
         else
         {
@@ -160,8 +160,8 @@ public class ResourceLookupDictionary implements ResourceLocator
                   return resource;
               }
           }
-          logger.warn("Unable to locate resource resource for :"+entityResource+" "+relationResource==null?"":relationResource);
-          throw new NotFoundException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource));
+          logger.warn("Unable to locate resource for: "+entityResource+" "+relationResource==null ? "" : relationResource);
+          throw new NotFoundException("Unable to locate resource for: "+entityResource+" "+relationResource==null ? "" : relationResource);
         } 
         else
         {

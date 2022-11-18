@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -38,6 +38,8 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.solr.SearchDAO;
+import org.alfresco.repo.search.impl.DbOrIndexSwitchingQueryLanguage;
+import org.alfresco.repo.search.impl.DisabledFeatureException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.solr.NodeParameters;

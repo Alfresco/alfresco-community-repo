@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -449,30 +449,18 @@ public class LockMethod extends WebDAVMethod
      */
     protected final void createLock(FileInfo lockNode, String userName) throws WebDAVServerException
     {
-        // Create Lock token
-        lockToken = WebDAV.makeLockToken(lockNode.getNodeRef(), userName);
-
-        if (createExclusive)
-        {
-            // Lock the node
-            lockInfo.setTimeoutSeconds(getLockTimeout());
-            lockInfo.setExclusiveLockToken(lockToken);
-        }
-        else
-        {
+        if (!createExclusive) {
             // Shared lock creation should already have been prohibited when parsing the request body
             throw new WebDAVServerException(HttpServletResponse.SC_PRECONDITION_FAILED);
         }
 
-        // Store lock depth
+        lockToken = WebDAV.makeLockToken(lockNode.getNodeRef(), userName);
+        lockInfo.setExclusiveLockToken(lockToken);
         lockInfo.setDepth(WebDAV.getDepthName(m_depth));
-        // Store lock scope (shared/exclusive)
-        String scope = createExclusive ? WebDAV.XML_EXCLUSIVE : WebDAV.XML_SHARED;
-        lockInfo.setScope(scope);
-        // Store the owner of this lock
+        lockInfo.setScope(WebDAV.XML_EXCLUSIVE);
         lockInfo.setOwner(userName);
-        // Lock the node
-        getDAVLockService().lock(lockNode.getNodeRef(), lockInfo);
+
+        getDAVLockService().lock(lockNode.getNodeRef(), lockInfo, getLockTimeout());
         
         if (logger.isDebugEnabled())
         {

@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>14.37-SNAPSHOT</version>
+        <version>20.19-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -73,6 +73,7 @@
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>cmis</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -106,8 +107,10 @@
                     <suiteXmlFiles>
                         <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
                     </suiteXmlFiles>
+                    <!-- Keeping illegal-access=warn for Java 11 compatibility, even though it has no effect on JDK 17 -->
                     <argLine>
                         --illegal-access=warn
+                        --add-opens=java.base/java.lang=ALL-UNNAMED
                     </argLine>
                 </configuration>
             </plugin>

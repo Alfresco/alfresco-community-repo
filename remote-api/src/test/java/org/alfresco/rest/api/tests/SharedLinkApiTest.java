@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -93,7 +93,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -204,7 +204,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(fileName1, resp.getName());
         assertEquals("The quick brown fox jumps over the lazy dog", resp.getTitle());
-        assertEquals("Gym class featuring a brown fox and lazy dog", resp.getDescription());
+        assertEquals("Pangram, fox, dog, Gym class featuring a brown fox and lazy dog", resp.getDescription());
 
         assertEquals(file1_MimeType, resp.getContent().getMimeType());
         assertEquals("Adobe PDF Document", resp.getContent().getMimeTypeName());
@@ -245,7 +245,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(shared1Id, resp.getId());
         assertEquals(fileName1, resp.getName());
         assertEquals("The quick brown fox jumps over the lazy dog", resp.getTitle());
-        assertEquals("Gym class featuring a brown fox and lazy dog", resp.getDescription());
+        assertEquals("Pangram, fox, dog, Gym class featuring a brown fox and lazy dog", resp.getDescription());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
         assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
@@ -303,7 +303,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
         Map<String, String> responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file1_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(file1_MimeType+";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", responseHeaders.get("Content-Disposition"));
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
@@ -319,7 +319,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file1_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(file1_MimeType+";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
@@ -330,7 +330,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(content2Text.getBytes(), response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file2_MimeType+";charset=ISO-8859-1", responseHeaders.get("Content-Type"));
+        assertEquals(file2_MimeType+";charset=iso-8859-1", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", responseHeaders.get("Content-Disposition"));
@@ -392,7 +392,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         String docName = "doclib";
@@ -405,7 +405,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
         lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
@@ -816,7 +816,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
         Map<String, String> responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file1_MimeType + ";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(file1_MimeType + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", responseHeaders.get("Content-Disposition"));
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
@@ -832,7 +832,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file1_MimeType + ";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(file1_MimeType + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
@@ -888,7 +888,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertNotNull(responseHeaders.get("Expires"));
         String docName = "doclib";
@@ -901,7 +901,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertTrue(response.getResponseAsBytes().length > 0);
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG + ";charset=utf-8", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNull(responseHeaders.get("Content-Disposition"));
         lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
@@ -1319,7 +1319,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
             // Quick check that some extended info is present. 
             assertEquals("The quick brown fox jumps over the lazy dog", sharedLink.getTitle());
-            assertEquals("Gym class featuring a brown fox and lazy dog", sharedLink.getDescription());
+            assertEquals("Pangram, fox, dog, Gym class featuring a brown fox and lazy dog", sharedLink.getDescription());
         });
     }
 

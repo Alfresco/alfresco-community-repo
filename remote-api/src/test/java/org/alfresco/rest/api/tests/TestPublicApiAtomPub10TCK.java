@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assume.assumeFalse;
-
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +40,6 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.impl.TestParameters;
-import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
@@ -93,7 +90,7 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
     @Test
     public void testCMISTCKBasics() throws Exception
     {
-        BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
+        AlfrescoCMISBasicsTestGroup basicsTestGroup = new AlfrescoCMISBasicsTestGroup();
         JUnitHelper.run(basicsTestGroup);
     }
     

@@ -233,8 +233,19 @@ public class WorkflowServiceImpl implements WorkflowService
      */
     public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype, String name)
     {
+        return deployDefinition(engineId, workflowDefinition, mimetype, name, false);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(java
+     * .lang.String, java.io.InputStream, java.lang.String, java.lang.String, boolean)
+     */
+    public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype, String name, boolean fullAccess)
+    {
         WorkflowComponent component = getWorkflowComponent(engineId);
-        WorkflowDeployment deployment = component.deployDefinition(workflowDefinition, mimetype, name);
+        WorkflowDeployment deployment = component.deployDefinition(workflowDefinition, mimetype, name, fullAccess);
 
         if (logger.isDebugEnabled() && deployment.getProblems().length > 0)
         {
@@ -275,6 +286,18 @@ public class WorkflowServiceImpl implements WorkflowService
     {
         WorkflowComponent component = getWorkflowComponent(engineId);
         return component.isDefinitionDeployed(workflowDefinition, mimetype);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.alfresco.service.cmr.workflow.WorkflowService#checkDeploymentCategory
+     * (java.lang.String, java.io.InputStream)
+     */
+    public void checkDeploymentCategory(String engineId, InputStream workflowDefinition)
+    {
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        component.checkDeploymentCategory(workflowDefinition);
     }
 
     /*

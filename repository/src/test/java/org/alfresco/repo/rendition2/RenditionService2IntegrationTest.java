@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,6 +28,8 @@ package org.alfresco.repo.rendition2;
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
 import static org.junit.Assert.assertNotEquals;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
@@ -358,7 +360,25 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
      * </p>
      */
     @Test
-    public void testRenditionWithoutContentButWithContentHashCode()
+    public void testRenditionWithNullContentButWithContentHashCode()
+    {
+        testRenditionWithoutContentButWithContentHashCode(null);
+    }
+
+    /**
+     * Tests if a rendition without content (but with contentHashCode) can be generated again.
+     * <p>
+     * If the rendition consumption receives a zero length InputStream, the contentHashCode should be cleaned from the
+     * rendition node, allowing new requests to generate the rendition.
+     * </p>
+     */
+    @Test
+    public void testRenditionWithZeroContentButWithContentHashCode()
+    {
+        testRenditionWithoutContentButWithContentHashCode(new ByteArrayInputStream(new byte[0]));
+    }
+
+    private void testRenditionWithoutContentButWithContentHashCode(InputStream transformInputStream)
     {
         // Create a node with an actual rendition
         NodeRef sourceNodeRef = createSource(ADMIN, "quick.jpg");
@@ -379,7 +399,7 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         // This is explicitly called to prove that rendition hash code will be cleaned (as opposite to previous behavior)
         RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(DOC_LIB);
         AuthenticationUtil.runAs(() -> {
-            renditionService2.consume(sourceNodeRef, null, renditionDefinition, contentHashCode);
+            renditionService2.consume(sourceNodeRef, transformInputStream, renditionDefinition, contentHashCode);
             return null;
         }, ADMIN);
         waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, false);

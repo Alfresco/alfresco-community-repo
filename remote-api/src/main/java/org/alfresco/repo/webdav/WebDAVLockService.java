@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -56,7 +56,9 @@ public interface WebDAVLockService
     void lock(NodeRef nodeRef, String userName, int timeout);
 
     void lock(NodeRef nodeRef, LockInfo lockInfo);
-    
+
+    void lock(NodeRef nodeRef, LockInfo lockInfo, int timeout);
+
     /**
      * Shared method for webdav/vti to unlock node. Unlocked node is automatically removed from
      * current sessions's locked resources list.

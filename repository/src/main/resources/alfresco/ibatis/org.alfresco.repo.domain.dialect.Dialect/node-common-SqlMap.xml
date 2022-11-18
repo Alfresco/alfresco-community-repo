@@ -1505,5 +1505,32 @@
         where 
             commit_time_ms > #{minCommitTime} 
     </select>
+
+    <delete id="delete_NodesById" parameterType="list">
+        delete from alf_node
+        where
+        id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="delete_NodePropsByNodeId" parameterType="list">
+        delete from alf_node_properties
+        where
+        node_id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="delete_Txns_UnusedById" parameterType="list">
+        delete from alf_transaction
+        where
+        id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
         
 </mapper>

@@ -15,7 +15,7 @@
         </if>
     </select>
 
-    <select id="select_ChildNodeIds_Limited" parameterType="Ids" resultMap="alfresco.node.result_ChildAssocIds" fetchSize="-2147483648">
+    <select id="select_ChildNodeIds_Limited" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssocIds" fetchSize="-2147483648">
         <include refid="alfresco.node.select_ChildNodeIds_Limited_Snippet"/>
     </select>
 

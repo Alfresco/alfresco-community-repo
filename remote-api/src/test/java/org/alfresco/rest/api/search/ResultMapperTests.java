@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -224,7 +224,7 @@ public class ResultMapperTests
 
         PersonPropertyLookup propertyLookups = mock(PersonPropertyLookup.class);
         when(propertyLookups.supports()).thenReturn(Stream.of("creator","modifier").collect(Collectors.toSet()));
-        when(propertyLookups.lookup(notNull(String.class))).thenAnswer(invocation -> {
+        when(propertyLookups.lookup(notNull())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             String value = (String)args[0];
             return "mjackson".equals(value) ? "Michael Jackson" : null;

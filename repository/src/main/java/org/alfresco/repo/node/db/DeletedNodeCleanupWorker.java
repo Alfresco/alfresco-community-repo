@@ -50,6 +50,13 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     // of the chunk (in ms). Default is a couple of hours.
     private int purgeSize = 7200000; // ms
 
+    //to determine if we need a time based window deletion of nodes or in fixed size batches.
+    private  String algorithm;
+
+    private int deleteBatchSize;
+
+    private static final String NODE_TABLE_CLEANER_ALG_V2 = "V2";
+
     /**
      * Default constructor
      */
@@ -67,15 +74,57 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         {
             return Collections.singletonList("Minimum purge age is negative; purge disabled");
         }
-        
-        List<String> purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
-        List<String> purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
-        
-        List<String> allResults = new ArrayList<String>(100);
+        List<String> purgedNodes, purgedTxns;
+
+        if (NODE_TABLE_CLEANER_ALG_V2.equals(algorithm))
+        {
+            refreshLock();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("DeletedNodeCleanupWorker using batch deletion: About to execute the clean up nodes ");
+
+            }
+            purgedNodes = purgeOldDeletedNodesV2(minPurgeAgeMs);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(purgedNodes);
+            }
+            refreshLock();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
+            }
+
+            purgedTxns = purgeOldEmptyTransactionsV2(minPurgeAgeMs);
+        }
+        else
+        {
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("DeletedNodeCleanupWorker: About to start purgeOldDeletedNodes ");
+            }
+
+            purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
+            logger.debug(purgedNodes);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("DeletedNodeCleanupWorker: About to start purgeOldEmptyTransactions ");
+            }
+
+            purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(purgedTxns);
+        }
+
+        List<String> allResults = new ArrayList<>(100);
         allResults.addAll(purgedNodes);
         allResults.addAll(purgedTxns);
-        
-        // Done
+
         return allResults;
     }
 
@@ -110,7 +159,17 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         this.purgeSize = purgeSize;
     }
 
-	/**
+    public void setAlgorithm(String algorithm)
+    {
+        this.algorithm = algorithm;
+    }
+
+    public void setDeleteBatchSize(int deleteBatchSize)
+    {
+        this.deleteBatchSize = deleteBatchSize;
+    }
+
+    /**
      * Cleans up deleted nodes that are older than the given minimum age.
      * 
      * @param minAge        the minimum age of a transaction or deleted node
@@ -122,10 +181,12 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
         long fromCommitTime = fromCustomCommitTime;
+
         if (fromCommitTime <= 0L)
         {
             fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
         }
+
         if ( fromCommitTime == 0L )
         {
               String msg = "There are no old nodes to purge.";
@@ -134,7 +195,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         }
         
         long loopPurgeSize = purgeSize;
-        Long purgeCount = new Long(0);
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes started ");
+        }
         while (true)
         {
             // Ensure we keep the lock
@@ -153,9 +217,9 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             try
             {
                 DeleteNodesByTransactionsCallback purgeNodesCallback = new DeleteNodesByTransactionsCallback(nodeDAO, fromCommitTime, toCommitTime);
-                purgeCount = txnHelper.doInTransaction(purgeNodesCallback, false, true);
+                Long purgeCount = txnHelper.doInTransaction(purgeNodesCallback, false, true);
 
-                if (purgeCount.longValue() > 0)
+                if (purgeCount > 0)
                 {
                     String msg =
                         "Purged old nodes: \n" +
@@ -220,7 +284,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                 break;
             }
         }
-            
+
+        logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes finished ");
         // Done
         return results;
     }
@@ -244,6 +309,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         if (fromCommitTime <= 0L)
         {
             fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
+        }
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions started ");
         }
     	// delete unused transactions in batches of size 'purgeTxnBlockSize'
         while (true)
@@ -298,13 +367,45 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             }
 
             fromCommitTime += purgeSize;
-            if(fromCommitTime >= maxCommitTime)
+            if (fromCommitTime >= maxCommitTime)
             {
-            	break;
+                break;
             }
         }
+        logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions finished ");
         // Done
         return results;
+    }
+
+
+    private List<String> purgeOldDeletedNodesV2(long minAge)
+    {
+        refreshLock();
+        final List<String> returnList = new ArrayList<>();
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+
+        RetryingTransactionCallback<Void> callback = () -> {
+            returnList.addAll(nodeDAO.purgeDeletedNodes(minAge, deleteBatchSize));
+            return null;
+        };
+
+        txnHelper.doInTransaction(callback, false, true);
+        return returnList;
+    }
+
+    private List<String> purgeOldEmptyTransactionsV2(long minAge)
+    {
+        refreshLock();
+        final List<String> returnList = new ArrayList<>();
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+
+        RetryingTransactionCallback<Void> callback = () -> {
+            returnList.addAll(nodeDAO.purgeEmptyTransactions(minAge, deleteBatchSize));
+            return null;
+        };
+        txnHelper.doInTransaction(callback, false, true);
+
+        return returnList;
     }
     
     private static abstract class DeleteByTransactionsCallback implements RetryingTransactionCallback<Long>
@@ -356,4 +457,5 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             return count;
         }       
     }
+
 }

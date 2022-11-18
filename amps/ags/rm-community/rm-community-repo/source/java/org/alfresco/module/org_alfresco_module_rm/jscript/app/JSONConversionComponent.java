@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -38,9 +38,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
@@ -76,6 +79,7 @@ import org.json.simple.JSONObject;
  *
  * @author Roy Wetherall
  */
+@Slf4j
 public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent
                                      implements NodeServicePolicies.OnDeleteNodePolicy,
                                                 NodeServicePolicies.OnCreateNodePolicy
@@ -515,17 +519,25 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
             //Add details of the next incomplete event in the disposition schedule
-            if (dispositionService.getNextDispositionAction(nodeRef) != null)
+            DispositionAction nextDispositionAction = dispositionService.getNextDispositionAction(nodeRef);
+            if (nextDispositionAction != null)
             {
-                for (EventCompletionDetails details : dispositionService.getNextDispositionAction(nodeRef).getEventCompletionDetails())
+                for (EventCompletionDetails details : nextDispositionAction.getEventCompletionDetails())
                 {
                     if (!details.isEventComplete())
                     {
+                        DispositionActionDefinition dispositionActionDefinition = nextDispositionAction.getDispositionActionDefinition();
                         HashMap properties = (HashMap) rmNodeValues.get("properties");
-                        properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
                         properties.put("incompleteDispositionEvent", details.getEventName());
-                        properties.put("dispositionEventCombination", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
-
+                        if(dispositionActionDefinition == null)
+                        {
+                            log.debug("Disposition action definition for disposition action "+ nextDispositionAction.getName() +" has been removed or never exist");
+                        }
+                        else
+                        {
+                            properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+                            properties.put("dispositionEventCombination", nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
+                        }
                         break;
                     }
                 }

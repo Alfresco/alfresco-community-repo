@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -86,7 +86,8 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 
 	private boolean allowUnsecureCallbackJSONP;
 
-    private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
+	// pre-configured allow list of media/mime types, eg. specific types of images & also pdf
+    private Set<String> nonAttachContentTypes = Collections.emptySet();
 
 	public void setTenantAdminService(TenantAdminService tenantAdminService)
 	{
@@ -133,9 +134,12 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
         this.cmisVersion = CmisVersion.fromValue(cmisVersion);
     }
 
-    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList)
+    public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
-        this.nonAttachContentTypes = nonAttachWhiteList;
+		if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
+		{
+			nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
+		}
     }
 
     protected synchronized Descriptor getCurrentDescriptor()

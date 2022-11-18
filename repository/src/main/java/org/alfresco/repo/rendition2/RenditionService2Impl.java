@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,6 +38,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.util.PostTxnCallbackScheduler;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -553,11 +554,21 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                     contentWriter.setEncoding(DEFAULT_ENCODING);
                                     ContentWriter renditionWriter = contentWriter;
                                     renditionWriter.putContent(transformInputStream);
-                                    if (logger.isDebugEnabled())
+
+                                    ContentReader contentReader = renditionWriter.getReader();
+                                    long sizeOfRendition = contentReader.getSize();
+                                    if (sizeOfRendition > 0L)
                                     {
-                                        logger.debug("Set rendition hashcode for " + renditionName);
+                                        if (logger.isDebugEnabled()) {
+                                            logger.debug("Set rendition hashcode for " + renditionName);
+                                        }
+                                        nodeService.setProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE, transformContentHashCode);
                                     }
-                                    nodeService.setProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE, transformContentHashCode);
+                                    else
+                                    {
+                                        logger.error("Transform was zero bytes for " + renditionName + " on " + sourceNodeRef);
+                                        clearRenditionContentData(renditionNode);
+                                    }
                                 }
                                 catch (Exception e)
                                 {
@@ -890,6 +901,17 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             NodeRef renditionNode = childAssoc.getChildRef();
             return !isRenditionAvailable(sourceNodeRef, renditionNode) ? null: childAssoc;
         }
+    }
+
+    @Override
+    public void clearRenditionContentDataInTransaction(NodeRef renditionNode)
+    {
+        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    clearRenditionContentData(renditionNode);
+                    return null;
+                }, false, true));
     }
 
     @Override

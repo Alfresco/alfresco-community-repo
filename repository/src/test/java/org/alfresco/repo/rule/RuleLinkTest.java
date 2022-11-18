@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -350,7 +351,120 @@ public class RuleLinkTest extends BaseSpringTest
         assertTrue(nodeService.hasAspect(folderThree, RuleModel.ASPECT_RULES));
         assertEquals(rules1, rules3);
     }
-    
+
+    @Test
+    public void testGetRuleSetNode() {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef expectedRuleSetNodeRef = getRuleSetNode(folderOne);
+
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
+
+        assertNotNull(ruleSetNodeRef);
+        assertEquals(expectedRuleSetNodeRef, ruleSetNodeRef);
+    }
+
+    @Test
+    public void testGetRuleSetNodeForLinkedFolder() {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        link(folderOne, folderTwo);
+        final NodeRef expectedRuleSetNodeRef = getRuleSetNode(folderOne);
+
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderTwo);
+
+        assertNotNull(ruleSetNodeRef);
+        assertEquals(expectedRuleSetNodeRef, ruleSetNodeRef);
+    }
+
+    @Test
+    public void testIsRuleSetAssociatedWithFolder()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef ruleSetNodeRef = getRuleSetNode(folderOne);
+
+        // when
+        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderOne);
+
+        assertTrue(associated);
+    }
+
+    @Test
+    public void testIsRuleSetNotAssociatedWithFolder()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderTwo , rule);
+        final NodeRef ruleSetNodeRef = getRuleSetNode(folderTwo);
+
+        // when
+        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderOne);
+
+        assertFalse(associated);
+    }
+
+    @Test
+    public void testIsRuleAssociatedWithRuleSet()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef ruleSetNodeRef = getRuleSetNode(folderOne);
+
+        List<ChildAssociationRef> folderChildes = nodeService.getChildAssocs(folderOne);
+        List<ChildAssociationRef> ruleSetChildes = nodeService.getChildAssocs(ruleSetNodeRef);
+        List<ChildAssociationRef> ruleParents = nodeService.getParentAssocs(rule.getNodeRef());
+
+        // when
+        final boolean associated = ruleService.isRuleAssociatedWithRuleSet(rule.getNodeRef(), ruleSetNodeRef);
+
+        assertNotNull(folderChildes);
+        assertNotNull(ruleSetChildes);
+        assertNotNull(ruleParents);
+        assertTrue(associated);
+    }
+
+    @Test
+    public void testIsRuleNotAssociatedWithRuleSet()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        final Rule otherRule = createTestRule(false, "bobs rule");
+        this.ruleService.saveRule(folderOne, rule);
+        this.ruleService.saveRule(folderTwo, otherRule);
+        final NodeRef ruleSetNodeRef = getRuleSetNode(folderOne);
+
+        // when
+        final boolean associated = ruleService.isRuleAssociatedWithRuleSet(otherRule.getNodeRef(), ruleSetNodeRef);
+
+        assertFalse(associated);
+    }
+
+    @Test
+    public void testIsRuleSetShared()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        link(folderOne, folderTwo);
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
+
+        // when
+        final boolean shared = ruleService.isRuleSetShared(ruleSetNodeRef);
+
+        assertTrue(shared);
+    }
+
+    @Test
+    public void testIsRuleSetNotShared()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
+
+        // when
+        final boolean shared = ruleService.isRuleSetShared(ruleSetNodeRef);
+
+        assertFalse(shared);
+    }
+
     protected Rule createTestRule(boolean isAppliedToChildren, String title)
     {
         // Rule properties
@@ -381,5 +495,12 @@ public class RuleLinkTest extends BaseSpringTest
 
         return rule;
     }
-        
+
+    private NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
+        return nodeService.getChildAssocs(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+    }
 }

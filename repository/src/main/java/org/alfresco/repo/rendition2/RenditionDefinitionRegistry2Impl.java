@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,7 +27,7 @@ package org.alfresco.repo.rendition2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.transform.client.registry.TransformServiceRegistry;
+import org.alfresco.transform.registry.TransformServiceRegistry;
 import org.alfresco.util.ConfigFileFinder;
 import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.Pair;
@@ -369,7 +369,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
             renditionNamesWithMaxSize = data.renditionsFor.get(sourceMimetype);
             if (renditionNamesWithMaxSize == null)
             {
-                renditionNamesWithMaxSize = getRenditionNamesWithMaxSize(sourceMimetype);
+                renditionNamesWithMaxSize = getRenditionNamesWithMaxSize(data, sourceMimetype);
                 data.renditionsFor.put(sourceMimetype, renditionNamesWithMaxSize);
             }
         }
@@ -394,10 +394,9 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
 
     // Gets a list of rendition names that can be created from the given sourceMimetype.
     // Includes the maxSize for each.
-    private Set<Pair<String,Long>> getRenditionNamesWithMaxSize(String sourceMimetype)
+    private Set<Pair<String,Long>> getRenditionNamesWithMaxSize(Data data, String sourceMimetype)
     {
         Set<Pair<String,Long>> renditions = new HashSet();
-        Data data = getData();
         for (Map.Entry<String, RenditionDefinition2> entry : data.renditionDefinitions.entrySet())
         {
             RenditionDefinition2 renditionDefinition2 = entry.getValue();

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -68,6 +68,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
         final Map<String, String> resourceVars = locator.parseTemplateVars(req.getServiceMatch().getTemplateVars());
         final String entityId = resourceVars.get(ResourceLocator.ENTITY_ID);
         final String relationshipId = resourceVars.get(ResourceLocator.RELATIONSHIP_ID);
+        final String relationship2Id = resourceVars.get(ResourceLocator.RELATIONSHIP2_ID);
 
         final Params.RecognizedParams params = getRecognizedParams(req);
         
@@ -78,7 +79,15 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                  return Params.valueOf(params, entityId, relationshipId, req);
             case RELATIONSHIP:
                 // note: relationshipId can be null - when deleting a related set/collection
-                return Params.valueOf(params, entityId, relationshipId, req);
+                if (StringUtils.isNotBlank(relationship2Id))
+                {
+                    return Params.valueOf(false, entityId, relationshipId, relationship2Id,
+                            null, null, null, params, null, req);
+                }
+                else
+                {
+                    return Params.valueOf(params, entityId, relationshipId, req);
+                }
             case PROPERTY:
                 final String resourceName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
                 final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);

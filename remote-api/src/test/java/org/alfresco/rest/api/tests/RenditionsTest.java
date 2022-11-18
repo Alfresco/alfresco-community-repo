@@ -515,6 +515,51 @@ public class RenditionsTest extends AbstractBaseApiTest
         }
     }
 
+    @Test
+    public void testRequestRenditionContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        RepoService.TestNetwork networkN1;
+        RepoService.TestPerson userOneN1;
+        Site userOneN1Site;
+
+        networkN1 = repoService.createNetworkWithAlias("ping", true);
+        networkN1.create();
+        userOneN1 = networkN1.createUser();
+
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
+
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String parentId = getSiteContainerNodeId(userOneN1Site.getId(), "documentLibrary");
+        String folder_Id = createNode(parentId, folderName, TYPE_CM_FOLDER, null).getId();
+
+        // Create multipart request - pdf file
+        String renditionName = "doclib";
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setRenditions(Collections.singletonList(renditionName))
+                .build();
+
+        // Upload quick.pdf file into 'folder' - including request to create 'doclib' thumbnail
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        HttpResponse dauResponse = post(getRequestRenditionDirectAccessUrl(contentNodeId, renditionName), null, null, null, null, 501);
+    }
+
     /**
      * Tests create rendition when on upload/create of a file
      *

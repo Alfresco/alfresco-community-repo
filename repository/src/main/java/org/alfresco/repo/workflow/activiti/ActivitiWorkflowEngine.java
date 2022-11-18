@@ -337,6 +337,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      */
      public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name)
      {
+         return deployDefinition(workflowDefinition, mimetype, name, false);
+     }
+
+    /**
+     * {@inheritDoc}
+     */
+     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name, boolean fullAccess)
+     {
          try 
          {
              String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIXES[0];
@@ -362,6 +370,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                  if (internalCategory)
                  {
                      repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL);
+                 }
+                 else if (fullAccess)
+                 {
+                     repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
                  }
              }
              
@@ -1002,6 +1014,46 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             	logger.debug(msg, ae);
             }
             throw new WorkflowException(msg, ae);
+        }
+    }
+
+    /**
+    * {@inheritDoc}
+    */
+    public void checkDeploymentCategory(InputStream workflowDefinition)
+    {
+        try
+        {
+            String key = getProcessKey(workflowDefinition);
+            ProcessDefinition pd = activitiUtil.getProcessDefinitionByKey(key);
+            String deploymentId = pd.getDeploymentId();
+
+            List<ProcessDefinition> definitionList = repoService.createProcessDefinitionQuery().deploymentId(deploymentId).list();
+            if (definitionList != null && definitionList.size() > 0)
+            {
+                boolean internalCategory = true;
+                for (ProcessDefinition processDefinition : definitionList)
+                {
+                    if (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(processDefinition.getCategory()) == false)
+                    {
+                        internalCategory = false;
+                        break;
+                    }
+                }
+
+                if (!internalCategory)
+                {
+                    repoService.setDeploymentCategory(deploymentId, WorkflowDeployer.CATEGORY_FULL_ACCESS);
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Category was not set: " + e.getMessage(), e);
+            }
         }
     }
 

@@ -2,10 +2,13 @@ package org.alfresco.rest.actions;
 
 import static org.testng.Assert.assertFalse;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.List;
 
+import com.google.common.collect.ImmutableMap;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestActionConstraintDataModel;
+import org.alfresco.rest.model.RestActionConstraintModel;
 import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.rest.model.RestNodeModel;
@@ -147,5 +150,67 @@ public class ActionsTests extends RestTest
         restActionDefinition.getId().equals("add-features");
         restActionDefinition.getDescription().equals("This will add an aspect to the matched item.");
         restActionDefinition.getTitle().equals("Add aspect");
+    }
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.ACTIONS}, executionType = ExecutionType.SANITY,
+            description = "Sanity test for ACTIONS endpoint GET action-conditions/{actionConstraintName}")
+    @Test(groups = {TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
+    public void testGetSingleActionConstraint()
+    {
+        final UserModel testUser = dataUser.createRandomTestUser();
+        restClient.authenticateUser(testUser);
+
+        final String compareOperationsName = "ac-compare-operations";
+        final RestActionConstraintModel actionConstraintCompareOperations =
+                restClient.withCoreAPI().usingActions().getActionConstraintByName(compareOperationsName);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        final RestActionConstraintModel expectedComparatorConstraints = new RestActionConstraintModel();
+        expectedComparatorConstraints.setConstraintName(compareOperationsName);
+        expectedComparatorConstraints.setConstraintValues(getComparatorConstraints());
+        actionConstraintCompareOperations.assertThat().isEqualTo(expectedComparatorConstraints);
+    }
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.ACTIONS}, executionType = ExecutionType.SANITY,
+            description = "Sanity test for ACTIONS endpoint GET action-conditions/{actionConstraintName} - non existing constraint name")
+    @Test(groups = {TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
+    public void testGetSingleNonExistingActionConstraint()
+    {
+        final UserModel testUser = dataUser.createRandomTestUser();
+        restClient.authenticateUser(testUser);
+        restClient.withCoreAPI().usingActions().getActionConstraintByName("dummy-name");
+
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
+
+    private List<RestActionConstraintDataModel> getComparatorConstraints()
+    {
+        final RestActionConstraintDataModel equalsConstraint = new RestActionConstraintDataModel();
+        equalsConstraint.setValue("EQUALS");
+        equalsConstraint.setLabel("Equals");
+        final RestActionConstraintDataModel containsConstraint = new RestActionConstraintDataModel();
+        containsConstraint.setValue("CONTAINS");
+        containsConstraint.setLabel("Contains");
+        final RestActionConstraintDataModel beginsConstraint = new RestActionConstraintDataModel();
+        beginsConstraint.setValue("BEGINS");
+        beginsConstraint.setLabel("Begins With");
+        final RestActionConstraintDataModel endsConstraint = new RestActionConstraintDataModel();
+        endsConstraint.setValue("ENDS");
+        endsConstraint.setLabel("Ends With");
+        final RestActionConstraintDataModel greaterThanConstraint = new RestActionConstraintDataModel();
+        greaterThanConstraint.setValue("GREATER_THAN");
+        greaterThanConstraint.setLabel("Greater Than");
+        final RestActionConstraintDataModel greaterThanEqualConstraint = new RestActionConstraintDataModel();
+        greaterThanEqualConstraint.setValue("GREATER_THAN_EQUAL");
+        greaterThanEqualConstraint.setLabel("Greater Than Or Equal To");
+        final RestActionConstraintDataModel lessThanConstraint = new RestActionConstraintDataModel();
+        lessThanConstraint.setValue("LESS_THAN");
+        lessThanConstraint.setLabel("Less Than");
+        final RestActionConstraintDataModel lessThanEqualConstraint = new RestActionConstraintDataModel();
+        lessThanEqualConstraint.setValue("LESS_THAN_EQUAL");
+        lessThanEqualConstraint.setLabel("Less Than Or Equal To");
+        return List.of(equalsConstraint, containsConstraint, beginsConstraint, endsConstraint, greaterThanConstraint,
+                greaterThanEqualConstraint, lessThanConstraint, lessThanEqualConstraint);
     }
 }

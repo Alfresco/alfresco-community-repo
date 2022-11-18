@@ -452,37 +452,86 @@ public abstract class AbstractAuditDAOImpl implements AuditDAO
             org.alfresco.service.cmr.audit.AuditQueryParameters parameters,
             int maxResults)
     {
-        String searchKey = null;
-        Serializable searchValue = null;
-        if (parameters.getSearchKeyValues().size() > 0)
-        {
-            // Only handle one pair for now
-            Pair<String, Serializable> searchKeyValue = parameters.getSearchKeyValues().get(0);
-            searchKey = searchKeyValue.getFirst();
-            searchValue = searchKeyValue.getSecond();
-        }
-        
         AuditQueryRowHandler rowHandler = new AuditQueryRowHandler(callback);
         findAuditEntries(
                 rowHandler,
-                parameters.isForward(),
-                parameters.getApplicationName(),
-                parameters.getUser(),
-                parameters.getFromId(),
-                parameters.getToId(),
-                parameters.getFromTime(),
-                parameters.getToTime(),
                 maxResults,
-                searchKey,
-                searchValue);
+                parameters);
     }
     
     protected abstract void findAuditEntries(
             AuditQueryRowHandler rowHandler,
-            boolean forward,
-            String applicationName, String user,
-            Long fromId, Long toId,
-            Long fromTime, Long toTime,
             int maxResults,
-            String searchKey, Serializable searchValue);
+            org.alfresco.service.cmr.audit.AuditQueryParameters restParameters);
+
+    protected AuditQueryParameters convertFromRestAuditQueryParameters(org.alfresco.service.cmr.audit.AuditQueryParameters restParameters)
+    {
+        AuditQueryParameters dbParameters = new AuditQueryParameters();
+
+        String appName = restParameters.getApplicationName();
+        if (appName != null)
+        {
+            // Look up the application's ID (this is unique)
+            Pair<Long, Serializable> appNamePair = propertyValueDAO.getPropertyValue(appName);
+            if (appNamePair == null)
+            {
+                // No such value
+                return null;
+            }
+            dbParameters.setAuditAppNameId(appNamePair.getFirst());
+        }
+
+        String user = restParameters.getUser();
+        if (user != null)
+        {
+            // Look up the application's ID (this is unique)
+            Pair<Long, Serializable> userPair = propertyValueDAO.getPropertyValue(user);
+            if (userPair == null)
+            {
+                // No such value
+                return null;
+            }
+            dbParameters.setAuditUserId(userPair.getFirst());
+        }
+
+        dbParameters.setAuditFromId(restParameters.getFromId());
+        dbParameters.setAuditToId(restParameters.getToId());
+        dbParameters.setAuditFromTime(restParameters.getFromTime());
+        dbParameters.setAuditToTime(restParameters.getToTime());
+
+        String searchKey = null;
+        Serializable searchValue = null;
+        if (restParameters.getSearchKeyValues().size() > 0)
+        {
+            // Only handle one pair for now
+            Pair<String, Serializable> searchKeyValue = restParameters.getSearchKeyValues().get(0);
+            searchKey = searchKeyValue.getFirst();
+            searchValue = searchKeyValue.getSecond();
+        }
+        if (searchKey != null)
+        {
+            // Look up the ID of the search key
+            Pair<Long, Serializable> searchKeyPair = propertyValueDAO.getPropertyValue(searchKey);
+            if (searchKeyPair == null)
+            {
+                // No such value
+                return null;
+            }
+            dbParameters.setSearchKeyId(searchKeyPair.getFirst());
+        }
+        if (searchValue != null)
+        {
+            // Look up the ID of the search key
+            Pair<Long, Serializable> searchValuePair = propertyValueDAO.getPropertyValue(searchValue);
+            if (searchValuePair == null)
+            {
+                // No such value
+                return null;
+            }
+            dbParameters.setSearchValueId(searchValuePair.getFirst());
+        }
+        dbParameters.setForward(restParameters.isForward());
+
+        return dbParameters;
+    }
 }

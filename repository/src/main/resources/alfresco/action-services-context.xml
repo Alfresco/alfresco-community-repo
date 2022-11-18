@@ -375,10 +375,10 @@
          <value>false</value>
       </property>
       <property name="nodeService">
-         <ref bean="nodeService"/>
+         <ref bean="NodeService"/>
       </property>
       <property name="versionService">
-         <ref bean="versionService"/>
+         <ref bean="VersionService"/>
       </property>
    </bean>
 
@@ -474,7 +474,7 @@
             <ref bean="NodeService" />
         </property>
         <property name="cociService">
-            <ref bean="checkOutCheckInService"></ref>
+            <ref bean="CheckOutCheckInService"></ref>
         </property>
         <property name="applicableTypes">
             <list>
@@ -488,7 +488,7 @@
             <ref bean="NodeService" />
         </property>
         <property name="cociService">
-            <ref bean="checkOutCheckInService"></ref>
+            <ref bean="CheckOutCheckInService"></ref>
         </property>
         <property name="applicableTypes">
             <list>
@@ -527,16 +527,11 @@
             <list>
                 <value>org.alfresco.repo.action.executer.ActionExecuter</value>
                 <value>org.alfresco.repo.action.executer.TestModeable</value>
+                <value>org.alfresco.repo.action.executer.LoggingAwareExecuter</value>
             </list>
         </property>
     </bean>
-    
-    <bean id="errorProneActionExecutor" class="org.alfresco.repo.activities.feed.ErrorProneActionExecutor" parent="action-executer">
-      <property name="publicAction">
-         <value>false</value>
-      </property>
-   </bean>
-   
+
     <!-- Import MailService from the OutboundSMTP subsystem (needed for email space/invited users actions) -->
     <bean id="mailService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory">
@@ -598,6 +593,8 @@
         <property name="fileFolderService">
             <ref bean="FileFolderService"/>
         </property>
+       <property name="ratioThreshold" value="${import.zip.compressionRatioThreshold}"/>
+       <property name="uncompressedBytesLimit" value="${import.zip.uncompressedBytesLimit}"/>
     </bean>
     
     <bean id="export" class="org.alfresco.repo.action.executer.ExporterActionExecuter" parent="action-executer">
@@ -772,6 +769,23 @@
         </property>
         <property name="templateService">
             <ref bean="TemplateService"/>
+        </property>
+    </bean>
+
+    <!-- Action Restriction Beans -->
+
+    <bean id="actionAccessRestrictionBase" abstract="true" class="org.alfresco.repo.action.access.ActionAccessRestrictionAbstractBase">
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+        <property name="configProperties">
+            <ref bean="global-properties" />
+        </property>
+    </bean>
+
+    <bean id="adminActionAccessRestriction" class="org.alfresco.repo.action.access.AdminActionAccessRestriction" parent="actionAccessRestrictionBase">
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
         </property>
     </bean>
     

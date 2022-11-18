@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.BaseInterpreter;
@@ -54,6 +55,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
+import org.alfresco.service.cmr.workflow.FailedWorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -726,10 +728,18 @@ public class WorkflowInterpreter extends BaseInterpreter
             {
                 out.println(problem);
             }
-            out.println("deployed definition id: " + def.getId() + " , name: " + def.getName() + " , title: " + def.getTitle() + " , version: " + def.getVersion());
-            currentDeployEngine = command[1];
-            currentDeployResource = command[2];
-            out.print(executeCommand("use definition " + def.getId()));
+            final Optional<String> possibleDeploymentFailure = FailedWorkflowDeployment.getFailure(deployment);
+            if (possibleDeploymentFailure.isPresent())
+            {
+                out.println("Failed to deploy the workflow definition.");
+            }
+            else
+            {
+                out.println("deployed definition id: " + def.getId() + " , name: " + def.getName() + " , title: " + def.getTitle() + " , version: " + def.getVersion());
+                currentDeployEngine = command[1];
+                currentDeployResource = command[2];
+                out.print(executeCommand("use definition " + def.getId()));
+            }
         }
 
         else if (command[0].equals("redeploy"))

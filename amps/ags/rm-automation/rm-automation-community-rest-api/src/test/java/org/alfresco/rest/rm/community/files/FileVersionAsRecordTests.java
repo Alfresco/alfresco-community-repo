@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -61,7 +61,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
+import org.alfresco.utility.model.TestGroup;
 
 /**
  * API tests for declaring a document version as record and filing to a record folder location within the file plan
@@ -207,7 +209,8 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * record folder
      * And the document is not declared as a version record
      */
-    @Test (dataProvider = "invalidDestinationPaths")
+    @Test (dataProvider = "invalidDestinationPaths", groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
+    @Ignore
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record version with an invalid location parameter value");

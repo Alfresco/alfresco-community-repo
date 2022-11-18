@@ -76,6 +76,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.web.scripts.site.SurfConfigTest.class,
     org.alfresco.repo.web.scripts.node.NodeWebScripTest.class,
     org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
+    org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
     org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class
 })
 public class AppContext04TestSuite

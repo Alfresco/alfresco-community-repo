@@ -25,6 +25,9 @@ package org.alfresco.error;
  */
 public class ExceptionStackUtil
 {
+    private static final String JAVASCRIPT_EXCEPTION = "org.mozilla.javascript.JavaScriptException";
+    private static final String EXCEPTION_DELIMITER = ":";
+
     /**
      * Searches through the exception stack of the given throwable to find any instance
      * of the possible cause.  The top-level throwable will also be tested.
@@ -38,10 +41,17 @@ public class ExceptionStackUtil
     {
         while (throwable != null)
         {
+            Class<?> throwableClass = throwable.getClass();
+
+            boolean isJavaScriptException = throwableClass.getName().contains(JAVASCRIPT_EXCEPTION);
+            String throwableMsg = throwable.getMessage() != null ? throwable.getMessage() : "";
+
             for (Class<?> possibleCauseClass : possibleCauses)
             {
-                Class<?> throwableClass = throwable.getClass();
-                if (possibleCauseClass.isAssignableFrom(throwableClass))
+                String possibleCauseClassName = possibleCauseClass.getName();
+
+                if (possibleCauseClass.isAssignableFrom(throwableClass)
+                        || (isJavaScriptException && throwableMsg.contains(possibleCauseClassName + EXCEPTION_DELIMITER)))
                 {
                     // We have a match
                     return throwable;

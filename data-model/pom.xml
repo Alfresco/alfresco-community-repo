@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>14.37-SNAPSHOT</version>
+        <version>20.19-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -21,6 +21,10 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.jibx</groupId>
                 <artifactId>maven-jibx-plugin</artifactId>
@@ -130,7 +134,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.2.6</version>
+            <version>6.4.0</version>
         </dependency>
 
         <!-- the cxf libs were updated, see dependencyManagement section -->
@@ -230,13 +234,9 @@
         </dependency>
         <dependency>
             <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parsers</artifactId>
+            <artifactId>tika-parsers-standard-package</artifactId>
             <version>${dependency.tika.version}</version>
             <exclusions>
-                <exclusion>
-                    <groupId>com.tdunning</groupId>
-                    <artifactId>json</artifactId>
-                </exclusion>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcprov-jdk15on</artifactId>
@@ -244,39 +244,6 @@
                 <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.annotation:jakarta.annotation-api -->
-                <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from com.sun.activation:jakarta.activation -->
-                <exclusion>
-                    <groupId>com.sun.activation</groupId>
-                    <artifactId>javax.activation</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta -->
-                <exclusion>
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jaxb-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.activation</groupId>
-                    <artifactId>activation</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.activation</groupId>
-                    <artifactId>javax.activation-api</artifactId>
                 </exclusion>
                 <!-- No longer needed -->
                 <exclusion>
@@ -289,21 +256,26 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.pdfbox</groupId>
-                    <artifactId>preflight</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.pdfbox</groupId>
                     <artifactId>jempbox</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.pdfbox</groupId>
-                    <artifactId>xmpbox</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.pdfbox</groupId>
                     <artifactId>jbig2-imageio</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

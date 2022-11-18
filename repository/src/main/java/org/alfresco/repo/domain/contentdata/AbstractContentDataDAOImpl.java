@@ -352,13 +352,20 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         }
 
         /**
-         * Looks the node up based on the NodeRef of the given node
+         * Looks the entity up based on the ContentURL of the given node
          */
         @Override
         public Pair<Long, ContentUrlEntity> findByValue(ContentUrlEntity entity)
         {
             String contentUrl = entity.getContentUrl();
             ContentUrlEntity ret = getContentUrlEntity(contentUrl);
+            // Validate if this entity has exactly the value we are looking for or if it is a CRC collision
+            if (ret != null && !entity.getContentUrl().equals(ret.getContentUrl()))
+            {
+                throw new IllegalArgumentException("Collision detected for this contentURL. '" + entity.getContentUrl()
+                        + "' collides with existing contentURL '" + ret.getContentUrl() + "'. (ContentUrlShort;ContentUrlCrc) pair collision: ('"
+                        + entity.getContentUrlShort() + "';'" + entity.getContentUrlCrc() + "')");
+            }
             return (ret != null ? new Pair<Long, ContentUrlEntity>(ret.getId(), ret) : null);
         }
 

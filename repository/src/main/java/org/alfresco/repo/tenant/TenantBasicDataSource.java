@@ -27,7 +27,7 @@ package org.alfresco.repo.tenant;
 
 import java.sql.SQLException;
 
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 
 /**
  * Experimental
@@ -41,7 +41,7 @@ public class TenantBasicDataSource extends BasicDataSource
     {
         // tenant-specific
         this.setUrl(tenantUrl);
-        this.setMaxActive(tenantMaxActive == -1 ? bds.getMaxActive() : tenantMaxActive);
+        this.setMaxTotal(tenantMaxActive == -1 ? bds.getMaxTotal() : tenantMaxActive);
         
         // defaults/overrides - see also 'baseDefaultDataSource' (core-services-context.xml + repository.properties)
         
@@ -54,7 +54,7 @@ public class TenantBasicDataSource extends BasicDataSource
         this.setMaxIdle(bds.getMaxIdle());
         this.setDefaultAutoCommit(bds.getDefaultAutoCommit());
         this.setDefaultTransactionIsolation(bds.getDefaultTransactionIsolation());
-        this.setMaxWait(bds.getMaxWait());
+        this.setMaxWaitMillis(bds.getMaxWaitMillis());
         this.setValidationQuery(bds.getValidationQuery());
         this.setTimeBetweenEvictionRunsMillis(bds.getTimeBetweenEvictionRunsMillis());
         this.setMinEvictableIdleTimeMillis(bds.getMinEvictableIdleTimeMillis());
@@ -62,7 +62,7 @@ public class TenantBasicDataSource extends BasicDataSource
         this.setTestOnBorrow(bds.getTestOnBorrow());
         this.setTestOnReturn(bds.getTestOnReturn());
         this.setTestWhileIdle(bds.getTestWhileIdle());
-        this.setRemoveAbandoned(bds.getRemoveAbandoned());
+        this.setRemoveAbandonedOnBorrow(bds.getRemoveAbandonedOnBorrow());
         this.setRemoveAbandonedTimeout(bds.getRemoveAbandonedTimeout());
         this.setPoolPreparedStatements(bds.isPoolPreparedStatements());
         this.setMaxOpenPreparedStatements(bds.getMaxOpenPreparedStatements());

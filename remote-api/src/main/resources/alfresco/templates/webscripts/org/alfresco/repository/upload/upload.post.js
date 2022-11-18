@@ -357,12 +357,13 @@ function main()
          updateNode.properties.content.write(content, updateNameAndMimetype, true, newFilename);
          // check it in again, with supplied version history note
          
+         updateNode = updateNode.checkin(description, majorVersion);
+
          // Extract the metadata
          // (The overwrite policy controls which if any parts of
          //  the document's properties are updated from this)
          extractMetadata(updateNode);
-         
-         updateNode = updateNode.checkin(description, majorVersion);
+
          if (aspects.length != 0)
          {
             for (i = 0; i < aspects.length; i++)

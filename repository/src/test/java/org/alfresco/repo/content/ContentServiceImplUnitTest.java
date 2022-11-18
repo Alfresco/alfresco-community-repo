@@ -30,7 +30,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,11 +47,13 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
@@ -77,6 +78,8 @@ public class ContentServiceImplUnitTest
     private static final String VALUE_1 = "value1";
     private static final String X_AMZ_HEADER_2 = "x-amz-header-2";
     private static final String VALUE_2 = "value2";
+
+    private static final QName PROP_CONTENT_QNAME = ContentModel.PROP_CONTENT;
 
     @InjectMocks
     private ContentServiceImpl contentService;
@@ -131,15 +134,10 @@ public class ContentServiceImplUnitTest
     public void testRequestContentDirectUrl_SystemWideIsDisabled()
     {
         setupSystemWideDirectAccessConfig(DISABLED);
-        try
-        {
-            contentService.requestContentDirectUrl(NODE_REF, true, 20L);
-            fail("Expected DirectAccessUrlDisabledException");
-        }
-        catch (DirectAccessUrlDisabledException ex)
-        {
-            verify(mockContentStore, never()).isContentDirectUrlEnabled();
-        }
+        assertThrows(DirectAccessUrlDisabledException.class, () -> {
+            contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
+        });
+        verify(mockContentStore, never()).isContentDirectUrlEnabled();
     }
 
     @Test
@@ -148,7 +146,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME,true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }
@@ -159,7 +157,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }
@@ -204,6 +202,75 @@ public class ContentServiceImplUnitTest
 
         assertThrows(IllegalArgumentException.class, () -> {
             contentService.getStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
+        });
+    }
+
+    @Test
+    public void shouldRequestSendContentToArchiveSucceed()
+    {
+        final boolean expectedResult = true;
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL, archiveParams)).thenReturn(expectedResult);
+        boolean sendContentToArchive = contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT, archiveParams);
+        assertEquals(expectedResult, sendContentToArchive);
+    }
+
+    @Test
+    public void requestSendContentToArchiveThrowsExceptionWhenNotImplemented()
+    {
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL, archiveParams)).thenCallRealMethod();
+        assertThrows(UnsupportedOperationException.class, () -> {
+            contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT, archiveParams);
+        });
+    }
+
+    @Test
+    public void requestSendContentToArchiveThrowsExceptionWhenContentNotFound()
+    {
+        final String dummyContentProperty = "dummy";
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(dummyContentProperty);
+        when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            contentService.requestSendContentToArchive(NODE_REF_2, ContentModel.PROP_CONTENT, archiveParams);
+        });
+    }
+
+    @Test
+    public void requestRestoreContentFromArchiveThrowsExceptionWhenContentNotFound()
+    {
+        final String dummyContentProperty = "dummy";
+        when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(dummyContentProperty);
+        when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            contentService.requestRestoreContentFromArchive(NODE_REF_2, ContentModel.PROP_CONTENT, restoreParams);
+        });
+    }
+
+    @Test
+    public void shouldRequestRestoreContentFromArchiveSucceed()
+    {
+        final boolean expectedResult = true;
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        when(mockContentStore.requestRestoreContentFromArchive(SOME_CONTENT_URL, restoreParams)).thenReturn(expectedResult);
+
+        boolean restoreContentFromArchive =
+                contentService.requestRestoreContentFromArchive(NODE_REF, ContentModel.PROP_CONTENT, restoreParams);
+
+        assertEquals(expectedResult, restoreContentFromArchive);
+    }
+
+    @Test
+    public void requestRestoreContentFromArchiveThrowsExceptionWhenNotImplemented()
+    {
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        when(mockContentStore.requestRestoreContentFromArchive(SOME_CONTENT_URL, restoreParams)).thenCallRealMethod();
+        assertThrows(UnsupportedOperationException.class, () -> {
+            contentService.requestRestoreContentFromArchive(NODE_REF, ContentModel.PROP_CONTENT, restoreParams);
         });
     }
 

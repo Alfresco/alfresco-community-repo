@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,8 +26,6 @@
  */
 package org.alfresco.rest.v0;
 
-import static org.testng.AssertJUnit.assertTrue;
-
 import java.text.MessageFormat;
 
 import org.alfresco.rest.core.v0.BaseAPI;
@@ -38,7 +36,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
 /**
  * Methods to make API requests using v0 API on Records Management Custom Model Reference Definitions
  *
@@ -57,6 +57,8 @@ public class CustomDefinitionsAPI extends BaseAPI
      * create reference endpoint
      */
     private static final String CREATE_RELATIONSHIP_API_ENDPOINT = "{0}node/{1}/customreferences";
+    private static final String GET_RELATIONSHIP_API_ENDPOINT = "{0}node/{1}/relationships";
+    private static final String DELETE_RELATIONSHIP_API_ENDPOINT = "{0}node/{1}/targetnode/{2}/uniqueName/{3}";
 
     /**
      * logger
@@ -141,4 +143,48 @@ public class CustomDefinitionsAPI extends BaseAPI
         assertTrue("Creating relationship from " + recordNodeIdFrom + " to " + recordNodeIdTo + " failed.", success);
     }
 
+    public void createRelationship(
+        String adminUser,
+        String adminPassword,
+        int expectedStatus,
+        String recordNodeIdFrom,
+        String recordNodeIdTo,
+        CustomDefinitions relationshipType) {
+        //create the request body
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo);
+        requestParams.put("refId", getCustomReferenceId(adminUser, adminPassword, relationshipType
+            .getDefinition()));
+        //send the API request to create the relationship
+        JSONObject setRelationshipStatus = doPostRequest(adminUser, adminPassword, requestParams,
+            MessageFormat.format(CREATE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom));
+        //check the response
+        assertEquals("POST request for createRelationship was not successful.", expectedStatus, setRelationshipStatus.getJSONObject("status").get("code"));
+    }
+
+    public JSONObject getRelationshipDetails(
+        String adminUser,
+        String adminPassword,
+        String nodeRef) {
+        //send the API request to create the relationship
+        JSONObject relationshipDetails = doGetRequest(adminUser, adminPassword,
+            MessageFormat.format(GET_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + nodeRef));
+        //check the response
+        assertNotNull("The Relationship detail is not found for the Noderef " + nodeRef, relationshipDetails);
+        return relationshipDetails;
+    }
+
+    public void deleteRelationship(
+        String adminUser,
+        String adminPassword,
+        String recordNodeIdFrom,
+        String recordNodeIdTo,
+        String relationshipUniqueName) {
+        //send the API request to create the relationship
+        JSONObject setRelationshipStatus = doDeleteRequest(adminUser, adminPassword,
+            MessageFormat.format(DELETE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom,NODE_PREFIX + recordNodeIdTo,relationshipUniqueName));
+        //check the response
+        boolean success = (setRelationshipStatus != null) && setRelationshipStatus.getBoolean("success");
+        assertTrue("Deleting relationship from " + recordNodeIdFrom + " to " + recordNodeIdTo + " failed.", success);
+    }
 }

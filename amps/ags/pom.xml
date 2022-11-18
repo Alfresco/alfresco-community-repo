@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo-amps</artifactId>
-      <version>14.37-SNAPSHOT</version>
+      <version>20.19-SNAPSHOT</version>
    </parent>
 
    <modules>
@@ -21,6 +21,7 @@
 
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
+      <license.failOnNotUptodateHeader>true</license.failOnNotUptodateHeader>
    </properties>
 
    <build>
@@ -29,16 +30,20 @@
             <plugin>
                <artifactId>maven-surefire-plugin</artifactId>
                <configuration>
+                  <!-- Keeping illegal-access=permit for Java 11 compatibility, even though it has no effect on JDK 17 -->
                   <argLine>
                      --illegal-access=permit
+                     --add-opens=java.base/java.lang=ALL-UNNAMED
                   </argLine>
                </configuration>
             </plugin>
             <plugin>
                <artifactId>maven-failsafe-plugin</artifactId>
+               <!-- Keeping illegal-access=permit for Java 11 compatibility, even though it has no effect on JDK 17 -->
                <configuration>
                   <argLine>
                      --illegal-access=permit
+                     --add-opens=java.base/java.lang=ALL-UNNAMED
                   </argLine>
                </configuration>
             </plugin>
@@ -46,50 +51,49 @@
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>license-maven-plugin</artifactId>
-               <version>1.16</version>
-               <configuration>
-                  <verbose>${license.verbose}</verbose>
-                  <addSvnKeyWords>false</addSvnKeyWords>
-                  <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-
-                  <!-- header configuration -->
-                  <organizationName>Alfresco Software Limited</organizationName>
-                  <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
-                  <canUpdateCopyright>true</canUpdateCopyright>
-                  <canUpdateDescription>true</canUpdateDescription>
-
-                  <!-- licence configuration -->
-                  <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
-
-                  <!-- dry run options -->
-                  <dryRun>${license.update.dryrun}</dryRun>
-                  <failOnMissingHeader>true</failOnMissingHeader>
-                  <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-
-                  <!-- default root -->
-                  <roots>
-                     <root>src</root>
-                  </roots>
-
-                  <!-- exculsions -->
-                  <excludes>
-                     <exclude>**/package-info.java</exclude>
-                     <exclude>**/*.properties</exclude>
-                     <exclude>**/*.css</exclude>
-                     <exclude>**/*.xml</exclude>
-                     <exclude>**/*.json</exclude>
-                     <exclude>**/*.txt</exclude>
-                     <exclude>**/*.html</exclude>
-                  </excludes>
-
-               </configuration>
                <executions>
                   <execution>
                      <id>first</id>
                      <goals>
                         <goal>update-file-header</goal>
                      </goals>
-                     <phase>process-sources</phase>
+                     <phase>none</phase>
+                     <configuration>
+                        <verbose>${license.verbose}</verbose>
+                        <addSvnKeyWords>false</addSvnKeyWords>
+                        <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+
+                        <!-- header configuration -->
+                        <organizationName>Alfresco Software Limited</organizationName>
+                        <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                        <canUpdateCopyright>true</canUpdateCopyright>
+                        <canUpdateDescription>true</canUpdateDescription>
+
+                        <!-- license configuration -->
+                        <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+
+                        <!-- dry run options -->
+                        <dryRun>${license.update.dryrun}</dryRun>
+                        <failOnMissingHeader>true</failOnMissingHeader>
+                        <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
+
+                        <!-- default root -->
+                        <roots>
+                            <root>src</root>
+                        </roots>
+
+                        <!-- exclusions -->
+                        <excludes>
+                           <exclude>**/package-info.java</exclude>
+                           <exclude>**/*.properties</exclude>
+                           <exclude>**/*.css</exclude>
+                           <exclude>**/*.xml</exclude>
+                           <exclude>**/*.json</exclude>
+                           <exclude>**/*.txt</exclude>
+                           <exclude>**/*.html</exclude>
+                        </excludes>
+
+                     </configuration>
                   </execution>
                </executions>
             </plugin>

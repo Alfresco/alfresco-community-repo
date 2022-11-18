@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -63,20 +63,21 @@ import org.junit.runners.Suite;
     org.alfresco.repo.jscript.ScriptSearchTest.class,
     org.alfresco.repo.lock.LockUtilsTest.class,
     org.alfresco.repo.lock.mem.LockStoreImplTest.class,
+    org.alfresco.repo.management.CheckRequiredClassesForLoggingConsoleUnitTest.class,
     org.alfresco.repo.management.subsystems.CryptodocSwitchableApplicationContextFactoryTest.class,
     org.alfresco.repo.module.ModuleDetailsImplTest.class,
     org.alfresco.repo.module.ModuleVersionNumberTest.class,
-    org.alfresco.repo.module.tool.ModuleManagementToolTest.class,
-    org.alfresco.repo.module.tool.WarHelperImplTest.class,
-    org.alfresco.repo.module.tool.ModuleServiceImplTest.class,
+    org.alfresco.repo.module.DeprecatedModulesValidatorTest.class,
     org.alfresco.repo.node.integrity.IntegrityEventTest.class,
     org.alfresco.repo.policy.MTPolicyComponentTest.class,
     org.alfresco.repo.policy.PolicyComponentTest.class,
     org.alfresco.repo.rendition.RenditionNodeManagerTest.class,
     org.alfresco.repo.rendition.RenditionServiceImplTest.class,
     org.alfresco.repo.replication.ReplicationServiceImplTest.class,
+    org.alfresco.repo.rule.RuleServiceImplUnitTest.class,
     org.alfresco.repo.service.StoreRedirectorProxyFactoryTest.class,
     org.alfresco.repo.site.RoleComparatorImplTest.class,
+    org.alfresco.repo.template.UnsafeMethodsTest.class,
     org.alfresco.repo.tenant.MultiTAdminServiceImplTest.class,
     org.alfresco.repo.thumbnail.ThumbnailServiceImplParameterTest.class,
     org.alfresco.repo.transfer.ContentChunkerImplTest.class,
@@ -119,6 +120,7 @@ import org.junit.runners.Suite;
     org.alfresco.util.schemacomp.validator.SchemaVersionValidatorTest.class,
     org.alfresco.util.schemacomp.validator.TypeNameOnlyValidatorTest.class,
     org.alfresco.util.test.OmittedTestClassFinderUnitTest.class,
+    org.alfresco.util.test.junitrules.RetryAtMostRuleTest.class,
     org.alfresco.util.test.junitrules.TemporaryMockOverrideTest.class,
     org.alfresco.repo.search.impl.solr.AbstractSolrQueryHTTPClientTest.class,
     org.alfresco.repo.search.impl.solr.SpellCheckDecisionManagerTest.class,
@@ -177,6 +179,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.action.CompositeActionImplTest.class,
     org.alfresco.repo.action.CompositeActionConditionImplTest.class,
     org.alfresco.repo.action.executer.TransformActionExecuterTest.class,
+    org.alfresco.repo.action.executer.ImporterActionExecutorUnitTest.class,
     org.alfresco.repo.audit.AuditableAnnotationTest.class,
     org.alfresco.repo.audit.PropertyAuditFilterTest.class,
     org.alfresco.repo.audit.access.NodeChangeTest.class,
@@ -187,9 +190,11 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.filestore.FileIOTest.class,
     org.alfresco.repo.content.filestore.SpoofedTextContentReaderTest.class,
     org.alfresco.repo.content.ContentDataTest.class,
+    org.alfresco.repo.content.replication.AggregatingContentStoreUnitTest.class,
     org.alfresco.service.cmr.repository.TransformationOptionLimitsTest.class,
     org.alfresco.service.cmr.repository.TransformationOptionPairTest.class,
     org.alfresco.repo.content.transform.TransformerConfigTestSuite.class,
+    org.alfresco.repo.content.transform.TransformerDebugTest.class,
     org.alfresco.service.cmr.repository.TemporalSourceOptionsTest.class,
     org.alfresco.repo.content.metadata.MetadataExtracterLimitsTest.class,
     org.alfresco.repo.content.caching.quota.StandardQuotaStrategyMockTest.class,

@@ -60,15 +60,15 @@ public class IntegrationFullTestsBulk2  extends IntegrationTest
         ftpProtocol.authenticateUser(testUser1).usingSite(testSitePublic).createFolder(testFolder1)
             .usingResource(testFolder1).createFile(wordFile)
             .assertThat().contentIs("tasTesting");
-        
+
         STEP("2. Open document for edit using CMIS");
         cmisAPI.authenticateUser(testUser1).usingResource(wordFile).checkOut();
         FileModel wordFilePWC = cmisAPI.usingResource(wordFile).withCMISUtil().getPWCFileModel();
-        
+
         STEP("3. Try to edit document using Webdav while checked-out with CMIS - content should be updated");
         webDavProtocol.authenticateUser(testUser1).usingResource(wordFilePWC).update("update")
             .and().assertThat().contentIs("update");
-        
+
         STEP("4. Copy document to testFolder2 with ftp");
         FileModel copiedWordFile = new FileModel(wordFile);
         ftpProtocol.usingSite(testSitePublic).createFolder(testFolder2)
@@ -76,15 +76,15 @@ public class IntegrationFullTestsBulk2  extends IntegrationTest
         copiedWordFile.setCmisLocation(ftpProtocol.getLastResourceWithoutPrefix());
         ftpProtocol.usingResource(testFolder1).assertThat().hasFiles(wordFile)
             .and().usingResource(testFolder2).assertThat().hasFiles(copiedWordFile);
-        
+
         STEP("5. Update document from folder2, check its content is updated with Webdav");
         webDavProtocol.usingResource(copiedWordFile).update("Step5")
             .and().assertThat().contentIs("Step5");
-        
+
         STEP("6. Update document with WebDAV");
         webDavProtocol.authenticateUser(testUser1).usingResource(wordFile).update("WebDAVUpdate");
     }
-    
+
     /**
      * Scenario 84
      * 1. Create folder1 with webdav
@@ -150,7 +150,7 @@ public class IntegrationFullTestsBulk2  extends IntegrationTest
      * 13. Check file is deleted with WebDAV
      */
     @Test(groups = { TestGroup.INTEGRATION, TestGroup.FULL })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, 
+    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION,
         description = "Update file with different user roles and protocols")
     public void updateFileWithDifferentRolesUsingDifferentProtocols() throws Exception
     {
@@ -276,41 +276,41 @@ public class IntegrationFullTestsBulk2  extends IntegrationTest
         UserModel user1 = dataUser.createRandomTestUser();
         UserModel user2 = dataUser.createRandomTestUser();
         user2.setUserRole(UserRole.SiteManager);
-        
+
         STEP("2. User1 creates site1 and invites user2 as manager");
         SiteModel site = dataSite.usingUser(user1).createPublicRandomSite();
         restAPI.authenticateUser(user1).withCoreAPI().usingSite(site).addPerson(user2);
-        
+
         STEP("3. User1 adds document1 and tag1 to doc");
         dataContent.usingUser(user1).usingSite(site).createContent(testFile);
         RestTagModel tag = restAPI.withCoreAPI().usingResource(testFile).addTag("tag1");
         restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag1");
-        
+
         STEP("4. User2 gets tags and verifies tag1 appears");
         restAPI.authenticateUser(user2).withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag1");
-        
+
         STEP("5. User2 delete tag1");
         restAPI.withCoreAPI().usingResource(testFile).deleteTag(tag);
         restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListDoesNotContain("tag", "tag1");
-        
+
         STEP("6. User1 tries to update tag1");
         restAPI.authenticateUser(user2).withCoreAPI().usingTag(tag).update("updatedTag");
         restAPI.assertStatusCodeIs(HttpStatus.FORBIDDEN)
             .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
             .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
-        
+
         STEP("7. User1 add new tag tag2");
         tag = restAPI.authenticateUser(user1).withCoreAPI().usingResource(testFile).addTag("tag2");
         restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag2");
-        
+
         STEP("8. User2 verifies tag2 appears and tag1 is not in the list");
         restAPI.authenticateUser(user2).withCoreAPI().usingResource(testFile).getNodeTags()
             .assertThat().entriesListDoesNotContain("tag", "tag1")
             .assertThat().entriesListContains("tag", "tag2");
-        
+
         STEP("9. User2 deletes document1");
         dataContent.usingUser(user2).usingResource(testFile).deleteContent();
-        
+
         STEP("10. User1 tries to delete tag2");
         restAPI.authenticateUser(user1).withCoreAPI().usingResource(testFile).deleteTag(tag);
         restAPI.assertStatusCodeIs(HttpStatus.NOT_FOUND)
@@ -329,9 +329,9 @@ public class IntegrationFullTestsBulk2  extends IntegrationTest
      * 7. User1 deletes the document1 with ftp
      * 8. Verify user2 cannot update document1 with cmis
      */
-        @Test(groups = { TestGroup.INTEGRATION, TestGroup.FULL }, expectedExceptions = CmisObjectNotFoundException.class, expectedExceptionsMessageRegExp = ".*Object not found:.*")
-        @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Negative scenarios for update document")
-        public void fileUpdateNegativeScenariosTest() throws Exception
+    @Test(groups = { TestGroup.INTEGRATION, TestGroup.FULL }, expectedExceptions = CmisObjectNotFoundException.class, expectedExceptionsMessageRegExp = ".*Object not found:.*")
+    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT }, executionType = ExecutionType.REGRESSION, description = "Negative scenarios for update document")
+    public void fileUpdateNegativeScenariosTest() throws Exception
         {
             STEP("1. Create user1, user2");
         UserModel user1 = dataUser.createRandomTestUser();

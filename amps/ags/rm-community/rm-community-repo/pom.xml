@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>14.37-SNAPSHOT</version>
+      <version>20.19-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -217,6 +217,7 @@
                            <fileset dir="${project.build.outputDirectory}/alfresco" />
                         </move>
                         <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
+                        <copy file="${project.build.directory}/generated-sources/license/THIRD-PARTY.txt" todir="${project.build.directory}/${project.build.finalName}/licenses/${artifactId}" />
                      </target>
                   </configuration>
                </execution>
@@ -320,17 +321,23 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <configuration>
-               <licenseName>alfresco_community</licenseName>
-               <roots>
-                  <root>source/java</root>
-                  <root>unit-test/java</root>
-                  <root>source/compatibility</root>
-                  <root>config</root>
-                  <root>test/java</root>
-                  <root>test/resources</root>
-               </roots>
-            </configuration>
+            <executions>
+               <execution>
+                  <id>first</id>
+                  <phase>process-sources</phase>
+                  <configuration>
+                     <licenseName>alfresco_community</licenseName>
+                     <roots>
+                        <root>source/java</root>
+                        <root>unit-test/java</root>
+                        <root>source/compatibility</root>
+                        <root>config</root>
+                        <root>test/java</root>
+                        <root>test/resources</root>
+                     </roots>
+                  </configuration>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>
@@ -352,6 +359,12 @@
            <id>agsAllTestSuitePt3</id>
            <properties>
                <integrationTestSuite>**/AllTestSuitePt3.class</integrationTestSuite>
+           </properties>
+       </profile>
+       <profile>
+           <id>agsAllTestSuitePt4</id>
+           <properties>
+               <integrationTestSuite>**/AllTestSuitePt4.class</integrationTestSuite>
            </properties>
        </profile>
 
@@ -421,7 +434,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}</name>
+                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre11-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>
@@ -492,7 +505,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}</name>
+                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre11-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>

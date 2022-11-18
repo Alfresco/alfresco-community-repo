@@ -156,7 +156,7 @@
     <bean id="defaultDataSource" parent="baseDefaultDataSource" />
 
     <!-- Datasource bean -->
-    <bean id="baseDefaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" abstract="true">
+    <bean id="baseDefaultDataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close" abstract="true">
         <property name="driverClassName">
             <value>${db.driver}</value>
         </property>
@@ -172,7 +172,7 @@
         <property name="initialSize" >
             <value>${db.pool.initial}</value>
         </property>
-        <property name="maxActive" >
+        <property name="maxTotal" >
             <value>${db.pool.max}</value>
         </property>
         <property name="minIdle" >
@@ -187,7 +187,7 @@
         <property name="defaultTransactionIsolation" >
             <value>${db.txn.isolation}</value>
         </property>
-        <property name="maxWait" >
+        <property name="maxWaitMillis" >
             <value>${db.pool.wait.max}</value>
         </property>
         <property name="validationQuery" >
@@ -211,7 +211,7 @@
         <property name="testWhileIdle" >
             <value>${db.pool.evict.validate}</value>
         </property>
-        <property name="removeAbandoned" >
+        <property name="removeAbandonedOnBorrow" >
             <value>${db.pool.abandoned.detect}</value>
         </property>
         <property name="removeAbandonedTimeout" >
@@ -487,6 +487,9 @@
         </property>
         <property name="versionComparatorClass">
             <value>${version.store.versionComparatorClass}</value>
+        </property>
+        <property name="useVersionAssocIndex">
+            <value>${version.store.useVersionAssocIndex}</value>
         </property>
     </bean>
 

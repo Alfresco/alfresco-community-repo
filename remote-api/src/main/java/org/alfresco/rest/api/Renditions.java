@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -146,6 +146,25 @@ public interface Renditions
      */
     void createRenditions(NodeRef nodeRef, String versionId, List<Rendition> renditions, Parameters parameters)
             throws NotFoundException, ConstraintViolatedException;
+
+    /**
+     * Delete the rendition node.
+     *
+     * @param nodeRef       the source nodeRef, ie. live node
+     * @param renditionId   the rendition id
+     * @param parameters    the {@link Parameters} object to get the parameters passed into the request
+     */
+    void deleteRendition(NodeRef nodeRef, String renditionId, Parameters parameters);
+
+    /**
+     * Delete the rendition node.
+     *
+     * @param nodeRef       the source nodeRef, ie. live node
+     * @param versionId     the version id (aka version label)
+     * @param renditionId   the rendition id
+     * @param parameters    the {@link Parameters} object to get the parameters passed into the request
+     */
+    void deleteRendition(NodeRef nodeRef, String versionId, String renditionId, Parameters parameters);
 
     /**
      * Downloads rendition.

@@ -99,7 +99,11 @@
             <ref bean="search.indexerAndSearcherFactory" />
         </property>
     </bean>
-    
+
+    <bean id="search.fts.alfresco.switching" parent="base.search.fts.alfresco.switching" >
+        <property name="subsystemName" value="noindex"/>
+    </bean>
+
     <bean id="search.fts.alfresco.index" class="org.alfresco.repo.search.impl.solr.NoIndexQueryLanguage" >
         <property name="factories">
             <list>

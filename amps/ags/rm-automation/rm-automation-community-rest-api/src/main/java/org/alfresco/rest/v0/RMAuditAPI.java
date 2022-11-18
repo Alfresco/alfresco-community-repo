@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,6 +26,7 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.Assert.assertTrue;
 
 import java.io.UnsupportedEncodingException;
@@ -36,6 +37,7 @@ import java.util.List;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.util.PojoUtility;
+import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -57,6 +59,8 @@ public class RMAuditAPI extends BaseAPI
     /** The URI for the audit API. */
     private static final String RM_AUDIT_API = "{0}rma/admin/rmauditlog";
     private static final String RM_AUDIT_LOG_API = RM_AUDIT_API + "?{1}";
+
+    private static final String RM_AUDIT_LOG_AS_RECORD = "{0}node/{1}/rmauditlog";
 
     /**
      * Returns a list of rm audit entries .
@@ -85,6 +89,21 @@ public class RMAuditAPI extends BaseAPI
     }
 
     /**
+     * Returns a list of rm audit entries .
+     *
+     * @param user     The username of the user to use.
+     * @param password The password of the user.
+     * @param size     Maximum number of log entries to return
+     * @return return All return log entries
+     */
+    public List<AuditEntry> getRMAuditLogAll(String user, String password, final int size) {
+        String parameters = "size=" + size;
+        JSONArray auditEntries =  doGetRequest(user, password,
+            MessageFormat.format(RM_AUDIT_LOG_API,"{0}", parameters)).getJSONObject("data").getJSONArray("entries");
+        return PojoUtility.jsonToObject(auditEntries, AuditEntry.class);
+    }
+
+    /**
      * Clear the list of audit entries.
      *
      * @param username The username of the user to use.
@@ -100,5 +119,19 @@ public class RMAuditAPI extends BaseAPI
                 && getRMAuditLog(username, password, 100, null).size() == 2);
     }
 
+    /**
+     * Logs the Audit Log as Record.
+     *
+     * @param username The username of the user to use.
+     * @param password The password of the user.
+     * @param recNodeRef The Record Node reference for which Audit log should be created as record
+     * @param destinationNodeRef The Folder id Node reference where the html file should be placed
+     * @throws AssertionError If the API call didn't create the Audit Log as Record.
+     */
+    public HttpResponse logsAuditLogAsRecord(String username, String password, String recNodeRef, String destinationNodeRef) {
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("destination", destinationNodeRef);
+        return doPostJsonRequest(username, password, SC_OK, requestParams, RM_AUDIT_LOG_AS_RECORD,recNodeRef);
+    }
 
 }

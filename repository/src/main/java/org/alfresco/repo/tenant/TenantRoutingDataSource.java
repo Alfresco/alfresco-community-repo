@@ -32,7 +32,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 

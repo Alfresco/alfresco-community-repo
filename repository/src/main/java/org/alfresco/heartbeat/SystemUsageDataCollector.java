@@ -31,7 +31,7 @@ import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;

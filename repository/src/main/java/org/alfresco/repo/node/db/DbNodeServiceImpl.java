@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -844,26 +844,25 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // get the node
         final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         final Long nodeId = nodePair.getFirst();
-        
-        boolean hadAspect = nodeDAO.hasNodeAspect(nodeId, aspectTypeQName);
-        
+
+        if (!nodeDAO.hasNodeAspect(nodeId, aspectTypeQName))
+        {
+            return;
+        }
         // Invoke policy behaviours
         invokeBeforeUpdateNode(nodeRef);
-        if (hadAspect)
-        {
-            invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
-            nodeDAO.removeNodeAspects(nodeId, Collections.singleton(aspectTypeQName));
-        }
-        
+        invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
+        nodeDAO.removeNodeAspects(nodeId, Collections.singleton(aspectTypeQName));
+
         AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
         boolean updated = false;
         if (aspectDef != null)
         {
             // Remove default properties
-            Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
+            Map<QName, PropertyDefinition> propertyDefs = aspectDef.getProperties();
             Set<QName> propertyToRemoveQNames = propertyDefs.keySet();
             nodeDAO.removeNodeProperties(nodeId, propertyToRemoveQNames);
-            
+
             // Remove child associations
             // We have to iterate over the associations and remove all those between the parent and child
             final List<Pair<Long, ChildAssociationRef>> assocsToDelete = new ArrayList<Pair<Long, ChildAssociationRef>>(5);
@@ -875,29 +874,24 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     return true;
                 }
 
-                @Override
-                public boolean orderResults()
+                @Override public boolean orderResults()
                 {
                     return false;
                 }
 
-                public boolean handle(
-                        Pair<Long, ChildAssociationRef> childAssocPair,
-                        Pair<Long, NodeRef> parentNodePair,
-                        Pair<Long, NodeRef> childNodePair
-                        )
+                public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
+                            Pair<Long, NodeRef> childNodePair)
                 {
                     if (isPendingDelete(parentNodePair.getSecond()) || isPendingDelete(childNodePair.getSecond()))
                     {
                         if (logger.isTraceEnabled())
                         {
-                            logger.trace(
-                                    "Aspect-triggered association removal: " +
-                                    "Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
+                            logger.trace("Aspect-triggered association removal: "
+                                        + "Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
                         }
                         return true;
                     }
-                    
+
                     // Double check that it's not a primary association.  If so, we can't delete it and
                     //    have to delete the child node directly and with full archival.
                     if (childAssocPair.getSecond().isPrimary())
@@ -914,7 +908,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
                 public void done()
                 {
-                }                               
+                }
             };
             // Get all the QNames to remove
             Set<QName> assocTypeQNamesToRemove = new HashSet<QName>(aspectDef.getChildAssociations().keySet());
@@ -930,14 +924,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 nodeDAO.deleteChildAssoc(assocId);
                 invokeOnDeleteChildAssociation(assocRef);
             }
-            
+
             // Cascade-delete any nodes that were attached to primary associations
             for (Pair<Long, NodeRef> childNodePair : nodesToDelete)
             {
                 NodeRef childNodeRef = childNodePair.getSecond();
                 this.deleteNode(childNodeRef);
             }
-            
+
             // Gather peer associations to delete
             Map<QName, AssociationDefinition> nodeAssocDefs = aspectDef.getAssociations();
             List<Long> nodeAssocIdsToRemove = new ArrayList<Long>(13);
@@ -949,8 +943,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     if (logger.isTraceEnabled())
                     {
                         logger.trace(
-                                "Aspect-triggered association removal: " +
-                                "Ignoring peer associations where one of the nodes is pending delete: " + nodeRef);
+                                    "Aspect-triggered association removal: " + "Ignoring peer associations where one of the nodes is pending delete: "
+                                                + nodeRef);
                     }
                     continue;
                 }
@@ -967,9 +961,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     {
                         if (logger.isTraceEnabled())
                         {
-                            logger.trace(
-                                    "Aspect-triggered association removal: " +
-                                    "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
+                            logger.trace("Aspect-triggered association removal: "
+                                        + "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
                         }
                         continue;
                     }
@@ -990,16 +983,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             updated = updated || assocsDeleted > 0;
         }
-        
+
         // Invoke policy behaviours
         if (updated)
         {
             invokeOnUpdateNode(nodeRef);
         }
-        if (hadAspect)
-        {
-            invokeOnRemoveAspect(nodeRef, aspectTypeQName);
-        }
+
+        invokeOnRemoveAspect(nodeRef, aspectTypeQName);
+
     }
 
     /**

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -53,9 +53,12 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -91,6 +94,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -120,6 +124,8 @@ public class BaseRMRestTest extends RestTest
     @Autowired
     @Getter(value = PROTECTED)
     private SearchAPI searchApi;
+
+    protected static final String iso8601_DateFormat="yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
 
     /**
      * Asserts the given status code
@@ -161,7 +167,7 @@ public class BaseRMRestTest extends RestTest
      */
     @Override
     @BeforeClass (alwaysRun = true)
-    public void checkServerHealth() throws Exception
+    public void checkServerHealth()
     {
         // Create RM Site if not exist
         createRMSiteIfNotExists();
@@ -628,8 +634,8 @@ public class BaseRMRestTest extends RestTest
      * Returns search results for the given search term
      *
      * @param user
-     * @param term
-     * @param query language
+     * @param q
+     * @param queryLanguage language
      * @return
      * @throws Exception
      */
@@ -956,5 +962,34 @@ public class BaseRMRestTest extends RestTest
             return false;
         }
     }
+    /**
+     * Helper method to get the Previous Date in the YYYY-MM-ddTHH:mm:ss.SSSXXX format
+     * @param previousDays number of previous days while calculating the date as output
+     * @return previousDate as String in the ISO 8601 Date Format
+     */
+    protected String getIso8601Date(int previousDays) {
+        Date date = new Date(System.currentTimeMillis());
+        Date previousDate = new Date(date.getTime() - previousDays);
+        // Conversion
+        SimpleDateFormat sdf= new SimpleDateFormat(iso8601_DateFormat);;
+        sdf.setTimeZone(TimeZone.getDefault());
+        return sdf.format(previousDate);
+    }
+    /**
+     * Helper method to provide the Edited Disposition Date Json
+     * The Edited Disposition Date is modified to previous date so that CUTOFF & DESTROY Steps will be enabled
+     * @return JsonObject with the format {"name":"editDispositionActionAsOfDate","params":{"asOfDate":{"iso8601":"Previous Date"}}}
+     */
+    protected JSONObject editDispositionDateJson() {
+        JSONObject requestParams = new JSONObject();
 
+        requestParams.put("name","editDispositionActionAsOfDate");
+        JSONObject params = new JSONObject();
+        requestParams.put("params",params);
+
+        JSONObject asOfDate = new JSONObject();
+        params.put("asOfDate",asOfDate);
+        asOfDate.put("iso8601",getIso8601Date(1));
+        return requestParams;
+    }
 }

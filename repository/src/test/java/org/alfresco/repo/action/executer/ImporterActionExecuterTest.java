@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -201,6 +201,98 @@ public class ImporterActionExecuterTest
                     // MNT-17017 check ContentModel.PROP_TITLE is not set on the top level folder, just like Share
                     String title = (String)nodeService.getProperty(importedFolder, ContentModel.PROP_TITLE);
                     assertNull("The title should not have cm:title set", title);
+                }
+                finally
+                {
+                    // clean test data
+                    nodeService.deleteNode(targetFolderNodeRef);
+                    nodeService.deleteNode(zipFileNodeRef);
+                }
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Test zip file that exceeds the compression ratio threshold (non-recursive zip bomb)
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testImportThatExceedsCompressionRatioFails() throws IOException
+    {
+        final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
+
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+                // create test data
+                NodeRef zipFileNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT).getChildRef();
+                NodeRef targetFolderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
+
+                putContent(zipFileNodeRef, "import-archive-test/exceedsRatio.zip");
+
+                Action action = createAction(zipFileNodeRef, "ImporterActionExecuterTestActionDefinition", targetFolderNodeRef);
+
+                try
+                {
+                    importerActionExecuter.setRatioThreshold(3);
+                    importerActionExecuter.execute(action, zipFileNodeRef);
+                    fail("Import action should have detected that zip file exceeds compression ration threshold");
+                }
+                catch (AlfrescoRuntimeException e)
+                {
+                    assertTrue(e.getMessage().contains("Unexpected compression ratio detected"));
+                }
+                finally
+                {
+                    // clean test data
+                    nodeService.deleteNode(targetFolderNodeRef);
+                    nodeService.deleteNode(zipFileNodeRef);
+                }
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Test zip file that exceeds the uncompressed bytes limit
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testImportThatExceedsUncompressedBytesLimitFails() throws IOException
+    {
+        final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
+
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+                // create test data
+                NodeRef zipFileNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT).getChildRef();
+                NodeRef targetFolderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
+
+                putContent(zipFileNodeRef, "import-archive-test/exceedsUncompressedBytesLimit.zip");
+
+                Action action = createAction(zipFileNodeRef, "ImporterActionExecuterTestActionDefinition", targetFolderNodeRef);
+
+                try
+                {
+                    importerActionExecuter.setUncompressedBytesLimit("1000");
+                    importerActionExecuter.execute(action, zipFileNodeRef);
+                    fail("Import action should have detected that uncompressed bytes exceed limit");
+                }
+                catch (AlfrescoRuntimeException e)
+                {
+                    assertTrue(e.getMessage().contains("Uncompressed bytes limit exceeded"));
                 }
                 finally
                 {

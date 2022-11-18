@@ -272,4 +272,16 @@ public interface AuditComponent
     {
         return -1;
     }
+
+    /**
+     * Issue an audit query to retrieve count of records for a given application and properties
+     *
+     * @param applicationName             the name of the application
+     * @param parameters                  audit parameters provided by the <code>where</code> clause on the ReST API
+     * @return                            a map containing min/max and the associated value
+     */
+    default int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
+    {
+        return -1;
+    }
 }

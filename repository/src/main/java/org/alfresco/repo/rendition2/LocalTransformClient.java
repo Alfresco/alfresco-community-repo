@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 Alfresco Software Limited
+ * Copyright (C) 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,17 +32,23 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
 
 /**
  * Requests rendition transforms take place using transforms available on the local machine (based on
@@ -61,6 +67,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     private TransactionService transactionService;
     private ContentService contentService;
     private RenditionService2Impl renditionService2;
+    private boolean directAccessUrlEnabled;
 
     private ExecutorService executorService;
     private ThreadLocal<LocalTransform> transform = new ThreadLocal<>();
@@ -85,6 +92,11 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         this.renditionService2 = renditionService2;
     }
 
+    public void setDirectAccessUrlEnabled(boolean directAccessUrlEnabled)
+    {
+        this.directAccessUrlEnabled = directAccessUrlEnabled;
+    }
+
     public void setExecutorService(ExecutorService executorService)
     {
         this.executorService = executorService;
@@ -97,6 +109,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "renditionService2", renditionService2);
+        PropertyCheck.mandatory(this, "directAccessUrlEnabled", directAccessUrlEnabled);
         if (executorService == null)
         {
             executorService = Executors.newCachedThreadPool();
@@ -130,8 +143,9 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     {
         String renditionName = renditionDefinition.getRenditionName();
         String targetMimetype = renditionDefinition.getTargetMimetype();
-        Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
+        Map<String, String> renditionOptions = renditionDefinition.getTransformOptions();
         LocalTransform localTransform = transform.get();
+        Map<String, String> actualOptions = addDirectAccessUrlToOptionsIfPossible(renditionOptions, sourceNodeRef, localTransform);
 
         executorService.submit(() ->
         {
@@ -186,5 +200,19 @@ public class LocalTransformClient implements TransformClient, InitializingBean
                     return null;
                 }), user);
         });
+    }
+
+    private Map<String, String> addDirectAccessUrlToOptionsIfPossible(Map<String, String> actualOptions,
+                                                                      NodeRef sourceNodeRef, LocalTransform transform)
+    {
+        if (directAccessUrlEnabled &&
+            localTransformServiceRegistry.isSupported(CoreFunction.DIRECT_ACCESS_URL, transform) &&
+            contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT))
+        {
+            DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, true);
+            actualOptions = new HashMap<>(actualOptions);
+            actualOptions.put(DIRECT_ACCESS_URL, directAccessUrl.getContentUrl());
+        }
+        return actualOptions;
     }
 }

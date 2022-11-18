@@ -498,6 +498,8 @@
                org.alfresco.service.cmr.repository.ContentService.requestContentDirectUrl=ACL_NODE.0.sys:base.ReadContent
                org.alfresco.service.cmr.repository.ContentService.isContentDirectUrlEnabled=ACL_ALLOW
                org.alfresco.service.cmr.repository.ContentService.getStorageProperties=ACL_NODE.0.sys:base.ReadContent
+               org.alfresco.service.cmr.repository.ContentService.requestSendContentToArchive=ACL_NODE.0.sys:base.WriteContent
+               org.alfresco.service.cmr.repository.ContentService.requestRestoreContentFromArchive=ACL_NODE.0.sys:base.WriteContent
                org.alfresco.service.cmr.repository.ContentService.*=ACL_DENY
             </value>
         </property>

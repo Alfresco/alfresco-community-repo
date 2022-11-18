@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,8 +26,8 @@
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
-import org.alfresco.transform.client.registry.SupportedTransform;
-import org.alfresco.transform.client.registry.TransformServiceRegistry;
+import org.alfresco.transform.registry.SupportedTransform;
+import org.alfresco.transform.registry.TransformServiceRegistry;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,8 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IMAGE_JPEG;
-import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IWORK_PAGES;
+import static org.alfresco.transform.common.Mimetype.MIMETYPE_IMAGE_JPEG;
+import static org.alfresco.transform.common.Mimetype.MIMETYPE_IWORK_PAGES;
 
 /**
  * Integration tests for {@link LocalTransformServiceRegistry}

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,7 +33,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -79,18 +79,7 @@ public class ContentInfo extends StreamContent
         delegate.setAttachment(req, res, attach, attachFileName);
 
         // establish mimetype
-        String mimetype = reader.getMimetype();
-        String extensionPath = req.getExtensionPath();
-        if (mimetype == null || mimetype.length() == 0)
-        {
-            mimetype = MimetypeMap.MIMETYPE_BINARY;
-            int extIndex = extensionPath.lastIndexOf('.');
-            if (extIndex != -1)
-            {
-                String ext = extensionPath.substring(extIndex + 1);
-                mimetype = mimetypeService.getMimetype(ext);
-            }
-        }
+        String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
 
         // set mimetype for the content and the character encoding + length for the stream
         res.setContentType(mimetype);

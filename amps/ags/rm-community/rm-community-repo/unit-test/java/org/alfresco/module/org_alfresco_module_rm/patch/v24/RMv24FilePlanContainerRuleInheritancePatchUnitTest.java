@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,7 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v24;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
@@ -81,7 +81,7 @@ public class RMv24FilePlanContainerRuleInheritancePatchUnitTest
         patch.applyInternal();
         
         // then
-        verifyZeroInteractions(mockedNodeService);
+        verifyNoInteractions(mockedNodeService);
     }
     
     /**

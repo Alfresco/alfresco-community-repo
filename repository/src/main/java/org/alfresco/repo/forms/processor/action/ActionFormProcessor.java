@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FormData;
@@ -164,6 +165,7 @@ public class ActionFormProcessor extends FilteredFormProcessor<ActionDefinition,
         final boolean isAsync = isAsynchronousActionRequest(item, data);
         
         // execute the action
+        ActionAccessRestriction.setActionContext(actionToExecute, ActionAccessRestriction.FORM_PROCESSOR_ACTION_CONTEXT);
         actionService.executeAction(actionToExecute, actionedUponNodeRef, true, isAsync);
         
         // extract the result

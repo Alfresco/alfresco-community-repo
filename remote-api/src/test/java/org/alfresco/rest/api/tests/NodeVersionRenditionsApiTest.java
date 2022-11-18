@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,20 +27,32 @@ package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.web.scripts.RepositoryContainer;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
+import org.alfresco.rest.api.DirectAccessUrlHelper;
+import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
+import org.alfresco.rest.api.model.Site;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Rendition;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 
 import static org.junit.Assert.*;
 
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.junit.After;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -273,6 +285,138 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
         }
     }
 
+    @Test
+    public void testRequestVersionRenditionContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        RepoService.TestNetwork networkN1;
+        RepoService.TestPerson userOneN1;
+        Site userOneN1Site;
+
+        networkN1 = repoService.createNetworkWithAlias("ping", true);
+        networkN1.create();
+        userOneN1 = networkN1.createUser();
+
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
+
+        String PROP_LTM = "cm:lastThumbnailModification";
+
+        String RENDITION_NAME = "imgpreview";
+
+        String userId = userOneN1.getId();
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String parentId = getSiteContainerNodeId(userOneN1Site.getId(), "documentLibrary");
+        String folder_Id = createNode(parentId, folderName, TYPE_CM_FOLDER, null).getId();
+
+        // Create multipart request - pdf file
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                                                   .setFileData(new FileData(fileName, file))
+                                                   .build();
+        Map<String, String> params = Collections.singletonMap("include", "properties");
+
+        // Upload quick.pdf file into 'folder' - do not include request to create 'doclib' thumbnail
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), params, null, "alfresco", reqBody.getContentType(), 201);
+        Document document1 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document1.getId();
+        assertNotNull(document1.getProperties());
+
+        // pause briefly
+        Thread.sleep(DELAY_IN_MS);
+
+        // Get rendition (not created yet) information for node
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), RENDITION_NAME, 200);
+        Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.NOT_CREATED, rendition.getStatus());
+
+        params = new HashMap<>();
+        params.put("placeholder", "false");
+        getSingle(getNodeRenditionsUrl(contentNodeId), (RENDITION_NAME + "/content"), params, 404);
+
+        // Create and get 'imgpreview' rendition
+        rendition = createAndGetRendition(contentNodeId, RENDITION_NAME);
+        assertNotNull(rendition);
+
+        params = new HashMap<>();
+        params.put("placeholder", "false");
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), (RENDITION_NAME + "/content"), params, 200);
+
+        byte[] renditionBytes1 = response.getResponseAsBytes();
+        assertNotNull(renditionBytes1);
+
+        // check node details ...
+        params = Collections.singletonMap("include", "properties");
+        response = getSingle(NodesEntityResource.class, contentNodeId, params, 200);
+        Document document1b = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(document1b.getModifiedByUser().getId(), document1.getModifiedByUser().getId());
+
+        // upload another version of "quick.pdf" and check again
+        fileName = "quick-2.pdf";
+        file = getResourceFile(fileName);
+        reqBody = MultiPartBuilder.create()
+                                  .setFileData(new FileData("quick.pdf", file))
+                                  .setOverwrite(true)
+                                  .build();
+
+        response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, null, "alfresco", reqBody.getContentType(), 201);
+        Document document2 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(contentNodeId, document2.getId());
+
+        // wait to allow new version of the rendition to be created ...
+        Thread.sleep(DELAY_IN_MS * 4);
+
+        params = new HashMap<>();
+        params.put("placeholder", "false");
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), (RENDITION_NAME + "/content"), params, 200);
+        assertNotNull(response.getResponseAsBytes());
+
+        // check rendition binary has changed
+        assertNotEquals(renditionBytes1, response.getResponseAsBytes());
+
+        params = Collections.singletonMap("include", "properties");
+        response = getSingle(NodesEntityResource.class, contentNodeId, params, 200);
+        Document document2b = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String contentNodeId2b = document2b.getId();
+        HttpResponse dauResponse = post(getRequestVersionRenditionContentDirectUrl(contentNodeId2b, "1.0", RENDITION_NAME), null, null, null, null, 501);
+    }
+
+    @Test
+    public void testRequestVersionRenditionContentDirectUrlErrorResponses () throws Exception
+    {
+        setRequestContext(user1);
+
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
+        createVersionRendition(contentNodeId, "1.0", "doclib");
+
+        // REST direct access URLs must be enabled in order to test DAU error responses
+        enableRestDirectAccessUrls();
+
+        // Test error response for node does not exist
+        HttpResponse dauResponseForNoSuchNode = post(getRequestVersionRenditionContentDirectUrl("nosuchnode", "1.0", "doclib"), null, 404);
+
+        // Test error response for node is not a file
+        HttpResponse dauResponseForNodeIsNotAFile = post(getRequestVersionRenditionContentDirectUrl(folderNodeId, "1.0", "doclib"), null, 400);
+
+        // Test error response for version does not exist
+        HttpResponse dauResponseForNoSuchVersion = post(getRequestVersionRenditionContentDirectUrl(contentNodeId, "2.0", "doclib"), null, 404);
+
+        // Test error response for rendition does not exist
+        HttpResponse dauResponseForNoSuchRendition = post(getRequestVersionRenditionContentDirectUrl(contentNodeId, "1.0", "avatar"), null, 404);
+
+        disableRestDirectAccessUrls();
+    }
+
     private void checkCreateAndGetVersionRendition(String docId, String versionId, String renditionId) throws Exception
     {
         String getRenditionsUrl;
@@ -359,6 +503,12 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("PNG Image", contentInfo.getMimeTypeName());
         assertNotNull(contentInfo.getEncoding());
         assertTrue(contentInfo.getSizeInBytes() > 0);
+    }
+
+    private void createVersionRendition(String contentNodeId, String versionId, String renditionId) throws Exception
+    {
+        getAll(getNodeVersionRenditionsUrl(contentNodeId, versionId), null, 200);
+        checkCreateAndGetVersionRendition(contentNodeId, versionId, renditionId);
     }
 
     @Override

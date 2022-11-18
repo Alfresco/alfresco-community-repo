@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-amps</artifactId>
-        <version>14.37-SNAPSHOT</version>
+        <version>20.19-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -167,6 +167,10 @@
                 <directory>src/main/amp</directory>
                 <targetPath>../${project.build.finalName}</targetPath>
                 <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>${project.build.directory}/generated-sources/license</directory>
+                <targetPath>../${project.build.finalName}/licenses/${artifactId}</targetPath>
             </resource>
         </resources>
         <testResources>

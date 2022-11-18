@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>14.37-SNAPSHOT</version>
+        <version>20.19-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.apache.santuario</groupId>
             <artifactId>xmlsec</artifactId>
-            <version>2.3.0</version>
+            <version>3.0.0</version>
         </dependency>
         <!-- newer version, see REPO-3133 -->
         <dependency>
@@ -88,8 +88,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -120,7 +130,7 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>8.2.0.v20160908</version>
+            <version>10.0.11</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -132,19 +142,19 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-security</artifactId>
-            <version>8.2.0.v20160908</version>
+            <version>10.0.11</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
-            <version>8.2.0.v20160908</version>
+            <version>10.0.11</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>2.0</version>
+            <version>2.1</version>
             <scope>test</scope>
             <exclusions>
               <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
@@ -171,15 +181,6 @@
         </dependency>
     </dependencies>
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>license-maven-plugin</artifactId>
-                    <version>2.0.0</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <!-- Create a jar of test classes -->
             <plugin>
@@ -266,21 +267,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-                    <organizationName>Alfresco Software Limited</organizationName>
-                    <failOnMissingHeader>true</failOnMissingHeader>
-                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-                    <licenseResolver>classpath://alfresco</licenseResolver>
-                    <licenseName>${licenseName}</licenseName>
-                    <roots>
-                        <root>src</root>
-                    </roots>
-                    <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.jsp</include>
-                    </includes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>check-licenses</id>
@@ -288,6 +274,21 @@
                         <goals>
                             <goal>check-file-header</goal>
                         </goals>
+                        <configuration>
+                            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                            <organizationName>Alfresco Software Limited</organizationName>
+                            <failOnMissingHeader>true</failOnMissingHeader>
+                            <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                            <licenseResolver>classpath://alfresco</licenseResolver>
+                            <licenseName>${licenseName}</licenseName>
+                            <roots>
+                                <root>src</root>
+                            </roots>
+                            <includes>
+                                <include>**/*.java</include>
+                                <include>**/*.jsp</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>

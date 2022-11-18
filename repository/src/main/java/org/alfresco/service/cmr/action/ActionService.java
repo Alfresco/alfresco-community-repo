@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -155,7 +154,7 @@ public interface ActionService
     */
     @Auditable()
    CompositeActionCondition createCompositeActionCondition();
-    
+
     /**
      * The actions conditions are always checked.
      * 

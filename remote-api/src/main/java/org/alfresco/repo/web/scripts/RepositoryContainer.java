@@ -47,6 +47,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TooBusyException;
 import org.alfresco.repo.web.scripts.bean.LoginPost;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -506,6 +507,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 return;
             }
         }
+        catch (ArchivedIOException e) // handle ArchivedIOException to lower log pollution
+        {
+            handleArchivedIOException(e);
+        }
         catch (IOException e)
         {
             handleIOException(e);
@@ -606,6 +611,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 // Map TooBusyException to a 503 status code
                 throw new WebScriptException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, e.getMessage(), e);
             }
+            catch (ArchivedIOException e) // handle ArchivedIOException to lower log pollution
+            {
+                handleArchivedIOException(e);
+            }
 
             // Ensure a response is always flushed after successful execution
             if (bufferedRes != null)
@@ -613,6 +622,19 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 bufferedRes.writeResponse();
             }
         }
+    }
+
+    private void handleArchivedIOException(ArchivedIOException e)
+    {
+        if (logger.isDebugEnabled()) // log with stack trace at debug level
+        {
+            logger.debug("ArchivedIOException error ", e);
+        }
+        else if (logger.isInfoEnabled()) // log without stack trace at info level
+        {
+            logger.info("ArchivedIOException error. Message: " + e.getMessage());
+        }
+        throw new WebScriptException(HttpServletResponse.SC_PRECONDITION_FAILED, "Content is archived and not accessible.");
     }
 
     private static void handleIOException(final IOException ioe) throws IOException

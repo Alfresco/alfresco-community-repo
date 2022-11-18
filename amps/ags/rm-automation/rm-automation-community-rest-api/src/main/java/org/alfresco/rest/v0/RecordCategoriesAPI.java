@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -52,7 +52,7 @@ public class RecordCategoriesAPI extends BaseAPI
     private static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
     private static final String DISPOSITION_ACTIONS_API = "{0}node/{1}/dispositionschedule/dispositionactiondefinitions";
     private static final String DISPOSITION_SCHEDULE_API = "{0}node/{1}/dispositionschedule";
-
+    private static final String NEXT_DISPOSITION_ACTIONS_API = "{0}node/{1}/nextdispositionaction";
 
     /**
      * Creates a retention schedule for the category given as parameter
@@ -190,5 +190,20 @@ public class RecordCategoriesAPI extends BaseAPI
         retentionProperties.put(RETENTION_SCHEDULE.RETENTION_AUTHORITY, authority);
         retentionProperties.put(RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS, instructions);
         return retentionProperties;
+    }
+
+    /**
+     * Get the Next Disposition Action
+     *
+     * @param user
+     * @param password
+     * @param recordId
+     * @return the next disposition schedule action
+     */
+    public JSONObject getNextDispositionAction(String user, String password, String recordId)
+    {
+        String nodeRef = NODE_PREFIX + recordId;
+        JSONObject nextDispositionAction = doGetRequest(user, password, MessageFormat.format(NEXT_DISPOSITION_ACTIONS_API, "{0}", nodeRef));
+        return nextDispositionAction;
     }
 }

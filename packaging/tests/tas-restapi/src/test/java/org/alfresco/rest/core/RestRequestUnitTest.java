@@ -37,7 +37,7 @@ import io.restassured.RestAssured;
 import org.testng.annotations.Test;
 
 /** Unit tests for {@link RestRequest}. */
-public class RestRequestTest
+public class RestRequestUnitTest
 {
     @Test
     public void testSimpleRequest_emptyPathAndParams()

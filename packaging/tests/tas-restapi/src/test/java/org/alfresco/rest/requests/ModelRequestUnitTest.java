@@ -37,7 +37,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /** Unit tests for {@link ModelRequest}. */
-public class ModelRequestTest
+public class ModelRequestUnitTest
 {
     /** Abstract class, so test with mock passing through to real methods. */
     @InjectMocks

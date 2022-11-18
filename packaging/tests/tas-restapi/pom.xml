@@ -214,6 +214,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*UnitTest*</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

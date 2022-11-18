@@ -41,7 +41,8 @@ import com.google.common.collect.ImmutableMap;
 import org.alfresco.rest.core.IRestModel;
 import org.testng.annotations.Test;
 
-public class ModelAssertionTest {
+public class ModelAssertionUnitTest
+{
 	private static final String DEFAULT_ID = "1234";
 	private static final String DEFAULT_NAME = "test";
 

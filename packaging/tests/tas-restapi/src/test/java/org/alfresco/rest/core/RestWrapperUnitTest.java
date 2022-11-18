@@ -31,7 +31,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /** Unit tests for {@link RestWrapper}. */
-public class RestWrapperTest
+public class RestWrapperUnitTest
 {
     private RestWrapper restWrapper;
 

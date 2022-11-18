@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.SocketException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -58,6 +59,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.cxf.attachment.Rfc5987Util;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.extensions.webscripts.Cache;
@@ -482,7 +484,7 @@ public class ContentStreamer implements ResourceLoaderAware
 
                 if (req == null)
                 {
-                    headerValue += "; filename*=UTF-8''" + URLEncoder.encode(attachFileName, StandardCharsets.UTF_8)
+                    headerValue += "; filename*=UTF-8''" + encodeFilename(attachFileName)
                             + "; filename=\"" + filterNameForQuotedString(attachFileName) + "\"";
                 }
                 else
@@ -491,12 +493,12 @@ public class ContentStreamer implements ResourceLoaderAware
                     boolean isLegacy = (null != userAgent) && (userAgent.contains("MSIE 8") || userAgent.contains("MSIE 7"));
                     if (isLegacy)
                     {
-                        headerValue += "; filename=\"" + URLEncoder.encode(attachFileName, StandardCharsets.UTF_8);
+                        headerValue += "; filename=\"" + encodeFilename(attachFileName);
                     }
                     else
                     {
                         headerValue += "; filename=\"" + filterNameForQuotedString(attachFileName) + "\"; filename*=UTF-8''"
-                                + URLEncoder.encode(attachFileName, StandardCharsets.UTF_8);
+                                + encodeFilename(attachFileName);
                     }
                 }
             }
@@ -504,6 +506,21 @@ public class ContentStreamer implements ResourceLoaderAware
             // set header based on filename - will force a Save As from the browse if it doesn't recognize it
             // this is better than the default response of the browser trying to display the contents
             res.setHeader("Content-Disposition", headerValue);
+        }
+    }
+
+    private String encodeFilename(String attachFileName)
+    {
+        try
+        {
+            return Rfc5987Util.encode(attachFileName);
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            if (logger.isInfoEnabled())
+                logger.info(e.getMessage() + " Changing encoder from Rfc5987Util to java.net.URLEncoder.");
+
+            return URLEncoder.encode(attachFileName, StandardCharsets.UTF_8);
         }
     }
     

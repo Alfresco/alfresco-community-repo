@@ -30,6 +30,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Clean cache"
         run: bash ./scripts/travis/cleanup_cache.sh
       - name: "Prepare environment"
@@ -47,8 +54,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - run: mkdir -p $HOME/.m2
-      - run: cp .travis.settings.xml $HOME/.m2
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@master
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
@@ -64,6 +76,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -75,11 +94,10 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
-      - name: "test"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl core,data-model -am -DfailIfNoTests=false
-      - name: "test2"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
+      - name: "Run tests"
+        run: |
+          mvn -B test -pl core,data-model -am -DfailIfNoTests=false
+          mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
 
   Repository-AppContext01TestSuite:
     name: "Repository - AppContext01TestSuite"
@@ -92,6 +110,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -107,14 +132,10 @@ jobs:
       - name: "Set Transformers tag"
         run: |
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
-      - name: "docker build 1"
-        run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
-      - name: "docker build 2"
-        run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
-      - name: "docker build 3"
-        run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${{ env.TRANSFORMERS_TAG }}
+      - name: "Set up the environment"
+        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml --profile with-transform-core-aio up -d
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   Repository-AppContext05TestSuite:
     name: "Repository - AppContext05TestSuite"
@@ -127,6 +148,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -139,21 +167,17 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
           cache: "maven"
-      - name: "docker build 1"
-        run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
-      - name: "docker build 2"
-        run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
-      - name: "make folder"
-        run: mkdir -p "${HOME}/tmp"
-      - name: "copy file"
-        run: cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
-      - name: "set HOST_IP"
+      - name: "Set up the environment"
+        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
+      - name: "Set HOST_IP"
         run: |
+          mkdir -p "${HOME}/tmp"
+          cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
           echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
-      - name: "docker build 3"
+      - name: "Run IDS"
         run: docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json alfresco/alfresco-identity-service:1.2
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext05TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${{ env.HOST_IP }}:8999/auth"
+        run: mvn -B test -pl repository -am -Dtest=AppContext05TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${{ env.HOST_IP }}:8999/auth"
 
   Repository-SearchTestSuite:
     name: "Repository - SearchTestSuite"
@@ -166,6 +190,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -178,12 +209,10 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
           cache: "maven"
-      - name: "docker build 1"
-        run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
-      - name: "docker build 2"
-        run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
+      - name: "Set up the environment"
+        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=SearchTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
+        run: mvn -B test -pl repository -am -Dtest=SearchTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
 
   Repository-MariaDB10-2-18-tests:
     name: "Repository - MariaDB 10.2.18 tests"
@@ -198,6 +227,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -215,7 +251,7 @@ jobs:
       - name: "docker build 2"
         run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
   Remote-api-AppContext01TestSuite:
     name: "Remote-api - AppContext01TestSuite"
@@ -230,6 +266,13 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -247,12 +290,10 @@ jobs:
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh
-      - name: "docker build 1"
-        run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
-      - name: "docker build 2"
-        run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
+      - name: "Set up the environment"
+        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   Remote-api-AppContext02TestSuite:
     name: "Remote-api - AppContext02TestSuite"
@@ -267,6 +308,13 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -287,14 +335,10 @@ jobs:
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh
-      - name: "docker build 1"
-        run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
-      - name: "docker build 2"
-        run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
-      - name: "docker build 3"
-        run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${{ env.TRANSFORMERS_TAG }}
+      - name: "Set up the environment"
+        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml --profile with-transform-core-aio up -d
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   REST-API-TAS-tests-part1:
     name: "REST API TAS tests part1"
@@ -311,6 +355,13 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -334,7 +385,7 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Run tests"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --settings .travis.settings.xml --file  packaging/tests/tas-restapi/pom.xml -B verify -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
+        run: mvn -B verify -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
 
   AGS-Unit-And_Integration-Tests-01-PostgreSQL:
     name: "AGS Unit & Integration Tests 01 (PostgreSQL)"
@@ -351,6 +402,13 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -370,7 +428,7 @@ jobs:
         run: bash ./scripts/travis/build.sh
       - name: "verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --settings .travis.settings.xml --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 ${{ env.LOG_WARN }}
+        run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 ${{ env.LOG_WARN }}
 
   AGS-Community-Rest-API-Tests:
     name: "AGS Community Rest API Tests"
@@ -385,6 +443,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Docker Hub"
         uses: docker/login-action@v1
         with:
@@ -413,7 +478,7 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
       - name: "test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --settings .travis.settings.xml -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags
+        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags
       - run: bash amps/ags/travis/scripts/getLogs.sh
         if: ${{ always() }}
       - shell: bash

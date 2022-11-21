@@ -17,5 +17,6 @@
       <property name="filePlanService" ref="filePlanService" />
       <property name="holdService" ref="holdService" />
       <property name="nodeService" ref="nodeService" />
+      <property name="batchSize" value="${rm.patch.v35.holdNewChildAssocPatch.batchSize}" />
    </bean>
 </beans>

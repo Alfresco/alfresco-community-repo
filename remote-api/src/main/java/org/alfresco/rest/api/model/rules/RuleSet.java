@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
@@ -40,6 +41,11 @@ public class RuleSet
     private String id;
     private NodeRef owningFolder;
     private InclusionType inclusionType;
+    private List<NodeRef> inheritedBy;
+    private List<NodeRef> linkedToBy;
+    private Boolean isInherited;
+    private Boolean isLinkedTo;
+    private List<String> ruleIds;
 
     public static RuleSet of(String id)
     {
@@ -86,6 +92,76 @@ public class RuleSet
         this.inclusionType = inclusionType;
     }
 
+    public List<NodeRef> getInheritedBy()
+    {
+        return inheritedBy;
+    }
+
+    public void setInheritedBy(List<NodeRef> inheritedBy)
+    {
+        this.inheritedBy = inheritedBy;
+    }
+
+    public List<NodeRef> getLinkedToBy()
+    {
+        return linkedToBy;
+    }
+
+    public void setLinkedToBy(List<NodeRef> linkedToBy)
+    {
+        this.linkedToBy = linkedToBy;
+    }
+
+    /**
+     * Set a flag indicating that the rule set is inherited by a folder.
+     *
+     * @param inherited The flag.
+     */
+    public void setIsInherited(Boolean inherited)
+    {
+        isInherited = inherited;
+    }
+
+    /**
+     * Find if the rule set is inherited by a folder.
+     *
+     * @return The value of the flag.
+     */
+    public Boolean getIsInherited()
+    {
+        return isInherited;
+    }
+
+    /**
+     * Set a flag indicating that the rule set is linked to by a folder.
+     *
+     * @param isLinkedTo The flag.
+     */
+    public void setIsLinkedTo(Boolean isLinkedTo)
+    {
+        this.isLinkedTo = isLinkedTo;
+    }
+
+    /**
+     * Find if the rule set is linked to by a folder.
+     *
+     * @return The value of the flag.
+     */
+    public Boolean getIsLinkedTo()
+    {
+        return isLinkedTo;
+    }
+
+    public List<String> getRuleIds()
+    {
+        return ruleIds;
+    }
+
+    public void setRuleIds(List<String> ruleIds)
+    {
+        this.ruleIds = ruleIds;
+    }
+
     @Override
     public String toString()
     {
@@ -94,6 +170,11 @@ public class RuleSet
                     .add("id='" + id + "'")
                     .add("owningFolder='" + owningFolder + "'")
                     .add("inclusionType='" + inclusionType + "'")
+                    .add("inheritedBy='" + inheritedBy + "'")
+                    .add("linkedToBy='" + linkedToBy + "'")
+                    .add("isInherited='" + isInherited + "'")
+                    .add("isLinkedTo='" + isLinkedTo + "'")
+                    .add("ruleIds='" + ruleIds + "'")
                     .toString()
                 + '}';
     }
@@ -108,13 +189,18 @@ public class RuleSet
         RuleSet ruleSet = (RuleSet) o;
         return Objects.equals(id, ruleSet.id)
                 && Objects.equals(owningFolder, ruleSet.owningFolder)
-                && inclusionType == ruleSet.inclusionType;
+                && inclusionType == ruleSet.inclusionType
+                && Objects.equals(inheritedBy, ruleSet.inheritedBy)
+                && Objects.equals(linkedToBy, ruleSet.linkedToBy)
+                && Objects.equals(isInherited, ruleSet.isInherited)
+                && Objects.equals(isLinkedTo, ruleSet.isLinkedTo)
+                && Objects.equals(ruleIds, ruleSet.ruleIds);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, owningFolder, inclusionType);
+        return Objects.hash(id, owningFolder, inclusionType, inheritedBy, linkedToBy, isInherited, isLinkedTo, ruleIds);
     }
 
     public static Builder builder()
@@ -127,6 +213,11 @@ public class RuleSet
         private String id;
         private NodeRef owningFolder;
         private InclusionType inclusionType;
+        private List<NodeRef> inheritedBy;
+        private List<NodeRef> linkedToBy;
+        private Boolean isInherited;
+        private Boolean isLinkedTo;
+        private List<String> ruleIds;
 
         public Builder id(String id)
         {
@@ -146,12 +237,47 @@ public class RuleSet
             return this;
         }
 
+        public Builder inheritedBy(List<NodeRef> inheritedBy)
+        {
+            this.inheritedBy = inheritedBy;
+            return this;
+        }
+
+        public Builder linkedToBy(List<NodeRef> linkedToBy)
+        {
+            this.linkedToBy = linkedToBy;
+            return this;
+        }
+
+        public Builder isInherited(Boolean isInherited)
+        {
+            this.isInherited = isInherited;
+            return this;
+        }
+
+        public Builder isLinkedTo(Boolean isLinkedTo)
+        {
+            this.isLinkedTo = isLinkedTo;
+            return this;
+        }
+
+        public Builder ruleIds(List<String> ruleIds)
+        {
+            this.ruleIds = ruleIds;
+            return this;
+        }
+
         public RuleSet create()
         {
             final RuleSet ruleSet = new RuleSet();
             ruleSet.setId(id);
             ruleSet.setOwningFolder(owningFolder);
             ruleSet.setInclusionType(inclusionType);
+            ruleSet.setInheritedBy(inheritedBy);
+            ruleSet.setLinkedToBy(linkedToBy);
+            ruleSet.setIsInherited(isInherited);
+            ruleSet.setIsLinkedTo(isLinkedTo);
+            ruleSet.setRuleIds(ruleIds);
             return ruleSet;
         }
     }

@@ -29,6 +29,7 @@ package org.alfresco.rest.api;
 import java.util.List;
 
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.RuleExecution;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -65,10 +66,10 @@ public interface Rules
     Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId, List<String> includes);
 
     /**
-     * Create new rules (and potentially a rule set if "_default_" is supplied).
+     * Create new rules (and potentially a rule set if "-default-" is supplied).
      *
      * @param folderNodeId The node id of a folder.
-     * @param ruleSetId The id of a rule set (or "_default_" to use/create the default rule set for the folder).
+     * @param ruleSetId The id of a rule set (or "-default-" to use/create the default rule set for the folder).
      * @param rule The definition of the rule.
      * @param includes The list of optional fields to include in the response.
      * @return The newly created rules.
@@ -81,7 +82,7 @@ public interface Rules
      * Update a rule.
      *
      * @param folderNodeId The id of a folder.
-     * @param ruleSetId The id of a rule set within the folder (or "_default_" to use the default rule set for the folder).
+     * @param ruleSetId The id of a rule set within the folder (or "-default-" to use the default rule set for the folder).
      * @param ruleId The rule id.
      * @param rule The new version of the rule.
      * @param includes The list of optional fields to include in the response.
@@ -94,7 +95,15 @@ public interface Rules
      *
      * @param folderNodeId - folder node ID
      * @param ruleSetId - rule set ID
-     * @param ruleId - rule ID     *
+     * @param ruleId - rule ID
      */
     void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId);
+
+    /**
+     * Execute rules for given folder node.
+     *
+     * @param folderNodeId - the ID of a folder
+     * @param eachSubFolderIncluded - indicates if rules should be executed also on sub-folders
+     */
+    RuleExecution executeRules(final String folderNodeId, final boolean eachSubFolderIncluded);
 }

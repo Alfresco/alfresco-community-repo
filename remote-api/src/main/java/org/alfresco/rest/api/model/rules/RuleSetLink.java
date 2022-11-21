@@ -30,7 +30,7 @@ public class RuleSetLink
 {
 
     /**
-     * This id is referring to the node id of the linked-to-folder which contains the ruleset(s)
+     * This id is referring to the node id of either the rule set or the folder that contains the rule set.
      */
     private String id;
 

@@ -25,14 +25,25 @@
  */
 package org.alfresco.repo.rule;
 
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
+import static org.alfresco.repo.rule.RuleModel.ASSOC_RULE_FOLDER;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.namespace.RegexQNamePattern.MATCH_ALL;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Sets;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -64,7 +75,6 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -255,7 +265,7 @@ public class RuleServiceImpl
         policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
                 RuleModel.ASPECT_RULES,
-                RuleModel.ASSOC_RULE_FOLDER,
+                ASSOC_RULE_FOLDER,
                 new JavaBehaviour(this, "onCreateChildAssociation"));
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnAddAspectPolicy.QNAME,
@@ -347,8 +357,8 @@ public class RuleServiceImpl
         
         List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(
                 nodeRef,
-                RuleModel.ASSOC_RULE_FOLDER,
-                RuleModel.ASSOC_RULE_FOLDER);
+                ASSOC_RULE_FOLDER,
+                ASSOC_RULE_FOLDER);
         if (assocs.size() > 1)
         {
             throw new ActionServiceException("There is more than one rule folder, which is invalid.");
@@ -479,7 +489,7 @@ public class RuleServiceImpl
                     // Node has gone or is not the correct type
                     return rules;
                 }
-                if (includeInherited == true && runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
+                if (includeInherited && !runtimeNodeService.hasAspect(nodeRef, ASPECT_IGNORE_INHERITED_RULES))
                 {
                     // Get any inherited rules
                     for (Rule rule : getInheritedRules(nodeRef, ruleTypeName, null))
@@ -514,7 +524,7 @@ public class RuleServiceImpl
             // https://issues.alfresco.com/browse/ETWOTWO-438
             
         if (!runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) ||
-            permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED)
+            permissionService.hasPermission(nodeRef, PermissionService.READ) != ALLOWED)
         {
             // Doesn't have the aspect or the user doesn't have access
             return Collections.emptyList();
@@ -532,7 +542,7 @@ public class RuleServiceImpl
         {
             // Get the rules for this node
             List<ChildAssociationRef> ruleChildAssocRefs = 
-                this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+                this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
             for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
             {
                 // Create the rule and add to the list
@@ -561,7 +571,7 @@ public class RuleServiceImpl
                 {
                     // Get the rules for this node
                     List<ChildAssociationRef> ruleChildAssocRefs = 
-                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+                        this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
                     
                     ruleCount = ruleChildAssocRefs.size();
                 }
@@ -597,10 +607,106 @@ public class RuleServiceImpl
         
         return result;
     }
-    
+
+    /** {@inheritDoc} */
+    @Override
+    @Experimental
+    public List<NodeRef> getNodesSupplyingRuleSets(NodeRef nodeRef)
+    {
+        return getNodesSupplyingRuleSets(nodeRef, new ArrayList<>());
+    }
+
+    /**
+     * Traverse the folder hierarchy find all the folder nodes that could supply rules by inheritance.
+     * <p>
+     * The order of nodes returned by this methods has to match the order used by {@link #getInheritedRules}.
+     *
+     * @param nodeRef The starting node ref.
+     * @param visitedNodeRefs All the visited node refs (will be modified).
+     * @return A list of node refs, starting with the first parent of the first parent of ... and ending with the object generated by the
+     * given node ref.
+     */
+    private List<NodeRef> getNodesSupplyingRuleSets(NodeRef nodeRef, List<NodeRef> visitedNodeRefs)
+    {
+        List<NodeRef> returnList = new ArrayList<>();
+        // This check prevents stack over flow when we have a cyclic node graph
+        if (!visitedNodeRefs.contains(nodeRef))
+        {
+            visitedNodeRefs.add(nodeRef);
+            if (!runtimeNodeService.hasAspect(nodeRef, ASPECT_IGNORE_INHERITED_RULES))
+            {
+                List<ChildAssociationRef> parents = runtimeNodeService.getParentAssocs(nodeRef);
+                for (ChildAssociationRef parent : parents)
+                {
+                    // We are not interested in following potentially massive person group membership trees!
+                    if (!IGNORE_PARENT_ASSOC_TYPES.contains(parent.getTypeQName()))
+                    {
+                        // Update visitedNodeRefs with all the ancestors.
+                        returnList.addAll(getNodesSupplyingRuleSets(parent.getParentRef(), visitedNodeRefs));
+                    }
+                }
+            }
+            returnList.add(nodeRef);
+        }
+        return returnList;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Experimental
+    public List<NodeRef> getFoldersInheritingRuleSet(NodeRef ruleSet, int maxFoldersToReturn)
+    {
+        // Seed stack with all folders owning or linking to the rule set.
+        Deque<NodeRef> stack = new LinkedList<>();
+        for (ChildAssociationRef parentAssociation : runtimeNodeService.getParentAssocs(ruleSet))
+        {
+            stack.add(parentAssociation.getParentRef());
+        }
+        // Process child folders to find all that inherit the rules.
+        List<NodeRef> inheritors = new ArrayList<>();
+        while (!stack.isEmpty() && inheritors.size() < maxFoldersToReturn)
+        {
+            NodeRef folder = stack.pop();
+            runtimeNodeService.getChildAssocs(folder, ASSOC_CONTAINS, MATCH_ALL).stream().map(ChildAssociationRef::getChildRef).forEach(childNode -> {
+                QName childType = runtimeNodeService.getType(childNode);
+                if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER)
+                        && !runtimeNodeService.hasAspect(childNode, ASPECT_IGNORE_INHERITED_RULES))
+                {
+                    stack.add(childNode);
+                    // Only return nodes that the user has permission to view.
+                    if (permissionService.hasReadPermission(childNode) == ALLOWED)
+                    {
+                        inheritors.add(childNode);
+                        if (inheritors.size() == maxFoldersToReturn)
+                        {
+                            // Return once we've hit the limit.
+                            return;
+                        }
+                    }
+                }
+            });
+        }
+        return inheritors;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Experimental
+    public List<NodeRef> getFoldersLinkingToRuleSet(NodeRef ruleSet, int maxFoldersToReturn)
+    {
+        NodeRef parentRef = nodeService.getPrimaryParent(ruleSet).getParentRef();
+        return nodeService.getParentAssocs(ruleSet)
+                          .stream()
+                          .limit(maxFoldersToReturn)
+                          .map(ChildAssociationRef::getParentRef)
+                          .filter(folder -> !folder.equals(parentRef))
+                          .filter(folder -> permissionService.hasReadPermission(folder) == ALLOWED)
+                          .collect(Collectors.toList());
+    }
+
     /**
      * Gets the inherited rules for a given node reference
-     * 
+     *
      * @param nodeRef            the nodeRef
      * @param ruleTypeName        the rule type (null if all applicable)
      * @return                    a list of inherited rules (empty if none)
@@ -608,20 +714,20 @@ public class RuleServiceImpl
     private List<Rule> getInheritedRules(NodeRef nodeRef, String ruleTypeName, Set<NodeRef> visitedNodeRefs)
     {
         List<Rule> inheritedRules = new ArrayList<Rule>();
-        
+
         if (this.runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_IGNORE_INHERITED_RULES) == false)
-        {        
+        {
             // Create the visited nodes set if it has not already been created
             if (visitedNodeRefs == null)
             {
                 visitedNodeRefs = new HashSet<NodeRef>();
             }
-            
+
             // This check prevents stack over flow when we have a cyclic node graph
             if (visitedNodeRefs.contains(nodeRef) == false)
             {
                 visitedNodeRefs.add(nodeRef);
-                
+
                 List<Rule> allInheritedRules = new ArrayList<Rule>();
                 List<ChildAssociationRef> parents = this.runtimeNodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef parent : parents)
@@ -641,7 +747,7 @@ public class RuleServiceImpl
                             allInheritedRules.add(rule);
                         }
                     }
-                    
+
                     List<Rule> rules = getRules(parent.getParentRef(), false);
                     for (Rule rule : rules)
                     {
@@ -652,7 +758,7 @@ public class RuleServiceImpl
                         }
                     }
                 }
-                
+
                 if (ruleTypeName == null)
                 {
                     inheritedRules = allInheritedRules;
@@ -670,7 +776,7 @@ public class RuleServiceImpl
                 }
             }
         }
-        
+
         return inheritedRules;
     }
 
@@ -749,7 +855,7 @@ public class RuleServiceImpl
     {
         checkForLinkedRules(nodeRef);
         
-        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) != AccessStatus.ALLOWED)
+        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) != ALLOWED)
         {
             throw new RuleServiceException("Insufficient permissions to save a rule.");
         }
@@ -774,7 +880,7 @@ public class RuleServiceImpl
                 // Create the action node
                 ruleNodeRef = this.nodeService.createNode(
                         getSavedRuleFolderRef(nodeRef),
-                        ContentModel.ASSOC_CONTAINS,
+                        ASSOC_CONTAINS,
                         QName.createQName(RuleModel.RULE_MODEL_URI, ASSOC_NAME_RULES_PREFIX + GUID.generate()),
                         RuleModel.TYPE_RULE).getChildRef();
 
@@ -817,7 +923,7 @@ public class RuleServiceImpl
         NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
         if (ruleFolder != null)
         {
-            List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+            List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
             List<ChildAssociationRef> orderedAssocs = new ArrayList<ChildAssociationRef>(assocs.size());
             ChildAssociationRef movedAssoc = null;
             for (ChildAssociationRef assoc : assocs)
@@ -899,7 +1005,7 @@ public class RuleServiceImpl
     {
         checkForLinkedRules(nodeRef);
         
-        if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+        if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == ALLOWED)
         {
             if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES))
             {
@@ -962,7 +1068,7 @@ public class RuleServiceImpl
     {
         checkForLinkedRules(nodeRef);
         
-        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == ALLOWED)
         {
             if (this.nodeService.exists(nodeRef) == true && 
                 this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
@@ -972,7 +1078,7 @@ public class RuleServiceImpl
                 {
                     List<ChildAssociationRef> ruleChildAssocs = this.nodeService.getChildAssocs(
                                                                                 folder, 
-                                                                                RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+                                                                                MATCH_ALL, ASSOC_NAME_RULES_REGEX);
                     for (ChildAssociationRef ruleChildAssoc : ruleChildAssocs)
                     {
                         this.nodeService.removeChild(folder, ruleChildAssoc.getChildRef());
@@ -1322,7 +1428,7 @@ public class RuleServiceImpl
     {
         boolean result = true;
         if (this.nodeService.exists(actionedUponNodeRef)
-                && this.permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ).equals(AccessStatus.ALLOWED))
+                && this.permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ).equals(ALLOWED))
         {
             NodeRef copiedFrom = copyService.getOriginal(actionedUponNodeRef);
             if (logger.isDebugEnabled() == true)
@@ -1524,6 +1630,12 @@ public class RuleServiceImpl
     }
 
     @Override
+    public NodeRef getOwningNodeRef(NodeRef ruleSet)
+    {
+        return nodeService.getPrimaryParent(ruleSet).getParentRef();
+    }
+
+    @Override
     public NodeRef getOwningNodeRef(final Action action)
     {
         // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
@@ -1615,7 +1727,7 @@ public class RuleServiceImpl
     @Experimental
     public NodeRef getRuleSetNode(final NodeRef folderNodeRef)
     {
-        return runtimeNodeService.getChildAssocs(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+        return runtimeNodeService.getChildAssocs(folderNodeRef, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER).stream()
             .map(ChildAssociationRef::getChildRef)
             .findFirst()
             .orElse(null);
@@ -1625,7 +1737,10 @@ public class RuleServiceImpl
     @Experimental
     public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
     {
-        return isChildOf(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, folderNodeRef);
+        List<ChildAssociationRef> associations = runtimeNodeService.getParentAssocs(ruleSetNodeRef, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        Set<NodeRef> associatedFolders = associations.stream().map(ChildAssociationRef::getParentRef).collect(Collectors.toSet());
+        Set<NodeRef> supplyingFolders = new HashSet<>(getNodesSupplyingRuleSets(folderNodeRef));
+        return !Sets.intersection(associatedFolders, supplyingFolders).isEmpty();
     }
 
     @Override

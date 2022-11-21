@@ -50,7 +50,7 @@ jobs:
 
     - name: "Source Clear Scan (SCA)"
       stage: test
-      if: branch = master OR branch =~ /release\/.*/
+      if: (branch = master OR branch =~ /release\/.*/) AND type != pull_request
       # Run Veracode
       install: skip
       script: travis_wait 30 bash scripts/travis/source_clear.sh
@@ -261,6 +261,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 60 mvn -B verify -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
 
     - name: "REST API TAS tests part2"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -269,6 +270,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 60 mvn -B verify -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
 
     - name: "REST API TAS tests part3"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -277,6 +279,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 60 mvn -B verify -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
 
     - name: "CMIS TAS tests - BROWSER binding"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -285,6 +288,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 40 mvn -B verify -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-browser -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-cmis"
 
     - name: "CMIS TAS tests - ATOM binding"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -293,6 +297,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 40 mvn -B verify -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-atom -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-cmis"
 
     - name: "CMIS TAS tests - WEBSERVICES binding"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -301,6 +306,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 40 mvn -B verify -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-webservices -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-cmis"
 
     - name: "Email TAS tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -309,6 +315,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 30 mvn -B verify -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-email"
 
     - name: "WebDAV TAS tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -317,6 +324,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 30 mvn -B verify -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-webdav"
 
     - name: "Integration TAS tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
@@ -324,7 +332,9 @@ jobs:
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - travis_retry travis_wait 40 mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       script: travis_wait 30 mvn -B verify -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+      after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-integration"
 
     - name: "Share Services - ShareServicesTestSuite"
       if: commit_message !~ /\[skip repo\]/

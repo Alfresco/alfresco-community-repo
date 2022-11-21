@@ -99,6 +99,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.WebDAVMethodTest.class,
     org.alfresco.repo.webdav.PutMethodTest.class,
     org.alfresco.repo.webdav.WebDAVonContentUpdateTest.class,
+    org.alfresco.repo.webdav.WebDAVInsecurePostMethodTest.class,
 
     // [classpath:test-rest-context.xml]
     org.alfresco.rest.framework.tests.core.ExceptionResolverTests.class,

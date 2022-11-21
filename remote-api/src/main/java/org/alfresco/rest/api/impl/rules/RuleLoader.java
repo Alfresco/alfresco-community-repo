@@ -27,8 +27,12 @@ package org.alfresco.rest.api.impl.rules;
 
 import java.util.List;
 
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
+import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.SimpleCondition;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 
@@ -39,10 +43,11 @@ public class RuleLoader
     public static final String IS_SHARED = "isShared";
     private RuleService ruleService;
     private NodeValidator nodeValidator;
+    private RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper;
 
     public Rule loadRule(org.alfresco.service.cmr.rule.Rule ruleModel, List<String> includes)
     {
-        Rule rule = Rule.from(ruleModel);
+        final Rule rule = ruleMapper.toRestModel(ruleModel);
         if (includes != null && includes.contains(IS_SHARED))
         {
             NodeRef ruleSet = ruleService.getRuleSetNode(ruleModel.getNodeRef());
@@ -60,5 +65,11 @@ public class RuleLoader
     public void setNodeValidator(NodeValidator nodeValidator)
     {
         this.nodeValidator = nodeValidator;
+    }
+
+    public void setRuleMapper(
+            RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper)
+    {
+        this.ruleMapper = ruleMapper;
     }
 }

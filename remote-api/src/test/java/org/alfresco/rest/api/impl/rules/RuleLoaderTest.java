@@ -33,19 +33,22 @@ import static org.alfresco.rest.api.model.rules.RuleTrigger.UPDATE;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.MockitoAnnotations.openMocks;
+import static org.mockito.BDDMockito.then;
 
 import java.util.List;
 
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /** Unit tests for {@link RuleLoader}. */
+@RunWith(MockitoJUnitRunner.class)
 public class RuleLoaderTest
 {
     private static final String NODE_ID = "node-id";
@@ -53,36 +56,38 @@ public class RuleLoaderTest
     private static final String TITLE = "title";
     private static final String DESCRIPTION = "description";
     private static final boolean ENABLED = true;
-    private static final boolean CASCADE = true;
+    private static final boolean INHERITABLE = true;
     private static final boolean EXECUTE_ASYNCHRONOUSLY = false;
     private static final List<String> TRIGGERS = List.of("update", "outbound");
     private static final NodeRef RULE_SET_NODE = new NodeRef("rule://set/");
 
-    @InjectMocks
-    private RuleLoader ruleLoader;
     @Mock
     private RuleService ruleServiceMock;
     @Mock
     private NodeValidator nodeValidatorMock;
+    @Mock
+    private RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapperMock;
+
     private org.alfresco.service.cmr.rule.Rule serviceRule = createServiceRule();
 
-    @Before
-    public void setUp()
-    {
-        openMocks(this);
-    }
+    @InjectMocks
+    private RuleLoader ruleLoader;
 
     @Test
     public void testLoadRule()
     {
+        final Rule restModelRule = getRestModelRule();
+        given(ruleMapperMock.toRestModel(serviceRule)).willReturn(restModelRule);
+
+        //when
         Rule rule = ruleLoader.loadRule(serviceRule, emptyList());
 
         Rule expected = Rule.builder().id(NODE_ID)
                             .name(TITLE)
                             .description(DESCRIPTION)
-                            .enabled(ENABLED)
-                            .cascade(CASCADE)
-                            .asynchronous(EXECUTE_ASYNCHRONOUSLY)
+                            .isEnabled(ENABLED)
+                            .isInheritable(INHERITABLE)
+                            .isAsynchronous(EXECUTE_ASYNCHRONOUSLY)
                             .triggers(List.of(UPDATE, OUTBOUND)).create();
         assertThat(rule).isEqualTo(expected);
     }
@@ -90,18 +95,30 @@ public class RuleLoaderTest
     @Test
     public void testLoadRule_noExceptionWithNullInclude()
     {
+        //when
         ruleLoader.loadRule(serviceRule, null);
+
+        then(ruleMapperMock).should().toRestModel(serviceRule);
+        then(ruleMapperMock).shouldHaveNoMoreInteractions();
     }
 
     @Test
     public void testLoadRule_includeIsShared()
     {
         // Simulate the rule set being shared.
+        final Rule restModelRule = getRestModelRule();
         given(ruleServiceMock.getRuleSetNode(NODE_REF)).willReturn(RULE_SET_NODE);
         given(nodeValidatorMock.isRuleSetNotNullAndShared(RULE_SET_NODE)).willReturn(true);
+        given(ruleMapperMock.toRestModel(serviceRule)).willReturn(restModelRule);
 
         Rule rule = ruleLoader.loadRule(serviceRule, List.of(IS_SHARED));
 
+        then(ruleMapperMock).should().toRestModel(serviceRule);
+        then(ruleMapperMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().getRuleSetNode(NODE_REF);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(nodeValidatorMock).should().isRuleSetNotNullAndShared(RULE_SET_NODE);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         assertThat(rule).extracting("isShared").isEqualTo(true);
     }
 
@@ -112,10 +129,21 @@ public class RuleLoaderTest
         rule.setTitle(TITLE);
         rule.setDescription(DESCRIPTION);
         rule.setRuleDisabled(!ENABLED);
-        rule.applyToChildren(CASCADE);
+        rule.applyToChildren(INHERITABLE);
         rule.setExecuteAsynchronously(EXECUTE_ASYNCHRONOUSLY);
         rule.setRuleTypes(TRIGGERS);
         return rule;
+    }
+
+    private Rule getRestModelRule()
+    {
+        return Rule.builder().id(NODE_ID)
+                .name(TITLE)
+                .description(DESCRIPTION)
+                .isEnabled(ENABLED)
+                .isInheritable(INHERITABLE)
+                .isAsynchronous(EXECUTE_ASYNCHRONOUSLY)
+                .triggers(List.of(UPDATE, OUTBOUND)).create();
     }
 
 }

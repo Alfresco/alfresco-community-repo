@@ -1,9 +1,21 @@
 package org.alfresco.cmis.search;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.alfresco.cmis.CmisProperties;
+import org.alfresco.cmis.dsl.QueryExecutor.QueryResultAssertion;
 import org.alfresco.utility.Utility;
+import org.alfresco.utility.model.ContentModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,32 +57,76 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
     /**
      * Repeat Elastic Query till results count returns expectedCountResults
      * @param query CMIS Query to be executed
-     * @param expectedCountResults Number of results expected
+     * @param expectedResultsCount Number of results expected
      * @return true when results count is equals to expectedCountResults
      */
-    protected boolean waitForIndexing(String query, long expectedCountResults)
+    protected boolean waitForIndexing(String query, long expectedResultsCount)
     {
-
-        for (int searchCount = 1; searchCount <= SEARCH_MAX_ATTEMPTS; searchCount++)
+        try
         {
+            waitForIndexing(query, execution -> execution.hasLength(expectedResultsCount));
+            return true;
+        }
+        catch (AssertionError ae)
+        {
+            STEP("Received assertion error for query '" + query + "': " + ae);
+            return false;
+        }
+    }
 
+    /**
+     * Repeat Elastic Query until we get the expected results or we hit the retry limit.
+     *
+     * @param query CMIS Query to be executed
+     * @param expectedResults The expected results (unordered).
+     */
+    protected void waitForIndexing(String query, ContentModel... expectedResults)
+    {
+        Set<String> expectedNames = Arrays.stream(expectedResults).map(ContentModel::getName).collect(toSet());
+        waitForIndexing(query, execution -> execution.isReturningValues("cmis:name", expectedNames));
+    }
+
+    /**
+     * Repeat Elastic Query until we get the expected results in the given order or we hit the retry limit.
+     *
+     * @param query CMIS Query to be executed
+     * @param expectedResults The expected results (ordered).
+     */
+    protected void waitForIndexingOrdered(String query, ContentModel... expectedResults)
+    {
+        List<String> expectedNames = Arrays.stream(expectedResults).map(ContentModel::getName).collect(toList());
+        waitForIndexing(query, execution -> execution.isReturningOrderedValues("cmis:name", expectedNames));
+    }
+
+    /**
+     * Repeat Elastic Query until we get the expected results or we hit the retry limit.
+     *
+     * @param query CMIS Query to be executed
+     * @param assertionMethod A method that will be called to check the response and which will throw an AssertionError if they aren't what we want.
+     */
+    protected void waitForIndexing(String query, Consumer<QueryResultAssertion> assertionMethod)
+    {
+        int searchCount = 0;
+        while (true)
+        {
             try
             {
-                cmisApi.withQuery(query).assertResultsCount().equals(expectedCountResults);
-                return true;
+                assertionMethod.accept(cmisApi.withQuery(query).assertValues());
+                return;
             }
             catch (AssertionError ae)
             {
-                LOGGER.info(String.format("WaitForIndexing in Progress: %s", ae));
+                searchCount++;
+                if (searchCount < SEARCH_MAX_ATTEMPTS)
+                {
+                    LOGGER.info(String.format("WaitForIndexing in Progress: %s", ae));
+                    Utility.waitToLoopTime(getElasticWaitTimeInSeconds(), "Wait For Indexing");
+                }
+                else
+                {
+                    throw ae;
+                }
             }
-
-
-            Utility.waitToLoopTime(getElasticWaitTimeInSeconds(), "Wait For Indexing");
-
         }
-
-        return false;
     }
-
-
 }

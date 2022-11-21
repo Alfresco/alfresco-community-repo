@@ -25,15 +25,10 @@
  */
 package org.alfresco.repo.jscript;
 
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -42,7 +37,6 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -58,9 +52,14 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.UniqueTag;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 
 /**
@@ -434,7 +433,147 @@ public class RhinoScriptTest extends TestCase
         });
 
     }
-    
+
+    // MNT-21638
+    public void testSecureScriptString()
+    {
+        boolean executed = executeSecureScriptString(TESTSCRIPT2, false);
+        assertFalse("Script shouldn't have been executed (secure = false)", executed);
+
+        executed = executeSecureScriptString(TESTSCRIPT2, null);
+        assertFalse("Script shouldn't have been executed (secure = null)", executed);
+
+        executed = executeSecureScriptString(TESTSCRIPT2, true);
+        assertTrue("Script should have been executed (secure = true)", executed);
+    }
+
+    // MNT-23158
+    public void testScopeData()
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Exception
+                {
+                    Context cx = Context.enter();
+                    try
+                    {
+                        Scriptable sharedScope = new ImporterTopLevel(cx, true);
+                        Scriptable scope = cx.newObject(sharedScope);
+                        scope.setPrototype(sharedScope);
+                        scope.setParentScope(null);
+
+                        // Executes a first script
+                        Object result = cx.evaluateString(scope, "var a = 10; var b = 20; var sum = a+b;", "TestJS1", 1, null);
+                        assertTrue(Undefined.isUndefined(result));
+
+                        // Test sum value
+                        Object sum = scope.get("sum", scope);
+                        assertEquals(30.0, Context.toNumber(sum));
+
+                        // No 'sum' property should be found in the shared scope
+                        sum = sharedScope.get("sum", sharedScope);
+                        assertEquals(sum, UniqueTag.NOT_FOUND);
+
+                        // No 'b' property should be found in the shared scope
+                        Object b = ScriptableObject.getProperty(sharedScope, "b");
+                        assertEquals(b, UniqueTag.NOT_FOUND);
+
+                        // Cleans scope
+                        unsetScope(scope);
+
+                        // Executes a second script using the same scope
+                        result = cx.evaluateString(scope, "var test = 'test';", "TestJS2", 1, null);
+
+                        // 'sum' property should be null
+                        sum = scope.get("sum", scope);
+                        assertNull(sum);
+
+                        // New scope initialization
+                        scope = cx.newObject(sharedScope);
+                        scope.setPrototype(sharedScope);
+                        scope.setParentScope(null);
+
+                        // check 'test' property
+                        Object test = scope.get("test", scope);
+                        assertEquals(test, UniqueTag.NOT_FOUND);
+                    }
+                    finally
+                    {
+                        Context.exit();
+                    }
+
+                    return null;
+                }
+            });
+    }
+
+    private boolean executeSecureScriptString(String script, Boolean secure)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+        {
+            public Boolean execute() throws Exception
+            {
+                StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                NodeRef root = nodeService.getRootNode(store);
+                BaseNodeServiceTest.buildNodeGraph(nodeService, root);
+
+                try
+                {
+                    Map<String, Object> model = new HashMap<String, Object>();
+                    model.put("out", System.out);
+
+                    ScriptNode rootNode = new ScriptNode(root, serviceRegistry, null);
+                    model.put("root", rootNode);
+
+                    // test executing a script directly as string
+                    scriptService.executeScriptString("javascript", script, model, secure);
+                }
+                catch (Exception e)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    private void unsetScope(Scriptable scope)
+    {
+        if (scope != null)
+        {
+            Object[] ids = scope.getIds();
+
+            if (ids != null)
+            {
+                for (Object id : ids)
+                {
+                    try
+                    {
+                        deleteProperty(scope, id.toString());
+                    }
+                    catch (Exception e)
+                    {
+                        // Do nothing
+                    }
+                }
+            }
+        }
+    }
+
+    private void deleteProperty(Scriptable scope, String name)
+    {
+        if (scope != null && name != null)
+        {
+            if (!ScriptableObject.deleteProperty(scope, name))
+            {
+                ScriptableObject.putProperty(scope, name, null);
+            }
+            scope.delete(name);
+        }
+    }
+
     private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
     private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
     private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";
@@ -453,7 +592,12 @@ public class RhinoScriptTest extends TestCase
             "logger.log(\"child by name path: \" + childByNameNode.name);\r\n" +
             "var xpathResults = root.childrenByXPath(\"/*\");\r\n" +
             "logger.log(\"children of root from xpath: \" + xpathResults.length);\r\n";
-    
+
+    private static final String TESTSCRIPT2 = "var exec = new org.alfresco.util.exec.RuntimeExec();\r\n"
+            + "exec.setCommand([\"/bin/ls\"]);\r\n"
+            + "var res = exec.execute();\r\n"
+            + "java.lang.System.err.println(res.getStdOut());\r\n";
+
     private static final String BASIC_JAVA = 
             "var list = com.google.common.collect.Lists.newArrayList();\n" + 
             "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";

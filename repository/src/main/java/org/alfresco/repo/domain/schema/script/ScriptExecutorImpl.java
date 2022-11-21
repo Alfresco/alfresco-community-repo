@@ -274,6 +274,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
             
             while(true)
             {
+                connection = refreshConnection(connection);
+
                 String sqlOriginal = reader.readLine();
                 line++;
                 
@@ -346,6 +348,24 @@ public class ScriptExecutorImpl implements ScriptExecutor
                             batchSize = batchSizeString == null ? 10000 : Integer.parseInt(batchSizeString);
                         }
                     }
+                    continue;
+                }
+                else if (sql.startsWith("--DELETE_NOT_EXISTS_V3"))
+                {
+                    DeleteNotExistsV3Executor deleteNotExistsFiltered = createDeleteNotExistV3Executor(dialect, connection, sql,
+                            line, scriptFile);
+                    deleteNotExistsFiltered.execute();
+
+                    // Reset
+                    sb.setLength(0);
+                    fetchVarName = null;
+                    fetchColumnName = null;
+                    defaultFetchValue = null;
+                    batchTableName = null;
+                    doBatch = false;
+                    batchUpperLimit = 0;
+                    batchSize = 1;
+
                     continue;
                 }
                 else if (sql.startsWith("--DELETE_NOT_EXISTS"))
@@ -538,6 +558,17 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
     }
 
+    private Connection refreshConnection(Connection connection) throws SQLException
+    {
+        if (connection == null || connection.isClosed())
+        {
+            connection = dataSource.getConnection();
+            connection.setAutoCommit(true);
+        }
+
+        return connection;
+    }
+
     private DeleteNotExistsExecutor createDeleteNotExistsExecutor(Dialect dialect, Connection connection, String sql, int line, File scriptFile)
     {
         if (dialect instanceof MySQLInnoDBDialect)
@@ -546,6 +577,12 @@ public class ScriptExecutorImpl implements ScriptExecutor
         }
 
         return new DeleteNotExistsExecutor(connection, sql, line, scriptFile, globalProperties);
+    }
+
+    private DeleteNotExistsV3Executor createDeleteNotExistV3Executor(Dialect dialect, Connection connection, String sql, int line,
+            File scriptFile)
+    {
+        return new DeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, globalProperties, dataSource);
     }
 
     /**

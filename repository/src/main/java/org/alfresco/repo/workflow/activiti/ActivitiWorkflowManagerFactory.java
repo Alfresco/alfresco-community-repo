@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -105,7 +105,7 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         ActivitiPropertyConverter propertyConverter = new ActivitiPropertyConverter(activitiUtil, factory, handlerRegistry, authorityManager, messageService, nodeConverter);
         ActivitiTypeConverter typeConverter = new ActivitiTypeConverter(processEngine, factory, propertyConverter, deployWorkflowsInTenant);
         
-        ActivitiWorkflowEngine workflowEngine = new ActivitiWorkflowEngine();
+        ActivitiWorkflowEngine workflowEngine = instantiateWorkflowEngine();
         workflowEngine.setActivitiUtil(activitiUtil);
         workflowEngine.setAuthorityManager(authorityManager);
         workflowEngine.setBPMEngineRegistry(bpmEngineRegistry);
@@ -122,6 +122,11 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
         workflowEngine.setTypeConverter(typeConverter);
         workflowEngine.setRepositoryHelper(repositoryHelper);
         return new ActivitiWorkflowManager(workflowEngine, propertyConverter, handlerRegistry, nodeConverter, authorityManager);
+    }
+
+    protected ActivitiWorkflowEngine instantiateWorkflowEngine()
+    {
+        return new ActivitiWorkflowEngine();
     }
 
     /**

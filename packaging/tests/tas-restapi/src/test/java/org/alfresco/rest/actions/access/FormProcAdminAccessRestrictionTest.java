@@ -1,5 +1,15 @@
 package org.alfresco.rest.actions.access;
 
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_FIELD;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.getExpectedEmailSendFailureMessage;
+import static org.hamcrest.Matchers.containsString;
+
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
@@ -12,15 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
-import java.util.Map;
-
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_FIELD;
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.getExpectedEmailSendFailureMessage;
-import static org.hamcrest.Matchers.containsString;
 
 public class FormProcAdminAccessRestrictionTest extends RestTest {
 
@@ -75,7 +76,7 @@ public class FormProcAdminAccessRestrictionTest extends RestTest {
                 .assertThat().body(ERROR_MESSAGE_FIELD, containsString(getExpectedEmailSendFailureMessage(testUser)));
     }
 
-    private String generateBody(Map<String, String> mailParameters) {
+    private String generateBody(Map<String, Serializable> mailParameters) {
         JSONObject json = new JSONObject();
         mailParameters.forEach((key, value) -> json.put(PROPERTY_PREFIX + key, value));
 

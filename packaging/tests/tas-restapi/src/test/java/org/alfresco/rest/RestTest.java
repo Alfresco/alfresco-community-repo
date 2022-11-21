@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import org.alfresco.dataprep.WorkflowService;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.rules.RulesTestsUtils;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.data.DataContent;
@@ -60,6 +61,9 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     
     @Autowired
     protected WorkflowService workflow;
+
+    @Autowired
+    protected RulesTestsUtils rulesUtils;
 
     protected SiteModel testSite;
 

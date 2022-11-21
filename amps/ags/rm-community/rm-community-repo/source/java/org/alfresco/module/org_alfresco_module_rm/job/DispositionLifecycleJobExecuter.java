@@ -30,8 +30,10 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -47,7 +49,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 
 /**
@@ -64,7 +65,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** batching properties */
     private int batchSize;
     public static final int DEFAULT_BATCH_SIZE = 500;
-    private static final String MSG_NODE_FROZEN = "rm.action.node.frozen.error-message";
 
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
@@ -194,6 +194,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             boolean hasMore = true;
             int skipCount = 0;
+            List<NodeRef> resultNodes = new ArrayList<>();
 
             if (batchSize < 1)
             {
@@ -214,7 +215,14 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 // execute search
                 ResultSet results = searchService.query(params);
-                List<NodeRef> resultNodes = results.getNodeRefs();
+                if(results != null)
+                {
+                    // filtering out the hold/freezed cases from the result set
+                    resultNodes =
+                            results.getNodeRefs().stream().filter(node -> nodeService.getPrimaryParent(node) == null ?
+                                    !freezeService.isFrozenOrHasFrozenChildren(node) :
+                                    !freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
+                }
                 hasMore = results.hasMore();
                 skipCount += resultNodes.size(); // increase by page size
                 results.close();
@@ -264,12 +272,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     continue;
                 }
                 Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
-
-                if (freezeService.isFrozenOrHasFrozenChildren(parent.getParentRef()))
-                {
-                    log.debug(I18NUtil.getMessage(MSG_NODE_FROZEN, dispAction));
-                    continue;
-                }
 
                 try
                 {

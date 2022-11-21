@@ -24,8 +24,17 @@
       <property name="tenantAdminService" ref="tenantAdminService" />
    </bean>
 
+   <bean id="deprecatedModulesValidator" class="org.alfresco.repo.module.DeprecatedModulesValidator" init-method="onInit">
+      <constructor-arg name="moduleService" ref="moduleService" />
+      <constructor-arg name="deprecatedModules">
+         <list>
+            <value>alfresco-saml-repo</value>
+         </list>
+      </constructor-arg>
+   </bean>
+
    <!-- Import of installed modules -->
-   
+
    <!--  bootstrap context first - for any resources shared between modules like the data list model -->
    <import resource="classpath*:alfresco/module/*/module-bootstrap-context.xml"/>
    <!--  the main context for each module -->

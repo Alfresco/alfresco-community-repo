@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertEquals;
 
@@ -38,6 +39,7 @@ import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
+import org.alfresco.rest.model.RestRuleSettingsModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -71,8 +73,11 @@ public class GetInheritedRulesTests extends RestTest
         STEP("Create a parent and child folder, each with inheriting rules");
         FolderModel parent = dataContent.usingUser(user).usingSite(site).createFolder();
         FolderModel child = dataContent.usingUser(user).usingResource(parent).createFolder();
-        RestRuleModel parentRule = rulesUtils.createRuleModelWithDefaultValues();
+        RestRuleModel parentRule = rulesUtils.createInheritableRuleModel();
         parentRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(parent).usingDefaultRuleSet().createSingleRule(parentRule);
+        RestRuleSettingsModel enabled = new RestRuleSettingsModel();
+        enabled.setValue(true);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingRuleSetting(IS_INHERITANCE_ENABLED).updateSetting(enabled);
         RestRuleModel childRule = rulesUtils.createRuleModelWithDefaultValues();
         childRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingDefaultRuleSet().createSingleRule(childRule);
 
@@ -89,6 +94,37 @@ public class GetInheritedRulesTests extends RestTest
         RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingRuleSet(inheritedRuleSetId).getListOfRules();
         inheritedRules.assertThat().entriesListContains("id", parentRule.getId())
                       .and().entriesListCountIs(1);
+    }
+
+    /**
+     * Check we only get the owned rules and no inherited rules in the child folder when parent rule isn't inheritable.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getInheritedRules_parent_rule_not_inheritable()
+    {
+        STEP("Create a parent and child folder, each with inheriting rules");
+        FolderModel parent = dataContent.usingUser(user).usingSite(site).createFolder();
+        FolderModel child = dataContent.usingUser(user).usingResource(parent).createFolder();
+        RestRuleModel parentRule = rulesUtils.createRuleModelWithDefaultValues();
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(parent).usingDefaultRuleSet().createSingleRule(parentRule);
+        RestRuleSettingsModel enabled = new RestRuleSettingsModel();
+        enabled.setValue(true);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingRuleSetting(IS_INHERITANCE_ENABLED).updateSetting(enabled);
+        RestRuleModel childRule = rulesUtils.createRuleModelWithDefaultValues();
+        childRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingDefaultRuleSet().createSingleRule(childRule);
+
+        STEP("Get the rules in the default rule set for the child folder");
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingDefaultRuleSet().getListOfRules();
+        rules.assertThat().entriesListContains("id", childRule.getId())
+                .and().entriesListCountIs(1);
+
+        STEP("The inherited rule set for the child folder shouldn't return any rules");
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).include("inclusionType").getListOfRuleSets();
+        String inheritedRuleSetId = ruleSets.getEntries().stream()
+                .filter(ruleSet -> ruleSet.onModel().getInclusionType().equals("inherited"))
+                .findFirst().get().onModel().getId();
+        RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingRuleSet(inheritedRuleSetId).getListOfRules();
+        inheritedRules.assertThat().entriesListIsEmpty();
     }
 
     /**
@@ -110,9 +146,14 @@ public class GetInheritedRulesTests extends RestTest
         FolderModel folderB = dataContent.usingUser(user).usingResource(folderA).createFolder();
         FolderModel folderC = dataContent.usingUser(user).usingResource(folderB).createFolder();
         FolderModel folderD = dataContent.usingUser(user).usingResource(folderC).createFolder();
-        RestRuleModel ruleB = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderB).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
-        RestRuleModel ruleC = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderC).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+        RestRuleModel ruleB = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderB).usingDefaultRuleSet().createSingleRule(rulesUtils.createInheritableRuleModel());
+        RestRuleModel ruleC = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderC).usingDefaultRuleSet().createSingleRule(rulesUtils.createInheritableRuleModel());
         RestRuleModel ruleD = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderD).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+        RestRuleSettingsModel enabled = new RestRuleSettingsModel();
+        enabled.setValue(true);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folderC).usingRuleSetting(IS_INHERITANCE_ENABLED).updateSetting(enabled);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folderD).usingRuleSetting(IS_INHERITANCE_ENABLED).updateSetting(enabled);
+
         STEP("Link folderA to ruleSetD");
         RestRuleSetLinkModel linkModel = new RestRuleSetLinkModel();
         linkModel.setId(folderD.getNodeRef());

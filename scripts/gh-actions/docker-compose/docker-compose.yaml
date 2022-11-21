@@ -3,7 +3,7 @@ version: "3"
 services:
   transform-core-aio:
     profiles: ["with-transform-core-aio"]
-    image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG:}
+    image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
     environment:
       JAVA_OPTS: " -Xms256m -Xmx256m"
     ports:

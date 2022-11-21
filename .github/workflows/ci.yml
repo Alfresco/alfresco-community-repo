@@ -128,12 +128,11 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
       - name: "Set Transformers tag"
         run: |
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
-        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml --profile with-transform-core-aio up -d
+        run: docker-compose -f ./scripts/gh-actions/docker-compose/docker-compose.yaml --profile with-transform-core-aio up -d
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
@@ -166,9 +165,8 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
       - name: "Set up the environment"
-        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
+        run: docker-compose -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
       - name: "Set HOST_IP"
         run: |
           mkdir -p "${HOME}/tmp"
@@ -208,9 +206,8 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
       - name: "Set up the environment"
-        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
+        run: docker-compose -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=SearchTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
 
@@ -245,7 +242,6 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
       - name: "docker build 1"
         run: docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.2.18 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
       - name: "docker build 2"
@@ -284,14 +280,13 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
-      - name: "init"
-        run: bash ./scripts/travis/init.sh
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: bash ./scripts/travis/build.sh
+        run: |
+          bash ./scripts/travis/init.sh
+          bash ./scripts/travis/build.sh
       - name: "Set up the environment"
-        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
+        run: docker-compose -f ./scripts/gh-actions/docker-compose/docker-compose.yaml up -d
       - name: "Run tests"
         run: mvn -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
@@ -326,17 +321,14 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
-      - name: "init"
-        run: bash ./scripts/travis/init.sh
-      - name: "Get Transformers tag"
+      - name: "Build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
-      - name: "build"
-        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: bash ./scripts/travis/build.sh
+          bash ./scripts/travis/init.sh
+          bash ./scripts/travis/build.sh
       - name: "Set up the environment"
-        run: docker-compose up -f ./scripts/gh-actions/docker-compose/docker-compose.yaml --profile with-transform-core-aio up -d
+        run: docker-compose -f ./scripts/gh-actions/docker-compose/docker-compose.yaml --profile with-transform-core-aio up -d
       - name: "Run tests"
         run: mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
@@ -373,12 +365,11 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
-      - name: "init"
-        run: bash ./scripts/travis/init.sh
-      - name: "build"
+      - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: bash ./scripts/travis/build.sh
+        run: |
+          bash ./scripts/travis/init.sh
+          bash ./scripts/travis/build.sh
       - name: "Set up the environment"
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
@@ -420,7 +411,6 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
       - name: "init"
         run: bash ./scripts/travis/init.sh
       - name: "build"
@@ -466,7 +456,6 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh

@@ -16,7 +16,7 @@ services:
       - POSTGRES_DB=alfresco
     command: postgres -c max_connections=300
     ports:
-      - "5432:5432"
+      - "5433:5432"
   activemq:
     image: alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
     ports:

@@ -245,7 +245,7 @@ jobs:
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/gh-actions/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
-          - MARIADB_VERSION=10.2.18
+          MARIADB_VERSION: 10.2.18
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 

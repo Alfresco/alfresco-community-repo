@@ -39,7 +39,7 @@ tags:
   - name: unfiled-record-folders
     description: Retrieve and manage unfiled record folders
   - name: events
-    description: Retrieve and manage events
+    description: Retrieve and manage record management events
     
 paths:
   ## GS sites
@@ -2098,7 +2098,7 @@ paths:
     get:
       tags:
         - events
-      summary: List the events.
+      summary: List all the record management events.
       description: |
         Use this to get all the events in the record management site. This return all the custom events as well as default events in record management site with mandatory fields and properties
 
@@ -2174,7 +2174,7 @@ paths:
     put:
       tags:
         - events
-      summary: Return event for given eventId
+      summary: Update event for given eventId
       description: |
         Get an record management event information using event ID.
       produces:

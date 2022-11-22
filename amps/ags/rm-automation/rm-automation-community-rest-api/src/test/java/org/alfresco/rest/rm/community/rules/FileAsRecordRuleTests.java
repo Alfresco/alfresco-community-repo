@@ -37,28 +37,25 @@ import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChi
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
-import org.alfresco.utility.model.*;
-
+import org.alfresco.rest.rm.community.smoke.FileAsRecordTests;
 import org.alfresco.rest.v0.RulesAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
-
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.util.Arrays.asList;
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -66,18 +63,17 @@ import static org.springframework.http.HttpStatus.CREATED;
 @AlfrescoTest (jira = "APPS-36")
 public class FileAsRecordRuleTests extends BaseRMRestTest
 {
-    private static final String CATEGORY_MANAGER = "categoryManager" + generateTestPrefix(FileAsRecordRuleTests.class);
-    private static final String CATEGORY_ADMIN = "categoryAdmin" + generateTestPrefix(FileAsRecordRuleTests.class);
-    private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordRuleTests.class);
-    private static final String FOLDER_ADMIN = "recordFolder" + generateTestPrefix(FileAsRecordRuleTests.class);
-    private UserModel nonRMUser,rmManager;
-    private SiteModel publicSite;
+    private UserModel nonRMUser, rmManager;
+    private RecordCategory category_manager, category_admin;
+    private RecordCategoryChild folder_admin, folder_manager ;
+    private static final String CATEGORY_MANAGER = "catManager" + generateTestPrefix(FileAsRecordTests.class);
+    private static final String CATEGORY_ADMIN = "catAdmin" + generateTestPrefix(FileAsRecordTests.class);
+    private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
+    private static final String FOLDER_ADMIN = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
     private FolderModel testFolder;
-    private FileModel inPlaceRecord;
-    private RecordCategory category_manager,category_admin;
-    private RecordCategoryChild folder_admin,folder_manager;
-    private static final String RULE_NAME = "File as Record Rule";
-    private static final String FOLDER_MANAGER_PATH = "/" + CATEGORY_MANAGER + "/" + FOLDER_MANAGER;
+    private FileModel document,inPlaceRecord;
+
+
     @Autowired
     private RoleService roleService;
     @Autowired
@@ -101,7 +97,7 @@ public class FileAsRecordRuleTests extends BaseRMRestTest
         nonRMUser = dataUser.createRandomTestUser("testUser");
 
         STEP("Create a collaboration site");
-        publicSite = dataSite.usingUser(nonRMUser).createPublicRandomSite();
+        testSite = dataSite.usingUser(nonRMUser).createPublicRandomSite();
 
         STEP("Create two categories with two folders");
         category_manager = createRootCategory(CATEGORY_MANAGER);
@@ -113,7 +109,7 @@ public class FileAsRecordRuleTests extends BaseRMRestTest
         RecordCategory recordCategory = new RecordCategory().builder()
             .id(category_manager.getId()).build();
 
-        rmManager = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory,
+        rmManager = roleService.createCollaboratorWithRMRoleAndPermission(testSite, recordCategory,
             UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
 
         STEP("Create a collaboration folder with a rule set to declare and file as record to a record folder");
@@ -142,7 +138,7 @@ public class FileAsRecordRuleTests extends BaseRMRestTest
     @Test
     public void declareAsRecordRuleAsRMUserWithFilingPermissions() {
         STEP("Create a collaboration folder");
-        testFolder = dataContent.usingSite(publicSite)
+        testFolder = dataContent.usingSite(testSite)
             .usingUser(rmManager)
             .createFolder();
 
@@ -167,18 +163,18 @@ public class FileAsRecordRuleTests extends BaseRMRestTest
     public void declareAsRecordRuleAsNonRMUser()
     {
         STEP("Create a collaboration folder");
-        testFolder = dataContent.usingSite(publicSite)
-            .usingUser(rmManager)
+        testFolder = dataContent.usingSite(testSite)
+            .usingUser(nonRMUser)
             .createFolder();
 
         STEP("Create a rule with Declare as Record action and check that user can select a record folder.");
         RecordCategory recordCategory = new RecordCategory().builder()
             .id(category_manager.getId()).build();
-        RecordCategoryChild folderWithRule = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
+
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")
             .applyToChildren(true)
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
-        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
+        rulesAPI.createRule(nonRMUser.getUsername(), nonRMUser.getPassword(), NODE_PREFIX + testFolder.getNodeRef(), ruleDefinition);
 
         assertStatusCode(CREATED);
     }
@@ -220,7 +216,7 @@ public class FileAsRecordRuleTests extends BaseRMRestTest
     public void cleanupDeclareAsRecordRuleTests()
     {
         STEP("Delete the collaboration site");
-        dataSite.usingUser(nonRMUser).deleteSite(publicSite);
+        dataSite.usingUser(nonRMUser).deleteSite(testSite);
 
         STEP("Delete Users");
         dataUser.deleteUser(nonRMUser);
@@ -229,6 +225,5 @@ public class FileAsRecordRuleTests extends BaseRMRestTest
         STEP("Delete categories");
         getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getEntries().forEach(recordCategoryEntry ->
             deleteRecordCategory(recordCategoryEntry.getEntry().getId()));
-        getRestAPIFactory().getRecordsAPI().deleteRecord(inPlaceRecord.getNodeRefWithoutVersion());
     }
 }

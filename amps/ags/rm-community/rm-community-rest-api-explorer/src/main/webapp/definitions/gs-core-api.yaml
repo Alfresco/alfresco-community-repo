@@ -2154,7 +2154,7 @@ paths:
         - events
       summary: Return event for given eventId
       description: |
-        Get an record management event information using event ID.
+        Get an record management event information using eventId.
       produces:
         - application/json
       parameters:
@@ -2166,8 +2166,6 @@ paths:
             $ref: '#/definitions/EventInfo'
         '401':
           description: Authentication failed
-        '403':
-          description: Current user does not have permission to read **eventId**
         '404':
           description: "**eventId** does not exist"
         default:
@@ -2179,7 +2177,7 @@ paths:
         - events
       summary: Update event for given eventId
       description: |
-        Get an record management event information using event ID.
+        Update record management event information using eventId. The event type value can be one of the following- [ Simple, Obsoleted, Superseded, Cross-Referenced Record Transferred, Versioned ]
       produces:
         - application/json
       parameters:
@@ -2197,8 +2195,8 @@ paths:
             $ref: '#/definitions/EventInfo'
         '401':
           description: Authentication failed
-        '403':
-          description: Current user does not have permission to read **eventId**
+        '400':
+          description: Cannot update event. An event with the name **name** already exists
         '404':
           description: "**eventId** does not exist"
         default:
@@ -3884,11 +3882,11 @@ definitions:
   EventInfo:
     type: object
     required:
-      - ID
+      - id
       - name
       - type
     properties:
-      ID:
+      id:
         type: string
       name:
         type: string

@@ -48,7 +48,7 @@ import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
 import static org.alfresco.rest.core.v0.BaseAPI.RM_SITE_ID;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.DELETE_PERSON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.LOGIN_SUCCESSFUL;
-import static org.alfresco.rest.rm.community.records.priorities.SearchRecordsTests.*;
+import static org.alfresco.rest.rm.community.records.SearchRecordsTests.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.junit.Assert.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;

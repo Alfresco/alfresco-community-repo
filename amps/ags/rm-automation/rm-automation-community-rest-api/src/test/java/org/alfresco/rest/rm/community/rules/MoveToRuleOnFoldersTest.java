@@ -173,7 +173,7 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
         STEP("Update metadata for Non-Electronic Record");
         updateRecordMetadata();
 
-        STEP("Delete E and Non-E RECORDS IN FOLDER 2");
+        STEP("Delete ELECTRONIC AND NON-ELECTRONIC RECORDS IN FOLDER 2");
         org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         recordsAPI.deleteRecord(electronicRecord.getId());
         assertStatusCode(NO_CONTENT);
@@ -187,7 +187,7 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
             .actions(Collections.singletonList(ActionsOnRule.MOVE_TO.getActionValue())).ruleType(ruleType).path(recfolder2_path);
         rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX +recordFolder1.getId() , ruleDefinition);
 
-        STEP("CREATE E AND NON E RECORDS");
+        STEP("CREATE ELECTRONIC AND NON-ELECTRONIC RECORDS");
         electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder1.getId(), getFile(IMAGE_FILE));
         STEP("Check the electronic record has been created");
         assertStatusCode(CREATED);
@@ -198,7 +198,7 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
         STEP("UPDATE METADATA");
         updateRecordMetadata();
 
-        STEP("CHECK IF E AND NON-E RECORDS MOVED  TO FOLDER2");
+        STEP("CHECK IF ELECTRONIC AND NON-ELECTRONIC RECORDS MOVED  TO FOLDER2");
         updateRecordMetadata();
     }
 

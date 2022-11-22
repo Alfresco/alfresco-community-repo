@@ -171,7 +171,7 @@ public class RulesImplTest extends TestCase
     }
 
     @Test
-    public void testGetRules_rule_not_applied_to_children()
+    public void testGetRules_ruleNotAppliedToChildren()
     {
         given(ruleSetMock.getInclusionType()).willReturn(InclusionType.INHERITED);
         ruleModelInherited.applyToChildren(false);

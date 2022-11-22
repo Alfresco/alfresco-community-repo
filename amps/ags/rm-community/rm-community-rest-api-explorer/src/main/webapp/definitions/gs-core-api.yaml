@@ -2126,7 +2126,7 @@ paths:
       parameters:
         - in: body
           name: eventBodyCreate
-          description: The node information to create.
+          description: The event information to create. The event type value can be one of the following- [ Simple, Obsoleted, Superseded, Cross-Referenced Record Transferred, Versioned ]
           required: true
           schema:
             $ref: '#/definitions/EventBodyCreate'
@@ -2139,12 +2139,15 @@ paths:
           description: Successful response
           schema:
             $ref: '#/definitions/EventEntry'
+        '400':
+          description: Cannot create event. An event with the name **name** already exists  
         '401':
           description: Authentication failed
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  
   '/events/{eventId}':
     get:
       tags:

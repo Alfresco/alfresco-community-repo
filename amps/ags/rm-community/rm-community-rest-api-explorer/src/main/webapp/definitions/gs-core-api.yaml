@@ -2092,7 +2092,122 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  '/events':
+    get:
+      tags:
+        - events
+      summary: List the events.
+      description: |
+        Use this to get all the events in the record management site. This return all the custom events as well as default events in record management site with mandatory fields and properties
+
+      operationId: getAllEvents
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+        '401':
+          description: Authentication failed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+    post:
+      tags:
+        - events
+      summary: Create a new records management event.
+      description: |
+        Create a new records management event.
+
+      operationId: createRecordManagementEvent
+      parameters:
+        - in: body
+          name: eventBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/EventBodyCreate'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/EventEntry'
+        '401':
+          description: Authentication failed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/events/{eventId}':
+    get:
+      tags:
+        - events
+      summary: Return event for given eventId
+      description: |
+        Get an record management event information using event ID.
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/eventIdParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/EventInfo'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **eventId**
+        '404':
+          description: "**eventId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - events
+      summary: Return event for given eventId
+      description: |
+        Get an record management event information using event ID.
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/eventIdParam'
+        - in: body
+          name: eventBodyUpdate
+          description: The event information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/EventBodyUpdate'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/EventInfo'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **eventId**
+        '404':
+          description: "**eventId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 parameters:
+  ## event
+  eventIdParam:
+    name: eventId
+    in: path
+    description: The identifier of an event.
+    required: true
+    type: string
   ## File plans
   filePlanEntryIncludeParam:
     name: include
@@ -3761,3 +3876,64 @@ definitions:
           - SiteCollaborator
           - SiteContributor
           - SiteManager
+  EventInfo:
+    type: object
+    required:
+      - ID
+      - name
+      - type
+    properties:
+      ID:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+  EventBodyCreate:
+    type: object
+    required:
+      - title
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: Simple
+        enum:
+          - Simple
+          - Obsoleted
+          - Superseded
+          - Cross-Referenced Record Transferred
+          - Versioned
+
+  EventEntry:
+    type: object
+    required:
+      - name
+      - type
+
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      type:
+        type: string
+  EventBodyUpdate:
+    type: object
+    required:
+      - id
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+        default: Simple
+        enum:
+          - Simple
+          - Obsoleted
+          - Superseded
+          - Cross-Referenced Record Transferred
+          - Versioned

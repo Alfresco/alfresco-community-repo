@@ -38,6 +38,8 @@ tags:
     description: Retrieve and manage unfiled records containers
   - name: unfiled-record-folders
     description: Retrieve and manage unfiled record folders
+  - name: events
+    description: Retrieve and manage events
     
 paths:
   ## GS sites

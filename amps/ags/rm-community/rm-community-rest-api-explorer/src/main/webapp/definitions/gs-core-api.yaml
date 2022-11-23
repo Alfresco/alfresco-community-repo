@@ -2118,10 +2118,9 @@ paths:
     post:
       tags:
         - events
-      summary: Create a new records management event.
+      summary: Create a new records management event
       description: |
         Create a new records management event.
-
       operationId: createRecordManagementEvent
       parameters:
         - in: body
@@ -2154,7 +2153,7 @@ paths:
         - events
       summary: Return event for given eventId
       description: |
-        Get an record management event information using eventId.
+        Get an record management event information using eventId
       produces:
         - application/json
       parameters:
@@ -2208,7 +2207,7 @@ paths:
     get:
       tags:
         - events
-      summary: Get all the event types.
+      summary: List all the record management events types
       description: |
         Get all the event types in the record management site. This return all the custom event types as well as default event types.
       produces:

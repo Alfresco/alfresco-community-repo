@@ -174,10 +174,8 @@ public class RulesImplTest extends TestCase
     public void testGetRules_ruleNotAppliedToChildren()
     {
         given(ruleSetMock.getInclusionType()).willReturn(InclusionType.INHERITED);
-        ruleModelInherited.applyToChildren(false);
-
-        //given(ruleSetMock.getInclusionType()).willReturn(InclusionType.OWNED);
         given(ruleServiceMock.getRules(FOLDER_NODE_REF, false)).willReturn(List.of(ruleModel, ruleModelInherited));
+        ruleModelInherited.applyToChildren(false);
 
         // when
         final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);

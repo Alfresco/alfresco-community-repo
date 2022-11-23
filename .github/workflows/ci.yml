@@ -377,8 +377,6 @@ jobs:
       - name: "Run tests"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn -B verify -f packaging/tests/${{ matrix.test-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
-ci:
-  yml:
 #  Repository-PostgreSQL-tests:
 #    name: Repository - PostgreSQL ${{ matrix.version }} tests
 #    runs-on: ubuntu-latest

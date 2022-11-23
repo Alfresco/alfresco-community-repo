@@ -100,7 +100,7 @@ public class GetInheritedRulesTests extends RestTest
      * Check we only get the owned rules and no inherited rules in the child folder when parent rule isn't inheritable.
      */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
-    public void getInheritedRules_parent_rule_not_inheritable()
+    public void getInheritedRules_parentRuleNotInheritable()
     {
         STEP("Create a parent and child folder, each with inheriting rules");
         FolderModel parent = dataContent.usingUser(user).usingSite(site).createFolder();

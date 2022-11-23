@@ -299,7 +299,7 @@ jobs:
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.parameters }}
 
   TAS-Tests:
-    name: {{ matrix.test-name }}
+    name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs:
       - prepare

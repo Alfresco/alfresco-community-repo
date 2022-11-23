@@ -137,7 +137,7 @@ public class GetInheritedRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void inheritance_test()
     {
-        STEP("Create a parent and child folder, each with inheriting rules");
+        STEP("Create a parent and child folder, with an inheritable and a non-inheritable parent rule");
         FolderModel parent = dataContent.usingUser(user).usingSite(site).createFolder();
         FolderModel child = dataContent.usingUser(user).usingResource(parent).createFolder();
 

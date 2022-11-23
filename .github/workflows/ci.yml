@@ -41,6 +41,9 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
       - name: "Prepare environment"
         run: bash ./scripts/ci/prepare.sh
+      - name: "Set transformers tag"
+        run: |
+          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
 
   veracode:
     name: "Source Clear Scan (SCA)"
@@ -115,17 +118,22 @@ jobs:
             profile: with-transform-core-aio
           - testSuite: AppContext02TestSuite
             profile: default
+          - testSuite: AppContext03TestSuite
+            profile: with-transform-core-aio
+          - testSuite: AppContext04TestSuite
+            profile: with-transform-core-aio
+          - testSuite: AppContext05TestSuite
+            profile: default
+            parameters: '\"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth\"'
+          - testSuite: AppContext06TestSuite
+            profile: with-transform-core-aio
+          - testSuite: AppContextExtraTestSuite
+            profile: with-transform-core-aio
+          - testSuite: MiscContextTestSuite
+            profile: with-transform-core-aio
+          - testSuite: SearchTestSuite
+            profile: default
             parameters: '-Dindex.subsystem.name=solr6'
-#          - testSuite: AppContext03TestSuite
-#            profile: with-transform-core-aio
-#          - testSuite: AppContext04TestSuite
-#            profile: with-transform-core-aio
-#          - testSuite: AppContext06TestSuite
-#            profile: with-transform-core-aio
-#          - testSuite: AppContextExtraTestSuite
-#            profile: with-transform-core-aio
-#          - testSuite: MiscContextTestSuite
-#            profile: with-transform-core-aio
     steps:
       - uses: actions/checkout@v3
       - name: Cache local Maven repository
@@ -146,166 +154,59 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-      - name: "Set up the environment with the transformers"
-        if: ${{ matrix.profile }} == 'with-transform-core-aio'
+      - name: "Set up IDS"
         run: |
+          if ${{ matrix.profile }} == 'AppContext05TestSuite'
+          then
+            mkdir -p "${HOME}/tmp"
+            cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
+            export HOST_IP=$(hostname  -I | cut -f1 -d' ')
+            docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json alfresco/alfresco-identity-service:1.2
+          fi
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.profile }} up -d
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.parameters }}
-#
-#
-#  Repository-AppContext01TestSuite:
-#    name: "Repository - AppContext01TestSuite"
-#    runs-on: ubuntu-latest
-#    needs:
-#      - prepare
-#    if: >
-#      ! contains(github.event.head_commit.message, '[skip repo]') &&
-#      ! contains(github.event.head_commit.message, '[skip tests]') &&
-#      ! contains(github.event.head_commit.message, '[force]')
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Cache local Maven repository
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/.m2/repository
-#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven-
-#      - name: "Login to Quay.io"
-#        uses: docker/login-action@v1
-#        with:
-#          registry: quay.io
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_PASSWORD }}
-#      - name: "Set up Java"
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: ${{ env.JAVA_VERSION }}
-#          distribution: "temurin"
-#      - name: "Set Transformers tag"
-#        run: |
-#          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
-#      - name: "Set up the environment"
-#        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile with-transform-core-aio up -d
-#      - name: "Run tests"
-#        run: mvn -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-#
-#  Repository-AppContext05TestSuite:
-#    name: "Repository - AppContext05TestSuite"
-#    runs-on: ubuntu-latest
-#    needs:
-#      - prepare
-#    if: >
-#      ! contains(github.event.head_commit.message, '[skip repo]') &&
-#      ! contains(github.event.head_commit.message, '[skip tests]') &&
-#      ! contains(github.event.head_commit.message, '[force]')
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Cache local Maven repository
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/.m2/repository
-#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven-
-#      - name: "Login to Quay.io"
-#        uses: docker/login-action@v1
-#        with:
-#          registry: quay.io
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_PASSWORD }}
-#      - name: "Set up Java"
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: ${{ env.JAVA_VERSION }}
-#          distribution: "temurin"
-#      - name: "Set up the environment"
-#        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml up -d
-#      - name: "Set HOST_IP"
-#        run: |
-#          mkdir -p "${HOME}/tmp"
-#          cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
-#          echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
-#      - name: "Run IDS"
-#        run: docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json alfresco/alfresco-identity-service:1.2
-#      - name: "Run tests"
-#        run: mvn -B test -pl repository -am -Dtest=AppContext05TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${{ env.HOST_IP }}:8999/auth"
-#
-#  Repository-SearchTestSuite:
-#    name: "Repository - SearchTestSuite"
-#    runs-on: ubuntu-latest
-#    needs:
-#      - prepare
-#    if: >
-#      ! contains(github.event.head_commit.message, '[skip repo]') &&
-#      ! contains(github.event.head_commit.message, '[skip tests]') &&
-#      ! contains(github.event.head_commit.message, '[force]')
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Cache local Maven repository
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/.m2/repository
-#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven-
-#      - name: "Login to Quay.io"
-#        uses: docker/login-action@v1
-#        with:
-#          registry: quay.io
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_PASSWORD }}
-#      - name: "Set up Java"
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: ${{ env.JAVA_VERSION }}
-#          distribution: "temurin"
-#      - name: "Set up the environment"
-#        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml up -d
-#      - name: "Run tests"
-#        run: mvn -B test -pl repository -am -Dtest=SearchTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
-#
-#  Repository-MariaDB10-2-18-tests:
-#    name: "Repository - MariaDB 10.2.18 tests"
-#    runs-on: ubuntu-latest
-#    needs:
-#      - prepare
-#    if: >
-#      ((github.ref_name == 'master' || contains(github.ref_name, '[release]')) &&
-#      ! contains(github.event.head_commit.message, '[skip db]')) ||
-#      contains(github.event.head_commit.message, '[db]') &&
-#      ! contains(github.event.head_commit.message, '[skip tests]') &&
-#      ! contains(github.event.head_commit.message, '[force]')
-#    steps:
-#      - uses: actions/checkout@v3
-#      - name: Cache local Maven repository
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/.m2/repository
-#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-#          restore-keys: |
-#            ${{ runner.os }}-maven-
-#      - name: "Login to Quay.io"
-#        uses: docker/login-action@v1
-#        with:
-#          registry: quay.io
-#          username: ${{ secrets.QUAY_USERNAME }}
-#          password: ${{ secrets.QUAY_PASSWORD }}
-#      - name: "Set up Java"
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: ${{ env.JAVA_VERSION }}
-#          distribution: "temurin"
-#      - name: "Set up the environment"
-#        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
-#        env:
-#          MARIADB_VERSION: 10.2.18
-#      - name: "Run tests"
-#        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
-#
+
+  Repository-MariaDB-tests:
+    name: Repository - MariaDB - ${{ matrix.testSuite }} - tests
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+    if: >
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
+    strategy:
+      matrix:
+        version: ['10.2.18', '10.4', '10.5', '10.6']
+    steps:
+      - uses: actions/checkout@v3
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: "Login to Quay.io"
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+      - name: "Set up Java"
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+      - name: "Set up the environment"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
+        env:
+          MARIADB_VERSION: ${{ matrix.version }}
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 #  Remote-api-AppContext01TestSuite:
 #    name: "Remote-api - AppContext01TestSuite"
 #    runs-on: ubuntu-latest

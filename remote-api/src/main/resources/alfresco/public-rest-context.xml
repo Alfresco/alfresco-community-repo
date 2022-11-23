@@ -929,6 +929,7 @@
         <property name="validator" ref="nodeValidator"/>
         <property name="ruleService" ref="RuleService" />
         <property name="ruleLoader" ref="ruleLoader"/>
+        <property name="ruleSetLoader" ref="ruleSetLoader"/>
         <property name="actionPermissionValidator" ref="actionPermissionValidator"/>
         <property name="ruleMapper" ref="ruleMapper"/>
     </bean>

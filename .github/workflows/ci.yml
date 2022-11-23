@@ -65,39 +65,39 @@ jobs:
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
 
-  AllUnitTestsSuite:
-    name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
-    runs-on: ubuntu-latest
-    needs:
-      - prepare
-    if: >
-      ! contains(github.event.head_commit.message, '[skip repo]') &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: "Login to Quay.io"
-        uses: docker/login-action@v1
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
-      - name: "Set up Java"
-        uses: actions/setup-java@v3
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: "temurin"
-      - name: "Run tests"
-        run: |
-          mvn -B test -pl core,data-model -am -DfailIfNoTests=false
-          mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
+#  AllUnitTestsSuite:
+#    name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
+#    runs-on: ubuntu-latest
+#    needs:
+#      - prepare
+#    if: >
+#      ! contains(github.event.head_commit.message, '[skip repo]') &&
+#      ! contains(github.event.head_commit.message, '[skip tests]') &&
+#      ! contains(github.event.head_commit.message, '[force]')
+#    steps:
+#      - uses: actions/checkout@v3
+#      - name: Cache local Maven repository
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.m2/repository
+#          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-maven-
+#      - name: "Login to Quay.io"
+#        uses: docker/login-action@v1
+#        with:
+#          registry: quay.io
+#          username: ${{ secrets.QUAY_USERNAME }}
+#          password: ${{ secrets.QUAY_PASSWORD }}
+#      - name: "Set up Java"
+#        uses: actions/setup-java@v3
+#        with:
+#          java-version: ${{ env.JAVA_VERSION }}
+#          distribution: "temurin"
+#      - name: "Run tests"
+#        run: |
+#          mvn -B test -pl core,data-model -am -DfailIfNoTests=false
+#          mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
 
   Repository-AppContextTestSuites:
     name: Repository - ${{ matrix.testSuite }}
@@ -115,16 +115,17 @@ jobs:
             profile: with-transform-core-aio
           - testSuite: AppContext02TestSuite
             profile: default
-          - testSuite: AppContext03TestSuite
-            profile: with-transform-core-aio
-          - testSuite: AppContext04TestSuite
-            profile: with-transform-core-aio
-          - testSuite: AppContext06TestSuite
-            profile: with-transform-core-aio
-          - testSuite: AppContextExtraTestSuite
-            profile: with-transform-core-aio
-          - testSuite: MiscContextTestSuite
-            profile: with-transform-core-aio
+            parameters: '-Dindex.subsystem.name=solr6'
+#          - testSuite: AppContext03TestSuite
+#            profile: with-transform-core-aio
+#          - testSuite: AppContext04TestSuite
+#            profile: with-transform-core-aio
+#          - testSuite: AppContext06TestSuite
+#            profile: with-transform-core-aio
+#          - testSuite: AppContextExtraTestSuite
+#            profile: with-transform-core-aio
+#          - testSuite: MiscContextTestSuite
+#            profile: with-transform-core-aio
     steps:
       - uses: actions/checkout@v3
       - name: Cache local Maven repository
@@ -152,7 +153,7 @@ jobs:
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.parameters }}
 #
 #
 #  Repository-AppContext01TestSuite:

@@ -112,6 +112,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     strategy:
+      fail-fast: false
       matrix:
         include:
           - testSuite: AppContext01TestSuite
@@ -156,14 +157,13 @@ jobs:
           distribution: "temurin"
       - name: "Set up IDS"
         run: |
-          if ${{ matrix.testSuite }} == 'AppContext05TestSuite'
+          if [ ${{ matrix.testSuite }} == 'AppContext05TestSuite' ];
           then
             mkdir -p "${HOME}/tmp"
             cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
             export HOST_IP=$(hostname  -I | cut -f1 -d' ')
             docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json alfresco/alfresco-identity-service:1.2
           fi
-          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.profile }} up -d
       - name: "Run tests"
@@ -179,6 +179,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     strategy:
+      fail-fast: false
       matrix:
         version: ['10.2.18', '10.4', '10.5', '10.6']
     steps:

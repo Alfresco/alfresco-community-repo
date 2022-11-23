@@ -202,7 +202,7 @@ public class RulesImplTest extends TestCase
     }
 
     @Test
-    public void testGetRules_inherited_rule_set()
+    public void testGetRules_inheritedRuleSet()
     {
         given(ruleSetMock.getInclusionType()).willReturn(InclusionType.INHERITED);
         ruleModelInherited.applyToChildren(false);

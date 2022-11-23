@@ -146,7 +146,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
       - name: "Set up the environment with the transformers"
-        if: {{ matrix.profile }} == 'with-transform-core-aio'
+        if: ${{ matrix.profile }} == 'with-transform-core-aio'
         run: |
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"

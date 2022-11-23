@@ -2203,6 +2203,27 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  
+  '/event-types':
+    get:
+      tags:
+        - events
+      summary: Get all the event types.
+      description: |
+        Get all the event types in the record management site. This return all the custom event types as well as default event types.
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/EventTypeInfo'
+        '401':
+          description: Authentication failed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'          
 parameters:
   ## event
   eventIdParam:
@@ -3908,13 +3929,11 @@ definitions:
           - Superseded
           - Cross-Referenced Record Transferred
           - Versioned
-
   EventEntry:
     type: object
     required:
       - name
       - type
-
     properties:
       name:
         type: string
@@ -3936,3 +3955,23 @@ definitions:
           - Superseded
           - Cross-Referenced Record Transferred
           - Versioned
+  EventTypeInfo:
+    type: object
+    required:
+      - id
+      - name
+      - isAutomatic
+      - associationName
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      isAutomatic:
+        type: boolean
+        default: true
+      associationName:
+        type: string
+      actionOnAssociatedNode:
+        type: string
+    

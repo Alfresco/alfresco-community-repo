@@ -10,6 +10,7 @@ services:
       - "8090:8090"
   postgres:
     image: postgres:14.4
+    profiles: ["default", "with-transform-core-aio"]
     environment:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
@@ -18,6 +19,7 @@ services:
     ports:
       - "5433:5432"
   activemq:
+    profiles: ["default", "with-transform-core-aio"]
     image: alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
     ports:
       - "5672:5672" # AMQP

@@ -5,7 +5,7 @@ function cloneRepo() {
   local REPO="${1}"
   local TAG_OR_BRANCH="${2}"
 
-  printf "Clonning \"%s\" on %s\n" "${TAG_OR_BRANCH}" "${REPO}"
+  printf "Cloning \"%s\" on %s\n" "${TAG_OR_BRANCH}" "${REPO}"
 
   # clone the repository branch/tag
   pushd "$(dirname "${BASH_SOURCE[0]}")/../../../" >/dev/null

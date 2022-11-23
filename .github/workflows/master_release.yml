@@ -24,8 +24,13 @@ jobs:
       ! contains(github.event.head_commit.message, '[no release]')
     steps:
       - uses: actions/checkout@v3
-      - run: mkdir -p $HOME/.m2
-      - run: cp .travis.settings.xml $HOME/.m2
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
       - name: "Login to Quay.io"
         uses: docker/login-action@v1
         with:
@@ -37,7 +42,6 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-          cache: "maven"
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.12.0
         with:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}
@@ -45,7 +49,7 @@ jobs:
       - name: "Verify release tag"
         run: bash ./scripts/travis/verify_release_tag.sh
       - name: "Release"
-        run: bash ./scripts/gh-actions/maven_release.sh
+        run: bash ./scripts/ci/maven_release.sh
         env:
           BUILD_NUMBER: ${{ github.run_number }}
           GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
@@ -62,9 +66,14 @@ jobs:
       ! contains(github.event.head_commit.message, '[no downstream]')
     steps:
       - uses: actions/checkout@v3
-      - run: mkdir -p $HOME/.m2
-      - run: cp .travis.settings.xml $HOME/.m2
-      - run: bash ./scripts/gh-actions/update_downstream.sh
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - run: bash ./scripts/ci/update_downstream.sh
         env:
           BRANCH: ${{ github.ref_name }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}

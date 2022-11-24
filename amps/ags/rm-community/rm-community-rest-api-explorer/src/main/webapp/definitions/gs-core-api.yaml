@@ -2105,6 +2105,9 @@ paths:
       operationId: getAllEvents
       produces:
         - application/json
+      parameters:
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
       responses:
         '200':
           description: Successful response
@@ -2140,10 +2143,13 @@ paths:
           description: Successful response
           schema:
             $ref: '#/definitions/EventEntry'
-        '400':
-          description: Cannot create event. An event with the name **name** already exists  
         '401':
           description: Authentication failed
+        '403':
+          description: Current user does not have permission to create event
+        '409':
+          description: Cannot create event. An event with the name **name** already exists
+
         default:
           description: Unexpected error
           schema:
@@ -2198,10 +2204,12 @@ paths:
             $ref: '#/definitions/EventInfo'
         '401':
           description: Authentication failed
-        '400':
-          description: Cannot update event. An event with the name **name** already exists
+        '403':
+          description: Current user does not have permission to update this event
         '404':
           description: "**eventId** does not exist"
+        '409':
+          description: Cannot update event. An event with the name **name** already exists
         default:
           description: Unexpected error
           schema:
@@ -2217,6 +2225,9 @@ paths:
       operationId: getAllEventType
       produces:
         - application/json
+      parameters:
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
       responses:
         '200':
           description: Successful response
@@ -3910,6 +3921,8 @@ definitions:
       list:
         type: object
         properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
           entries:
             type: array
             items:
@@ -3923,10 +3936,13 @@ definitions:
     properties:
       id:
         type: string
+        description: this is the id of the event
       name:
         type: string
+        description: This is the display label of the event
       type:
         type: string
+        description: this is event type
   EventBodyCreate:
     type: object
     required:
@@ -3934,15 +3950,11 @@ definitions:
     properties:
       name:
         type: string
+        description: This is the display label of the event
       type:
         type: string
+        description: this is event type
         default: Simple
-        enum:
-          - Simple
-          - Obsoleted
-          - Superseded
-          - Cross-Referenced Record Transferred
-          - Versioned
   EventEntry:
     type: object
     required:
@@ -3951,8 +3963,10 @@ definitions:
     properties:
       name:
         type: string
+        description: This is the display label of the event
       type:
         type: string
+        description: this is event type
   EventBodyUpdate:
     type: object
     required:
@@ -3960,21 +3974,19 @@ definitions:
     properties:
       name:
         type: string
+        description: This is the display label of the event
       type:
         type: string
+        description: this is event type
         default: Simple
-        enum:
-          - Simple
-          - Obsoleted
-          - Superseded
-          - Cross-Referenced Record Transferred
-          - Versioned
   EventTypeInfo:
     type: object
     properties:
       list:
         type: object
         properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
           entries:
             type: array
             items:
@@ -3985,17 +3997,20 @@ definitions:
       - id
       - name
       - isAutomatic
-      - associationName
     properties:
       id:
         type: string
+        description: this is the event type id
       name:
         type: string
+        description: this is event type name
       isAutomatic:
         type: boolean
+        description: this field describes whether the event type is manual or automatic
         default: true
       associationName:
         type: string
+        description: this is the association name
       actionOnAssociatedNode:
         type: string
-    
+        description: this is the action applied on the associated node

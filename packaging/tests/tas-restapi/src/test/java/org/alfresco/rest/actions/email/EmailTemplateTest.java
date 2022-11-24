@@ -72,8 +72,8 @@ public class EmailTemplateTest extends RestTest {
         final FileModel templateToCreate = new FileModel(templateName, FileType.TEXT_PLAIN, templateContent);
 
         final FileModel createdTemplate = dataContent.usingAdmin()
-                                                         .usingResource(testFolder)
-                                                         .createContent(templateToCreate);
+                                                     .usingResource(testFolder)
+                                                     .createContent(templateToCreate);
 
         return createdTemplate.getNodeRef();
     }

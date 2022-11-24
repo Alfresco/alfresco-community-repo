@@ -182,7 +182,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Create folders");
         final FolderModel parentFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         final FolderModel childFolder = dataContent.usingUser(user).usingResource(parentFolder).createFolder();
-        final FolderModel linkingFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final FolderModel linkedToFolder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Create rules in the parent folder and the linking folder");
         RestRuleModel parentRule = rulesUtils.createInheritableRuleModel();

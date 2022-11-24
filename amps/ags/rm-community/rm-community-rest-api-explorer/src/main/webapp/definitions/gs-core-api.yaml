@@ -2108,6 +2108,8 @@ paths:
       responses:
         '200':
           description: Successful response
+          schema:
+            $ref: '#/definitions/RMEventsInfo'
         '401':
           description: Authentication failed
         default:
@@ -3928,6 +3930,29 @@ definitions:
           - Superseded
           - Cross-Referenced Record Transferred
           - Versioned
+  RMEventsInfo:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/EventResponse'
+  EventResponse:
+    type: object
+    required:
+      - id
+      - name
+      - type
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
   EventEntry:
     type: object
     required:
@@ -3955,6 +3980,16 @@ definitions:
           - Cross-Referenced Record Transferred
           - Versioned
   EventTypeInfo:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/EventTypeEntry'
+  EventTypeEntry:
     type: object
     required:
       - id

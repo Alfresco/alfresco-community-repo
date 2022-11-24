@@ -122,6 +122,8 @@ jobs:
             profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite
             profile: default
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
       - name: Cache local Maven repository
@@ -142,6 +144,11 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
+      - name: "Build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: |
+          bash ./scripts/ci/init.sh
+          bash ./scripts/ci/build.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
@@ -435,7 +442,7 @@ jobs:
           distribution: "temurin"
       - name: "Set up IDS"
         run: |
-          if [ ${{ matrix.testSuite }} == 'AppContext05TestSuite' ];
+          if [ "${{ matrix.testSuite }}" == 'AppContext05TestSuite' ];
           then
             mkdir -p "${HOME}/tmp"
             cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
@@ -465,7 +472,7 @@ jobs:
       matrix:
         include:
           - test-name: "REST API TAS tests part1"
-            test-dir: rtas-restapi
+            test-dir: tas-restapi
             test-profile: run-restapi-part1
           - test-name: "REST API TAS tests part2"
             test-dir: tas-restapi
@@ -521,7 +528,7 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Set up the environment for integration tests"
         run: |
-          if [ ${{ matrix.test-name }} == 'Integration TAS tests' ];
+          if [ "${{ matrix.test-name }}" == 'Integration TAS tests' ];
           then
             mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
           fi
@@ -666,6 +673,8 @@ jobs:
       contains(github.event.head_commit.message, '[ags]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
       - name: Cache local Maven repository
@@ -693,9 +702,9 @@ jobs:
           distribution: "temurin"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: bash ./scripts/ci/build.sh
-        env:
-          REQUIRES_LOCAL_IMAGES: true
+        run: |
+          bash ./scripts/ci/init.sh
+          bash ./scripts/ci/build.sh
       - name: "Set up the environment"
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml

@@ -2098,7 +2098,7 @@ paths:
     get:
       tags:
         - events
-      summary: List all the record management events.
+      summary: List all the record management events
       description: |
         Use this to get all the events in the record management site. This return all the custom events as well as default events in record management site with mandatory fields and properties
 
@@ -2109,7 +2109,7 @@ paths:
         '200':
           description: Successful response
           schema:
-            $ref: '#/definitions/RMEventsInfo'
+            $ref: '#/definitions/EventsInfo'
         '401':
           description: Authentication failed
         default:
@@ -2123,7 +2123,7 @@ paths:
       summary: Create a new records management event
       description: |
         Create a new records management event.
-      operationId: createRecordManagementEvent
+      operationId: createEvent
       parameters:
         - in: body
           name: eventBodyCreate
@@ -2156,6 +2156,7 @@ paths:
       summary: Return event for given eventId
       description: |
         Get an record management event information using eventId
+      operationId: getEvent
       produces:
         - application/json
       parameters:
@@ -2177,6 +2178,7 @@ paths:
       tags:
         - events
       summary: Update event for given eventId
+      operationId: updateEvent
       description: |
         Update record management event information using eventId. The event type value can be one of the following- [ Simple, Obsoleted, Superseded, Cross-Referenced Record Transferred, Versioned ]
       produces:
@@ -2212,6 +2214,7 @@ paths:
       summary: List all the record management events types
       description: |
         Get all the event types in the record management site. This return all the custom event types as well as default event types.
+      operationId: getAllEventType
       produces:
         - application/json
       responses:
@@ -3901,6 +3904,16 @@ definitions:
           - SiteCollaborator
           - SiteContributor
           - SiteManager
+  EventsInfo:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/EventInfo'
   EventInfo:
     type: object
     required:
@@ -3930,29 +3943,6 @@ definitions:
           - Superseded
           - Cross-Referenced Record Transferred
           - Versioned
-  RMEventsInfo:
-    type: object
-    properties:
-      list:
-        type: object
-        properties:
-          entries:
-            type: array
-            items:
-              $ref: '#/definitions/EventResponse'
-  EventResponse:
-    type: object
-    required:
-      - id
-      - name
-      - type
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-      type:
-        type: string
   EventEntry:
     type: object
     required:

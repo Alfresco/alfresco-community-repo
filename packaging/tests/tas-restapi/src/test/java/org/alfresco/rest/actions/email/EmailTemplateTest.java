@@ -1,8 +1,11 @@
 package org.alfresco.rest.actions.email;
 
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static java.util.Objects.requireNonNull;
 
+import static org.hamcrest.Matchers.notNullValue;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,13 +13,11 @@ import javax.json.JsonObject;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
-import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.Utility;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -28,9 +29,6 @@ public class EmailTemplateTest extends RestTest {
     private UserModel adminUser;
     private UserModel testUser;
     private FolderModel testFolder;
-
-    @Autowired
-    protected RestWrapper restClient;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception {
@@ -68,16 +66,26 @@ public class EmailTemplateTest extends RestTest {
                   .assertThat().body("entry.id", notNullValue());
     }
 
-    private String uploadEmailTemplate(String templateName)
+    private String uploadEmailTemplate(String templateName) throws IOException
     {
-        restClient.authenticateUser(adminUser)
-                  .configureRequestSpec()
-                  .addMultiPart("filedata", Utility.getResourceTestDataFile(templateName));
+        final String templateContent = getTemplateContent(templateName);
+        final FileModel templateToCreate = new FileModel(templateName, FileType.TEXT_PLAIN, templateContent);
 
-        RestNodeModel template = restClient.authenticateUser(adminUser).withCoreAPI().usingResource(testFolder).createNode();
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        final FileModel createdTemplate = dataContent.usingAdmin()
+                                                     .usingResource(testFolder)
+                                                     .createContent(templateToCreate);
 
-        return template.getId();
+        return createdTemplate.getNodeRef();
+    }
+
+    private String getTemplateContent(String templateName) throws IOException
+    {
+        final String templateClasspathLocation = "/shared-resources/testdata/" + templateName;
+        try (InputStream templateStream = getClass().getResourceAsStream(templateClasspathLocation))
+        {
+            requireNonNull(templateStream, "Couldn't locate `" + templateClasspathLocation + "`");
+            return new String(templateStream.readAllBytes());
+        }
     }
 
     private static Map<String, Serializable> createMailWithTemplateParameters(UserModel sender, UserModel recipient, String templateId, Serializable model)

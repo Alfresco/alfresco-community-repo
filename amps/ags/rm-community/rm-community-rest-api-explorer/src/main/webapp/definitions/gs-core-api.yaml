@@ -2211,7 +2211,7 @@ paths:
     get:
       tags:
         - events
-      summary: List all the record management events types
+      summary: List all the record management event types
       description: |
         Get all the event types in the record management site. This return all the custom event types as well as default event types.
       operationId: getAllEventType

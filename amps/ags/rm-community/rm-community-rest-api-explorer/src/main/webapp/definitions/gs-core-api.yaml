@@ -39,7 +39,7 @@ tags:
   - name: unfiled-record-folders
     description: Retrieve and manage unfiled record folders
   - name: events
-    description: Retrieve and manage record management events
+    description: Retrieve and manage retention events
     
 paths:
   ## GS sites
@@ -2098,10 +2098,9 @@ paths:
     get:
       tags:
         - events
-      summary: List all the record management events
+      summary: List all available retention events
       description: |
-        Use this to get all the events in the record management site. This return all the custom events as well as default events in record management site with mandatory fields and properties
-
+        Use this to get the list of events that can be used by retention steps.
       operationId: getAllEvents
       produces:
         - application/json
@@ -2122,12 +2121,12 @@ paths:
         - events
       summary: Create a new records management event
       description: |
-        Create a new records management event.
+        Create a new event that can be used by retention schedules.
       operationId: createEvent
       parameters:
         - in: body
           name: eventBodyCreate
-          description: The event information to create. The event type value can be one of the following- [ Simple, Obsoleted, Superseded, Cross-Referenced Record Transferred, Versioned ]
+          description: The new event.
           required: true
           schema:
             $ref: '#/definitions/EventBodyCreate'
@@ -2155,7 +2154,7 @@ paths:
         - events
       summary: Return event for given eventId
       description: |
-        Get an record management event information using eventId
+        Get information about the retention event with id **eventId**.
       operationId: getEvent
       produces:
         - application/json
@@ -2180,7 +2179,7 @@ paths:
       summary: Update event for given eventId
       operationId: updateEvent
       description: |
-        Update record management event information using eventId. The event type value can be one of the following- [ Simple, Obsoleted, Superseded, Cross-Referenced Record Transferred, Versioned ]
+        Update retention event with id **eventId**.
       produces:
         - application/json
       parameters:
@@ -2196,10 +2195,10 @@ paths:
           description: Successful response
           schema:
             $ref: '#/definitions/EventInfo'
+        '400':
+          description: Cannot update event. An event with the name **name** already exists   
         '401':
           description: Authentication failed
-        '400':
-          description: Cannot update event. An event with the name **name** already exists
         '404':
           description: "**eventId** does not exist"
         default:
@@ -2211,10 +2210,10 @@ paths:
     get:
       tags:
         - events
-      summary: List all the record management event types
+      summary: List all the retention event types
       description: |
-        Get all the event types in the record management site. This return all the custom event types as well as default event types.
-      operationId: getAllEventType
+        Get a list of all the retention event types.
+      operationId: getAllEventTypes
       produces:
         - application/json
       responses:

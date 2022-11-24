@@ -2104,6 +2104,9 @@ paths:
       operationId: getAllEvents
       produces:
         - application/json
+      parameters:
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
       responses:
         '200':
           description: Successful response

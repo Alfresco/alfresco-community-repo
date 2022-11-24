@@ -2119,7 +2119,7 @@ paths:
     post:
       tags:
         - events
-      summary: Create a new records management event
+      summary: Create a new retention event
       description: |
         Create a new event that can be used by retention schedules.
       operationId: createEvent

@@ -166,6 +166,15 @@ public interface RuleService
     public boolean hasRules(NodeRef nodeRef);
 
     /**
+     * Indicates whether the node in question has any non-inherited rules associated with it.
+     *
+     * @param nodeRef   the node reference
+     * @return          true if the node has rules associated, false otherwise
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public boolean hasNonInheritedRules(NodeRef nodeRef);
+
+    /**
      * Get all the rules associated with an actionable node, including those
      * inherited from parents.
      * <p>

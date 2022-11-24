@@ -459,7 +459,13 @@ public class RuleServiceImpl
     public boolean hasRules(NodeRef nodeRef)
     {
         return getRules(nodeRef).size() != 0;
-    } 
+    }
+
+    @Override
+    public boolean hasNonInheritedRules(NodeRef nodeRef)
+    {
+        return getRules(nodeRef, false).size() != 0;
+    }
 
     @Override
     public List<Rule> getRules(NodeRef nodeRef)

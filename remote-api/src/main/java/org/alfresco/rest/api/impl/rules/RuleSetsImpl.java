@@ -170,7 +170,7 @@ public class RuleSetsImpl implements RuleSets
         }
 
         //The folder shouldn't have any pre-existing rules
-        if (ruleService.hasRules(folderNodeRef)) {
+        if (ruleService.hasNonInheritedRules(folderNodeRef)) {
             throw new InvalidArgumentException("Unable to link to a rule set because the folder has pre-existing rules or is already linked to a rule set.");
         }
 

@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
-      - uses: Alfresco/acs-community-packaging@b394b3a9897afa74abe4d20e47e51277d17d0cfe/.github/actions/get-build-info
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
 #
 #  prepare:
 #    name: "Prepare"

@@ -235,7 +235,7 @@ jobs:
     needs:
       - prepare
     if: >
-      (github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||

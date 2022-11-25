@@ -2144,7 +2144,7 @@ paths:
             $ref: '#/definitions/EventEntry'
         '400':
           description: |
-            Invalid parameter: **name**, or **type** or **eventBodyCreate** is invalid
+            Invalid parameter: **name** or **type** is invalid
         '401':
           description: Authentication failed
         '403':

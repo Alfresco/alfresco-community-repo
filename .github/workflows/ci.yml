@@ -116,7 +116,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
-
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -264,7 +263,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - name: Cache local Maven repository
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d

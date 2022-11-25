@@ -13,7 +13,6 @@ env:
   DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
-  JAVA_VERSION: "17"
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
   MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
   MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -136,7 +135,8 @@ jobs:
     needs:
       - prepare
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      github.event_name != 'pull_request' &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
@@ -163,7 +163,7 @@ jobs:
     needs:
       - prepare
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]') &&
@@ -187,7 +187,7 @@ jobs:
     needs:
       - prepare
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]') &&
@@ -211,7 +211,8 @@ jobs:
     needs:
       - prepare
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      github.event_name != 'pull_request' &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
@@ -234,7 +235,8 @@ jobs:
     needs:
       - prepare
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      (github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      github.event_name != 'pull_request' &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]') &&
@@ -341,29 +343,29 @@ jobs:
       matrix:
         include:
           - test-name: "REST API TAS tests part1"
-            test-dir: tas-restapi
+            pom: packaging/tests/tas-restapi/pom.xml
             test-profile: run-restapi-part1
           - test-name: "REST API TAS tests part2"
-            test-dir: tas-restapi
+            pom: packaging/tests/tas-restapi/pom.xml
             test-profile: run-restapi-part2
           - test-name: "REST API TAS tests part3"
-            test-dir: tas-restapi
+            pom: packaging/tests/tas-restapi/pom.xml
             test-profile: run-restapi-part3
           - test-name: "CMIS TAS tests - BROWSER binding"
-            test-dir: tas-cmis
+            pom: packaging/tests/tas-cmis/pom.xml
             test-profile: run-cmis-browser
           - test-name: "CMIS TAS tests - ATOM binding"
-            test-dir: tas-cmis
+            pom: packaging/tests/tas-cmis/pom.xml
             test-profile: run-cmis-atom
           - test-name: "CMIS TAS tests - WEBSERVICES binding"
-            test-dir: tas-cmis
+            pom: packaging/tests/tas-cmis/pom.xml
             test-profile: run-cmis-webservices
           - test-name: "Email TAS tests"
-            test-dir: tas-email
+            pom: packaging/tests/tas-email/pom.xml
           - test-name: "WebDAV TAS tests"
-            test-dir: tas-webdav
+            pom: packaging/tests/tas-webdav/pom.xml
           - test-name: "Integration TAS tests"
-            test-dir: tas-integration
+            pom: packaging/tests/tas-integration/pom.xml
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
@@ -386,7 +388,7 @@ jobs:
           fi
       - name: "Run tests"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B verify -f packaging/tests/${{ matrix.test-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: mvn -B verify -f ${{ matrix.pom }} -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

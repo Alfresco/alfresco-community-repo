@@ -24,7 +24,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[no release]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.12.0
         with:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}
@@ -50,7 +50,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[no downstream]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - run: bash ./scripts/ci/update_downstream.sh
         env:
           BRANCH: ${{ github.ref_name }}

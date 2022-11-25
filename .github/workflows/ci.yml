@@ -12,7 +12,6 @@ on:
 env:
   DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  CACHE_CLEANUP_SCRIPT: ./scripts/ci/cleanup_cache.sh
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   JAVA_VERSION: "17"
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
@@ -30,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/get-build-info
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
 
   prepare:
     name: "Prepare"
@@ -41,7 +40,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Prepare environment"
         run: bash ./scripts/ci/prepare.sh
 
@@ -81,7 +80,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Run tests"
         run: |
           mvn -B test -pl core,data-model -am -DfailIfNoTests=false
@@ -116,7 +115,7 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
 
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -149,7 +148,7 @@ jobs:
         version: ['10.2.18', '10.4', '10.5']
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
@@ -173,7 +172,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
@@ -197,7 +196,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
         env:
@@ -220,7 +219,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
@@ -244,7 +243,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
@@ -266,7 +265,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Cache local Maven repository
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
       - name: "Run tests"
@@ -309,7 +308,7 @@ jobs:
             parameters: '-Dindex.subsystem.name=solr6'
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up IDS"
         run: |
           if [ "${{ matrix.testSuite }}" == 'AppContext05TestSuite' ];
@@ -371,7 +370,7 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -404,7 +403,7 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
@@ -431,7 +430,7 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -462,7 +461,7 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -489,7 +488,7 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
+      - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

@@ -10,38 +10,21 @@ on:
       - release/**
 
 jobs:
-  Run-CI:
+  run_ci:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
-  Push-to-Nexus:
+  push_to_nexus:
     name: "Push to Nexus"
     runs-on: ubuntu-latest
     needs:
-      - Run-CI
+      - run_ci
     if: |
       always() &&
-      (needs.Run-CI.result == 'skipped' || needs.Run-CI.result == 'success') &&
+      (needs.run_ci.result == 'skipped' || needs.run_ci.result == 'success') &&
       ! contains(github.event.head_commit.message, '[no release]')
     steps:
       - uses: actions/checkout@v3
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-      - name: "Login to Quay.io"
-        uses: docker/login-action@v1
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USERNAME }}
-          password: ${{ secrets.QUAY_PASSWORD }}
-      - name: "Set up Java"
-        uses: actions/setup-java@v3
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: "temurin"
+      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.12.0
         with:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}
@@ -54,28 +37,25 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
           GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
           GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
-
-  Update-downstream:
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+  update_downstream:
     name: "Update alfresco-enterprise-repo"
     runs-on: ubuntu-latest
     needs:
-      - Run-CI
+      - run_ci
     if: |
       always() &&
-      (needs.Run-CI.result == 'skipped' || needs.Run-CI.result == 'success') &&
+      (needs.run_ci.result == 'skipped' || needs.run_ci.result == 'success') &&
       ! contains(github.event.head_commit.message, '[no downstream]')
     steps:
       - uses: actions/checkout@v3
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+      - uses: Alfresco/acs-community-packaging@feature/ACS-3844_migrate-to-GHA/.github/actions/setup-build-tools
       - run: bash ./scripts/ci/update_downstream.sh
         env:
           BRANCH: ${{ github.ref_name }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
           GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh

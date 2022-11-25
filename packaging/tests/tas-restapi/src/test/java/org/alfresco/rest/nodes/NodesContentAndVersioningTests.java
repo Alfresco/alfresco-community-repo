@@ -48,7 +48,7 @@ public class NodesContentAndVersioningTests extends RestTest
     private FileModel file1, file2;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void dataPreparation()
     {
         user1 = dataUser.createRandomTestUser();
         user2 = dataUser.createRandomTestUser();
@@ -60,21 +60,18 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify file name in Content-Disposition header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    public void checkFileNameWithRegularCharsInHeader() throws Exception
+    public void checkFileNameWithRegularCharsInHeader()
     {
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("attachment=false").getNodeContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file1.getName()));
     }
 
-
-
-
     @Bug(id = "MNT-17545", description = "HTTP Header Injection in ContentStreamer", status = Bug.Status.FIXED)
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.REGRESSION, description = "Verify file name with special chars is escaped in Content-Disposition header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    public void checkFileNameWithSpecialCharsInHeader() throws Exception
+    public void checkFileNameWithSpecialCharsInHeader()
     {
         char c1 = 127;
         char c2 = 31;
@@ -88,14 +85,12 @@ public class NodesContentAndVersioningTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via REST.")
-    public void verifyFileEncodingUsingRestAPI() throws Exception
+    public void verifyFileEncodingUsingRestAPI()
     {
         STEP("1. Create a folder, two text file templates and define the expected encoding.");
         FileModel utf8File = new FileModel("utf8File", FileType.TEXT_PLAIN);
         FileModel iso8859File = new FileModel("iso8859File", FileType.TEXT_PLAIN);
         FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
-        String utf8Type = "text/plain;charset=UTF-8";
-        String iso8859Type = "text/plain;charset=ISO-8859-1";
 
         STEP("2. Using multipart data upload (POST nodes/{nodeId}/children) the UTF-8 encoded file.");
         restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("UTF-8File.txt"));
@@ -110,6 +105,8 @@ public class NodesContentAndVersioningTests extends RestTest
         iso8859File.setNodeRef(fileNode.getId());
 
         STEP("4. Retrieve the nodes and verify that the content type is the expected one (GET nodes/{nodeId}).");
+        String utf8Type = "text/plain;charset=UTF-8";
+        String iso8859Type = "text/plain;charset=ISO-8859-1";
         restClient.withCoreAPI().usingNode(utf8File).getNodeContent().assertThat().contentType(utf8Type);
         restClient.withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
     }
@@ -119,7 +116,7 @@ public class NodesContentAndVersioningTests extends RestTest
     @Test(enabled=false, groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES },
                 executionType = ExecutionType.REGRESSION, description = "Verify that the node content is streamed directly to the client and not buffered in memory.")
-    public void verifyUploadDownloadLargeFileUsingRestAPI() throws Exception
+    public void verifyUploadDownloadLargeFileUsingRestAPI()
     {
         Integer largeFileSizeBytes = Integer.MAX_VALUE;
         String largeFileName = "largeFile.tmp";
@@ -145,12 +142,12 @@ public class NodesContentAndVersioningTests extends RestTest
         largeFile.delete();
     }
 
-    public static File getSystemTempDir() throws Exception
+    public static File getSystemTempDir()
     {
         String systemTempDirPath = System.getProperty("java.io.tmpdir");
         if (systemTempDirPath == null)
         {
-            throw new Exception("System property not available: " + "java.io.tmpdir");
+            throw new RuntimeException("System property not available: " + "java.io.tmpdir");
         }
         File systemTempDir = new File(systemTempDirPath);
         return systemTempDir;
@@ -158,7 +155,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify updating a node content.")
-    public void testUpdateNodeContent() throws Exception
+    public void testUpdateNodeContent()
     {
         STEP("1. Retrieve the node in order to get data to compare after update GET /nodes/{nodeId}?include=path.");
         RestNodeModel initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=path").getNode();
@@ -181,7 +178,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test copy a node.")
-    public void testCopyNode() throws Exception
+    public void testCopyNode()
     {
         STEP("1. Create a lock and lock the node POST /nodes/{nodeId}/lock?include=path,isLocked.");
         RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
@@ -266,7 +263,7 @@ public class NodesContentAndVersioningTests extends RestTest
             RestResponse versionContent = restClient.withCoreAPI().usingNode(file2).getVersionContent("2.0");
             restClient.assertStatusCodeIs(HttpStatus.OK);
 
-            assertEquals("Sample text.\n", versionContent.getResponse().body().asString());
+            assertEquals("Sample text.", versionContent.getResponse().body().asString());
             restClient.assertHeaderValueContains("Content-Disposition", "attachment");
             restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file2.getName()));
         });
@@ -274,7 +271,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test revert and delete a node version.")
-    public void testRevertDeleteVersion() throws Exception
+    public void testRevertDeleteVersion()
     {
         STEP("1. Revert to version 1.0 POST /nodes/{nodeId}/versions/{versionId}/revert");
         RestVersionModel version = restClient.authenticateUser(user2).withCoreAPI().usingNode(file2).revertVersion("1.0", new String("{}"));
@@ -299,7 +296,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify file name in Content Range header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    public void checkFileNameContentRangeHeader() throws Exception
+    public void checkFileNameContentRangeHeader()
     {
         restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).getNodeContent();
@@ -309,11 +306,18 @@ public class NodesContentAndVersioningTests extends RestTest
     }
 
 
-    private void createRandomFileInDirectory(String path, String fileName, int size) throws IOException {
+    private void createRandomFileInDirectory(String path, String fileName, int size) {
         String fullPath = new File(path, fileName).getPath();
 
-        RandomAccessFile file = new RandomAccessFile(fullPath,"rw");
-        file.setLength(size);
-        file.close();
+        try
+        {
+            RandomAccessFile file = new RandomAccessFile(fullPath, "rw");
+            file.setLength(size);
+            file.close();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }

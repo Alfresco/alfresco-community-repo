@@ -47,7 +47,7 @@ jobs:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}
           email: ${{ secrets.BOT_GITHUB_EMAIL }}
       - name: "Verify release tag"
-        run: bash ./scripts/travis/verify_release_tag.sh
+        run: bash ./scripts/ci/verify_release_tag.sh
       - name: "Release"
         run: bash ./scripts/ci/maven_release.sh
         env:

@@ -40,6 +40,8 @@ tags:
     description: Retrieve and manage unfiled record folders
   - name: events
     description: Retrieve and manage retention events
+  - name: retention-management
+    description: Retrieve and manage retention management
     
 paths:
   ## GS sites

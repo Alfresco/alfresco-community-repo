@@ -1,16 +1,16 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="300000">
+   <test name="restapi - records">
+      <packages>
+         <package name="org.alfresco.rest.rm.community.records" />
+      </packages>
+   </test>
    <test name="restapi">
       <packages>
          <package name="org.alfresco.rest.rm.community.*">
             <exclude name="org.alfresco.rest.rm.community.records" />
          </package>
-      </packages>
-   </test>
-   <test name="restapi - records">
-      <packages>
-         <package name="org.alfresco.rest.rm.community.records" />
       </packages>
    </test>
 </suite>

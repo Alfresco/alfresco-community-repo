@@ -22,14 +22,6 @@ env:
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
 
 jobs:
-  configure_env:
-    name: Configure build env vars
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
-      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-
   prepare:
     name: "Prepare"
     needs: configure_env
@@ -39,6 +31,8 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Prepare environment"
         run: bash ./scripts/ci/prepare.sh
@@ -46,8 +40,7 @@ jobs:
   veracode:
     name: "Source Clear Scan (SCA)"
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       (github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip repo]') &&
@@ -55,6 +48,8 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
@@ -71,14 +66,15 @@ jobs:
   all_unit_tests_suite:
     name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ! contains(github.event.head_commit.message, '[skip repo]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Run tests"
         run: |
@@ -90,8 +86,7 @@ jobs:
   remote_api_app_context_test_suites:
     name: Remote-api - ${{ matrix.testSuite }}
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ! contains(github.event.head_commit.message, '[skip repo]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
@@ -114,6 +109,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -132,8 +129,7 @@ jobs:
   repository_mariadb_tests:
     name: Repository - MariaDB ${{ matrix.version }} tests
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
@@ -147,6 +143,8 @@ jobs:
         version: ['10.2.18', '10.4', '10.5']
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
@@ -160,8 +158,7 @@ jobs:
   repository_mariadb_10_6_tests:
     name: "Repository - MariaDB 10.6 tests"
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
@@ -171,6 +168,8 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
@@ -184,8 +183,7 @@ jobs:
   repository_mysql_tests:
     name: Repository - MySQL 8 tests
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
@@ -195,6 +193,8 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
@@ -208,8 +208,7 @@ jobs:
   repository_postgresql_13_7_tests:
     name: "Repository - PostgreSQL 13.7 tests"
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
@@ -219,6 +218,8 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
@@ -232,8 +233,7 @@ jobs:
   repository_postgresql_14_4_tests:
     name: "Repository - PostgreSQL 14.4 tests"
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
@@ -244,6 +244,8 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
@@ -257,14 +259,15 @@ jobs:
   repository_messaging_tests:
     name: Repository - Messaging tests
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ! contains(github.event.head_commit.message, '[skip repo]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
@@ -276,8 +279,7 @@ jobs:
   repository_app_context_test_suites:
     name: Repository - ${{ matrix.testSuite }}
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ! contains(github.event.head_commit.message, '[skip repo]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
@@ -308,6 +310,8 @@ jobs:
             parameters: '-Dindex.subsystem.name=solr6'
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up IDS"
         run: |
@@ -330,8 +334,7 @@ jobs:
   tas-tests:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       ! contains(github.event.head_commit.message, '[skip tas]')) ||
@@ -370,6 +373,8 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -395,14 +400,15 @@ jobs:
   share_services_share_services_test_suite:
     name: Share Services - ShareServicesTestSuite
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ! contains(github.event.head_commit.message, '[skip repo]') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
@@ -414,8 +420,7 @@ jobs:
   ags_tests_postgressql:
     name: AGS Unit & Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       ! contains(github.event.head_commit.message, '[skip ags]')) ||
@@ -430,6 +435,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -445,8 +452,7 @@ jobs:
   ags_tests_mysql:
     name: AGS Unit & Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       ! contains(github.event.head_commit.message, '[skip ags]')) ||
@@ -461,6 +467,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -476,8 +484,7 @@ jobs:
   ags_community_rest_api_tests:
     name: "AGS Community Rest API Tests"
     runs-on: ubuntu-latest
-    needs:
-      - prepare
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       ! contains(github.event.head_commit.message, '[skip ags]')) ||
@@ -488,6 +495,8 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
+      - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}

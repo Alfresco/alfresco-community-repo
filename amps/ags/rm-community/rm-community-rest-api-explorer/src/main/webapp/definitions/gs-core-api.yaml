@@ -2135,7 +2135,7 @@ paths:
           description: The new event.
           required: true
           schema:
-            $ref: '#/definitions/EventBodyCreate'
+            $ref: '#/definitions/EventBody'
       consumes:
         - application/json
       produces:
@@ -2200,7 +2200,7 @@ paths:
           description: The event information to update.
           required: true
           schema:
-            $ref: '#/definitions/EventBodyUpdate'
+            $ref: '#/definitions/EventBody'
       responses:
         '200':
           description: Successful response
@@ -3960,7 +3960,7 @@ definitions:
       type:
         type: string
         description: this is event type
-  EventBodyCreate:
+  EventBody:
     type: object
     required:
       - name
@@ -3971,23 +3971,6 @@ definitions:
       type:
         type: string
         description: this is event type
-        default: Simple
-  EventBodyUpdate:
-    type: object
-    required:
-      - id
-      - name
-      - type
-    properties:
-      id:
-        type: string
-        description: This is the id of the event
-      name:
-        type: string
-        description: This is the unique display label of the event
-      type:
-        type: string
-        description: This is event type
         default: Simple
   EventTypePaging:
     type: object

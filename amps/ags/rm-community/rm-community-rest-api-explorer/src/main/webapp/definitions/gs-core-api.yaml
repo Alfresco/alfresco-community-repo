@@ -2176,6 +2176,9 @@ paths:
           description: Successful response
           schema:
             $ref: '#/definitions/EventEntry'
+        '400':
+          description: |
+            Invalid parameter: **eventId** is invalid    
         '401':
           description: Authentication failed
         '404':

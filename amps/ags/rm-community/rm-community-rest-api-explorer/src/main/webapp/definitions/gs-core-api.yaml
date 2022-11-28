@@ -3975,15 +3975,19 @@ definitions:
   EventBodyUpdate:
     type: object
     required:
+      - id
       - name
       - type
     properties:
+      id:
+        type: string
+        description: This is the id of the event
       name:
         type: string
         description: This is the unique display label of the event
       type:
         type: string
-        description: this is event type
+        description: This is event type
         default: Simple
   EventTypePaging:
     type: object

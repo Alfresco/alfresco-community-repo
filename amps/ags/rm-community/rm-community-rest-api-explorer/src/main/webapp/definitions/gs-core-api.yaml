@@ -2112,6 +2112,8 @@ paths:
           description: Successful response
           schema:
             $ref: '#/definitions/EventPaging'
+        '400': |
+          description: Invalid parameter: value of **maxItems** or **skipCount** is invalid
         '401':
           description: Authentication failed
         default:
@@ -2237,6 +2239,8 @@ paths:
           description: Successful response
           schema:
             $ref: '#/definitions/EventTypePaging'
+        '400': |
+          description: Invalid parameter: value of **maxItems** or **skipCount** is invalid
         '401':
           description: Authentication failed
         default:

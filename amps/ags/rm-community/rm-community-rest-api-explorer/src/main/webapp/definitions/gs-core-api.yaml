@@ -3975,6 +3975,9 @@ definitions:
         default: Simple
   EventBodyUpdate:
     type: object
+    required:
+      - name
+      - type
     properties:
       name:
         type: string

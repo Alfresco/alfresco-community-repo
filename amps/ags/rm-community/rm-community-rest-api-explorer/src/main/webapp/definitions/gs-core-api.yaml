@@ -106,7 +106,7 @@ paths:
         - gs-sites
       summary: Get the Records Management (RM) site
       description: |
-        
+
         Gets information for RM site.
 
       operationId: getRMSite
@@ -695,7 +695,7 @@ paths:
           description: New name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
-  ## Unfiled record folders
+ ## Unfiled record folders
   '/unfiled-record-folders/{unfiledRecordFolderId}':
     get:
       tags:
@@ -2160,7 +2160,6 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-
   '/events/{eventId}':
     get:
       tags:
@@ -2226,7 +2225,6 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-
   '/event-types':
     get:
       tags:
@@ -2405,7 +2403,7 @@ parameters:
     description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **unfiledContainerId**
     required: false
     type: boolean
-  ## Unfiled record folders
+## Unfiled record folders
   unfiledRecordFolderIdParam:
     name: unfiledRecordFolderId
     in: path
@@ -2742,10 +2740,10 @@ parameters:
       **true** enables a web browser to download the file as an attachment.
       **false** means a web browser may preview the file in a new tab or window, but not
       download the file.
-      
+
       You can only set this parameter to **false** if the content type of the file is in the supported list;
       for example, certain image files and PDF files.
-      
+
       If the content type is not supported for preview, then a value of **false**  is ignored, and
       the attachment will be returned in the response.
     required: false
@@ -2791,14 +2789,14 @@ definitions:
   FilePlan:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -2874,14 +2872,14 @@ definitions:
   UnfiledContainer:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -2927,16 +2925,16 @@ definitions:
   UnfiledContainerChild:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - isUnfiledRecordFolder
-      - isRecord
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3021,16 +3019,16 @@ definitions:
   UnfiledRecordFolder:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - isUnfiledRecordFolder
-      - isRecord
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3080,16 +3078,16 @@ definitions:
   UnfiledRecordFolderChild:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - isUnfiledRecordFolder
-      - isRecord
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3174,14 +3172,14 @@ definitions:
   RecordCategory:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3224,14 +3222,14 @@ definitions:
   RecordCategoryChild:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3326,14 +3324,14 @@ definitions:
   RecordFolder:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3412,14 +3410,14 @@ definitions:
   Record:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3472,14 +3470,14 @@ definitions:
   TransferContainer:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3523,12 +3521,12 @@ definitions:
   TransferContainerChild:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3613,12 +3611,12 @@ definitions:
   Transfer:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - parentId
     properties:
       id:
         type: string
@@ -3668,14 +3666,14 @@ definitions:
   TransferChild:
     type: object
     required:
-      - id
-      - name
-      - nodeType
-      - createdAt
-      - createdByUser
-      - modifiedAt
-      - modifiedByUser
-      - parentId
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
     properties:
       id:
         type: string
@@ -4154,4 +4152,3 @@ definitions:
         default: true
       events:
         $ref: '#/definitions/Events'
-  

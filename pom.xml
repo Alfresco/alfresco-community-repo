@@ -62,7 +62,7 @@
         <dependency.jackson-databind.version>2.13.3</dependency.jackson-databind.version>
         <dependency.cxf.version>3.5.3</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.32</dependency.webscripts.version>
+        <dependency.webscripts.version>8.33</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.6.1</dependency.mockito-core.version>
         <dependency.assertj.version>3.23.1</dependency.assertj.version>

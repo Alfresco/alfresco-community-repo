@@ -3,12 +3,13 @@ function main()
    // Get the args
    var siteShortName = url.templateArgs.shortname,
       site = siteService.getSite(siteShortName),
-      filter = ((args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "" )+ " [hint:useCQ]",
       maxResults = (args.maxResults == null) ? 10 : parseInt(args.maxResults, 10),
       authorityType = args.authorityType,
       zone = args.zone,
       sortBy = args.sortBy,
       sortAsc = args.dir != "desc";
+   
+  var filter;
 
 
    if (authorityType != null)
@@ -28,6 +29,7 @@ function main()
 
    if (authorityType == null || authorityType == "USER")
    {
+      filter = ((args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "" )+ " [hint:useCQ]";
       // Get the collection of people
       peopleFound = sortBy != null ? people.getPeople(filter, maxResults, sortBy, sortAsc) : people.getPeople(filter, maxResults);
 
@@ -67,6 +69,7 @@ function main()
 
    if (authorityType == null || authorityType == "GROUP")
    {
+      filter = (args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "";
       // Get the collection of groups
       paging = utils.createPaging(maxResults, -1);
       groupsFound = groups.getGroupsInZone(filter, zone, paging, "displayName");

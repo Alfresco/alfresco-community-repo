@@ -15,6 +15,7 @@
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <rest.api.explorer.branch>master</rest.api.explorer.branch>
         <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
         <org.glassfish.version>1.1.4</org.glassfish.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -218,6 +219,27 @@
                     <excludes>
                         <exclude>**/*UnitTest*</exclude>
                     </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <arguments>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-auth.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-core.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-discovery.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-search.yaml</argument>
+                        <argument>https://raw.githubusercontent.com/Alfresco/rest-api-explorer/${rest.api.explorer.branch}/src/main/webapp/definitions/alfresco-workflow.yaml</argument>
+                    </arguments>
+                    <mainClass>org.alfresco.rest.core.swagger.Generator</mainClass>
                 </configuration>
             </plugin>
         </plugins>

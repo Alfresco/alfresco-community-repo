@@ -26,12 +26,14 @@
 package org.alfresco.rest.requests.coreAPI;
 
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestDownloadsModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.rest.requests.Actions;
 import org.alfresco.rest.requests.Audit;
+import org.alfresco.rest.requests.Categories;
 import org.alfresco.rest.requests.ContentStorageInformation;
 import org.alfresco.rest.requests.Downloads;
 import org.alfresco.rest.requests.Groups;
@@ -183,6 +185,12 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     public RestTagModel getTag(RestTagModel tag)
     {
         return new Tags(tag, restWrapper).getTag();
+    }
+
+
+    public Categories usingCategory(RestCategoryModel categoryModel)
+    {
+        return new Categories(restWrapper, categoryModel);
     }
     
     public Queries usingQueries()

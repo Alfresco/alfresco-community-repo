@@ -36,34 +36,6 @@ public class AddProcessItemFullTests  extends RestTest
         document2 = dataContent.usingUser(adminUser).usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
         dataWorkflow.usingUser(userWhoStartsProcess).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
     }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Adding multiple process items is falling in case of empty process id is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void failedAddingMultipleProcessItemsIfEmptyProcessIdIsProvided() throws Exception
-    {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();    
-        FileModel testDocument = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        
-        processModel.setId("");
-        processItems = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItems(testDocument, document);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, ""));
-    }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Adding process items is falling in case of empty process id is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void failedAddingProcessItemsIfEmptyProcessIdIsProvided() throws Exception
-    {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();    
-        FileModel testDocument = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        
-        processModel.setId("");
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(testDocument);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError()
-                .containsSummary(String.format(RestErrorModel.ENTITY_WAS_NOT_FOUND, ""));
-    }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
             description = "Adding process item is falling in case of empty body item value is provided")

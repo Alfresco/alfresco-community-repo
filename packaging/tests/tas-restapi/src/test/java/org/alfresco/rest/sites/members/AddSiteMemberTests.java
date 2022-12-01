@@ -314,18 +314,6 @@ public class AddSiteMemberTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that user can not be added to a site if an empty site id is provided and gets status code 404")
-    public void userIsNotAbleToAddAnotherUserUsingEmptySiteId() throws Exception
-    {
-        UserModel testUser = dataUser.createRandomTestUser("testUser");
-        testUser.setUserRole(UserRole.SiteManager);
-        SiteModel inexistentSite = new SiteModel("");
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingSite(inexistentSite).addPerson(testUser);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, inexistentSite.getId()));
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify that inexistent user can not be added to site and gets status code 404")
     public void userIsNotAbleToAddInexistentUserToSite() throws Exception
     {

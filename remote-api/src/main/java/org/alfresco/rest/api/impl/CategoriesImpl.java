@@ -26,24 +26,28 @@
 
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.rest.api.Nodes.PATH_ROOT;
+
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.apache.commons.collections.CollectionUtils;
 
+@Experimental
 public class CategoriesImpl implements Categories
 {
     private final Nodes nodes;
@@ -58,7 +62,7 @@ public class CategoriesImpl implements Categories
     @Override
     public Category getCategoryById(String id, Parameters params)
     {
-        final NodeRef nodeRef = Nodes.PATH_ROOT.equals(id) ? getRooCategoryNodeRef() : nodes.validateNode(id);
+        final NodeRef nodeRef = PATH_ROOT.equals(id) ? getRooCategoryNodeRef() : nodes.validateNode(id);
         final boolean isCategory = nodes.isSubClass(nodeRef, ContentModel.TYPE_CATEGORY, false);
         if (!isCategory)
         {
@@ -68,24 +72,37 @@ public class CategoriesImpl implements Categories
         final Category category = new Category();
         category.setId(nodeRef.getId());
         category.setName(categoryNode.getName());
-        final ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
-        final NodeRef parentNode = primaryParent.getParentRef();
-        category.setParentId(parentNode.getId());
-        final boolean hasChildren =
-                !nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false).isEmpty();
+        category.setParentId(getParentId(nodeRef));
+        final boolean hasChildren = CollectionUtils
+                .isNotEmpty(nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false));
         category.setHasChildren(hasChildren);
 
         return category;
     }
 
-    private NodeRef getRooCategoryNodeRef()
+    @Override
+    public NodeRef getRooCategoryNodeRef()
     {
         final NodeRef rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        final List<ChildAssociationRef> rootChildAssocs = nodeService.getChildAssocs(rootNode, Set.of(ContentModel.TYPE_CATEGORYROOT));
-        final ChildAssociationRef categoryRootChild = rootChildAssocs.iterator().next();
-        final List<ChildAssociationRef> categoryRootChildAssocs = nodeService.getChildAssocs(categoryRootChild.getChildRef()).stream()
+        final ChildAssociationRef categoryRoot = nodeService.getChildAssocs(rootNode, Set.of(ContentModel.TYPE_CATEGORYROOT)).stream()
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(PATH_ROOT));
+        final List<ChildAssociationRef> categoryRootAssocs = nodeService.getChildAssocs(categoryRoot.getChildRef());
+        if (CollectionUtils.isEmpty(categoryRootAssocs))
+        {
+            throw new EntityNotFoundException(PATH_ROOT);
+        }
+        return categoryRootAssocs.stream()
                 .filter(ca -> ca.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE))
-                .collect(Collectors.toList());
-        return categoryRootChildAssocs.iterator().next().getChildRef();
+                .map(ChildAssociationRef::getChildRef)
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException(PATH_ROOT));
+    }
+
+    private String getParentId (NodeRef nodeRef) {
+        final ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
+        final List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(primaryParent.getParentRef());
+        final boolean isParentRootCategory = parentAssocs.stream().anyMatch(pa -> pa.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE));
+        return isParentRootCategory ? PATH_ROOT : primaryParent.getParentRef().getId();
     }
 }

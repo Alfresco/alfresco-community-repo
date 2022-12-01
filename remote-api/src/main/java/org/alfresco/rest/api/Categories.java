@@ -28,8 +28,13 @@ package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
 
+@Experimental
 public interface Categories
 {
     Category getCategoryById(String id, Parameters params);
+
+    NodeRef getRooCategoryNodeRef();
 }

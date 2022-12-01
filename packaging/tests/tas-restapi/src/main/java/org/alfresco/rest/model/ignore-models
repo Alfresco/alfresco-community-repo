@@ -1,0 +1,12 @@
+# Any line that will start with # will be considered one comment
+# Empty lines are also ignored
+# Use this file if you want to ignore models from YAML file
+#---------------------------------------------------------- 
+SiteBodyCreate
+Error
+# this is SiteModel (exist in Utility project)
+SiteModel
+#NodeBodyCreate/NodeBodyUpdate are created as NodeBody 
+NodeBodyCreate
+NodeBodyUpdate
+Node

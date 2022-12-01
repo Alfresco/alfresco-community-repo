@@ -148,16 +148,6 @@ public class UpdateSiteGroupTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if update site member request returns status code 404 when empty siteId is used")
-    public void updateSiteMemberUsingEmptySiteId() throws Exception
-    {
-        restClient.authenticateUser(adminUser).withCoreAPI().usingSite("").updateSiteGroup(getId(regularGroup), UserRole.SiteConsumer);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if update site member request returns status code 405 when empty personId is used")
     public void updateSiteMemberUsingEmptyPersonId() throws Exception
     {

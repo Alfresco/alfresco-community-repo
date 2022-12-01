@@ -12,8 +12,16 @@
 
    <modules>
       <module>rm-community</module>
-      <module>rm-automation</module>
    </modules>
+
+   <profiles>
+      <profile>
+         <id>all-tas-tests</id>
+         <modules>
+            <module>rm-automation</module>
+         </modules>
+      </profile>
+   </profiles>
 
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

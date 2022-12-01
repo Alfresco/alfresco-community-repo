@@ -1,0 +1,67 @@
+/*-
+ * #%L
+ * alfresco-tas-restapi
+ * %%
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+package org.alfresco.rest.model;
+
+import org.alfresco.rest.core.RestModels;
+
+/**
+ * Handle collection of <RestSiteMembershipRequestModel>
+ * 
+ * {
+  "list": {
+    "pagination": {
+      "count": 0,
+      "hasMoreItems": true,
+      "totalItems": 0,
+      "skipCount": 0,
+      "maxItems": 0
+    },
+    "entries": [
+      {
+        "entry": {
+          "id": "string",
+          "createdAt": "2016-10-06T08:24:04.910Z",
+          "site": {
+            "id": "string",
+            "guid": "string",
+            "title": "string",
+            "description": "string",
+            "visibility": "PRIVATE",
+            "role": "SiteConsumer"
+          },
+          "message": "string"
+        }
+      }
+    ]
+  }
+}
+ * 
+ * @author Cristina Axinte
+ *
+ */
+public class RestSiteMembershipRequestModelsCollection extends RestModels<RestSiteMembershipRequestModel, RestSiteMembershipRequestModelsCollection>
+{
+}    

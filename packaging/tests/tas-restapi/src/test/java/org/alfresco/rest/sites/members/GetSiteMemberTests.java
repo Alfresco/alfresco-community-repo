@@ -173,19 +173,6 @@ public class GetSiteMemberTests extends RestTest
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section = {TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify user with Manager role can get site member for empty siteId")
-    public void getSiteMemberForEmptySiteId() throws Exception
-    {
-        SiteModel emptySite = new SiteModel("");
-
-        restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
-        restClient.withCoreAPI().usingSite(emptySite).getSiteMember(consumer);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, consumer.getUsername(), emptySite.getId()));
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.SITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify user with Manager role gets site member with Manager role and status code is OK (200)")
     public void getSiteManagerMemberWithManagerRole() throws Exception

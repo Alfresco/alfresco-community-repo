@@ -80,17 +80,8 @@ public class AlfrescoContextFactory extends ContextFactory
             context.setThreadId(Thread.currentThread().getId());
         }
 
-        // Max stack depth
-        if (maxStackDepth > 0)
-        {
-            if (optimizationLevel != INTERPRETIVE_MODE)
-            {
-                LOGGER.warn("Changing optimization level from " + optimizationLevel + " to " + INTERPRETIVE_MODE);
-            }
-            // stack depth can only be set when no optimizations are applied
-            context.setOptimizationLevel(INTERPRETIVE_MODE);
-            context.setMaximumInterpreterStackDepth(maxStackDepth);
-        }
+        // Max call stack depth
+        setMaxStackDepth(context, true);
 
         return context;
     }
@@ -137,7 +128,38 @@ public class AlfrescoContextFactory extends ContextFactory
     {
         AlfrescoScriptContext acx = (AlfrescoScriptContext) cx;
         acx.setStartTime(System.currentTimeMillis());
+        setMaxStackDepth(acx, acx.isLimitsEnabled());
         return super.doTopCall(callable, cx, scope, thisObj, args);
+    }
+
+    private void setMaxStackDepth(AlfrescoScriptContext acx, boolean enable)
+    {
+        if (enable)
+        {
+            // Max stack depth
+            if (maxStackDepth > 0 && maxStackDepth != acx.getMaximumInterpreterStackDepth())
+            {
+                LOGGER.debug("Max call stack depth limit will be enabled with value: " + maxStackDepth);
+
+                if (optimizationLevel != INTERPRETIVE_MODE)
+                {
+                    LOGGER.debug("Changing optimization level from " + optimizationLevel + " to " + INTERPRETIVE_MODE);
+                }
+                // stack depth can only be set in interpretive mode
+                acx.setOptimizationLevel(INTERPRETIVE_MODE);
+                acx.setMaximumInterpreterStackDepth(maxStackDepth);
+            }
+        }
+        else
+        {
+            if (acx.getMaximumInterpreterStackDepth() != Integer.MAX_VALUE)
+            {
+                LOGGER.debug("Max call stack depth limit will be set to default value: " + Integer.MAX_VALUE);
+                acx.setOptimizationLevel(INTERPRETIVE_MODE);
+                acx.setMaximumInterpreterStackDepth(Integer.MAX_VALUE);
+                acx.setOptimizationLevel(optimizationLevel);
+            }
+        }
     }
 
     public int getOptimizationLevel()

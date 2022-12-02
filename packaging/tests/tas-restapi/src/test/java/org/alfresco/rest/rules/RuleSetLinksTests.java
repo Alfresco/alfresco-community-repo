@@ -54,7 +54,7 @@ import org.testng.annotations.Test;
  * Tests for /nodes/{nodeId}/rule-set-links.
  */
 @Test(groups = {TestGroup.RULES})
-public class RuleSetLinksTests extends RestTest
+public class RuleSetLinksTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

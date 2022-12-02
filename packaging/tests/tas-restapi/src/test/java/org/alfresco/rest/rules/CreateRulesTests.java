@@ -83,7 +83,7 @@ import org.testng.annotations.Test;
  * Tests for POST /nodes/{nodeId}/rule-sets/{ruleSetId}/rules.
  */
 @Test(groups = {TestGroup.RULES})
-public class CreateRulesTests extends RestTest
+public class CreateRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

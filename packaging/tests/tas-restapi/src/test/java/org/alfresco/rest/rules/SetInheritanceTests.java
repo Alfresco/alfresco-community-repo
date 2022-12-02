@@ -46,7 +46,7 @@ import org.testng.annotations.Test;
  * Tests for GET and PUT /nodes/{nodeId}/rule-settings/{ruleSettingKey}.
  */
 @Test (groups = { TestGroup.RULES })
-public class SetInheritanceTests extends RestTest
+public class SetInheritanceTests extends RulesRestTest
 {
     private UserModel siteOwner;
     private SiteModel site;

@@ -27,10 +27,14 @@
 package org.alfresco.rest.categories;
 
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
@@ -48,20 +52,33 @@ public class GetCategoriesTests extends RestTest
     }
 
     /**
-     * Check we can get root category
+     * Check we get an error when passing -root- as category id
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void getEmptyRulesList()
+    public void testGetCategoryByIdProvidingRootAsId()
     {
-        STEP("Get root category");
+        STEP("Get category with -root- as id (which does not exist)");
         final RestCategoryModel rootCategory = new RestCategoryModel();
         rootCategory.setId("-root-");
-        final RestCategoryModel resultCategory = restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
-        restClient.assertStatusCodeIs(OK);
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
+        restClient.assertStatusCodeIs(NOT_FOUND);
+    }
 
-        resultCategory.assertThat().field("name").is("General");
-        resultCategory.assertThat().field("hasChildren").is(true);
+    /**
+     * Check we get an error when passing  as category id
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void testGetCategoryByIdProvidingFolderAsId()
+    {
+        STEP("Create a site and a folder inside it");
+        final SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
+        final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
+        STEP("Get category with folder id passed as id");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId(folder.getNodeRef());
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
+        restClient.assertStatusCodeIs(BAD_REQUEST);
     }
 
 }

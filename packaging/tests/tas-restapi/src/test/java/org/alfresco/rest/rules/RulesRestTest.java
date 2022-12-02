@@ -24,15 +24,13 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.rest.rules;
 
-import org.alfresco.rest.api.model.Category;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.rest.RestTest;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Experimental
-public interface Categories
+public class RulesRestTest extends RestTest
 {
-    Category getCategoryById(String id, Parameters params);
+    @Autowired
+    protected RulesTestsUtils rulesUtils;
 }

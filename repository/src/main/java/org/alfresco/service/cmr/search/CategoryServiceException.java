@@ -24,15 +24,38 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.service.cmr.search;
 
-import org.alfresco.rest.api.model.Category;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.error.AlfrescoRuntimeException;
 
-@Experimental
-public interface Categories
+/**
+ * Category Service Exception Class
+ */
+public class CategoryServiceException extends AlfrescoRuntimeException
 {
-    Category getCategoryById(String id, Parameters params);
+	/**
+	 * Serial version UID
+	 */
+	private static final long serialVersionUID = 3257571687441467958L;
+
+	/**
+	 * Construtor
+	 *
+	 * @param message 	the message string
+	 */
+	public CategoryServiceException(String message)
+	{
+		super(message);
+	}
+
+	/**
+	 * Constructor
+	 *
+	 * @param message	the message string
+	 * @param source	the source exception
+	 */
+	public CategoryServiceException(String message, Throwable source)
+	{
+		super(message, source);
+	}
 }

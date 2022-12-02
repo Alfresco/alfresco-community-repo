@@ -29,27 +29,26 @@ package org.alfresco.rest.api.impl;
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
 public class CategoriesImpl implements Categories
 {
+    static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
+
     private final Nodes nodes;
     private final NodeService nodeService;
 
@@ -60,13 +59,13 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public Category getCategoryById(String id, Parameters params)
+    public Category getCategoryById(final String id, final Parameters params)
     {
-        final NodeRef nodeRef = PATH_ROOT.equals(id) ? getRooCategoryNodeRef() : nodes.validateNode(id);
+        final NodeRef nodeRef = nodes.validateNode(id);
         final boolean isCategory = nodes.isSubClass(nodeRef, ContentModel.TYPE_CATEGORY, false);
-        if (!isCategory)
+        if (!isCategory || isRootCategory(nodeRef))
         {
-            throw new InvalidArgumentException("Node id does not refer to a category", new String[]{id});
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
         }
         final Node categoryNode = nodes.getNode(nodeRef.getId());
         final Category category = new Category();
@@ -80,29 +79,15 @@ public class CategoriesImpl implements Categories
         return category;
     }
 
-    @Override
-    public NodeRef getRooCategoryNodeRef()
+    private boolean isRootCategory(final NodeRef nodeRef)
     {
-        final NodeRef rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        final ChildAssociationRef categoryRoot = nodeService.getChildAssocs(rootNode, Set.of(ContentModel.TYPE_CATEGORYROOT)).stream()
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(PATH_ROOT));
-        final List<ChildAssociationRef> categoryRootAssocs = nodeService.getChildAssocs(categoryRoot.getChildRef());
-        if (CollectionUtils.isEmpty(categoryRootAssocs))
-        {
-            throw new EntityNotFoundException(PATH_ROOT);
-        }
-        return categoryRootAssocs.stream()
-                .filter(ca -> ca.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE))
-                .map(ChildAssociationRef::getChildRef)
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException(PATH_ROOT));
+        final List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+        return parentAssocs.stream().anyMatch(pa -> pa.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE));
     }
 
-    private String getParentId (NodeRef nodeRef) {
-        final ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
-        final List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(primaryParent.getParentRef());
-        final boolean isParentRootCategory = parentAssocs.stream().anyMatch(pa -> pa.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE));
-        return isParentRootCategory ? PATH_ROOT : primaryParent.getParentRef().getId();
+    private String getParentId(final NodeRef nodeRef)
+    {
+        final NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        return isRootCategory(parentRef) ? PATH_ROOT : parentRef.getId();
     }
 }

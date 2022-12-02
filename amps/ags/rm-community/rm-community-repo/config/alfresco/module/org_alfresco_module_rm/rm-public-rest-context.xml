@@ -175,6 +175,10 @@
        <property name="nodesModelFactory" ref="nodesModelFactory" />
     </bean>
 
+    <bean class="org.alfresco.rm.rest.api.events.EventEntityResource">
+        <property name="recordsManagementEventService" ref="RecordsManagementEventService" />
+    </bean>
+
    <!-- extended sites bean definition -->
    <bean id="rm.sites" class="org.alfresco.rm.rest.api.impl.RMSitesImpl" parent="sites">
         <property name="siteSurfConfig" ref="rm.siteSurfConfig" />
@@ -209,6 +213,8 @@
                 <entry key="org.alfresco.service.cmr.attributes.DuplicateAttributeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.module.org_alfresco_module_rm.record.RecordCreationException" value="422" />
                 <entry key="org.alfresco.service.cmr.model.FileExistsException" value="409" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.EventAlreadyExistsException" value="409" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="404" />
             </map>
         </property>
    </bean>

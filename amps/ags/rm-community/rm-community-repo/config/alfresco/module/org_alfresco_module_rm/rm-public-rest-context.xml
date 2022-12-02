@@ -213,8 +213,6 @@
                 <entry key="org.alfresco.service.cmr.attributes.DuplicateAttributeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.module.org_alfresco_module_rm.record.RecordCreationException" value="422" />
                 <entry key="org.alfresco.service.cmr.model.FileExistsException" value="409" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.EventAlreadyExistsException" value="409" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="404" />
             </map>
         </property>
    </bean>

@@ -385,7 +385,6 @@ jobs:
 
     - name: "AGS Community Rest API Tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-      runs-on: ubuntu-18.04
       install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       addons:
         artifacts:

@@ -48,7 +48,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test (groups = { TestGroup.RULES })
-public class ReorderRules extends RestTest
+public class ReorderRules extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

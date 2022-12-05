@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -42,6 +43,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -50,6 +52,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.search.CategoryServiceException;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -59,6 +62,7 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Category service implementation
@@ -67,6 +71,9 @@ import org.alfresco.util.Pair;
  */
 public abstract class AbstractCategoryServiceImpl implements CategoryService
 {
+    static final String CATEGORY_ROOT_NODE_NOT_FOUND = "Category root node not found";
+    static final String NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND = "Node with category_root type not found";
+
     protected NodeService nodeService;
     
     protected NodeService publicNodeService;
@@ -538,4 +545,23 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     }
 
     public abstract List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
+
+    @Override
+    @Experimental
+    public Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
+    {
+        final NodeRef rootNode = nodeService.getRootNode(storeRef);
+        final ChildAssociationRef categoryRoot = nodeService.getChildAssocs(rootNode, Set.of(ContentModel.TYPE_CATEGORYROOT)).stream()
+                .findFirst()
+                .orElseThrow(() -> new CategoryServiceException(NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND));
+        final List<ChildAssociationRef> categoryRootAssocs = nodeService.getChildAssocs(categoryRoot.getChildRef());
+        if (CollectionUtils.isEmpty(categoryRootAssocs))
+        {
+            throw new CategoryServiceException(CATEGORY_ROOT_NODE_NOT_FOUND);
+        }
+        return categoryRootAssocs.stream()
+                .filter(ca -> ca.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE))
+                .map(ChildAssociationRef::getChildRef)
+                .findFirst();
+    }
 }

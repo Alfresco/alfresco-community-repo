@@ -52,7 +52,7 @@ import org.testng.annotations.Test;
  * Tests for GET /nodes/{nodeId}/rule-sets/{ruleSetId}/rules with rule inheritance.
  */
 @Test(groups = {TestGroup.RULES})
-public class GetInheritedRulesTests extends RestTest
+public class GetInheritedRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

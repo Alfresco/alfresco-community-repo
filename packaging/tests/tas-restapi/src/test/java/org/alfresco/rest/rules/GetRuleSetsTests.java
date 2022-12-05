@@ -57,7 +57,7 @@ import org.testng.annotations.Test;
  * Tests for GET /nodes/{nodeId}/rule-sets and /nodes/{nodeId}/rule-sets/{ruleSetId}.
  */
 @Test (groups = { TestGroup.RULES })
-public class GetRuleSetsTests extends RestTest
+public class GetRuleSetsTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

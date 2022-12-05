@@ -64,7 +64,7 @@ import org.testng.annotations.Test;
  * Tests for PUT /nodes/{nodeId}/rule-sets/{ruleSetId}/rules.
  */
 @Test (groups = { TestGroup.RULES })
-public class UpdateRulesTests extends RestTest
+public class UpdateRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

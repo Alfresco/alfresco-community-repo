@@ -56,7 +56,7 @@ import org.testng.annotations.Test;
  * Tests for DELETE /nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}.
  */
 @Test(groups = {TestGroup.RULES})
-public class DeleteRulesTests extends RestTest
+public class DeleteRulesTests extends RulesRestTest
 {
     private static final String FAKE_NODE_REF = "fake-node-id";
 

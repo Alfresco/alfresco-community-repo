@@ -56,7 +56,7 @@ import org.testng.annotations.Test;
  * Tests for POST /nodes/{nodeId}/rule-executions.
  */
 @Test(groups = { TestGroup.RULES})
-public class ExecuteRulesTests extends RestTest
+public class ExecuteRulesTests extends RulesRestTest
 {
 
     private UserModel user;

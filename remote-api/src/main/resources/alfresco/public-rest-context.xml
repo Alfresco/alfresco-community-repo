@@ -828,7 +828,26 @@
             </list>
         </property>
     </bean>
-    
+
+    <bean id="categories" class="org.alfresco.rest.api.impl.CategoriesImpl">
+        <constructor-arg name="nodes" ref="nodes"/>
+        <constructor-arg name="nodeService" ref="NodeService"/>
+    </bean>
+
+    <bean id="Categories" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Categories</value>
+        </property>
+        <property name="target">
+            <ref bean="categories"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor"/>
+            </list>
+        </property>
+    </bean>
+
     <bean id="tags" class="org.alfresco.rest.api.impl.TagsImpl">
         <property name="nodes" ref="nodes" />
         <property name="taggingService" ref="TaggingService" />
@@ -1075,11 +1094,15 @@
     <bean class="org.alfresco.rest.api.people.PersonGroupsRelation">
         <property name="groups" ref="Groups" />
     </bean>
-	
+
+    <bean class="org.alfresco.rest.api.categories.CategoriesEntityResource">
+        <constructor-arg name="categories" ref="Categories"/>
+    </bean>
+
     <bean class="org.alfresco.rest.api.tags.TagsEntityResource">
         <property name="tags" ref="Tags" />
     </bean>
-	
+
     <bean class="org.alfresco.rest.api.people.PersonSitesRelation">
         <property name="sites" ref="Sites" />
     </bean>

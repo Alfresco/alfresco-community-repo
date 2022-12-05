@@ -695,7 +695,7 @@ paths:
           description: New name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
- ## Unfiled record folders
+  ## Unfiled record folders
   '/unfiled-record-folders/{unfiledRecordFolderId}':
     get:
       tags:
@@ -2255,6 +2255,38 @@ paths:
 
   ## Retention-management
   '/dispositionschedule/{storeType}/{storeId}/{nodeId}':
+    get:
+      tags:
+        - retention-management
+      summary: List all available retention schedule
+      description: |
+        Use this to get the information of a retention schedule applied on a category. Mandatory fields and properties are returned by default
+      operationId: getAllRetentionSteps
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/storeTypeParam'
+        - $ref: '#/parameters/storeIdParam'
+        - $ref: '#/parameters/nodeIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionSchedulePaging'
+        '400':
+          description: |
+            Invalid parameter: value of **maxItems** or **skipCount** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read retention schedule.
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
     post:
       tags:
         - retention-management
@@ -2262,17 +2294,17 @@ paths:
       description: |
         Create a retention schedule on a category in record management site with given details. 
         Mandatory fields and properties are returned by default.
-      operationId: post
+      operationId: postRetentionSteps
       parameters:
         - $ref: '#/parameters/storeTypeParam'
         - $ref: '#/parameters/storeIdParam'
         - $ref: '#/parameters/nodeIdParam'
         - in: body
-          name: retentionBody
+          name: retentionBodyCreate
           description: The retention schedule.
           required: true
           schema:
-            $ref: '#/definitions/RetentionBodyCreate'
+            $ref: '#/definitions/RetentionBody'
 
       produces:
         - application/json
@@ -2290,6 +2322,47 @@ paths:
           description: Current user does not have permission to create retention schedule.
         '404':
           description: "**nodeId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/dispositionschedule/{storeType}/{storeId}/{nodeId}/{retentionScheduletId}':
+    put:
+      tags:
+        - retention-management
+      summary: Update a retention schedule on a category in record management site.
+      operationId: updateRetentionSteps
+      description: |
+        Update the a retention schedule on a category in record management site. Use this to change event display level or to change event type.
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/storeTypeParam'
+        - $ref: '#/parameters/storeIdParam'
+        - $ref: '#/parameters/nodeIdParam'
+        - $ref: '#/parameters/retentionIdParam'
+        - in: body
+          name: retentionBodyUpdate
+          description: The retention schedule to update.
+          required: true
+          schema:
+            $ref: '#/definitions/RetentionBody'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionScheduleEntry'
+        '400':
+          description: |
+            Invalid parameter: The update request is invalid or **eventId** is not a valid format or **eventBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update events
+        '404':
+          description: "**eventId** does not exist"
+        '409':
+          description: Cannot update event. An event with the name **name** already exists
         default:
           description: Unexpected error
           schema:
@@ -2320,6 +2393,12 @@ parameters:
     name: nodeId
     in: path
     description: The identifier of node id.
+    required: true
+    type: string
+  retentionIdParam:
+    name: retentionScheduletId
+    in: path
+    description: The identifier of a retention schedule.
     required: true
     type: string
   ## File plans
@@ -2403,7 +2482,7 @@ parameters:
     description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **unfiledContainerId**
     required: false
     type: boolean
-## Unfiled record folders
+  ## Unfiled record folders
   unfiledRecordFolderIdParam:
     name: unfiledRecordFolderId
     in: path
@@ -2789,14 +2868,14 @@ definitions:
   FilePlan:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -2872,14 +2951,14 @@ definitions:
   UnfiledContainer:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -2925,16 +3004,16 @@ definitions:
   UnfiledContainerChild:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - isUnfiledRecordFolder
-    - isRecord
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - isUnfiledRecordFolder
+      - isRecord
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3019,16 +3098,16 @@ definitions:
   UnfiledRecordFolder:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - isUnfiledRecordFolder
-    - isRecord
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - isUnfiledRecordFolder
+      - isRecord
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3078,16 +3157,16 @@ definitions:
   UnfiledRecordFolderChild:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - isUnfiledRecordFolder
-    - isRecord
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - isUnfiledRecordFolder
+      - isRecord
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3172,14 +3251,14 @@ definitions:
   RecordCategory:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3222,14 +3301,14 @@ definitions:
   RecordCategoryChild:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3324,14 +3403,14 @@ definitions:
   RecordFolder:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3410,14 +3489,14 @@ definitions:
   Record:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3470,14 +3549,14 @@ definitions:
   TransferContainer:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3521,12 +3600,12 @@ definitions:
   TransferContainerChild:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3611,12 +3690,12 @@ definitions:
   Transfer:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - parentId
     properties:
       id:
         type: string
@@ -3666,14 +3745,14 @@ definitions:
   TransferChild:
     type: object
     required:
-    - id
-    - name
-    - nodeType
-    - createdAt
-    - createdByUser
-    - modifiedAt
-    - modifiedByUser
-    - parentId
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
     properties:
       id:
         type: string
@@ -4078,7 +4157,7 @@ definitions:
       actionOnAssociatedNode:
         type: string
         description: If an association name is set for this event type then it is possible to require an action to be completed on the associated node
-  RetentionBodyCreate:
+  RetentionBody:
     type: object
     required:
       - name
@@ -4119,6 +4198,20 @@ definitions:
       name:
         type: string
         description: Name of the event.
+
+  RetentionSchedulePaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RetentionScheduleEntry'
+
   RetentionScheduleEntry:
     type: object
     required:

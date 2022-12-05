@@ -30,7 +30,10 @@ import static org.alfresco.rest.rules.RulesTestsUtils.LOCKABLE_ASPECT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
@@ -294,5 +297,28 @@ public class ExecuteRulesTests extends RestTest
         rulesUtils.assertThat(fileNode).containsAspects(AUDIO_ASPECT);
     }
 
-    //TODO: add test(s) that would cover handling executing broken rule and/or broken rule execution (ACS-3699)
+    /**
+     * Try to execute rule with broken action and receive 404 error.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    public void executeRules_copyActionWithDeletedDestinationFolder()
+    {
+        FolderModel owningFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        FileModel owningFolderFile = dataContent.usingUser(user).usingResource(owningFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FolderModel destinationFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Create copy action and rule");
+        final Map<String, Serializable> copyParams =
+                Map.of("destination-folder", destinationFolder.getNodeRef(), "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = rulesUtils.createCustomActionModel("copy", copyParams);
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        ruleModel.setActions(Arrays.asList(copyAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(owningFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        STEP("Delete destination folder and execute rule");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(destinationFolder).deleteNode(destinationFolder.getNodeRef());
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(owningFolder).executeRules(rulesUtils.createRuleExecutionRequest());
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+    }
 }

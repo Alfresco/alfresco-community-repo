@@ -34,6 +34,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URL;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -386,6 +389,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         AuditApp auditApp = auditAppsProxy.getAuditApp("alfresco-access");
 
         testGetAuditEntries(auditAppsProxy, auditApp);
+        testGetAuditEntriesWhereCreatedAt(auditAppsProxy, auditApp);
         testAuditEntriesSorting(auditAppsProxy, auditApp);
         testAuditEntriesWhereDate(auditAppsProxy, auditApp);
         testAuditEntriesWhereId(auditAppsProxy, auditApp);
@@ -394,6 +398,30 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         testRetrieveAuditEntry(auditAppsProxy, auditApp);
         testDeleteAuditEntry(auditAppsProxy, auditApp);
         testDeleteAuditEntries(auditAppsProxy, auditApp);
+    }
+
+    private void testGetAuditEntriesWhereCreatedAt(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception
+    {
+        // get "totalItems" for a specific time interval
+        Map<String, String> params = new HashMap<>();
+
+        final ZonedDateTime beginDate = ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MINUTES);
+        final ZonedDateTime endDate = ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        params.put("where","(createdAt BETWEEN ('"+beginDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)+"' , '"+endDate.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)+"'))");
+
+        ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
+                HttpServletResponse.SC_OK);
+        int totalItemsWithDefaultMaxSize = auditEntries.getPaging().getTotalItems();
+        assertTrue( totalItemsWithDefaultMaxSize > 1 );
+
+        // get "totalItems" for a specific time internal (with maxSize=1)
+        params.put("maxSize","1");
+        auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), params,
+                HttpServletResponse.SC_OK);
+        int totalItemsWithMaxSize1 = auditEntries.getPaging().getTotalItems();
+
+        // number of "totalItems" must be the same, regardless maxSize
+        assertEquals(totalItemsWithMaxSize1, totalItemsWithDefaultMaxSize);
     }
 
     private void testGetAuditEntries(AuditApps auditAppsProxy, AuditApp auditApp) throws Exception 

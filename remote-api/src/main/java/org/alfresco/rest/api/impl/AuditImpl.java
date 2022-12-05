@@ -295,7 +295,18 @@ public class AuditImpl implements Audit
         }
         else
         {
-            totalItems = hasMoreItems ? getAuditEntriesCountByApp(auditApplication) : totalRetrievedItems;
+            if (hasMoreItems) {
+                if (q != null) {
+                    // filtering via "where" clause
+                    AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
+                    QueryHelper.walk(q, propertyWalker);
+                    totalItems = getAuditEntriesCountByAppAndProperties(auditApplication, propertyWalker);
+                } else {
+                    totalItems = getAuditEntriesCountByApp(auditApplication);
+                }
+            } else {
+                totalItems = totalRetrievedItems;
+            }
         }
 
         entriesAudit = (skipCount >= totalRetrievedItems)
@@ -894,5 +905,20 @@ public class AuditImpl implements Audit
     {
         final String applicationName = auditApplication.getKey().substring(1);
         return auditService.getAuditEntriesCountByApp(applicationName);
+    }
+
+    public int getAuditEntriesCountByAppAndProperties(AuditService.AuditApplication auditApplication, AuditEntryQueryWalker propertyWalker)
+    {
+        final String applicationName = auditApplication.getKey().substring(1);
+
+        AuditQueryParameters parameters = new AuditQueryParameters();
+        parameters.setApplicationName(applicationName);
+        parameters.setFromTime(propertyWalker.getFromTime());
+        parameters.setToTime(propertyWalker.getToTime());
+        parameters.setFromId(propertyWalker.getFromId());
+        parameters.setToId(propertyWalker.getToId());
+        parameters.setUser(propertyWalker.getCreatedByUser());
+
+        return auditService.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 }

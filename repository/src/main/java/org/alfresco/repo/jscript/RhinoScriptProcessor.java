@@ -57,10 +57,12 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.WrapFactory;
 import org.mozilla.javascript.WrappedException;
 import org.springframework.beans.factory.InitializingBean;
@@ -108,7 +110,24 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     /** Cache of runtime compiled script instances */
     private final Map<String, Script> scriptCache = new ConcurrentHashMap<String, Script>(256);
     
-    
+    /** Rhino optimization level */
+    private int optimizationLevel = -1;
+
+    /** Maximum seconds a script is allowed to run */
+    private int maxScriptExecutionSeconds = -1;
+
+    /** Maximum of call stack depth (in terms of number of call frames) */
+    private int maxStackDepth = -1;
+
+    /** Maximum memory (bytes) a script can use */
+    private long maxMemoryUsedInBytes = -1L;
+
+    /** Number of (bytecode) instructions that will trigger the observer */
+    private int observerInstructionCount = 100;
+
+    /** Custom context factory */
+    public static AlfrescoContextFactory contextFactory;
+
     /**
      * Set the default store reference
      * 
@@ -142,6 +161,51 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     public void setShareSealedScopes(boolean shareSealedScopes)
     {
         this.shareSealedScopes = shareSealedScopes;
+    }
+
+    /**
+     * @param optimizationLevel
+     *            -1 interpretive mode, 0 no optimizations, 1-9 optimizations performed
+     */
+    public void setOptimizationLevel(int optimizationLevel)
+    {
+        this.optimizationLevel = optimizationLevel;
+    }
+
+    /**
+     * @param maxScriptExecutionSeconds
+     *            the number of seconds a script is allowed to run
+     */
+    public void setMaxScriptExecutionSeconds(int maxScriptExecutionSeconds)
+    {
+        this.maxScriptExecutionSeconds = maxScriptExecutionSeconds;
+    }
+
+    /**
+     * @param maxStackDepth
+     *            the number of call stack depth allowed
+     */
+    public void setMaxStackDepth(int maxStackDepth)
+    {
+        this.maxStackDepth = maxStackDepth;
+    }
+
+    /**
+     * @param maxMemoryUsedInBytes
+     *            the number of memory a script can use
+     */
+    public void setMaxMemoryUsedInBytes(long maxMemoryUsedInBytes)
+    {
+        this.maxMemoryUsedInBytes = maxMemoryUsedInBytes;
+    }
+
+    /**
+     * @param observerInstructionCount
+     *            the number of instructions that will trigger {@link ContextFactory#observeInstructionCount}
+     */
+    public void setObserverInstructionCount(int observerInstructionCount)
+    {
+        this.observerInstructionCount = observerInstructionCount;
     }
 
     /**
@@ -449,6 +513,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     private Object executeScriptImpl(Script script, Map<String, Object> model, boolean secure, String debugScriptName)
         throws AlfrescoRuntimeException
     {
+        Scriptable scope = null;
+
         long startTime = 0;
         if (callLogger.isDebugEnabled())
         {
@@ -465,14 +531,16 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             // Create a thread-specific scope from one of the shared scopes.
             // See http://www.mozilla.org/rhino/scopes.html
             cx.setWrapFactory(secure ? wrapFactory : sandboxFactory);
-            Scriptable scope;
+
+            // Enables or disables execution limits based on secure flag
+            enableLimits(cx, secure);
+
             if (this.shareSealedScopes)
             {
                 Scriptable sharedScope = secure ? this.nonSecureScope : this.secureScope;
                 scope = cx.newObject(sharedScope);
                 scope.setPrototype(sharedScope);
                 scope.setParentScope(null);
-
             }
             else
             {
@@ -546,6 +614,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         finally
         {
+            unsetScope(model, scope);
             Context.exit();
             
             if (callLogger.isDebugEnabled())
@@ -638,6 +707,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     public void afterPropertiesSet() throws Exception
     {
+        // Initialize context factory
+        initContextFactory();
+
         // Initialize the secure scope
         Context cx = Context.enter();
         try
@@ -694,5 +766,130 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             scope = cx.initSafeStandardObjects(null, sealed);
         }
         return scope;
+    }
+
+    /**
+     * Clean supplied scope and unset it from any model instance where it has been injected before
+     *
+     * @param model
+     *            Data model containing objects from where scope will be unset
+     * @param scope
+     *            The scope to clean
+     */
+    private void unsetScope(Map<String, Object> model, Scriptable scope)
+    {
+        if (scope != null)
+        {
+            Object[] ids = scope.getIds();
+            if (ids != null)
+            {
+                for (Object id : ids)
+                {
+                    try
+                    {
+                        deleteProperty(scope, id.toString());
+                    }
+                    catch (Exception e)
+                    {
+                        logger.info("Unable to delete id: " + id, e);
+                    }
+                }
+            }
+        }
+
+        if (model != null)
+        {
+            for (String key : model.keySet())
+            {
+                try
+                {
+                    deleteProperty(scope, key);
+
+                    Object obj = model.get(key);
+                    if (obj instanceof Scopeable)
+                    {
+                        ((Scopeable) obj).setScope(null);
+                    }
+                }
+                catch (Exception e)
+                {
+                    logger.info("Unable to unset model object " + key + " : ", e);
+                }
+            }
+        }
+    }
+
+    /**
+     * Deletes a property from the supplied scope, if property is not removable, then is set to null
+     *
+     * @param scope
+     *            the scope object from where property will be removed
+     * @param name
+     *            the property name to delete
+     */
+    private void deleteProperty(Scriptable scope, String name)
+    {
+        if (scope != null && name != null)
+        {
+            if (!ScriptableObject.deleteProperty(scope, name))
+            {
+                ScriptableObject.putProperty(scope, name, null);
+            }
+            scope.delete(name);
+        }
+    }
+
+    /**
+     * Initializes the context factory with limits configuration
+     */
+    private synchronized void initContextFactory()
+    {
+        if (contextFactory == null)
+        {
+            contextFactory = new AlfrescoContextFactory();
+            contextFactory.setOptimizationLevel(optimizationLevel);
+
+            if (maxScriptExecutionSeconds > 0)
+            {
+                contextFactory.setMaxScriptExecutionSeconds(maxScriptExecutionSeconds);
+            }
+
+            if (maxMemoryUsedInBytes > 0L)
+            {
+                contextFactory.setMaxMemoryUsedInBytes(maxMemoryUsedInBytes);
+            }
+
+            if (maxStackDepth > 0)
+            {
+                contextFactory.setMaxStackDepth(maxStackDepth);
+            }
+
+            if (maxScriptExecutionSeconds > 0 || maxMemoryUsedInBytes > 0L)
+            {
+                contextFactory.setObserveInstructionCount(observerInstructionCount);
+            }
+
+            ContextFactory.initGlobal(contextFactory);
+        }
+    }
+
+    /**
+     * If script is considered secure no limits will be applied, otherwise, the limits are enabled and the script can be
+     * interrupted in case a limit has been reached.
+     *
+     * @param cx
+     *            the Rhino scope
+     * @param secure
+     *            true if script execution is considered secure (e.g, deployed at classpath level)
+     */
+    private void enableLimits(Context cx, boolean secure)
+    {
+        if (cx != null)
+        {
+            if (cx instanceof AlfrescoScriptContext)
+            {
+                ((AlfrescoScriptContext) cx).setLimitsEnabled(!secure);
+            }
+        }
     }
 }

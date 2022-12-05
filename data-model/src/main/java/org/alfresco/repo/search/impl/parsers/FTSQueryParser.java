@@ -346,7 +346,7 @@ public class FTSQueryParser
             }
             constraints.add(constraint);
         }
-        if (constraints.size() == 1)
+        if (constraints.size() == 1 && Occur.EXCLUDE != constraints.get(0).getOccur())
         {
             return constraints.get(0);
         }

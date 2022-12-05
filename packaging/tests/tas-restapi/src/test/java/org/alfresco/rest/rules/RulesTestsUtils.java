@@ -213,6 +213,13 @@ public class RulesTestsUtils
         return createRuleModel(RULE_NAME_DEFAULT);
     }
 
+    public RestRuleModel createInheritableRuleModel()
+    {
+        RestRuleModel ruleModel = createRuleModel(RULE_NAME_DEFAULT);
+        ruleModel.setIsInheritable(true);
+        return ruleModel;
+    }
+
     public RestRuleModel createRuleModel(String name)
     {
         return createRuleModel(name, List.of(createAddAudioAspectAction()));

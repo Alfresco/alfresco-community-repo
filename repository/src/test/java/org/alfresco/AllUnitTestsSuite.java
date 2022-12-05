@@ -77,6 +77,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rule.RuleServiceImplUnitTest.class,
     org.alfresco.repo.service.StoreRedirectorProxyFactoryTest.class,
     org.alfresco.repo.site.RoleComparatorImplTest.class,
+    org.alfresco.repo.template.UnsafeMethodsTest.class,
     org.alfresco.repo.tenant.MultiTAdminServiceImplTest.class,
     org.alfresco.repo.thumbnail.ThumbnailServiceImplParameterTest.class,
     org.alfresco.repo.transfer.ContentChunkerImplTest.class,

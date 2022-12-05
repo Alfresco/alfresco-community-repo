@@ -951,6 +951,28 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Category in condition is invalid");
     }
 
+    /**
+     * Check we get 400 error when condition comparator is invalid
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithConditions_invalidComparator()
+    {
+        STEP("Try to create a rule with invalid comparator in conditions.");
+        final String comparator = "greaterthan";
+        RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(List.of(
+                rulesUtils.createCompositeCondition(!INVERTED, List.of(
+                        rulesUtils.createSimpleCondition("size", comparator, "500")
+                ))
+        ));
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        ruleModel.setConditions(conditions);
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Comparator value for condition is invalid: " + comparator);
+    }
+
     private String getAddPermissionsBody(String username, String role)
     {
         JsonObject userPermission = Json.createObjectBuilder().add("permissions",

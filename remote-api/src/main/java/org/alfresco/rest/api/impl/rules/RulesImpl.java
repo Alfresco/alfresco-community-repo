@@ -26,17 +26,12 @@
 
 package org.alfresco.rest.api.impl.rules;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
+import org.alfresco.rest.api.model.rules.InclusionType;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleExecution;
 import org.alfresco.rest.api.model.rules.RuleSet;
@@ -53,6 +48,14 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
+
 @Experimental
 public class RulesImpl implements Rules
 {
@@ -63,6 +66,7 @@ public class RulesImpl implements Rules
     private RuleService ruleService;
     private NodeValidator validator;
     private RuleLoader ruleLoader;
+    private RuleSetLoader ruleSetLoader;
     private ActionPermissionValidator actionPermissionValidator;
     private RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper;
 
@@ -75,8 +79,10 @@ public class RulesImpl implements Rules
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
         NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         NodeRef owningFolder = ruleService.getOwningNodeRef(ruleSetNode);
+        RuleSet ruleSet = ruleSetLoader.loadRuleSet(ruleSetNode, folderNodeRef, List.of(INCLUSION_TYPE));
 
         final List<Rule> rules = ruleService.getRules(owningFolder, false).stream()
+                .filter(ruleModel -> ruleSet.getInclusionType() != InclusionType.INHERITED || ruleModel.isAppliedToChildren())
                 .map(ruleModel -> ruleLoader.loadRule(ruleModel, includes))
                 .collect(Collectors.toList());
 
@@ -180,6 +186,11 @@ public class RulesImpl implements Rules
     public void setRuleLoader(RuleLoader ruleLoader)
     {
         this.ruleLoader = ruleLoader;
+    }
+
+    public void setRuleSetLoader(RuleSetLoader ruleSetLoader)
+    {
+        this.ruleSetLoader = ruleSetLoader;
     }
 
     public void setActionPermissionValidator(ActionPermissionValidator actionPermissionValidator)

@@ -254,7 +254,7 @@ public interface CategoryService
      * @return NodeRef for category root node
      */
     @Experimental
-    @Auditable()
+    @Auditable(parameters = {"storeRef"})
     default Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
     {
         return Optional.empty();

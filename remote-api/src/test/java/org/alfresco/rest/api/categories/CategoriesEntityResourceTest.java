@@ -35,6 +35,7 @@ import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -49,13 +50,16 @@ public class CategoriesEntityResourceTest
     @Mock
     private Parameters parametersMock;
 
+    @InjectMocks
+    private CategoriesEntityResource objectUnderTest;
+
     @Test
-    public void testReturnCategoryById()
+    public void testReadCategoryById()
     {
         given(categoriesMock.getCategoryById(CATEGORY_ID, parametersMock)).willReturn(categoryMock);
 
         //when
-        final Category category = categoriesMock.getCategoryById(CATEGORY_ID, parametersMock);
+        final Category category = objectUnderTest.readById(CATEGORY_ID, parametersMock);
 
         then(categoriesMock).should().getCategoryById(CATEGORY_ID, parametersMock);
         then(categoriesMock).shouldHaveNoMoreInteractions();

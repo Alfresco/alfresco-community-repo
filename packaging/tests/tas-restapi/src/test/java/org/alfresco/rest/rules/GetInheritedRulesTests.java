@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
@@ -49,7 +48,7 @@ import org.testng.annotations.Test;
  * Tests for GET /nodes/{nodeId}/rule-sets/{ruleSetId}/rules with rule inheritance.
  */
 @Test(groups = {TestGroup.RULES})
-public class GetInheritedRulesTests extends RestTest
+public class GetInheritedRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

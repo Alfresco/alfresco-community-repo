@@ -4218,6 +4218,33 @@ definitions:
       - entry
     properties:
       entry:
+        $ref: '#/definitions/RetentionData'
+  RetentionData:
+    type: object
+    properties:
+      authority:
+        type: string
+        description: this is retention schedule authority name
+      instructions:
+        type: string
+        description: this is retention schedule instructions
+      unpublishedUpdates:
+        type: boolean
+        description: this is retention schedule unpublishedUpdates
+        default: false
+      publishInProgress :
+        type: boolean
+        description: this is retention schedule publishInProgress
+        default: false
+      recordLevelDisposition:
+        type: boolean
+        description: this is retention schedule recordLevelDisposition
+        default: false
+      canStepsBeRemoved:
+        type: boolean
+        description: this is retention schedule canStepsBeRemoved
+        default: true
+      actions:
         $ref: '#/definitions/RetentionSchedule'
 
   RetentionSchedule:

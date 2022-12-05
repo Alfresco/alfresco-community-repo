@@ -1,16 +1,12 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="300000">
-   <test name="restapi - records">
-      <packages>
-         <package name="org.alfresco.rest.rm.community.records" />
-      </packages>
-   </test>
+   <listeners>
+      <listener class-name="org.alfresco.rest.rm.community.utils.AlphabeticallyPriorityInterceptor" />
+   </listeners>
    <test name="restapi">
       <packages>
-         <package name="org.alfresco.rest.rm.community.*">
-            <exclude name="org.alfresco.rest.rm.community.records" />
-         </package>
+         <package name="org.alfresco.rest.rm.community.*"/>
       </packages>
    </test>
 </suite>

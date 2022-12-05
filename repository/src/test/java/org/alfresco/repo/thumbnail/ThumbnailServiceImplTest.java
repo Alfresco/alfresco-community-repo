@@ -81,10 +81,12 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -107,6 +109,7 @@ import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_F
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_MIME_TYPE;
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_PROPERTY_VALUE;
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_TRANSFORM_TIME;
+import static org.alfresco.util.log4j.Log4jAppenderUtil.addAbstractAppenderToLogger;
 
 /**
  * Thumbnail service implementation unit test
@@ -709,19 +712,19 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
      *
      * That is useful if you need to use the log output for your tests.
      */
-    private class LogErrorAppender extends AppenderSkeleton
+    @Plugin (name = "LogErrorAppender", category = "Core")
+    private class LogErrorAppender extends AbstractAppender
     {
 
-        private final List<LoggingEvent> log = new ArrayList<LoggingEvent>();
+        private final List<LogEvent> log = new ArrayList<LogEvent>();
 
-        @Override
-        public boolean requiresLayout()
+        protected LogErrorAppender()
         {
-            return false;
+            super("LogErrorAppender", null, null, false, null);
         }
 
         @Override
-        protected void append(final LoggingEvent loggingEvent)
+        public void append(final LogEvent loggingEvent)
         {
             if(loggingEvent.getLevel() == Level.ERROR)
             {
@@ -729,14 +732,9 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             }
         }
 
-        @Override
-        public void close()
+        public List<LogEvent> getLog()
         {
-        }
-
-        public List<LoggingEvent> getLog()
-        {
-            return new ArrayList<LoggingEvent>(log);
+            return new ArrayList<LogEvent>(log);
         }
     }
 
@@ -750,7 +748,9 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     {
         // Add the log appender to the root logger
         LogErrorAppender logErrorAppender = new LogErrorAppender();
-        Logger.getRootLogger().addAppender(logErrorAppender);
+        Logger rootLogger = LogManager.getRootLogger();
+
+        addAbstractAppenderToLogger(logErrorAppender, rootLogger);
 
         // create content node for thumbnail node
         NodeRef pdfOrig = createOriginalContent(folder, MimetypeMap.MIMETYPE_PDF);

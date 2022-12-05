@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,13 +34,13 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.calendar.CalendarModel;
 import org.alfresco.service.cmr.calendar.CalendarEntry;
-import org.alfresco.service.cmr.calendar.CalendarEntryDTO;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -57,7 +57,7 @@ public class CalendarAllDayEventDatesCorrectingPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.calendarAllDayEventDatesCorrectingPatch.result";
 
-    private static final Logger LOGGER = Logger.getLogger(CalendarAllDayEventDatesCorrectingPatch.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CalendarAllDayEventDatesCorrectingPatch.class);
 
     private int batchSize = 1000;
 

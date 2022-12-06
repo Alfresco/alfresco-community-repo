@@ -36,8 +36,6 @@ import static org.springframework.http.HttpStatus.OK;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
-
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
 import org.alfresco.rest.model.RestRuleSetModel;

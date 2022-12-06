@@ -33,7 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
  * The EventInfo model to be exposed through REST API.
  *
  * @author Swapnil Verma
- * @since 7.3.0
+ * @since 7.4.0-M2
  */
 public class EventInfo {
     private String id;

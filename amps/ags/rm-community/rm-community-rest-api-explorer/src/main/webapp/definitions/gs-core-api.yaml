@@ -2351,7 +2351,7 @@ paths:
         '200':
           description: Successful response
           schema:
-            $ref: '#/definitions/RetentionScheduleEntry'
+            $ref: '#/definitions/RetentionSchedule'
         '400':
           description: |
             Invalid parameter: The update request is invalid or **eventId** is not a valid format or **eventBodyUpdate** is invalid

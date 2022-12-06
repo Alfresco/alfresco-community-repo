@@ -264,6 +264,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 60 mvn -B verify -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-restapi"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
 
     - name: "REST API TAS tests part2"
@@ -273,6 +274,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 60 mvn -B verify -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-restapi"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
 
     - name: "REST API TAS tests part3"
@@ -282,6 +284,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 60 mvn -B verify -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-restapi"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
 
     - name: "CMIS TAS tests - BROWSER binding"
@@ -291,6 +294,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 40 mvn -B verify -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-browser -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-cmis"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-cmis"
 
     - name: "CMIS TAS tests - ATOM binding"
@@ -300,6 +304,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 40 mvn -B verify -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-atom -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-cmis"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-cmis"
 
     - name: "CMIS TAS tests - WEBSERVICES binding"
@@ -309,6 +314,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 40 mvn -B verify -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-webservices -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-cmis"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-cmis"
 
     - name: "Email TAS tests"
@@ -318,6 +324,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 30 mvn -B verify -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-email"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-email"
 
     - name: "WebDAV TAS tests"
@@ -327,6 +334,7 @@ jobs:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       script: travis_wait 30 mvn -B verify -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-webdav"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-webdav"
 
     - name: "Integration TAS tests"
@@ -337,6 +345,7 @@ jobs:
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
         - travis_retry travis_wait 40 mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       script: travis_wait 30 mvn -B verify -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
+      after_success: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-integration"
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-integration"
 
     - name: "Share Services - ShareServicesTestSuite"

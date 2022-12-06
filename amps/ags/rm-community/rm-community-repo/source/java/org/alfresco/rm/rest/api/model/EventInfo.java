@@ -40,7 +40,8 @@ public class EventInfo {
     private String name;
     private String type;
 
-    public static EventInfo fromRecordsManagementEvent(RecordsManagementEvent event) {
+    public static EventInfo fromRecordsManagementEvent(RecordsManagementEvent event)
+    {
         EventInfo eventInfo = new EventInfo();
         if (event != null) {
             eventInfo.setName(event.getDisplayLabel());
@@ -52,27 +53,33 @@ public class EventInfo {
 
     public EventInfo() {}
 
-    public String getId() {
+    public String getId()
+    {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(String id)
+    {
         this.id = id;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name)
+    {
         this.name = name;
     }
 
-    public String getType() {
+    public String getType()
+    {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(String type)
+    {
         this.type = type;
     }
 }

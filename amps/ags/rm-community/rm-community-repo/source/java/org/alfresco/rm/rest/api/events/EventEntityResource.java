@@ -61,7 +61,8 @@ public class EventEntityResource implements EntityResourceAction.Read<EventInfo>
 
     @Override
     @WebApiDescription(title = "Return a list of events")
-    public CollectionWithPagingInfo<EventInfo> readAll(Parameters params) {
+    public CollectionWithPagingInfo<EventInfo> readAll(Parameters params)
+    {
         Paging paging = params.getPaging();
 
         List<EventInfo> eventInfoList = recordsManagementEventService.getEvents().stream()

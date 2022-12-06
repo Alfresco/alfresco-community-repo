@@ -830,6 +830,8 @@
     </bean>
 
     <bean id="categories" class="org.alfresco.rest.api.impl.CategoriesImpl">
+        <constructor-arg name="authorityService" ref="AuthorityService"/>
+        <constructor-arg name="categoryService" ref="CategoryService"/>
         <constructor-arg name="nodes" ref="nodes"/>
         <constructor-arg name="nodeService" ref="NodeService"/>
     </bean>
@@ -1096,6 +1098,10 @@
     </bean>
 
     <bean class="org.alfresco.rest.api.categories.CategoriesEntityResource">
+        <constructor-arg name="categories" ref="Categories"/>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.categories.SubcategoriesRelation">
         <constructor-arg name="categories" ref="Categories"/>
     </bean>
 

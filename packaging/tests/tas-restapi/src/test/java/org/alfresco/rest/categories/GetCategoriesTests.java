@@ -52,9 +52,22 @@ public class GetCategoriesTests extends RestTest
     }
 
     /**
+     * Check we can get a category which we just created in as direct child of root category
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testGetCategoryById()
+    {
+        STEP("Get category with -root- as id (which does not exist)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId("-root-");
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
+        restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
+    /**
      * Check we get an error when passing -root- as category id
      */
-    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryByIdProvidingRootAsId()
     {
         STEP("Get category with -root- as id (which does not exist)");
@@ -67,7 +80,7 @@ public class GetCategoriesTests extends RestTest
     /**
      * Check we get an error when passing  as category id
      */
-    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryByIdProvidingFolderAsId()
     {
         STEP("Create a site and a folder inside it");

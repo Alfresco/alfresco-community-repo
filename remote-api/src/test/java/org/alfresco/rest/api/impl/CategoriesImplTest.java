@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -35,6 +36,7 @@ import static org.mockito.BDDMockito.then;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Nodes;
@@ -42,11 +44,14 @@ import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,6 +73,10 @@ public class CategoriesImplTest
     private NodeService nodeServiceMock;
     @Mock
     private Parameters parametersMock;
+    @Mock
+    private AuthorityService authorityServiceMock;
+    @Mock
+    private CategoryService categoryServiceMock;
     @Mock
     private ChildAssociationRef dummyChildAssociationRefMock;
     @Mock
@@ -93,6 +102,8 @@ public class CategoriesImplTest
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).should().getParentAssocs(categoryRootNodeRef);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
     }
 
     @Test
@@ -125,6 +136,8 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().getParentAssocs(categoryNodeRef);
         then(nodeServiceMock).should().getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
 
         assertEquals(categoryNode.getName(), category.getName());
         assertEquals(CATEGORY_ID, category.getId());
@@ -161,6 +174,8 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().getParentAssocs(categoryNodeRef);
         then(nodeServiceMock).should().getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
 
         assertEquals(categoryNode.getName(), category.getName());
         assertEquals(CATEGORY_ID, category.getId());
@@ -183,6 +198,8 @@ public class CategoriesImplTest
         then(nodesMock).shouldHaveNoMoreInteractions();
 
         then(nodeServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
     }
 
     @Test
@@ -197,5 +214,165 @@ public class CategoriesImplTest
         then(nodesMock).shouldHaveNoMoreInteractions();
 
         then(nodeServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testCreateCategoryUnderRoot()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PATH_ROOT);
+        given(categoryServiceMock.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
+                .willReturn(Optional.of(parentCategoryNodeRef));
+        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
+        final NodeRef categoryNodeRef = prepareCategoryNodeRef();
+        given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
+        given(nodesMock.getNode(CATEGORY_ID)).willReturn(prepareCategoryNode());
+        final ChildAssociationRef parentAssoc = new ChildAssociationRef(null, parentCategoryNodeRef, null, categoryNodeRef);
+        given(nodeServiceMock.getPrimaryParent(categoryNodeRef)).willReturn(parentAssoc);
+        given(nodeServiceMock.getParentAssocs(parentCategoryNodeRef)).willReturn(List.of(parentAssoc));
+        given(nodeServiceMock.getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false))
+                .willReturn(Collections.emptyList());
+
+        //when
+        final List<Category> createdCategories = objectUnderTest.createSubcategories(PATH_ROOT, prepareCategories(), parametersMock);
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).should().getNode(CATEGORY_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getPrimaryParent(categoryNodeRef);
+        then(nodeServiceMock).should().getParentAssocs(parentCategoryNodeRef);
+        then(nodeServiceMock).should().getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(categoryServiceMock).should().getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        then(categoryServiceMock).should().createCategory(parentCategoryNodeRef, CATEGORY_NAME);
+        then(categoryServiceMock).shouldHaveNoMoreInteractions();
+
+        assertEquals(1, createdCategories.size());
+        Category createdCategory = createdCategories.iterator().next();
+        assertEquals(CATEGORY_ID, createdCategory.getId());
+        assertEquals(CATEGORY_NAME, createdCategory.getName());
+        assertEquals(PATH_ROOT, createdCategory.getParentId());
+        assertFalse(createdCategory.getHasChildren());
+    }
+
+    @Test
+    public void testCreateCategory()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
+        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
+        final NodeRef categoryNodeRef = prepareCategoryNodeRef();
+        given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
+        given(nodesMock.getNode(CATEGORY_ID)).willReturn(prepareCategoryNode());
+        final ChildAssociationRef parentAssoc = new ChildAssociationRef(null, parentCategoryNodeRef, null, categoryNodeRef);
+        given(nodeServiceMock.getPrimaryParent(categoryNodeRef)).willReturn(parentAssoc);
+        given(nodeServiceMock.getParentAssocs(parentCategoryNodeRef)).willReturn(List.of(parentAssoc));
+        given(nodeServiceMock.getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false))
+                .willReturn(Collections.emptyList());
+
+        //when
+        final List<Category> createdCategories = objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock);
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().validateNode(PARENT_ID);
+        then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).should().getNode(CATEGORY_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getPrimaryParent(categoryNodeRef);
+        then(nodeServiceMock).should().getParentAssocs(parentCategoryNodeRef);
+        then(nodeServiceMock).should().getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(categoryServiceMock).should().createCategory(parentCategoryNodeRef, CATEGORY_NAME);
+        then(categoryServiceMock).shouldHaveNoMoreInteractions();
+
+        assertEquals(1, createdCategories.size());
+        Category createdCategory = createdCategories.iterator().next();
+        assertEquals(CATEGORY_ID, createdCategory.getId());
+        assertEquals(CATEGORY_NAME, createdCategory.getName());
+        assertEquals(PARENT_ID, createdCategory.getParentId());
+        assertFalse(createdCategory.getHasChildren());
+    }
+
+    private Node prepareCategoryNode()
+    {
+        final Node categoryNode = new Node();
+        categoryNode.setName(CATEGORY_NAME);
+        categoryNode.setNodeId(CATEGORY_ID);
+        final NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        categoryNode.setParentId(parentNodeRef);
+        return categoryNode;
+    }
+
+    @Test
+    public void testCreateCategories_noPermissions()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
+
+        //when
+        assertThrows(PermissionDeniedException.class,
+                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock));
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).shouldHaveNoInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testCreateCategories_wrongParentNodeType()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
+        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(false);
+
+        //when
+        assertThrows(InvalidArgumentException.class,
+                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock));
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().validateNode(PARENT_ID);
+        then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testCreateCategories_nonExistingParentNode()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        given(nodesMock.validateNode(PARENT_ID)).willThrow(EntityNotFoundException.class);
+
+        //when
+        assertThrows(EntityNotFoundException.class,
+                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock));
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().validateNode(PARENT_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+    }
+
+    private NodeRef prepareCategoryNodeRef()
+    {
+        return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID);
+    }
+
+    private List<Category> prepareCategories()
+    {
+        final Category category = new Category();
+        category.setName(CATEGORY_NAME);
+        return List.of(category);
     }
 }

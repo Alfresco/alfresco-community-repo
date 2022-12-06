@@ -25,6 +25,9 @@
  * #L%
  */
 
+/**
+ * Package info that defines the Information Governance Events REST API
+ */
 @WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
 package org.alfresco.rm.rest.api.events;
 import org.alfresco.rest.framework.Api;

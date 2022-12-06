@@ -29,6 +29,9 @@ package org.alfresco.rm.rest.api.model;
 
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 
+/**
+ * The EventInfo model to be exposed through REST API.
+ */
 public class EventInfo {
     private String id;
     private String name;

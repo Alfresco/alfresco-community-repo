@@ -39,6 +39,9 @@ import org.alfresco.rm.rest.api.model.EventInfo;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Event entity resource
+ */
 @EntityResource(name = "events", title = "Events")
 public class EventEntityResource implements EntityResourceAction.Read<EventInfo> {
     private RecordsManagementEventService recordsManagementEventService;

@@ -49,21 +49,6 @@ public class AddProcessVariablesCoreTests extends RestTest
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidProcessID"));
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify addProcessVariable by any user for empty processID with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void addProcessVariableForEmptyProcessIdIsEmpty() throws Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processModel.setId("");
-
-        processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)
-                                    .addProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding multiple process variables is falling in case invalid process id is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
@@ -81,21 +66,4 @@ public class AddProcessVariablesCoreTests extends RestTest
                   .assertLastError()
                   .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidProcessID"));
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-            description = "Adding multiple process variables is falling in case empty process id is provided")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void addMultipleProcessVariablesEmptyProcessId() throws Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:int");
-        variableModel1 = RestProcessVariableModel.getRandomProcessVariableModel("d:text");       
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();       
-        processModel.setId("");
-        
-        restClient.authenticateUser(assignee).withWorkflowAPI().usingProcess(processModel)           
-                                              .addProcessVariables(variableModel1, variableModel); 
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
-    }    
 }

@@ -36,27 +36,6 @@ public class DeleteProcessItemFullTests extends RestTest
         siteModel = dataSite.usingUser(userWhoStartsProcess).createPublicRandomSite();
         document = dataContent.usingUser(userWhoStartsProcess).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
-              description = "Try to delete existing process item using empty processId")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void deleteProcessItemUsingEmptyProcessId() throws Exception
-    {
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI()
-                .addProcess("activitiAdhoc", assignee, false, Priority.Normal);
-        document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        processModel.setId("");
-        restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessItem(processItem);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "The entity with id: "))
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
              description = "Add a new process item, update the item and then delete.")

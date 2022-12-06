@@ -66,6 +66,7 @@
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>restapi</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 

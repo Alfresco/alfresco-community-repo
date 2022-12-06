@@ -1,3 +1,28 @@
+/*-
+ * #%L
+ * alfresco-tas-restapi
+ * %%
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
+ * provided under the following open source license terms:
+ * 
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 package org.alfresco.rest;
 
 import java.lang.reflect.Method;
@@ -5,7 +30,6 @@ import java.lang.reflect.Method;
 import org.alfresco.dataprep.WorkflowService;
 import org.alfresco.rest.core.RestProperties;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.rules.RulesTestsUtils;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.data.DataContent;
@@ -62,15 +86,19 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     @Autowired
     protected WorkflowService workflow;
 
-    @Autowired
-    protected RulesTestsUtils rulesUtils;
-
     protected SiteModel testSite;
 
     @BeforeSuite(alwaysRun = true)
-    public void checkServerHealth() throws Exception
+    public void checkServerHealth()
     {
-        super.springTestContextPrepareTestInstance();
+        try
+        {
+            super.springTestContextPrepareTestInstance();
+        }
+        catch (Exception e)
+        {
+            throw new IllegalStateException("Error while preparing for test execution", e);
+        }
         serverHealth.assertServerIsOnline();
         testSite = dataSite.createPublicRandomSite();
     }

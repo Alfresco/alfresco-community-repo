@@ -396,7 +396,7 @@ jobs:
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt4 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Community Rest API Tests"
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
+      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/ AND commit_message !~ /\[skip tas\]/) OR (commit_message =~ /\[ags\]/ AND commit_message =~ /\[tas\]/)
       install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       addons:
         artifacts:
@@ -408,7 +408,8 @@ jobs:
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
-      script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags
+        - travis_wait 40 mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
+      script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       after_script: bash amps/ags/travis/scripts/getLogs.sh
 
     - name: "Push to Nexus"

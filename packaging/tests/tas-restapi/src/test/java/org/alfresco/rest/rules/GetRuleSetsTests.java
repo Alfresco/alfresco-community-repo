@@ -36,8 +36,6 @@ import static org.springframework.http.HttpStatus.OK;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
-
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
 import org.alfresco.rest.model.RestRuleSetModel;
@@ -57,7 +55,7 @@ import org.testng.annotations.Test;
  * Tests for GET /nodes/{nodeId}/rule-sets and /nodes/{nodeId}/rule-sets/{ruleSetId}.
  */
 @Test (groups = { TestGroup.RULES })
-public class GetRuleSetsTests extends RestTest
+public class GetRuleSetsTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

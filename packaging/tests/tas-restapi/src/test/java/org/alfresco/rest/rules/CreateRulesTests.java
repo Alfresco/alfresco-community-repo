@@ -26,7 +26,6 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
-
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.CHECKIN_ACTION;
@@ -58,11 +57,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
-
 import javax.json.Json;
 import javax.json.JsonObject;
 
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestActionConstraintModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
@@ -83,7 +80,7 @@ import org.testng.annotations.Test;
  * Tests for POST /nodes/{nodeId}/rule-sets/{ruleSetId}/rules.
  */
 @Test(groups = {TestGroup.RULES})
-public class CreateRulesTests extends RestTest
+public class CreateRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

@@ -29,7 +29,6 @@ package org.alfresco.rest.categories;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryModel;
@@ -54,7 +53,7 @@ public class GetCategoriesTests extends RestTest
     /**
      * Check we get an error when passing -root- as category id
      */
-    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryByIdProvidingRootAsId()
     {
         STEP("Get category with -root- as id (which does not exist)");
@@ -67,7 +66,7 @@ public class GetCategoriesTests extends RestTest
     /**
      * Check we get an error when passing  as category id
      */
-    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryByIdProvidingFolderAsId()
     {
         STEP("Create a site and a folder inside it");

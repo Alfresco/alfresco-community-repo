@@ -16,6 +16,7 @@
             <package name="org.alfresco.rest.trashcan.*"/>
             <package name="org.alfresco.rest.workflow.*"/>
             <package name="org.alfresco.rest.models.*"/>
+            <package name="org.alfresco.rest.categories.*"/>
         </packages>
     </test>
 </suite>

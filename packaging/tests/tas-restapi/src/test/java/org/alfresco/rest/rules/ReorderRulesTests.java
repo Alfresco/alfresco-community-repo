@@ -26,6 +26,7 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
+
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;

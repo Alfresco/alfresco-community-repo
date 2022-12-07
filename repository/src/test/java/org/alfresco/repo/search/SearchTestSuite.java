@@ -28,6 +28,7 @@ package org.alfresco.repo.search;
 import org.alfresco.repo.search.impl.parsers.CMISTest;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSTest;
 import org.alfresco.repo.search.impl.parsers.FTSTest;
+import org.alfresco.repo.search.impl.solr.SolrCategoryServiceImplTest;
 import org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactoryTest;
 import org.alfresco.repo.search.impl.solr.SolrSubsystemTest;
 import org.alfresco.util.NumericEncodingTest;
@@ -46,7 +47,8 @@ import org.junit.runners.Suite;
     CMISTest.class,
     FTSTest.class,
     SolrChildApplicationContextFactoryTest.class,
-    SolrSubsystemTest.class
+    SolrSubsystemTest.class,
+    SolrCategoryServiceImplTest.class
 })
 
 public class SearchTestSuite

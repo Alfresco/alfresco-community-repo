@@ -26,8 +26,198 @@
 
 package org.alfresco.rest.categories;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
+import java.util.List;
+
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.rest.model.RestCategoryModelsCollection;
+import org.alfresco.utility.data.RandomData;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.UserModel;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 public class CreateCategoriesTests extends RestTest
 {
+    private static final String FIELD_NAME = "name";
+    private static final String FIELD_PARENT_ID = "parentId";
+    private static final String FIELD_HAS_CHILDREN = "hasChildren";
+    private static final String FIELD_ID = "id";
+    private UserModel user;
+
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        STEP("Create a user");
+        user = dataUser.createRandomTestUser();
+    }
+
+    /**
+     * Check we can create a category as direct child of root category
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testCreateCategoryUnderRoot()
+    {
+        STEP("Create a category under root category (as admin)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId("-root-");
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(RandomData.getRandomName("Category"));
+        final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(CREATED);
+
+        createdCategory.assertThat()
+                .field(FIELD_NAME).is(aCategory.getName());
+        createdCategory.assertThat()
+                .field(FIELD_PARENT_ID).is(rootCategory.getId());
+        createdCategory.assertThat()
+                .field(FIELD_HAS_CHILDREN).is(false);
+    }
+
+    /**
+     * Check we can create several categories as children of a created category
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testCreateSeveralSubCategories()
+    {
+        STEP("Create a category under root category (as admin)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId("-root-");
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(RandomData.getRandomName("Category"));
+        final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(CREATED);
+
+        createdCategory.assertThat()
+                    .field(FIELD_NAME).is(aCategory.getName())
+                .assertThat()
+                    .field(FIELD_PARENT_ID).is(rootCategory.getId())
+                .assertThat()
+                    .field(FIELD_HAS_CHILDREN).is(false)
+                .assertThat()
+                    .field(FIELD_ID).isNotEmpty();
+
+        STEP("Create two categories under the previously created (as admin)");
+        final RestCategoryModel aSubCategory1 = new RestCategoryModel();
+        aSubCategory1.setName(RandomData.getRandomName("SubCategory"));
+        final RestCategoryModel aSubCategory2 = new RestCategoryModel();
+        aSubCategory2.setName(RandomData.getRandomName("SubCategory"));
+        final List<RestCategoryModel> categoriesToCreate = List.of(aSubCategory1, aSubCategory2);
+        final RestCategoryModelsCollection createdSubCategories = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(createdCategory)
+                .createCategoriesList(categoriesToCreate);
+        restClient.assertStatusCodeIs(CREATED);
+        createdSubCategories.assertThat()
+                .entriesListCountIs(categoriesToCreate.size())
+                .getEntries()
+                    .get(0).onModel()
+                        .assertThat()
+                            .field(FIELD_NAME).is(aSubCategory1.getName())
+                        .assertThat()
+                            .field(FIELD_PARENT_ID).is(createdCategory.getId())
+                        .assertThat()
+                            .field(FIELD_HAS_CHILDREN).is(false)
+                        .assertThat()
+                            .field(FIELD_ID).isNotEmpty();
+        createdSubCategories.assertThat()
+                .entriesListCountIs(categoriesToCreate.size())
+                .getEntries()
+                    .get(1).onModel()
+                        .assertThat()
+                            .field(FIELD_NAME).is(aSubCategory2.getName())
+                        .assertThat()
+                            .field(FIELD_PARENT_ID).is(createdCategory.getId())
+                        .assertThat()
+                            .field(FIELD_HAS_CHILDREN).is(false)
+                        .assertThat()
+                            .field(FIELD_ID).isNotEmpty();
+        STEP("Get the parent category and check if it now has children (as regular user)");
+        final RestCategoryModel parentCategoryFromGet = restClient.authenticateUser(user)
+                .withCoreAPI()
+                .usingCategory(createdCategory)
+                .getCategory();
+
+        parentCategoryFromGet.assertThat()
+                .field(FIELD_NAME).is(aCategory.getName())
+                .assertThat()
+                .field(FIELD_PARENT_ID).is(rootCategory.getId())
+                .assertThat()
+                .field(FIELD_HAS_CHILDREN).is(true)
+                .assertThat()
+                .field(FIELD_ID).isNotEmpty();
+    }
+
+    /**
+     * Check we cannot create a category as direct child of root category as non-admin user
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testCreateCategoryUnderRootAsRegularUser_andFail()
+    {
+        STEP("Create a category under root category (as user)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId("-root-");
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(RandomData.getRandomName("Category"));
+        restClient.authenticateUser(user)
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(FORBIDDEN).assertLastError().containsSummary("Current user does not have permission to create a category");
+    }
+
+    /**
+     * Check we cannot create a category under non existing parent node
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testCreateCategoryUnderNonExistingParent_andFail()
+    {
+        STEP("Create a category under non existing category node (as admin)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        final String id = "non-existing-node-id";
+        rootCategory.setId(id);
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(RandomData.getRandomName("Category"));
+        restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(NOT_FOUND).assertLastError().containsSummary("The entity with id: " + id + " was not found");
+    }
+
+    /**
+     * Check we cannot create a category under a node which is not a category
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testCreateCategoryUnderFolderNode_andFail()
+    {
+        STEP("Create a site and a folder inside it");
+        final SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
+        final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Create a category under folder node (as admin)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId(folder.getNodeRef());
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(RandomData.getRandomName("Category"));
+        restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
+    }
 }

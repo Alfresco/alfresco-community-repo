@@ -25,9 +25,15 @@
  */
 package org.alfresco.rest.requests;
 
+import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
+
+import java.util.List;
+
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.rest.model.RestCategoryModelsCollection;
+import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.springframework.http.HttpMethod;
 
 public class Categories extends ModelRequest<Categories>
@@ -43,12 +49,34 @@ public class Categories extends ModelRequest<Categories>
     /**
      * Retrieves a category with ID using GET call on using GET call on "/tags/{tagId}"
      *
-     * @return
+     * @return RestCategoryModel
      */
     public RestCategoryModel getCategory()
     {
         RestRequest request = RestRequest
                 .simpleRequest(HttpMethod.GET, "categories/{categoryId}?{parameters}", category.getId(), restWrapper.getParameters());
+        return restWrapper.processModel(RestCategoryModel.class, request);
+    }
+
+    /**
+     * Create several categories in one request.
+     *
+     * @param restCategoryModels The list of categories to create.
+     * @return The list of created categories with additional data populated by the repository.
+     */
+    public RestCategoryModelsCollection createCategoriesList(List<RestCategoryModel> restCategoryModels) {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, arrayToJson(restCategoryModels), "categories/{categoryId}/subcategories", category.getId());
+        return restWrapper.processModels(RestCategoryModelsCollection.class, request);
+    }
+
+    /**
+     * Create single category.
+     *
+     * @param restCategoryModel The categories to create.
+     * @return Created category with additional data populated by the repository.
+     */
+    public RestCategoryModel createSingleCategory(RestCategoryModel restCategoryModel) {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, restCategoryModel.toJson(), "categories/{categoryId}/subcategories", category.getId());
         return restWrapper.processModel(RestCategoryModel.class, request);
     }
 

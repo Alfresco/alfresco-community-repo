@@ -1,5 +1,7 @@
 package org.alfresco.rest.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
@@ -47,8 +49,7 @@ This must be unique within the parent category.
     private boolean hasChildren;	    
     /**
     The number of nodes that are assigned to this category.
-    */	        
-
+    */
     private long count;
 
     public String getId()
@@ -99,6 +100,33 @@ This must be unique within the parent category.
     public void setCount(long count)
     {
         this.count = count;
-    }				
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RestCategoryModel that = (RestCategoryModel) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestCategoryModel{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", parentId='" + parentId + '\'' +
+                ", hasChildren=" + hasChildren +
+                ", count=" + count +
+                '}';
+    }
 }
  

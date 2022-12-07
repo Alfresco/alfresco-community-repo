@@ -28,9 +28,7 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -136,13 +134,17 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().getParentAssocs(categoryNodeRef);
         then(nodeServiceMock).should().getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
-        then(categoryServiceMock).shouldHaveNoInteractions();
-        then(authorityServiceMock).shouldHaveNoMoreInteractions();
 
-        assertEquals(categoryNode.getName(), category.getName());
-        assertEquals(CATEGORY_ID, category.getId());
-        assertEquals(PARENT_ID, category.getParentId());
-        assertTrue(category.getHasChildren());
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoInteractions();
+
+        final Category expectedCategory = Category.builder()
+                .id(CATEGORY_ID)
+                .name(categoryNode.getName())
+                .hasChildren(true)
+                .parentId(PARENT_ID)
+                .create();
+        assertEquals(expectedCategory, category);
     }
 
     @Test
@@ -174,13 +176,17 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().getParentAssocs(categoryNodeRef);
         then(nodeServiceMock).should().getChildAssocs(categoryNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
-        then(categoryServiceMock).shouldHaveNoInteractions();
-        then(authorityServiceMock).shouldHaveNoMoreInteractions();
 
-        assertEquals(categoryNode.getName(), category.getName());
-        assertEquals(CATEGORY_ID, category.getId());
-        assertEquals(PARENT_ID, category.getParentId());
-        assertFalse(category.getHasChildren());
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoInteractions();
+
+        final Category expectedCategory = Category.builder()
+                .id(CATEGORY_ID)
+                .name(categoryNode.getName())
+                .hasChildren(false)
+                .parentId(PARENT_ID)
+                .create();
+        assertEquals(expectedCategory, category);
     }
 
     @Test
@@ -199,7 +205,7 @@ public class CategoriesImplTest
 
         then(nodeServiceMock).shouldHaveNoInteractions();
         then(categoryServiceMock).shouldHaveNoInteractions();
-        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(authorityServiceMock).shouldHaveNoInteractions();
     }
 
     @Test
@@ -215,7 +221,7 @@ public class CategoriesImplTest
 
         then(nodeServiceMock).shouldHaveNoInteractions();
         then(categoryServiceMock).shouldHaveNoInteractions();
-        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(authorityServiceMock).shouldHaveNoInteractions();
     }
 
     @Test
@@ -252,11 +258,14 @@ public class CategoriesImplTest
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
 
         assertEquals(1, createdCategories.size());
-        Category createdCategory = createdCategories.iterator().next();
-        assertEquals(CATEGORY_ID, createdCategory.getId());
-        assertEquals(CATEGORY_NAME, createdCategory.getName());
-        assertEquals(PATH_ROOT, createdCategory.getParentId());
-        assertFalse(createdCategory.getHasChildren());
+        final Category expectedCategory = Category.builder()
+                .id(CATEGORY_ID)
+                .name(CATEGORY_NAME)
+                .hasChildren(false)
+                .parentId(PATH_ROOT)
+                .create();
+        final Category createdCategory = createdCategories.iterator().next();
+        assertEquals(expectedCategory, createdCategory);
     }
 
     @Test
@@ -292,21 +301,14 @@ public class CategoriesImplTest
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
 
         assertEquals(1, createdCategories.size());
-        Category createdCategory = createdCategories.iterator().next();
-        assertEquals(CATEGORY_ID, createdCategory.getId());
-        assertEquals(CATEGORY_NAME, createdCategory.getName());
-        assertEquals(PARENT_ID, createdCategory.getParentId());
-        assertFalse(createdCategory.getHasChildren());
-    }
-
-    private Node prepareCategoryNode()
-    {
-        final Node categoryNode = new Node();
-        categoryNode.setName(CATEGORY_NAME);
-        categoryNode.setNodeId(CATEGORY_ID);
-        final NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
-        categoryNode.setParentId(parentNodeRef);
-        return categoryNode;
+        final Category expectedCategory = Category.builder()
+                .id(CATEGORY_ID)
+                .name(CATEGORY_NAME)
+                .hasChildren(false)
+                .parentId(PARENT_ID)
+                .create();
+        final Category createdCategory = createdCategories.iterator().next();
+        assertEquals(expectedCategory, createdCategory);
     }
 
     @Test
@@ -364,6 +366,16 @@ public class CategoriesImplTest
         then(categoryServiceMock).shouldHaveNoInteractions();
     }
 
+    private Node prepareCategoryNode()
+    {
+        final Node categoryNode = new Node();
+        categoryNode.setName(CATEGORY_NAME);
+        categoryNode.setNodeId(CATEGORY_ID);
+        final NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        categoryNode.setParentId(parentNodeRef);
+        return categoryNode;
+    }
+
     private NodeRef prepareCategoryNodeRef()
     {
         return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID);
@@ -371,8 +383,8 @@ public class CategoriesImplTest
 
     private List<Category> prepareCategories()
     {
-        final Category category = new Category();
-        category.setName(CATEGORY_NAME);
-        return List.of(category);
+        return List.of(Category.builder()
+                .name(CATEGORY_NAME)
+                .create());
     }
 }

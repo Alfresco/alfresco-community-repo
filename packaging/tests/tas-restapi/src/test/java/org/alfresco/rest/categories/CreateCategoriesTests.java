@@ -33,6 +33,8 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryModel;
@@ -77,12 +79,9 @@ public class CreateCategoriesTests extends RestTest
                 .createSingleCategory(aCategory);
         restClient.assertStatusCodeIs(CREATED);
 
-        createdCategory.assertThat()
-                .field(FIELD_NAME).is(aCategory.getName());
-        createdCategory.assertThat()
-                .field(FIELD_PARENT_ID).is(rootCategory.getId());
-        createdCategory.assertThat()
-                .field(FIELD_HAS_CHILDREN).is(false);
+        createdCategory.assertThat().field(FIELD_NAME).is(aCategory.getName());
+        createdCategory.assertThat().field(FIELD_PARENT_ID).is(rootCategory.getId());
+        createdCategory.assertThat().field(FIELD_HAS_CHILDREN).is(false);
     }
 
     /**
@@ -102,64 +101,37 @@ public class CreateCategoriesTests extends RestTest
                 .createSingleCategory(aCategory);
         restClient.assertStatusCodeIs(CREATED);
 
-        createdCategory.assertThat()
-                    .field(FIELD_NAME).is(aCategory.getName())
-                .assertThat()
-                    .field(FIELD_PARENT_ID).is(rootCategory.getId())
-                .assertThat()
-                    .field(FIELD_HAS_CHILDREN).is(false)
-                .assertThat()
-                    .field(FIELD_ID).isNotEmpty();
+        createdCategory.assertThat().field(FIELD_NAME).is(aCategory.getName())
+                .assertThat().field(FIELD_PARENT_ID).is(rootCategory.getId())
+                .assertThat().field(FIELD_HAS_CHILDREN).is(false)
+                .assertThat().field(FIELD_ID).isNotEmpty();
 
         STEP("Create two categories under the previously created (as admin)");
-        final RestCategoryModel aSubCategory1 = new RestCategoryModel();
-        aSubCategory1.setName(RandomData.getRandomName("SubCategory"));
-        final RestCategoryModel aSubCategory2 = new RestCategoryModel();
-        aSubCategory2.setName(RandomData.getRandomName("SubCategory"));
-        final List<RestCategoryModel> categoriesToCreate = List.of(aSubCategory1, aSubCategory2);
+        final int categoriesNumber = 2;
+        final List<RestCategoryModel> categoriesToCreate = getCategoriesToCreate(categoriesNumber);
         final RestCategoryModelsCollection createdSubCategories = restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingCategory(createdCategory)
                 .createCategoriesList(categoriesToCreate);
         restClient.assertStatusCodeIs(CREATED);
+
         createdSubCategories.assertThat()
-                .entriesListCountIs(categoriesToCreate.size())
-                .getEntries()
-                    .get(0).onModel()
-                        .assertThat()
-                            .field(FIELD_NAME).is(aSubCategory1.getName())
-                        .assertThat()
-                            .field(FIELD_PARENT_ID).is(createdCategory.getId())
-                        .assertThat()
-                            .field(FIELD_HAS_CHILDREN).is(false)
-                        .assertThat()
-                            .field(FIELD_ID).isNotEmpty();
-        createdSubCategories.assertThat()
-                .entriesListCountIs(categoriesToCreate.size())
-                .getEntries()
-                    .get(1).onModel()
-                        .assertThat()
-                            .field(FIELD_NAME).is(aSubCategory2.getName())
-                        .assertThat()
-                            .field(FIELD_PARENT_ID).is(createdCategory.getId())
-                        .assertThat()
-                            .field(FIELD_HAS_CHILDREN).is(false)
-                        .assertThat()
-                            .field(FIELD_ID).isNotEmpty();
+                .entriesListCountIs(categoriesToCreate.size());
+        IntStream.range(0, categoriesNumber)
+                .forEach(i -> createdSubCategories.getEntries().get(i).onModel()
+                    .assertThat().field(FIELD_NAME).is(categoriesToCreate.get(i).getName())
+                    .assertThat().field(FIELD_PARENT_ID).is(createdCategory.getId())
+                    .assertThat().field(FIELD_HAS_CHILDREN).is(false)
+                    .assertThat().field(FIELD_ID).isNotEmpty()
+                );
+
         STEP("Get the parent category and check if it now has children (as regular user)");
         final RestCategoryModel parentCategoryFromGet = restClient.authenticateUser(user)
                 .withCoreAPI()
                 .usingCategory(createdCategory)
                 .getCategory();
 
-        parentCategoryFromGet.assertThat()
-                .field(FIELD_NAME).is(aCategory.getName())
-                .assertThat()
-                .field(FIELD_PARENT_ID).is(rootCategory.getId())
-                .assertThat()
-                .field(FIELD_HAS_CHILDREN).is(true)
-                .assertThat()
-                .field(FIELD_ID).isNotEmpty();
+        parentCategoryFromGet.assertThat().field(FIELD_HAS_CHILDREN).is(true);
     }
 
     /**
@@ -219,5 +191,16 @@ public class CreateCategoriesTests extends RestTest
                 .usingCategory(rootCategory)
                 .createSingleCategory(aCategory);
         restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
+    }
+
+    private List<RestCategoryModel> getCategoriesToCreate(final int count)
+    {
+        return IntStream.range(0, count)
+                .mapToObj(i -> {
+                    final RestCategoryModel aSubCategory = new RestCategoryModel();
+                    aSubCategory.setName((RandomData.getRandomName("SubCategory")));
+                    return aSubCategory;
+                })
+                .collect(Collectors.toList());
     }
 }

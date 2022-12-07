@@ -111,15 +111,15 @@ public class CategoriesImpl implements Categories
 
     private Category mapToCategory(NodeRef nodeRef)
     {
-        final Category category = new Category();
         final Node categoryNode = nodes.getNode(nodeRef.getId());
-        category.setId(nodeRef.getId());
-        category.setName(categoryNode.getName());
-        category.setParentId(getParentId(nodeRef));
         final boolean hasChildren = CollectionUtils
                 .isNotEmpty(nodeService.getChildAssocs(nodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false));
-        category.setHasChildren(hasChildren);
-        return category;
+        return Category.builder()
+                .id(nodeRef.getId())
+                .name(categoryNode.getName())
+                .parentId(getParentId(nodeRef))
+                .hasChildren(hasChildren)
+                .create();
     }
 
     private boolean isRootCategory(final NodeRef nodeRef)

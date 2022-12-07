@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestRuleExecutionModel;

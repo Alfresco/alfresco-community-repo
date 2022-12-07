@@ -27,10 +27,8 @@ package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -38,14 +36,11 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -61,9 +56,9 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.ConstraintDefinition;
+import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.PropertyDefinition;
@@ -106,7 +101,6 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -3604,123 +3598,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // -ve - try to invalid media type argument (when parsing request)
         payload = new BinaryPayload(txtFile, "/jpeg", null);
         putBinary(url, payload, null, null, 415);
-    }
-
-    /**
-     * Tests download of file/content.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
-     */
-    @Test
-    @Ignore("ACS-3531 Frequent intermittent failure")
-    public void testDownloadFileContent() throws Exception
-    {
-        setRequestContext(user1);
-
-        //
-        // Test plain text
-        //
-
-        String fileName = "quick-1.txt";
-        File file = getResourceFile(fileName);
-
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file));
-        MultiPartRequest reqBody = multiPartBuilder.build();
-
-        // Upload text content
-        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-        String contentNodeId = document.getId();
-
-        // Check the upload response
-        assertEquals(fileName, document.getName());
-        ContentInfo contentInfo = document.getContent();
-        assertNotNull(contentInfo);
-        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
-
-        // Download text content - by default with Content-Disposition header
-        response = getSingle(NodesEntityResource.class, contentNodeId + "/content", null, 200);
-
-        String textContent = response.getResponse();
-        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
-        Map<String, String> responseHeaders = response.getHeaders();
-        assertNotNull(responseHeaders);
-        assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", responseHeaders.get("Content-Disposition"));
-        String cacheControl = responseHeaders.get("Cache-Control");
-        assertNotNull(cacheControl);
-        assertTrue(cacheControl.contains("must-revalidate"));
-        assertTrue(cacheControl.contains("max-age=0"));
-        assertNotNull(responseHeaders.get("Expires"));
-        String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
-        assertNotNull(lastModifiedHeader);
-        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
-        // Test 304 response
-        getSingle(getNodeContentUrl(contentNodeId), null, null, headers, 304);
-
-        // Update the content to change the node's modified date
-        Document docUpdate = new Document();
-        docUpdate.setProperties(Collections.singletonMap("cm:description", (Object) "desc updated!"));
-        // Wait a second then update, as the dates will be rounded to
-        // ignore millisecond when checking for If-Modified-Since
-        Thread.sleep(1000L);
-        response = put(URL_NODES, contentNodeId, toJsonAsStringNonNull(docUpdate), null, 200);
-        Document updatedDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        assertEquals(contentNodeId, updatedDocument.getId());
-
-        // The requested "If-Modified-Since" date is older than node's modified date
-        response = getSingle(getNodeContentUrl(contentNodeId), null, null, headers, 200);
-        responseHeaders = response.getHeaders();
-        assertNotNull(responseHeaders);
-        assertNotNull(responseHeaders.get("Cache-Control"));
-        assertNotNull(responseHeaders.get("Expires"));
-        String newLastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
-        assertNotNull(newLastModifiedHeader);
-        assertNotEquals(lastModifiedHeader, newLastModifiedHeader);
-
-        //
-        // Test binary (eg. PDF)
-        //
-
-        fileName = "quick.pdf";
-        file = getResourceFile(fileName);
-        byte[] originalBytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
-
-        multiPartBuilder = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file));
-        reqBody = multiPartBuilder.build();
-
-        // Upload binary content
-        response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-        contentNodeId = document.getId();
-
-        // Check the upload response
-        assertEquals(fileName, document.getName());
-        contentInfo = document.getContent();
-        assertNotNull(contentInfo);
-        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
-
-        // Download binary content (as bytes) - without Content-Disposition header (attachment=false)
-        Map<String, String> params = new LinkedHashMap<>();
-        params.put("attachment", "false");
-
-        response = getSingle(NodesEntityResource.class, contentNodeId + "/content", params, 200);
-        byte[] bytes = response.getResponseAsBytes();
-        assertArrayEquals(originalBytes, bytes);
-
-        responseHeaders = response.getHeaders();
-        assertNotNull(responseHeaders);
-        assertNull(responseHeaders.get("Content-Disposition"));
-        assertNotNull(responseHeaders.get("Cache-Control"));
-        assertNotNull(responseHeaders.get("Expires"));
-        lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
-        assertNotNull(lastModifiedHeader);
-        headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
-        // Test 304 response
-        getSingle(getNodeContentUrl(contentNodeId), null, null, headers, 304);
     }
 
     /**

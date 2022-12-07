@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2022 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
- * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies against the otherwise
+ * A stand in for the org.apache.logging.log4j.ThreadContext class that avoids introducing runtime dependencies against the otherwise
  * optional log4j.
  * 
  * @author dward
@@ -32,7 +32,7 @@ public class NDC
 {
     private static Log logger = LogFactory.getLog(NDC.class);
     
-    /** Log4J delegate for NDC */
+    /** Log4J2 delegate for NDC */
     private static NDCDelegate ndcDelegate;
 
     static

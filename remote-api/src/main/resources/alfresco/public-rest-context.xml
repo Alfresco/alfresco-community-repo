@@ -1108,7 +1108,7 @@
     <bean class="org.alfresco.rest.api.tags.TagsEntityResource">
         <property name="tags" ref="Tags" />
     </bean>
-
+	
     <bean class="org.alfresco.rest.api.people.PersonSitesRelation">
         <property name="sites" ref="Sites" />
     </bean>

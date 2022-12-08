@@ -29,6 +29,7 @@ package org.alfresco.rest.categories;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryModel;
@@ -48,6 +49,19 @@ public class GetCategoriesTests extends RestTest
     {
         STEP("Create a user");
         user = dataUser.createRandomTestUser();
+    }
+
+    /**
+     * Check we can get a category which we just created in as direct child of root category
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testGetCategoryById()
+    {
+        STEP("Get category with -root- as id (which does not exist)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId("-root-");
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
+        restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
     /**

@@ -24,19 +24,36 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.rest.api.categories;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
 
-@Experimental
-public interface Categories
+@RelationshipResource(name = "subcategories",  entityResource = CategoriesEntityResource.class, title = "Subcategories")
+public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>
 {
-    Category getCategoryById(String id, Parameters params);
 
-    List<Category> createSubcategories(String parentCategoryId, List<Category> categories, Parameters parameters);
+    private final Categories categories;
+
+    public SubcategoriesRelation(Categories categories)
+    {
+        this.categories = categories;
+    }
+
+    @WebApiDescription(title = "Create a category",
+            description = "Creates one or more categories under a parent category",
+            successStatus = HttpServletResponse.SC_CREATED)
+    @Override
+    public List<Category> create(String parentCategoryId, List<Category> categoryList, Parameters parameters)
+    {
+        return categories.createSubcategories(parentCategoryId, categoryList, parameters);
+    }
 }

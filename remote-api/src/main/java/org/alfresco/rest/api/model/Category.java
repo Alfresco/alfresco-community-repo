@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.model;
 
+import java.util.Objects;
+
 public class Category
 {
     private String id;
@@ -72,4 +74,68 @@ public class Category
     {
         this.hasChildren = hasChildren;
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Category category = (Category) o;
+        return hasChildren == category.hasChildren && Objects.equals(id, category.id) && name.equals(category.name) &&
+                Objects.equals(parentId, category.parentId);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, name, parentId, hasChildren);
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String id;
+        private String name;
+        private String parentId;
+        private boolean hasChildren;
+
+        public Builder id(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name)
+        {
+            this.name = name;
+            return this;
+        }
+
+        public Builder parentId(String parentId)
+        {
+            this.parentId = parentId;
+            return this;
+        }
+
+        public Builder hasChildren(boolean hasChildren)
+        {
+            this.hasChildren = hasChildren;
+            return this;
+        }
+
+        public Category create()
+        {
+            final Category category = new Category();
+            category.setId(id);
+            category.setName(name);
+            category.setParentId(parentId);
+            category.setHasChildren(hasChildren);
+            return category;
+        }
+    }
+
 }

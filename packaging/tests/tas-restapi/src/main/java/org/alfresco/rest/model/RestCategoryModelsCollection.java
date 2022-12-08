@@ -24,19 +24,12 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.rest.model;
 
-import java.util.List;
+import org.alfresco.rest.core.RestModels;
 
-import org.alfresco.rest.api.model.Category;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-@Experimental
-public interface Categories
+public class RestCategoryModelsCollection extends RestModels<RestCategoryModel, RestCandidateModelsCollection>
 {
-    Category getCategoryById(String id, Parameters params);
 
-    List<Category> createSubcategories(String parentCategoryId, List<Category> categories, Parameters parameters);
 }
+ 

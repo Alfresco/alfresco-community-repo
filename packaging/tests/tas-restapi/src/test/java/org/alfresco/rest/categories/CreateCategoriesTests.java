@@ -175,7 +175,7 @@ public class CreateCategoriesTests extends RestTest
                 .assertThat().field(FIELD_HAS_CHILDREN).is(false)
                 .assertThat().field(FIELD_ID).isNotEmpty();
 
-        STEP("Create two categories under the previously created (as admin)");
+        STEP("Create more than a hundred categories under the previously created (as admin)");
         final int categoriesNumber = 120;
         final List<RestCategoryModel> categoriesToCreate = getCategoriesToCreate(categoriesNumber);
         final RestCategoryModelsCollection createdSubCategories = restClient.authenticateUser(dataUser.getAdminUser())

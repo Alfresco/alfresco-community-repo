@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import joptsimple.internal.Strings;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
@@ -45,6 +44,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -95,7 +95,7 @@ public class CreateCategoriesTests extends RestTest
         final RestCategoryModel rootCategory = new RestCategoryModel();
         rootCategory.setId("-root-");
         final RestCategoryModel aCategory = new RestCategoryModel();
-        aCategory.setName(Strings.EMPTY);
+        aCategory.setName(StringUtils.EMPTY);
         restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingCategory(rootCategory)

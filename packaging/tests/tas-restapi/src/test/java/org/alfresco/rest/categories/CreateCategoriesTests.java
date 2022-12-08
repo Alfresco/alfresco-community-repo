@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import joptsimple.internal.Strings;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
@@ -82,6 +83,24 @@ public class CreateCategoriesTests extends RestTest
         createdCategory.assertThat().field(FIELD_NAME).is(aCategory.getName());
         createdCategory.assertThat().field(FIELD_PARENT_ID).is(rootCategory.getId());
         createdCategory.assertThat().field(FIELD_HAS_CHILDREN).is(false);
+    }
+
+    /**
+     * Check we get 400 error when attempting to create a category with empty name
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testCreateCategoryWithoutName_andFail()
+    {
+        STEP("Create a category under root category (as admin)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId("-root-");
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(Strings.EMPTY);
+        restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Category name must not be null or empty");
     }
 
     /**
@@ -132,6 +151,54 @@ public class CreateCategoriesTests extends RestTest
                 .getCategory();
 
         parentCategoryFromGet.assertThat().field(FIELD_HAS_CHILDREN).is(true);
+    }
+
+    /**
+     * Check we can create over 100 categories as children of a created category and pagination information is proper.
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testCreateOver100SubCategories()
+    {
+        STEP("Create a category under root category (as admin)");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId("-root-");
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(RandomData.getRandomName("Category"));
+        final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(CREATED);
+
+        createdCategory.assertThat().field(FIELD_NAME).is(aCategory.getName())
+                .assertThat().field(FIELD_PARENT_ID).is(rootCategory.getId())
+                .assertThat().field(FIELD_HAS_CHILDREN).is(false)
+                .assertThat().field(FIELD_ID).isNotEmpty();
+
+        STEP("Create two categories under the previously created (as admin)");
+        final int categoriesNumber = 120;
+        final List<RestCategoryModel> categoriesToCreate = getCategoriesToCreate(categoriesNumber);
+        final RestCategoryModelsCollection createdSubCategories = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(createdCategory)
+                .createCategoriesList(categoriesToCreate);
+        restClient.assertStatusCodeIs(CREATED);
+
+        createdSubCategories.assertThat()
+                .entriesListCountIs(categoriesToCreate.size());
+        IntStream.range(0, categoriesNumber)
+                .forEach(i -> createdSubCategories.getEntries().get(i).onModel()
+                        .assertThat().field(FIELD_NAME).is(categoriesToCreate.get(i).getName())
+                        .assertThat().field(FIELD_PARENT_ID).is(createdCategory.getId())
+                        .assertThat().field(FIELD_HAS_CHILDREN).is(false)
+                        .assertThat().field(FIELD_ID).isNotEmpty()
+                );
+        createdSubCategories.getPagination().assertThat().field("count").is(categoriesNumber)
+            .assertThat().field("totalItems").is(categoriesNumber)
+            .assertThat().field("maxItems").is(categoriesNumber)
+            .assertThat().field("skipCount").is(0)
+            .assertThat().field("hasMoreItems").is(false);
+
     }
 
     /**

@@ -49,12 +49,14 @@ import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Experimental
 public class CategoriesImpl implements Categories
 {
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_CREATE_A_CATEGORY = "Current user does not have permission to create a category";
+    private static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
@@ -97,11 +99,19 @@ public class CategoriesImpl implements Categories
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{parentCategoryId});
         }
         final List<NodeRef> categoryNodeRefs = categories.stream()
-                .map(c -> categoryService.createCategory(parentNodeRef, c.getName()))
+                .map(c -> createCategoryNodeRef(parentNodeRef, c))
                 .collect(Collectors.toList());
         return categoryNodeRefs.stream()
                 .map(this::mapToCategory)
                 .collect(Collectors.toList());
+    }
+
+    private NodeRef createCategoryNodeRef(NodeRef parentNodeRef, Category c)
+    {
+        if (StringUtils.isEmpty(c.getName())) {
+            throw new InvalidArgumentException(NOT_NULL_OR_EMPTY);
+        }
+        return categoryService.createCategory(parentNodeRef, c.getName());
     }
 
     private boolean isNotACategory(NodeRef nodeRef)

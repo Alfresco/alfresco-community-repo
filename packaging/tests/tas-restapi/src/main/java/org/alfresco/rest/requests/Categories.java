@@ -47,7 +47,7 @@ public class Categories extends ModelRequest<Categories>
     }
 
     /**
-     * Retrieves a category with ID using GET call on using GET call on "/tags/{tagId}"
+     * Retrieves a category with ID using GET call on "/categories/{categoryId}"
      *
      * @return RestCategoryModel
      */

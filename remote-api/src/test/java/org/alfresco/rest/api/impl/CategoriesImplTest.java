@@ -231,7 +231,6 @@ public class CategoriesImplTest
         final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PATH_ROOT);
         given(categoryServiceMock.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
                 .willReturn(Optional.of(parentCategoryNodeRef));
-        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
         final NodeRef categoryNodeRef = prepareCategoryNodeRef();
         given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
         given(nodesMock.getNode(CATEGORY_ID)).willReturn(prepareCategoryNode());
@@ -246,7 +245,6 @@ public class CategoriesImplTest
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
-        then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
         then(nodesMock).should().getNode(CATEGORY_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).should().getPrimaryParent(categoryNodeRef);
@@ -364,6 +362,60 @@ public class CategoriesImplTest
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).shouldHaveNoInteractions();
         then(categoryServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testGetRootCategoryChildren()
+    {
+        //TODO: add test logic
+    }
+
+    @Test
+    public void testGetCategoryChildren()
+    {
+        //TODO: add test logic
+    }
+
+    @Test
+    public void testGetCategoryChildren_noChildren()
+    {
+        //TODO: add test logic
+    }
+
+    @Test
+    public void testGetCategoryChildren_wrongParentNodeType()
+    {
+        final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
+        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(false);
+
+        //when
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock));
+
+        then(nodesMock).should().validateNode(PARENT_ID);
+        then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testGetCategoryChildren_nonExistingParentNode()
+    {
+        given(nodesMock.validateNode(PARENT_ID)).willThrow(EntityNotFoundException.class);
+
+        //when
+        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock));
+
+
+        then(nodesMock).should().validateNode(PARENT_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+        then(authorityServiceMock).shouldHaveNoInteractions();
     }
 
     private Node prepareCategoryNode()

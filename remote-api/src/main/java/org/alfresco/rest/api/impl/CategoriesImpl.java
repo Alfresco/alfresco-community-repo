@@ -29,6 +29,7 @@ package org.alfresco.rest.api.impl;
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
@@ -39,6 +40,8 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -74,8 +77,8 @@ public class CategoriesImpl implements Categories
     @Override
     public Category getCategoryById(final String id, final Parameters params)
     {
-        final NodeRef nodeRef = nodes.validateNode(id);
-        if (isNotACategory(nodeRef) || isRootCategory(nodeRef))
+        final NodeRef nodeRef = getCategoryNodeRef(id);
+        if (isRootCategory(nodeRef))
         {
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
         }
@@ -90,20 +93,42 @@ public class CategoriesImpl implements Categories
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_CREATE_A_CATEGORY);
         }
-        final NodeRef parentNodeRef = PATH_ROOT.equals(parentCategoryId) ?
-                categoryService.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE)
-                        .orElseThrow(() -> new EntityNotFoundException(parentCategoryId)) :
-                nodes.validateNode(parentCategoryId);
-        if (isNotACategory(parentNodeRef))
-        {
-            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{parentCategoryId});
-        }
+        final NodeRef parentNodeRef = getParentNodeRef(parentCategoryId);
         final List<NodeRef> categoryNodeRefs = categories.stream()
                 .map(c -> createCategoryNodeRef(parentNodeRef, c))
                 .collect(Collectors.toList());
         return categoryNodeRefs.stream()
                 .map(this::mapToCategory)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public CollectionWithPagingInfo<Category> getCategoryChildren(String parentCategoryId, Parameters params)
+    {
+        final NodeRef parentNodeRef = getParentNodeRef(parentCategoryId);
+        final List<ChildAssociationRef> childCategoriesAssocs =
+                nodeService.getChildAssocs(parentNodeRef).stream()
+                        .filter(ca -> ca.getTypeQName().equals(ContentModel.ASSOC_SUBCATEGORIES)).collect(Collectors.toList());
+        final List<Category> categories = childCategoriesAssocs.stream().map(c -> mapToCategory(c.getChildRef())).collect(Collectors.toList());
+        return ListPage.of(categories, params.getPaging());
+    }
+
+    private NodeRef getCategoryNodeRef(String nodeId)
+    {
+        final NodeRef nodeRef = nodes.validateNode(nodeId);
+        if (isNotACategory(nodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{nodeId});
+        }
+        return nodeRef;
+    }
+
+    private NodeRef getParentNodeRef(String parentCategoryId)
+    {
+        return PATH_ROOT.equals(parentCategoryId) ?
+                categoryService.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE)
+                        .orElseThrow(() -> new EntityNotFoundException(parentCategoryId)) :
+                getCategoryNodeRef(parentCategoryId);
     }
 
     private NodeRef createCategoryNodeRef(NodeRef parentNodeRef, Category c)

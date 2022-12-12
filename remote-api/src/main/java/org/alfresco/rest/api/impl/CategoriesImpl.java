@@ -152,6 +152,23 @@ public class CategoriesImpl implements Categories
         return categoryService.createCategory(parentNodeRef, c.getName());
     }
 
+    @Override
+    public void deleteCategoryById(String id, Parameters params)
+    {
+        if (!authorityService.hasAdminAuthority())
+        {
+            throw new PermissionDeniedException(NO_PERMISSION_TO_CREATE_A_CATEGORY);
+        }
+
+        final NodeRef nodeRef = nodes.validateNode(id);
+        if (isNotACategory(nodeRef) || isRootCategory(nodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
+        }
+
+        nodeService.deleteNode(nodeRef);
+    }
+
     private boolean isNotACategory(NodeRef nodeRef)
     {
         return !nodes.isSubClass(nodeRef, ContentModel.TYPE_CATEGORY, false);

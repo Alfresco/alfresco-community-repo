@@ -29,7 +29,6 @@ package org.alfresco.rest.api.impl;
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
@@ -93,7 +92,7 @@ public class CategoriesImpl implements Categories
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_CREATE_A_CATEGORY);
         }
-        final NodeRef parentNodeRef = getParentNodeRef(parentCategoryId);
+        final NodeRef parentNodeRef = getCategoryNodeRef(parentCategoryId);
         final List<NodeRef> categoryNodeRefs = categories.stream()
                 .map(c -> createCategoryNodeRef(parentNodeRef, c))
                 .collect(Collectors.toList());
@@ -105,17 +104,37 @@ public class CategoriesImpl implements Categories
     @Override
     public CollectionWithPagingInfo<Category> getCategoryChildren(String parentCategoryId, Parameters params)
     {
-        final NodeRef parentNodeRef = getParentNodeRef(parentCategoryId);
+        final NodeRef parentNodeRef = getCategoryNodeRef(parentCategoryId);
         final List<ChildAssociationRef> childCategoriesAssocs = nodeService.getChildAssocs(parentNodeRef).stream()
-                        .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
-                        .collect(Collectors.toList());
+                .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
+                .collect(Collectors.toList());
         final List<Category> categories = childCategoriesAssocs.stream()
                 .map(c -> mapToCategory(c.getChildRef()))
                 .collect(Collectors.toList());
         return ListPage.of(categories, params.getPaging());
     }
 
+    /**
+     * This method gets category NodeRef for a given category id.
+     * If '-root-' is passed as category id, then it's retrieved as a call to {@link org.alfresco.service.cmr.search.CategoryService#getRootCategoryNodeRef}
+     * In all other cases it's retrieved as a node of a category type {@link #validateCategoryNode(String)}
+     * @param nodeId category node id
+     * @return NodRef of category node
+     */
     private NodeRef getCategoryNodeRef(String nodeId)
+    {
+        return PATH_ROOT.equals(nodeId) ?
+                categoryService.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE)
+                        .orElseThrow(() -> new EntityNotFoundException(nodeId)) :
+                validateCategoryNode(nodeId);
+    }
+
+    /**
+     * Validates if the node exists and is a category.
+     * @param nodeId (presumably) category node id
+     * @return category NodeRef
+     */
+    private NodeRef validateCategoryNode(String nodeId)
     {
         final NodeRef nodeRef = nodes.validateNode(nodeId);
         if (isNotACategory(nodeRef))
@@ -123,14 +142,6 @@ public class CategoriesImpl implements Categories
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{nodeId});
         }
         return nodeRef;
-    }
-
-    private NodeRef getParentNodeRef(String parentCategoryId)
-    {
-        return PATH_ROOT.equals(parentCategoryId) ?
-                categoryService.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE)
-                        .orElseThrow(() -> new EntityNotFoundException(parentCategoryId)) :
-                getCategoryNodeRef(parentCategoryId);
     }
 
     private NodeRef createCategoryNodeRef(NodeRef parentNodeRef, Category c)

@@ -28,7 +28,6 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -403,7 +402,8 @@ public class CategoriesImplTest
 
         assertEquals(childAssociationRefMocks.size(), categoryChildren.getTotalItems().intValue());
         final List<Category> categoryChildrenList = new ArrayList<>(categoryChildren.getCollection());
-        IntStream.range(0, childrenCount).forEach(i -> assertCategoryFields(categoryChildrenList.get(i), i, PATH_ROOT));
+        assertEquals(childAssociationRefMocks.size(), categoryChildrenList.size());
+        IntStream.range(0, childrenCount).forEach(i -> doCategoryAssertions(categoryChildrenList.get(i), i, PATH_ROOT));
     }
 
     @Test
@@ -439,7 +439,8 @@ public class CategoriesImplTest
 
         assertEquals(childAssociationRefMocks.size(), categoryChildren.getTotalItems().intValue());
         final List<Category> categoryChildrenList = new ArrayList<>(categoryChildren.getCollection());
-        IntStream.range(0, childrenCount).forEach(i -> assertCategoryFields(categoryChildrenList.get(i), i, PARENT_ID));
+        assertEquals(childAssociationRefMocks.size(), categoryChildrenList.size());
+        IntStream.range(0, childrenCount).forEach(i -> doCategoryAssertions(categoryChildrenList.get(i), i, PARENT_ID));
     }
 
     @Test
@@ -555,11 +556,14 @@ public class CategoriesImplTest
         given(nodeServiceMock.getParentAssocs(parentRef)).willReturn(List.of(parentAssoc));
     }
 
-    private void assertCategoryFields(final Category category, final int index, final String parentId)
+    private void doCategoryAssertions(final Category category, final int index, final String parentId)
     {
-        assertEquals(CATEGORY_ID + "-" + index, category.getId());
-        assertEquals(CATEGORY_NAME + "-" + index, category.getName());
-        assertEquals(parentId, category.getParentId());
-        assertFalse(category.getHasChildren());
+        final Category expectedCategory = Category.builder()
+                .id(CATEGORY_ID + "-" + index)
+                .name(CATEGORY_NAME + "-" + index)
+                .parentId(parentId)
+                .hasChildren(false)
+                .create();
+        assertEquals(expectedCategory, category);
     }
 }

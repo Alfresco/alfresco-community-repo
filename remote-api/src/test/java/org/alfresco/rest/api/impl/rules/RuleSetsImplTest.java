@@ -257,7 +257,7 @@ public class RuleSetsImplTest extends TestCase
         String actual = ruleSets.linkToRuleSet(FOLDER_ID,LINK_TO_NODE_ID).getId();
 
         then(ruleServiceMock).should().hasRules(LINK_TO_NODE);
-        then(ruleServiceMock).should().hasRules(FOLDER_NODE);
+        then(ruleServiceMock).should().hasNonInheritedRules(FOLDER_NODE);
         then(runtimeRuleServiceMock).should().getSavedRuleFolderAssoc(LINK_TO_NODE);
         then(runtimeRuleServiceMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).should().addChild(FOLDER_NODE, childNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
@@ -284,7 +284,7 @@ public class RuleSetsImplTest extends TestCase
         then(nodeValidatorMock).should().validateRuleSetNode(LINK_TO_NODE_ID,false);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().hasRules(LINK_TO_NODE);
-        then(ruleServiceMock).should().hasRules(FOLDER_NODE);
+        then(ruleServiceMock).should().hasNonInheritedRules(FOLDER_NODE);
         then(runtimeRuleServiceMock).should().getSavedRuleFolderAssoc(LINK_TO_NODE);
         then(runtimeRuleServiceMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).should().addChild(FOLDER_NODE, childNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
@@ -312,7 +312,8 @@ public class RuleSetsImplTest extends TestCase
     @Test
     public void testLinkToRuleSet_folderShouldntHavePreExistingRules()
     {
-        given(ruleServiceMock.hasRules(any(NodeRef.class))).willReturn(true, true);
+        given(ruleServiceMock.hasRules(any(NodeRef.class))).willReturn(true);
+        given(ruleServiceMock.hasNonInheritedRules(any(NodeRef.class))).willReturn(true);
 
         //when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
@@ -320,7 +321,7 @@ public class RuleSetsImplTest extends TestCase
 
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().hasRules(LINK_TO_NODE);
-        then(ruleServiceMock).should().hasRules(FOLDER_NODE);
+        then(ruleServiceMock).should().hasNonInheritedRules(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         then(runtimeRuleServiceMock).shouldHaveNoInteractions();
     }

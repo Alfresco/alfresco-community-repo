@@ -33,7 +33,6 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleSettingsModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -46,7 +45,7 @@ import org.testng.annotations.Test;
  * Tests for GET and PUT /nodes/{nodeId}/rule-settings/{ruleSettingKey}.
  */
 @Test (groups = { TestGroup.RULES })
-public class SetInheritanceTests extends RestTest
+public class SetInheritanceTests extends RulesRestTest
 {
     private UserModel siteOwner;
     private SiteModel site;

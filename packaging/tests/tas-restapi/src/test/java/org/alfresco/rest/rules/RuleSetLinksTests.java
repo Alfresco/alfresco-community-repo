@@ -35,7 +35,6 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
@@ -46,6 +45,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -53,7 +53,7 @@ import org.testng.annotations.Test;
  * Tests for /nodes/{nodeId}/rule-set-links.
  */
 @Test(groups = {TestGroup.RULES})
-public class RuleSetLinksTests extends RestTest
+public class RuleSetLinksTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;
@@ -170,6 +170,56 @@ public class RuleSetLinksTests extends RestTest
         expectedRuleSet.setInclusionType("linked");
         likedRuleSets.getEntries()
                 .get(0).onModel().assertThat().isEqualTo(expectedRuleSet);
+    }
+
+    /**
+     * Check we can link to a rule set when linking from a folder which has inherited rules.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void linkFromFolderWithInheritedRules()
+    {
+        STEP("Create folders");
+        final FolderModel parentFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final FolderModel childFolder = dataContent.usingUser(user).usingResource(parentFolder).createFolder();
+        final FolderModel linkedToFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Create rules in the parent folder and the linking folder");
+        RestRuleModel parentRule = rulesUtils.createInheritableRuleModel();
+        parentRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).usingDefaultRuleSet().createSingleRule(parentRule);
+        restClient.assertStatusCodeIs(CREATED);
+
+        RestRuleModel linkingFolderRule = rulesUtils.createRuleModelWithDefaultValues();
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(linkedToFolder).usingDefaultRuleSet().createSingleRule(linkingFolderRule);
+        restClient.assertStatusCodeIs(CREATED);
+
+        STEP("Get the rule sets for the linking folder and find the rule set id");
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(linkedToFolder).getListOfRuleSets();
+        restClient.assertStatusCodeIs(OK);
+        ruleSets.assertThat().entriesListCountIs(1);
+        final String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
+
+        STEP("Link the child folder to the target folder");
+        final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
+        request.setId(linkedToFolder.getNodeRef());
+        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).createRuleLink(request);
+        restClient.assertStatusCodeIs(CREATED);
+
+        STEP("Assert link result");
+        final RestRuleSetLinkModel expectedLink = new RestRuleSetLinkModel();
+        expectedLink.setId(ruleSetId);
+        ruleLink.assertThat().isEqualTo(expectedLink);
+
+        STEP("Assert that the child folder has also inherited the parent rule");
+        RestRuleSetModelsCollection ruleSetsInh = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).include("inclusionType").getListOfRuleSets();
+        restClient.assertStatusCodeIs(OK);
+        String inheritedRuleSetId = ruleSetsInh.getEntries().stream()
+                .filter(ruleSet -> ruleSet.onModel().getInclusionType().equals("inherited"))
+                .findFirst().get().onModel().getId();
+
+        RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).usingRuleSet(inheritedRuleSetId).getListOfRules();
+        restClient.assertStatusCodeIs(OK);
+        inheritedRules.assertThat().entriesListContains("id", parentRule.getId())
+                .and().entriesListCountIs(1);
     }
 
     /**

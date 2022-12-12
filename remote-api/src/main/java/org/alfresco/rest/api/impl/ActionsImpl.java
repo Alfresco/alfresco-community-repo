@@ -363,13 +363,13 @@ public class ActionsImpl implements Actions
                         Map.Entry::getValue));
     }
 
-    private Map<String, Serializable> extractActionParams(org.alfresco.service.cmr.action.ActionDefinition actionDefinition, Map<String, String> params)
+    private Map<String, Serializable> extractActionParams(org.alfresco.service.cmr.action.ActionDefinition actionDefinition, Map<String, ?> params)
     {
         Map<String, Serializable> parameterValues = new HashMap<>();
 
         try
         {
-            for (Map.Entry<String, String> entry : params.entrySet())
+            for (Map.Entry<String, ?> entry : params.entrySet())
             {
                 String propertyName = entry.getKey();
                 Object propertyValue = entry.getValue();

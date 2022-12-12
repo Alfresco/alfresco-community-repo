@@ -3,16 +3,22 @@ package org.alfresco.rest.nodes;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNotSame;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
+import javax.json.Json;
+import javax.json.JsonObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
+import io.restassured.http.Headers;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.JsonBodyGenerator;
@@ -31,6 +37,7 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -48,7 +55,7 @@ public class NodesContentAndVersioningTests extends RestTest
     private FileModel file1, file2;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
+    public void dataPreparation()
     {
         user1 = dataUser.createRandomTestUser();
         user2 = dataUser.createRandomTestUser();
@@ -60,21 +67,18 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify file name in Content-Disposition header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    public void checkFileNameWithRegularCharsInHeader() throws Exception
+    public void checkFileNameWithRegularCharsInHeader()
     {
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("attachment=false").getNodeContent();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file1.getName()));
     }
 
-
-
-
     @Bug(id = "MNT-17545", description = "HTTP Header Injection in ContentStreamer", status = Bug.Status.FIXED)
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.REGRESSION, description = "Verify file name with special chars is escaped in Content-Disposition header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
-    public void checkFileNameWithSpecialCharsInHeader() throws Exception
+    public void checkFileNameWithSpecialCharsInHeader()
     {
         char c1 = 127;
         char c2 = 31;
@@ -88,14 +92,12 @@ public class NodesContentAndVersioningTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify that alfresco returns the correct encoding for files created via REST.")
-    public void verifyFileEncodingUsingRestAPI() throws Exception
+    public void verifyFileEncodingUsingRestAPI()
     {
         STEP("1. Create a folder, two text file templates and define the expected encoding.");
         FileModel utf8File = new FileModel("utf8File", FileType.TEXT_PLAIN);
         FileModel iso8859File = new FileModel("iso8859File", FileType.TEXT_PLAIN);
         FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
-        String utf8Type = "text/plain;charset=UTF-8";
-        String iso8859Type = "text/plain;charset=ISO-8859-1";
 
         STEP("2. Using multipart data upload (POST nodes/{nodeId}/children) the UTF-8 encoded file.");
         restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("UTF-8File.txt"));
@@ -110,6 +112,8 @@ public class NodesContentAndVersioningTests extends RestTest
         iso8859File.setNodeRef(fileNode.getId());
 
         STEP("4. Retrieve the nodes and verify that the content type is the expected one (GET nodes/{nodeId}).");
+        String utf8Type = "text/plain;charset=UTF-8";
+        String iso8859Type = "text/plain;charset=ISO-8859-1";
         restClient.withCoreAPI().usingNode(utf8File).getNodeContent().assertThat().contentType(utf8Type);
         restClient.withCoreAPI().usingNode(iso8859File).getNodeContent().assertThat().contentType(iso8859Type);
     }
@@ -119,7 +123,7 @@ public class NodesContentAndVersioningTests extends RestTest
     @Test(enabled=false, groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES },
                 executionType = ExecutionType.REGRESSION, description = "Verify that the node content is streamed directly to the client and not buffered in memory.")
-    public void verifyUploadDownloadLargeFileUsingRestAPI() throws Exception
+    public void verifyUploadDownloadLargeFileUsingRestAPI()
     {
         Integer largeFileSizeBytes = Integer.MAX_VALUE;
         String largeFileName = "largeFile.tmp";
@@ -145,12 +149,12 @@ public class NodesContentAndVersioningTests extends RestTest
         largeFile.delete();
     }
 
-    public static File getSystemTempDir() throws Exception
+    public static File getSystemTempDir()
     {
         String systemTempDirPath = System.getProperty("java.io.tmpdir");
         if (systemTempDirPath == null)
         {
-            throw new Exception("System property not available: " + "java.io.tmpdir");
+            throw new RuntimeException("System property not available: " + "java.io.tmpdir");
         }
         File systemTempDir = new File(systemTempDirPath);
         return systemTempDir;
@@ -158,7 +162,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify updating a node content.")
-    public void testUpdateNodeContent() throws Exception
+    public void testUpdateNodeContent()
     {
         STEP("1. Retrieve the node in order to get data to compare after update GET /nodes/{nodeId}?include=path.");
         RestNodeModel initialNode = restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).usingParams("include=path").getNode();
@@ -181,7 +185,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test copy a node.")
-    public void testCopyNode() throws Exception
+    public void testCopyNode()
     {
         STEP("1. Create a lock and lock the node POST /nodes/{nodeId}/lock?include=path,isLocked.");
         RestNodeLockBodyModel lockBodyModel = new RestNodeLockBodyModel();
@@ -266,7 +270,7 @@ public class NodesContentAndVersioningTests extends RestTest
             RestResponse versionContent = restClient.withCoreAPI().usingNode(file2).getVersionContent("2.0");
             restClient.assertStatusCodeIs(HttpStatus.OK);
 
-            assertEquals("Sample text.\n", versionContent.getResponse().body().asString());
+            assertEquals("Sample text.", versionContent.getResponse().body().asString());
             restClient.assertHeaderValueContains("Content-Disposition", "attachment");
             restClient.assertHeaderValueContains("Content-Disposition", String.format("filename=\"%s\"", file2.getName()));
         });
@@ -274,7 +278,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Test revert and delete a node version.")
-    public void testRevertDeleteVersion() throws Exception
+    public void testRevertDeleteVersion()
     {
         STEP("1. Revert to version 1.0 POST /nodes/{nodeId}/versions/{versionId}/revert");
         RestVersionModel version = restClient.authenticateUser(user2).withCoreAPI().usingNode(file2).revertVersion("1.0", new String("{}"));
@@ -299,7 +303,7 @@ public class NodesContentAndVersioningTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY, description = "Verify file name in Content Range header")
     @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
-    public void checkFileNameContentRangeHeader() throws Exception
+    public void checkFileNameContentRangeHeader()
     {
         restClient.configureRequestSpec().addHeader("content-range", "bytes=1-10");
         restClient.authenticateUser(user1).withCoreAPI().usingNode(file1).getNodeContent();
@@ -308,12 +312,141 @@ public class NodesContentAndVersioningTests extends RestTest
         restClient.assertHeaderValueContains("content-length", String.valueOf(10));
     }
 
+    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    public void checkUploadResponse()
+    {
+        STEP("Create a folder in the test site.");
+        FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
 
-    private void createRandomFileInDirectory(String path, String fileName, int size) throws IOException {
+        STEP("Upload a text document to the folder.");
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("UTF-8File.txt"));
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        fileNode.assertThat().field("id").isNotNull()
+                .and().field("name").is("UTF-8File.txt")
+                .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+    }
+
+    @Test (groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+    public void checkTextFileDownload()
+    {
+        STEP("Create a folder in the test site.");
+        FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("Upload a text document to the folder.");
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleContent.txt"));
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        FileModel fileModel = new FileModel();
+        fileModel.setNodeRef(fileNode.getId());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        STEP("Download the file and check the content and headers.");
+        RestResponse nodeContent = restClient.withCoreAPI().usingNode(fileModel).getNodeContent();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        nodeContent.assertThat().body(Matchers.equalTo("Sample text."));
+        restClient.assertHeaderValueContains("Content-Disposition", "attachment; filename=\"sampleContent.txt\"; filename*=UTF-8''sampleContent.txt");
+        Headers responseHeaders = restClient.getResponseHeaders();
+        String cacheControl = responseHeaders.getValue("Cache-Control");
+        assertTrue(cacheControl.contains("must-revalidate"), "Cache-Control is missing \"must-revalidate\": " + cacheControl);
+        assertTrue(cacheControl.contains("max-age=0"), "Cache-Control is missing \"max-age=0\": " + cacheControl);
+        assertNotNull(responseHeaders.getValue("Expires"), "\"Expires\" header is missing");
+    }
+
+    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    public void checkBinaryFileDownload() throws Exception
+    {
+        STEP("Create a folder in the test site.");
+        FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("Upload a text document to the folder.");
+        File binaryFile = Utility.getResourceTestDataFile("avatar.jpg");
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", binaryFile);
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        FileModel fileModel = new FileModel();
+        fileModel.setNodeRef(fileNode.getId());
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        STEP("Download the file and check the binary content and headers.");
+        RestResponse nodeContent = restClient.withCoreAPI().usingNode(fileModel).getNodeContent();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        byte[] originalBytes = Files.readAllBytes(Paths.get(binaryFile.getAbsolutePath()));
+        assertEquals(nodeContent.getResponse().getBody().asByteArray(), originalBytes, "Unexpected content retrieved");
+        restClient.assertHeaderValueContains("Content-Disposition", "attachment; filename=\"avatar.jpg\"; filename*=UTF-8''avatar.jpg");
+        Headers responseHeaders = restClient.getResponseHeaders();
+        String cacheControl = responseHeaders.getValue("Cache-Control");
+        assertTrue(cacheControl.contains("must-revalidate"), "Cache-Control is missing \"must-revalidate\": " + cacheControl);
+        assertTrue(cacheControl.contains("max-age=0"), "Cache-Control is missing \"max-age=0\": " + cacheControl);
+        assertNotNull(responseHeaders.getValue("Expires"), "\"Expires\" header is missing");
+    }
+
+    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    public void checkNotModifiedStatusCode()
+    {
+        STEP("Create a folder in the test site.");
+        FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("Upload a text document to the folder.");
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleContent.txt"));
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        FileModel fileModel = new FileModel();
+        fileModel.setNodeRef(fileNode.getId());
+
+        STEP("Download the file with If-Modified-Since in the past and check for a 200 status code.");
+        restClient.configureRequestSpec().addHeader("If-Modified-Since", "Thu, 01 Jan 1970 00:00:00 GMT");
+        restClient.withCoreAPI().usingNode(fileModel).getNodeContent();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        STEP("Try redownloading the file the current If-Modified-Since and check for a 304 status code.");
+        String lastModified = restClient.getResponseHeaders().getValue("Last-Modified");
+        restClient.configureRequestSpec().addHeader("If-Modified-Since", lastModified);
+        restClient.withCoreAPI().usingNode(fileModel).getNodeContent();
+        restClient.assertStatusCodeIs(HttpStatus.NOT_MODIFIED);
+    }
+
+    @Test (groups = { TestGroup.REST_API, TestGroup.NODES })
+    public void checkModificationUpdatesLastModifiedHeader() throws InterruptedException
+    {
+        STEP("Create a folder in the test site.");
+        FolderModel folder = dataContent.usingUser(user1).usingSite(site1).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("Upload a text document to the folder.");
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleContent.txt"));
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        FileModel fileModel = new FileModel();
+        fileModel.setNodeRef(fileNode.getId());
+
+        STEP("Download the file and get the Last-Modified header.");
+        restClient.withCoreAPI().usingNode(fileModel).getNodeContent();
+        String oldLastModified = restClient.getResponseHeaders().getValue("Last-Modified");
+
+        STEP("Wait for a second so that the modification will be at a different datetime.");
+        Thread.sleep(1000);
+
+        STEP("Modify the description and check the Last-Modified header changes.");
+        JsonObject json = Json.createObjectBuilder().add("properties", Json.createObjectBuilder()
+                                                                           .add("cm:description", "New description")).build();
+        restClient.withCoreAPI().usingNode(fileModel).updateNode(json.toString());
+
+        restClient.configureRequestSpec().addHeader("If-Modified-Since", oldLastModified);
+        restClient.withCoreAPI().usingNode(fileModel).getNodeContent();
+        String newLastModified = restClient.getResponseHeaders().getValue("Last-Modified");
+        assertNotEquals(newLastModified, oldLastModified, "Expected Last-Modified header to change when property was updated.");
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+    }
+
+    private void createRandomFileInDirectory(String path, String fileName, int size) {
         String fullPath = new File(path, fileName).getPath();
 
-        RandomAccessFile file = new RandomAccessFile(fullPath,"rw");
-        file.setLength(size);
-        file.close();
+        try
+        {
+            RandomAccessFile file = new RandomAccessFile(fullPath, "rw");
+            file.setLength(size);
+            file.close();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }

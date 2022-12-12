@@ -573,6 +573,7 @@
                 org.alfresco.service.cmr.search.CategoryService.deleteClassification=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.deleteCategory=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.getTopCategories=ACL_ALLOW
+                org.alfresco.service.cmr.search.CategoryService.getRootCategoryNodeRef=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.*=ACL_DENY
             </value>
         </property>

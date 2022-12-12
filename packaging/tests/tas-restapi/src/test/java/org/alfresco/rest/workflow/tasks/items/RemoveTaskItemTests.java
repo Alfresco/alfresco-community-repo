@@ -81,21 +81,6 @@ public class RemoveTaskItemTests extends RestTest
     }
 
     @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Delete existing task item with empty task id")
-    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void deleteTaskItemEmptyTaskId() throws Exception
-    {
-        taskModel = dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(assigneeUser);
-        restClient.authenticateUser(userWhoStartsTask);
-        document2 = dataContent.usingSite(siteModel).createContent(DocumentType.XML);
-        taskItem = restClient.withWorkflowAPI().usingTask(taskModel).addTaskItem(document2);
-        taskModel.setId("");
-        restClient.withWorkflowAPI().usingTask(taskModel).deleteTaskItem(taskItem);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
-    }
-
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
             description = "Delete existing task item with empty item id")
     @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
     public void deleteTaskItemEmptyItemId() throws Exception

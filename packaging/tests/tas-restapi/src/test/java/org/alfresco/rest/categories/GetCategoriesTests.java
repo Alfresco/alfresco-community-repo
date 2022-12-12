@@ -191,7 +191,7 @@ public class GetCategoriesTests extends RestTest
     }
 
     /**
-     * Check we get an error when passing folder node id as parent category id when getting children.
+     * Check we get an error when passing a non-existent node id as parent category id when getting children.
      */
     @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryChildrenProvidingNonExistingParent()

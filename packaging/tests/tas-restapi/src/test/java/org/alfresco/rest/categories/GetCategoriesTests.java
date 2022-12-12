@@ -160,7 +160,7 @@ public class GetCategoriesTests extends RestTest
                 .collect(Collectors.toList())
                 .contains(createdCategory.getId()));
 
-        STEP("Create 2 more categories under newCategoryUnderRoot and make sure it is returned as children");
+        STEP("Create 2 more categories under newCategoryUnderRoot and make sure they are returned as children");
         final int categoriesCount = 2;
         final List<RestCategoryModel> categoriesToCreate = CreateCategoriesTests.getCategoriesToCreate(categoriesCount);
         final RestCategoryModelsCollection createdSubCategories = restClient.authenticateUser(dataUser.getAdminUser())

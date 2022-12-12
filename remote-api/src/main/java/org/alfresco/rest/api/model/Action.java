@@ -32,7 +32,7 @@ public class Action
     private String id;
     private String actionDefinitionId;
     private String targetId;
-    Map<String, String> params;
+    Map<String, ?> params;
 
     public String getId()
     {
@@ -64,7 +64,7 @@ public class Action
         this.targetId = targetId;
     }
 
-    public Map<String, String> getParams()
+    public Map<String, ?> getParams()
     {
         return params;
     }

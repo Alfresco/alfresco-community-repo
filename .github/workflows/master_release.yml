@@ -37,7 +37,9 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
           GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
           GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
+          GIT_EMAIL: ${{ secrets.BOT_GITHUB_TOKEN }}
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
   update_downstream:
     name: "Update alfresco-enterprise-repo"
@@ -56,9 +58,10 @@ jobs:
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - run: bash ./scripts/ci/update_downstream.sh
         env:
-          BRANCH: ${{ github.ref_name }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
           GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
+          GIT_EMAIL: ${{ secrets.BOT_GITHUB_TOKEN }}
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh

@@ -60,6 +60,7 @@ jobs:
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
         
   all_unit_tests_suite:
@@ -80,6 +81,7 @@ jobs:
           mvn -B test -pl core,data-model -am -DfailIfNoTests=false
           mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   remote_api_app_context_test_suites:
@@ -123,6 +125,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_mariadb_tests:
@@ -152,6 +155,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_mariadb_10_6_tests:
@@ -177,6 +181,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_mysql_tests:
@@ -202,6 +207,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_postgresql_13_7_tests:
@@ -227,6 +233,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_postgresql_14_4_tests:
@@ -253,6 +260,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_messaging_tests:
@@ -273,6 +281,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_app_context_test_suites:
@@ -328,6 +337,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.parameters }}
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   tas-tests:
@@ -394,6 +404,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn -B verify -f ${{ matrix.pom }} -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   share_services_share_services_test_suite:
@@ -414,6 +425,7 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_tests_postgressql:
@@ -446,6 +458,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_tests_mysql:
@@ -478,6 +491,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_community_rest_api_tests:
@@ -529,4 +543,5 @@ jobs:
         if: ${{ always() }}
         run: aws s3 cp --recursive ./deploy_dir s3://ags-travis-artifacts
       - name: "Clean Maven cache"
+        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh

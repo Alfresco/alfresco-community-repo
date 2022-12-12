@@ -28,13 +28,19 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Nodes;
@@ -43,6 +49,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -367,19 +374,97 @@ public class CategoriesImplTest
     @Test
     public void testGetRootCategoryChildren()
     {
-        //TODO: add test logic
+        final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PATH_ROOT);
+        given(categoryServiceMock.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
+                .willReturn(Optional.of(parentCategoryNodeRef));
+        final int childrenCount = 3;
+        final List<ChildAssociationRef> childAssociationRefMocks = prepareChildAssocMocks(childrenCount, parentCategoryNodeRef);
+        given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(childAssociationRefMocks);
+        childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
+
+        //when
+        final CollectionWithPagingInfo<Category> categoryChildren = objectUnderTest.getCategoryChildren(PATH_ROOT, parametersMock);
+
+        then(categoryServiceMock).should().getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        then(categoryServiceMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getChildAssocs(parentCategoryNodeRef);
+        childAssociationRefMocks.forEach(ca -> {
+            then(nodesMock).should().getNode(ca.getChildRef().getId());
+            then(nodeServiceMock).should()
+                    .getChildAssocs(ca.getChildRef(), RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+            then(nodeServiceMock).should().getPrimaryParent(ca.getChildRef());
+        });
+        then(nodeServiceMock).should(times(childrenCount)).getParentAssocs(parentCategoryNodeRef);
+
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+
+        then(authorityServiceMock).shouldHaveNoInteractions();
+
+        assertEquals(childAssociationRefMocks.size(), categoryChildren.getTotalItems().intValue());
+        final List<Category> categoryChildrenList = new ArrayList<>(categoryChildren.getCollection());
+        IntStream.range(0, childrenCount).forEach(i -> assertCategoryFields(categoryChildrenList.get(i), i, PATH_ROOT));
     }
 
     @Test
     public void testGetCategoryChildren()
     {
-        //TODO: add test logic
+        final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
+        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
+        final int childrenCount = 3;
+        final List<ChildAssociationRef> childAssociationRefMocks = prepareChildAssocMocks(childrenCount, parentCategoryNodeRef);
+        given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(childAssociationRefMocks);
+        childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
+
+        //when
+        final CollectionWithPagingInfo<Category> categoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock);
+
+        then(nodesMock).should().validateNode(PARENT_ID);
+        then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodeServiceMock).should().getChildAssocs(parentCategoryNodeRef);
+        childAssociationRefMocks.forEach(ca -> {
+            then(nodesMock).should().getNode(ca.getChildRef().getId());
+            then(nodeServiceMock).should()
+                    .getChildAssocs(ca.getChildRef(), RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+            then(nodeServiceMock).should().getPrimaryParent(ca.getChildRef());
+        });
+        then(nodeServiceMock).should(times(childrenCount)).getParentAssocs(parentCategoryNodeRef);
+
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+
+        then(authorityServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+
+        assertEquals(childAssociationRefMocks.size(), categoryChildren.getTotalItems().intValue());
+        final List<Category> categoryChildrenList = new ArrayList<>(categoryChildren.getCollection());
+        IntStream.range(0, childrenCount).forEach(i -> assertCategoryFields(categoryChildrenList.get(i), i, PARENT_ID));
     }
 
     @Test
     public void testGetCategoryChildren_noChildren()
     {
-        //TODO: add test logic
+        final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
+        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
+
+        given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(Collections.emptyList());
+
+
+        //when
+        final CollectionWithPagingInfo<Category> categoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock);
+
+        then(nodesMock).should().validateNode(PARENT_ID);
+        then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getChildAssocs(parentCategoryNodeRef);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+
+        then(authorityServiceMock).shouldHaveNoInteractions();
+        then(categoryServiceMock).shouldHaveNoInteractions();
+
+        assertEquals(0, categoryChildren.getTotalItems().intValue());
     }
 
     @Test
@@ -420,10 +505,15 @@ public class CategoriesImplTest
 
     private Node prepareCategoryNode()
     {
-        final Node categoryNode = new Node();
-        categoryNode.setName(CATEGORY_NAME);
-        categoryNode.setNodeId(CATEGORY_ID);
         final NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        return prepareCategoryNode(CATEGORY_NAME, CATEGORY_ID, parentNodeRef);
+    }
+
+    private Node prepareCategoryNode(final String name, final String id, final NodeRef parentNodeRef)
+    {
+        final Node categoryNode = new Node();
+        categoryNode.setName(name);
+        categoryNode.setNodeId(id);
         categoryNode.setParentId(parentNodeRef);
         return categoryNode;
     }
@@ -438,5 +528,38 @@ public class CategoriesImplTest
         return List.of(Category.builder()
                 .name(CATEGORY_NAME)
                 .create());
+    }
+
+    private List<ChildAssociationRef> prepareChildAssocMocks(final int count, NodeRef parentCategoryNodeRef)
+    {
+        return IntStream.range(0, count).mapToObj(i -> {
+            ChildAssociationRef dummyChildAssocMock = mock(ChildAssociationRef.class);
+            given(dummyChildAssocMock.getTypeQName()).willReturn(ContentModel.ASSOC_SUBCATEGORIES);
+            given(dummyChildAssocMock.getChildRef())
+                    .willReturn(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID + "-" + i));
+            given(dummyChildAssocMock.getParentRef()).willReturn(parentCategoryNodeRef);
+            return dummyChildAssocMock;
+        })
+                .collect(Collectors.toList());
+    }
+
+    private void prepareCategoryNodeMocks(ChildAssociationRef childAssociationRef)
+    {
+        final NodeRef childRef = childAssociationRef.getChildRef();
+        final String id = childRef.getId();
+        final String name = id.replace(CATEGORY_ID, CATEGORY_NAME);
+        final NodeRef parentRef = childAssociationRef.getParentRef();
+        given(nodesMock.getNode(id)).willReturn(prepareCategoryNode(name, id, parentRef));
+        final ChildAssociationRef parentAssoc = new ChildAssociationRef(null, parentRef, null, childRef);
+        given(nodeServiceMock.getPrimaryParent(childRef)).willReturn(parentAssoc);
+        given(nodeServiceMock.getParentAssocs(parentRef)).willReturn(List.of(parentAssoc));
+    }
+
+    private void assertCategoryFields(final Category category, final int index, final String parentId)
+    {
+        assertEquals(CATEGORY_ID + "-" + index, category.getId());
+        assertEquals(CATEGORY_NAME + "-" + index, category.getName());
+        assertEquals(parentId, category.getParentId());
+        assertFalse(category.getHasChildren());
     }
 }

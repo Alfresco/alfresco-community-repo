@@ -106,10 +106,12 @@ public class CategoriesImpl implements Categories
     public CollectionWithPagingInfo<Category> getCategoryChildren(String parentCategoryId, Parameters params)
     {
         final NodeRef parentNodeRef = getParentNodeRef(parentCategoryId);
-        final List<ChildAssociationRef> childCategoriesAssocs =
-                nodeService.getChildAssocs(parentNodeRef).stream()
-                        .filter(ca -> ca.getTypeQName().equals(ContentModel.ASSOC_SUBCATEGORIES)).collect(Collectors.toList());
-        final List<Category> categories = childCategoriesAssocs.stream().map(c -> mapToCategory(c.getChildRef())).collect(Collectors.toList());
+        final List<ChildAssociationRef> childCategoriesAssocs = nodeService.getChildAssocs(parentNodeRef).stream()
+                        .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
+                        .collect(Collectors.toList());
+        final List<Category> categories = childCategoriesAssocs.stream()
+                .map(c -> mapToCategory(c.getChildRef()))
+                .collect(Collectors.toList());
         return ListPage.of(categories, params.getPaging());
     }
 

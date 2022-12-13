@@ -35,14 +35,16 @@ jobs:
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
       - name: "Prepare environment"
         run: bash ./scripts/ci/prepare.sh
+      - name: "Clean Maven cache"
+        if: ${{ always() }}
+        run: bash ./scripts/ci/cleanup_cache.sh
 
   veracode:
     name: "Source Clear Scan (SCA)"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      (github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name != 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
@@ -133,10 +135,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]') &&
+      contains(github.event.head_commit.message, '[db]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     strategy:
@@ -163,10 +165,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]') &&
+      contains(github.event.head_commit.message, '[db]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
@@ -189,10 +191,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]') &&
+      contains(github.event.head_commit.message, '[db]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
@@ -215,10 +217,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
-      github.event_name != 'pull_request' &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) github.event_name != 'pull_request' &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]') &&
+      contains(github.event.head_commit.message, '[db]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
@@ -241,11 +242,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
-      github.event_name != 'pull_request' &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
       ! contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]') &&
+      contains(github.event.head_commit.message, '[db]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     steps:
@@ -345,9 +345,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       ! contains(github.event.head_commit.message, '[skip tas]')) ||
-      contains(github.event.head_commit.message, '[tas]') &&
+      contains(github.event.head_commit.message, '[tas]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     strategy:
@@ -401,8 +401,15 @@ jobs:
             mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
           fi
       - name: "Run tests"
+        id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn -B verify -f ${{ matrix.pom }} -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+      - name: "After success"
+        if: ${{ always() }} && outcome.tests.outcome == 'success'
+        run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-restapi"
+      - name: "After failure"
+        if: ${{ always() }} && outcome.tests.outcome == 'failure'
+        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
       - name: "Clean Maven cache"
         if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
@@ -433,9 +440,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       ! contains(github.event.head_commit.message, '[skip ags]')) ||
-      contains(github.event.head_commit.message, '[ags]') &&
+      contains(github.event.head_commit.message, '[ags]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     strategy:
@@ -466,9 +473,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       ! contains(github.event.head_commit.message, '[skip ags]')) ||
-      contains(github.event.head_commit.message, '[ags on MySQL]') &&
+      contains(github.event.head_commit.message, '[ags on MySQL]')) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     strategy:
@@ -499,9 +506,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      ! contains(github.event.head_commit.message, '[skip ags]')) ||
-      contains(github.event.head_commit.message, '[ags]') &&
+      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      ! contains(github.event.head_commit.message, '[skip ags]') && ! contains(github.event.head_commit.message, '[skip tas]')) ||
+      (contains(github.event.head_commit.message, '[ags]') && contains(github.event.head_commit.message, '[tas]'))) &&
       ! contains(github.event.head_commit.message, '[skip tests]') &&
       ! contains(github.event.head_commit.message, '[force]')
     env:
@@ -517,12 +524,14 @@ jobs:
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
       - name: "Set up the environment"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
+          mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags
+        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags -Pall-tas-tests
       - run: bash amps/ags/ci/scripts/getLogs.sh
         if: ${{ always() }}
       - shell: bash

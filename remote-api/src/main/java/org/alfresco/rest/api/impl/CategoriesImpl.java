@@ -58,6 +58,7 @@ public class CategoriesImpl implements Categories
 {
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_CREATE_A_CATEGORY = "Current user does not have permission to create a category";
+    static final String NO_PERMISSION_TO_DELETE_A_CATEGORY = "Current user does not have permission to delete a category";
     private static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
 
     private final AuthorityService authorityService;
@@ -157,7 +158,7 @@ public class CategoriesImpl implements Categories
     {
         if (!authorityService.hasAdminAuthority())
         {
-            throw new PermissionDeniedException(NO_PERMISSION_TO_CREATE_A_CATEGORY);
+            throw new PermissionDeniedException(NO_PERMISSION_TO_DELETE_A_CATEGORY);
         }
 
         final NodeRef nodeRef = nodes.validateNode(id);

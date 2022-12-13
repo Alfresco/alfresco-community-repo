@@ -31,7 +31,6 @@ import java.util.List;
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public interface Categories
@@ -39,4 +38,14 @@ public interface Categories
     Category getCategoryById(String id, Parameters params);
 
     List<Category> createSubcategories(String parentCategoryId, List<Category> categories, Parameters parameters);
+
+    /**
+     * Update category by ID. Currently, it's possible only to update the name of category.
+     * Fixed category fields: id, parentId and hasChildren has to match the original category.
+     *
+     * @param id Category ID.
+     * @param fixedCategoryModel Fixed category model.
+     * @return Updated category.
+     */
+    Category updateCategoryById(String id, Category fixedCategoryModel);
 }

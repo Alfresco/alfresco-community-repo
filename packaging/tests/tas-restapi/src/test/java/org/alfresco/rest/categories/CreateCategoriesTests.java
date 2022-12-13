@@ -48,7 +48,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class CreateCategoriesTests extends RestTest
+public class CreateCategoriesTests extends CategoriesRestTest
 {
     private static final String FIELD_NAME = "name";
     private static final String FIELD_PARENT_ID = "parentId";
@@ -100,7 +100,7 @@ public class CreateCategoriesTests extends RestTest
                 .withCoreAPI()
                 .usingCategory(rootCategory)
                 .createSingleCategory(aCategory);
-        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Category name must not be null or empty");
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Category name must not be null nor empty");
     }
 
     /**

@@ -26,7 +26,9 @@
 
 package org.alfresco.rest.api.categories;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -64,5 +66,18 @@ public class CategoriesEntityResourceTest
         then(categoriesMock).should().getCategoryById(CATEGORY_ID, parametersMock);
         then(categoriesMock).shouldHaveNoMoreInteractions();
         assertEquals(categoryMock, category);
+    }
+
+    @Test
+    public void testUpdateCategoryById()
+    {
+        given(categoriesMock.updateCategoryById(any(), any())).willReturn(categoryMock);
+
+        // when
+        final Category actualCategory = objectUnderTest.update(CATEGORY_ID, categoryMock, parametersMock);
+
+        then(categoriesMock).should().updateCategoryById(CATEGORY_ID, categoryMock);
+        then(categoriesMock).shouldHaveNoMoreInteractions();
+        assertThat(actualCategory).isNotNull();
     }
 }

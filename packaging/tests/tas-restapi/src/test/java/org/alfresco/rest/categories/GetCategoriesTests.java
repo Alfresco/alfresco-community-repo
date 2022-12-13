@@ -40,7 +40,7 @@ import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class GetCategoriesTests extends RestTest
+public class GetCategoriesTests extends CategoriesRestTest
 {
     private UserModel user;
 

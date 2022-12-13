@@ -41,7 +41,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  * @author mpichura
  */
 @EntityResource(name = "categories", title = "Categories")
-public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>
+public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>, EntityResourceAction.Update<Category>
 {
     private final Categories categories;
 
@@ -57,5 +57,16 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     public Category readById(String id, Parameters parameters) throws EntityNotFoundException
     {
         return categories.getCategoryById(id, parameters);
+    }
+
+    @WebApiDescription(
+        title = "Update category",
+        description = "Update a single category by its ID",
+        successStatus = HttpServletResponse.SC_OK
+    )
+    @Override
+    public Category update(String id, Category categoryModel, Parameters parameters)
+    {
+        return categories.updateCategoryById(id, categoryModel);
     }
 }

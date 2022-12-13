@@ -72,7 +72,7 @@ public class Categories extends ModelRequest<Categories>
     /**
      * Create single category.
      *
-     * @param restCategoryModel The categories to create.
+     * @param restCategoryModel The category to create.
      * @return Created category with additional data populated by the repository.
      */
     public RestCategoryModel createSingleCategory(RestCategoryModel restCategoryModel) {
@@ -80,4 +80,14 @@ public class Categories extends ModelRequest<Categories>
         return restWrapper.processModel(RestCategoryModel.class, request);
     }
 
+    /**
+     * Update single category.
+     *
+     * @param restCategoryModel The categories to update.
+     * @return Created category with additional data populated by the repository.
+     */
+    public RestCategoryModel updateCategory(RestCategoryModel restCategoryModel) {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, restCategoryModel.toJson(), "categories/{categoryId}", category.getId());
+        return restWrapper.processModel(RestCategoryModel.class, request);
+    }
 }

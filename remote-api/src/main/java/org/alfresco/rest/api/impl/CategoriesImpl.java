@@ -47,6 +47,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +57,8 @@ public class CategoriesImpl implements Categories
 {
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_CREATE_A_CATEGORY = "Current user does not have permission to create a category";
-    private static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
+    static final String NOT_NULL_NOR_EMPTY = "Category name must not be null nor empty";
+    static final String FIELD_NOT_MATCH = "Category field: %s does not match the original one";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
@@ -86,10 +88,7 @@ public class CategoriesImpl implements Categories
     @Override
     public List<Category> createSubcategories(String parentCategoryId, List<Category> categories, Parameters parameters)
     {
-        if (!authorityService.hasAdminAuthority())
-        {
-            throw new PermissionDeniedException(NO_PERMISSION_TO_CREATE_A_CATEGORY);
-        }
+        verifyAdminAuthority();
         final NodeRef parentNodeRef = PATH_ROOT.equals(parentCategoryId) ?
                 categoryService.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE)
                         .orElseThrow(() -> new EntityNotFoundException(parentCategoryId)) :
@@ -106,17 +105,36 @@ public class CategoriesImpl implements Categories
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Category updateCategoryById(final String id, final Category fixedCategoryModel)
+    {
+        verifyAdminAuthority();
+        final NodeRef categoryNodeRef = nodes.validateOrLookupNode(id, null);
+        if (isNotACategory(categoryNodeRef) || isRootCategory(categoryNodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
+        }
+
+        final Category originalCategory = mapToCategory(categoryNodeRef);
+        compareAndVerifyCategoryFields(fixedCategoryModel, originalCategory);
+
+        return mapToCategory(changeCategoryName(categoryNodeRef, fixedCategoryModel.getName()));
+    }
+
+    private void verifyAdminAuthority()
+    {
+        if (!authorityService.hasAdminAuthority())
+        {
+            throw new PermissionDeniedException(NO_PERMISSION_TO_CREATE_A_CATEGORY);
+        }
+    }
+
     private NodeRef createCategoryNodeRef(NodeRef parentNodeRef, Category c)
     {
         if (StringUtils.isEmpty(c.getName())) {
-            throw new InvalidArgumentException(NOT_NULL_OR_EMPTY);
+            throw new InvalidArgumentException(NOT_NULL_NOR_EMPTY);
         }
         return categoryService.createCategory(parentNodeRef, c.getName());
-    }
-
-    private boolean isNotACategory(NodeRef nodeRef)
-    {
-        return !nodes.isSubClass(nodeRef, ContentModel.TYPE_CATEGORY, false);
     }
 
     private Category mapToCategory(NodeRef nodeRef)
@@ -132,6 +150,11 @@ public class CategoriesImpl implements Categories
                 .create();
     }
 
+    private boolean isNotACategory(NodeRef nodeRef)
+    {
+        return !nodes.isSubClass(nodeRef, ContentModel.TYPE_CATEGORY, false);
+    }
+
     private boolean isRootCategory(final NodeRef nodeRef)
     {
         final List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
@@ -142,5 +165,55 @@ public class CategoriesImpl implements Categories
     {
         final NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
         return isRootCategory(parentRef) ? PATH_ROOT : parentRef.getId();
+    }
+
+    /**
+     * Change category qualified name.
+     *
+     * @param categoryNodeRef Category node reference.
+     * @param newName New name.
+     * @return Updated category.
+     */
+    private NodeRef changeCategoryName(final NodeRef categoryNodeRef, final String newName)
+    {
+        final ChildAssociationRef parentAssociation = nodeService.getPrimaryParent(categoryNodeRef);
+        if (parentAssociation == null)
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{categoryNodeRef.getId()});
+        }
+
+        nodeService.setProperty(categoryNodeRef, ContentModel.PROP_NAME, newName);
+        final QName newQName = QName.createQName(parentAssociation.getQName().getNamespaceURI(), QName.createValidLocalName(newName));
+        return nodeService.moveNode(parentAssociation.getChildRef(), parentAssociation.getParentRef(), parentAssociation.getTypeQName(), newQName).getChildRef();
+    }
+
+    /**
+     * Verify if fixed category name is not empty and fields: id, parentId and hasChildren do match the original's category fields.
+     *
+     * @param fixedCategoryModel Fixed category model.
+     * @param originalCategory Original category.
+     */
+    private void compareAndVerifyCategoryFields(final Category fixedCategoryModel, final Category originalCategory)
+    {
+        if (StringUtils.isEmpty(fixedCategoryModel.getName())) {
+            throw new InvalidArgumentException(NOT_NULL_NOR_EMPTY);
+        }
+        if (fixedCategoryModel.getId() != null && !fixedCategoryModel.getId().equals(originalCategory.getId()))
+        {
+            throw new InvalidArgumentException(String.format(FIELD_NOT_MATCH, "id"),
+                new String[]{ fixedCategoryModel.getId(), originalCategory.getId() });
+        }
+
+        if (fixedCategoryModel.getParentId() != null && !fixedCategoryModel.getParentId().equals(originalCategory.getParentId()))
+        {
+            throw new InvalidArgumentException(String.format(FIELD_NOT_MATCH, "parentId"),
+                new String[]{ fixedCategoryModel.getParentId(), originalCategory.getParentId() });
+        }
+
+        if (fixedCategoryModel.getHasChildren() != originalCategory.getHasChildren())
+        {
+            throw new InvalidArgumentException(String.format(FIELD_NOT_MATCH, "hasChildren"),
+                new String[]{ String.valueOf(fixedCategoryModel.getHasChildren()), String.valueOf(originalCategory.getHasChildren()) });
+        }
     }
 }

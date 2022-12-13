@@ -33,7 +33,6 @@ import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
-import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.springframework.http.HttpMethod;
 
 public class Categories extends ModelRequest<Categories>
@@ -75,9 +74,22 @@ public class Categories extends ModelRequest<Categories>
      * @param restCategoryModel The categories to create.
      * @return Created category with additional data populated by the repository.
      */
-    public RestCategoryModel createSingleCategory(RestCategoryModel restCategoryModel) {
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, restCategoryModel.toJson(), "categories/{categoryId}/subcategories", category.getId());
+    public RestCategoryModel createSingleCategory(RestCategoryModel restCategoryModel)
+    {
+        RestRequest request = RestRequest
+                .requestWithBody(HttpMethod.POST, restCategoryModel.toJson(), "categories/{categoryId}/subcategories", category.getId());
         return restWrapper.processModel(RestCategoryModel.class, request);
+    }
+
+    /**
+     * Get parent category children.
+     *
+     * @return The list of child categories.
+     */
+    public RestCategoryModelsCollection getCategoryChildren()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "categories/{categoryId}/subcategories", category.getId());
+        return restWrapper.processModels(RestCategoryModelsCollection.class, request);
     }
 
 }

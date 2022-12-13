@@ -52,6 +52,8 @@ import org.testng.annotations.Test;
 public class GetCategoriesTests extends RestTest
 {
     private static final List<String> DEFAULT_ROOT_CATEGORIES = List.of("Software Document Classification", "Languages", "Regions", "Tags");
+    private static final String ROOT = "-root-";
+    private static final String NON_EXISTING_CATEGORY_ID = "non-existing-category-id";
 
     private UserModel user;
 
@@ -70,7 +72,7 @@ public class GetCategoriesTests extends RestTest
     {
         STEP("Create a category under root category (as admin)");
         final RestCategoryModel rootCategory = new RestCategoryModel();
-        rootCategory.setId("-root-");
+        rootCategory.setId(ROOT);
         final RestCategoryModel aCategory = new RestCategoryModel();
         aCategory.setName(RandomData.getRandomName("Category"));
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
@@ -99,12 +101,11 @@ public class GetCategoriesTests extends RestTest
     @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryByIdProvidingRootAsId()
     {
-        STEP("Get category with -root- as id (which does not exist)");
+        STEP("Get category with -root- as id");
         final RestCategoryModel rootCategory = new RestCategoryModel();
-        final String id = "-root-";
-        rootCategory.setId(id);
+        rootCategory.setId(ROOT);
         restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
-        restClient.assertStatusCodeIs(NOT_FOUND).assertLastError().containsSummary(id);
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
     }
 
     /**
@@ -125,6 +126,20 @@ public class GetCategoriesTests extends RestTest
     }
 
     /**
+     * Check we get an error when passing non existing as category id
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testGetCategoryByIdProvidingNonExistingId()
+    {
+        STEP("Get category with id which does not exist");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        final String id = NON_EXISTING_CATEGORY_ID;
+        rootCategory.setId(id);
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
+        restClient.assertStatusCodeIs(NOT_FOUND).assertLastError().containsSummary(id);
+    }
+
+    /**
      * Check we can get children category of a root category
      */
     @Test(groups = {TestGroup.REST_API})
@@ -132,7 +147,7 @@ public class GetCategoriesTests extends RestTest
     {
         STEP("Get category children with -root- as parent id");
         final RestCategoryModel rootCategory = new RestCategoryModel();
-        rootCategory.setId("-root-");
+        rootCategory.setId(ROOT);
         RestCategoryModelsCollection childCategoriesList =
                 restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategoryChildren();
         restClient.assertStatusCodeIs(OK);
@@ -199,7 +214,7 @@ public class GetCategoriesTests extends RestTest
 
         STEP("Get category with folder id passed as id");
         final RestCategoryModel parentCategory = new RestCategoryModel();
-        final String parentId = "non-existing-parent-category-id";
+        final String parentId = NON_EXISTING_CATEGORY_ID;
         parentCategory.setId(parentId);
         restClient.authenticateUser(user).withCoreAPI().usingCategory(parentCategory).getCategoryChildren();
         restClient.assertStatusCodeIs(NOT_FOUND).assertLastError().containsSummary(parentId);

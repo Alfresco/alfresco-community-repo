@@ -69,7 +69,7 @@ public class Action
         return params;
     }
 
-    public void setParams(Map<String, String> params)
+    public void setParams(Map<String, ? extends Object> params)
     {
         this.params = params;
     }

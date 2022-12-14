@@ -723,8 +723,7 @@ public class CategoriesImplTest
                     .willReturn(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID + "-" + i));
             given(dummyChildAssocMock.getParentRef()).willReturn(parentCategoryNodeRef);
             return dummyChildAssocMock;
-        })
-                .collect(Collectors.toList());
+        }).collect(Collectors.toList());
     }
 
     private void prepareCategoryNodeMocks(ChildAssociationRef childAssociationRef)

@@ -407,6 +407,7 @@ jobs:
       - name: "After success"
         if: ${{ always() }} && outcome.tests.outcome == 'success'
         run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
+        continue-on-error: true
       - name: "After failure"
         if: ${{ always() }} && outcome.tests.outcome == 'failure'
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"

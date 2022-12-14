@@ -10,7 +10,7 @@ on:
 env:
   GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
   GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
-  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }
+  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
 
 jobs:
   run_ci:

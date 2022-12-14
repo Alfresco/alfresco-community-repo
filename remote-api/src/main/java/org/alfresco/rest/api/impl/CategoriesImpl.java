@@ -56,8 +56,8 @@ import org.apache.commons.lang3.StringUtils;
 public class CategoriesImpl implements Categories
 {
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
-    static final String NO_PERMISSION_TO_CREATE_A_CATEGORY = "Current user does not have permission to create a category";
-    static final String NOT_NULL_NOR_EMPTY = "Category name must not be null nor empty";
+    static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
+    static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
     static final String FIELD_NOT_MATCH = "Category field: %s does not match the original one";
 
     private final AuthorityService authorityService;
@@ -115,8 +115,7 @@ public class CategoriesImpl implements Categories
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
         }
 
-        final Category originalCategory = mapToCategory(categoryNodeRef);
-        compareAndVerifyCategoryFields(fixedCategoryModel, originalCategory);
+        verifyCategoryFields(fixedCategoryModel);
 
         return mapToCategory(changeCategoryName(categoryNodeRef, fixedCategoryModel.getName()));
     }
@@ -125,15 +124,13 @@ public class CategoriesImpl implements Categories
     {
         if (!authorityService.hasAdminAuthority())
         {
-            throw new PermissionDeniedException(NO_PERMISSION_TO_CREATE_A_CATEGORY);
+            throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_CATEGORY);
         }
     }
 
     private NodeRef createCategoryNodeRef(NodeRef parentNodeRef, Category c)
     {
-        if (StringUtils.isEmpty(c.getName())) {
-            throw new InvalidArgumentException(NOT_NULL_NOR_EMPTY);
-        }
+        verifyCategoryFields(c);
         return categoryService.createCategory(parentNodeRef, c.getName());
     }
 
@@ -188,32 +185,15 @@ public class CategoriesImpl implements Categories
     }
 
     /**
-     * Verify if fixed category name is not empty and fields: id, parentId and hasChildren do match the original's category fields.
+     * Verify if fixed category name is not empty.
      *
      * @param fixedCategoryModel Fixed category model.
-     * @param originalCategory Original category.
      */
-    private void compareAndVerifyCategoryFields(final Category fixedCategoryModel, final Category originalCategory)
+    private void verifyCategoryFields(final Category fixedCategoryModel)
     {
-        if (StringUtils.isEmpty(fixedCategoryModel.getName())) {
-            throw new InvalidArgumentException(NOT_NULL_NOR_EMPTY);
-        }
-        if (fixedCategoryModel.getId() != null && !fixedCategoryModel.getId().equals(originalCategory.getId()))
+        if (StringUtils.isEmpty(fixedCategoryModel.getName()))
         {
-            throw new InvalidArgumentException(String.format(FIELD_NOT_MATCH, "id"),
-                new String[]{ fixedCategoryModel.getId(), originalCategory.getId() });
-        }
-
-        if (fixedCategoryModel.getParentId() != null && !fixedCategoryModel.getParentId().equals(originalCategory.getParentId()))
-        {
-            throw new InvalidArgumentException(String.format(FIELD_NOT_MATCH, "parentId"),
-                new String[]{ fixedCategoryModel.getParentId(), originalCategory.getParentId() });
-        }
-
-        if (fixedCategoryModel.getHasChildren() != originalCategory.getHasChildren())
-        {
-            throw new InvalidArgumentException(String.format(FIELD_NOT_MATCH, "hasChildren"),
-                new String[]{ String.valueOf(fixedCategoryModel.getHasChildren()), String.valueOf(originalCategory.getHasChildren()) });
+            throw new InvalidArgumentException(NOT_NULL_OR_EMPTY);
         }
     }
 }

@@ -68,20 +68,9 @@ abstract class CategoriesRestTest extends RestTest
 
     protected RestCategoryModel createCategoryModelWithIdAndName(final String id, final String name)
     {
-        final RestCategoryModel categoryModel = new RestCategoryModel();
-        categoryModel.setName(name);
-        categoryModel.setId(id);
-
-        return categoryModel;
-    }
-
-    protected RestCategoryModel createCategoryModelOf(final String name, final RestCategoryModel originalCategory)
-    {
-        final RestCategoryModel categoryModel = createCategoryModelWithName(name);
-        categoryModel.setId(originalCategory.getId());
-        categoryModel.setParentId(originalCategory.getParentId());
-        categoryModel.setHasChildren(originalCategory.getHasChildren());
-
-        return categoryModel;
+        return RestCategoryModel.builder()
+            .id(id)
+            .name(name)
+            .create();
     }
 }

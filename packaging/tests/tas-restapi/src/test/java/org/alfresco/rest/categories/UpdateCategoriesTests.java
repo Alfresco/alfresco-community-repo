@@ -56,8 +56,8 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
         STEP("Update as admin newly created category");
-        final String newName = getRandomName("NewCategoryName");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(newName, createdCategory);
+        final String categoryNewName = getRandomName("NewCategoryName");
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(createdCategory)
@@ -66,7 +66,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         restClient.assertStatusCodeIs(OK);
         updatedCategory.assertThat().isEqualTo(createdCategory, IGNORE_FIELD_NAME);
         updatedCategory.assertThat().field(FIELD_NAME).isNot(createdCategory.getName());
-        updatedCategory.assertThat().field(FIELD_NAME).is(newName);
+        updatedCategory.assertThat().field(FIELD_NAME).is(categoryNewName);
     }
 
     /**
@@ -82,8 +82,8 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdSubcategory = prepareCategoryUnder(createdCategory.getId());
 
         STEP("Update as admin newly created subcategory");
-        final String newName = getRandomName("NewCategoryName");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(newName, createdSubcategory);
+        final String categoryNewName = getRandomName("NewCategoryName");
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(createdSubcategory)
@@ -91,8 +91,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
 
         restClient.assertStatusCodeIs(OK);
         updatedCategory.assertThat().isEqualTo(createdSubcategory, IGNORE_FIELD_NAME);
-        updatedCategory.assertThat().field(FIELD_NAME).isNot(createdSubcategory.getName());
-        updatedCategory.assertThat().field(FIELD_NAME).is(newName);
+        updatedCategory.assertThat().field(FIELD_NAME).is(categoryNewName);
     }
 
     /**
@@ -105,7 +104,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
         STEP("Try to update as user newly created category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(getRandomName("NewCategoryName"), createdCategory);
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
         restClient.authenticateUser(dataUser.createRandomTestUser())
             .withCoreAPI()
             .usingCategory(createdCategory)
@@ -121,10 +120,10 @@ public class UpdateCategoriesTests extends CategoriesRestTest
     public void testUpdateCategory_usingNonExistingCategoryAndExpect404()
     {
         STEP("Create a fake parent category");
-        final RestCategoryModel nonExistingCategory = createCategoryModelWithIdAndName(randomUUID().toString(), getRandomName("CategoryName"));
+        final RestCategoryModel nonExistingCategory = createCategoryModelWithIdAndName(randomUUID() + "-invalid", getRandomName("CategoryName"));
 
         STEP("Try to update as admin fake category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(getRandomName("NewCategoryName"), nonExistingCategory);
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
         restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(nonExistingCategory)
@@ -146,7 +145,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel categoryWithFolderId = createCategoryModelWithIdAndName(folder.getNodeRef(), getRandomName("CategoryName"));
 
         STEP("Try to update as admin folder node as category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(getRandomName("NewCategoryName"), categoryWithFolderId);
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
         restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(categoryWithFolderId)
@@ -165,7 +164,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel rootCategoryModel = createCategoryModelWithId(ROOT_CATEGORY_ID);
 
         STEP("Try to update as admin root category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(getRandomName("NewCategoryName"), rootCategoryModel);
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
         restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(rootCategoryModel)
@@ -184,7 +183,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
         STEP("Try to update as admin newly created category with a category without name");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(null, createdCategory);
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(null);
         restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(createdCategory)
@@ -194,42 +193,23 @@ public class UpdateCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to update a category using not matching ID in path and receive 400 (Bad Request)
+     * Try to update a category with an invalid, but not important ID in body and receive 200 (OK)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testUpdateCategory_withNotMatchingIdInPathAndExpect400()
-    {
-        STEP("Prepare as admin two categories under root category");
-        final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
-        final RestCategoryModel notRelatedCategory = prepareCategoryUnderRoot();
-
-        STEP("Try to update as admin newly created category using wrong ID in path");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelOf(getRandomName("NewCategoryName"), createdCategory);
-        restClient.authenticateUser(dataUser.getAdminUser())
-            .withCoreAPI()
-            .usingCategory(notRelatedCategory)
-            .updateCategory(fixedCategoryModel);
-
-        restClient.assertStatusCodeIs(BAD_REQUEST);
-    }
-
-    /**
-     * Try to update a category using not matching ID in request body and receive 400 (Bad Request)
-     */
-    @Test(groups = { TestGroup.REST_API})
-    public void testUpdateCategory_withNotMatchingIdInBodyAndExpect400()
+    public void testUpdateCategory_withIgnoredInvalidIdInBodyAndExpect200()
     {
         STEP("Prepare as admin a category under root category");
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
-        STEP("Try to update as admin newly created category using wrong ID in request body");
-        final RestCategoryModel fixedCategoryModelWithInvalidId = createCategoryModelOf(getRandomName("NewCategoryName"), createdCategory);
-        fixedCategoryModelWithInvalidId.setId(randomUUID().toString());
-        restClient.authenticateUser(dataUser.getAdminUser())
+        STEP("Try to update as admin newly created category with a category with invalid ID and receive 200");
+        final String categoryNewName = getRandomName("NewCategoryName");
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithIdAndName(randomUUID() + "-invalid" ,categoryNewName);
+        final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(createdCategory)
-            .updateCategory(fixedCategoryModelWithInvalidId);
+            .updateCategory(fixedCategoryModel);
 
-        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertStatusCodeIs(OK);
+        updatedCategory.assertThat().field(FIELD_NAME).is(categoryNewName);
     }
 }

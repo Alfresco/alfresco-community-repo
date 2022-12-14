@@ -11,6 +11,12 @@ env:
   GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
   GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
   GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
 
 jobs:
   run_ci:

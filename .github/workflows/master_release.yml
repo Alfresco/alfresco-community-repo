@@ -28,6 +28,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.12.0
         with:
           username: ${{ secrets.BOT_GITHUB_USERNAME }}
@@ -55,6 +57,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - run: bash ./scripts/ci/update_downstream.sh
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}

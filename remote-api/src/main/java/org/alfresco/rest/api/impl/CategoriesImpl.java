@@ -115,6 +115,23 @@ public class CategoriesImpl implements Categories
         return ListPage.of(categories, params.getPaging());
     }
 
+    @Override
+    public void deleteCategoryById(String id, Parameters params)
+    {
+        if (!authorityService.hasAdminAuthority())
+        {
+            throw new PermissionDeniedException(NO_PERMISSION_TO_DELETE_A_CATEGORY);
+        }
+
+        final NodeRef nodeRef = nodes.validateNode(id);
+        if (isNotACategory(nodeRef) || isRootCategory(nodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
+        }
+
+        nodeService.deleteNode(nodeRef);
+    }
+
     /**
      * This method gets category NodeRef for a given category id.
      * If '-root-' is passed as category id, then it's retrieved as a call to {@link org.alfresco.service.cmr.search.CategoryService#getRootCategoryNodeRef}
@@ -151,23 +168,6 @@ public class CategoriesImpl implements Categories
             throw new InvalidArgumentException(NOT_NULL_OR_EMPTY);
         }
         return categoryService.createCategory(parentNodeRef, c.getName());
-    }
-
-    @Override
-    public void deleteCategoryById(String id, Parameters params)
-    {
-        if (!authorityService.hasAdminAuthority())
-        {
-            throw new PermissionDeniedException(NO_PERMISSION_TO_DELETE_A_CATEGORY);
-        }
-
-        final NodeRef nodeRef = nodes.validateNode(id);
-        if (isNotACategory(nodeRef) || isRootCategory(nodeRef))
-        {
-            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
-        }
-
-        nodeService.deleteNode(nodeRef);
     }
 
     private boolean isNotACategory(NodeRef nodeRef)

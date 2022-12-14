@@ -41,7 +41,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  * @author mpichura
  */
 @EntityResource(name = "categories", title = "Categories")
-public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>
+public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>,
+                                                EntityResourceAction.Delete
 {
     private final Categories categories;
 
@@ -57,5 +58,13 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     public Category readById(String id, Parameters parameters) throws EntityNotFoundException
     {
         return categories.getCategoryById(id, parameters);
+    }
+
+    @WebApiDescription(title = "Delete category",
+                description = "Delete a category given its node id",
+                successStatus = HttpServletResponse.SC_NO_CONTENT)
+    @Override
+    public void delete(String id, Parameters parameters) {
+        categories.deleteCategoryById(id, parameters);
     }
 }

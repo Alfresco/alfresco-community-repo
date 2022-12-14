@@ -92,4 +92,16 @@ public class Categories extends ModelRequest<Categories>
         return restWrapper.processModels(RestCategoryModelsCollection.class, request);
     }
 
+    /**
+     * Delete category.
+     *
+     * - DELETE /categories/{categoryId}
+     */
+    public void deleteCategory()
+    {
+        RestRequest request = RestRequest.
+                simpleRequest(HttpMethod.DELETE, "/categories/{categoryId}", category.getId());
+        restWrapper.processEmptyModel(request);
+    }
+
 }

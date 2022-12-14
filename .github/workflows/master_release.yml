@@ -46,7 +46,7 @@ jobs:
       always() &&
       (needs.run_ci.result == 'skipped' || needs.run_ci.result == 'success') &&
       (needs.push_to_nexus.result == 'success') &&
-      (! contains(github.event.head_commit.message, '[no downstream]')
+      (! contains(github.event.head_commit.message, '[no downstream]'))
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0

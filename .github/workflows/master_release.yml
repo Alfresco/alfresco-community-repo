@@ -6,6 +6,12 @@ on:
 #      - master
 #      - release/**
       - feature/ACS-3841_test_gha
+
+env:
+  GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+  GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }
+
 jobs:
   run_ci:
     uses: ./.github/workflows/ci.yml
@@ -32,9 +38,6 @@ jobs:
         run: bash ./scripts/ci/maven_release.sh
         env:
           BUILD_NUMBER: ${{ github.run_number }}
-          GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
-          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
-          GIT_EMAIL: ${{ secrets.BOT_GITHUB_TOKEN }}
       - name: "Clean Maven cache"
         if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
@@ -55,9 +58,6 @@ jobs:
       - run: bash ./scripts/ci/update_downstream.sh
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
-          GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
-          GIT_EMAIL: ${{ secrets.BOT_GITHUB_TOKEN }}
       - name: "Clean Maven cache"
         if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh

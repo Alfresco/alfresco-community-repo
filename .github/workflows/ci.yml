@@ -355,29 +355,29 @@ jobs:
       matrix:
         include:
           - test-name: "REST API TAS tests part1"
-            pom: packaging/tests/tas-restapi/pom.xml
+            pom-dir: tas-restapi
             test-profile: run-restapi-part1
           - test-name: "REST API TAS tests part2"
-            pom: packaging/tests/tas-restapi/pom.xml
+            pom-dir: tas-restapi
             test-profile: run-restapi-part2
           - test-name: "REST API TAS tests part3"
-            pom: packaging/tests/tas-restapi/pom.xml
+            pom-dir: tas-restapi
             test-profile: run-restapi-part3
           - test-name: "CMIS TAS tests - BROWSER binding"
-            pom: packaging/tests/tas-cmis/pom.xml
+            pom-dir: tas-cmis
             test-profile: run-cmis-browser
           - test-name: "CMIS TAS tests - ATOM binding"
-            pom: packaging/tests/tas-cmis/pom.xml
+            pom-dir: tas-cmis
             test-profile: run-cmis-atom
           - test-name: "CMIS TAS tests - WEBSERVICES binding"
-            pom: packaging/tests/tas-cmis/pom.xml
+            pom-dir: tas-cmis
             test-profile: run-cmis-webservices
           - test-name: "Email TAS tests"
-            pom: packaging/tests/tas-email/pom.xml
+            pom-dir: tas-email
           - test-name: "WebDAV TAS tests"
-            pom: packaging/tests/tas-webdav/pom.xml
+            pom-dir: tas-webdav
           - test-name: "Integration TAS tests"
-            pom: packaging/tests/tas-integration/pom.xml
+            pom-dir: tas-integration
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
@@ -403,13 +403,13 @@ jobs:
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B verify -f ${{ matrix.pom }} -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
       - name: "After success"
         if: ${{ always() }} && outcome.tests.outcome == 'success'
-        run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/tas-restapi"
+        run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "After failure"
         if: ${{ always() }} && outcome.tests.outcome == 'failure'
-        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-restapi"
+        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Clean Maven cache"
         if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
@@ -531,7 +531,7 @@ jobs:
           mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags -Pall-tas-tests
+        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - run: bash amps/ags/ci/scripts/getLogs.sh
         if: ${{ always() }}
       - shell: bash

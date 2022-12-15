@@ -33,6 +33,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Prepare environment"
         run: bash ./scripts/ci/prepare.sh
       - name: "Clean Maven cache"
@@ -58,6 +60,8 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@master
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
@@ -78,6 +82,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Run tests"
         run: |
           mvn -B test -pl core,data-model -am -DfailIfNoTests=false
@@ -150,6 +156,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
@@ -176,6 +184,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
@@ -202,6 +212,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
         env:
@@ -227,6 +239,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
@@ -253,6 +267,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
@@ -276,6 +292,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
       - name: "Run tests"
@@ -306,7 +324,7 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext05TestSuite
             compose-profile: default
-            parameters: '"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"'
+            mvn-options: '"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"'
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite
@@ -315,12 +333,14 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: SearchTestSuite
             compose-profile: default
-            parameters: '-Dindex.subsystem.name=solr6'
+            mvn-options: '-Dindex.subsystem.name=solr6'
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up IDS"
         run: |
           if [ "${{ matrix.testSuite }}" == 'AppContext05TestSuite' ];
@@ -335,7 +355,7 @@ jobs:
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.parameters }}
+        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
       - name: "Clean Maven cache"
         if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
@@ -411,6 +431,7 @@ jobs:
       - name: "After failure"
         if: ${{ always() }} && outcome.tests.outcome == 'failure'
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
+        continue-on-error: true
       - name: "Clean Maven cache"
         if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
@@ -428,6 +449,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/acs-community-packaging/.github/actions/setup-build-tools@feature/ACS-3844_migrate-to-GHA
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
@@ -470,7 +493,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_tests_mysql:
-    name: AGS Unit & Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
+    name: AGS Unit & Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >

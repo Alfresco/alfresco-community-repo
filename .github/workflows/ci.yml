@@ -423,10 +423,10 @@ jobs:
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
-      - name: "After success"
+      - name: "Print output after success"
         if: ${{ always() }} && outcome.tests.outcome == 'success'
         run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
-      - name: "After failure"
+      - name: "Print output after failure"
         if: ${{ always() }} && outcome.tests.outcome == 'failure'
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Clean Maven cache"
@@ -457,7 +457,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_tests_postgressql:
-    name: AGS Unit & Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
+    name: AGS Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -490,7 +490,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_tests_mysql:
-    name: AGS Unit & Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
+    name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >

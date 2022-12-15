@@ -105,11 +105,11 @@ public class CategoriesImpl implements Categories
     {
         final NodeRef parentNodeRef = getCategoryNodeRef(parentCategoryId);
         final List<ChildAssociationRef> childCategoriesAssocs = nodeService.getChildAssocs(parentNodeRef).stream()
-            .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
-            .collect(Collectors.toList());
+                .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
+                .collect(Collectors.toList());
         final List<Category> categories = childCategoriesAssocs.stream()
-            .map(c -> mapToCategory(c.getChildRef()))
-            .collect(Collectors.toList());
+                .map(c -> mapToCategory(c.getChildRef()))
+                .collect(Collectors.toList());
         return ListPage.of(categories, params.getPaging());
     }
 
@@ -134,6 +134,19 @@ public class CategoriesImpl implements Categories
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_CATEGORY);
         }
+    }
+
+    @Override
+    public void deleteCategoryById(String id, Parameters params)
+    {
+        verifyAdminAuthority();
+        final NodeRef nodeRef = nodes.validateNode(id);
+        if (isNotACategory(nodeRef) || isRootCategory(nodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
+        }
+
+        nodeService.deleteNode(nodeRef);
     }
 
     /**

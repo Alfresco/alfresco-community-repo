@@ -50,4 +50,7 @@ public interface Categories
      * @return Updated category.
      */
     Category updateCategoryById(String id, Category fixedCategoryModel);
+
+    void deleteCategoryById(String id, Parameters parameters);
+
 }

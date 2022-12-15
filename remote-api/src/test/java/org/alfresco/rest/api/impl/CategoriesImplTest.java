@@ -249,6 +249,92 @@ public class CategoriesImplTest
     }
 
     @Test
+    public void testDeleteCategoryById_asAdmin()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        final NodeRef categoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID);
+        given(nodesMock.validateNode(CATEGORY_ID)).willReturn(categoryNodeRef);
+        given(nodesMock.isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
+        final Node categoryNode = new Node();
+        categoryNode.setName(CATEGORY_NAME);
+        categoryNode.setNodeId(CATEGORY_ID);
+        final NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
+        categoryNode.setParentId(parentNodeRef);
+
+        //when
+        objectUnderTest.deleteCategoryById(CATEGORY_ID, parametersMock);
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().validateNode(CATEGORY_ID);
+
+        then(nodesMock).should().isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+
+        then(nodeServiceMock).should().getParentAssocs(categoryNodeRef);
+        then(nodeServiceMock).should().deleteNode(categoryNodeRef);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testDeleteCategoryById_asNonAdminUser()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
+
+        //when
+        assertThrows(PermissionDeniedException.class, () -> objectUnderTest.deleteCategoryById(CATEGORY_ID, parametersMock));
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+
+        then(nodesMock).shouldHaveNoInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testDeleteCategoryById_nonCategoryId()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        final NodeRef categoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID);
+        given(nodesMock.validateNode(CATEGORY_ID)).willReturn(categoryNodeRef);
+        given(nodesMock.isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(false);
+
+        //when
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.deleteCategoryById(CATEGORY_ID, parametersMock));
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+
+        then(nodesMock).should().validateNode(CATEGORY_ID);
+        then(nodesMock).should().isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testDeleteCategoryById_rootCategory()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        final NodeRef categoryRootNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CAT_ROOT_NODE_ID);
+        given(nodesMock.validateNode(CAT_ROOT_NODE_ID)).willReturn(categoryRootNodeRef);
+        given(nodesMock.isSubClass(categoryRootNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
+        given(categoryChildAssociationRefMock.getQName()).willReturn(ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        given(nodeServiceMock.getParentAssocs(categoryRootNodeRef)).willReturn(List.of(categoryChildAssociationRefMock));
+
+        //when
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.deleteCategoryById(CAT_ROOT_NODE_ID, parametersMock));
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+
+        then(nodesMock).should().validateNode(CAT_ROOT_NODE_ID);
+        then(nodesMock).should().isSubClass(categoryRootNodeRef, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+
+        then(nodeServiceMock).should().getParentAssocs(categoryRootNodeRef);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
     public void testCreateCategoryUnderRoot()
     {
         final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PATH_ROOT);

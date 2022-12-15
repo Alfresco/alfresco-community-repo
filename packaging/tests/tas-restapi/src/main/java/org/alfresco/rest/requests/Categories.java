@@ -94,6 +94,7 @@ public class Categories extends ModelRequest<Categories>
 
     /**
      * Update single category.
+     * - PUT /categories/{categoryId}
      *
      * @param restCategoryModel The categories to update.
      * @return Created category with additional data populated by the repository.
@@ -103,4 +104,15 @@ public class Categories extends ModelRequest<Categories>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, restCategoryModel.toJson(), "categories/{categoryId}", category.getId());
         return restWrapper.processModel(RestCategoryModel.class, request);
     }
+    /**
+     * Delete category.
+     * - DELETE /categories/{categoryId}
+     */
+    public void deleteCategory()
+    {
+        RestRequest request = RestRequest.
+                simpleRequest(HttpMethod.DELETE, "/categories/{categoryId}", category.getId());
+        restWrapper.processEmptyModel(request);
+    }
+
 }

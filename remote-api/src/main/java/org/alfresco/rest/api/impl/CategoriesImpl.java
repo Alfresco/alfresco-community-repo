@@ -117,8 +117,8 @@ public class CategoriesImpl implements Categories
     public Category updateCategoryById(final String id, final Category fixedCategoryModel)
     {
         verifyAdminAuthority();
-        final NodeRef categoryNodeRef = nodes.validateOrLookupNode(id, null);
-        if (isNotACategory(categoryNodeRef) || isRootCategory(categoryNodeRef))
+        final NodeRef categoryNodeRef = getCategoryNodeRef(id);
+        if (isRootCategory(categoryNodeRef))
         {
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
         }
@@ -128,25 +128,25 @@ public class CategoriesImpl implements Categories
         return mapToCategory(changeCategoryName(categoryNodeRef, fixedCategoryModel.getName()));
     }
 
+    @Override
+    public void deleteCategoryById(String id, Parameters parameters)
+    {
+        verifyAdminAuthority();
+        final NodeRef nodeRef = getCategoryNodeRef(id);
+        if (isRootCategory(nodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
+        }
+
+        nodeService.deleteNode(nodeRef);
+    }
+
     private void verifyAdminAuthority()
     {
         if (!authorityService.hasAdminAuthority())
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_CATEGORY);
         }
-    }
-
-    @Override
-    public void deleteCategoryById(String id, Parameters params)
-    {
-        verifyAdminAuthority();
-        final NodeRef nodeRef = nodes.validateNode(id);
-        if (isNotACategory(nodeRef) || isRootCategory(nodeRef))
-        {
-            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
-        }
-
-        nodeService.deleteNode(nodeRef);
     }
 
     /**

@@ -27,16 +27,31 @@
 package org.alfresco.rest.categories;
 
 import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.utility.model.UserModel;
+import org.testng.annotations.BeforeClass;
 
 abstract class CategoriesRestTest extends RestTest
 {
+    protected static final String ROOT_CATEGORY_ID = "-root-";
+    protected static final String CATEGORY_NAME_PREFIX = "CategoryName";
+    protected static final String FIELD_NAME = "name";
+    protected static final String FIELD_ID = "id";
+    protected static final String FIELD_PARENT_ID = "parentId";
+    protected static final String FIELD_HAS_CHILDREN = "hasChildren";
 
-    public static final String ROOT_CATEGORY_ID = "-root-";
-    public static final String FIELD_NAME = "name";
+    protected UserModel user;
+
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception
+    {
+        STEP("Create a user");
+        user = dataUser.createRandomTestUser();
+    }
 
     protected RestCategoryModel prepareCategoryUnderRoot()
     {
@@ -46,7 +61,7 @@ abstract class CategoriesRestTest extends RestTest
     protected RestCategoryModel prepareCategoryUnder(final String parentId)
     {
         final RestCategoryModel parentCategory = createCategoryModelWithId(parentId);
-        final RestCategoryModel categoryModel = createCategoryModelWithName(getRandomName("CategoryName"));
+        final RestCategoryModel categoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NAME_PREFIX));
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(parentCategory)

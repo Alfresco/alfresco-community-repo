@@ -106,7 +106,7 @@ public class CategoriesImplTest
     public void setUp() throws Exception
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
-        given(nodesMock.validateOrLookupNode(eq(CATEGORY_ID), isNull())).willReturn(CATEGORY_NODE_REF);
+        given(nodesMock.validateNode(eq(CATEGORY_ID))).willReturn(CATEGORY_NODE_REF);
         given(nodesMock.isSubClass(any(), any(), anyBoolean())).willReturn(true);
     }
 
@@ -620,7 +620,7 @@ public class CategoriesImplTest
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
-        then(nodesMock).should().validateOrLookupNode(CATEGORY_ID, null);
+        then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
         then(nodesMock).should().getNode(CATEGORY_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -654,7 +654,7 @@ public class CategoriesImplTest
     @Test
     public void testUpdateCategoryById_categoryNodeNotFound()
     {
-        given(nodesMock.validateOrLookupNode(any(), isNull())).willThrow(EntityNotFoundException.class);
+        given(nodesMock.validateNode(any(String.class))).willThrow(EntityNotFoundException.class);
 
         // when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY));
@@ -677,13 +677,16 @@ public class CategoriesImplTest
     @Test
     public void testUpdateCategoryById_isRootCategory()
     {
-        given(nodesMock.validateOrLookupNode(any(), isNull())).willReturn(createNodeRefUsingId(CAT_ROOT_NODE_ID));
+        given(categoryServiceMock.getRootCategoryNodeRef(any())).willReturn(Optional.of(createNodeRefUsingId(PATH_ROOT)));
         given(nodeServiceMock.getParentAssocs(any())).willReturn(List.of(categoryChildAssociationRefMock));
         given(categoryChildAssociationRefMock.getQName()).willReturn(ContentModel.ASPECT_GEN_CLASSIFIABLE);
 
         // when
-        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY))
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(PATH_ROOT, CATEGORY))
             .withMessageContaining(NOT_A_VALID_CATEGORY);
+
+        then(categoryServiceMock).should().getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        then(categoryServiceMock).shouldHaveNoMoreInteractions();
     }
 
     private List<String> getInvalidCategoryNames()

@@ -26,34 +26,20 @@
 
 package org.alfresco.rest.categories;
 
-import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestCategoryModel;
-import org.alfresco.utility.data.RandomData;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
-import org.alfresco.utility.model.UserModel;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
-public class DeleteCategoriesTests extends RestTest {
+import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
+import org.testng.annotations.Test;
 
-    private UserModel user;
-
-
-    @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
-        STEP("Create a user");
-        user = dataUser.createRandomTestUser();
-    }
+public class DeleteCategoriesTests extends CategoriesRestTest
+{
 
     /**
      * Check we can delete a category.
@@ -62,7 +48,7 @@ public class DeleteCategoriesTests extends RestTest {
     public void testDeleteCategory()
     {
         STEP("Create a category and send a request to delete it.");
-        RestCategoryModel aCategory = createCategory();
+        RestCategoryModel aCategory = prepareCategoryUnderRoot();
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingCategory(aCategory).deleteCategory();
         restClient.assertStatusCodeIs(NO_CONTENT);
 
@@ -77,9 +63,9 @@ public class DeleteCategoriesTests extends RestTest {
     @Test(groups = {TestGroup.REST_API})
     public void testDeleteCategoryAsRegularUser_andFail()
     {
-        RestCategoryModel aCategory = createCategory();
+        RestCategoryModel aCategory = prepareCategoryUnderRoot();
         restClient.authenticateUser(user).withCoreAPI().usingCategory(aCategory).deleteCategory();
-        restClient.assertStatusCodeIs(FORBIDDEN).assertLastError().containsSummary("Current user does not have permission to delete a category");
+        restClient.assertStatusCodeIs(FORBIDDEN).assertLastError().containsSummary("Current user does not have permission to manage a category");
     }
 
     /**
@@ -89,9 +75,8 @@ public class DeleteCategoriesTests extends RestTest {
     public void testDeleteNonExistentCategory()
     {
         STEP("Get category with non-existent id");
-        final RestCategoryModel rootCategory = new RestCategoryModel();
         final String id = "non-existing-dummy-id";
-        rootCategory.setId(id);
+        final RestCategoryModel rootCategory = createCategoryModelWithId(id);
 
         STEP("Attempt to delete category with non-existent id and receive 404");
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingCategory(rootCategory).deleteCategory();
@@ -110,24 +95,8 @@ public class DeleteCategoriesTests extends RestTest {
         String id = folder.getNodeRef();
 
         STEP("Create a category, set its id to the folder id and attempt to delete it");
-        final RestCategoryModel aCategory = new RestCategoryModel();
-        aCategory.setId(id);
+        final RestCategoryModel aCategory = createCategoryModelWithId(id);
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingCategory(aCategory).deleteCategory();
         restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
-    }
-
-    public RestCategoryModel createCategory()
-    {
-        final RestCategoryModel rootCategory = new RestCategoryModel();
-        rootCategory.setId("-root-");
-        final RestCategoryModel aCategory = new RestCategoryModel();
-        aCategory.setName(RandomData.getRandomName("Category"));
-        final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
-                .withCoreAPI()
-                .usingCategory(rootCategory)
-                .createSingleCategory(aCategory);
-        restClient.assertStatusCodeIs(CREATED);
-
-        return createdCategory;
     }
 }

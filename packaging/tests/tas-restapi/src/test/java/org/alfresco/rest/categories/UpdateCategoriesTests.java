@@ -26,8 +26,6 @@
 
 package org.alfresco.rest.categories;
 
-import static java.util.UUID.randomUUID;
-
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -44,6 +42,7 @@ import org.testng.annotations.Test;
 
 public class UpdateCategoriesTests extends CategoriesRestTest
 {
+    private static final String CATEGORY_NEW_NAME_PREFIX = "NewCategoryName";
     private static final String IGNORE_FIELD_NAME = FIELD_NAME;
 
     /**
@@ -56,7 +55,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
         STEP("Update as admin newly created category");
-        final String categoryNewName = getRandomName("NewCategoryName");
+        final String categoryNewName = getRandomName(CATEGORY_NEW_NAME_PREFIX);
         final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
@@ -82,7 +81,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdSubcategory = prepareCategoryUnder(createdCategory.getId());
 
         STEP("Update as admin newly created subcategory");
-        final String categoryNewName = getRandomName("NewCategoryName");
+        final String categoryNewName = getRandomName(CATEGORY_NEW_NAME_PREFIX);
         final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
@@ -104,8 +103,8 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
         STEP("Try to update as user newly created category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
-        restClient.authenticateUser(dataUser.createRandomTestUser())
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NEW_NAME_PREFIX));
+        restClient.authenticateUser(user)
             .withCoreAPI()
             .usingCategory(createdCategory)
             .updateCategory(fixedCategoryModel);
@@ -120,10 +119,10 @@ public class UpdateCategoriesTests extends CategoriesRestTest
     public void testUpdateCategory_usingNonExistingCategoryAndExpect404()
     {
         STEP("Create a fake parent category");
-        final RestCategoryModel nonExistingCategory = createCategoryModelWithIdAndName(randomUUID() + "-invalid", getRandomName("CategoryName"));
+        final RestCategoryModel nonExistingCategory = createCategoryModelWithIdAndName("non-existing-dummy-id", getRandomName(CATEGORY_NAME_PREFIX));
 
         STEP("Try to update as admin fake category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NEW_NAME_PREFIX));
         restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(nonExistingCategory)
@@ -142,10 +141,10 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final UserModel user = dataUser.createRandomTestUser();
         final SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
         final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-        final RestCategoryModel categoryWithFolderId = createCategoryModelWithIdAndName(folder.getNodeRef(), getRandomName("CategoryName"));
+        final RestCategoryModel categoryWithFolderId = createCategoryModelWithIdAndName(folder.getNodeRef(), getRandomName(CATEGORY_NAME_PREFIX));
 
         STEP("Try to update as admin folder node as category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NEW_NAME_PREFIX));
         restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(categoryWithFolderId)
@@ -164,7 +163,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel rootCategoryModel = createCategoryModelWithId(ROOT_CATEGORY_ID);
 
         STEP("Try to update as admin root category");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName("NewCategoryName"));
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NEW_NAME_PREFIX));
         restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(rootCategoryModel)
@@ -202,8 +201,8 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
         STEP("Try to update as admin newly created category with a category with invalid ID and receive 200");
-        final String categoryNewName = getRandomName("NewCategoryName");
-        final RestCategoryModel fixedCategoryModel = createCategoryModelWithIdAndName(randomUUID() + "-invalid" ,categoryNewName);
+        final String categoryNewName = getRandomName(CATEGORY_NEW_NAME_PREFIX);
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithIdAndName("non-existing-dummy-id", categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(createdCategory)

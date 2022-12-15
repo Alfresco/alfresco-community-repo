@@ -41,9 +41,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  * @author mpichura
  */
 @EntityResource(name = "categories", title = "Categories")
-public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>,
-    EntityResourceAction.Update<Category>,
-    EntityResourceAction.Delete
+public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>, EntityResourceAction.Update<Category>, EntityResourceAction.Delete
 {
     private final Categories categories;
 
@@ -52,6 +50,9 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
         this.categories = categories;
     }
 
+    /**
+     * GET /categories/{categoryId}
+     */
     @WebApiDescription(
         title = "Get category by its ID",
         description = "Retrieves a category given category node id",
@@ -63,6 +64,9 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
         return categories.getCategoryById(id, parameters);
     }
 
+    /**
+     * PUT /categories/{categoryId}
+     */
     @WebApiDescription(
         title = "Update category",
         description = "Update a single category by its ID",
@@ -74,6 +78,9 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
         return categories.updateCategoryById(id, categoryModel);
     }
 
+    /**
+     * DELETE /categories/{categoryId}
+     */
     @WebApiDescription(
         title = "Delete category",
         description = "Delete a category given its node ID",

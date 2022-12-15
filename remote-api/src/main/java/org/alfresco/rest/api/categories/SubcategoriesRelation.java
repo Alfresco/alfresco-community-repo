@@ -39,7 +39,8 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RelationshipResource(name = "subcategories",  entityResource = CategoriesEntityResource.class, title = "Subcategories")
-public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>, RelationshipResourceAction.Read<Category>
+public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>,
+                                              RelationshipResourceAction.Read<Category>
 {
 
     private final Categories categories;

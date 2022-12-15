@@ -41,7 +41,9 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  * @author mpichura
  */
 @EntityResource(name = "categories", title = "Categories")
-public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>, EntityResourceAction.Update<Category>, EntityResourceAction.Delete
+public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>,
+                                                 EntityResourceAction.Update<Category>,
+                                                 EntityResourceAction.Delete
 {
     private final Categories categories;
 

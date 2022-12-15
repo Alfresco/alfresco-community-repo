@@ -27,7 +27,6 @@
 package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
-import static org.alfresco.rest.api.impl.CategoriesImpl.FIELD_NOT_MATCH;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_A_VALID_CATEGORY;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_NULL_OR_EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +36,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -81,7 +79,7 @@ public class CategoriesImplTest
     private static final String CATEGORY_NAME = "categoryName";
     private static final String PARENT_ID = "parent-node-id";
     private static final String CAT_ROOT_NODE_ID = "cat-root-node-id";
-    private static final NodeRef CATEGORY_NODE_REF = createNodeRefUsingId(CATEGORY_ID);
+    private static final NodeRef CATEGORY_NODE_REF = createNodeRefWithId(CATEGORY_ID);
     private static final Category CATEGORY = createDefaultCategoryWithName(CATEGORY_NAME);
 
     @Mock
@@ -340,7 +338,7 @@ public class CategoriesImplTest
         final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PATH_ROOT);
         given(categoryServiceMock.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE))
                 .willReturn(Optional.of(parentCategoryNodeRef));
-        final NodeRef categoryNodeRef = createNodeRefUsingId(CATEGORY_ID);
+        final NodeRef categoryNodeRef = createNodeRefWithId(CATEGORY_ID);
         given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
         given(nodesMock.getNode(CATEGORY_ID)).willReturn(prepareCategoryNode());
         final ChildAssociationRef parentAssoc = new ChildAssociationRef(null, parentCategoryNodeRef, null, categoryNodeRef);
@@ -380,7 +378,7 @@ public class CategoriesImplTest
     {
         final NodeRef parentCategoryNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
         given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
-        final NodeRef categoryNodeRef = createNodeRefUsingId(CATEGORY_ID);
+        final NodeRef categoryNodeRef = createNodeRefWithId(CATEGORY_ID);
         given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
         given(nodesMock.getNode(CATEGORY_ID)).willReturn(prepareCategoryNode());
         final ChildAssociationRef parentAssoc = new ChildAssociationRef(null, parentCategoryNodeRef, null, categoryNodeRef);
@@ -609,7 +607,7 @@ public class CategoriesImplTest
         final String categoryNewName = "categoryNewName";
         final Category fixedCategory = createCategoryOnlyWithName(categoryNewName);
         final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
-        final NodeRef parentCategoryNodeRef = createNodeRefUsingId(PARENT_ID);
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
         given(nodesMock.getNode(any())).willReturn(prepareCategoryNode(categoryNewName));
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
@@ -677,7 +675,7 @@ public class CategoriesImplTest
     @Test
     public void testUpdateCategoryById_isRootCategory()
     {
-        given(categoryServiceMock.getRootCategoryNodeRef(any())).willReturn(Optional.of(createNodeRefUsingId(PATH_ROOT)));
+        given(categoryServiceMock.getRootCategoryNodeRef(any())).willReturn(Optional.of(createNodeRefWithId(PATH_ROOT)));
         given(nodeServiceMock.getParentAssocs(any())).willReturn(List.of(categoryChildAssociationRefMock));
         given(categoryChildAssociationRefMock.getQName()).willReturn(ContentModel.ASPECT_GEN_CLASSIFIABLE);
 
@@ -717,7 +715,7 @@ public class CategoriesImplTest
         final Category categoryWithInvalidId = createCategoryOnlyWithName(categoryNewName);
         categoryWithInvalidId.setId("different-" + CATEGORY_ID);
         final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
-        final NodeRef parentCategoryNodeRef = createNodeRefUsingId(PARENT_ID);
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
         given(nodesMock.getNode(any())).willReturn(prepareCategoryNode(categoryNewName));
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
@@ -739,7 +737,7 @@ public class CategoriesImplTest
         final Category categoryWithInvalidParentId = createCategoryOnlyWithName(categoryNewName);
         categoryWithInvalidParentId.setParentId("different-" + PARENT_ID);
         final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
-        final NodeRef parentCategoryNodeRef = createNodeRefUsingId(PARENT_ID);
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
         given(nodesMock.getNode(any())).willReturn(prepareCategoryNode(categoryNewName));
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
@@ -761,7 +759,7 @@ public class CategoriesImplTest
         final Category categoryWithInvalidHasChildren = createCategoryOnlyWithName(categoryNewName);
         categoryWithInvalidHasChildren.setHasChildren(true);
         final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
-        final NodeRef parentCategoryNodeRef = createNodeRefUsingId(PARENT_ID);
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
         given(nodesMock.getNode(any())).willReturn(prepareCategoryNode(categoryNewName));
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
@@ -838,7 +836,7 @@ public class CategoriesImplTest
         assertEquals(expectedCategory, category);
     }
 
-    private static NodeRef createNodeRefUsingId(final String id)
+    private static NodeRef createNodeRefWithId(final String id)
     {
         return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
     }

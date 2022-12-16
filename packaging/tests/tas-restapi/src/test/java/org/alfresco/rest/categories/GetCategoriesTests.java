@@ -28,11 +28,20 @@ package org.alfresco.rest.categories;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertTrue;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.rest.model.RestCategoryModelsCollection;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -42,6 +51,10 @@ import org.testng.annotations.Test;
 
 public class GetCategoriesTests extends RestTest
 {
+    private static final List<String> DEFAULT_ROOT_CATEGORIES = List.of("Software Document Classification", "Languages", "Regions", "Tags");
+    private static final String ROOT = "-root-";
+    private static final String NON_EXISTING_CATEGORY_ID = "non-existing-category-id";
+
     private UserModel user;
 
     @BeforeClass(alwaysRun = true)
@@ -57,11 +70,29 @@ public class GetCategoriesTests extends RestTest
     @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryById()
     {
-        STEP("Get category with -root- as id (which does not exist)");
+        STEP("Create a category under root category (as admin)");
         final RestCategoryModel rootCategory = new RestCategoryModel();
-        rootCategory.setId("-root-");
-        restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
-        restClient.assertStatusCodeIs(NOT_FOUND);
+        rootCategory.setId(ROOT);
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName(RandomData.getRandomName("Category"));
+        final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(CREATED);
+
+        createdCategory.assertThat()
+                .field("name").is(aCategory.getName());
+        createdCategory.assertThat()
+                .field("parentId").is(rootCategory.getId());
+        createdCategory.assertThat()
+                .field("hasChildren").is(false);
+
+        STEP("Get the created category (as regular user)");
+        final RestCategoryModel categoryFromGet =
+                restClient.authenticateUser(user).withCoreAPI().usingCategory(createdCategory).getCategory();
+        restClient.assertStatusCodeIs(OK);
+        categoryFromGet.assertThat().isEqualTo(createdCategory);
     }
 
     /**
@@ -70,15 +101,15 @@ public class GetCategoriesTests extends RestTest
     @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryByIdProvidingRootAsId()
     {
-        STEP("Get category with -root- as id (which does not exist)");
+        STEP("Get category with -root- as id");
         final RestCategoryModel rootCategory = new RestCategoryModel();
-        rootCategory.setId("-root-");
+        rootCategory.setId(ROOT);
         restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
-        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
     }
 
     /**
-     * Check we get an error when passing  as category id
+     * Check we get an error when passing folder node id as category id
      */
     @Test(groups = {TestGroup.REST_API})
     public void testGetCategoryByIdProvidingFolderAsId()
@@ -91,7 +122,101 @@ public class GetCategoriesTests extends RestTest
         final RestCategoryModel rootCategory = new RestCategoryModel();
         rootCategory.setId(folder.getNodeRef());
         restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
-        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
     }
 
+    /**
+     * Check we get an error when passing non existing as category id
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testGetCategoryByIdProvidingNonExistingId()
+    {
+        STEP("Get category with id which does not exist");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        final String id = NON_EXISTING_CATEGORY_ID;
+        rootCategory.setId(id);
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategory();
+        restClient.assertStatusCodeIs(NOT_FOUND).assertLastError().containsSummary(id);
+    }
+
+    /**
+     * Check we can get children category of a root category
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testGetCategoryChildren()
+    {
+        STEP("Get category children with -root- as parent id");
+        final RestCategoryModel rootCategory = new RestCategoryModel();
+        rootCategory.setId(ROOT);
+        RestCategoryModelsCollection childCategoriesList =
+                restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategoryChildren();
+        restClient.assertStatusCodeIs(OK);
+
+        childCategoriesList.assertThat().entriesListIsNotEmpty();
+        assertTrue(childCategoriesList.getEntries().stream()
+                .map(RestCategoryModel::onModel)
+                .map(RestCategoryModel::getName)
+                .collect(Collectors.toList())
+                .containsAll(DEFAULT_ROOT_CATEGORIES));
+        STEP("Create a new category under root and make sure it is returned as one of root's children");
+        final RestCategoryModel aCategory = new RestCategoryModel();
+        aCategory.setName((RandomData.getRandomName("newCategoryUnderRoot")));
+        final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(rootCategory)
+                .createSingleCategory(aCategory);
+        restClient.assertStatusCodeIs(CREATED);
+
+        childCategoriesList = restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategoryChildren();
+        restClient.assertStatusCodeIs(OK);
+        assertTrue(childCategoriesList.getEntries().stream()
+                .map(RestCategoryModel::onModel)
+                .map(RestCategoryModel::getId)
+                .collect(Collectors.toList())
+                .contains(createdCategory.getId()));
+
+        STEP("Create 2 more categories under newCategoryUnderRoot and make sure they are returned as children");
+        final int categoriesCount = 2;
+        final List<RestCategoryModel> categoriesToCreate = CreateCategoriesTests.getCategoriesToCreate(categoriesCount);
+        final RestCategoryModelsCollection createdSubCategories = restClient.authenticateUser(dataUser.getAdminUser())
+                .withCoreAPI()
+                .usingCategory(createdCategory)
+                .createCategoriesList(categoriesToCreate);
+        restClient.assertStatusCodeIs(CREATED);
+        childCategoriesList = restClient.authenticateUser(user).withCoreAPI().usingCategory(rootCategory).getCategoryChildren();
+        restClient.assertStatusCodeIs(OK);
+        childCategoriesList.getEntries().containsAll(createdSubCategories.getEntries());
+    }
+
+    /**
+     * Check we get an error when passing folder node id as parent category id when getting children.
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testGetCategoryChildrenProvidingFolderAsId()
+    {
+        STEP("Create a site and a folder inside it");
+        final SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
+        final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Get category children with folder id passed as parent id");
+        final RestCategoryModel parentCategory = new RestCategoryModel();
+        parentCategory.setId(folder.getNodeRef());
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(parentCategory).getCategoryChildren();
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
+    }
+
+    /**
+     * Check we get an error when passing a non-existent node id as parent category id when getting children.
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testGetCategoryChildrenProvidingNonExistingParent()
+    {
+
+        STEP("Get category with folder id passed as id");
+        final RestCategoryModel parentCategory = new RestCategoryModel();
+        final String parentId = NON_EXISTING_CATEGORY_ID;
+        parentCategory.setId(parentId);
+        restClient.authenticateUser(user).withCoreAPI().usingCategory(parentCategory).getCategoryChildren();
+        restClient.assertStatusCodeIs(NOT_FOUND).assertLastError().containsSummary(parentId);
+    }
 }

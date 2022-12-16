@@ -29,9 +29,9 @@ package org.alfresco.rest.api;
 import java.util.List;
 
 import org.alfresco.rest.api.model.Category;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public interface Categories
@@ -39,4 +39,9 @@ public interface Categories
     Category getCategoryById(String id, Parameters params);
 
     List<Category> createSubcategories(String parentCategoryId, List<Category> categories, Parameters parameters);
+
+    CollectionWithPagingInfo<Category> getCategoryChildren(String parentCategoryId, Parameters params);
+
+    void deleteCategoryById(String id, Parameters params);
+
 }

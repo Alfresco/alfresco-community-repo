@@ -260,7 +260,7 @@ public class CreateCategoriesTests extends RestTest
         restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
     }
 
-    private List<RestCategoryModel> getCategoriesToCreate(final int count)
+    static List<RestCategoryModel> getCategoriesToCreate(final int count)
     {
         return IntStream.range(0, count)
                 .mapToObj(i -> {

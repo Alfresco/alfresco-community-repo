@@ -4,4 +4,4 @@ TAS_DIRECTORY=$1
 
 cd ${TAS_DIRECTORY}
 
-cat target/reports/alfresco-tas.log | grep "*** STARTING"
+cat target/reports/alfresco-tas.log | grep -a "*** STARTING"

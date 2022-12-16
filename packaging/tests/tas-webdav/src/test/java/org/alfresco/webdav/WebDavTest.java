@@ -18,7 +18,7 @@ import org.testng.annotations.BeforeSuite;
 @ContextConfiguration("classpath:alfresco-webdav-context.xml")
 public abstract class WebDavTest extends AbstractTestNGSpringContextTests
 {
-    private static Logger LOG = LogFactory.getLogger();
+    private static final Logger LOG = LogFactory.getLogger();
 
     @Autowired
     protected DataSite dataSite;
@@ -48,7 +48,7 @@ public abstract class WebDavTest extends AbstractTestNGSpringContextTests
     @BeforeMethod(alwaysRun=true)
     public void showStartTestInfo(Method method)
     {
-        LOG.info(String.format("*** STARTING Test: [%s] ***",method.getName()));
+        LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
     }
 
     @AfterMethod(alwaysRun=true)

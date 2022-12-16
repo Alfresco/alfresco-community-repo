@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - release/**
+      - feature/ACS-3841_test_migration
 
 env:
   GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
@@ -30,7 +31,7 @@ jobs:
       always() &&
       (needs.run_ci.result == 'skipped' || needs.run_ci.result == 'success') &&
       (! contains(github.event.head_commit.message, '[no release]')) &&
-      (github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      (github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.ref_name == 'feature/ACS-3841_test_migration') &&
       (github.event_name != 'pull_request')
     steps:
       - uses: actions/checkout@v3
@@ -54,7 +55,7 @@ jobs:
       always() &&
       (needs.run_ci.result == 'skipped' || needs.run_ci.result == 'success') &&
       (! contains(github.event.head_commit.message, '[no downstream]')) &&
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request')
+      ((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.ref_name == 'feature/ACS-3841_test_migration') && github.event_name != 'pull_request')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA

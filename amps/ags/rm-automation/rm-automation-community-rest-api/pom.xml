@@ -69,17 +69,6 @@
          <groupId>org.alfresco.tas</groupId>
          <artifactId>utility</artifactId>
          <version>${dependency.tas-utility.version}</version>
-         <!-- These exclusions can be removed once tas-utility does not rely on Reload4j anymore -->
-         <exclusions>
-            <exclusion>
-               <groupId>ch.qos.reload4j</groupId>
-               <artifactId>reload4j</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-reload4j</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.projectlombok</groupId>

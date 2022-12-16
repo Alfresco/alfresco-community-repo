@@ -16,6 +16,7 @@ env:
   MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
   QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
   QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+  GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
 
 jobs:
   run_ci:
@@ -33,21 +34,15 @@ jobs:
       (github.event_name != 'pull_request')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.12.0
-        with:
-          username: ${{ secrets.BOT_GITHUB_USERNAME }}
-          email: ${{ secrets.BOT_GITHUB_EMAIL }}
-      - name: "Verify release tag"
-        run: bash ./scripts/ci/verify_release_tag.sh
       - name: "Release"
-        run: bash ./scripts/ci/maven_release.sh
-        env:
-          BUILD_NUMBER: ${{ github.run_number }}
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: |
+          bash scripts/ci/verify_release_tag.sh
+          bash scripts/ci/maven_release.sh
       - name: "Clean Maven cache"
         if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
@@ -62,12 +57,12 @@ jobs:
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - run: bash ./scripts/ci/update_downstream.sh
+      - name: "Update downstream"
+        run: bash ./scripts/ci/update_downstream.sh
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       - name: "Clean Maven cache"

@@ -2,6 +2,8 @@ name: Alfresco Community Repo CI
 
 on:
   pull_request:
+    - feature/**
+    - fix/**
   push:
     branches:
       - feature/**
@@ -30,7 +32,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -51,7 +52,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - name: Cache local Maven repository
         uses: actions/cache@v2
@@ -79,7 +79,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -118,7 +117,6 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Build"
@@ -153,7 +151,6 @@ jobs:
         version: ['10.2.18', '10.4', '10.5']
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -181,7 +178,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -209,7 +205,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -236,7 +231,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -263,7 +257,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -288,7 +281,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -335,7 +327,6 @@ jobs:
             mvn-options: '-Dindex.subsystem.name=solr6'
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -401,7 +392,6 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Build"
@@ -443,7 +433,6 @@ jobs:
       ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Init"
@@ -474,7 +463,6 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Build"
@@ -507,7 +495,6 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Build"
@@ -536,7 +523,6 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-branch-name@v1.23.0
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
       - name: "Build"
@@ -553,11 +539,11 @@ jobs:
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
-      - run: bash amps/ags/ci/scripts/getLogs.sh
-        if: ${{ always() }}
-      - shell: bash
+      - name: "Get logs and move to deploy_dir"
+        shell: bash
         if: ${{ always() }}
         run: |
+          bash amps/ags/ci/scripts/getLogs.sh
           mkdir -p deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
           mv "alfresco.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
           mv "solr.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"

@@ -39,7 +39,8 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RelationshipResource(name = "subcategories",  entityResource = CategoriesEntityResource.class, title = "Subcategories")
-public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>, RelationshipResourceAction.Read<Category>
+public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>,
+                                              RelationshipResourceAction.Read<Category>
 {
 
     private final Categories categories;
@@ -49,6 +50,9 @@ public class SubcategoriesRelation implements RelationshipResourceAction.Create<
         this.categories = categories;
     }
 
+    /**
+     * POST /categories/{categoryId}/subcategories
+     */
     @WebApiDescription(title = "Create a category",
             description = "Creates one or more categories under a parent category",
             successStatus = HttpServletResponse.SC_CREATED)
@@ -58,6 +62,9 @@ public class SubcategoriesRelation implements RelationshipResourceAction.Create<
         return categories.createSubcategories(parentCategoryId, categoryList, parameters);
     }
 
+    /**
+     * GET /categories/{categoryId}/subcategories
+     */
     @WebApiDescription(title = "List category direct children",
             description = "Lists direct children of a parent category",
             successStatus = HttpServletResponse.SC_OK)

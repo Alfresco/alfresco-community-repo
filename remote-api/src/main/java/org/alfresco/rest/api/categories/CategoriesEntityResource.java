@@ -42,7 +42,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  */
 @EntityResource(name = "categories", title = "Categories")
 public class CategoriesEntityResource implements EntityResourceAction.ReadById<Category>,
-                                                EntityResourceAction.Delete
+                                                 EntityResourceAction.Update<Category>,
+                                                 EntityResourceAction.Delete
 {
     private final Categories categories;
 
@@ -51,20 +52,45 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
         this.categories = categories;
     }
 
-    @WebApiDescription(title = "Get category by its id",
-            description = "Retrieves a category given category node id",
-            successStatus = HttpServletResponse.SC_OK)
+    /**
+     * GET /categories/{categoryId}
+     */
+    @WebApiDescription(
+        title = "Get category by its ID",
+        description = "Retrieves a category given category node id",
+        successStatus = HttpServletResponse.SC_OK
+    )
     @Override
     public Category readById(String id, Parameters parameters) throws EntityNotFoundException
     {
         return categories.getCategoryById(id, parameters);
     }
 
-    @WebApiDescription(title = "Delete category",
-                description = "Delete a category given its node id",
-                successStatus = HttpServletResponse.SC_NO_CONTENT)
+    /**
+     * PUT /categories/{categoryId}
+     */
+    @WebApiDescription(
+        title = "Update category",
+        description = "Update a single category by its ID",
+        successStatus = HttpServletResponse.SC_OK
+    )
     @Override
-    public void delete(String id, Parameters parameters) {
+    public Category update(String id, Category categoryModel, Parameters parameters)
+    {
+        return categories.updateCategoryById(id, categoryModel);
+    }
+
+    /**
+     * DELETE /categories/{categoryId}
+     */
+    @WebApiDescription(
+        title = "Delete category",
+        description = "Delete a category given its node ID",
+        successStatus = HttpServletResponse.SC_NO_CONTENT
+    )
+    @Override
+    public void delete(String id, Parameters parameters)
+    {
         categories.deleteCategoryById(id, parameters);
     }
 }

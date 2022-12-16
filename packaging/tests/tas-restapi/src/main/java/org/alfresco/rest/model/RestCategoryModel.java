@@ -128,5 +128,52 @@ This must be unique within the parent category.
                 ", count=" + count +
                 '}';
     }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String id;
+        private String name;
+        private String parentId;
+        private boolean hasChildren;
+
+        public Builder id(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name)
+        {
+            this.name = name;
+            return this;
+        }
+
+        public Builder parentId(String parentId)
+        {
+            this.parentId = parentId;
+            return this;
+        }
+
+        public Builder hasChildren(boolean hasChildren)
+        {
+            this.hasChildren = hasChildren;
+            return this;
+        }
+
+        public RestCategoryModel create()
+        {
+            final RestCategoryModel category = new RestCategoryModel();
+            category.setId(id);
+            category.setName(name);
+            category.setParentId(parentId);
+            category.setHasChildren(hasChildren);
+            return category;
+        }
+    }
 }
  

@@ -43,6 +43,7 @@ import org.alfresco.repo.event.v1.model.UserInfo;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
+import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -152,6 +153,7 @@ public class NodeResourceHelper implements InitializingBean
                            .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
                            .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
                            .setProperties(mapToNodeProperties(properties))
+                           .setLocalizedProperties(mapToNodeLocalizedProperties(properties))
                            .setAspectNames(getMappedAspects(nodeRef));
     }
 
@@ -200,9 +202,8 @@ public class NodeResourceHelper implements InitializingBean
         props.forEach((k, v) -> {
             if (!nodePropertyFilter.isExcluded(k))
             {
-                if (v != null && v instanceof MLText)
+                if (v instanceof MLText)
                 {
-                    //TODO - should we send all of the values if multiple locales exist?
                     v = ((MLText) v).getDefaultValue();
                 }
 
@@ -211,6 +212,23 @@ public class NodeResourceHelper implements InitializingBean
         });
 
         return filteredProps;
+    }
+
+    public Map<String, Map<String, String>> mapToNodeLocalizedProperties(Map<QName, Serializable> props)
+    {
+        Map<String, Map<String, String>> filteredProps = new HashMap<>(props.size());
+
+        props.forEach((k, v) -> {
+            if (!nodePropertyFilter.isExcluded(k) && v instanceof MLText)
+            {
+                final MLText mlTextValue = (MLText) v;
+                final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
+                mlTextValue.forEach((lang, text) -> localizedValues.put(lang.getLanguage(), text));
+                filteredProps.put(getQNamePrefixString(k),localizedValues);
+            }
+        });
+
+        return filteredProps.isEmpty() ? null : filteredProps;
     }
 
     public ContentInfo getContentInfo(Map<QName, Serializable> props)
@@ -330,7 +348,17 @@ public class NodeResourceHelper implements InitializingBean
 
     public Map<QName, Serializable> getProperties(NodeRef nodeRef)
     {
-        return nodeService.getProperties(nodeRef);
+        //We need to have full MLText properties here. This is why we are marking the current thread as a "ml aware"
+        final boolean toRestore = MLPropertyInterceptor.isMLAware();
+        MLPropertyInterceptor.setMLAware(true);
+        try
+        {
+            return nodeService.getProperties(nodeRef);
+        }
+        finally
+        {
+            MLPropertyInterceptor.setMLAware(toRestore);
+        }
     }
 
     public Set<String> getMappedAspects(NodeRef nodeRef)

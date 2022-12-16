@@ -2,8 +2,9 @@ name: Alfresco Community Repo CI
 
 on:
   pull_request:
-    - feature/**
-    - fix/**
+    branches:
+      - feature/**
+      - fix/**
   push:
     branches:
       - feature/**

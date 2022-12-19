@@ -56,16 +56,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - name: Cache local Maven repository
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@master
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.25.0
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
       - name: "Clean Maven cache"
@@ -334,19 +328,14 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up IDS"
-        run: |
-          if [ "${{ matrix.testSuite }}" == 'AppContext05TestSuite' ];
-          then
-            mkdir -p "${HOME}/tmp"
-            cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
-            echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
-            docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json alfresco/alfresco-identity-service:1.2
-          fi
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
+        run: |
+          if [ -e ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh ]; then
+            bash ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh
+          fi
+          docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
       - name: "Clean Maven cache"
@@ -407,11 +396,8 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Set up the environment for integration tests"
-        run: |
-          if [ "${{ matrix.test-name }}" == 'Integration TAS tests' ];
-          then
-            mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
-          fi
+        if: ${{ matrix.test-name }} == 'Integration TAS tests'
+        run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}

@@ -6,7 +6,7 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
-#Fetch the latest changes, as Travis will only checkout the PR commit
+#Fetch the latest changes, as GHA will only checkout the PR commit
 git fetch origin "${BRANCH_NAME}"
 git checkout "${BRANCH_NAME}"
 git pull

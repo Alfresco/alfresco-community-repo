@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Release"
@@ -58,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@master
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Update downstream"

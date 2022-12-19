@@ -1147,6 +1147,22 @@
             parentNode.id = #{parentNode.id} and
             a.child_node_id IS NULL
     </select>
+
+    <select id="select_RootGroups" parameterType="ChildAssoc" resultType="java.lang.String">
+        select distinct z.qname_localname
+            from alf_child_assoc a
+            join alf_child_assoc z
+            on z.parent_node_id = #{parentNode.id}
+            and z.child_node_id = a.parent_node_id
+        where z.qname_localname not in
+        (
+            select distinct  a.qname_localname
+            from alf_child_assoc a
+            join alf_child_assoc z
+            on z.parent_node_id = #{parentNode.id}
+            and z.child_node_id = a.parent_node_id
+        )
+    </select>
     
     <select id="select_ChildAssocsByPropertyValue" parameterType="ChildProperty" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>

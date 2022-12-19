@@ -186,6 +186,9 @@ public interface VirtualStore
     Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(Reference parentReference,
                 QName assocTypeQName);
 
+    List<String> getRootGroups(Reference parentReference,
+            QName assocTypeQName);
+
     /**
      * Lists page of immediate children of the referred virtualized artefact
      * with optional filtering (exclusion of certain child file/folder subtypes,

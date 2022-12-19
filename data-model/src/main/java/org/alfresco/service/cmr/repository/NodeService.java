@@ -714,6 +714,12 @@ public interface NodeService
             final NodeRef parent,
             final QName assocTypeQName);
 
+    @Auditable(parameters = {"parent", "assocTypeQName"})
+    public List<String> getRootGroups(
+            final NodeRef parent,
+            final QName assocTypeQName);
+
+
     /**
      * Create a peer association between two nodes.
      * <p/>

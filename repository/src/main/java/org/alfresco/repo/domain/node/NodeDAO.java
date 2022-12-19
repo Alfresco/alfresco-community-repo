@@ -724,6 +724,10 @@ public interface NodeDAO extends NodeBulkLoader
             final QName assocTypeQName,
             ChildAssocRefQueryCallback resultsCallback);
 
+    public List<String> getRootGroups(
+            final Long parentNodeId,
+            final QName assocTypeQName);
+
     /**
      * @param parentNodeId              the parent node id
      * @param minNodeId                 the minimum node ID (inclusive), <tt>null</tt> for no limitation on the minimum value of the node id

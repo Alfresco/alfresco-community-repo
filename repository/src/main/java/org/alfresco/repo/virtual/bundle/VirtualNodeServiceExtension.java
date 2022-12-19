@@ -1468,6 +1468,12 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
+    public List<String> getRootGroups(NodeRef nodeRef,
+            QName assocTypeQName){
+        return getTrait().getRootGroups(nodeRef, assocTypeQName);
+    }
+
+    @Override
     public void removeAssociation(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
                 throws InvalidNodeRefException
     {

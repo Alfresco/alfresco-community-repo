@@ -2134,15 +2134,14 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         return results;
     }
 
-
     @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
-    public List<String> getRootGroups(NodeRef parent, QName assocTypeQName)
+    public List<String> getRootGroups(NodeRef parent)
     {
         // Get the parent node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(parent);
         Long parentNodeId = nodePair.getFirst();
 
-        return nodeDAO.getRootGroups(parentNodeId, assocTypeQName);
+        return nodeDAO.getRootGroupsNames(parentNodeId);
     }
     /**
      * Specific properties <b>not</b> supported by {@link #getChildAssocsByPropertyValue(NodeRef, QName, Serializable)}

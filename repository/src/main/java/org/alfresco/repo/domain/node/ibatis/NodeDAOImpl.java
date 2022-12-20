@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1422,9 +1422,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
-    protected List<String> selectRootGroups(
-            Long parentNodeId,
-            QName assocTypeQName)
+    protected List<String> selectRootGroupsNames(
+            Long parentNodeId)
     {
         ChildAssocEntity assoc = new ChildAssocEntity();
         // Parent

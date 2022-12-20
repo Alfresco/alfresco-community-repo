@@ -767,7 +767,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public List<String> getRootGroups(NodeRef parent, QName assocTypeQName)
+    public List<String> getRootGroups(NodeRef parent)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -714,10 +714,16 @@ public interface NodeService
             final NodeRef parent,
             final QName assocTypeQName);
 
-    @Auditable(parameters = {"parent", "assocTypeQName"})
+    /**
+     * Gets the list the names of the root groups
+     *
+     * @param parent
+     *            the parent node reference
+     * @return a list of the names of the groups
+     */
+    @Auditable(parameters = {"parent"})
     public List<String> getRootGroups(
-            final NodeRef parent,
-            final QName assocTypeQName);
+            final NodeRef parent);
 
 
     /**

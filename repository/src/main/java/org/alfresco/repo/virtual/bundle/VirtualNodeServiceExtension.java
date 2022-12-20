@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1468,9 +1468,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
-    public List<String> getRootGroups(NodeRef nodeRef,
-            QName assocTypeQName){
-        return getTrait().getRootGroups(nodeRef, assocTypeQName);
+    public List<String> getRootGroups(NodeRef nodeRef){
+        return getTrait().getRootGroups(nodeRef);
     }
 
     @Override

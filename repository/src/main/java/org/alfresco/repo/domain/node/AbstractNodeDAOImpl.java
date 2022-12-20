@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,8 +26,6 @@
 package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +33,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +66,6 @@ import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transaction.TransactionAwareSingleton;
 import org.alfresco.repo.transaction.TransactionalDao;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -97,7 +93,6 @@ import org.alfresco.util.EqualsHelper.MapValueComparison;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.ReadWriteLockExecuter;
 import org.alfresco.util.ValueProtectingMap;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
@@ -3677,12 +3672,10 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     @Override
-    public List<String> getRootGroups(
-            Long parentNodeId,
-            QName assocTypeQName)
+    public List<String> getRootGroupsNames(
+            Long parentNodeId)
     {
-        return selectRootGroups(
-                parentNodeId, assocTypeQName);
+        return selectRootGroupsNames(parentNodeId);
     }
 
     @Override
@@ -5044,10 +5037,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long parentNodeId,
             QName assocTypeQName,
             ChildAssocRefQueryCallback resultsCallback);
-
-    protected abstract List<String> selectRootGroups(
-            Long parentNodeId,
-            QName assocTypeQName);
+    protected abstract List<String> selectRootGroupsNames(
+            Long parentNodeId);
     /**
      * Parameters are all optional except the parent node ID and the callback
      */

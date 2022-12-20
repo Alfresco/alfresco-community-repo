@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -324,8 +324,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     }
 
     @Override
-    public List<String> getRootGroups(Reference parentReference,
-            QName assocTypeQName)
+    public List<String> getRootGroups(Reference parentReference)
     {
         return Collections.emptyList();
     }

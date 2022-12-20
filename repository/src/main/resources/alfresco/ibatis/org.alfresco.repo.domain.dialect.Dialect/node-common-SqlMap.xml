@@ -1153,7 +1153,6 @@
             from alf_child_assoc a
             join alf_child_assoc z
             on z.parent_node_id = #{parentNode.id}
-            and z.child_node_id = a.parent_node_id
         where z.qname_localname not in
         (
             select distinct  a.qname_localname

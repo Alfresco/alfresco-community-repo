@@ -225,10 +225,10 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 10.6 database"
+      - name: "Run PostgreSQL 13.7 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
-          POSTGRES_VERSION: 10.6
+          POSTGRES_VERSION: 13.7
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"

@@ -42,7 +42,6 @@ jobs:
       - name: "Prepare environment"
         run: bash ./scripts/ci/prepare.sh
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   veracode:
@@ -63,7 +62,6 @@ jobs:
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
         
   all_unit_tests_suite:
@@ -85,7 +83,6 @@ jobs:
           mvn -B test -pl core,data-model -am -DfailIfNoTests=false
           mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   remote_api_app_context_test_suites:
@@ -128,7 +125,6 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_mariadb_tests:
@@ -152,14 +148,13 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up the environment"
+      - name: Run MariaDB ${{ matrix.version }} database
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
           MARIADB_VERSION: ${{ matrix.version }}
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_mariadb_10_6_tests:
@@ -179,14 +174,13 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up the environment"
+      - name: "Run MariaDB 10.6 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
         env:
           MARIADB_VERSION: 10.6
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_mysql_tests:
@@ -206,14 +200,13 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up the environment"
+      - name: "Run MySQL 8 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
         env:
           MYSQL_VERSION: 8
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_postgresql_13_7_tests:
@@ -232,14 +225,13 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up the environment"
+      - name: "Run PostgreSQL 10.6 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 10.6
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_postgresql_14_4_tests:
@@ -258,14 +250,13 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up the environment"
+      - name: "Run PostgreSQL 14.4 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 14.4
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_messaging_tests:
@@ -282,12 +273,11 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up the environment"
+      - name: "Run ActiveMQ"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_app_context_test_suites:
@@ -339,10 +329,9 @@ jobs:
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  tas-tests:
+  tas_tests:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs: [prepare]
@@ -395,7 +384,7 @@ jobs:
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
-      - name: "Set up the environment for integration tests"
+      - name: "Build TAS integration tests"
         if: ${{ matrix.test-name }} == 'Integration TAS tests'
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Run tests"
@@ -409,7 +398,6 @@ jobs:
         if: ${{ always() }} && outcome.tests.outcome == 'failure'
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   share_services_share_services_test_suite:
@@ -426,12 +414,11 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set up the environment"
+      - name: "Run Postgres 14.4 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
         run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_tests_postgressql:
@@ -463,7 +450,6 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_tests_mysql:
@@ -495,7 +481,6 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
 
   ags_community_rest_api_tests:
@@ -548,5 +533,4 @@ jobs:
         if: ${{ always() }}
         run: aws s3 cp --recursive ./deploy_dir s3://ags-travis-artifacts
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh

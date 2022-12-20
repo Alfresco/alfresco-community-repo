@@ -6,9 +6,6 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 # Use full history for release
 git checkout -B "${BRANCH_NAME}"
-# Define git identity for commits
-git config user.email "${GIT_EMAIL}"
-git config user.name "${GIT_USERNAME}"
 
 # Run the release plugin - with "[skip ci]" in the release commit message
 mvn -B \

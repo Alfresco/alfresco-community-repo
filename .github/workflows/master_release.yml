@@ -38,13 +38,16 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.25.0
+        with:
+          username: ${GIT_USERNAME}
+          email: ${GIT_EMAIL}
       - name: "Release"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           bash scripts/ci/verify_release_tag.sh
           bash scripts/ci/maven_release.sh
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh
   update_downstream:
     name: "Update alfresco-enterprise-repo"
@@ -61,10 +64,13 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.25.0
+        with:
+          username: ${GIT_USERNAME}
+          email: ${GIT_EMAIL}
       - name: "Update downstream"
         run: bash ./scripts/ci/update_downstream.sh
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       - name: "Clean Maven cache"
-        if: ${{ always() }}
         run: bash ./scripts/ci/cleanup_cache.sh

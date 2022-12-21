@@ -187,15 +187,6 @@ public interface VirtualStore
                 QName assocTypeQName);
 
     /**
-     * Gets the list of root groups
-     *
-     * @param parentReference
-     *            the parent node reference
-     * @return a list of the root group names
-     */
-    List<String> getRootGroups(Reference parentReference);
-
-    /**
      * Lists page of immediate children of the referred virtualized artefact
      * with optional filtering (exclusion of certain child file/folder subtypes,
      * actual-virtual filtering) and sorting.<br>

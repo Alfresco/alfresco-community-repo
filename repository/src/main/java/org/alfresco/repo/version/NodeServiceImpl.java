@@ -767,7 +767,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * @throws UnsupportedOperationException always
      */
-    public List<String> getRootGroups(NodeRef parent)
+    public List<String> getLocalNameListOfAssocsWithoutParent(NodeRef parent)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
     }

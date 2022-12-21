@@ -48,7 +48,6 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.cache.AsynchronouslyRefreshedCache;
 import org.alfresco.util.cache.RefreshableCacheEvent;
 import org.alfresco.util.cache.RefreshableCacheListener;
 import org.alfresco.repo.cache.SimpleCache;
@@ -1566,7 +1565,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             return Collections.<String> emptySet();
         }
-        List<String> rootGroupsNames = nodeService.getRootGroups(container);
+        List<String> rootGroupsNames = nodeService.getLocalNameListOfAssocsWithoutParent(container);
         Set<String> authorities = new TreeSet<String>();
         for (String rootGroupName : rootGroupsNames)
         {

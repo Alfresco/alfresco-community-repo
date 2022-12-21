@@ -324,12 +324,6 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     }
 
     @Override
-    public List<String> getRootGroups(Reference parentReference)
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
     public List<ChildAssociationRef> getChildAssocsByPropertyValue(Reference parentReference, QName propertyQName,
                 Serializable value)
     {

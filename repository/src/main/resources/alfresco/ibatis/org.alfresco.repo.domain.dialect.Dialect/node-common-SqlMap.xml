@@ -1148,19 +1148,18 @@
             a.child_node_id IS NULL
     </select>
 
-    <select id="select_RootGroups" parameterType="ChildAssoc" resultType="java.lang.String">
-        select distinct z.qname_localname
-            from alf_child_assoc a
-            join alf_child_assoc z
-            on z.parent_node_id = #{parentNode.id}
-        where z.qname_localname not in
-        (
-            select distinct  a.qname_localname
+    <select id="select_LocalNameListOfChildAssocsWithoutParent" parameterType="ChildAssoc" resultType="java.lang.String">
+        select distinct c.qname_localname
+        from alf_child_assoc c
+        where c.parent_node_id = #{parentNode.id}
+        and not exists (
+            select 1
             from alf_child_assoc a
             join alf_child_assoc z
             on z.parent_node_id = #{parentNode.id}
             and z.child_node_id = a.parent_node_id
-        )
+            where c.child_node_id = a.child_node_id
+        );
     </select>
     
     <select id="select_ChildAssocsByPropertyValue" parameterType="ChildProperty" resultMap="result_ChildAssoc">

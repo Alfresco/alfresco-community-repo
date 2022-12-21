@@ -3672,13 +3672,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     @Override
-    public List<String> getRootGroupsNames(
-            Long parentNodeId)
-    {
-        return selectRootGroupsNames(parentNodeId);
-    }
-
-    @Override
     public Pair<Long, ChildAssociationRef> getPrimaryParentAssoc(Long childNodeId)
     {
         ChildAssocEntity childAssocEntity = getPrimaryParentAssocImpl(childNodeId);
@@ -5037,8 +5030,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long parentNodeId,
             QName assocTypeQName,
             ChildAssocRefQueryCallback resultsCallback);
-    protected abstract List<String> selectRootGroupsNames(
-            Long parentNodeId);
     /**
      * Parameters are all optional except the parent node ID and the callback
      */

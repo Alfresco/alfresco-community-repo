@@ -140,7 +140,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
 
-    private static final String SELECT_ROOT_GROUPS = "alfresco.node.select_RootGroups";
+    private static final String SELECT_LOCAL_NAME_LIST_OF_CHILD_ASSOCS_WITHOUT_PARENT = "alfresco.node.select_LocalNameListOfChildAssocsWithoutParent";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_NODE_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutNodeAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
@@ -1422,7 +1422,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
-    protected List<String> selectRootGroupsNames(
+    public List<String> selectLocalNameListOfAssocsWithoutParent(
             Long parentNodeId)
     {
         ChildAssocEntity assoc = new ChildAssocEntity();
@@ -1431,7 +1431,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         parentNode.setId(parentNodeId);
         assoc.setParentNode(parentNode);
         // Type QName
-        return template.selectList(SELECT_ROOT_GROUPS, assoc);
+        return template.selectList(SELECT_LOCAL_NAME_LIST_OF_CHILD_ASSOCS_WITHOUT_PARENT, assoc);
     }
 
     @Override

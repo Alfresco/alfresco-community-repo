@@ -724,9 +724,6 @@ public interface NodeDAO extends NodeBulkLoader
             final QName assocTypeQName,
             ChildAssocRefQueryCallback resultsCallback);
 
-    public List<String> getRootGroupsNames(
-            final Long parentNodeId);
-
     /**
      * @param parentNodeId              the parent node id
      * @param minNodeId                 the minimum node ID (inclusive), <tt>null</tt> for no limitation on the minimum value of the node id
@@ -897,6 +894,8 @@ public interface NodeDAO extends NodeBulkLoader
             Serializable nodeValue,
             ChildAssocRefQueryCallback resultsCallback);
 
+    public abstract List<String> selectLocalNameListOfAssocsWithoutParent(
+            Long parentNodeId);
     /**
      * Used by the re-encryptor to re-encrypt encryptable properties with a new encryption key.
      */

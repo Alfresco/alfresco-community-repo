@@ -1468,8 +1468,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
-    public List<String> getRootGroups(NodeRef nodeRef){
-        return getTrait().getRootGroups(nodeRef);
+    public List<String> getLocalNameListOfAssocsWithoutParent(NodeRef nodeRef){
+        return getTrait().getLocalNameListOfAssocsWithoutParent(nodeRef);
     }
 
     @Override

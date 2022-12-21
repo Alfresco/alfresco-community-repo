@@ -2135,13 +2135,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
 
     @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
-    public List<String> getRootGroups(NodeRef parent)
+    public List<String> getLocalNameListOfAssocsWithoutParent(NodeRef parent)
     {
         // Get the parent node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(parent);
         Long parentNodeId = nodePair.getFirst();
 
-        return nodeDAO.getRootGroupsNames(parentNodeId);
+        return nodeDAO.selectLocalNameListOfAssocsWithoutParent(parentNodeId);
     }
     /**
      * Specific properties <b>not</b> supported by {@link #getChildAssocsByPropertyValue(NodeRef, QName, Serializable)}

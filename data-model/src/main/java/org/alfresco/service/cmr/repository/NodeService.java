@@ -715,14 +715,14 @@ public interface NodeService
             final QName assocTypeQName);
 
     /**
-     * Gets the list the names of the root groups
+     * Gets the list of the localnames of the child associations without parent node
      *
      * @param parent
      *            the parent node reference
-     * @return a list of the names of the groups
+     * @return a list of the local names of the child associations
      */
     @Auditable(parameters = {"parent"})
-    public List<String> getRootGroups(
+    public List<String> getLocalNameListOfAssocsWithoutParent(
             final NodeRef parent);
 
 

@@ -894,7 +894,7 @@ public interface NodeDAO extends NodeBulkLoader
             Serializable nodeValue,
             ChildAssocRefQueryCallback resultsCallback);
 
-    public abstract List<String> selectLocalNameListOfAssocsWithoutParent(
+    public abstract List<String> selectAssocsNotLinkedByTwoOtherAssocs(
             Long parentNodeId);
     /**
      * Used by the re-encryptor to re-encrypt encryptable properties with a new encryption key.

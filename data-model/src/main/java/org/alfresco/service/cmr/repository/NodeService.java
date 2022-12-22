@@ -722,7 +722,7 @@ public interface NodeService
      * @return a list of the local names of the child associations
      */
     @Auditable(parameters = {"parent"})
-    public List<String> getLocalNameListOfAssocsWithoutParent(
+    public List<String> findAssocsNotLinkedByTwoOtherAssocs(
             final NodeRef parent);
 
 

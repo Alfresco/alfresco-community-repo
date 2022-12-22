@@ -1468,8 +1468,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     }
 
     @Override
-    public List<String> getLocalNameListOfAssocsWithoutParent(NodeRef nodeRef){
-        return getTrait().getLocalNameListOfAssocsWithoutParent(nodeRef);
+    public List<String> findAssocsNotLinkedByTwoOtherAssocs(NodeRef nodeRef){
+        return getTrait().findAssocsNotLinkedByTwoOtherAssocs(nodeRef);
     }
 
     @Override

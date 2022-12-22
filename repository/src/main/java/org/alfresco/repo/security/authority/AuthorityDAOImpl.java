@@ -1565,7 +1565,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             return Collections.<String> emptySet();
         }
-        List<String> rootGroupsNames = nodeService.getLocalNameListOfAssocsWithoutParent(container);
+        List<String> rootGroupsNames = nodeService.findAssocsNotLinkedByTwoOtherAssocs(container);
         Set<String> authorities = new TreeSet<String>();
         for (String rootGroupName : rootGroupsNames)
         {

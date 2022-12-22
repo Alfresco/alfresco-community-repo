@@ -1148,7 +1148,7 @@
             a.child_node_id IS NULL
     </select>
 
-    <select id="select_LocalNameListOfChildAssocsWithoutParent" parameterType="ChildAssoc" resultType="java.lang.String">
+    <select id="select_AssocsNotLinkedByTwoOtherAssocs" parameterType="ChildAssoc" resultType="java.lang.String">
         select distinct c.qname_localname
         from alf_child_assoc c
         where c.parent_node_id = #{parentNode.id}

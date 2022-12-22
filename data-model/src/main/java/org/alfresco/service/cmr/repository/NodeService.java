@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -713,6 +713,18 @@ public interface NodeService
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(
             final NodeRef parent,
             final QName assocTypeQName);
+
+    /**
+     * Gets the list of the localnames of the child associations without parent node
+     *
+     * @param parent
+     *            the parent node reference
+     * @return a list of the local names of the child associations
+     */
+    @Auditable(parameters = {"parent"})
+    public List<String> findAssocsNotLinkedByTwoOtherAssocs(
+            final NodeRef parent);
+
 
     /**
      * Create a peer association between two nodes.

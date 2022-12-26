@@ -425,7 +425,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel,
             @Override
             public Void doWork()
             {
-                if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+                if (nodeService.exists(nodeRef) || (nodeService.hasAspect(nodeRef, ASPECT_RECORD)))
                 {
                     applySearchAspect(nodeRef);
                     setupDispositionScheduleProperties(nodeRef);

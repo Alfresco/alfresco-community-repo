@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>20.50</version>
+      <version>20.51-SNAPSHOT</version>
    </parent>
 
    <properties>

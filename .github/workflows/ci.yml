@@ -31,8 +31,8 @@ jobs:
     name: "Prepare"
     runs-on: ubuntu-latest
     if: >
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -50,8 +50,8 @@ jobs:
     needs: [prepare]
     if: >
       ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request') &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -69,9 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ! contains(github.event.head_commit.message, '[skip repo]') &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -90,9 +90,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ! contains(github.event.head_commit.message, '[skip repo]') &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     strategy:
       fail-fast: false
       matrix:
@@ -134,10 +134,10 @@ jobs:
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
-      ! contains(github.event.head_commit.message, '[skip db]')) ||
+      !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     strategy:
       fail-fast: false
       matrix:
@@ -163,11 +163,11 @@ jobs:
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-      ! contains(github.event.head_commit.message, '[skip db]')) ||
+      !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -189,11 +189,11 @@ jobs:
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
-      ! contains(github.event.head_commit.message, '[skip db]')) ||
+      !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -215,10 +215,10 @@ jobs:
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      ! contains(github.event.head_commit.message, '[skip db]')) ||
+      !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -242,8 +242,8 @@ jobs:
       (!contains(github.event.head_commit.message, '[skip db]') ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -264,9 +264,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ! contains(github.event.head_commit.message, '[skip repo]') &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -285,9 +285,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ! contains(github.event.head_commit.message, '[skip repo]') &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     strategy:
       fail-fast: false
       matrix:
@@ -337,10 +337,10 @@ jobs:
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      ! contains(github.event.head_commit.message, '[skip tas]')) ||
+      !contains(github.event.head_commit.message, '[skip tas]')) ||
       contains(github.event.head_commit.message, '[tas]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     strategy:
       fail-fast: false
       matrix:
@@ -405,9 +405,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ! contains(github.event.head_commit.message, '[skip repo]') &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
@@ -427,10 +427,10 @@ jobs:
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      ! contains(github.event.head_commit.message, '[skip ags]')) ||
+      !contains(github.event.head_commit.message, '[skip ags]')) ||
       contains(github.event.head_commit.message, '[ags]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     strategy:
       fail-fast: false
       matrix:
@@ -458,10 +458,10 @@ jobs:
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      ! contains(github.event.head_commit.message, '[skip ags]')) ||
+      !contains(github.event.head_commit.message, '[skip ags]')) ||
       contains(github.event.head_commit.message, '[ags on MySQL]')) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     strategy:
       fail-fast: false
       matrix:
@@ -489,10 +489,10 @@ jobs:
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
-      ! contains(github.event.head_commit.message, '[skip ags]') && ! contains(github.event.head_commit.message, '[skip tas]')) ||
+      !contains(github.event.head_commit.message, '[skip ags]') && !contains(github.event.head_commit.message, '[skip tas]')) ||
       (contains(github.event.head_commit.message, '[ags]') && contains(github.event.head_commit.message, '[tas]'))) &&
-      ! contains(github.event.head_commit.message, '[skip tests]') &&
-      ! contains(github.event.head_commit.message, '[force]')
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:

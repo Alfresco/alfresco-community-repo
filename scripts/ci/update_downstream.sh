@@ -28,10 +28,6 @@ mvn -B versions:set-property versions:commit \
   -Dproperty=dependency.alfresco-community-repo.version \
   "-DnewVersion=${VERSION}"
 
-# Define git identity for commits
-git config user.email "${GIT_EMAIL}"
-git config user.name "${GIT_USERNAME}"
-
 # Commit changes
 git status
 git --no-pager diff pom.xml

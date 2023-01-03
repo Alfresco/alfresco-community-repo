@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,13 +34,19 @@ import org.testng.IMethodInstance;
 import org.testng.IMethodInterceptor;
 import org.testng.ITestContext;
 
+/**
+ * A method interceptor that sorts test classes alphabetically.
+ *
+ * @author Damian Ujma
+ */
 public class AlphabeticallyPriorityInterceptor implements IMethodInterceptor
 {
     @Override
     public List<IMethodInstance> intercept(List<IMethodInstance> methods,
         ITestContext context)
     {
-        return methods.stream().sorted(Comparator.comparing(el -> el.getMethod().getTestClass().toString()))
+        return methods.stream()
+            .sorted(Comparator.comparing(methodInstance -> methodInstance.getMethod().getTestClass().getName()))
             .collect(Collectors.toList());
     }
 }

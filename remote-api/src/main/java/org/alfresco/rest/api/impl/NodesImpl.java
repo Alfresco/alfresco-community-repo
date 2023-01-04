@@ -2772,7 +2772,7 @@ public class NodesImpl implements Nodes
         {
             try
             {
-                if (!nodePerms.getIsInheritanceEnabled())
+                if (nodePerms.getIsInheritanceEnabled() != null && !nodePerms.getIsInheritanceEnabled())
                 {
                     SiteInfo containingSite = siteService.getSite(nodeRef);
 
@@ -2793,7 +2793,7 @@ public class NodesImpl implements Nodes
             }
             catch (Exception e)
             {
-                logger.error("Error setting site manager permission on " + nodeRef);
+                logger.error("Error setting site manager permission on " + nodeRef, e);
             }
         }
     }

@@ -139,6 +139,15 @@
                             <images>
                                 <image>
                                     <name>${image.name}:${image.tag}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>linux/amd64</platform>
+                                                <platform>linux/arm64</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFileDir>${project.basedir}</dockerFileDir>
+                                    </build>
                                 </image>
                             </images>
                         </configuration>
@@ -168,12 +177,29 @@
                             <images>
                                 <!-- Quay image -->
                                 <image>
-                                    <name>${image.name}:${image.tag}</name>
-                                    <registry>${image.registry}</registry>
+                                    <name>${image.registry}/${image.name}:${image.tag}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>linux/amd64</platform>
+                                                <platform>linux/arm64</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFileDir>${project.basedir}</dockerFileDir>
+                                    </build>
                                 </image>
                                 <!-- DockerHub image -->
                                 <image>
                                     <name>${image.name}:${image.tag}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>linux/amd64</platform>
+                                                <platform>linux/arm64</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <dockerFileDir>${project.basedir}</dockerFileDir>
+                                    </build>
                                 </image>
                             </images>
                         </configuration>

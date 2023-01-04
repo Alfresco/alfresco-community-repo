@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,24 +27,31 @@
 package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
+import static org.alfresco.rest.api.impl.CategoriesImpl.INVALID_NODE_TYPE;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_A_VALID_CATEGORY;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_NULL_OR_EMPTY;
+import static org.alfresco.rest.api.impl.CategoriesImpl.NO_PERMISSION_TO_READ_CONTENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -62,9 +69,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +92,8 @@ public class CategoriesImplTest
     private static final String CAT_ROOT_NODE_ID = "cat-root-node-id";
     private static final NodeRef CATEGORY_NODE_REF = createNodeRefWithId(CATEGORY_ID);
     private static final Category CATEGORY = createDefaultCategoryWithName(CATEGORY_NAME);
+    private static final String CONTENT_NODE_ID = "content-node-id";
+    private static final NodeRef CONTENT_NODE_REF = createNodeRefWithId(CONTENT_NODE_ID);
 
     @Mock
     private Nodes nodesMock;
@@ -96,6 +109,8 @@ public class CategoriesImplTest
     private ChildAssociationRef dummyChildAssociationRefMock;
     @Mock
     private ChildAssociationRef categoryChildAssociationRefMock;
+    @Mock
+    private PermissionService permissionServiceMock;
 
     @InjectMocks
     private CategoriesImpl objectUnderTest;
@@ -104,8 +119,11 @@ public class CategoriesImplTest
     public void setUp() throws Exception
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
-        given(nodesMock.validateNode(eq(CATEGORY_ID))).willReturn(CATEGORY_NODE_REF);
+        given(nodesMock.validateNode(CATEGORY_ID)).willReturn(CATEGORY_NODE_REF);
+        given(nodesMock.validateNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(nodesMock.isSubClass(any(), any(), anyBoolean())).willReturn(true);
+        given(nodesMock.nodeMatches(any(), any(), isNull())).willReturn(true);
+        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
     }
 
     @Test
@@ -774,6 +792,204 @@ public class CategoriesImplTest
             .isEqualTo(expectedCategory);
     }
 
+    @Test
+    public void testLinkContentNodeToCategories_withoutCategoryAspect()
+    {
+        final List<Category> categoryLinks = List.of(CATEGORY);
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        given(nodesMock.getNode(any())).willReturn(prepareCategoryNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+
+        // when
+        final List<Category> actualLinkedCategories = objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, categoryLinks);
+
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT), null);
+        then(nodesMock).should().validateNode(CATEGORY_ID);
+        then(nodesMock).should().getNode(CATEGORY_ID);
+        then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+        then(nodeServiceMock).should().getPrimaryParent(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
+        then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        final Map<QName, Serializable> expectedProperties = Map.of(ContentModel.PROP_CATEGORIES, (Serializable) List.of(CATEGORY_NODE_REF));
+        then(nodeServiceMock).should().addAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE, expectedProperties);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        final List<Category> expectedLinkedCategories = List.of(CATEGORY);
+        assertThat(actualLinkedCategories)
+            .isNotNull().usingRecursiveComparison()
+            .isEqualTo(expectedLinkedCategories);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withPresentCategoryAspect()
+    {
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        given(nodesMock.getNode(any())).willReturn(prepareCategoryNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(nodeServiceMock.hasAspect(any(), any())).willReturn(true);
+
+        // when
+        final List<Category> actualLinkedCategories = objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY));
+
+        then(nodesMock).should().getNode(CATEGORY_ID);
+        then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+        then(nodeServiceMock).should().getPrimaryParent(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
+        then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        then(nodeServiceMock).should().getProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES);
+        final Serializable expectedCategories = (Serializable) List.of(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().setProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES, expectedCategories);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        final List<Category> expectedLinkedCategories = List.of(CATEGORY);
+        assertThat(actualLinkedCategories)
+            .isNotNull().usingRecursiveComparison()
+            .isEqualTo(expectedLinkedCategories);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withMultipleCategoryIds()
+    {
+        final String secondCategoryId = "second-category-id";
+        final String secondCategoryName = "secondCategoryName";
+        final NodeRef secondCategoryNodeRef = createNodeRefWithId(secondCategoryId);
+        final Category secondCategoryLink = Category.builder().id(secondCategoryId).create();
+        final List<Category> categoryLinks = List.of(CATEGORY, secondCategoryLink);
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef categoryParentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        final ChildAssociationRef secondCategoryParentAssociation = createAssociationOf(categoryParentNodeRef, secondCategoryNodeRef);
+        given(nodesMock.validateNode(secondCategoryId)).willReturn(secondCategoryNodeRef);
+        given(nodesMock.getNode(any())).willReturn(prepareCategoryNode(), prepareCategoryNode(secondCategoryName));
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(categoryParentAssociation, secondCategoryParentAssociation);
+
+        // when
+        final List<Category> actualLinkedCategories = objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, categoryLinks);
+
+        then(nodesMock).should().validateNode(CATEGORY_ID);
+        then(nodesMock).should().validateNode(secondCategoryId);
+        then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
+        then(nodesMock).should().isSubClass(secondCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
+        final Map<QName, Serializable> expectedProperties = Map.of(ContentModel.PROP_CATEGORIES, (Serializable) List.of(CATEGORY_NODE_REF, secondCategoryNodeRef));
+        then(nodeServiceMock).should().addAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE, expectedProperties);
+        final List<Category> expectedLinkedCategories = List.of(
+            CATEGORY,
+            Category.builder().id(secondCategoryId).name(secondCategoryName).parentId(PARENT_ID).create()
+        );
+        assertThat(actualLinkedCategories)
+            .isNotNull().usingRecursiveComparison()
+            .isEqualTo(expectedLinkedCategories);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withPreviouslyLinkedCategories()
+    {
+        final String otherCategoryId = "other-category-id";
+        final NodeRef otherCategoryNodeRef = createNodeRefWithId(otherCategoryId);
+        final Serializable previousCategories = (Serializable) List.of(otherCategoryNodeRef);
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        given(nodesMock.getNode(any())).willReturn(prepareCategoryNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(nodeServiceMock.hasAspect(any(), any())).willReturn(true);
+        given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn(previousCategories);
+
+        // when
+        final List<Category> actualLinkedCategories = objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY));
+
+        final Serializable expectedCategories = (Serializable) List.of(otherCategoryNodeRef, CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().setProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES, expectedCategories);
+        final List<Category> expectedLinkedCategories = List.of(CATEGORY);
+        assertThat(actualLinkedCategories)
+            .isNotNull().usingRecursiveComparison()
+            .isEqualTo(expectedLinkedCategories);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withInvalidNodeId()
+    {
+        given(nodesMock.validateNode(CONTENT_NODE_ID)).willThrow(EntityNotFoundException.class);
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
+
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).shouldHaveNoInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withoutPermission()
+    {
+        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.DENIED);
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
+
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(PermissionDeniedException.class)
+            .hasMessageContaining(NO_PERMISSION_TO_READ_CONTENT);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withInvalidNodeType()
+    {
+        given(nodesMock.nodeMatches(any(), any(), isNull())).willReturn(false);
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
+
+        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT), null);
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(InvalidArgumentException.class)
+            .hasMessageContaining(INVALID_NODE_TYPE, ContentModel.TYPE_CONTENT.getLocalName());
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withEmptyLinks()
+    {
+        final List<Category> categoryLinks = Collections.emptyList();
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, categoryLinks));
+
+        then(nodesMock).shouldHaveNoInteractions();
+        then(permissionServiceMock).shouldHaveNoInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(InvalidArgumentException.class)
+            .hasMessageContaining(NOT_A_VALID_CATEGORY);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withInvalidCategoryIds()
+    {
+        final Category categoryLinkWithNullId = Category.builder().id(null).create();
+        final Category categoryLinkWithEmptyId = Category.builder().id(StringUtils.EMPTY).create();
+        final List<Category> categoryLinks = new ArrayList<>();
+        categoryLinks.add(categoryLinkWithNullId);
+        categoryLinks.add(null);
+        categoryLinks.add(categoryLinkWithEmptyId);
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, categoryLinks));
+
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(InvalidArgumentException.class)
+            .hasMessageContaining(NOT_A_VALID_CATEGORY);
+    }
+
     private Node prepareCategoryNode(final String name, final String id, final NodeRef parentNodeRef)
     {
         final Node categoryNode = new Node();
@@ -785,8 +1001,7 @@ public class CategoriesImplTest
 
     private Node prepareCategoryNode(final String name)
     {
-        final NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_ID);
-        return prepareCategoryNode(name, CATEGORY_ID, parentNodeRef);
+        return prepareCategoryNode(name, CATEGORY_ID, createNodeRefWithId(PARENT_ID));
     }
 
     private Node prepareCategoryNode()
@@ -858,7 +1073,12 @@ public class CategoriesImplTest
 
     private static QName createCmQNameOf(final String name)
     {
-        return QName.createQName(ContentModel.TYPE_CATEGORY.getNamespaceURI(), QName.createValidLocalName(name));
+        return QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name));
+    }
+
+    private static ChildAssociationRef createAssociationOf(final NodeRef parentNode, final NodeRef childNode)
+    {
+        return createAssociationOf(parentNode, childNode, null);
     }
 
     private static ChildAssociationRef createAssociationOf(final NodeRef parentNode, final NodeRef childNode, final QName childNodeName)

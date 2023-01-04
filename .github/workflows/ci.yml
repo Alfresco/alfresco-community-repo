@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare environment"
@@ -55,10 +55,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.28.0
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
       - name: "Clean Maven cache"
@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
@@ -112,7 +112,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -145,7 +145,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -171,7 +171,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.6 database"
@@ -197,7 +197,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -222,7 +222,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 13.7 database"
@@ -247,7 +247,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.4 database"
@@ -270,7 +270,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -315,7 +315,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -374,7 +374,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -411,7 +411,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 14.4 database"
@@ -440,7 +440,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -471,7 +471,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -498,7 +498,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -524,8 +524,8 @@ jobs:
         if: ${{ always() }}
         run: |
           bash amps/ags/ci/scripts/getLogs.sh
-          aws s3 cp --acl private --recursive alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
-          aws s3 cp --acl private --recursive solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
-          aws s3 cp --acl private --recursive ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
+          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/alfresco.log
+          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/solr.log
+          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/rm-automation-community-rest-api.log
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

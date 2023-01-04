@@ -513,15 +513,6 @@ jobs:
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
-      - name: "Get logs and move to deploy_dir"
-        shell: bash
-        if: ${{ always() }}
-        run: |
-          bash amps/ags/ci/scripts/getLogs.sh
-          mkdir -p deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
-          mv "alfresco.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
-          mv "solr.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
-          mv "./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
       - name: "Configure AWS credentials"
         if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@v1
@@ -531,6 +522,10 @@ jobs:
           aws-region: us-east-1
       - name: "Upload artifacts to Amazon S3 bucket"
         if: ${{ always() }}
-        run: aws s3 cp --recursive ./deploy_dir s3://ags-travis-artifacts
+        run: |
+          bash amps/ags/ci/scripts/getLogs.sh
+          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
+          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
+          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

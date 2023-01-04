@@ -33,10 +33,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@master
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.28.0
         with:
           username: ${{ env.GIT_USERNAME }}
           email: ${{ env.GIT_EMAIL }}
@@ -59,10 +59,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/acs-community-packaging/.github/actions/get-build-info@feature/ACS-3844_migrate-to-GHA
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.25.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.28.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@master
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.28.0
         with:
           username: ${{ env.GIT_USERNAME }}
           email: ${{ env.GIT_EMAIL }}

@@ -41,7 +41,11 @@ stages:
   - name: update_downstream
     if: commit_message !~ /\[no downstream\]/ AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND fork = false
 
-before_install: travis_retry bash scripts/travis/init.sh
+before_install:
+  - travis_retry bash scripts/travis/init.sh
+  - mkdir -vp ~/.docker/cli-plugins/
+  - curl --silent -L "https://github.com/docker/buildx/releases/download/v0.9.1/buildx-v0.9.1.linux-amd64" > ~/.docker/cli-plugins/docker-buildx
+  - chmod a+x ~/.docker/cli-plugins/docker-buildx
 install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 
 jobs:

@@ -54,11 +54,11 @@ public interface Categories
     void deleteCategoryById(String id, Parameters parameters);
 
     /**
-     * Link content node to categories.
+     * Link node to categories.
      *
-     * @param nodeId Content node ID.
+     * @param nodeId Node ID.
      * @param categoryLinks Category IDs to which content should be linked to.
      * @return Linked to categories.
      */
-    List<Category> linkContentNodeToCategories(String nodeId, List<Category> categoryLinks);
+    List<Category> linkNodeToCategories(String nodeId, List<Category> categoryLinks);
 }

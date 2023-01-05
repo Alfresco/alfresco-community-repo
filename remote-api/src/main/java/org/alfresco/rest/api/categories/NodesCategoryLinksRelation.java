@@ -59,6 +59,6 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
     @Override
     public List<Category> create(String nodeId, List<Category> categoryLinks, Parameters parameters)
     {
-        return categories.linkContentNodeToCategories(nodeId, categoryLinks);
+        return categories.linkNodeToCategories(nodeId, categoryLinks);
     }
 }

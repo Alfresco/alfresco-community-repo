@@ -156,7 +156,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public List<Category> linkContentNodeToCategories(final String nodeId, final List<Category> categoryLinks)
+    public List<Category> linkNodeToCategories(final String nodeId, final List<Category> categoryLinks)
     {
         if (CollectionUtils.isEmpty(categoryLinks))
         {

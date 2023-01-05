@@ -339,23 +339,4 @@ public class LinkToCategoriesTests extends CategoriesRestTest
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(file).updateNode(putPermissionsBody);
     }
-
-    private RestRuleModel createRuleModel()
-    {
-        final RestActionBodyExecTemplateModel actions = new RestActionBodyExecTemplateModel();
-        actions.setActionDefinitionId("add-features");
-        actions.setParams(Map.of("aspect-name", "audio:audio"));
-
-        final RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("ruleName");
-        ruleModel.setActions(List.of(actions));
-        //ruleModel.setTriggers(List.of("inbound"));
-
-        /*RestActionConstraintModel constraintDef = getConstraintsForActionParam(user, actionId, paramId);
-        RestActionConstraintDataModel constraintDataModel = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(constraintLabel)).findFirst().get();
-        return constraintDataModel.getValue()*/
-
-        //ruleModel.setErrorScript("fake-script");
-        return ruleModel;
-    }
 }

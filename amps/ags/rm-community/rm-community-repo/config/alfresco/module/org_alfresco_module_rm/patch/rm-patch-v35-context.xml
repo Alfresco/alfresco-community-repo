@@ -19,4 +19,11 @@
       <property name="nodeService" ref="nodeService" />
       <property name="batchSize" value="${rm.patch.v35.holdNewChildAssocPatch.batchSize}" />
    </bean>
+   <bean id="rm.updateDispositionPropertiesPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v35.RMv35UpdateDispositionPropertiesPatch">
+      <property name="description"
+                value="Update missing disposition properties when folders moved from one category to another"/>
+      <property name="batchSize" value="${rm.patch.v35.holdNewChildAssocPatch.batchSize}" />
+   </bean>
 </beans>

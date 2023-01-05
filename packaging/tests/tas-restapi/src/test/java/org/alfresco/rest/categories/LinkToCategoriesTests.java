@@ -26,22 +26,32 @@
 
 package org.alfresco.rest.categories;
 
+import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import javax.json.Json;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
+import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.RestRatingModel;
+import org.alfresco.rest.model.RestRenditionInfoModelCollection;
+import org.alfresco.rest.model.RestRuleModel;
+import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -175,10 +185,10 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link content to category as an improper user and expect 403 (Forbidden)
+     * Try to link content to category as a user without read permission and expect 403 (Forbidden)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_usingUserWithoutAccessRightsAndExpect403()
+    public void testLinkContentToCategory_asUserWithoutReadPermissionAndExpect403()
     {
         STEP("Try to link content to a category using user without read permission and expect 403");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
@@ -186,6 +196,45 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         restClient.authenticateUser(userWithoutRights).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
+    }
+
+    /**
+     * Try to link content to category as a user without change and expect 403 (Forbidden)
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testLinkContentToCategory_asUserWithoutChangePermissionAndExpect403()
+    {
+        STEP("Create another user as a consumer for file");
+        final UserModel consumer = dataUser.createRandomTestUser();
+        addPermissionsForUser(consumer.getUsername(), "Consumer", file);
+
+        STEP("Try to link content to a category using user without change permission and expect 403");
+        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
+        restClient.authenticateUser(consumer).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+    }
+
+    /**
+     * Try to link content to category as a owner and expect 403 (Forbidden)
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testLinkContentToCategory_asOwnerAndExpect403()
+    {
+        STEP("Use admin to create a private site");
+        final SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
+
+        STEP("Add the user to the site, let him create a folder and then evict him from the site again");
+        dataUser.addUserToSite(user, privateSite, SiteManager);
+        final FolderModel privateFolder = dataContent.usingUser(user).usingSite(privateSite).createFolder();
+        final FileModel privateFile = dataContent.usingUser(user).usingResource(privateFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        dataUser.removeUserFromSite(user, privateSite);
+
+        STEP("Try to link content to a category as owner and expect 403");
+        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFile).linkToCategory(categoryLink);
+
+        restClient.assertStatusCodeIs(CREATED);
     }
 
     /**
@@ -232,11 +281,14 @@ public class LinkToCategoriesTests extends CategoriesRestTest
      * Try to link non-content node to category and expect 400 (Bad Request)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_usingFolderInsteadOfContentAndExpect400()
+    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect400()
     {
-        STEP("Try to link folder to category and expect 400");
+        STEP("Try to link a tag to category and expect 400");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).linkToCategory(categoryLink);
+        final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
+        final RepoTestModel tagNode = new RepoTestModel() {};
+        tagNode.setNodeRef(tag.getId());
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(tagNode).linkToCategory(categoryLink);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
     }
@@ -272,5 +324,38 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         final RestCategoryLinkBodyModel categoryLink = new RestCategoryLinkBodyModel();
         categoryLink.setCategoryId(id);
         return categoryLink;
+    }
+
+    private void addPermissionsForUser(final String username, final String role, final FileModel file)
+    {
+        final String putPermissionsBody = Json.createObjectBuilder().add("permissions",
+                Json.createObjectBuilder()
+                    .add("isInheritanceEnabled", true)
+                    .add("locallySet", Json.createObjectBuilder()
+                        .add("authorityId", username)
+                        .add("name", role).add("accessStatus", "ALLOWED")))
+            .build()
+            .toString();
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).updateNode(putPermissionsBody);
+    }
+
+    private RestRuleModel createRuleModel()
+    {
+        final RestActionBodyExecTemplateModel actions = new RestActionBodyExecTemplateModel();
+        actions.setActionDefinitionId("add-features");
+        actions.setParams(Map.of("aspect-name", "audio:audio"));
+
+        final RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+        ruleModel.setActions(List.of(actions));
+        //ruleModel.setTriggers(List.of("inbound"));
+
+        /*RestActionConstraintModel constraintDef = getConstraintsForActionParam(user, actionId, paramId);
+        RestActionConstraintDataModel constraintDataModel = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(constraintLabel)).findFirst().get();
+        return constraintDataModel.getValue()*/
+
+        //ruleModel.setErrorScript("fake-script");
+        return ruleModel;
     }
 }

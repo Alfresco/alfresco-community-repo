@@ -28,9 +28,12 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -69,7 +72,7 @@ public class CategoriesImpl implements Categories
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
-    static final String INVALID_NODE_TYPE = "NodeId of a %s is expected!";
+    static final String INVALID_NODE_TYPE = "Node of type: [%s] is expected!";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
@@ -161,8 +164,8 @@ public class CategoriesImpl implements Categories
         }
 
         final NodeRef contentNodeRef = nodes.validateNode(nodeId);
-        verifyReadPermission(contentNodeRef);
-        verifyNodeType(contentNodeRef, ContentModel.TYPE_CONTENT);
+        verifyChangePermission(contentNodeRef);
+        verifyNodeType(contentNodeRef, ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER);
 
         final Collection<NodeRef> categoryNodeRefs = categoryLinks.stream()
             .filter(Objects::nonNull)
@@ -189,19 +192,23 @@ public class CategoriesImpl implements Categories
         }
     }
 
-    private void verifyReadPermission(final NodeRef nodeRef)
+    private void verifyChangePermission(final NodeRef nodeRef)
     {
-        if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+        if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
         }
     }
 
-    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType)
+    private void verifyNodeType(final NodeRef nodeRef, final QName... expectedTypes)
     {
-        if (!nodes.nodeMatches(nodeRef, Set.of(expectedType), null))
+        if (!nodes.nodeMatches(nodeRef, Set.of(expectedTypes), null))
         {
-            throw new InvalidArgumentException(String.format(INVALID_NODE_TYPE, expectedType.getLocalName()));
+            throw new InvalidArgumentException(
+                String.format(
+                    INVALID_NODE_TYPE,
+                    Arrays.stream(expectedTypes).map(QName::getLocalName).collect(Collectors.joining(", "))
+                ));
         }
     }
 
@@ -328,10 +335,9 @@ public class CategoriesImpl implements Categories
             return newCategories;
         }
 
-        final Collection<NodeRef> allCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
-        newCategories.stream()
-            .filter(category -> !allCategories.contains(category))
-            .forEach(allCategories::add);
+        final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
+        final Collection<NodeRef> allCategories = new HashSet<>(actualCategories);
+        allCategories.addAll(newCategories);
 
         return allCategories;
     }

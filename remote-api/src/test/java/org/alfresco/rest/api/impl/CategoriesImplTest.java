@@ -123,7 +123,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(nodesMock.isSubClass(any(), any(), anyBoolean())).willReturn(true);
         given(nodesMock.nodeMatches(any(), any(), isNull())).willReturn(true);
-        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
+        given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.ALLOWED);
     }
 
     @Test
@@ -805,19 +805,20 @@ public class CategoriesImplTest
         final List<Category> actualLinkedCategories = objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, categoryLinks);
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
-        then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
+        then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
-        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT), null);
+        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER), null);
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().getNode(CATEGORY_ID);
         then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
         then(nodeServiceMock).should().getPrimaryParent(CATEGORY_NODE_REF);
-        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
+        then(nodeServiceMock).should().getParentAssocs(CATEGORY_NODE_REF);
         then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE);
         final Map<QName, Serializable> expectedProperties = Map.of(ContentModel.PROP_CATEGORIES, (Serializable) List.of(CATEGORY_NODE_REF));
         then(nodeServiceMock).should().addAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE, expectedProperties);
+        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         final List<Category> expectedLinkedCategories = List.of(CATEGORY);
         assertThat(actualLinkedCategories)
@@ -840,11 +841,12 @@ public class CategoriesImplTest
         then(nodesMock).should().getNode(CATEGORY_ID);
         then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
         then(nodeServiceMock).should().getPrimaryParent(CATEGORY_NODE_REF);
-        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
+        then(nodeServiceMock).should().getParentAssocs(CATEGORY_NODE_REF);
         then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE);
         then(nodeServiceMock).should().getProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES);
         final Serializable expectedCategories = (Serializable) List.of(CATEGORY_NODE_REF);
         then(nodeServiceMock).should().setProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES, expectedCategories);
+        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         final List<Category> expectedLinkedCategories = List.of(CATEGORY);
         assertThat(actualLinkedCategories)
@@ -901,7 +903,7 @@ public class CategoriesImplTest
         // when
         final List<Category> actualLinkedCategories = objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY));
 
-        final Serializable expectedCategories = (Serializable) List.of(otherCategoryNodeRef, CATEGORY_NODE_REF);
+        final Serializable expectedCategories = (Serializable) Set.of(otherCategoryNodeRef, CATEGORY_NODE_REF);
         then(nodeServiceMock).should().setProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES, expectedCategories);
         final List<Category> expectedLinkedCategories = List.of(CATEGORY);
         assertThat(actualLinkedCategories)
@@ -927,13 +929,13 @@ public class CategoriesImplTest
     @Test
     public void testLinkContentNodeToCategories_withoutPermission()
     {
-        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.DENIED);
+        given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.DENIED);
 
         // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
-        then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
+        then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
             .isInstanceOf(PermissionDeniedException.class)
@@ -948,11 +950,11 @@ public class CategoriesImplTest
         // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
 
-        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT), null);
+        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER), null);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
             .isInstanceOf(InvalidArgumentException.class)
-            .hasMessageContaining(INVALID_NODE_TYPE, ContentModel.TYPE_CONTENT.getLocalName());
+            .hasMessageContaining(INVALID_NODE_TYPE, ContentModel.TYPE_CONTENT.getLocalName() + ", " + ContentModel.TYPE_FOLDER.getLocalName());
     }
 
     @Test

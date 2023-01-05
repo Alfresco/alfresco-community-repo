@@ -165,7 +165,6 @@ public class CategoriesImpl implements Categories
 
         final NodeRef contentNodeRef = nodes.validateNode(nodeId);
         verifyChangePermission(contentNodeRef);
-        verifyNodeType(contentNodeRef, ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER);
 
         final Collection<NodeRef> categoryNodeRefs = categoryLinks.stream()
             .filter(Objects::nonNull)
@@ -197,18 +196,6 @@ public class CategoriesImpl implements Categories
         if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
-        }
-    }
-
-    private void verifyNodeType(final NodeRef nodeRef, final QName... expectedTypes)
-    {
-        if (!nodes.nodeMatches(nodeRef, Set.of(expectedTypes), null))
-        {
-            throw new InvalidArgumentException(
-                String.format(
-                    INVALID_NODE_TYPE,
-                    Arrays.stream(expectedTypes).map(QName::getLocalName).collect(Collectors.joining(", "))
-                ));
         }
     }
 

@@ -278,19 +278,19 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link non-content node to category and expect 400 (Bad Request)
+     * Try to link non-content node to category and expect 201 (Created)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect400()
+    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect201()
     {
-        STEP("Try to link a tag to category and expect 400");
+        STEP("Try to link a tag to category and expect 201");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
         final RepoTestModel tagNode = new RepoTestModel() {};
         tagNode.setNodeRef(tag.getId());
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(tagNode).linkToCategory(categoryLink);
 
-        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertStatusCodeIs(CREATED);
     }
 
     /**

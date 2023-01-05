@@ -122,7 +122,6 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(CATEGORY_ID)).willReturn(CATEGORY_NODE_REF);
         given(nodesMock.validateNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(nodesMock.isSubClass(any(), any(), anyBoolean())).willReturn(true);
-        given(nodesMock.nodeMatches(any(), any(), isNull())).willReturn(true);
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.ALLOWED);
     }
 
@@ -807,7 +806,6 @@ public class CategoriesImplTest
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
-        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER), null);
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().getNode(CATEGORY_ID);
         then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
@@ -940,21 +938,6 @@ public class CategoriesImplTest
         assertThat(actualException)
             .isInstanceOf(PermissionDeniedException.class)
             .hasMessageContaining(NO_PERMISSION_TO_READ_CONTENT);
-    }
-
-    @Test
-    public void testLinkContentNodeToCategories_withInvalidNodeType()
-    {
-        given(nodesMock.nodeMatches(any(), any(), isNull())).willReturn(false);
-
-        // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkContentNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
-
-        then(nodesMock).should().nodeMatches(CONTENT_NODE_REF, Set.of(ContentModel.TYPE_CONTENT, ContentModel.TYPE_FOLDER), null);
-        then(nodeServiceMock).shouldHaveNoInteractions();
-        assertThat(actualException)
-            .isInstanceOf(InvalidArgumentException.class)
-            .hasMessageContaining(INVALID_NODE_TYPE, ContentModel.TYPE_CONTENT.getLocalName() + ", " + ContentModel.TYPE_FOLDER.getLocalName());
     }
 
     @Test

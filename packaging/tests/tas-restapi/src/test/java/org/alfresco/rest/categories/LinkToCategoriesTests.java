@@ -273,12 +273,12 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link folder node to category and expect 201 (Created)
+     * Link folder node to category and expect 201 (Created)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_usingFolderInsteadOfContentAndExpect200()
+    public void testLinkFolderToCategory()
     {
-        STEP("Try to link a tag to category and expect 201");
+        STEP("Link folder node to category");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).linkToCategory(categoryLink);
 

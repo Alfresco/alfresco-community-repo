@@ -31,23 +31,18 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import javax.json.Json;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
-import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestNodeModel;
-import org.alfresco.rest.model.RestRatingModel;
-import org.alfresco.rest.model.RestRenditionInfoModelCollection;
-import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -278,19 +273,32 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link non-content node to category and expect 201 (Created)
+     * Try to link folder node to category and expect 201 (Created)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect201()
+    public void testLinkContentToCategory_usingFolderInsteadOfContentAndExpect200()
     {
         STEP("Try to link a tag to category and expect 201");
+        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).linkToCategory(categoryLink);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /**
+     * Try to link non-content node to category and expect 405 (Method Not Allowed)
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect405()
+    {
+        STEP("Try to link a tag to category and expect 405");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
         final RepoTestModel tagNode = new RepoTestModel() {};
         tagNode.setNodeRef(tag.getId());
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(tagNode).linkToCategory(categoryLink);
 
-        restClient.assertStatusCodeIs(CREATED);
+        restClient.assertStatusCodeIs(METHOD_NOT_ALLOWED);
     }
 
     /**

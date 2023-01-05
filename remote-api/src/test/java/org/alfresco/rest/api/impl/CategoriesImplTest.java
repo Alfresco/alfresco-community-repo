@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
+import static org.alfresco.rest.api.impl.CategoriesImpl.INVALID_NODE_TYPE;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_A_VALID_CATEGORY;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_NULL_OR_EMPTY;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NO_PERMISSION_TO_READ_CONTENT;
@@ -38,6 +39,7 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -60,6 +62,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -73,6 +76,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.TypeConstraint;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,6 +113,8 @@ public class CategoriesImplTest
     private ChildAssociationRef categoryChildAssociationRefMock;
     @Mock
     private PermissionService permissionServiceMock;
+    @Mock
+    private TypeConstraint typeConstraint;
 
     @InjectMocks
     private CategoriesImpl objectUnderTest;
@@ -120,6 +126,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(CATEGORY_ID)).willReturn(CATEGORY_NODE_REF);
         given(nodesMock.validateNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(nodesMock.isSubClass(any(), any(), anyBoolean())).willReturn(true);
+        given(typeConstraint.matches(any())).willReturn(true);
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.ALLOWED);
     }
 
@@ -804,6 +811,8 @@ public class CategoriesImplTest
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(typeConstraint).should().matches(CONTENT_NODE_REF);
+        then(typeConstraint).shouldHaveNoMoreInteractions();
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().getNode(CATEGORY_ID);
         then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
@@ -936,6 +945,22 @@ public class CategoriesImplTest
         assertThat(actualException)
             .isInstanceOf(PermissionDeniedException.class)
             .hasMessageContaining(NO_PERMISSION_TO_READ_CONTENT);
+    }
+
+    @Test
+    public void testLinkContentNodeToCategories_withInvalidNodeType()
+    {
+        given(typeConstraint.matches(any())).willReturn(false);
+
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
+
+        then(typeConstraint).should().matches(CONTENT_NODE_REF);
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(UnsupportedResourceOperationException.class)
+            .hasMessageContaining(INVALID_NODE_TYPE);
     }
 
     @Test

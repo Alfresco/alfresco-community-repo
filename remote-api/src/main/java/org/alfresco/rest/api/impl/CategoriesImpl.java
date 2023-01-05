@@ -31,13 +31,11 @@ import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
@@ -48,6 +46,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -62,6 +61,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.TypeConstraint;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -72,21 +72,24 @@ public class CategoriesImpl implements Categories
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
-    static final String INVALID_NODE_TYPE = "Node of type: [%s] is expected!";
+    static final String INVALID_NODE_TYPE = "Cannot categorize this node type";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
     private final Nodes nodes;
     private final NodeService nodeService;
     private final PermissionService permissionService;
+    private final TypeConstraint typeConstraint;
 
-    public CategoriesImpl(AuthorityService authorityService, CategoryService categoryService, Nodes nodes, NodeService nodeService, PermissionService permissionService)
+    public CategoriesImpl(AuthorityService authorityService, CategoryService categoryService, Nodes nodes, NodeService nodeService, PermissionService permissionService,
+    TypeConstraint typeConstraint)
     {
         this.authorityService = authorityService;
         this.categoryService = categoryService;
         this.nodes = nodes;
         this.nodeService = nodeService;
         this.permissionService = permissionService;
+        this.typeConstraint = typeConstraint;
     }
 
     @Override
@@ -165,6 +168,7 @@ public class CategoriesImpl implements Categories
 
         final NodeRef contentNodeRef = nodes.validateNode(nodeId);
         verifyChangePermission(contentNodeRef);
+        verifyNodeType(contentNodeRef);
 
         final Collection<NodeRef> categoryNodeRefs = categoryLinks.stream()
             .filter(Objects::nonNull)
@@ -196,6 +200,14 @@ public class CategoriesImpl implements Categories
         if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
+        }
+    }
+
+    private void verifyNodeType(final NodeRef nodeRef)
+    {
+        if (!typeConstraint.matches(nodeRef))
+        {
+            throw new UnsupportedResourceOperationException(INVALID_NODE_TYPE);
         }
     }
 

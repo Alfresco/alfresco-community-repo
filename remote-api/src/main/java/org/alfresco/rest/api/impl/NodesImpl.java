@@ -2780,14 +2780,10 @@ public class NodesImpl implements Nodes
                     {
                         String thisSiteGroupPrefix = siteService.getSiteGroup(containingSite.getShortName());
                         final String siteManagerAuthority = thisSiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
-                        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-                        {
-                            public Void doWork() throws Exception
-                            {
-                                permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
-                                return null;
-                            }
-                        }, AuthenticationUtil.getSystemUserName());
+                        AuthenticationUtil.runAsSystem(() -> {
+                            permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
+                            return null;
+                        });
                     }
                 }
             }

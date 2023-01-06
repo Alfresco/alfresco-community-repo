@@ -47,8 +47,6 @@ public class AlfrescoContextFactory extends ContextFactory
     private long maxMemoryUsedInBytes = -1L;
     private int observeInstructionCount = -1;
 
-    private AlfrescoScriptThreadMxBeanWrapper threadMxBeanWrapper;
-
     private final int INTERPRETIVE_MODE = -1;
 
     @Override
@@ -74,11 +72,10 @@ public class AlfrescoContextFactory extends ContextFactory
             }
         }
 
-        // Memory limit
-        if (maxMemoryUsedInBytes > 0)
-        {
-            context.setThreadId(Thread.currentThread().getId());
-        }
+        // Memory control
+        context.setThreadId(Thread.currentThread().getId());
+        context.setThreadMxBeanWrapper(new AlfrescoScriptThreadMxBeanWrapper());
+        context.setStartMemory();
 
         // Max call stack depth
         setMaxStackDepth(context, true);
@@ -103,18 +100,16 @@ public class AlfrescoContextFactory extends ContextFactory
                 }
             }
 
-            // Memory
-            if (maxMemoryUsedInBytes > 0 && threadMxBeanWrapper != null && threadMxBeanWrapper.isThreadAllocatedMemorySupported())
+            // Memory limit
+            if (maxMemoryUsedInBytes > 0 && acx.isMemoryLimitSupported())
             {
-
                 if (acx.getStartMemory() <= 0)
                 {
-                    acx.setStartMemory(threadMxBeanWrapper.getThreadAllocatedBytes(acx.getThreadId()));
+                    acx.setStartMemory();
                 }
                 else
                 {
-                    long currentAllocatedBytes = threadMxBeanWrapper.getThreadAllocatedBytes(acx.getThreadId());
-                    if (currentAllocatedBytes - acx.getStartMemory() >= maxMemoryUsedInBytes)
+                    if (acx.getUsedMemory() >= maxMemoryUsedInBytes)
                     {
                         throw new Error("Memory limit of " + maxMemoryUsedInBytes + " bytes reached");
                     }
@@ -202,8 +197,8 @@ public class AlfrescoContextFactory extends ContextFactory
         this.maxMemoryUsedInBytes = maxMemoryUsedInBytes;
         if (maxMemoryUsedInBytes > 0)
         {
-            this.threadMxBeanWrapper = new AlfrescoScriptThreadMxBeanWrapper();
-            if (!threadMxBeanWrapper.isThreadAllocatedMemorySupported())
+            AlfrescoScriptThreadMxBeanWrapper tmxw = new AlfrescoScriptThreadMxBeanWrapper();
+            if (!tmxw.isThreadAllocatedMemorySupported())
             {
                 LOGGER.warn("com.sun.management.ThreadMXBean was not found on the classpath. "
                         + "This means that the limiting the memory usage for a script will NOT work.");

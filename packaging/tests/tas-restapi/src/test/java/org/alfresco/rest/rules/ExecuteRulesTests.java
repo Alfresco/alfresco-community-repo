@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestRuleExecutionModel;
@@ -56,7 +55,7 @@ import org.testng.annotations.Test;
  * Tests for POST /nodes/{nodeId}/rule-executions.
  */
 @Test(groups = { TestGroup.RULES})
-public class ExecuteRulesTests extends RestTest
+public class ExecuteRulesTests extends RulesRestTest
 {
 
     private UserModel user;

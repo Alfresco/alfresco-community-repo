@@ -7,13 +7,21 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo-amps</artifactId>
-      <version>20.29-SNAPSHOT</version>
+      <version>20.52-SNAPSHOT</version>
    </parent>
 
    <modules>
       <module>rm-community</module>
-      <module>rm-automation</module>
    </modules>
+
+   <profiles>
+      <profile>
+         <id>all-tas-tests</id>
+         <modules>
+            <module>rm-automation</module>
+         </modules>
+      </profile>
+   </profiles>
 
    <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

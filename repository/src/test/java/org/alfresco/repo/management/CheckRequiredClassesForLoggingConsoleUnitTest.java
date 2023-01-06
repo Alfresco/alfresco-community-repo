@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,7 +30,7 @@ import org.junit.Test;
 
 public class CheckRequiredClassesForLoggingConsoleUnitTest extends TestCase
 {
-    private static final String CLASS_NAME = "org.apache.log4j.jmx.HierarchyDynamicMBean";
+    private static final String CLASS_NAME = "org.apache.logging.log4j.core.jmx.Server";
 
     @Test
     public void testRequiredClassIsOnAClasspath() throws ClassNotFoundException

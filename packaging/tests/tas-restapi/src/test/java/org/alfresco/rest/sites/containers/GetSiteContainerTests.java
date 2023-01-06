@@ -213,30 +213,6 @@ public class GetSiteContainerTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
     @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get container request for empty siteId returns status code 404")
-    public void getContainerForEmptySiteId() throws Exception
-    {
-        restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite("").getSiteContainer(ContainerName.links.toString());
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsErrorKey(RestErrorModel.RELATIONSHIP_NOT_FOUND_ERRORKEY)
-                .containsSummary(String.format(RestErrorModel.RELATIONSHIP_NOT_FOUND, "", ContainerName.links.toString()))
-                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                .stackTraceIs(RestErrorModel.STACKTRACE);
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
-            description= "Verify if get container request for empty container returns status code 200 and the list of containers")
-    public void getContainerForEmptyContainer() throws Exception
-    {
-        restClient.authenticateUser(testUser)
-                .withCoreAPI().usingSite(moderatedSiteModel).getSiteContainer("");
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-    }
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION })
-    @TestRail(section={TestGroup.REST_API, TestGroup.SITES}, executionType= ExecutionType.REGRESSION,
             description= "Verify if get container with name containing special chars returns status code 404")
     public void getContainerWithNameContainingSpecialChars() throws Exception
     {

@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>20.29-SNAPSHOT</version>
+        <version>20.52-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -66,6 +66,7 @@
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>restapi</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 

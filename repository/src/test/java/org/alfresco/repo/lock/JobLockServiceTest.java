@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -47,8 +47,9 @@ import org.alfresco.util.TestHelper;
 import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -389,8 +390,8 @@ public class JobLockServiceTest extends TestCase
     public synchronized void testLockCallbackReleaseSelf() throws Exception
     {
         // ACE-4347 extra debug logging just for this test so we can see what's going on when it next fails
-        Level saveLogLevel = Logger.getLogger("org.alfresco.repo.lock").getLevel();
-        Logger.getLogger("org.alfresco.repo.lock").setLevel(Level.ALL);
+        Level saveLogLevel = LogManager.getLogger("org.alfresco.repo.lock").getLevel();
+        Configurator.setLevel(LogManager.getLogger("org.alfresco.repo.lock"), Level.ALL);
         try
         {
             final QName lockQName = QName.createQName(NAMESPACE, getName());
@@ -444,7 +445,7 @@ public class JobLockServiceTest extends TestCase
         }
         finally
         {
-            Logger.getLogger("org.alfresco.repo.lock").setLevel(saveLogLevel);
+            Configurator.setLevel(LogManager.getLogger("org.alfresco.repo.lock"), saveLogLevel);
         }
     }
     
@@ -520,8 +521,8 @@ public class JobLockServiceTest extends TestCase
     public void runGetLockWithCallback(int t)
     {
         // ACE-4347 extra debug logging just for this test so we can see what's going on when it next fails
-        Level saveLogLevel = Logger.getLogger("org.alfresco.repo.lock").getLevel();
-        Logger.getLogger("org.alfresco.repo.lock").setLevel(Level.ALL);
+        Level saveLogLevel = LogManager.getLogger("org.alfresco.repo.lock").getLevel();
+        Configurator.setLevel(LogManager.getLogger("org.alfresco.repo.lock"), Level.ALL);
 
         logger.debug("runGetLockWithCallback "+t+
             "\n----------------------------------------"+
@@ -618,7 +619,7 @@ public class JobLockServiceTest extends TestCase
             
             logger.debug("runGetLockWithCallback\n----------------------------------------");
 
-            Logger.getLogger("org.alfresco.repo.lock").setLevel(saveLogLevel);
+            Configurator.setLevel(LogManager.getLogger("org.alfresco.repo.lock"), saveLogLevel);
         }
     }
     

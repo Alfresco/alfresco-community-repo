@@ -48,8 +48,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
-
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
@@ -64,7 +62,7 @@ import org.testng.annotations.Test;
  * Tests for PUT /nodes/{nodeId}/rule-sets/{ruleSetId}/rules.
  */
 @Test (groups = { TestGroup.RULES })
-public class UpdateRulesTests extends RestTest
+public class UpdateRulesTests extends RulesRestTest
 {
     private UserModel user;
     private SiteModel site;

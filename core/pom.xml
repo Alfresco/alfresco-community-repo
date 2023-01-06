@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo</artifactId>
-      <version>20.29-SNAPSHOT</version>
+      <version>20.52-SNAPSHOT</version>
    </parent>
 
    <dependencies>
@@ -54,9 +54,14 @@
          <classifier>asl</classifier>
       </dependency>
       <dependency>
-         <groupId>ch.qos.reload4j</groupId>
-         <artifactId>reload4j</artifactId>
-         <version>1.2.18.3</version>
+         <groupId>org.apache.logging.log4j</groupId>
+         <artifactId>log4j-api</artifactId>
+         <version>${dependency.log4j.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.apache.logging.log4j</groupId>
+         <artifactId>log4j-core</artifactId>
+         <version>${dependency.log4j.version}</version>
       </dependency>
       <dependency>
          <groupId>org.json</groupId>
@@ -113,8 +118,8 @@
 
       <!-- Test only dependencies, as popped up while running mvn test -->
       <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-reload4j</artifactId>
+         <groupId>org.apache.logging.log4j</groupId>
+         <artifactId>log4j-slf4j2-impl</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>

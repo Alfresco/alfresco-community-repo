@@ -27,11 +27,13 @@ package org.alfresco.service.cmr.search;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -234,10 +236,10 @@ public interface CategoryService
      */
     @Auditable(parameters = {"nodeRef"})
     public void deleteCategory(NodeRef nodeRef);
-    
-   /** 
-    * Get the most polular categories 
-    * 
+
+   /**
+    * Get the most polular categories
+    *
     * @param storeRef StoreRef
     * @param aspectName QName
     * @param count int
@@ -245,4 +247,16 @@ public interface CategoryService
     */
     @Auditable(parameters = {"storeRef", "aspectName", "count"})
     public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
+
+    /**
+     * Get a root category NodeRef
+     *
+     * @return NodeRef for category root node
+     */
+    @Experimental
+    @Auditable(parameters = {"storeRef"})
+    default Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
+    {
+        return Optional.empty();
+    }
 }

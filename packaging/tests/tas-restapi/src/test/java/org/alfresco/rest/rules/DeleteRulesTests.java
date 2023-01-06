@@ -26,7 +26,6 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
-
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
@@ -41,7 +40,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FolderModel;
@@ -56,7 +54,7 @@ import org.testng.annotations.Test;
  * Tests for DELETE /nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}.
  */
 @Test(groups = {TestGroup.RULES})
-public class DeleteRulesTests extends RestTest
+public class DeleteRulesTests extends RulesRestTest
 {
     private static final String FAKE_NODE_REF = "fake-node-id";
 

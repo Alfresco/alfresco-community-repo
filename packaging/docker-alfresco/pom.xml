@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-packaging</artifactId>
-        <version>20.29-SNAPSHOT</version>
+        <version>20.52-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -78,7 +78,6 @@
                             </artifactItems>
                         </configuration>
                     </execution>
-
                     <execution>
                         <id>copy-amps</id>
                         <phase>process-resources</phase>

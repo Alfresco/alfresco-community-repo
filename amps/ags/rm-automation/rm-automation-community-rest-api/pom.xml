@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>20.29-SNAPSHOT</version>
+      <version>20.52-SNAPSHOT</version>
    </parent>
 
    <build>
@@ -43,14 +43,9 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-reload4j</artifactId>
-         <version>${dependency.slf4j.version}</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>restapi</artifactId>
+         <version>${project.version}</version>
          <exclusions>
             <exclusion>
                <groupId>org.alfresco.tas</groupId>

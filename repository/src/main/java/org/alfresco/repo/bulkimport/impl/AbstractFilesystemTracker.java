@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -35,7 +35,8 @@ import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.FilesystemTracker;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.util.PropertyCheck;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -44,7 +45,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class AbstractFilesystemTracker implements FilesystemTracker
 {
-	protected static Logger logger = Logger.getLogger(FilesystemTracker.class);
+	protected static Logger logger = LoggerFactory.getLogger(FilesystemTracker.class);
 
     protected DirectoryAnalyser directoryAnalyser = null;
 

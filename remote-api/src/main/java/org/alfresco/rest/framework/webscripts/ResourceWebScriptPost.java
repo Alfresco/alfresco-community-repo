@@ -44,6 +44,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResource
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
@@ -377,7 +378,8 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
     {
         if (created !=null && created.size() > 1)
         {
-            return CollectionWithPagingInfo.asPagedCollection(created.toArray());
+            final Paging pagingAll = Paging.valueOf(0, created.size());
+            return CollectionWithPagingInfo.asPaged(pagingAll, created);
         }
         else
         {

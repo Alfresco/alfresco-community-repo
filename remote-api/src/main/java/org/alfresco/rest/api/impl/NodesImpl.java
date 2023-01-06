@@ -2404,6 +2404,9 @@ public class NodesImpl implements Nodes
             // Check inherit from parent value and if it's changed set the new value
             if (nodePerms.getIsInheritanceEnabled() != null)
             {
+                // If inheritance flag is being disabled, the site manager needs to have permission
+                setSiteManagerPermission(nodeRef, nodePerms);
+
                 if (nodePerms.getIsInheritanceEnabled() != permissionService.getInheritParentPermissions(nodeRef))
                 {
                     permissionService.setInheritParentPermissions(nodeRef, nodePerms.getIsInheritanceEnabled());
@@ -2763,6 +2766,34 @@ public class NodesImpl implements Nodes
         }
         
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
+    }
+
+    private void setSiteManagerPermission(NodeRef nodeRef, NodePermissions nodePerms)
+    {
+        if (nodeRef != null && nodePerms != null)
+        {
+            try
+            {
+                if (nodePerms.getIsInheritanceEnabled() != null && !nodePerms.getIsInheritanceEnabled())
+                {
+                    SiteInfo containingSite = siteService.getSite(nodeRef);
+
+                    if (containingSite != null)
+                    {
+                        String thisSiteGroupPrefix = siteService.getSiteGroup(containingSite.getShortName());
+                        final String siteManagerAuthority = thisSiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
+                        AuthenticationUtil.runAsSystem(() -> {
+                            permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
+                            return null;
+                        });
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.error("Error setting site manager permission on " + nodeRef, e);
+            }
+        }
     }
 
     private Node updateExistingFile(NodeRef parentNodeRef, NodeRef nodeRef, String fileName, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)

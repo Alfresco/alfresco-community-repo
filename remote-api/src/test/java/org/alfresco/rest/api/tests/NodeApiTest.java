@@ -6431,5 +6431,49 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
     }
 
+    /**
+     * Tests if site manager permissions are kept after inheritance flag is disabled
+     */
+    @Test
+    public void testSiteManagerPermission() throws Exception
+    {
+        // Change to User1 context
+        setRequestContext(user1);
+
+        // user1 creates a site and adds user2 as a site manager
+        String site1Title = "site-testSiteManagerPermissions_DocLib-" + RUNID;
+        String site1Id = createSite(site1Title, SiteVisibility.PUBLIC).getId();
+        addSiteMember(site1Id, user2, SiteRole.SiteManager);
+
+        // user1 uploads a document to the site
+        String site1DocLibNodeId = getSiteContainerNodeId(site1Id, "documentLibrary");
+        String content = "content" + RUNID;
+        String content1_Id = createTextFile(site1DocLibNodeId, content, "The quick brown fox jumps over the lazy dog.").getId();
+        NodeRef content1_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, content1_Id);
+
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
+
+        // Change to User2 context
+        setRequestContext(user2);
+
+        // user2 should be able to disable the inheritance flag without getting a permission denied error
+        Node nodeUpdate = new Node();
+        NodePermissions nodePerms = new NodePermissions();
+        nodePerms.setIsInheritanceEnabled(false);
+        nodeUpdate.setPermissions(nodePerms);
+        put(URL_NODES, content1_Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
+
+        // user2 checks if has access to the document
+        Map<String, String> params = new HashMap<>();
+        HttpResponse response = getSingle(NodesEntityResource.class, content1_Id, params, 200);
+        Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertNotNull(node);
+        assertEquals(node.getId(), content1_Id);
+
+        // cleanup
+        setRequestContext(user1);
+        deleteSite(site1Id, true, 204);
+    }
 }
 

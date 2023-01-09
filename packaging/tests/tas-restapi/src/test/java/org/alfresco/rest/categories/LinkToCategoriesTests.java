@@ -211,7 +211,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link content to category as a owner and expect 201
+     * Try to link content to category as owner and expect 201
      */
     @Test(groups = { TestGroup.REST_API})
     public void testLinkContentToCategory_asOwner()

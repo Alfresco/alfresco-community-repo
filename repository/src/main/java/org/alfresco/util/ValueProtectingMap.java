@@ -241,6 +241,16 @@ public class ValueProtectingMap<K extends Serializable, V extends Serializable> 
         this.writeLock = lock.writeLock();
     }
 
+    /**
+     * An unsafe method to use for anything except tests.
+     *
+     * @return              the map that this instance is protecting
+     */
+    Map<K, V> getProtectedMap()
+    {
+        return map;
+    }
+
     /*
      * READ-ONLY METHODS
      */

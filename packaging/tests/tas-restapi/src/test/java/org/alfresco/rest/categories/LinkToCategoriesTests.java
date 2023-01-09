@@ -211,10 +211,10 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link content to category as a owner and expect 403 (Forbidden)
+     * Try to link content to category as a owner and expect 201
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_asOwnerAndExpect403()
+    public void testLinkContentToCategory_asOwner()
     {
         STEP("Use admin to create a private site");
         final SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
@@ -225,7 +225,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         final FileModel privateFile = dataContent.usingUser(user).usingResource(privateFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         dataUser.removeUserFromSite(user, privateSite);
 
-        STEP("Try to link content to a category as owner and expect 403");
+        STEP("Try to link content to a category as owner and expect 201");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
         restClient.authenticateUser(user).withCoreAPI().usingNode(privateFile).linkToCategory(categoryLink);
 

@@ -6374,6 +6374,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String content1_Id = createTextFile(site1DocLibNodeId, content, "The quick brown fox jumps over the lazy dog.").getId();
         NodeRef content1_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, content1_Id);
 
+        // TODO find a better solution to wait for the asynchronous metadata-extract/transform operation. E.g. awaitility
+        Thread.sleep(3000);
+
         // Change to User2 context
         setRequestContext(user2);
 

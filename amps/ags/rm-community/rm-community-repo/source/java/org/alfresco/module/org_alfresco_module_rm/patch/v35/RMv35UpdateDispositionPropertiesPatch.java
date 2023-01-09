@@ -31,9 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 /**
  * Patch to update disposition properties in all those folders which are moved from one category to another category
  * and missing disposition properties
- *
- * @author Ross Gale
- * @since 3.2
  */
 public class RMv35UpdateDispositionPropertiesPatch extends AbstractModulePatch
 {
@@ -42,9 +39,7 @@ public class RMv35UpdateDispositionPropertiesPatch extends AbstractModulePatch
 
     /**
      * Setter for maximum batch size
-     *
-     * @param batchSize
-     *            The max amount of associations to be created between the frozen nodes and the hold in a transaction
+     * @param batchSize The max amount of associations to be created between the frozen nodes and the hold in a transaction
      */
     public void setBatchSize(int batchSize)
     {

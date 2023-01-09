@@ -834,6 +834,8 @@
         <constructor-arg name="categoryService" ref="CategoryService"/>
         <constructor-arg name="nodes" ref="nodes"/>
         <constructor-arg name="nodeService" ref="NodeService"/>
+        <constructor-arg name="permissionService" ref="PermissionService"/>
+        <constructor-arg name="typeConstraint" ref="nodeTypeConstraint"/>
     </bean>
 
     <bean id="Categories" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1102,6 +1104,10 @@
     </bean>
 
     <bean class="org.alfresco.rest.api.categories.SubcategoriesRelation">
+        <constructor-arg name="categories" ref="Categories"/>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.categories.NodesCategoryLinksRelation">
         <constructor-arg name="categories" ref="Categories"/>
     </bean>
 

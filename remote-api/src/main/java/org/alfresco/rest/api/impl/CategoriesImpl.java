@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,8 +27,15 @@
 package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
@@ -39,6 +46,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -47,10 +55,13 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.TypeConstraint;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -59,20 +70,26 @@ public class CategoriesImpl implements Categories
 {
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
+    static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
-    static final String FIELD_NOT_MATCH = "Category field: %s does not match the original one";
+    static final String INVALID_NODE_TYPE = "Cannot categorize this node type";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
     private final Nodes nodes;
     private final NodeService nodeService;
+    private final PermissionService permissionService;
+    private final TypeConstraint typeConstraint;
 
-    public CategoriesImpl(AuthorityService authorityService, CategoryService categoryService, Nodes nodes, NodeService nodeService)
+    public CategoriesImpl(AuthorityService authorityService, CategoryService categoryService, Nodes nodes, NodeService nodeService, PermissionService permissionService,
+    TypeConstraint typeConstraint)
     {
         this.authorityService = authorityService;
         this.categoryService = categoryService;
         this.nodes = nodes;
         this.nodeService = nodeService;
+        this.permissionService = permissionService;
+        this.typeConstraint = typeConstraint;
     }
 
     @Override
@@ -123,7 +140,7 @@ public class CategoriesImpl implements Categories
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
         }
 
-        verifyCategoryFields(fixedCategoryModel);
+        validateCategoryFields(fixedCategoryModel);
 
         return mapToCategory(changeCategoryName(categoryNodeRef, fixedCategoryModel.getName()));
     }
@@ -141,11 +158,56 @@ public class CategoriesImpl implements Categories
         nodeService.deleteNode(nodeRef);
     }
 
+    @Override
+    public List<Category> linkNodeToCategories(final String nodeId, final List<Category> categoryLinks)
+    {
+        if (CollectionUtils.isEmpty(categoryLinks))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY);
+        }
+
+        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        verifyChangePermission(contentNodeRef);
+        verifyNodeType(contentNodeRef);
+
+        final Collection<NodeRef> categoryNodeRefs = categoryLinks.stream()
+            .filter(Objects::nonNull)
+            .map(Category::getId)
+            .filter(StringUtils::isNotEmpty)
+            .map(this::getCategoryNodeRef)
+            .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(categoryNodeRefs) || isRootCategoryPresent(categoryNodeRefs))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY);
+        }
+
+        linkNodeToCategories(contentNodeRef, categoryNodeRefs);
+
+        return categoryNodeRefs.stream().map(this::mapToCategory).collect(Collectors.toList());
+    }
+
     private void verifyAdminAuthority()
     {
         if (!authorityService.hasAdminAuthority())
         {
             throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_CATEGORY);
+        }
+    }
+
+    private void verifyChangePermission(final NodeRef nodeRef)
+    {
+        if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
+        {
+            throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
+        }
+    }
+
+    private void verifyNodeType(final NodeRef nodeRef)
+    {
+        if (!typeConstraint.matches(nodeRef))
+        {
+            throw new UnsupportedResourceOperationException(INVALID_NODE_TYPE);
         }
     }
 
@@ -181,7 +243,7 @@ public class CategoriesImpl implements Categories
 
     private NodeRef createCategoryNodeRef(NodeRef parentNodeRef, Category c)
     {
-        verifyCategoryFields(c);
+        validateCategoryFields(c);
         return categoryService.createCategory(parentNodeRef, c.getName());
     }
 
@@ -236,15 +298,67 @@ public class CategoriesImpl implements Categories
     }
 
     /**
-     * Verify if fixed category name is not empty.
+     * Validate if fixed category name is not empty.
      *
      * @param fixedCategoryModel Fixed category model.
      */
-    private void verifyCategoryFields(final Category fixedCategoryModel)
+    private void validateCategoryFields(final Category fixedCategoryModel)
     {
         if (StringUtils.isEmpty(fixedCategoryModel.getName()))
         {
             throw new InvalidArgumentException(NOT_NULL_OR_EMPTY);
+        }
+    }
+
+    private boolean isRootCategoryPresent(final Collection<NodeRef> categoryNodeRefs)
+    {
+        return categoryNodeRefs.stream().anyMatch(this::isRootCategory);
+    }
+
+    private boolean isCategoryAspectMissing(final NodeRef nodeRef)
+    {
+        return !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+    }
+
+    /**
+     * Merge already present and new categories ignoring repeating ones.
+     *
+     * @param currentCategories Already present categories.
+     * @param newCategories Categories which should be added.
+     * @return Merged categories.
+     */
+    private Collection<NodeRef> mergeCategories(final Serializable currentCategories, final Collection<NodeRef> newCategories)
+    {
+        if (currentCategories == null)
+        {
+            return newCategories;
+        }
+
+        final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
+        final Collection<NodeRef> allCategories = new HashSet<>(actualCategories);
+        allCategories.addAll(newCategories);
+
+        return allCategories;
+    }
+
+    /**
+     * Add to or update node's property cm:categories containing linked category references.
+     *
+     * @param nodeRef Node reference.
+     * @param categoryNodeRefs Category node references.
+     */
+    private void linkNodeToCategories(final NodeRef nodeRef, final Collection<NodeRef> categoryNodeRefs)
+    {
+        if (isCategoryAspectMissing(nodeRef))
+        {
+            final Map<QName, Serializable> properties = Map.of(ContentModel.PROP_CATEGORIES, (Serializable) categoryNodeRefs);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, properties);
+        }
+        else
+        {
+            final Serializable currentCategories = nodeService.getProperty(nodeRef, ContentModel.PROP_CATEGORIES);
+            final Collection<NodeRef> allCategories = mergeCategories(currentCategories, categoryNodeRefs);
+            nodeService.setProperty(nodeRef, ContentModel.PROP_CATEGORIES, (Serializable) allCategories);
         }
     }
 }

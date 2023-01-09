@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -53,4 +53,12 @@ public interface Categories
 
     void deleteCategoryById(String id, Parameters parameters);
 
+    /**
+     * Link node to categories. Node types allowed for categorization are specified within {@link org.alfresco.util.TypeConstraint}.
+     *
+     * @param nodeId Node ID.
+     * @param categoryLinks Category IDs to which content should be linked to.
+     * @return Linked to categories.
+     */
+    List<Category> linkNodeToCategories(String nodeId, List<Category> categoryLinks);
 }

@@ -5,11 +5,9 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <!-- RM v7.4 Patches -->
-   <bean id="rm.updateDispositionPropertiesPatch"
-         parent="rm.parentModulePatch"
+   <bean id="rm.updateDispositionPropertiesPatch" parent="rm.parentModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.v74.RMv74UpdateDispositionPropertiesPatch">
-      <property name="description"
-                value="Update missing disposition properties when folders moved from one category to another"/>
+      <property name="description" value="Update missing disposition properties when folders moved from one category to another"/>
       <property name="fixesFromSchema" value="3499"/>
       <property name="fixesToSchema" value="3500"/>
       <property name="targetSchema" value="3501" />

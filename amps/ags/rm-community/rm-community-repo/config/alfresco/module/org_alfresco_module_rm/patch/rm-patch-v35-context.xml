@@ -19,20 +19,4 @@
       <property name="nodeService" ref="nodeService" />
       <property name="batchSize" value="${rm.patch.v35.holdNewChildAssocPatch.batchSize}" />
    </bean>
-   <bean id="rm.updateDispositionPropertiesPatch"
-         parent="rm.parentModulePatch"
-         class="org.alfresco.module.org_alfresco_module_rm.patch.v35.RMv35UpdateDispositionPropertiesPatch">
-      <property name="description"
-                value="Update missing disposition properties when folders moved from one category to another"/>
-      <property name="fixesFromSchema" value="3499"/>
-      <property name="fixesToSchema" value="3500"/>
-      <property name="targetSchema" value="3501" />
-      <property name="nodeService" ref="nodeService"/>
-      <property name="batchSize" value="${rm.patch.v35.RMv35UpdateDispositionPropertiesPatch.batchSize}" />
-      <property name="querySize" value="${rm.patch.v35.RMv35UpdateDispositionPropertiesPatch.querySize}" />
-      <property name="nodeDAO" ref="nodeDAO"/>
-      <property name="behaviourFilter" ref="policyBehaviourFilter" />
-      <property name="recordsManagementQueryDAO" ref="recordsManagementQueryDAO"/>\
-      <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
-   </bean>
 </beans>

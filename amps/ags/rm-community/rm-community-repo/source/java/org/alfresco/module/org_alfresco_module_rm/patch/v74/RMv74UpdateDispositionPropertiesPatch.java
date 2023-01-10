@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.patch.v35;
+package org.alfresco.module.org_alfresco_module_rm.patch.v74;
 
 import java.util.List;
 
@@ -42,13 +42,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Patch to update disposition properties in all those folders which are moved from one category to another category
  * and missing disposition properties
- *
- * @author Ross Gale
- * @since 3.2
  */
-public class RMv35UpdateDispositionPropertiesPatch extends AbstractModulePatch
+public class RMv74UpdateDispositionPropertiesPatch extends AbstractModulePatch
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RMv35UpdateDispositionPropertiesPatch.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RMv74UpdateDispositionPropertiesPatch.class);
     private NodeDAO nodeDAO;
 
     private NodeService nodeService;
@@ -70,17 +67,14 @@ public class RMv35UpdateDispositionPropertiesPatch extends AbstractModulePatch
     {
         this.nodeDAO = nodeDAO;
     }
-
     public void setBatchSize(int batchSize)
     {
         this.batchSize = batchSize;
     }
-
     public void setQuerySize(int querySize)
     {
         this.querySize = querySize;
     }
-
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
@@ -97,7 +91,7 @@ public class RMv35UpdateDispositionPropertiesPatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-        LOGGER.info("Starting execution of patch RMv35UpdateDispositionPropertiesPatch.");
+        LOGGER.info("Starting execution of patch RMv74UpdateDispositionPropertiesPatch.");
 
         behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
         behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
@@ -110,104 +104,99 @@ public class RMv35UpdateDispositionPropertiesPatch extends AbstractModulePatch
                 batchProcessor.process();
             }
 
-            LOGGER.info("Finished execution of patch RMv35UpdateDispositionPropertiesPatch ",
-                    batchProcessor.getTotalNodesProcessed());
-        } finally
+            LOGGER.info("Finished execution of patch RMv74UpdateDispositionPropertiesPatch ", batchProcessor.getTotalNodesProcessed());
+        }
+        finally
         {
             behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
             behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }
     }
-        private class BatchProcessor
+    private class BatchProcessor
+    {
+        long minNodeId;
+        long maxNodeId;
+        long nextNodeId;
+        long lastNodeProcessed;
+        int counter;
+        int totalCounter;
+
+        public BatchProcessor()
         {
-            long minNodeId;
-            long maxNodeId;
-            long nextNodeId;
-            long lastNodeProcessed;
-            int counter;
-            int totalCounter;
+            this.minNodeId = nodeDAO.getMinNodeId();
+            this.maxNodeId = nodeDAO.getMaxNodeId();
+            this.nextNodeId = minNodeId;
+            this.counter = 0;
+            this.lastNodeProcessed = 0;
+        }
 
-            public BatchProcessor()
-            {
-                this.minNodeId = nodeDAO.getMinNodeId();
-                this.maxNodeId = nodeDAO.getMaxNodeId();
-                this.nextNodeId = minNodeId;
-                this.counter = 0;
-                this.lastNodeProcessed = 0;
-            }
+        public int getTotalNodesProcessed()
+        {
+            return totalCounter;
+        }
 
-            public int getTotalNodesProcessed()
-            {
-                return totalCounter;
-            }
+        public boolean hasNext()
+        {
+            return nextNodeId <= maxNodeId;
+        }
 
-            public boolean hasNext()
-            {
-                return nextNodeId <= maxNodeId;
-            }
+        public void process()
+        {
+            resetCounter();
 
-            public void process()
-            {
-                resetCounter();
+            transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
 
-                transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-
-                    Long currentNodeId = nextNodeId;
-
-                    // While we haven't reached our batchSize and still have nodes to verify, keep processing
-                    while (counter < batchSize && nextNodeId <= maxNodeId)
-                    {
-                        // Set upper value for query
-                        Long upperNodeId = nextNodeId + querySize;
-
-                        // Get nodes with aspects from node id nextNodeId to upperNodeId, ordered by node id and add/remove
-                        // the aspect
-                        updateDispositionPropertiesInFolders(upperNodeId);
-
-                        setNextNodeId();
-
-                    }
-                    LOGGER.debug("Processed batch [{},{}]. Changed nodes: {}", currentNodeId, lastNodeProcessed, counter);
-                    return true;
-                }, false, true);
-            }
-
-            private void updateDispositionPropertiesInFolders(Long upperNodeId)
-            {
-                List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(minNodeId,
-                        upperNodeId);
-                for (NodeRef folder : folders)
+                Long currentNodeId = nextNodeId;
+                // While we haven't reached our batchSize and still have nodes to verify, keep processing
+                while (counter < batchSize && nextNodeId <= maxNodeId)
                 {
-                    recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(folder, null);
-                    lastNodeProcessed = nodeDAO.getNodePair(folder).getFirst();
-                    incrementCounter();
+                    // Set upper value for query
+                    Long upperNodeId = nextNodeId + querySize;
+
+                    // Get nodes with aspects from node id nextNodeId to upperNodeId, ordered by node id and add/remove the aspect
+                    updateDispositionPropertiesInFolders(upperNodeId);
+                    setNextNodeId();
                 }
 
-            }
+                LOGGER.debug("Processed batch [{},{}]. Changed nodes: {}", currentNodeId, lastNodeProcessed, counter);
+                return true;
+            }, false, true);
+        }
 
-            private void setNextNodeId()
+        private void updateDispositionPropertiesInFolders(Long upperNodeId)
+        {
+            List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(minNodeId, upperNodeId);
+            for (NodeRef folder : folders)
             {
-                // If the last query did not return results, the lastNodeProcessed will be lower than the previous
-                // nextNodeId as it would be unchanged.
-                if (lastNodeProcessed < nextNodeId)
-                {
-                    this.nextNodeId += querySize;
-                    return;
-                }
-
-                // Next node id should be the last node id processed +1
-                this.nextNodeId = lastNodeProcessed + 1;
-            }
-
-            private void resetCounter()
-            {
-                this.counter = 0;
-            }
-
-            private void incrementCounter()
-            {
-                this.counter++;
-                this.totalCounter++;
+                recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(folder, null);
+                lastNodeProcessed = nodeDAO.getNodePair(folder).getFirst();
+                incrementCounter();
             }
         }
+
+        private void setNextNodeId()
+        {
+             /*If the last query did not return results, the lastNodeProcessed will be lower than the previous
+             nextNodeId as it would be unchanged.*/
+            if (lastNodeProcessed < nextNodeId)
+            {
+                this.nextNodeId += querySize;
+                return;
+            }
+
+            // Next node id should be the last node id processed +1
+            this.nextNodeId = lastNodeProcessed + 1;
+        }
+
+        private void resetCounter()
+        {
+            this.counter = 0;
+        }
+
+        private void incrementCounter()
+        {
+            this.counter++;
+            this.totalCounter++;
+        }
+    }
 }

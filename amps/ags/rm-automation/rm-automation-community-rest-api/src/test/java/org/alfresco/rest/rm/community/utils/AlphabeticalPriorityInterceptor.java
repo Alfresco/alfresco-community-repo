@@ -39,7 +39,7 @@ import org.testng.ITestContext;
  *
  * @author Damian Ujma
  */
-public class AlphabeticallyPriorityInterceptor implements IMethodInterceptor
+public class AlphabeticalPriorityInterceptor implements IMethodInterceptor
 {
     @Override
     public List<IMethodInstance> intercept(List<IMethodInstance> methods,

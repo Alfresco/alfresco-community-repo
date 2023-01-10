@@ -25,16 +25,16 @@ public class RestCategoryLinkBodyModel extends TestModel implements IRestModel<R
     */	        
 
     @JsonProperty(required = true)    
-    private String id;	    
+    private String categoryId;
 
-    public String getId()
+    public String getCategoryId()
     {
-        return this.id;
+        return categoryId;
     }
 
-    public void setId(String id)
+    public void setCategoryId(String categoryId)
     {
-        this.id = id;
-    }				
+        this.categoryId = categoryId;
+    }
 }
  

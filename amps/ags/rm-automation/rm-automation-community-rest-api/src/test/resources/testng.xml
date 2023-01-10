@@ -1,7 +1,10 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="300000">
-   <test name="restapi">
+   <listeners>
+      <listener class-name="org.alfresco.rest.rm.community.utils.AlphabeticalPriorityInterceptor" />
+   </listeners>
+   <test name="restapi" preserve-order="false">
       <packages>
          <package name="org.alfresco.rest.rm.community.*"/>
       </packages>

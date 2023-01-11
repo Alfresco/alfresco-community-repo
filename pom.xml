@@ -916,7 +916,22 @@
                 <plugin>
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.40.2</version>
+                    <version>0.40.3</version>
+                    <configuration>
+                        <images>
+                            <image>
+                                <build>
+                                    <buildx>
+                                        <platforms>
+                                            <platform>linux/amd64</platform>
+                                            <platform>linux/arm64</platform>
+                                        </platforms>
+                                    </buildx>
+                                    <contextDir>${project.basedir}</contextDir>
+                                </build>
+                            </image>
+                        </images>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>

@@ -207,6 +207,36 @@ public class CategoriesImpl implements Categories
         return categoryNodeRefs.stream().map(this::mapToCategory).collect(Collectors.toList());
     }
 
+    @Override
+    public void unlinkNodeFromCategory(String nodeId, String categoryId, Parameters parameters)
+    {
+        final NodeRef categoryNodeRef = getCategoryNodeRef(categoryId);
+        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        verifyChangePermission(contentNodeRef);
+        verifyNodeType(contentNodeRef);
+
+        if (isCategoryAspectMissing(contentNodeRef))
+        {
+            throw new InvalidArgumentException("Node with id: " + nodeId + "does not belong to a category");
+        }
+        if (isRootCategory(categoryNodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{categoryId});
+        }
+
+        final Serializable currentCategories = nodeService.getProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
+        final Collection<NodeRef> allCategories = removeCategory(currentCategories, categoryNodeRef);
+
+        if (allCategories.size()==0)
+        {
+            nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+            nodeService.removeProperty(categoryNodeRef, ContentModel.PROP_CATEGORIES);
+            return;
+        }
+
+        nodeService.setProperty(contentNodeRef, ContentModel.PROP_CATEGORIES, (Serializable) allCategories);
+    }
+
     private void verifyAdminAuthority()
     {
         if (!authorityService.hasAdminAuthority())
@@ -367,6 +397,21 @@ public class CategoriesImpl implements Categories
         allCategories.addAll(newCategories);
 
         return allCategories;
+    }
+
+    /**
+     * Remove specified category from present categories.
+     * @param currentCategories already present categories.
+     * @param categoryToRemove category that should be removed.
+     * @return updated category list.
+     */
+    private Collection<NodeRef> removeCategory(final Serializable currentCategories, final NodeRef categoryToRemove)
+    {
+        final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
+        final Collection<NodeRef> updatedCategories = new HashSet<>(actualCategories);
+        updatedCategories.remove(categoryToRemove);
+
+        return updatedCategories;
     }
 
     /**

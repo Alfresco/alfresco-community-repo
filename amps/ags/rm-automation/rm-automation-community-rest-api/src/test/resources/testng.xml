@@ -2,7 +2,7 @@
 
 <suite name="TestNG AllTestSuite" configfailurepolicy="continue" verbose="1" time-out="300000">
    <listeners>
-      <listener class-name="org.alfresco.rest.rm.community.utils.AlphabeticalPriorityInterceptor" />
+      <listener class-name="org.alfresco.utility.testng.AlphabeticalPriorityInterceptor" />
    </listeners>
    <test name="restapi" preserve-order="false">
       <packages>

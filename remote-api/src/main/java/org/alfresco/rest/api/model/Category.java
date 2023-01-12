@@ -45,6 +45,11 @@ public class Category
         this.id = id;
     }
 
+    public void setCategoryId(String categoryId)
+    {
+        this.id = categoryId;
+    }
+
     public String getName()
     {
         return name;

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,6 +29,7 @@ package org.alfresco.rest.categories;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
@@ -91,6 +92,27 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         restClient.assertStatusCodeIs(OK);
         updatedCategory.assertThat().isEqualTo(createdSubcategory, IGNORE_FIELD_NAME);
         updatedCategory.assertThat().field(FIELD_NAME).is(categoryNewName);
+    }
+
+    /**
+     * Try to update a category with a name, which is already present within the parent category
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testUpdateCategory_usingRecurringName()
+    {
+        STEP("Prepare as admin two categories under root category");
+        final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
+        final RestCategoryModel secondCreatedCategory = prepareCategoryUnderRoot();
+
+        STEP("Try to update as admin newly created category using name of already present, different category");
+        final String categoryNewName = secondCreatedCategory.getName();
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
+        restClient.authenticateUser(dataUser.getAdminUser())
+            .withCoreAPI()
+            .usingCategory(createdCategory)
+            .updateCategory(fixedCategoryModel);
+
+        restClient.assertStatusCodeIs(CONFLICT);
     }
 
     /**

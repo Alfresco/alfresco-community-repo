@@ -548,7 +548,7 @@
                    <configuration>
                       <images>
                          <image>
-                             <name>${image.name}:${image.tag}</name>
+                            <name>${image.name}:${image.tag}</name>
                          </image>
                       </images>
                    </configuration>
@@ -578,11 +578,11 @@
                       <images>
                          <image>
                             <!-- Quay image -->
-                             <name>${image.registry}/${image.name}:${image.tag}</name>
+                            <name>${image.registry}/${image.name}:${image.tag}</name>
                          </image>
                          <image>
                             <!-- DockerHub image -->
-                             <name>${image.name}:${image.tag}</name>
+                            <name>${image.name}:${image.tag}</name>
                          </image>
                       </images>
                    </configuration>

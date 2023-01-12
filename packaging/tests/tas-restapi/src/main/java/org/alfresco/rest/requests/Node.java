@@ -1113,6 +1113,17 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
+     * Get linked categories performing GET cal on "/nodes/{nodeId}/category-links"
+     *
+     * @return categories which are linked from content
+     */
+    public RestCategoryModelsCollection getLinkedToCategories()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/category-links", repoModel.getNodeRef());
+        return restWrapper.processModels(RestCategoryModelsCollection.class, request);
+    }
+
+    /**
      * Link content to category performing POST call on "/nodes/{nodeId}/category-links"
      *
      * @param categoryLink - contains category ID

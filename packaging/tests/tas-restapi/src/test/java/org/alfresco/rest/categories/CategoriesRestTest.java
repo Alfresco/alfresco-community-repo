@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,8 +30,14 @@ import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestCategoryLinkBodyModel;
 import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
 
@@ -71,6 +77,30 @@ abstract class CategoriesRestTest extends RestTest
         return createdCategory;
     }
 
+    protected List<RestCategoryModel> prepareCategoriesUnderRoot(final int categoriesCount)
+    {
+        return prepareCategoriesUnder(ROOT_CATEGORY_ID, categoriesCount);
+    }
+
+    protected List<RestCategoryModel> prepareCategoriesUnder(final String parentId, final int categoriesCount)
+    {
+        final RestCategoryModel parentCategory = createCategoryModelWithId(parentId);
+        final List<RestCategoryModel> categoryModels = IntStream
+            .range(0, categoriesCount)
+            .mapToObj(i -> createCategoryModelWithName(getRandomName(CATEGORY_NAME_PREFIX)))
+            .collect(Collectors.toList());
+        final List<RestCategoryModel> createdCategories = restClient.authenticateUser(dataUser.getAdminUser())
+            .withCoreAPI()
+            .usingCategory(parentCategory)
+            .createCategoriesList(categoryModels)
+            .getEntries().stream()
+            .map(RestCategoryModel::onModel)
+            .collect(Collectors.toList());
+        restClient.assertStatusCodeIs(CREATED);
+
+        return createdCategories;
+    }
+
     protected RestCategoryModel createCategoryModelWithId(final String id)
     {
         return createCategoryModelWithIdAndName(id, null);
@@ -87,5 +117,19 @@ abstract class CategoriesRestTest extends RestTest
             .id(id)
             .name(name)
             .create();
+    }
+
+    protected RestCategoryLinkBodyModel createCategoryLinkModelWithId(final String id)
+    {
+        final RestCategoryLinkBodyModel categoryLinkModel = new RestCategoryLinkBodyModel();
+        categoryLinkModel.setCategoryId(id);
+        return categoryLinkModel;
+    }
+
+    protected RepoTestModel createNodeModelWithId(final String id)
+    {
+        final RepoTestModel nodeModel = new RepoTestModel() {};
+        nodeModel.setNodeRef(id);
+        return nodeModel;
     }
 }

@@ -154,7 +154,7 @@ public class RMv74UpdateDispositionPropertiesPatch extends AbstractModulePatch
                     Long upperNodeId = nextNodeId + querySize;
 
                     // Get nodes with aspects from node id nextNodeId to upperNodeId, ordered by node id and add/remove the aspect
-                    updateDispositionPropertiesInFolders(upperNodeId);
+                    updateDispositionPropertiesInFolders(currentNodeId, upperNodeId);
                     setNextNodeId();
                 }
 
@@ -163,9 +163,9 @@ public class RMv74UpdateDispositionPropertiesPatch extends AbstractModulePatch
             }, false, true);
         }
 
-        private void updateDispositionPropertiesInFolders(Long upperNodeId)
+        private void updateDispositionPropertiesInFolders(Long currentNode, Long upperNodeId)
         {
-            List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(minNodeId, upperNodeId);
+            List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(currentNode, upperNodeId);
             for (NodeRef folder : folders)
             {
                 recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(folder, null);

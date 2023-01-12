@@ -208,7 +208,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public void unlinkNodeFromCategory(String nodeId, String categoryId, Parameters parameters)
+    public void unlinkNodeFromCategory(final String nodeId, final String categoryId, Parameters parameters)
     {
         final NodeRef categoryNodeRef = getCategoryNodeRef(categoryId);
         final NodeRef contentNodeRef = nodes.validateNode(nodeId);

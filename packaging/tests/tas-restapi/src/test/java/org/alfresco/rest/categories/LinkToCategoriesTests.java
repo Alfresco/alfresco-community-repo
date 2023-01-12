@@ -33,6 +33,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 import javax.json.Json;
 import java.util.Collections;
@@ -393,6 +394,74 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
+    }
+
+    /**
+     * Try to link and unlink content from a created category
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testUnlinkContentFromCategory()
+    {
+        STEP("Link content to created category and expect 201");
+        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkModelWithId(category.getId());
+        final RestCategoryModel linkedCategory = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+
+        restClient.assertStatusCodeIs(CREATED);
+        linkedCategory.assertThat().isEqualTo(category);
+
+        STEP("Verify that category is present in file metadata");
+        RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+
+        fileNode.assertThat().field(ASPECTS_FIELD).contains("cm:generalclassifiable");
+        fileNode.assertThat().field(PROPERTIES_FIELD).contains("cm:categories");
+        fileNode.assertThat().field(PROPERTIES_FIELD).contains(category.getId());
+
+        STEP("Unlink content from created category and expect 204");
+        restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
+        restClient.assertStatusCodeIs(NO_CONTENT);
+
+        STEP("Verify that category isn't present in file metadata");
+        fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+
+        fileNode.assertThat().field(ASPECTS_FIELD).notContains("cm:generalclassifiable");
+        fileNode.assertThat().field(PROPERTIES_FIELD).notContains("cm:categories");
+        fileNode.assertThat().field(PROPERTIES_FIELD).notContains(category.getId());
+    }
+
+    /**
+     * Try to link content to multiple categories and try to unlink content from a single category
+     * Other categories should remain intact and file should keep having "cm:generalclassifiable" aspect
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testUnlinkContentFromCategory_multipleLinkedCategories()
+    {
+        STEP("Create second category under root");
+        final RestCategoryModel secondCategory = prepareCategoryUnderRoot();
+
+        STEP("Link content to created categories and expect 201");
+        final List<RestCategoryLinkBodyModel> categoryLinks = List.of(
+                createCategoryLinkModelWithId(category.getId()),
+                createCategoryLinkModelWithId(secondCategory.getId())
+        );
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinks);
+
+        restClient.assertStatusCodeIs(CREATED);
+        linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(category);
+        linkedCategories.getEntries().get(1).onModel().assertThat().isEqualTo(secondCategory);
+
+        STEP("Unlink content from created category and expect 204");
+        restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
+        restClient.assertStatusCodeIs(NO_CONTENT);
+
+        STEP("Verify that second category is present in file metadata");
+        RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+        fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+
+        fileNode.assertThat().field(ASPECTS_FIELD).contains("cm:generalclassifiable");
+        fileNode.assertThat().field(PROPERTIES_FIELD).contains("cm:categories");
+        fileNode.assertThat().field(PROPERTIES_FIELD).notContains(category.getId());
+        fileNode.assertThat().field(PROPERTIES_FIELD).contains(secondCategory.getId());
+
     }
 
     private void allowPermissionsForUser(final String username, final String role, final FileModel file)

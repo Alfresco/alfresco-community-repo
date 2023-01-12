@@ -1154,7 +1154,7 @@ public class Node extends ModelRequest<Node>
      */
     public void unlinkFromCategory(String categoryId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/category-links/{categoryId}", repoModel.getNodeRef(), categodyId);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/category-links/{categoryId}", repoModel.getNodeRef(), categoryId);
         restWrapper.processEmptyModel(request);
     }
 }

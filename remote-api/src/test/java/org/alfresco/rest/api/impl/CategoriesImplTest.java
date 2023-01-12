@@ -1021,6 +1021,24 @@ public class CategoriesImplTest
     }
 
     @Test
+    public void testUnlinkNodeFromCategory()
+    {
+        given(nodeServiceMock.hasAspect(CONTENT_NODE_REF,ContentModel.ASPECT_GEN_CLASSIFIABLE)).willReturn(true);
+
+        // when
+        objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID, CATEGORY_ID, parametersMock);
+
+        then(nodesMock).should().validateNode(CATEGORY_ID);
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(typeConstraint).should().matches(CONTENT_NODE_REF);
+        then(typeConstraint).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES);
+        then(nodeServiceMock).should().setProperty(eq(CONTENT_NODE_REF),eq(ContentModel.PROP_CATEGORIES),any());
+    }
+
+    @Test
     public void testListCategoriesForNode()
     {
         final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);

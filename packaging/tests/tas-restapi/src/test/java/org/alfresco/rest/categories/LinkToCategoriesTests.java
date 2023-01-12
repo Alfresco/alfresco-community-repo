@@ -455,13 +455,45 @@ public class LinkToCategoriesTests extends CategoriesRestTest
 
         STEP("Verify that second category is present in file metadata");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
-        fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
 
         fileNode.assertThat().field(ASPECTS_FIELD).contains("cm:generalclassifiable");
         fileNode.assertThat().field(PROPERTIES_FIELD).contains("cm:categories");
         fileNode.assertThat().field(PROPERTIES_FIELD).notContains(category.getId());
         fileNode.assertThat().field(PROPERTIES_FIELD).contains(secondCategory.getId());
+    }
 
+    /**
+     * Link content to a category as user with permission and try to unlink content using a user without change permissions
+     */
+    @Test(groups = {TestGroup.REST_API})
+    public void testUnlinkContentFromCategory_asUserWithoutChangePermissionAndGet403()
+    {
+        STEP("Link content to created category and expect 201");
+        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
+        final RestCategoryModel linkedCategory = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+
+        restClient.assertStatusCodeIs(CREATED);
+        linkedCategory.assertThat().isEqualTo(category);
+
+        STEP("Create another user as a consumer for file");
+        final UserModel consumer = dataUser.createRandomTestUser();
+        addPermissionsForUser(consumer.getUsername(), "Consumer", file);
+
+        STEP("Try to unlink content to a category using user without change permission and expect 403");
+        restClient.authenticateUser(consumer).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
+        restClient.assertStatusCodeIs(FORBIDDEN);
+    }
+
+    /**
+     * Try to unlink content from category using non-existing category id and expect 404 (Not Found)
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testUnlinkContentFromCategory_usingNonExistingCategoryAndExpect404()
+    {
+        STEP("Try to unlink content from non-existent category and expect 404");
+        final String nonExistentCategoryId = "non-existent-dummy-id";
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).unlinkFromCategory(nonExistentCategoryId);
+        restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
     private void allowPermissionsForUser(final String username, final String role, final FileModel file)

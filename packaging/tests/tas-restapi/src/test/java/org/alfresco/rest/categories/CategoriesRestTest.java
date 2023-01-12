@@ -121,9 +121,9 @@ abstract class CategoriesRestTest extends RestTest
 
     protected RestCategoryLinkBodyModel createCategoryLinkModelWithId(final String id)
     {
-        final RestCategoryLinkBodyModel categoryLinkModel = new RestCategoryLinkBodyModel();
-        categoryLinkModel.setCategoryId(id);
-        return categoryLinkModel;
+        return RestCategoryLinkBodyModel.builder()
+            .categoryId(id)
+            .create();
     }
 
     protected RepoTestModel createNodeModelWithId(final String id)

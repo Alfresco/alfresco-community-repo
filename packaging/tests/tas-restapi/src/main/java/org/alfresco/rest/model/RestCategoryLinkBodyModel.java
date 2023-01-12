@@ -61,5 +61,28 @@ public class RestCategoryLinkBodyModel extends TestModel implements IRestModel<R
     {
         return "RestCategoryLinkBodyModel{" + "categoryId='" + categoryId + '\'' + '}';
     }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String categoryId;
+
+        public Builder categoryId(String categoryId)
+        {
+            this.categoryId = categoryId;
+            return this;
+        }
+
+        public RestCategoryLinkBodyModel create()
+        {
+            final RestCategoryLinkBodyModel categoryLink = new RestCategoryLinkBodyModel();
+            categoryLink.setCategoryId(categoryId);
+            return categoryLink;
+        }
+    }
 }
  

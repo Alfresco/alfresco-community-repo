@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,12 +27,8 @@ package org.alfresco.repo.search.impl.solr;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.search.impl.AbstractCategoryServiceImpl;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -52,59 +48,30 @@ public class SolrCategoryServiceImpl extends AbstractCategoryServiceImpl
     @Override
     public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count)
     {
-        AspectDefinition definition = dictionaryService.getAspect(aspectName);
-        if(definition == null)
-        {
-            throw new IllegalStateException("Unknown aspect");
-        }
-        QName catProperty = null;
-        Map<QName, PropertyDefinition> properties = definition.getProperties();
-        for(QName pName : properties.keySet())
-        {
-            if(pName.getNamespaceURI().equals(aspectName.getNamespaceURI()))
-            {
-                if(pName.getLocalName().equalsIgnoreCase(aspectName.getLocalName()))
-                {
-                    PropertyDefinition def = properties.get(pName);
-                    if(def.getDataType().getName().equals(DataTypeDefinition.CATEGORY))
-                    {
-                        catProperty = pName;
-                    }
-                }
-            }
-        }
-        if(catProperty == null)
-        {
-            throw new IllegalStateException("Aspect does not have category property mirroring the aspect name");
-        }
-        
-        String field = "@" + catProperty;
-        
-        SearchParameters sp = new SearchParameters();
-        sp.setLanguage(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO);
-        sp.addStore(storeRef);
-        sp.setQuery(catProperty+":*");
-        FieldFacet ff = new FieldFacet(field);
-        ff.setLimitOrNull(count);
-        sp.addFieldFacet(ff);
+        final SearchParameters searchParameters = createSearchTopCategoriesParameters(storeRef, aspectName, count);
+        searchParameters.setLanguage(SearchService.LANGUAGE_INDEX_FTS_ALFRESCO);
+        final String field = searchParameters.getFieldFacets().stream()
+                .map(FieldFacet::getField)
+                .findFirst()
+                .orElse("");
         
         ResultSet resultSet = null;
         try
         {
-            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(sp);
-            List<Pair<String, Integer>> facetCounts = resultSet.getFieldFacet(field);
-            List<Pair<NodeRef, Integer>> answer = new LinkedList<Pair<NodeRef, Integer>>();
+            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(searchParameters);
+            final List<Pair<String, Integer>> facetCounts = resultSet.getFieldFacet(field);
+            final List<Pair<NodeRef, Integer>> answer = new LinkedList<>();
             for (Pair<String, Integer> term : facetCounts)
             {
                 Pair<NodeRef, Integer> toAdd;
-                NodeRef nodeRef = new NodeRef(term.getFirst());
+                final NodeRef nodeRef = new NodeRef(term.getFirst());
                 if (nodeService.exists(nodeRef))
                 {
-                    toAdd = new Pair<NodeRef, Integer>(nodeRef, term.getSecond());
+                    toAdd = new Pair<>(nodeRef, term.getSecond());
                 }
                 else
                 {
-                    toAdd = new Pair<NodeRef, Integer>(null, term.getSecond());
+                    toAdd = new Pair<>(null, term.getSecond());
                 }
                 answer.add(toAdd);
             }

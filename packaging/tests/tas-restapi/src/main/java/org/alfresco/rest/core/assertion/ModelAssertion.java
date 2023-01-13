@@ -343,7 +343,7 @@ public class ModelAssertion<T>
             }
             if (i != fieldContent.lastIndexOf(value))
             {
-                Assert.fail(errorMessage("contains more then one expected value: " + value + ", Current Value: " + fieldValue.toString()));
+                Assert.fail(errorMessage("contains more than one expected value: " + value + ", Current Value: " + fieldValue.toString()));
             }
 
             return (T) model;

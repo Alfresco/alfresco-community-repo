@@ -337,9 +337,13 @@ public class ModelAssertion<T>
         {
             final String fieldContent = fieldValue.toString();
             final int i = fieldContent.indexOf(value);
-            if (i == -1 || i != fieldContent.lastIndexOf(value))
+            if (i == -1)
             {
-                Assert.fail(errorMessage("does NOT contain only once expected value: " + value + ", Current Value: " + fieldValue.toString()));
+                Assert.fail(errorMessage("does NOT contain once expected value: " + value + ", Current Value: " + fieldValue.toString()));
+            }
+            if (i != fieldContent.lastIndexOf(value))
+            {
+                Assert.fail(errorMessage("contains more then one expected value: " + value + ", Current Value: " + fieldValue.toString()));
             }
 
             return (T) model;

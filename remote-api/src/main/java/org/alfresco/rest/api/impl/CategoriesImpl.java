@@ -193,6 +193,7 @@ public class CategoriesImpl implements Categories
             .filter(Objects::nonNull)
             .map(Category::getId)
             .filter(StringUtils::isNotEmpty)
+            .distinct()
             .map(this::getCategoryNodeRef)
             .collect(Collectors.toList());
 

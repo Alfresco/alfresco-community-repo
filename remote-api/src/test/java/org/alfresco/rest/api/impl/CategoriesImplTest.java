@@ -1001,6 +1001,26 @@ public class CategoriesImplTest
     }
 
     @Test
+    public void testLinkNodeToCategories_withTwoSameCategories()
+    {
+        final List<Category> categoryLinks = List.of(CATEGORY, CATEGORY);
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        given(nodesMock.getNode(any())).willReturn(prepareCategoryNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+
+        // when
+        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks);
+
+        final Map<QName, Serializable> expectedProperties = Map.of(ContentModel.PROP_CATEGORIES, (Serializable) List.of(CATEGORY_NODE_REF));
+        then(nodeServiceMock).should().addAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE, expectedProperties);
+        final List<Category> expectedLinkedCategories = List.of(CATEGORY);
+        assertThat(actualLinkedCategories)
+            .isNotNull().usingRecursiveComparison()
+            .isEqualTo(expectedLinkedCategories);
+    }
+
+    @Test
     public void testListCategoriesForNode()
     {
         final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);

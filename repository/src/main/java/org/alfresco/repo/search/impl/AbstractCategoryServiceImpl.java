@@ -589,7 +589,8 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     }
 
     /**
-     * Checks whether give aspect property definition is valid category property
+     * Checks whether given aspect property definition is valid category property
+
      * @param aspectName Aspect name
      * @param propertyDef Aspect property definition.
      * @return is valid category property

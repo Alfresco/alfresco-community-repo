@@ -146,7 +146,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link file to three categories, which from two are the same, and expect two distinct categories in output.
+     * Try to link file to three categories, two of which are the same, and expect two distinct categories in output.
      */
     @Test(groups = { TestGroup.REST_API})
     public void testLinkContentToCategory_withRepeatedCategory()

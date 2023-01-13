@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  transform-core-aio:
+    profiles: ["with-transform-core-aio"]
+    image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
+    environment:
+      JAVA_OPTS: " -Xms256m -Xmx256m"
+    ports:
+      - "8090:8090"
+  postgres:
+    image: postgres:14.4
+    profiles: ["default", "with-transform-core-aio", "postgres"]
+    environment:
+      - POSTGRES_PASSWORD=alfresco
+      - POSTGRES_USER=alfresco
+      - POSTGRES_DB=alfresco
+    command: postgres -c max_connections=300
+    ports:
+      - "5433:5432"
+  activemq:
+    profiles: ["default", "with-transform-core-aio", "activemq"]
+    image: alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
+    ports:
+      - "5672:5672" # AMQP
+      - "61616:61616" # OpenWire

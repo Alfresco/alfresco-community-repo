@@ -30,6 +30,7 @@ import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 import static org.alfresco.rest.api.impl.CategoriesImpl.INVALID_NODE_TYPE;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_A_VALID_CATEGORY;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_NULL_OR_EMPTY;
+import static org.alfresco.rest.api.impl.CategoriesImpl.NO_PERMISSION_TO_CHANGE_CONTENT;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NO_PERMISSION_TO_READ_CONTENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -39,7 +40,6 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -54,6 +54,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Nodes;
@@ -127,6 +128,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(nodesMock.isSubClass(any(), any(), anyBoolean())).willReturn(true);
         given(typeConstraint.matches(any())).willReturn(true);
+        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.ALLOWED);
     }
 
@@ -944,7 +946,7 @@ public class CategoriesImplTest
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
             .isInstanceOf(PermissionDeniedException.class)
-            .hasMessageContaining(NO_PERMISSION_TO_READ_CONTENT);
+            .hasMessageContaining(NO_PERMISSION_TO_CHANGE_CONTENT);
     }
 
     @Test
@@ -996,6 +998,94 @@ public class CategoriesImplTest
         assertThat(actualException)
             .isInstanceOf(InvalidArgumentException.class)
             .hasMessageContaining(NOT_A_VALID_CATEGORY);
+    }
+
+    @Test
+    public void testListCategoriesForNode()
+    {
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn((Serializable) List.of(CATEGORY_NODE_REF));
+        given(nodesMock.getNode(any())).willReturn(prepareCategoryNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+
+        // when
+        final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID);
+
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(typeConstraint).should().matches(CONTENT_NODE_REF);
+        then(typeConstraint).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().getNode(CATEGORY_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES);
+        then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+        then(nodeServiceMock).should().getPrimaryParent(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        final List<Category> expectedCategories = List.of(CATEGORY);
+        assertThat(actualCategories)
+            .isNotNull().usingRecursiveComparison()
+            .isEqualTo(expectedCategories);
+    }
+
+    @Test
+    public void testListCategoriesForNode_withInvalidNodeId()
+    {
+        given(nodesMock.validateNode(CONTENT_NODE_ID)).willThrow(EntityNotFoundException.class);
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
+
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(EntityNotFoundException.class);
+    }
+
+    @Test
+    public void testListCategoriesForNode_withoutPermission()
+    {
+        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.DENIED);
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
+
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(PermissionDeniedException.class)
+            .hasMessageContaining(NO_PERMISSION_TO_READ_CONTENT);
+    }
+
+    @Test
+    public void testListCategoriesForNode_withInvalidNodeType()
+    {
+        given(typeConstraint.matches(any())).willReturn(false);
+
+        // when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
+
+        then(typeConstraint).should().matches(CONTENT_NODE_REF);
+        then(nodeServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(UnsupportedResourceOperationException.class)
+            .hasMessageContaining(INVALID_NODE_TYPE);
+    }
+
+    @Test
+    public void testListCategoriesForNode_withoutLinkedCategories()
+    {
+        Stream.of(null, Collections.emptyList()).forEach(nullOrEmptyList -> {
+            given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn((Serializable) nullOrEmptyList);
+
+            // when
+            final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID);
+
+            assertThat(actualCategories).isNotNull().isEmpty();
+        });
     }
 
     private Node prepareCategoryNode(final String name, final String id, final NodeRef parentNodeRef)

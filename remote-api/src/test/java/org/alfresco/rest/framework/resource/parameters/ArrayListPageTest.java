@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,7 +28,6 @@ package org.alfresco.rest.framework.resource.parameters;
 
 import junit.framework.TestCase;
 import org.alfresco.rest.framework.resource.SerializablePagedCollection;
-import org.alfresco.service.Experimental;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -42,7 +41,6 @@ import java.util.Random;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-@Experimental
 @RunWith(MockitoJUnitRunner.class)
 public class ArrayListPageTest extends TestCase
 {

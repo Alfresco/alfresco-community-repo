@@ -60,13 +60,13 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     private static final String ASPECTS_FIELD = "aspectNames";
     private static final String PROPERTIES_FIELD = "properties";
 
-    private UserModel user;
     private SiteModel site;
     private FolderModel folder;
     private FileModel file;
     private RestCategoryModel category;
 
     @BeforeClass(alwaysRun = true)
+    @Override
     public void dataPreparation()
     {
         STEP("Create user and a site");
@@ -96,8 +96,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         fileNode.assertThat().field(PROPERTIES_FIELD).notContains("cm:categories");
 
         STEP("Link content to created category and expect 201");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
-        final RestCategoryModel linkedCategory = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        final RestCategoryModel linkedCategory = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(CREATED);
         linkedCategory.assertThat().isEqualTo(category);
@@ -126,11 +126,11 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         final RestCategoryModel secondCategory = prepareCategoryUnderRoot();
 
         STEP("Link content to created categories and expect 201");
-        final List<RestCategoryLinkBodyModel> categoryLinks = List.of(
-            createCategoryLinkWithId(category.getId()),
-            createCategoryLinkWithId(secondCategory.getId())
+        final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
+            createCategoryLinkModelWithId(category.getId()),
+            createCategoryLinkModelWithId(secondCategory.getId())
         );
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinks);
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
 
         restClient.assertStatusCodeIs(CREATED);
         linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(category);
@@ -152,18 +152,18 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     public void testLinkContentToCategory_usingContentWithAlreadyLinkedCategories()
     {
         STEP("Link content to created category");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
         restClient.assertStatusCodeIs(CREATED);
 
         STEP("Create second and third category under root, link content to them and expect 201");
         final RestCategoryModel secondCategory = prepareCategoryUnderRoot();
         final RestCategoryModel thirdCategory = prepareCategoryUnderRoot();
-        final List<RestCategoryLinkBodyModel> categoryLinks = List.of(
-            createCategoryLinkWithId(secondCategory.getId()),
-            createCategoryLinkWithId(thirdCategory.getId())
+        final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
+            createCategoryLinkModelWithId(secondCategory.getId()),
+            createCategoryLinkModelWithId(thirdCategory.getId())
         );
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinks);
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
 
         restClient.assertStatusCodeIs(CREATED);
         linkedCategories.assertThat().entriesListCountIs(2);
@@ -186,9 +186,9 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     public void testLinkContentToCategory_asUserWithoutReadPermissionAndExpect403()
     {
         STEP("Try to link content to a category using user without read permission and expect 403");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
         final UserModel userWithoutRights = dataUser.createRandomTestUser();
-        restClient.authenticateUser(userWithoutRights).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        restClient.authenticateUser(userWithoutRights).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
     }
@@ -201,11 +201,11 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     {
         STEP("Create another user as a consumer for file");
         final UserModel consumer = dataUser.createRandomTestUser();
-        addPermissionsForUser(consumer.getUsername(), "Consumer", file);
+        allowPermissionsForUser(consumer.getUsername(), "Consumer", file);
 
         STEP("Try to link content to a category using user without change permission and expect 403");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
-        restClient.authenticateUser(consumer).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        restClient.authenticateUser(consumer).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
     }
@@ -226,8 +226,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         dataUser.removeUserFromSite(user, privateSite);
 
         STEP("Try to link content to a category as owner and expect 201");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFile).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFile).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(CREATED);
     }
@@ -240,8 +240,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     {
         STEP("Try to link content to non-existing category and expect 404");
         final String nonExistingCategoryId = "non-existing-dummy-id";
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(nonExistingCategoryId);
-        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(nonExistingCategoryId);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
@@ -266,8 +266,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     {
         STEP("Try to call link content API with empty category ID and expect 400");
         final String nonExistingCategoryId = StringUtils.EMPTY;
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(nonExistingCategoryId);
-        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(nonExistingCategoryId);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
     }
@@ -279,8 +279,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     public void testLinkFolderToCategory()
     {
         STEP("Link folder node to category");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(CREATED);
     }
@@ -292,11 +292,10 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect405()
     {
         STEP("Try to link a tag to category and expect 405");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
-        final RepoTestModel tagNode = new RepoTestModel() {};
-        tagNode.setNodeRef(tag.getId());
-        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(tagNode).linkToCategory(categoryLink);
+        final RepoTestModel tagNode = createNodeModelWithId(tag.getId());
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(tagNode).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(METHOD_NOT_ALLOWED);
     }
@@ -308,8 +307,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     public void testLinkContentToCategory_usingFolderInsteadOfCategoryAndExpect400()
     {
         STEP("Try to link content to non-category and expect 400");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(folder.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(folder.getNodeRef());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
     }
@@ -321,30 +320,22 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     public void testLinkContentToCategory_usingRootCategoryAndExpect400()
     {
         STEP("Try to link content to root category and expect 400");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(ROOT_CATEGORY_ID);
-        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(ROOT_CATEGORY_ID);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
     }
 
-    private RestCategoryLinkBodyModel createCategoryLinkWithId(final String id)
-    {
-        final RestCategoryLinkBodyModel categoryLink = new RestCategoryLinkBodyModel();
-        categoryLink.setCategoryId(id);
-        return categoryLink;
-    }
-
-    private void addPermissionsForUser(final String username, final String role, final FileModel file)
+    private void allowPermissionsForUser(final String username, final String role, final FileModel file)
     {
         final String putPermissionsBody = Json.createObjectBuilder().add("permissions",
                 Json.createObjectBuilder()
                     .add("isInheritanceEnabled", true)
                     .add("locallySet", Json.createObjectBuilder()
                         .add("authorityId", username)
-                        .add("name", role).add("accessStatus", "ALLOWED")))
-            .build()
-            .toString();
-
+                        .add("name", role)
+                        .add("accessStatus", "ALLOWED")))
+            .build().toString();
         restClient.authenticateUser(user).withCoreAPI().usingNode(file).updateNode(putPermissionsBody);
     }
 }

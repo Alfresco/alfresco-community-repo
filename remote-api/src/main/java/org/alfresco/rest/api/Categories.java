@@ -54,7 +54,17 @@ public interface Categories
     void deleteCategoryById(String id, Parameters parameters);
 
     /**
-     * Link node to categories. Node types allowed for categorization are specified within {@link org.alfresco.util.TypeConstraint}.
+     * Get categories linked from node. Read permission on node is required.
+     * Node type is restricted to specified vales from: {@link org.alfresco.util.TypeConstraint}.
+     *
+     * @param nodeId Node ID.
+     * @return Categories linked from node.
+     */
+    List<Category> listCategoriesForNode(String nodeId);
+
+    /**
+     * Link node to categories. Change permission on node is required.
+     * Node types allowed for categorization are specified within {@link org.alfresco.util.TypeConstraint}.
      *
      * @param nodeId Node ID.
      * @param categoryLinks Category IDs to which content should be linked to.

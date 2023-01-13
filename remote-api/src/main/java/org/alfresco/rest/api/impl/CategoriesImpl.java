@@ -32,6 +32,7 @@ import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISS
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,7 @@ public class CategoriesImpl implements Categories
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
+    static final String NO_PERMISSION_TO_CHANGE_CONTENT = "Current user does not have change permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
     static final String INVALID_NODE_TYPE = "Cannot categorize this node type";
 
@@ -159,6 +161,23 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
+    public List<Category> listCategoriesForNode(final String nodeId)
+    {
+        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        verifyReadPermission(contentNodeRef);
+        verifyNodeType(contentNodeRef);
+
+        final Serializable currentCategories = nodeService.getProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
+        if (currentCategories == null)
+        {
+            return Collections.emptyList();
+        }
+        final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
+
+        return actualCategories.stream().map(this::mapToCategory).collect(Collectors.toList());
+    }
+
+    @Override
     public List<Category> linkNodeToCategories(final String nodeId, final List<Category> categoryLinks)
     {
         if (CollectionUtils.isEmpty(categoryLinks))
@@ -195,11 +214,19 @@ public class CategoriesImpl implements Categories
         }
     }
 
+    private void verifyReadPermission(final NodeRef nodeRef)
+    {
+        if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+        {
+            throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
+        }
+    }
+
     private void verifyChangePermission(final NodeRef nodeRef)
     {
         if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
         {
-            throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
+            throw new PermissionDeniedException(NO_PERMISSION_TO_CHANGE_CONTENT);
         }
     }
 

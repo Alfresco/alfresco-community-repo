@@ -51,7 +51,6 @@ public interface SerializablePagedCollection<T>
 
     /**
      * Indicates the total number of items available.
-     *
      * Can be greater than the number of items returned in the list.
      *
      */

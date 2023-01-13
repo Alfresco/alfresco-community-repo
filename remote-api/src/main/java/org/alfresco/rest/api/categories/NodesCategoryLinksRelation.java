@@ -35,10 +35,12 @@ import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RelationshipResource(name = "category-links", entityResource = NodesEntityResource.class, title = "Category links")
-public class NodesCategoryLinksRelation implements RelationshipResourceAction.Create<Category>
+public class NodesCategoryLinksRelation implements RelationshipResourceAction.Read<Category>, RelationshipResourceAction.Create<Category>
 {
 
     private final Categories categories;
@@ -49,11 +51,25 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
     }
 
     /**
+     * GET /nodes/{nodeId}/category-links
+     */
+    @WebApiDescription(
+        title = "Get categories linked to by node",
+        description = "Get categories linked to by node",
+        successStatus = HttpServletResponse.SC_OK
+    )
+    @Override
+    public CollectionWithPagingInfo<Category> readAll(String nodeId, Parameters parameters)
+    {
+        return ListPage.of(categories.listCategoriesForNode(nodeId), parameters.getPaging());
+    }
+
+    /**
      * POST /nodes/{nodeId}/category-links
      */
     @WebApiDescription(
-        title = "Link content node to categories",
-        description = "Creates a link between a content node and categories",
+        title = "Link node to categories",
+        description = "Creates a link between a node and categories",
         successStatus = HttpServletResponse.SC_CREATED
     )
     @Override

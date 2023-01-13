@@ -161,7 +161,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public List<Category> getLinkedToCategories(final String nodeId)
+    public List<Category> listCategoriesForNode(final String nodeId)
     {
         final NodeRef contentNodeRef = nodes.validateNode(nodeId);
         verifyReadPermission(contentNodeRef);

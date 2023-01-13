@@ -61,12 +61,12 @@ public class NodesCategoryLinksRelationTest
     @Test
     public void testReadAll()
     {
-        given(categoriesMock.getLinkedToCategories(any())).willReturn(List.of(categoryMock));
+        given(categoriesMock.listCategoriesForNode(any())).willReturn(List.of(categoryMock));
 
         // when
         final CollectionWithPagingInfo<Category> actualCategoriesPage = objectUnderTest.readAll(CONTENT_ID, parametersMock);
 
-        then(categoriesMock).should().getLinkedToCategories(CONTENT_ID);
+        then(categoriesMock).should().listCategoriesForNode(CONTENT_ID);
         then(categoriesMock).shouldHaveNoMoreInteractions();
         assertThat(actualCategoriesPage)
             .isNotNull()

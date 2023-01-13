@@ -1001,7 +1001,7 @@ public class CategoriesImplTest
     }
 
     @Test
-    public void testGetLinkedToCategories()
+    public void testListCategoriesForNode()
     {
         final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
@@ -1010,7 +1010,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
 
         // when
-        final List<Category> actualCategories = objectUnderTest.getLinkedToCategories(CONTENT_NODE_ID);
+        final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID);
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
@@ -1031,12 +1031,12 @@ public class CategoriesImplTest
     }
 
     @Test
-    public void testGetLinkedToCategories_withInvalidNodeId()
+    public void testListCategoriesForNode_withInvalidNodeId()
     {
         given(nodesMock.validateNode(CONTENT_NODE_ID)).willThrow(EntityNotFoundException.class);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.getLinkedToCategories(CONTENT_NODE_ID));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(nodeServiceMock).shouldHaveNoInteractions();
@@ -1045,12 +1045,12 @@ public class CategoriesImplTest
     }
 
     @Test
-    public void testGetLinkedToCategories_withoutPermission()
+    public void testListCategoriesForNode_withoutPermission()
     {
         given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.DENIED);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.getLinkedToCategories(CONTENT_NODE_ID));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
@@ -1061,12 +1061,12 @@ public class CategoriesImplTest
     }
 
     @Test
-    public void testGetLinkedToCategories_withInvalidNodeType()
+    public void testListCategoriesForNode_withInvalidNodeType()
     {
         given(typeConstraint.matches(any())).willReturn(false);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.getLinkedToCategories(CONTENT_NODE_ID));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
 
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
@@ -1076,13 +1076,13 @@ public class CategoriesImplTest
     }
 
     @Test
-    public void testGetLinkedToCategories_withoutLinkedCategories()
+    public void testListCategoriesForNode_withoutLinkedCategories()
     {
         Stream.of(null, Collections.emptyList()).forEach(nullOrEmptyList -> {
             given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn((Serializable) nullOrEmptyList);
 
             // when
-            final List<Category> actualCategories = objectUnderTest.getLinkedToCategories(CONTENT_NODE_ID);
+            final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID);
 
             assertThat(actualCategories).isNotNull().isEmpty();
         });

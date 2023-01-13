@@ -61,7 +61,7 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Re
     @Override
     public CollectionWithPagingInfo<Category> readAll(String nodeId, Parameters parameters)
     {
-        return ListPage.of(categories.getLinkedToCategories(nodeId), parameters.getPaging());
+        return ListPage.of(categories.listCategoriesForNode(nodeId), parameters.getPaging());
     }
 
     /**

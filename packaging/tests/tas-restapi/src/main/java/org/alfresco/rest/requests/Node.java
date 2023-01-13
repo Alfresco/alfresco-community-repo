@@ -1117,7 +1117,7 @@ public class Node extends ModelRequest<Node>
      *
      * @return categories which are linked from content
      */
-    public RestCategoryModelsCollection getLinkedToCategories()
+    public RestCategoryModelsCollection getLinkedCategories()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/category-links", repoModel.getNodeRef());
         return restWrapper.processModels(RestCategoryModelsCollection.class, request);

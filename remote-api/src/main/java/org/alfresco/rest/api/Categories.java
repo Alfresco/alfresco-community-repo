@@ -60,7 +60,7 @@ public interface Categories
      * @param nodeId Node ID.
      * @return Categories linked from node.
      */
-    List<Category> getLinkedToCategories(String nodeId);
+    List<Category> listCategoriesForNode(String nodeId);
 
     /**
      * Link node to categories. Change permission on node is required.

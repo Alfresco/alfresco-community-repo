@@ -52,7 +52,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-public class GetCategoryLinksTests extends CategoriesRestTest
+public class ListCategoriesForNodeTests extends CategoriesRestTest
 {
 
     private SiteModel site;
@@ -82,14 +82,14 @@ public class GetCategoryLinksTests extends CategoriesRestTest
      * Get one linked category using file
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testGetSingleLinkedToCategory_usingFile()
+    public void testListSingleCategoryForNode_usingFile()
     {
         STEP("Link file to category");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkModelWithId(category.getId());
         final RestCategoryModel linkedCategory = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
 
         STEP("Get linked category");
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getLinkedToCategories();
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getLinkedCategories();
 
         restClient.assertStatusCodeIs(OK);
         linkedCategories.assertThat().entriesListCountIs(1);
@@ -100,14 +100,14 @@ public class GetCategoryLinksTests extends CategoriesRestTest
      * Get one linked category using folder
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testGetSingleLinkedToCategory_usingFolder()
+    public void testListSingleCategoryForNode_usingFolder()
     {
         STEP("Link folder to category");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkModelWithId(category.getId());
         final RestCategoryModel linkedCategory = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).linkToCategory(categoryLink);
 
         STEP("Get linked category");
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).getLinkedToCategories();
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).getLinkedCategories();
 
         restClient.assertStatusCodeIs(OK);
         linkedCategories.assertThat().entriesListCountIs(1);
@@ -118,7 +118,7 @@ public class GetCategoryLinksTests extends CategoriesRestTest
      * Get multiple linked categories using file
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testGetMultipleLinkedToCategories_usingFile()
+    public void testListMultipleCategoriesForNode_usingFile()
     {
         STEP("Create multiple categories under root");
         final List<RestCategoryModel> createdCategories = prepareCategoriesUnderRoot(10);
@@ -133,7 +133,7 @@ public class GetCategoryLinksTests extends CategoriesRestTest
         ).getEntries();
 
         STEP("Get categories which are linked from file and compare them to created category links");
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getLinkedToCategories();
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getLinkedCategories();
 
         restClient.assertStatusCodeIs(OK);
         linkedCategories.assertThat().entriesListCountIs(createdCategoryLinks.size());
@@ -146,10 +146,10 @@ public class GetCategoryLinksTests extends CategoriesRestTest
      * Try to get linked categories for content which is not linked to any category
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testGetLinkedToCategories_withoutLinkedCategories()
+    public void testListCategoriesForNode_withoutLinkedCategories()
     {
         STEP("Try to get linked categories and expect empty list");
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getLinkedToCategories();
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getLinkedCategories();
 
         restClient.assertStatusCodeIs(OK);
         linkedCategories.assertThat().entriesListIsEmpty();
@@ -159,11 +159,11 @@ public class GetCategoryLinksTests extends CategoriesRestTest
      * Try to get linked categories using non-existing node and expect 404 (Not Found)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testGetLinkedToCategories_usingNonExistingNodeAndExpect404()
+    public void testListCategoriesForNode_usingNonExistingNodeAndExpect404()
     {
         STEP("Try to get linked categories for non-existing node and expect 404");
         final RepoTestModel nonExistingNode = createNodeModelWithId("non-existing-id");
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistingNode).getLinkedToCategories();
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistingNode).getLinkedCategories();
 
         restClient.assertStatusCodeIs(NOT_FOUND);
         linkedCategories.assertThat().entriesListIsEmpty();
@@ -173,7 +173,7 @@ public class GetCategoryLinksTests extends CategoriesRestTest
      * Try to get multiple linked categories as user without read permission and expect 403 (Forbidden)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testGetLinkedToCategories_asUserWithoutReadPermissionAndExpect403()
+    public void testListCategoriesForNode_asUserWithoutReadPermissionAndExpect403()
     {
         STEP("Link content to category");
         final RestCategoryLinkBodyModel categoryLink = createCategoryLinkModelWithId(category.getId());
@@ -184,7 +184,7 @@ public class GetCategoryLinksTests extends CategoriesRestTest
         denyPermissionsForUser(userWithoutRights.getUsername(), "Consumer", file);
 
         STEP("Try to get linked categories using user without read permission and expect 403");
-        restClient.authenticateUser(userWithoutRights).withCoreAPI().usingNode(file).getLinkedToCategories();
+        restClient.authenticateUser(userWithoutRights).withCoreAPI().usingNode(file).getLinkedCategories();
 
         restClient.assertStatusCodeIs(FORBIDDEN);
     }
@@ -193,14 +193,14 @@ public class GetCategoryLinksTests extends CategoriesRestTest
      * Try to get linked categories using tag instead of a content and expect 405 (Method Not Allowed)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testGetLinkedToCategories_usingTagInsteadOfContentAndExpect405()
+    public void testListCategoriesForNode_usingTagInsteadOfContentAndExpect405()
     {
         STEP("Add tag to file");
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
         final RepoTestModel tagNode = createNodeModelWithId(tag.getId());
 
         STEP("Try to get linked categories for a tag and expect 405");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(tagNode).getLinkedToCategories();
+        restClient.authenticateUser(user).withCoreAPI().usingNode(tagNode).getLinkedCategories();
 
         restClient.assertStatusCodeIs(METHOD_NOT_ALLOWED);
     }

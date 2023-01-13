@@ -1001,7 +1001,7 @@ public class CategoriesImplTest
     }
 
     @Test
-    public void testLinkNodeToCategories_withTwoSameCategories()
+    public void testLinkNodeToCategories_withTwoIdenticalCategories()
     {
         final List<Category> categoryLinks = List.of(CATEGORY, CATEGORY);
         final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);

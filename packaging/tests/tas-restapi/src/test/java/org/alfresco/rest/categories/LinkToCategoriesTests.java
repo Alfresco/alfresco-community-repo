@@ -207,7 +207,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(category);
         linkedCategories.getEntries().get(1).onModel().assertThat().isEqualTo(secondCategory);
 
-        STEP("Verify if repeated category was ignored and only two are categories present in file metadata");
+        STEP("Verify if repeated category was ignored and only two categories are present in file metadata");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
 
         fileNode.assertThat().field(PROPERTIES_FIELD).containsOnce(category.getId());

@@ -54,7 +54,7 @@ public class AlfrescoScriptThreadMxBeanWrapper
         return -1;
     }
 
-    public void checkThreadAllocatedMemory()
+    private void checkThreadAllocatedMemory()
     {
         try
         {

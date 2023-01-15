@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.jscript;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.mozilla.javascript.Context;
 
 /**
@@ -36,8 +38,36 @@ public class AlfrescoScriptContext extends Context
 {
     private long startTime;
     private long threadId;
-    private long startMemory;
+    private long startMemory = -1;
     private boolean limitsEnabled = false;
+    private AlfrescoScriptThreadMxBeanWrapper threadMxBeanWrapper = null;
+
+    public void setStartMemory()
+    {
+        if (isMemoryLimitSupported())
+        {
+            startMemory = threadMxBeanWrapper.getThreadAllocatedBytes(threadId);
+        }
+    }
+
+    public long getUsedMemory()
+    {
+        long usedMemory = -1;
+
+        if (isMemoryLimitSupported())
+        {
+            long currentAllocatedBytes = threadMxBeanWrapper.getThreadAllocatedBytes(threadId);
+            usedMemory = currentAllocatedBytes - startMemory;
+        }
+
+        return usedMemory;
+    }
+
+    public boolean isMemoryLimitSupported()
+    {
+        AlfrescoScriptThreadMxBeanWrapper tmxw = getThreadMxBeanWrapper();
+        return tmxw != null && tmxw.isThreadAllocatedMemorySupported();
+    }
 
     public long getStartTime()
     {
@@ -77,5 +107,20 @@ public class AlfrescoScriptContext extends Context
     public void setLimitsEnabled(boolean limitsEnabled)
     {
         this.limitsEnabled = limitsEnabled;
+    }
+
+    public AlfrescoScriptThreadMxBeanWrapper getThreadMxBeanWrapper()
+    {
+        if (threadMxBeanWrapper == null)
+        {
+            threadMxBeanWrapper = new AlfrescoScriptThreadMxBeanWrapper();
+        }
+
+        return threadMxBeanWrapper;
+    }
+
+    public void setThreadMxBeanWrapper(AlfrescoScriptThreadMxBeanWrapper threadMxBeanWrapper)
+    {
+        this.threadMxBeanWrapper = threadMxBeanWrapper;
     }
 }

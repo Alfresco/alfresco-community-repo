@@ -230,7 +230,7 @@ public class CategoriesImpl implements Categories
         if (allCategories.size()==0)
         {
             nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
-            nodeService.removeProperty(categoryNodeRef, ContentModel.PROP_CATEGORIES);
+            nodeService.removeProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
             return;
         }
 

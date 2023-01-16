@@ -25,10 +25,10 @@
  * #L%
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v74;
-
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
@@ -47,14 +47,11 @@ public class RMv74UpdateDispositionPropertiesPatch extends AbstractModulePatch
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RMv74UpdateDispositionPropertiesPatch.class);
     private NodeDAO nodeDAO;
-
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
-
     private RecordsManagementQueryDAO recordsManagementQueryDAO;
-
     private RecordsManagementSearchBehaviour recordsManagementSearchBehaviour;
-
+    private DispositionService dispositionService;
     /** How many operations in a transaction */
     private int batchSize = 1000;
     /** How many nodes do we query each time */
@@ -87,7 +84,10 @@ public class RMv74UpdateDispositionPropertiesPatch extends AbstractModulePatch
     {
         this.recordsManagementSearchBehaviour = recordsManagementSearchBehaviour;
     }
-
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
     @Override
     public void applyInternal()
     {
@@ -145,17 +145,24 @@ public class RMv74UpdateDispositionPropertiesPatch extends AbstractModulePatch
             resetCounter();
 
             transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-
+                LOGGER.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^calling process ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
                 Long currentNodeId = nextNodeId;
                 // While we haven't reached our batchSize and still have nodes to verify, keep processing
                 while (counter < batchSize && nextNodeId <= maxNodeId)
                 {
                     // Set upper value for query
                     Long upperNodeId = nextNodeId + querySize;
-
+                    LOGGER.debug("calling update desposition batch process batch start node {} and  nodes upper node ",                                    nextNodeId,
+                            nextNodeId, upperNodeId);
                     // Get nodes with aspects from node id nextNodeId to upperNodeId, ordered by node id and add/remove the aspect
                     updateDispositionPropertiesInFolders(currentNodeId, upperNodeId);
                     setNextNodeId();
+
+                    if (nextNodeId >= maxNodeId)
+                    {
+                        // stop processing since we have meet our limit
+                        break;
+                    }
                 }
 
                 LOGGER.debug("Processed batch [{},{}]. Changed nodes: {}", currentNodeId, lastNodeProcessed, counter);
@@ -168,7 +175,13 @@ public class RMv74UpdateDispositionPropertiesPatch extends AbstractModulePatch
             List<NodeRef> folders = recordsManagementQueryDAO.getRecordFoldersWithSchedules(currentNode, upperNodeId);
             for (NodeRef folder : folders)
             {
-                recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(folder, null);
+                DispositionSchedule schedule = dispositionService.getDispositionSchedule(folder);
+                if (schedule != null && !schedule.isRecordLevelDisposition())
+                {
+                    LOGGER.debug("Processing folder [{},{}]. moved with node ref: {}", folder);
+                    recordsManagementSearchBehaviour.onAddDispositionLifecycleAspect(folder, null);
+                    LOGGER.debug("Processed folder [{},{}]. moved with node ref: {}", folder);
+                }
                 lastNodeProcessed = nodeDAO.getNodePair(folder).getFirst();
                 incrementCounter();
             }

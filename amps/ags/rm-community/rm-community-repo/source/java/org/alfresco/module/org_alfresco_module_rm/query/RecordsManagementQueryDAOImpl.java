@@ -265,10 +265,15 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     public List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end)
     {
         Map<String, Object> params = new HashMap<>(2);
-        params.put("processed", qnameDAO.getQName(ASPECT_DISPOSITION_PROCESSED)
-            .getFirst());
-        params.put("folderQnameId", qnameDAO.getQName(TYPE_RECORD_FOLDER)
-            .getFirst());
+        Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_DISPOSITION_PROCESSED);
+
+        if( aspectPair != null )
+            params.put("processed", aspectPair.getFirst());
+
+        Pair<Long, QName> recordFolderPair = qnameDAO.getQName(TYPE_RECORD_FOLDER);
+        if( recordFolderPair != null)
+            params.put("folderQnameId", recordFolderPair.getFirst())
+                    ;
         params.put("start", start);
         params.put("end", end);
 

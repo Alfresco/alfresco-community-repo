@@ -18,5 +18,6 @@
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <property name="recordsManagementQueryDAO" ref="recordsManagementQueryDAO"/>
       <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
+      <property name="dispositionService" ref="dispositionService"/>
    </bean>
 </beans>

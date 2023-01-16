@@ -453,7 +453,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
         restClient.assertStatusCodeIs(NO_CONTENT);
 
-        STEP("Verify that second category is present in file metadata");
+        STEP("Verify that second category is still present in file metadata");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
 
         fileNode.assertThat().field(ASPECTS_FIELD).contains("cm:generalclassifiable");

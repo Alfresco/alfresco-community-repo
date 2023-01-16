@@ -146,6 +146,75 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
+     * Try to link file to three categories, two of which are the same, and expect two distinct categories in output.
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testLinkContentToCategory_withRepeatedCategory()
+    {
+        STEP("Check if file is not linked to any category");
+        RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+
+        fileNode.assertThat().field(ASPECTS_FIELD).notContains("cm:generalclassifiable");
+        fileNode.assertThat().field(PROPERTIES_FIELD).notContains("cm:categories");
+
+        STEP("Link content to three (one repeated) categories and expect 201");
+        final RestCategoryModel secondCategory = prepareCategoryUnderRoot();
+        final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
+            createCategoryLinkModelWithId(category.getId()),
+            createCategoryLinkModelWithId(secondCategory.getId()),
+            createCategoryLinkModelWithId(category.getId())
+        );
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
+
+        restClient.assertStatusCodeIs(CREATED);
+        linkedCategories.assertThat().entriesListCountIs(2);
+        linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(category);
+        linkedCategories.getEntries().get(1).onModel().assertThat().isEqualTo(secondCategory);
+
+        STEP("Verify if repeated category was ignored and only two categories are present in file metadata");
+        fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+
+        fileNode.assertThat().field(PROPERTIES_FIELD).containsOnce(category.getId());
+        fileNode.assertThat().field(PROPERTIES_FIELD).containsOnce(secondCategory.getId());
+    }
+
+    /**
+     * Try to link file to already linked category and expect distinct categories in response.
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testLinkContentToCategory_usingAlreadyLinkedCategory()
+    {
+        STEP("Create second category under root");
+        final RestCategoryModel secondCategory = prepareCategoryUnderRoot();
+
+        STEP("Link file to one category");
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLinkModel);
+        RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+
+        fileNode.assertThat().field(PROPERTIES_FIELD).containsOnce(category.getId());
+        fileNode.assertThat().field(PROPERTIES_FIELD).notContains(secondCategory.getId());
+
+        STEP("Link content to two categories using one already linked before to and expect 201");
+        final List<RestCategoryLinkBodyModel> categoryLinkModels = List.of(
+            createCategoryLinkModelWithId(category.getId()),
+            createCategoryLinkModelWithId(secondCategory.getId())
+        );
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinkModels);
+
+        restClient.assertStatusCodeIs(CREATED);
+        linkedCategories.assertThat().entriesListCountIs(2);
+        linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(category);
+        linkedCategories.getEntries().get(1).onModel().assertThat().isEqualTo(secondCategory);
+
+        STEP("Verify if repeated category was ignored and only two categories are present in file metadata");
+        fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(file).getNode();
+
+        fileNode.assertThat().field(PROPERTIES_FIELD).containsOnce(category.getId());
+        fileNode.assertThat().field(PROPERTIES_FIELD).containsOnce(secondCategory.getId());
+    }
+
+    /**
      * Link content, which already has some linked category to new ones and verify if all categories are present in node's properties
      */
     @Test(groups = { TestGroup.REST_API})

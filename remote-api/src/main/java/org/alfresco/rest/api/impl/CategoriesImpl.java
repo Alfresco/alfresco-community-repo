@@ -217,7 +217,7 @@ public class CategoriesImpl implements Categories
 
         if (isCategoryAspectMissing(contentNodeRef))
         {
-            throw new InvalidArgumentException("Node with id: " + nodeId + "does not belong to a category");
+            throw new InvalidArgumentException("Node with id: " + nodeId + " does not belong to a category");
         }
         if (isRootCategory(categoryNodeRef))
         {

@@ -449,7 +449,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(category);
         linkedCategories.getEntries().get(1).onModel().assertThat().isEqualTo(secondCategory);
 
-        STEP("Unlink content from created category and expect 204");
+        STEP("Unlink content from first category and expect 204");
         restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
         restClient.assertStatusCodeIs(NO_CONTENT);
 

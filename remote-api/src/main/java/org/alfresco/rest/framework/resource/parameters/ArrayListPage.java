@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,13 +27,11 @@
 package org.alfresco.rest.framework.resource.parameters;
 
 import org.alfresco.rest.api.search.context.SearchContext;
-import org.alfresco.service.Experimental;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Experimental
 public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
 {
     private final Paging paging;

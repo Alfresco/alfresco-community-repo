@@ -47,8 +47,6 @@ public class AlfrescoContextFactory extends ContextFactory
     private long maxMemoryUsedInBytes = -1L;
     private int observeInstructionCount = -1;
 
-    private AlfrescoScriptThreadMxBeanWrapper threadMxBeanWrapper;
-
     private final int INTERPRETIVE_MODE = -1;
 
     @Override
@@ -74,23 +72,13 @@ public class AlfrescoContextFactory extends ContextFactory
             }
         }
 
-        // Memory limit
-        if (maxMemoryUsedInBytes > 0)
-        {
-            context.setThreadId(Thread.currentThread().getId());
-        }
+        // Memory control
+        context.setThreadId(Thread.currentThread().getId());
+        context.setThreadMxBeanWrapper(new AlfrescoScriptThreadMxBeanWrapper());
+        context.setStartMemory();
 
-        // Max stack depth
-        if (maxStackDepth > 0)
-        {
-            if (optimizationLevel != INTERPRETIVE_MODE)
-            {
-                LOGGER.warn("Changing optimization level from " + optimizationLevel + " to " + INTERPRETIVE_MODE);
-            }
-            // stack depth can only be set when no optimizations are applied
-            context.setOptimizationLevel(INTERPRETIVE_MODE);
-            context.setMaximumInterpreterStackDepth(maxStackDepth);
-        }
+        // Max call stack depth
+        setMaxStackDepth(context, true);
 
         return context;
     }
@@ -112,18 +100,16 @@ public class AlfrescoContextFactory extends ContextFactory
                 }
             }
 
-            // Memory
-            if (maxMemoryUsedInBytes > 0 && threadMxBeanWrapper != null && threadMxBeanWrapper.isThreadAllocatedMemorySupported())
+            // Memory limit
+            if (maxMemoryUsedInBytes > 0 && acx.isMemoryLimitSupported())
             {
-
                 if (acx.getStartMemory() <= 0)
                 {
-                    acx.setStartMemory(threadMxBeanWrapper.getThreadAllocatedBytes(acx.getThreadId()));
+                    acx.setStartMemory();
                 }
                 else
                 {
-                    long currentAllocatedBytes = threadMxBeanWrapper.getThreadAllocatedBytes(acx.getThreadId());
-                    if (currentAllocatedBytes - acx.getStartMemory() >= maxMemoryUsedInBytes)
+                    if (acx.getUsedMemory() >= maxMemoryUsedInBytes)
                     {
                         throw new Error("Memory limit of " + maxMemoryUsedInBytes + " bytes reached");
                     }
@@ -137,7 +123,38 @@ public class AlfrescoContextFactory extends ContextFactory
     {
         AlfrescoScriptContext acx = (AlfrescoScriptContext) cx;
         acx.setStartTime(System.currentTimeMillis());
+        setMaxStackDepth(acx, acx.isLimitsEnabled());
         return super.doTopCall(callable, cx, scope, thisObj, args);
+    }
+
+    private void setMaxStackDepth(AlfrescoScriptContext acx, boolean enable)
+    {
+        if (enable)
+        {
+            // Max stack depth
+            if (maxStackDepth > 0 && maxStackDepth != acx.getMaximumInterpreterStackDepth())
+            {
+                LOGGER.debug("Max call stack depth limit will be enabled with value: " + maxStackDepth);
+
+                if (optimizationLevel != INTERPRETIVE_MODE)
+                {
+                    LOGGER.debug("Changing optimization level from " + optimizationLevel + " to " + INTERPRETIVE_MODE);
+                }
+                // stack depth can only be set in interpretive mode
+                acx.setOptimizationLevel(INTERPRETIVE_MODE);
+                acx.setMaximumInterpreterStackDepth(maxStackDepth);
+            }
+        }
+        else
+        {
+            if (acx.getMaximumInterpreterStackDepth() != Integer.MAX_VALUE)
+            {
+                LOGGER.debug("Max call stack depth limit will be set to default value: " + Integer.MAX_VALUE);
+                acx.setOptimizationLevel(INTERPRETIVE_MODE);
+                acx.setMaximumInterpreterStackDepth(Integer.MAX_VALUE);
+                acx.setOptimizationLevel(optimizationLevel);
+            }
+        }
     }
 
     public int getOptimizationLevel()
@@ -180,8 +197,8 @@ public class AlfrescoContextFactory extends ContextFactory
         this.maxMemoryUsedInBytes = maxMemoryUsedInBytes;
         if (maxMemoryUsedInBytes > 0)
         {
-            this.threadMxBeanWrapper = new AlfrescoScriptThreadMxBeanWrapper();
-            if (!threadMxBeanWrapper.isThreadAllocatedMemorySupported())
+            AlfrescoScriptThreadMxBeanWrapper tmxw = new AlfrescoScriptThreadMxBeanWrapper();
+            if (!tmxw.isThreadAllocatedMemorySupported())
             {
                 LOGGER.warn("com.sun.management.ThreadMXBean was not found on the classpath. "
                         + "This means that the limiting the memory usage for a script will NOT work.");

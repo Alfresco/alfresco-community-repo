@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>20.46-SNAPSHOT</version>
+      <version>20.62-SNAPSHOT</version>
    </parent>
 
    <build>
@@ -43,18 +43,6 @@
 
    <dependencies>
       <dependency>
-         <groupId>org.apache.logging.log4j</groupId>
-         <artifactId>log4j-slf4j2-impl</artifactId>
-         <version>${dependency.log4j.version}</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.logging.log4j</groupId>
-         <artifactId>log4j-core</artifactId>
-         <version>${dependency.log4j.version}</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>restapi</artifactId>
          <version>${project.version}</version>
@@ -69,17 +57,6 @@
          <groupId>org.alfresco.tas</groupId>
          <artifactId>utility</artifactId>
          <version>${dependency.tas-utility.version}</version>
-         <!-- These exclusions can be removed once tas-utility does not rely on Reload4j anymore -->
-         <exclusions>
-            <exclusion>
-               <groupId>ch.qos.reload4j</groupId>
-               <artifactId>reload4j</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.slf4j</groupId>
-               <artifactId>slf4j-reload4j</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.projectlombok</groupId>

@@ -1,5 +1,7 @@
 package org.alfresco.rest.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
@@ -25,16 +27,62 @@ public class RestCategoryLinkBodyModel extends TestModel implements IRestModel<R
     */	        
 
     @JsonProperty(required = true)    
-    private String id;	    
+    private String categoryId;
 
-    public String getId()
+    public String getCategoryId()
     {
-        return this.id;
+        return categoryId;
     }
 
-    public void setId(String id)
+    public void setCategoryId(String categoryId)
     {
-        this.id = id;
-    }				
+        this.categoryId = categoryId;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RestCategoryLinkBodyModel that = (RestCategoryLinkBodyModel) o;
+        return Objects.equals(categoryId, that.categoryId);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(categoryId);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestCategoryLinkBodyModel{" + "categoryId='" + categoryId + '\'' + '}';
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String categoryId;
+
+        public Builder categoryId(String categoryId)
+        {
+            this.categoryId = categoryId;
+            return this;
+        }
+
+        public RestCategoryLinkBodyModel create()
+        {
+            final RestCategoryLinkBodyModel categoryLink = new RestCategoryLinkBodyModel();
+            categoryLink.setCategoryId(categoryId);
+            return categoryLink;
+        }
+    }
 }
  

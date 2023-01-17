@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.requests;
 
+import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
 import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 import static org.springframework.http.HttpMethod.PUT;
 
@@ -33,6 +34,7 @@ import javax.json.JsonArrayBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
 import io.restassured.http.ContentType;
 import org.alfresco.rest.core.JsonBodyGenerator;
@@ -41,6 +43,9 @@ import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
+import org.alfresco.rest.model.RestCategoryLinkBodyModel;
+import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.rest.model.RestCategoryModelsCollection;
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestNodeAssocTargetModel;
@@ -1105,5 +1110,40 @@ public class Node extends ModelRequest<Node>
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, body.toJson(), "nodes/{nodeId}/rule-executions", repoModel.getNodeRef());
         return restWrapper.processModel(RestRuleExecutionModel.class, request);
+    }
+
+    /**
+     * Get linked categories performing GET cal on "/nodes/{nodeId}/category-links"
+     *
+     * @return categories which are linked from content
+     */
+    public RestCategoryModelsCollection getLinkedCategories()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/category-links", repoModel.getNodeRef());
+        return restWrapper.processModels(RestCategoryModelsCollection.class, request);
+    }
+
+    /**
+     * Link content to category performing POST call on "/nodes/{nodeId}/category-links"
+     *
+     * @param categoryLink - contains category ID
+     * @return linked to category
+     */
+    public RestCategoryModel linkToCategory(RestCategoryLinkBodyModel categoryLink)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, categoryLink.toJson(), "nodes/{nodeId}/category-links", repoModel.getNodeRef());
+        return restWrapper.processModel(RestCategoryModel.class, request);
+    }
+
+    /**
+     * Link content to many categories performing POST call on "/nodes/{nodeId}/category-links"
+     *
+     * @param categoryLinks - contains categories IDs
+     * @return linked to categories
+     */
+    public RestCategoryModelsCollection linkToCategories(List<RestCategoryLinkBodyModel> categoryLinks)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, arrayToJson(categoryLinks), "nodes/{nodeId}/category-links", repoModel.getNodeRef());
+        return restWrapper.processModels(RestCategoryModelsCollection.class, request);
     }
 }

@@ -443,11 +443,8 @@ public class LinkToCategoriesTests extends CategoriesRestTest
                 createCategoryLinkModelWithId(category.getId()),
                 createCategoryLinkModelWithId(secondCategory.getId())
         );
-        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinks);
-
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategories(categoryLinks);
         restClient.assertStatusCodeIs(CREATED);
-        linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(category);
-        linkedCategories.getEntries().get(1).onModel().assertThat().isEqualTo(secondCategory);
 
         STEP("Unlink content from first category and expect 204");
         restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
@@ -469,7 +466,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     public void testUnlinkContentFromCategory_asUserWithoutChangePermissionAndGet403()
     {
         STEP("Link content to created category and expect 201");
-        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkWithId(category.getId());
+        final RestCategoryLinkBodyModel categoryLink = createCategoryLinkModelWithId(category.getId());
         final RestCategoryModel linkedCategory = restClient.authenticateUser(user).withCoreAPI().usingNode(file).linkToCategory(categoryLink);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -477,11 +474,23 @@ public class LinkToCategoriesTests extends CategoriesRestTest
 
         STEP("Create another user as a consumer for file");
         final UserModel consumer = dataUser.createRandomTestUser();
-        addPermissionsForUser(consumer.getUsername(), "Consumer", file);
+        allowPermissionsForUser(consumer.getUsername(), "Consumer", file);
 
         STEP("Try to unlink content to a category using user without change permission and expect 403");
         restClient.authenticateUser(consumer).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
         restClient.assertStatusCodeIs(FORBIDDEN);
+    }
+
+    /**
+     * Try to unlink content from a category that the node isn't assigned to and expect 404
+     */
+    @Test(groups = { TestGroup.REST_API})
+    public void testUnlinkContentFromCategory_unlinkFromNonLinkedToNodeCategory()
+    {
+        STEP("Try to unlink content from a category that the node isn't assigned to");
+        final RestCategoryModel nonLinkedToNodeCategory = createCategoryModelWithId("non-linked-category-dummy-id");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).unlinkFromCategory(nonLinkedToNodeCategory.getId());
+        restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
     /**

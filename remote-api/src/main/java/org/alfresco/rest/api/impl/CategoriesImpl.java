@@ -224,8 +224,7 @@ public class CategoriesImpl implements Categories
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{categoryId});
         }
 
-        final Serializable currentCategories = nodeService.getProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
-        final Collection<NodeRef> allCategories = removeCategory(currentCategories, categoryNodeRef);
+        final Collection<NodeRef> allCategories = removeCategory(contentNodeRef, categoryNodeRef);
 
         if (allCategories.size()==0)
         {
@@ -401,12 +400,13 @@ public class CategoriesImpl implements Categories
 
     /**
      * Remove specified category from present categories.
-     * @param currentCategories already present categories.
+     * @param contentNodeRef the nodeRef that contains the categories.
      * @param categoryToRemove category that should be removed.
      * @return updated category list.
      */
-    private Collection<NodeRef> removeCategory(final Serializable currentCategories, final NodeRef categoryToRemove)
+    private Collection<NodeRef> removeCategory(final NodeRef contentNodeRef, final NodeRef categoryToRemove)
     {
+        final Serializable currentCategories = nodeService.getProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
         final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
         final Collection<NodeRef> updatedCategories = new HashSet<>(actualCategories);
         updatedCategories.remove(categoryToRemove);

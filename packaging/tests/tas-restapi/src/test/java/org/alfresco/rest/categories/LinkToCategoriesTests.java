@@ -417,7 +417,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         fileNode.assertThat().field(PROPERTIES_FIELD).contains(category.getId());
 
         STEP("Unlink content from created category and expect 204");
-        restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
         restClient.assertStatusCodeIs(NO_CONTENT);
 
         STEP("Verify that category isn't present in file metadata");
@@ -447,7 +447,7 @@ public class LinkToCategoriesTests extends CategoriesRestTest
         restClient.assertStatusCodeIs(CREATED);
 
         STEP("Unlink content from first category and expect 204");
-        restClient.authenticateUser(dataContent.getAdminUser()).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(file).unlinkFromCategory(category.getId());
         restClient.assertStatusCodeIs(NO_CONTENT);
 
         STEP("Verify that second category is still present in file metadata");

@@ -44,7 +44,7 @@ public abstract class RenditionIntegrationTests extends RestTest
         // 2. Create a rendition of the file using RESTAPI
         restClient.withCoreAPI().usingNode(file).createNodeRendition(renditionId);
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.ACCEPTED.value(),
-                "Failed to submit a request for rendition. [" + fileName+ ", " + nodeId + ", " + renditionId+"] [source file, node ID, rendition ID])";
+                "Failed to submit a request for rendition. [" + fileName+ ", " + nodeId + ", " + renditionId+"] [source file, node ID, rendition ID]");
 
         // 3. Verify that a rendition of the file is created and has content using RESTAPI
         RestResponse restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated(renditionId);

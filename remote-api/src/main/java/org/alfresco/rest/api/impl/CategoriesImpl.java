@@ -74,7 +74,7 @@ public class CategoriesImpl implements Categories
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
     static final String NO_PERMISSION_TO_CHANGE_CONTENT = "Current user does not have change permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
-    static final String INVALID_NODE_TYPE = "Cannot categorize this node type";
+    static final String INVALID_NODE_TYPE = "Cannot categorize this type of node (id: {0})";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
@@ -235,7 +235,7 @@ public class CategoriesImpl implements Categories
     {
         if (!typeConstraint.matches(nodeRef))
         {
-            throw new InvalidNodeTypeException(INVALID_NODE_TYPE);
+            throw new InvalidNodeTypeException(INVALID_NODE_TYPE, new String[] {nodeRef.getId()});
         }
     }
 

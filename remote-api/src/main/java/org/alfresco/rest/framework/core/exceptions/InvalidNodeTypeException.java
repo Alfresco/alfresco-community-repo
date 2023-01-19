@@ -34,14 +34,9 @@ public class InvalidNodeTypeException extends ApiException
 
     public static String DEFAULT_MESSAGE_ID = "framework.exception.InvalidNodeType";
 
-    public InvalidNodeTypeException()
+    public InvalidNodeTypeException(String nodeId)
     {
-        super(DEFAULT_MESSAGE_ID);
-    }
-
-    public InvalidNodeTypeException(String msgId)
-    {
-        super(msgId);
+        super(DEFAULT_MESSAGE_ID, new String[] {nodeId});
     }
 
     public InvalidNodeTypeException(String msgId, Object[] msgParams)

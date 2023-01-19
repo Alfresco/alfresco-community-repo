@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-import java.text.MessageFormat;
-
 /**
  * Type of provided node is invalid.
  */

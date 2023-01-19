@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
+import java.text.MessageFormat;
+
 /**
  * Type of provided node is invalid.
  */
@@ -34,9 +36,14 @@ public class InvalidNodeTypeException extends ApiException
 
     public static String DEFAULT_MESSAGE_ID = "framework.exception.InvalidNodeType";
 
-    public InvalidNodeTypeException(String nodeId)
+    public InvalidNodeTypeException(String msgId)
     {
-        super(DEFAULT_MESSAGE_ID, new String[] {nodeId});
+        super(msgId);
+    }
+
+    public InvalidNodeTypeException(Object[] msgParams)
+    {
+        super(DEFAULT_MESSAGE_ID, msgParams);
     }
 
     public InvalidNodeTypeException(String msgId, Object[] msgParams)

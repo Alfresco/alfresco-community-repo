@@ -190,16 +190,16 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     }
 
     /**
-     * Try to get linked categories using tag instead of a content and expect 405 (Method Not Allowed)
+     * Try to get linked categories using tag instead of a content and expect 422 (Unprocessable Entity)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testListCategoriesForNode_usingTagInsteadOfContentAndExpect405()
+    public void testListCategoriesForNode_usingTagInsteadOfContentAndExpect422()
     {
         STEP("Add tag to file");
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
         final RepoTestModel tagNode = createNodeModelWithId(tag.getId());
 
-        STEP("Try to get linked categories for a tag and expect 405");
+        STEP("Try to get linked categories for a tag and expect 422");
         restClient.authenticateUser(user).withCoreAPI().usingNode(tagNode).getLinkedCategories();
 
         restClient.assertStatusCodeIs(UNPROCESSABLE_ENTITY);

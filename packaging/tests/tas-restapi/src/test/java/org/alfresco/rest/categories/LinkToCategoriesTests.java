@@ -355,15 +355,17 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link non-content node to category and expect 405 (Method Not Allowed)
+     * Try to link non-content node to category and expect 422 (Unprocessable Entity)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect405()
+    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect422()
     {
-        STEP("Try to link a tag to category and expect 405");
-        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        STEP("Add tag to file");
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
         final RepoTestModel tagNode = createNodeModelWithId(tag.getId());
+
+        STEP("Try to link a tag to category and expect 422");
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(tagNode).linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(UNPROCESSABLE_ENTITY);

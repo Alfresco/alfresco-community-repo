@@ -543,12 +543,37 @@
           <build>
              <plugins>
                 <plugin>
+                   <artifactId>exec-maven-plugin</artifactId>
+                   <groupId>org.codehaus.mojo</groupId>
+                   <executions>
+                      <execution><!-- Run our version calculation script -->
+                         <id>Version Calculation</id>
+                         <phase>generate-sources</phase>
+                         <goals>
+                            <goal>exec</goal>
+                         </goals>
+                         <configuration>
+                            <executable>${basedir}/scripts/createBuilderAndExposeLocalRepository.sh</executable>
+                         </configuration>
+                      </execution>
+                   </executions>
+                </plugin>
+                <plugin>
                    <groupId>io.fabric8</groupId>
                    <artifactId>docker-maven-plugin</artifactId>
                    <configuration>
                       <images>
                          <image>
                             <name>${image.name}:${image.tag}</name>
+                            <build>
+                               <buildx>
+                                  <builderName>insecure-builder</builderName>
+                               </buildx>
+                               <network>host</network>
+                               <args>
+                                  <BASE_IMAGE>alfresco/alfresco-community-repo-base:${image.tag}</BASE_IMAGE>
+                               </args>
+                            </build>
                          </image>
                       </images>
                    </configuration>

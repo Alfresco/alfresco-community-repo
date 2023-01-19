@@ -62,8 +62,8 @@ import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -961,7 +961,7 @@ public class CategoriesImplTest
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(UnsupportedResourceOperationException.class)
+            .isInstanceOf(InvalidNodeTypeException.class)
             .hasMessageContaining(INVALID_NODE_TYPE);
     }
 
@@ -1091,7 +1091,7 @@ public class CategoriesImplTest
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(UnsupportedResourceOperationException.class)
+            .isInstanceOf(InvalidNodeTypeException.class)
             .hasMessageContaining(INVALID_NODE_TYPE);
     }
 

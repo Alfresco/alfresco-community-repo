@@ -47,7 +47,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
+import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -235,7 +235,7 @@ public class CategoriesImpl implements Categories
     {
         if (!typeConstraint.matches(nodeRef))
         {
-            throw new UnsupportedResourceOperationException(INVALID_NODE_TYPE);
+            throw new InvalidNodeTypeException(INVALID_NODE_TYPE);
         }
     }
 

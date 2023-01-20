@@ -11,7 +11,11 @@ LOCAL_REGISTRY="${LOCAL_REGISTRY_HOST}":"${LOCAL_REGISTRY_PORT}"
 docker run -d -p "${LOCAL_REGISTRY_PORT}":"${LOCAL_REGISTRY_PORT}" --restart=always --name registry registry:2
 
 #Push base image to the local repository
-docker tag "${BASE_IMAGE}":"${BASE_IMAGE_TAG}" "${LOCAL_REGISTRY}"/"${BASE_IMAGE}":"${BASE_IMAGE_TAG}"/
+docker tag "${BASE_IMAGE}":"${BASE_IMAGE_TAG}" "${LOCAL_REGISTRY}"/"${BASE_IMAGE}":"${BASE_IMAGE_TAG}"
+while [ "$( docker container inspect -f '{{.State.Running}}' registry )" != "true" ]
+do
+  sleep 1
+done
 docker push "${LOCAL_REGISTRY}"/"${BASE_IMAGE}":"${BASE_IMAGE_TAG}"
 
 #Create a `docker-container` builder with host networking and required flags

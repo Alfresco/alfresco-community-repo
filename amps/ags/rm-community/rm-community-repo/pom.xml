@@ -15,6 +15,12 @@
       <app.amp.client.war.folder>${project.build.directory}/${project.build.finalName}-war</app.amp.client.war.folder>
 
       <image.name>alfresco/alfresco-governance-repository-community-base</image.name>
+
+      <local.registry.host>127.0.0.1</local.registry.host>
+      <local.registry.port>5000</local.registry.port>
+      <base.image>alfresco/alfresco-community-repo-base</base.image>
+      <base.image.tag>latest</base.image.tag>
+      <builder.name>insecure-builder</builder.name>
    </properties>
 
    <dependencies>
@@ -546,14 +552,31 @@
                    <artifactId>exec-maven-plugin</artifactId>
                    <groupId>org.codehaus.mojo</groupId>
                    <executions>
-                      <execution><!-- Run our version calculation script -->
-                         <id>Version Calculation</id>
+                      <execution>
+                         <id>prepare-buildx</id>
                          <phase>generate-sources</phase>
                          <goals>
                             <goal>exec</goal>
                          </goals>
                          <configuration>
-                            <executable>${basedir}/scripts/createBuilderAndExposeLocalRepository.sh</executable>
+                            <executable>${basedir}/scripts/prepare_buildx.sh</executable>
+                            <arguments>
+                               <argument>${local.registry.host}</argument>
+                               <argument>${local.registry.port}</argument>
+                               <argument>${base.image}</argument>
+                               <argument>${base.image.tag}</argument>
+                               <argument>${builder.name}</argument>
+                            </arguments>
+                         </configuration>
+                      </execution>
+                      <execution>
+                         <id>clear</id>
+                         <phase>install</phase>
+                         <goals>
+                            <goal>exec</goal>
+                         </goals>
+                         <configuration>
+                            <executable>${basedir}/scripts/remove_local_registry.sh</executable>
                          </configuration>
                       </execution>
                    </executions>
@@ -567,11 +590,11 @@
                             <name>${image.name}:${image.tag}</name>
                             <build>
                                <buildx>
-                                  <builderName>insecure-builder</builderName>
+                                  <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
-                                  <BASE_IMAGE>alfresco/alfresco-community-repo-base:${image.tag}</BASE_IMAGE>
-                                  <LOCAL_REGISTRY>127.0.0.1:5000</LOCAL_REGISTRY>
+                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
+                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
                                </args>
                             </build>
                          </image>

@@ -569,11 +569,13 @@
                                <buildx>
                                   <builderName>insecure-builder</builderName>
                                </buildx>
-                               <network>host</network>
                                <args>
                                   <BASE_IMAGE>alfresco/alfresco-community-repo-base:${image.tag}</BASE_IMAGE>
                                </args>
                             </build>
+                            <run>
+                               <net>host</net>
+                            </run>
                          </image>
                       </images>
                    </configuration>

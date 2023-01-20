@@ -571,11 +571,9 @@
                                </buildx>
                                <args>
                                   <BASE_IMAGE>alfresco/alfresco-community-repo-base:${image.tag}</BASE_IMAGE>
+                                  <LOCAL_REGISTRY>localhost:5000</LOCAL_REGISTRY>
                                </args>
                             </build>
-                            <run>
-                               <net>host</net>
-                            </run>
                          </image>
                       </images>
                    </configuration>

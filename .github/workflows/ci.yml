@@ -1,5 +1,6 @@
 name: Alfresco Community Repo CI
 
+
 on:
   pull_request:
     branches:

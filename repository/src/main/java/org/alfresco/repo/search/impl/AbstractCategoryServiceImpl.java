@@ -279,7 +279,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
     HashMap<String, String> prefixLookup = new HashMap<String, String>();
 
-    private String getPrefix(String uri)
+    protected String getPrefix(String uri)
     {
         String prefix = prefixLookup.get(uri);
         if (prefix == null)

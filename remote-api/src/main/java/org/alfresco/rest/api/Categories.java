@@ -71,4 +71,12 @@ public interface Categories
      * @return Linked to categories.
      */
     List<Category> linkNodeToCategories(String nodeId, List<Category> categoryLinks);
+
+    /**
+     * Unlink node from a category.
+     *
+     * @param nodeId Node ID.
+     * @param categoryId Category ID from which content node should be unlinked from.
+     */
+    void unlinkNodeFromCategory(String nodeId, String categoryId, Parameters parameters);
 }

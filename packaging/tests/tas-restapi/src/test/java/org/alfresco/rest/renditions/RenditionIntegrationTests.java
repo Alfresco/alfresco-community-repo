@@ -44,20 +44,20 @@ public abstract class RenditionIntegrationTests extends RestTest
         // 2. Create a rendition of the file using RESTAPI
         restClient.withCoreAPI().usingNode(file).createNodeRendition(renditionId);
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.ACCEPTED.value(),
-                "Failed to submit a request for rendition. [" + fileName+ ", " + renditionId+"] [source file, rendition ID]. ");
+                "Failed to submit a request for rendition. [" + fileName + ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
 
         // 3. Verify that a rendition of the file is created and has content using RESTAPI
         RestResponse restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated(renditionId);
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.OK.value(),
-                "Failed to produce rendition. [" + fileName+ ", " + renditionId+"] [source file, rendition ID] ");
+                "Failed to produce rendition. [" + fileName + ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
 
         // 4. Check the returned content type
         Assert.assertEquals(restClient.getResponseHeaders().getValue("Content-Type"), expectedMimeType+";charset=UTF-8",
-                "Rendition was created but it has the wrong Content-Type. [" + fileName+ ", " + renditionId + "] [source file, rendition ID]");
+                "Rendition was created but it has the wrong Content-Type. [" + fileName+ ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
 
 
         Assert.assertTrue((restResponse.getResponse().body().asInputStream().available() > 0),
-                "Rendition was created but its content is empty. [" + fileName+ ", " + renditionId+"] [source file, rendition ID] ");
+                "Rendition was created but its content is empty. [" + fileName + ", " + nodeId + ", " + renditionId + "] [source file, node ID, rendition ID]");
     }
 
     /**

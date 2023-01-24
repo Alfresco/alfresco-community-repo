@@ -31,9 +31,9 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import javax.json.Json;
 import java.util.Collections;
@@ -356,18 +356,20 @@ public class LinkToCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Try to link non-content node to category and expect 405 (Method Not Allowed)
+     * Try to link non-content node to category and expect 422 (Unprocessable Entity)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect405()
+    public void testLinkContentToCategory_usingTagInsteadOfContentAndExpect422()
     {
-        STEP("Try to link a tag to category and expect 405");
-        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
+        STEP("Add tag to file");
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
         final RepoTestModel tagNode = createNodeModelWithId(tag.getId());
+
+        STEP("Try to link a tag to category and expect 422");
+        final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(tagNode).linkToCategory(categoryLinkModel);
 
-        restClient.assertStatusCodeIs(METHOD_NOT_ALLOWED);
+        restClient.assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
 
     /**

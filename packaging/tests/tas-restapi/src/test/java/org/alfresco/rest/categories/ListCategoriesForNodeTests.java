@@ -28,9 +28,9 @@ package org.alfresco.rest.categories;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 import javax.json.Json;
 import java.util.List;
@@ -190,19 +190,19 @@ public class ListCategoriesForNodeTests extends CategoriesRestTest
     }
 
     /**
-     * Try to get linked categories using tag instead of a content and expect 405 (Method Not Allowed)
+     * Try to get linked categories using tag instead of a content and expect 422 (Unprocessable Entity)
      */
     @Test(groups = { TestGroup.REST_API})
-    public void testListCategoriesForNode_usingTagInsteadOfContentAndExpect405()
+    public void testListCategoriesForNode_usingTagInsteadOfContentAndExpect422()
     {
         STEP("Add tag to file");
         final RestTagModel tag = restClient.authenticateUser(user).withCoreAPI().usingNode(file).addTag("someTag");
         final RepoTestModel tagNode = createNodeModelWithId(tag.getId());
 
-        STEP("Try to get linked categories for a tag and expect 405");
+        STEP("Try to get linked categories for a tag and expect 422");
         restClient.authenticateUser(user).withCoreAPI().usingNode(tagNode).getLinkedCategories();
 
-        restClient.assertStatusCodeIs(METHOD_NOT_ALLOWED);
+        restClient.assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
 
     private void denyPermissionsForUser(final String username, final String role, final FileModel file)

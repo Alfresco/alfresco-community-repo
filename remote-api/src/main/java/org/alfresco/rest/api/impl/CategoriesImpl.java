@@ -47,7 +47,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
+import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -74,7 +74,7 @@ public class CategoriesImpl implements Categories
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
     static final String NO_PERMISSION_TO_CHANGE_CONTENT = "Current user does not have change permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
-    static final String INVALID_NODE_TYPE = "Cannot categorize this node type";
+    static final String INVALID_NODE_TYPE = "Cannot categorize this type of node";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
@@ -264,7 +264,7 @@ public class CategoriesImpl implements Categories
     {
         if (!typeConstraint.matches(nodeRef))
         {
-            throw new UnsupportedResourceOperationException(INVALID_NODE_TYPE);
+            throw new InvalidNodeTypeException(INVALID_NODE_TYPE);
         }
     }
 

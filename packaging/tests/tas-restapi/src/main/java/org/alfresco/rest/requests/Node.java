@@ -1146,4 +1146,15 @@ public class Node extends ModelRequest<Node>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, arrayToJson(categoryLinks), "nodes/{nodeId}/category-links", repoModel.getNodeRef());
         return restWrapper.processModels(RestCategoryModelsCollection.class, request);
     }
+
+    /**
+     * Unlink content from a category performing a DELETE call on "nodes/{nodeId}/category-links/{categoryId}"
+     *
+     * @param categoryId the id of the category to be unlinked from content
+     */
+    public void unlinkFromCategory(String categoryId)
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/category-links/{categoryId}", repoModel.getNodeRef(), categoryId);
+        restWrapper.processEmptyModel(request);
+    }
 }

@@ -6,14 +6,16 @@ BASE_IMAGE="${3}"
 BASE_IMAGE_TAG="${4}"
 BUILDER_NAME="${5}"
 LOCAL_REGISTRY="${LOCAL_REGISTRY_HOST}":"${LOCAL_REGISTRY_PORT}"
+SLEEP_SECONDS=0
 
 #Run a local registry server
 docker run -d -p "${LOCAL_REGISTRY_PORT}":"${LOCAL_REGISTRY_PORT}" --restart=always --name registry registry:2
 
 #Push base image to the local repository
 docker tag "${BASE_IMAGE}":"${BASE_IMAGE_TAG}" "${LOCAL_REGISTRY}"/"${BASE_IMAGE}":"${BASE_IMAGE_TAG}"
-while [ "$( docker container inspect -f '{{.State.Running}}' registry )" != "true" ]
+while [ "$( docker container inspect -f '{{.State.Running}}' registry )" != "true" ] && [ $SLEEP_SECONDS -lt 120 ]
 do
+  ((SLEEP_SECONDS++))
   sleep 1
 done
 docker push "${LOCAL_REGISTRY}"/"${BASE_IMAGE}":"${BASE_IMAGE_TAG}"

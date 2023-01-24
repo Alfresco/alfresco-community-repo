@@ -19,7 +19,7 @@
       <local.registry.host>127.0.0.1</local.registry.host>
       <local.registry.port>5000</local.registry.port>
       <base.image>alfresco/alfresco-community-repo-base</base.image>
-      <base.image.tag>latest</base.image.tag>
+      <base.image.tag>${image.tag}</base.image.tag>
       <builder.name>insecure-builder</builder.name>
    </properties>
 

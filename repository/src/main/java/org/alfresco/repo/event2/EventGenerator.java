@@ -148,17 +148,17 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
     private void bindBehaviours()
     {
-        bindBehaviour(OnCreateNodePolicy.QNAME, "onCreateNode");
-        bindBehaviour(BeforeDeleteNodePolicy.QNAME, "beforeDeleteNode");
-        bindBehaviour(OnUpdatePropertiesPolicy.QNAME, "onUpdateProperties");
-        bindBehaviour(OnSetNodeTypePolicy.QNAME, "onSetNodeType");
-        bindBehaviour(OnAddAspectPolicy.QNAME, "onAddAspect");
-        bindBehaviour(OnRemoveAspectPolicy.QNAME, "onRemoveAspect");
-        bindBehaviour(OnMoveNodePolicy.QNAME, "onMoveNode");
-        bindBehaviour(OnCreateChildAssociationPolicy.QNAME, "onCreateChildAssociation");
-        bindBehaviour(BeforeDeleteChildAssociationPolicy.QNAME, "beforeDeleteChildAssociation");
-        bindBehaviour(OnCreateAssociationPolicy.QNAME, "onCreateAssociation");
-        bindBehaviour(BeforeDeleteAssociationPolicy.QNAME, "beforeDeleteAssociation");
+        setClassBehaviour(OnCreateNodePolicy.QNAME, "onCreateNode");
+        setClassBehaviour(BeforeDeleteNodePolicy.QNAME, "beforeDeleteNode");
+        setClassBehaviour(OnUpdatePropertiesPolicy.QNAME, "onUpdateProperties");
+        setClassBehaviour(OnSetNodeTypePolicy.QNAME, "onSetNodeType");
+        setClassBehaviour(OnAddAspectPolicy.QNAME, "onAddAspect");
+        setClassBehaviour(OnRemoveAspectPolicy.QNAME, "onRemoveAspect");
+        setClassBehaviour(OnMoveNodePolicy.QNAME, "onMoveNode");
+        setAssociationBehaviour(OnCreateChildAssociationPolicy.QNAME, "onCreateChildAssociation");
+        setAssociationBehaviour(BeforeDeleteChildAssociationPolicy.QNAME, "beforeDeleteChildAssociation");
+        setAssociationBehaviour(OnCreateAssociationPolicy.QNAME, "onCreateAssociation");
+        setAssociationBehaviour(BeforeDeleteAssociationPolicy.QNAME, "beforeDeleteAssociation");
     }
 
     /**
@@ -338,17 +338,31 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     {
         return new PeerAssociationEventConsolidator(peerAssociationRef, nodeResourceHelper);
     }
-    
-    private void bindBehaviour(QName policyQName, String method)
+
+    private void setClassBehaviour(QName policyQName, String method)
     {
-        bindBehaviour(policyQName, method, behaviours);
+        Behaviour behaviour = bindClassBehaviour(policyQName, method);
+        behaviours.add(behaviour);
     }
 
-    protected void bindBehaviour(QName policyQName, String method, Set<Behaviour> bindedBehaviours)
+    private void setAssociationBehaviour(QName policyQName, String method)
+    {
+        Behaviour behaviour = bindAssociationBehaviour(policyQName, method);
+        behaviours.add(behaviour);
+    }
+
+    protected Behaviour bindClassBehaviour(QName policyQName, String method)
     {
         BehaviourDefinition<ServiceBehaviourBinding> behaviourDef = policyComponent.bindClassBehaviour(policyQName, this,
                 new JavaBehaviour(this, method));
-        bindedBehaviours.add(behaviourDef.getBehaviour());
+        return behaviourDef.getBehaviour();
+    }
+
+    protected Behaviour bindAssociationBehaviour(QName policyQName, String method)
+    {
+        BehaviourDefinition<ServiceBehaviourBinding> behaviourDef = policyComponent.bindAssociationBehaviour(policyQName, this,
+                new JavaBehaviour(this, method));
+        return behaviourDef.getBehaviour();
     }
 
     private void disableBehaviours()

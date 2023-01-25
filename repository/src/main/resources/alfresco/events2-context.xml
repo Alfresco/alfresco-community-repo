@@ -43,6 +43,9 @@
         <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
         <property name="eventGeneratorQueue" ref="eventGeneratorQueue"/>
         <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="enabled">
+            <value>${repo.event2.enabled}</value>
+        </property>
     </bean>
 
     <bean id="baseNodeResourceHelper" abstract="true">

@@ -31,8 +31,10 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -54,8 +56,11 @@ import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnSetNodeTypePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.policy.Behaviour;
+import org.alfresco.repo.policy.BehaviourDefinition;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.ServiceBehaviourBinding;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -103,10 +108,27 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private ChildAssociationTypeFilter childAssociationTypeFilter;
     private EventUserFilter userFilter;
     protected final EventTransactionListener transactionListener = new EventTransactionListener();
+    protected boolean enabled;
+    private Set<Behaviour> behaviours;
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
 
     @Override
     public void afterPropertiesSet()
     {
+        if (!isEnabled())
+        {
+            return;
+        }
+
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
@@ -126,28 +148,56 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
     private void bindBehaviours()
     {
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onCreateNode"));
-        policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME, this,
-                                           new JavaBehaviour(this, "beforeDeleteNode"));
-        policyComponent.bindClassBehaviour(OnUpdatePropertiesPolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onUpdateProperties"));
-        policyComponent.bindClassBehaviour(OnSetNodeTypePolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onSetNodeType"));
-        policyComponent.bindClassBehaviour(OnAddAspectPolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onAddAspect"));
-        policyComponent.bindClassBehaviour(OnRemoveAspectPolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onRemoveAspect"));
-        policyComponent.bindClassBehaviour(OnMoveNodePolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onMoveNode"));
-        policyComponent.bindAssociationBehaviour(OnCreateChildAssociationPolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onCreateChildAssociation"));
-        policyComponent.bindAssociationBehaviour(BeforeDeleteChildAssociationPolicy.QNAME, this,
-                                           new JavaBehaviour(this, "beforeDeleteChildAssociation"));
-        policyComponent.bindAssociationBehaviour(OnCreateAssociationPolicy.QNAME, this,
-                                           new JavaBehaviour(this, "onCreateAssociation"));
-        policyComponent.bindAssociationBehaviour(BeforeDeleteAssociationPolicy.QNAME, this,
-                                           new JavaBehaviour(this, "beforeDeleteAssociation"));
+        setClassBehaviour(OnCreateNodePolicy.QNAME, "onCreateNode");
+        setClassBehaviour(BeforeDeleteNodePolicy.QNAME, "beforeDeleteNode");
+        setClassBehaviour(OnUpdatePropertiesPolicy.QNAME, "onUpdateProperties");
+        setClassBehaviour(OnSetNodeTypePolicy.QNAME, "onSetNodeType");
+        setClassBehaviour(OnAddAspectPolicy.QNAME, "onAddAspect");
+        setClassBehaviour(OnRemoveAspectPolicy.QNAME, "onRemoveAspect");
+        setClassBehaviour(OnMoveNodePolicy.QNAME, "onMoveNode");
+        setAssociationBehaviour(OnCreateChildAssociationPolicy.QNAME, "onCreateChildAssociation");
+        setAssociationBehaviour(BeforeDeleteChildAssociationPolicy.QNAME, "beforeDeleteChildAssociation");
+        setAssociationBehaviour(OnCreateAssociationPolicy.QNAME, "onCreateAssociation");
+        setAssociationBehaviour(BeforeDeleteAssociationPolicy.QNAME, "beforeDeleteAssociation");
+    }
+
+    /**
+     * Disable Events2 generated events
+     */
+    public void disable()
+    {
+        if (!isEnabled())
+        {
+            return;
+        }
+        setEnabled(false);
+        disableBehaviours();
+    }
+
+    /**
+     * Enable Events2 generated events
+     */
+    public void enable()
+    {
+        if (isEnabled())
+        {
+            return;
+        }
+
+        setEnabled(true);
+
+        if (behaviours == null)
+        {
+            behaviours = new HashSet<Behaviour>();
+            afterPropertiesSet();
+            bindBehaviours();
+
+        }
+        else
+        {
+            enableBehaviours();
+        }
+
     }
 
     public void setNodeDAO(NodeDAO nodeDAO)
@@ -289,6 +339,62 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         return new PeerAssociationEventConsolidator(peerAssociationRef, nodeResourceHelper);
     }
 
+    private void setClassBehaviour(QName policyQName, String method)
+    {
+        Behaviour behaviour = bindClassBehaviour(policyQName, method);
+        behaviours.add(behaviour);
+    }
+
+    private void setAssociationBehaviour(QName policyQName, String method)
+    {
+        Behaviour behaviour = bindAssociationBehaviour(policyQName, method);
+        behaviours.add(behaviour);
+    }
+
+    protected Behaviour bindClassBehaviour(QName policyQName, String method)
+    {
+        BehaviourDefinition<ServiceBehaviourBinding> behaviourDef = policyComponent.bindClassBehaviour(policyQName, this,
+                new JavaBehaviour(this, method));
+        return behaviourDef.getBehaviour();
+    }
+
+    protected Behaviour bindAssociationBehaviour(QName policyQName, String method)
+    {
+        BehaviourDefinition<ServiceBehaviourBinding> behaviourDef = policyComponent.bindAssociationBehaviour(policyQName, this,
+                new JavaBehaviour(this, method));
+        return behaviourDef.getBehaviour();
+    }
+
+    private void disableBehaviours()
+    {
+        disableBehaviours(behaviours);
+    }
+
+    protected void disableBehaviours(Set<Behaviour> bindedBehaviours)
+    {
+        if (bindedBehaviours != null)
+        {
+            bindedBehaviours.forEach(behaviour -> {
+                behaviour.disable();
+            });
+        }
+    }
+
+    private void enableBehaviours()
+    {
+        enableBehaviours(behaviours);
+    }
+
+    protected void enableBehaviours(Set<Behaviour> bindedBehaviours)
+    {
+        if (bindedBehaviours != null)
+        {
+            bindedBehaviours.forEach(behaviour -> {
+                behaviour.enable();
+            });
+        }
+    }
+
     /**
      * @return the {@link EventConsolidator} for the supplied {@code nodeRef} from
      * the current transaction context.
@@ -396,6 +502,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     @Override
     protected void onBootstrap(ApplicationEvent applicationEvent)
     {
+        if (!isEnabled())
+        {
+            return;
+        }
+        behaviours = new HashSet<Behaviour>();
         bindBehaviours();
     }
 

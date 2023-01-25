@@ -40,7 +40,9 @@ import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RelationshipResource(name = "category-links", entityResource = NodesEntityResource.class, title = "Category links")
-public class NodesCategoryLinksRelation implements RelationshipResourceAction.Read<Category>, RelationshipResourceAction.Create<Category>
+public class NodesCategoryLinksRelation implements RelationshipResourceAction.Create<Category>,
+                                                    RelationshipResourceAction.Read<Category>,
+                                                    RelationshipResourceAction.Delete
 {
 
     private final Categories categories;
@@ -77,4 +79,19 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Re
     {
         return categories.linkNodeToCategories(nodeId, categoryLinks);
     }
+
+    /**
+     * DELETE /nodes/{nodeId}/category-links/{categoryId}
+     */
+    @WebApiDescription(
+            title = "Unlink content node from category",
+            description = "Removes the link between a content node and a category",
+            successStatus = HttpServletResponse.SC_NO_CONTENT
+    )
+    @Override
+    public void delete(String nodeId, String categoryId, Parameters parameters)
+    {
+        categories.unlinkNodeFromCategory(nodeId, categoryId, parameters);
+    }
+
 }

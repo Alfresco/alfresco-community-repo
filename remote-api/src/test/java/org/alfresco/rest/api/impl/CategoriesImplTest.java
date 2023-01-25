@@ -62,8 +62,8 @@ import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -961,7 +961,7 @@ public class CategoriesImplTest
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(UnsupportedResourceOperationException.class)
+            .isInstanceOf(InvalidNodeTypeException.class)
             .hasMessageContaining(INVALID_NODE_TYPE);
     }
 
@@ -1018,6 +1018,40 @@ public class CategoriesImplTest
         assertThat(actualLinkedCategories)
             .isNotNull().usingRecursiveComparison()
             .isEqualTo(expectedLinkedCategories);
+    }
+
+    @Test
+    public void testUnlinkNodeFromCategory()
+    {
+        given(nodeServiceMock.hasAspect(CONTENT_NODE_REF,ContentModel.ASPECT_GEN_CLASSIFIABLE)).willReturn(true);
+
+        // when
+        objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID, CATEGORY_ID, parametersMock);
+
+        then(nodesMock).should().validateNode(CATEGORY_ID);
+        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(typeConstraint).should().matches(CONTENT_NODE_REF);
+        then(typeConstraint).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF,ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        then(nodeServiceMock).should().getProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES);
+        then(nodeServiceMock).should().setProperty(eq(CONTENT_NODE_REF),eq(ContentModel.PROP_CATEGORIES),any());
+    }
+
+    @Test
+    public void testUnlinkNodeFromCategory_missingCategoryAspect()
+    {
+        given(nodeServiceMock.hasAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE)).willReturn(false);
+
+        //when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID,CATEGORY_ID, parametersMock));
+
+        then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF,ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        assertThat(actualException)
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining("does not belong to a category");
     }
 
     @Test
@@ -1091,7 +1125,7 @@ public class CategoriesImplTest
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
-            .isInstanceOf(UnsupportedResourceOperationException.class)
+            .isInstanceOf(InvalidNodeTypeException.class)
             .hasMessageContaining(INVALID_NODE_TYPE);
     }
 

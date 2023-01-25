@@ -47,7 +47,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
+import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -74,7 +74,7 @@ public class CategoriesImpl implements Categories
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
     static final String NO_PERMISSION_TO_CHANGE_CONTENT = "Current user does not have change permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
-    static final String INVALID_NODE_TYPE = "Cannot categorize this node type";
+    static final String INVALID_NODE_TYPE = "Cannot categorize this type of node";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
@@ -207,6 +207,35 @@ public class CategoriesImpl implements Categories
         return categoryNodeRefs.stream().map(this::mapToCategory).collect(Collectors.toList());
     }
 
+    @Override
+    public void unlinkNodeFromCategory(final String nodeId, final String categoryId, Parameters parameters)
+    {
+        final NodeRef categoryNodeRef = getCategoryNodeRef(categoryId);
+        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        verifyChangePermission(contentNodeRef);
+        verifyNodeType(contentNodeRef);
+
+        if (isCategoryAspectMissing(contentNodeRef))
+        {
+            throw new InvalidArgumentException("Node with id: " + nodeId + " does not belong to a category");
+        }
+        if (isRootCategory(categoryNodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{categoryId});
+        }
+
+        final Collection<NodeRef> allCategories = removeCategory(contentNodeRef, categoryNodeRef);
+
+        if (allCategories.size()==0)
+        {
+            nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+            nodeService.removeProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
+            return;
+        }
+
+        nodeService.setProperty(contentNodeRef, ContentModel.PROP_CATEGORIES, (Serializable) allCategories);
+    }
+
     private void verifyAdminAuthority()
     {
         if (!authorityService.hasAdminAuthority())
@@ -235,7 +264,7 @@ public class CategoriesImpl implements Categories
     {
         if (!typeConstraint.matches(nodeRef))
         {
-            throw new UnsupportedResourceOperationException(INVALID_NODE_TYPE);
+            throw new InvalidNodeTypeException(INVALID_NODE_TYPE);
         }
     }
 
@@ -367,6 +396,22 @@ public class CategoriesImpl implements Categories
         allCategories.addAll(newCategories);
 
         return allCategories;
+    }
+
+    /**
+     * Remove specified category from present categories.
+     * @param contentNodeRef the nodeRef that contains the categories.
+     * @param categoryToRemove category that should be removed.
+     * @return updated category list.
+     */
+    private Collection<NodeRef> removeCategory(final NodeRef contentNodeRef, final NodeRef categoryToRemove)
+    {
+        final Serializable currentCategories = nodeService.getProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
+        final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
+        final Collection<NodeRef> updatedCategories = new HashSet<>(actualCategories);
+        updatedCategories.remove(categoryToRemove);
+
+        return updatedCategories;
     }
 
     /**

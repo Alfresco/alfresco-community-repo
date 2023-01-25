@@ -39,7 +39,7 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Prepare environment"
+      - name: "Prepare maven cache and check compilation"
         run: bash ./scripts/ci/prepare.sh
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

@@ -606,7 +606,10 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         finally
         {
-            unsetScope(model, scope);
+            if (!secure)
+            {
+                unsetScope(model, scope);
+            }
             Context.exit();
             
             if (callLogger.isDebugEnabled())

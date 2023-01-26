@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.event2;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -34,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -61,6 +64,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -74,14 +78,14 @@ public class NodeResourceHelper implements InitializingBean
 {
     private static final Log LOGGER = LogFactory.getLog(NodeResourceHelper.class);
 
-    protected NodeService         nodeService;
-    protected DictionaryService   dictionaryService;
-    protected PersonService       personService;
+    protected NodeService nodeService;
+    protected DictionaryService dictionaryService;
+    protected PersonService personService;
     protected EventFilterRegistry eventFilterRegistry;
-    protected NamespaceService    namespaceService;
-    protected PermissionService   permissionService;
+    protected NamespaceService namespaceService;
+    protected PermissionService permissionService;
 
-    private NodeAspectFilter   nodeAspectFilter;
+    private NodeAspectFilter nodeAspectFilter;
     private NodePropertyFilter nodePropertyFilter;
 
     @Override
@@ -117,9 +121,9 @@ public class NodeResourceHelper implements InitializingBean
     {
         this.permissionService = permissionService;
     }
-    
+
     // To make IntelliJ stop complaining about unused method!
-    @SuppressWarnings("unused")
+    @SuppressWarnings ("unused")
     public void setEventFilterRegistry(EventFilterRegistry eventFilterRegistry)
     {
         this.eventFilterRegistry = eventFilterRegistry;
@@ -146,9 +150,9 @@ public class NodeResourceHelper implements InitializingBean
                            .setIsFile(isSubClass(type, ContentModel.TYPE_CONTENT))
                            .setIsFolder(isSubClass(type, ContentModel.TYPE_FOLDER))
                            .setCreatedByUser(getUserInfo((String) properties.get(ContentModel.PROP_CREATOR), mapUserCache))
-                           .setCreatedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_CREATED)))
+                           .setCreatedAt(getZonedDateTime((Date) properties.get(ContentModel.PROP_CREATED)))
                            .setModifiedByUser(getUserInfo((String) properties.get(ContentModel.PROP_MODIFIER), mapUserCache))
-                           .setModifiedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_MODIFIED)))
+                           .setModifiedAt(getZonedDateTime((Date) properties.get(ContentModel.PROP_MODIFIED)))
                            .setContent(getContentInfo(properties))
                            .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
                            .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
@@ -162,17 +166,17 @@ public class NodeResourceHelper implements InitializingBean
         return dictionaryService.isSubClass(className, ofClassQName);
     }
 
-    private String getPrimaryAssocQName(NodeRef nodeRef) 
+    private String getPrimaryAssocQName(NodeRef nodeRef)
     {
         String result = null;
-        try 
+        try
         {
             ChildAssociationRef primaryParent = nodeService.getPrimaryParent(nodeRef);
-            if(primaryParent != null && primaryParent.getQName() != null) 
+            if (primaryParent != null && primaryParent.getQName() != null)
             {
                 result = primaryParent.getQName().getPrefixedQName(namespaceService).getPrefixString();
             }
-        } catch (NamespaceException namespaceException) 
+        } catch (NamespaceException namespaceException)
         {
             LOGGER.error("Cannot return a valid primary association QName: " + namespaceException.getMessage());
         }
@@ -224,7 +228,7 @@ public class NodeResourceHelper implements InitializingBean
                 final MLText mlTextValue = (MLText) v;
                 final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
                 mlTextValue.forEach((lang, text) -> localizedValues.put(lang.getLanguage(), text));
-                filteredProps.put(getQNamePrefixString(k),localizedValues);
+                filteredProps.put(getQNamePrefixString(k), localizedValues);
             }
         });
 
@@ -250,11 +254,10 @@ public class NodeResourceHelper implements InitializingBean
         {
             String sysUserName = AuthenticationUtil.getSystemUserName();
             if (userName.equals(sysUserName) || (AuthenticationUtil.isMtEnabled()
-                        && userName.startsWith(sysUserName + "@")))
+                    && userName.startsWith(sysUserName + "@")))
             {
                 userInfo = new UserInfo(userName, userName, "");
-            }
-            else
+            } else
             {
                 PersonService.PersonInfo pInfo = null;
                 try
@@ -264,8 +267,7 @@ public class NodeResourceHelper implements InitializingBean
                     {
                         pInfo = personService.getPerson(pNodeRef);
                     }
-                }
-                catch (NoSuchPersonException | AccessDeniedException ex)
+                } catch (NoSuchPersonException | AccessDeniedException ex)
                 {
                     // ignore
                 }
@@ -273,8 +275,7 @@ public class NodeResourceHelper implements InitializingBean
                 if (pInfo != null)
                 {
                     userInfo = new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
-                }
-                else
+                } else
                 {
                     if (LOGGER.isDebugEnabled())
                     {
@@ -300,8 +301,8 @@ public class NodeResourceHelper implements InitializingBean
      * Returns the QName in the format prefix:local, but in the exceptional case where there is no registered prefix
      * returns it in the form {uri}local.
      *
-     * @param   k QName
-     * @return  a String representing the QName in the format prefix:local or {uri}local.
+     * @param k QName
+     * @return a String representing the QName in the format prefix:local or {uri}local.
      */
     public String getQNamePrefixString(QName k)
     {
@@ -309,8 +310,7 @@ public class NodeResourceHelper implements InitializingBean
         try
         {
             key = k.toPrefixString(namespaceService);
-        }
-        catch (NamespaceException e)
+        } catch (NamespaceException e)
         {
             key = k.toString();
         }
@@ -331,14 +331,9 @@ public class NodeResourceHelper implements InitializingBean
         return filteredAspects;
     }
 
-    private boolean isNotEmptyString(Serializable ser)
-    {
-        return !(ser instanceof String) || !((String) ser).isEmpty();
-    }
-
     public QName getNodeType(NodeRef nodeRef)
     {
-       return nodeService.getType(nodeRef);
+        return nodeService.getType(nodeRef);
     }
 
     public Serializable getProperty(NodeRef nodeRef, QName qName)
@@ -348,14 +343,13 @@ public class NodeResourceHelper implements InitializingBean
 
     public Map<QName, Serializable> getProperties(NodeRef nodeRef)
     {
-        //We need to have full MLText properties here. This is why we are marking the current thread as a "ml aware"
+        //We need to have full MLText properties here. This is why we are marking the current thread as MLAware
         final boolean toRestore = MLPropertyInterceptor.isMLAware();
         MLPropertyInterceptor.setMLAware(true);
         try
         {
             return nodeService.getProperties(nodeRef);
-        }
-        finally
+        } finally
         {
             MLPropertyInterceptor.setMLAware(toRestore);
         }
@@ -365,7 +359,7 @@ public class NodeResourceHelper implements InitializingBean
     {
         return mapToNodeAspects(nodeService.getAspects(nodeRef));
     }
-    
+
     public List<String> getPrimaryHierarchy(NodeRef nodeRef, boolean showLeaf)
     {
         final Path path = nodeService.getPath(nodeRef);
@@ -375,5 +369,77 @@ public class NodeResourceHelper implements InitializingBean
     public PermissionService getPermissionService()
     {
         return permissionService;
+    }
+
+    public Map<String, Map<String, String>> getLocalizedPropertiesBefore(Map<QName, Serializable> propsBefore, NodeResource nodeAfter)
+    {
+        final Map<String, Map<String, String>> locPropsBefore = ofNullable(propsBefore)
+                .map(this::mapToNodeLocalizedProperties)
+                .orElseGet(Map::of);
+        final Map<String, Map<String, String>> locPropsAfter = ofNullable(nodeAfter)
+                .map(NodeResource::getLocalizedProperties)
+                .orElseGet(Map::of);
+
+        return getLocalizedPropertiesBefore(locPropsBefore, locPropsAfter);
+    }
+
+    static Map<String, Map<String, String>> getLocalizedPropertiesBefore(Map<String, Map<String, String>> locPropsBefore,
+                                                                         Map<String, Map<String, String>> locPropsAfter)
+    {
+        final Map<String, Map<String, String>> result = new HashMap<>(locPropsBefore.size());
+
+        locPropsBefore.forEach((propertyName, beforePropertyValues) -> {
+            final Map<String, String> valuesBefore = ofNullable(beforePropertyValues).orElseGet(Map::of);
+            final Map<String, String> valuesAfter = ofNullable(locPropsAfter.get(propertyName)).orElseGet(Map::of);
+
+            if (!locPropsAfter.containsKey(propertyName))
+            {
+                result.put(propertyName, valuesBefore);
+            } else if (valuesAfter.isEmpty() != valuesBefore.isEmpty())
+            {
+                result.put(propertyName, valuesBefore);
+            } else if (!valuesBefore.isEmpty() && !valuesAfter.isEmpty())
+            {
+                final Map<String, String> diff = new HashMap<>(valuesBefore.size());
+                final MutableBoolean wasThereAnyChangeDetected = new MutableBoolean(valuesBefore.size() != valuesAfter.size());
+                valuesBefore.forEach((lang, valueBefore) -> {
+                    final String valueAfter = valuesAfter.get(lang);
+                    if (!Objects.equals(valueBefore, valueAfter))
+                    {
+                        wasThereAnyChangeDetected.setTrue();
+                        diff.put(lang, valueBefore);
+                    }
+                });
+                if (wasThereAnyChangeDetected.isTrue())
+                {
+                    result.put(propertyName, diff);
+                }
+            }
+        });
+
+
+//        locPropsBefore.forEach((beforePropertyName, beforePropertyValues) -> {
+//            final Map<String, String> valuesBefore = ofNullable(beforePropertyValues).orElseGet(Map::of);
+//            final Map<String, String> valuesAfter = ofNullable(locPropsAfter.get(beforePropertyName)).orElseGet(Map::of);
+//            if (!locPropsAfter.containsKey(beforePropertyName) || valuesBefore.isEmpty() != valuesAfter.isEmpty())
+//            {
+//                result.put(beforePropertyName, valuesBefore);
+//            }
+//            else if (!valuesBefore.isEmpty() && !valuesAfter.isEmpty())
+//            {
+//                final Map<String, String> diff = new HashMap<>(valuesBefore.size());
+//
+//                valuesBefore.forEach((language, valueBefore) -> {
+//                    final String valueAfter = valuesAfter.get(language);
+//                    if ((valueAfter == null && !valuesAfter.containsKey(language)) || !Objects.equals(valueBefore, valueAfter))
+//                    {
+//                        diff.put(language, valueBefore);
+//                    }
+//                });
+//                result.put(beforePropertyName, diff);
+//            }
+//        });
+
+        return result;
     }
 }

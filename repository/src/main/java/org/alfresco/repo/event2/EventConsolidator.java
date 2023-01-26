@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -304,6 +304,16 @@ public class EventConsolidator implements EventSupportedPolicies
                 builder.setProperties(mappedProps);
                 resourceBeforeAllFieldsNull = false;
             }
+            Map<String, Map<String, String>> localizedPropertiesBefore = helper.getLocalizedPropertiesBefore(
+                    changedPropsBefore, after);
+
+            Map<String, Map<String, String>> mappedLocalizedProps = helper.mapToNodeLocalizedProperties(changedPropsBefore);
+            if (!mappedLocalizedProps.isEmpty())
+            {
+                builder.setLocalizedProperties(mappedLocalizedProps);
+                resourceBeforeAllFieldsNull = false;
+            }
+
             String name = (String) changedPropsBefore.get(ContentModel.PROP_NAME);
             if (name != null)
             {

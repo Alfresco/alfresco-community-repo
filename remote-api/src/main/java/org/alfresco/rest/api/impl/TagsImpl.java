@@ -128,6 +128,10 @@ public class TagsImpl implements Tags
     	taggingService.removeTag(nodeRef, tagValue);
     }
 
+	public void deleteTagById(StoreRef storeRef, String tagId) {
+		taggingService.deleteTag(storeRef, tagId);
+	}
+
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
         Paging paging = params.getPaging();

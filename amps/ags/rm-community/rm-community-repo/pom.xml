@@ -549,6 +549,35 @@
           <build>
              <plugins>
                 <plugin>
+                   <groupId>io.fabric8</groupId>
+                   <artifactId>docker-maven-plugin</artifactId>
+                   <configuration>
+                      <images>
+                         <image>
+                            <name>${image.name}:${image.tag}</name>
+                            <build>
+                               <buildx>
+                                  <builderName>${builder.name}</builderName>
+                               </buildx>
+                               <args>
+                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
+                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
+                               </args>
+                            </build>
+                         </image>
+                      </images>
+                   </configuration>
+                   <executions>
+                      <execution>
+                         <id>build-image</id>
+                         <phase>package</phase>
+                         <goals>
+                            <goal>build</goal>
+                         </goals>
+                      </execution>
+                   </executions>
+                </plugin>
+                <plugin>
                    <artifactId>exec-maven-plugin</artifactId>
                    <groupId>org.codehaus.mojo</groupId>
                    <executions>
@@ -581,35 +610,6 @@
                       </execution>
                    </executions>
                 </plugin>
-                <plugin>
-                   <groupId>io.fabric8</groupId>
-                   <artifactId>docker-maven-plugin</artifactId>
-                   <configuration>
-                      <images>
-                         <image>
-                            <name>${image.name}:${image.tag}</name>
-                            <build>
-                               <buildx>
-                                  <builderName>${builder.name}</builderName>
-                               </buildx>
-                               <args>
-                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
-                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
-                               </args>
-                            </build>
-                         </image>
-                      </images>
-                   </configuration>
-                   <executions>
-                      <execution>
-                         <id>build-image</id>
-                         <phase>package</phase>
-                         <goals>
-                            <goal>build</goal>
-                         </goals>
-                      </execution>
-                   </executions>
-                </plugin>
              </plugins>
           </build>
        </profile>
@@ -627,10 +627,28 @@
                          <image>
                             <!-- Quay image -->
                             <name>${image.registry}/${image.name}:${image.tag}</name>
+                            <build>
+                               <buildx>
+                                  <builderName>${builder.name}</builderName>
+                               </buildx>
+                               <args>
+                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
+                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
+                               </args>
+                            </build>
                          </image>
                          <image>
                             <!-- DockerHub image -->
                             <name>${image.name}:${image.tag}</name>
+                            <build>
+                               <buildx>
+                                  <builderName>${builder.name}</builderName>
+                               </buildx>
+                               <args>
+                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
+                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
+                               </args>
+                            </build>
                          </image>
                       </images>
                    </configuration>
@@ -645,6 +663,39 @@
                       </execution>
                    </executions>
                 </plugin>
+                 <plugin>
+                     <artifactId>exec-maven-plugin</artifactId>
+                     <groupId>org.codehaus.mojo</groupId>
+                     <executions>
+                        <execution>
+                            <id>prepare-buildx</id>
+                            <phase>generate-sources</phase>
+                            <goals>
+                               <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                               <executable>${basedir}/scripts/prepare_buildx.sh</executable>
+                               <arguments>
+                                  <argument>${local.registry.host}</argument>
+                                  <argument>${local.registry.port}</argument>
+                                  <argument>${base.image}</argument>
+                                  <argument>${base.image.tag}</argument>
+                                  <argument>${builder.name}</argument>
+                               </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
+                           <id>clear</id>
+                           <phase>install</phase>
+                           <goals>
+                              <goal>exec</goal>
+                           </goals>
+                           <configuration>
+                              <executable>${basedir}/scripts/remove_local_registry.sh</executable>
+                           </configuration>
+                         </execution>
+                     </executions>
+                 </plugin>
              </plugins>
           </build>
        </profile>

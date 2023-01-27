@@ -595,6 +595,9 @@
                                <argument>${base.image}</argument>
                                <argument>${base.image.tag}</argument>
                                <argument>${builder.name}</argument>
+                               <argument>${image.registry}</argument>
+                               <argument>${image.name}</argument>
+                               <argument>${image.tag}</argument>
                             </arguments>
                          </configuration>
                       </execution>
@@ -681,6 +684,9 @@
                                   <argument>${base.image}</argument>
                                   <argument>${base.image.tag}</argument>
                                   <argument>${builder.name}</argument>
+                                  <argument>${image.registry}</argument>
+                                  <argument>${image.name}</argument>
+                                  <argument>${image.tag}</argument>
                                </arguments>
                             </configuration>
                         </execution>

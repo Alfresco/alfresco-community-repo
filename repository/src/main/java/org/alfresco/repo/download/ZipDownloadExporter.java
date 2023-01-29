@@ -31,6 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -83,6 +85,7 @@ public class ZipDownloadExporter extends BaseExporter
 
     private Deque<Pair<String, NodeRef>> path = new LinkedList<Pair<String, NodeRef>>();
     private String currentName;
+    private Date zipTimestamp;
 
     private OutputStream outputStream;
 
@@ -137,6 +140,7 @@ public class ZipDownloadExporter extends BaseExporter
     public void startNode(NodeRef nodeRef)
     {
         this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        this.zipTimestamp = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         path.push(new Pair<String, NodeRef>(currentName, nodeRef));
         if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER))
         {
@@ -144,6 +148,10 @@ public class ZipDownloadExporter extends BaseExporter
             ZipArchiveEntry archiveEntry = new ZipArchiveEntry(path);
             try
             {
+                archiveEntry.setTime(zipTimestamp.getTime());
+                archiveEntry.setCreationTime(FileTime.fromMillis(zipTimestamp.getTime()));
+                archiveEntry.setLastAccessTime(FileTime.fromMillis(zipTimestamp.getTime()));
+                archiveEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestamp.getTime()));
                 zipStream.putArchiveEntry(archiveEntry);
                 zipStream.closeArchiveEntry();
             }
@@ -167,11 +175,13 @@ public class ZipDownloadExporter extends BaseExporter
         {
             // ALF-2016
             ZipArchiveEntry zipEntry=new ZipArchiveEntry(getPath());
+            zipEntry.setTime(zipTimestamp.getTime());
+            zipEntry.setCreationTime(FileTime.fromMillis(zipTimestamp.getTime()));
+            zipEntry.setLastAccessTime(FileTime.fromMillis(zipTimestamp.getTime()));
+            zipEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestamp.getTime()));
             zipStream.putArchiveEntry(zipEntry);
-            
             // copy export stream to zip
             copyStream(zipStream, content);
-            
             zipStream.closeArchiveEntry();
             filesAddedCount = filesAddedCount + 1;
         }

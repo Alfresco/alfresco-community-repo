@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -51,6 +51,18 @@ public class MLText extends HashMap<Locale, String>
 {
     private static final long serialVersionUID = -3696135175650511841L;
 
+    /**
+     * Returns default locale used by the {@link MLText} implementation
+     *
+     * @see I18NUtil#getLocale()
+     *
+     * @return default locale
+     */
+    public static Locale getDefaultLocale()
+    {
+        return I18NUtil.getLocale();
+    }
+
     public MLText()
     {
         super(3, 0.75F);
@@ -61,13 +73,13 @@ public class MLText extends HashMap<Locale, String>
      * 
      * @param value the value for the current default locale
      * 
-     * @see I18NUtil#getLocale()
+     * @see #getDefaultLocale()
      * @see #MLText(Locale, String)
      * @see #getDefaultValue()
      */
     public MLText(String value)
     {
-        this(I18NUtil.getLocale(), value);
+        this(getDefaultLocale(), value);
     }
     
     /**
@@ -124,7 +136,7 @@ public class MLText extends HashMap<Locale, String>
     /**
      * Retrieves a default value from the set of available locales.<br/>
      * 
-     * @see I18NUtil#getLocale()
+     * @see #getDefaultLocale()
      * @see #getClosestValue(Locale)
      */
     public String getDefaultValue()
@@ -135,7 +147,7 @@ public class MLText extends HashMap<Locale, String>
             return null;
         }
         // There is some hope of getting a match
-        Locale locale = I18NUtil.getLocale();
+        Locale locale = getDefaultLocale();
         return getClosestValue(locale);
     }
     
@@ -168,7 +180,7 @@ public class MLText extends HashMap<Locale, String>
         if (match == null)
         {
             // No close matches for the locale - go for the default locale
-            locale = I18NUtil.getLocale();
+            locale = getDefaultLocale();
             match = I18NUtil.getNearestLocale(locale, options);
             if (match == null)
             {

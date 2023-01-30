@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
@@ -55,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.32.0
@@ -76,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -146,7 +146,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -172,7 +172,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.6 database"
@@ -198,7 +198,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -223,7 +223,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 13.7 database"
@@ -248,7 +248,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.4 database"
@@ -271,7 +271,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -316,7 +316,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -375,7 +375,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -412,7 +412,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 14.4 database"
@@ -441,7 +441,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -472,7 +472,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -499,7 +499,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

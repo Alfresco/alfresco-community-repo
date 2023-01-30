@@ -5,7 +5,7 @@ set -vex
 pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 # Maven Setup
-mkdir -p "${HOME}/.m2" && cp -f .github/.ci.settings.xml "${HOME}/.m2/settings.xml"
+mkdir -p "${HOME}/.m2"
 find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
 
 # Docker Logins

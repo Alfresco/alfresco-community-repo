@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.32.0
@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.32.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.32.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@feature/ACS-4455_copy-settings-xml
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.32.0

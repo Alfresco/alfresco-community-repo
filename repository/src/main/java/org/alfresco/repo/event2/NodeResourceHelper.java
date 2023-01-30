@@ -39,6 +39,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.ContentInfo;
 import org.alfresco.repo.event.v1.model.NodeResource;
@@ -388,57 +391,27 @@ public class NodeResourceHelper implements InitializingBean
     {
         final Map<String, Map<String, String>> result = new HashMap<>(locPropsBefore.size());
 
-        locPropsBefore.forEach((propertyName, beforePropertyValues) -> {
-            final Map<String, String> valuesBefore = ofNullable(beforePropertyValues).orElseGet(Map::of);
+        Sets.union(locPropsBefore.keySet(), locPropsAfter.keySet()).forEach(propertyName -> {
+            final Map<String, String> valuesBefore = ofNullable(locPropsBefore.get(propertyName)).orElseGet(Map::of);
             final Map<String, String> valuesAfter = ofNullable(locPropsAfter.get(propertyName)).orElseGet(Map::of);
 
-            if (!locPropsAfter.containsKey(propertyName))
-            {
-                result.put(propertyName, valuesBefore);
-            } else if (valuesAfter.isEmpty() != valuesBefore.isEmpty())
-            {
-                result.put(propertyName, valuesBefore);
-            } else if (!valuesBefore.isEmpty() && !valuesAfter.isEmpty())
+            if (!valuesAfter.isEmpty() || !valuesBefore.isEmpty())
             {
                 final Map<String, String> diff = new HashMap<>(valuesBefore.size());
-                final MutableBoolean wasThereAnyChangeDetected = new MutableBoolean(valuesBefore.size() != valuesAfter.size());
-                valuesBefore.forEach((lang, valueBefore) -> {
+                Sets.union(valuesBefore.keySet(), valuesAfter.keySet()).forEach(lang -> {
+                    final String valueBefore = valuesBefore.get(lang);
                     final String valueAfter = valuesAfter.get(lang);
                     if (!Objects.equals(valueBefore, valueAfter))
                     {
-                        wasThereAnyChangeDetected.setTrue();
                         diff.put(lang, valueBefore);
                     }
                 });
-                if (wasThereAnyChangeDetected.isTrue())
+                if (!diff.isEmpty())
                 {
                     result.put(propertyName, diff);
                 }
             }
         });
-
-
-//        locPropsBefore.forEach((beforePropertyName, beforePropertyValues) -> {
-//            final Map<String, String> valuesBefore = ofNullable(beforePropertyValues).orElseGet(Map::of);
-//            final Map<String, String> valuesAfter = ofNullable(locPropsAfter.get(beforePropertyName)).orElseGet(Map::of);
-//            if (!locPropsAfter.containsKey(beforePropertyName) || valuesBefore.isEmpty() != valuesAfter.isEmpty())
-//            {
-//                result.put(beforePropertyName, valuesBefore);
-//            }
-//            else if (!valuesBefore.isEmpty() && !valuesAfter.isEmpty())
-//            {
-//                final Map<String, String> diff = new HashMap<>(valuesBefore.size());
-//
-//                valuesBefore.forEach((language, valueBefore) -> {
-//                    final String valueAfter = valuesAfter.get(language);
-//                    if ((valueAfter == null && !valuesAfter.containsKey(language)) || !Objects.equals(valueBefore, valueAfter))
-//                    {
-//                        diff.put(language, valueBefore);
-//                    }
-//                });
-//                result.put(beforePropertyName, diff);
-//            }
-//        });
 
         return result;
     }

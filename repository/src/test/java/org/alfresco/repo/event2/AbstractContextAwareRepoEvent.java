@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,6 +32,7 @@ import static org.awaitility.Awaitility.await;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import javax.jms.ConnectionFactory;
 
@@ -47,6 +48,7 @@ import org.alfresco.repo.event.v1.model.Resource;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -70,6 +72,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.stringtemplate.v4.ST;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -88,6 +91,15 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     private static final   String             TOPIC_NAME      = "alfresco.repo.event2";
     private static final   String             CAMEL_ROUTE     = "jms:topic:" + TOPIC_NAME;
     private static final   CamelContext       CAMEL_CONTEXT   = new DefaultCamelContext();
+
+    protected final Locale defaultLocale = MLText.getDefaultLocale();
+    protected final String defaultLanguage = defaultLocale.getLanguage();
+    protected final Locale germanLocale = Locale.GERMAN;
+    protected final String germanLanguage = germanLocale.getLanguage();
+    protected final Locale frenchLocale = Locale.FRENCH;
+    protected final String frenchLanguage = frenchLocale.getLanguage();
+    protected final Locale japaneseLocale = Locale.JAPANESE;
+    protected final String japaneseLanguage = japaneseLocale.getLanguage();
 
     private static boolean isCamelConfigured;
     private static DataFormat dataFormat;
@@ -386,6 +398,20 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         assertNotNull(resource);
         assertNotNull(resource.getProperties());
         return (T) resource.getProperties().get(propertyName);
+    }
+
+    protected String getLocalizedProperty(NodeResource resource, String propertyName, String language)
+    {
+        assertTrue(containsLocalizedProperty(resource, propertyName, language));
+        return resource.getLocalizedProperties().get(propertyName).get(language);
+    }
+
+    protected boolean containsLocalizedProperty(NodeResource resource, String propertyName, String language)
+    {
+        assertNotNull(resource);
+        assertNotNull(resource.getLocalizedProperties());
+        assertNotNull(resource.getLocalizedProperties().get(propertyName));
+        return resource.getLocalizedProperties().get(propertyName).containsKey(language);
     }
 
     /**

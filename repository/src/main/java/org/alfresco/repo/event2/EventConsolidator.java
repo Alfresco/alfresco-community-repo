@@ -304,13 +304,11 @@ public class EventConsolidator implements EventSupportedPolicies
                 builder.setProperties(mappedProps);
                 resourceBeforeAllFieldsNull = false;
             }
-            Map<String, Map<String, String>> localizedPropertiesBefore = helper.getLocalizedPropertiesBefore(
-                    changedPropsBefore, after);
 
-            Map<String, Map<String, String>> mappedLocalizedProps = helper.mapToNodeLocalizedProperties(changedPropsBefore);
-            if (!mappedLocalizedProps.isEmpty())
+            Map<String, Map<String, String>> localizedProps =helper.getLocalizedPropertiesBefore(changedPropsBefore, after);
+            if (!localizedProps.isEmpty())
             {
-                builder.setLocalizedProperties(mappedLocalizedProps);
+                builder.setLocalizedProperties(localizedProps);
                 resourceBeforeAllFieldsNull = false;
             }
 

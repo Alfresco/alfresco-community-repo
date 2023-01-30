@@ -158,6 +158,7 @@ public class NodeResourceHelper implements InitializingBean
                            .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
                            .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
                            .setProperties(mapToNodeProperties(properties))
+                           .setLocalizedProperties(mapToNodeLocalizedProperties(properties))
                            .setAspectNames(getMappedAspects(nodeRef));
     }
 

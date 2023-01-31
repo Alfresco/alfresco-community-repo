@@ -31,9 +31,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.attribute.FileTime;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.TimeZone;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -85,6 +90,7 @@ public class ZipDownloadExporter extends BaseExporter
     private String currentName;
 
     private OutputStream outputStream;
+    private Date zipTimestamp;
 
     /**
      * Construct
@@ -137,6 +143,18 @@ public class ZipDownloadExporter extends BaseExporter
     public void startNode(NodeRef nodeRef)
     {
         this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        Date utcTimestamp = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        TimeZone time_zone_default = TimeZone.getDefault();
+        SimpleDateFormat formatter= new SimpleDateFormat("dd MMM yyyy HH:mm:ss z");
+        formatter.setTimeZone(time_zone_default);
+        try
+        {
+            this.zipTimestamp = formatter.parse(formatter.format(utcTimestamp));
+        }
+        catch( ParseException e)
+        {
+            throw new ExporterException("Unexpected ParseException adding folder timestamp entry", e);
+        }
         path.push(new Pair<String, NodeRef>(currentName, nodeRef));
         if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER))
         {
@@ -144,6 +162,10 @@ public class ZipDownloadExporter extends BaseExporter
             ZipArchiveEntry archiveEntry = new ZipArchiveEntry(path);
             try
             {
+                archiveEntry.setTime(zipTimestamp.getTime());
+                archiveEntry.setCreationTime(FileTime.fromMillis(zipTimestamp.getTime()));
+                archiveEntry.setLastAccessTime(FileTime.fromMillis(zipTimestamp.getTime()));
+                archiveEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestamp.getTime()));
                 zipStream.putArchiveEntry(archiveEntry);
                 zipStream.closeArchiveEntry();
             }
@@ -167,6 +189,10 @@ public class ZipDownloadExporter extends BaseExporter
         {
             // ALF-2016
             ZipArchiveEntry zipEntry=new ZipArchiveEntry(getPath());
+            zipEntry.setTime(zipTimestamp.getTime());
+            zipEntry.setCreationTime(FileTime.fromMillis(zipTimestamp.getTime()));
+            zipEntry.setLastAccessTime(FileTime.fromMillis(zipTimestamp.getTime()));
+            zipEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestamp.getTime()));
             zipStream.putArchiveEntry(zipEntry);
             
             // copy export stream to zip

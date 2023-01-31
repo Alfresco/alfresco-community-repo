@@ -194,10 +194,10 @@ public class ZipDownloadExporter extends BaseExporter
             zipEntry.setLastAccessTime(FileTime.fromMillis(zipTimestamp.getTime()));
             zipEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestamp.getTime()));
             zipStream.putArchiveEntry(zipEntry);
-            
+
             // copy export stream to zip
             copyStream(zipStream, content);
-            
+
             zipStream.closeArchiveEntry();
             filesAddedCount = filesAddedCount + 1;
         }

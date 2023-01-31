@@ -145,6 +145,7 @@ public class ZipDownloadExporter extends BaseExporter
         this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         Date utcTimestamp = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         TimeZone time_zone_default = TimeZone.getDefault();
+        System.out.println("Time Zone: "+ time_zone_default.getID());
         SimpleDateFormat formatter= new SimpleDateFormat("dd MMM yyyy HH:mm:ss z");
         formatter.setTimeZone(time_zone_default);
         try
@@ -194,10 +195,8 @@ public class ZipDownloadExporter extends BaseExporter
             zipEntry.setLastAccessTime(FileTime.fromMillis(zipTimestamp.getTime()));
             zipEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestamp.getTime()));
             zipStream.putArchiveEntry(zipEntry);
-
             // copy export stream to zip
             copyStream(zipStream, content);
-
             zipStream.closeArchiveEntry();
             filesAddedCount = filesAddedCount + 1;
         }

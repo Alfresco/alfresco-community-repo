@@ -228,7 +228,7 @@ public class NodeResourceHelper implements InitializingBean
             {
                 final MLText mlTextValue = (MLText) v;
                 final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
-                mlTextValue.forEach((lang, text) -> localizedValues.put(lang.getLanguage(), text));
+                mlTextValue.forEach((locale, text) -> localizedValues.put(locale.toString(), text));
                 filteredProps.put(getQNamePrefixString(k), localizedValues);
             }
         });

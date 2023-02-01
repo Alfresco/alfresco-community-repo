@@ -1,5 +1,5 @@
 // check category exists?
-var category = search.luceneSearch("PATH:\"/cm:generalclassifiable//cm:" + url.extension + "\"");
+var category = search.luceneSearch("PATH:\"/cm:categoryRoot/cm:generalclassifiable//cm:" + url.extension + "\"");
 if (category == undefined)
 {
    status.code = 404;
@@ -9,6 +9,6 @@ if (category == undefined)
 else
 {
    // perform category search
-   var nodes = search.luceneSearch("PATH:\"/cm:generalclassifiable//cm:" + url.extension + "//member\"");
+   var nodes = search.luceneSearch("PATH:\"/cm:categoryRoot/cm:generalclassifiable//cm:" + url.extension + "//member\"");
    model.resultset = nodes;
 }

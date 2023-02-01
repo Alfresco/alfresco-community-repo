@@ -72,10 +72,10 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(createdResource.getId(), nodeResource.getId());
         assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, createdResource.getPrimaryAssocQName());
         assertEquals("test title", getProperty(nodeResource, "cm:title"));
-        assertEquals("test title", getLocalizedProperty(nodeResource, "cm:title", defaultLanguage));
+        assertEquals("test title", getLocalizedProperty(nodeResource, "cm:title", defaultLocale));
         assertEquals("default description", getProperty(nodeResource, "cm:description"));
-        assertEquals("default description", getLocalizedProperty(nodeResource, "cm:description", defaultLanguage));
-        assertEquals("german description", getLocalizedProperty(nodeResource, "cm:description", germanLanguage));
+        assertEquals("default description", getLocalizedProperty(nodeResource, "cm:description", defaultLocale));
+        assertEquals("german description", getLocalizedProperty(nodeResource, "cm:description", germanLocale));
 
         // There should be no resourceBefore
         EventData<NodeResource> eventData = getEventData(resultRepoEvent);

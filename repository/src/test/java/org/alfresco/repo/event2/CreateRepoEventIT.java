@@ -94,10 +94,10 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(nodeResource.getPrimaryHierarchy());
         assertNotNull("Default aspects were not added. ", nodeResource.getAspectNames());
         assertEquals("test title", getProperty(nodeResource, "cm:title"));
-        assertEquals("test title", getLocalizedProperty(nodeResource, "cm:title", defaultLanguage));
+        assertEquals("test title", getLocalizedProperty(nodeResource, "cm:title", defaultLocale));
         assertEquals("default description", getProperty(nodeResource, "cm:description"));
-        assertEquals("default description", getLocalizedProperty(nodeResource, "cm:description", defaultLanguage));
-        assertEquals("german description", getLocalizedProperty(nodeResource, "cm:description", germanLanguage));
+        assertEquals("default description", getLocalizedProperty(nodeResource, "cm:description", defaultLocale));
+        assertEquals("german description", getLocalizedProperty(nodeResource, "cm:description", germanLocale));
         assertNull("There is no content.", nodeResource.getContent());
 
         assertNotNull("Missing createdByUser property.", nodeResource.getCreatedByUser());

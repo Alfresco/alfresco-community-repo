@@ -306,12 +306,12 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         NodeResource resourceBefore = getNodeResourceBefore(2);
 
         assertEquals("default description", getProperty(resource, description));
-        assertEquals("default description", getLocalizedProperty(resource, description, defaultLanguage));
-        assertEquals("german description", getLocalizedProperty(resource, description, germanLanguage));
-        assertEquals("japanese description", getLocalizedProperty(resource, description, japaneseLanguage));
-        assertNull(getLocalizedProperty(resourceBefore, description, defaultLanguage));
-        assertNull(getLocalizedProperty(resourceBefore, description, germanLanguage));
-        assertNull(getLocalizedProperty(resourceBefore, description, japaneseLanguage));
+        assertEquals("default description", getLocalizedProperty(resource, description, defaultLocale));
+        assertEquals("german description", getLocalizedProperty(resource, description, germanLocale));
+        assertEquals("japanese description", getLocalizedProperty(resource, description, japaneseLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, defaultLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, germanLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, japaneseLocale));
 
         retryingTransactionHelper.doInTransaction(() -> {
             final MLText localizedDescription = new MLText(frenchLocale, "french description added");
@@ -326,14 +326,14 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         resourceBefore = getNodeResourceBefore(3);
 
         assertEquals("default description modified", getProperty(resource, description));
-        assertEquals("default description modified", getLocalizedProperty(resource, description, defaultLanguage));
-        assertEquals("french description added", getLocalizedProperty(resource, description, frenchLanguage));
-        assertEquals("japanese description", getLocalizedProperty(resource, description, japaneseLanguage));
-        assertFalse(containsLocalizedProperty(resource, description, germanLanguage));
-        assertEquals("default description", getLocalizedProperty(resourceBefore, description, defaultLanguage));
-        assertEquals("german description", getLocalizedProperty(resourceBefore, description, germanLanguage));
-        assertNull(getLocalizedProperty(resourceBefore, description, frenchLanguage));
-        assertFalse(containsLocalizedProperty(resourceBefore, description, japaneseLanguage));
+        assertEquals("default description modified", getLocalizedProperty(resource, description, defaultLocale));
+        assertEquals("french description added", getLocalizedProperty(resource, description, frenchLocale));
+        assertEquals("japanese description", getLocalizedProperty(resource, description, japaneseLocale));
+        assertFalse(containsLocalizedProperty(resource, description, germanLocale));
+        assertEquals("default description", getLocalizedProperty(resourceBefore, description, defaultLocale));
+        assertEquals("german description", getLocalizedProperty(resourceBefore, description, germanLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, frenchLocale));
+        assertFalse(containsLocalizedProperty(resourceBefore, description, japaneseLocale));
     }
 
     @Test
@@ -356,8 +356,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         NodeResource resourceBefore = getNodeResourceBefore(2);
         title = getProperty(resource, "cm:title");
         assertEquals("test title", title);
-        assertEquals("test title", getLocalizedProperty(resource, "cm:title", defaultLanguage));
-        assertNull(getLocalizedProperty(resourceBefore, "cm:title", defaultLanguage));
+        assertEquals("test title", getLocalizedProperty(resource, "cm:title", defaultLocale));
+        assertNull(getLocalizedProperty(resourceBefore, "cm:title", defaultLocale));
 
         // update content cm:title property again with "new test title" value
         retryingTransactionHelper.doInTransaction(() -> {
@@ -368,13 +368,13 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         resource = getNodeResource(3);
         title = getProperty(resource, "cm:title");
         assertEquals("new test title", title);
-        assertEquals("new test title", getLocalizedProperty(resource, "cm:title", defaultLanguage));
+        assertEquals("new test title", getLocalizedProperty(resource, "cm:title", defaultLocale));
 
 
         resourceBefore = getNodeResourceBefore(3);
         title = getProperty(resourceBefore, "cm:title");
         assertEquals("Wrong old property.", "test title", title);
-        assertEquals("test title", getLocalizedProperty(resourceBefore, "cm:title", defaultLanguage));
+        assertEquals("test title", getLocalizedProperty(resourceBefore, "cm:title", defaultLocale));
         assertNotNull(resourceBefore.getModifiedAt());
     }
 

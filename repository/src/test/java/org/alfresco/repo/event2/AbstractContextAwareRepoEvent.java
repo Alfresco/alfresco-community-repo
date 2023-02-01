@@ -72,7 +72,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.stringtemplate.v4.ST;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -92,14 +91,10 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     private static final   String             CAMEL_ROUTE     = "jms:topic:" + TOPIC_NAME;
     private static final   CamelContext       CAMEL_CONTEXT   = new DefaultCamelContext();
 
-    protected final Locale defaultLocale = MLText.getDefaultLocale();
-    protected final String defaultLanguage = defaultLocale.getLanguage();
-    protected final Locale germanLocale = Locale.GERMAN;
-    protected final String germanLanguage = germanLocale.getLanguage();
-    protected final Locale frenchLocale = Locale.FRENCH;
-    protected final String frenchLanguage = frenchLocale.getLanguage();
-    protected final Locale japaneseLocale = Locale.JAPANESE;
-    protected final String japaneseLanguage = japaneseLocale.getLanguage();
+    protected final Locale defaultLocale = new Locale(MLText.getDefaultLocale().getLanguage());
+    protected final Locale germanLocale = new Locale(Locale.GERMAN.getLanguage(), "XX");
+    protected final Locale frenchLocale = new Locale(Locale.FRENCH.getLanguage());
+    protected final Locale japaneseLocale = new Locale(Locale.JAPANESE.getLanguage(), "YY", "ZZ");
 
     private static boolean isCamelConfigured;
     private static DataFormat dataFormat;
@@ -400,18 +395,18 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         return (T) resource.getProperties().get(propertyName);
     }
 
-    protected String getLocalizedProperty(NodeResource resource, String propertyName, String language)
+    protected String getLocalizedProperty(NodeResource resource, String propertyName, Locale locale)
     {
-        assertTrue(containsLocalizedProperty(resource, propertyName, language));
-        return resource.getLocalizedProperties().get(propertyName).get(language);
+        assertTrue(containsLocalizedProperty(resource, propertyName, locale));
+        return resource.getLocalizedProperties().get(propertyName).get(locale.toString());
     }
 
-    protected boolean containsLocalizedProperty(NodeResource resource, String propertyName, String language)
+    protected boolean containsLocalizedProperty(NodeResource resource, String propertyName, Locale locale)
     {
         assertNotNull(resource);
         assertNotNull(resource.getLocalizedProperties());
         assertNotNull(resource.getLocalizedProperties().get(propertyName));
-        return resource.getLocalizedProperties().get(propertyName).containsKey(language);
+        return resource.getLocalizedProperties().get(propertyName).containsKey(locale.toString());
     }
 
     /**

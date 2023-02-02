@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request') &&
+      ((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]')) &&
@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]')) &&
@@ -189,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]')) &&
@@ -215,7 +215,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -337,7 +337,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip tas]')) ||
       contains(github.event.head_commit.message, '[tas]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -427,7 +427,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]')) ||
       contains(github.event.head_commit.message, '[ags]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -458,7 +458,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]')) ||
       contains(github.event.head_commit.message, '[ags on MySQL]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -489,7 +489,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]') && !contains(github.event.head_commit.message, '[skip tas]')) ||
       (contains(github.event.head_commit.message, '[ags]') && contains(github.event.head_commit.message, '[tas]'))) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -45,6 +45,8 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
                                                  EntityResourceAction.Update<Category>,
                                                  EntityResourceAction.Delete
 {
+    private static final String PARAM_INCLUDE_COUNT = "count";
+
     private final Categories categories;
 
     public CategoriesEntityResource(Categories categories)
@@ -63,7 +65,8 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     @Override
     public Category readById(String id, Parameters parameters) throws EntityNotFoundException
     {
-        return categories.getCategoryById(id, parameters);
+        final boolean includeCount = parameters.getInclude().contains(PARAM_INCLUDE_COUNT);
+        return categories.getCategoryById(id, includeCount);
     }
 
     /**
@@ -77,7 +80,8 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     @Override
     public Category update(String id, Category categoryModel, Parameters parameters)
     {
-        return categories.updateCategoryById(id, categoryModel);
+        final boolean includeCount = parameters.getInclude().contains(PARAM_INCLUDE_COUNT);
+        return categories.updateCategoryById(id, categoryModel, includeCount);
     }
 
     /**
@@ -91,6 +95,6 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     @Override
     public void delete(String id, Parameters parameters)
     {
-        categories.deleteCategoryById(id, parameters);
+        categories.deleteCategoryById(id);
     }
 }

@@ -91,7 +91,6 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
     @Override
     public void delete(String nodeId, String categoryId, Parameters parameters)
     {
-        categories.unlinkNodeFromCategory(nodeId, categoryId, parameters);
+        categories.unlinkNodeFromCategory(nodeId, categoryId);
     }
-
 }

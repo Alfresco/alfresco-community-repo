@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,7 +26,10 @@
 
 package org.alfresco.rest.api.categories;
 
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -37,8 +40,8 @@ import java.util.stream.IntStream;
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -52,6 +55,7 @@ public class SubcategoriesRelationTest
     private static final String CATEGORY_ID = "category-node-id";
     private static final String CATEGORY_NAME = "categoryName";
     private static final String SUBCATEGORY_NAME_PREFIX = "childCategoryName";
+    private static final boolean INCLUDE_COUNT = true;
 
     @Mock
     private Categories categoriesMock;
@@ -61,45 +65,49 @@ public class SubcategoriesRelationTest
     @InjectMocks
     private SubcategoriesRelation objectUnderTest;
 
+    @Before
+    public void setUp() throws Exception
+    {
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
+    }
+
     @Test
     public void testCreateSubcategory()
     {
         final Category categoryToCreate = Category.builder().name(CATEGORY_NAME).create();
         final Category category = Category.builder().name(CATEGORY_NAME).parentId(PARENT_CATEGORY_ID).hasChildren(false).id(CATEGORY_ID).create();
         final List<Category> categoriesToCreate = List.of(categoryToCreate);
-        given(categoriesMock.createSubcategories(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock)).willReturn(List.of(category));
+        given(categoriesMock.createSubcategories(any(), any(), anyBoolean())).willCallRealMethod();
+        given(categoriesMock.createSubcategories(any(), any(), any(), anyBoolean())).willReturn(List.of(category));
 
         //when
         List<Category> categories = objectUnderTest.create(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
 
-        then(categoriesMock).should().createSubcategories(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
-        then(categoriesMock).shouldHaveNoMoreInteractions();
+        then(categoriesMock).should().createSubcategories(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, categoriesToCreate, INCLUDE_COUNT);
         assertEquals(List.of(category), categories);
     }
 
     @Test
     public void testGetCategoryChildren() {
-        final CollectionWithPagingInfo<Category> categoryChildren = getCategories(3);
-        given(categoriesMock.getCategoryChildren(PARENT_CATEGORY_ID, parametersMock)).willReturn(categoryChildren);
+        final List<Category> categoryChildren = getCategories(3);
+        given(categoriesMock.getCategoryChildren(any(), anyBoolean())).willCallRealMethod();
+        given(categoriesMock.getCategoryChildren(any(), any(), anyBoolean())).willReturn(categoryChildren);
 
         //when
         final CollectionWithPagingInfo<Category> returnedChildren = objectUnderTest.readAll(PARENT_CATEGORY_ID, parametersMock);
 
-        then(categoriesMock).should().getCategoryChildren(PARENT_CATEGORY_ID, parametersMock);
-        then(categoriesMock).shouldHaveNoMoreInteractions();
-        assertEquals(categoryChildren, returnedChildren);
+        then(categoriesMock).should().getCategoryChildren(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, INCLUDE_COUNT);
+        assertEquals(categoryChildren, returnedChildren.getCollection());
     }
 
-    private CollectionWithPagingInfo<Category> getCategories(final int count)
+    private List<Category> getCategories(final int count)
     {
-        return CollectionWithPagingInfo.asPaged(Paging.DEFAULT,
-                IntStream.range(0, count)
-                        .mapToObj(i -> Category.builder().name(SUBCATEGORY_NAME_PREFIX + "-" + i)
-                            .parentId(PARENT_CATEGORY_ID)
-                            .hasChildren(false)
-                            .id(CATEGORY_ID + "-" + i)
-                            .create())
-                        .collect(Collectors.toList())
-        );
+        return IntStream.range(0, count)
+            .mapToObj(i -> Category.builder().name(SUBCATEGORY_NAME_PREFIX + "-" + i)
+                .parentId(PARENT_CATEGORY_ID)
+                .hasChildren(false)
+                .id(CATEGORY_ID + "-" + i)
+                .create())
+            .collect(Collectors.toList());
     }
 }

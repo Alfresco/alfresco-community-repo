@@ -30,6 +30,7 @@ import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -37,18 +38,21 @@ import java.util.stream.IntStream;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
 import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.rest.model.RestCategoryModelsCollection;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
 
 abstract class CategoriesRestTest extends RestTest
 {
+    protected static final String PARAM_INCLUDE_COUNT = "count";
     protected static final String ROOT_CATEGORY_ID = "-root-";
     protected static final String CATEGORY_NAME_PREFIX = "CategoryName";
     protected static final String FIELD_NAME = "name";
     protected static final String FIELD_ID = "id";
     protected static final String FIELD_PARENT_ID = "parentId";
     protected static final String FIELD_HAS_CHILDREN = "hasChildren";
+    protected static final String FIELD_COUNT = "count";
 
     protected UserModel user;
 
@@ -59,14 +63,26 @@ abstract class CategoriesRestTest extends RestTest
         user = dataUser.createRandomTestUser();
     }
 
-    protected RestCategoryModel prepareCategoryUnderRoot()
+    protected RestCategoryModelsCollection linkContentToCategories(final RepoTestModel node, final RestCategoryModel... categories)
     {
-        return prepareCategoryUnder(ROOT_CATEGORY_ID);
+        final List<RestCategoryLinkBodyModel> categoryLinkModels = Arrays.stream(categories)
+            .map(RestCategoryModel::getId)
+            .map(this::createCategoryLinkModelWithId)
+            .collect(Collectors.toList());
+        final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(user).withCoreAPI().usingNode(node).linkToCategories(categoryLinkModels);
+
+        restClient.assertStatusCodeIs(CREATED);
+
+        return linkedCategories;
     }
 
-    protected RestCategoryModel prepareCategoryUnder(final String parentId)
+    protected RestCategoryModel prepareCategoryUnderRoot()
     {
-        final RestCategoryModel parentCategory = createCategoryModelWithId(parentId);
+        return prepareCategoryUnder(createCategoryModelWithId(ROOT_CATEGORY_ID));
+    }
+
+    protected RestCategoryModel prepareCategoryUnder(final RestCategoryModel parentCategory)
+    {
         final RestCategoryModel categoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NAME_PREFIX));
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()

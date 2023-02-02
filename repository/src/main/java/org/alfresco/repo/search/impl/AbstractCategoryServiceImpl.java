@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -67,6 +69,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Category service implementation
@@ -619,5 +622,49 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
                 .filter(ca -> ca.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE))
                 .map(ChildAssociationRef::getChildRef)
                 .findFirst();
+    }
+
+    @Override
+    @Experimental
+    public Map<String, Integer> getCategoriesCount(final StoreRef storeRef, final String... categoryIds)
+    {
+        final String idPrefix = storeRef + "/";
+        final StringJoiner queryBuilder = new StringJoiner(" ");
+        queryBuilder.add("ASPECT:\"" + ContentModel.ASPECT_GEN_CLASSIFIABLE + "\"");
+        queryBuilder.add("AND NOT ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY + "\"");
+        if (categoryIds.length > 0)
+        {
+            final StringJoiner queryCategories = new StringJoiner(" OR ", "AND (", ")");
+            for (String categoryId : categoryIds)
+            {
+                queryCategories.add("@cm\\:categories:\"" + idPrefix + categoryId + "\"");
+            }
+            queryBuilder.add(queryCategories.toString());
+        }
+
+        final SearchParameters searchParameters = new SearchParameters();
+        searchParameters.addStore(storeRef);
+        searchParameters.setLanguage(SearchService.LANGUAGE_LUCENE);
+        searchParameters.setQuery(queryBuilder.toString());
+        searchParameters.addFieldFacet(new SearchParameters.FieldFacet("cm:categories"));
+        //we only care about faceted results and don't need query results
+        searchParameters.setMaxItems(1);
+        searchParameters.setSkipCount(0);
+
+        ResultSet resultSet = null;
+        try
+        {
+            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(searchParameters);
+            final Map<String, Integer> searchResult = Optional.ofNullable(resultSet.getFieldFacet("cm:categories")).orElse(Collections.emptyList())
+                .stream().collect(Collectors.toMap(pair -> pair.getFirst().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
+            return searchResult;
+        }
+        finally
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2013 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,7 +26,9 @@
 package org.alfresco.service.cmr.search;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -258,5 +260,19 @@ public interface CategoryService
     default Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
     {
         return Optional.empty();
+    }
+
+    /**
+     * Get categories by usage count. Result is a map of category IDs (short form - UUID) as key and usage count as value.
+     *
+     * @param storeRef Reference to node store.
+     * @param categoryIds Filter narrowing result to specified category IDs.
+     * @return Map of categories IDs and usage count.
+     */
+    @Experimental
+    @Auditable(parameters = {"storeRef"})
+    default Map<String, Integer> getCategoriesCount(StoreRef storeRef, String... categoryIds)
+    {
+        return Collections.emptyMap();
     }
 }

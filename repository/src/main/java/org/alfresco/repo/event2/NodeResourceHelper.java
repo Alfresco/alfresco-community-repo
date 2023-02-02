@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.event2;
 
+import static java.util.Optional.ofNullable;
+
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -34,7 +36,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.ContentInfo;
@@ -43,6 +48,7 @@ import org.alfresco.repo.event.v1.model.UserInfo;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
+import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -152,6 +158,7 @@ public class NodeResourceHelper implements InitializingBean
                            .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
                            .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
                            .setProperties(mapToNodeProperties(properties))
+                           .setLocalizedProperties(mapToNodeLocalizedProperties(properties))
                            .setAspectNames(getMappedAspects(nodeRef));
     }
 
@@ -200,9 +207,8 @@ public class NodeResourceHelper implements InitializingBean
         props.forEach((k, v) -> {
             if (!nodePropertyFilter.isExcluded(k))
             {
-                if (v != null && v instanceof MLText)
+                if (v instanceof MLText)
                 {
-                    //TODO - should we send all of the values if multiple locales exist?
                     v = ((MLText) v).getDefaultValue();
                 }
 
@@ -211,6 +217,23 @@ public class NodeResourceHelper implements InitializingBean
         });
 
         return filteredProps;
+    }
+
+    public Map<String, Map<String, String>> mapToNodeLocalizedProperties(Map<QName, Serializable> props)
+    {
+        Map<String, Map<String, String>> filteredProps = new HashMap<>(props.size());
+
+        props.forEach((k, v) -> {
+            if (!nodePropertyFilter.isExcluded(k) && v instanceof MLText)
+            {
+                final MLText mlTextValue = (MLText) v;
+                final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
+                mlTextValue.forEach((locale, text) -> localizedValues.put(locale.toString(), text));
+                filteredProps.put(getQNamePrefixString(k), localizedValues);
+            }
+        });
+
+        return filteredProps.isEmpty() ? null : filteredProps;
     }
 
     public ContentInfo getContentInfo(Map<QName, Serializable> props)
@@ -313,11 +336,6 @@ public class NodeResourceHelper implements InitializingBean
         return filteredAspects;
     }
 
-    private boolean isNotEmptyString(Serializable ser)
-    {
-        return !(ser instanceof String) || !((String) ser).isEmpty();
-    }
-
     public QName getNodeType(NodeRef nodeRef)
     {
        return nodeService.getType(nodeRef);
@@ -330,7 +348,58 @@ public class NodeResourceHelper implements InitializingBean
 
     public Map<QName, Serializable> getProperties(NodeRef nodeRef)
     {
-        return nodeService.getProperties(nodeRef);
+        //We need to have full MLText properties here. This is why we are marking the current thread as MLAware
+        final boolean toRestore = MLPropertyInterceptor.isMLAware();
+        MLPropertyInterceptor.setMLAware(true);
+        try
+        {
+            return nodeService.getProperties(nodeRef);
+        } finally
+        {
+            MLPropertyInterceptor.setMLAware(toRestore);
+        }
+    }
+
+    public Map<String, Map<String, String>> getLocalizedPropertiesBefore(Map<QName, Serializable> propsBefore, NodeResource nodeAfter)
+    {
+        final Map<String, Map<String, String>> locPropsBefore = ofNullable(propsBefore)
+                .map(this::mapToNodeLocalizedProperties)
+                .orElseGet(Map::of);
+        final Map<String, Map<String, String>> locPropsAfter = ofNullable(nodeAfter)
+                .map(NodeResource::getLocalizedProperties)
+                .orElseGet(Map::of);
+
+        return getLocalizedPropertiesBefore(locPropsBefore, locPropsAfter);
+    }
+
+    static Map<String, Map<String, String>> getLocalizedPropertiesBefore(Map<String, Map<String, String>> locPropsBefore,
+                                                                         Map<String, Map<String, String>> locPropsAfter)
+    {
+        final Map<String, Map<String, String>> result = new HashMap<>(locPropsBefore.size());
+
+        Sets.union(locPropsBefore.keySet(), locPropsAfter.keySet()).forEach(propertyName -> {
+            final Map<String, String> valuesBefore = ofNullable(locPropsBefore.get(propertyName)).orElseGet(Map::of);
+            final Map<String, String> valuesAfter = ofNullable(locPropsAfter.get(propertyName)).orElseGet(Map::of);
+
+            if (!valuesAfter.isEmpty() || !valuesBefore.isEmpty())
+            {
+                final Map<String, String> diff = new HashMap<>(valuesBefore.size());
+                Sets.union(valuesBefore.keySet(), valuesAfter.keySet()).forEach(lang -> {
+                    final String valueBefore = valuesBefore.get(lang);
+                    final String valueAfter = valuesAfter.get(lang);
+                    if (!Objects.equals(valueBefore, valueAfter))
+                    {
+                        diff.put(lang, valueBefore);
+                    }
+                });
+                if (!diff.isEmpty())
+                {
+                    result.put(propertyName, diff);
+                }
+            }
+        });
+
+        return result;
     }
 
     public Set<String> getMappedAspects(NodeRef nodeRef)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.event2;
 
+import static org.alfresco.model.ContentModel.PROP_DESCRIPTION;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,6 +48,7 @@ import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -280,6 +283,60 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
+    public void testUpdateContentWithLocalizedProperties()
+    {
+        final String description = "cm:description";
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
+        NodeResource resource = getNodeResource(1);
+
+        assertNull(getProperty(resource, description));
+        assertNull(resource.getLocalizedProperties());
+        assertNull(getEventData(1).getResourceBefore());
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            final MLText localizedDescription = new MLText(germanLocale, "german description");
+            localizedDescription.addValue(defaultLocale, "default description");
+            localizedDescription.addValue(japaneseLocale, "japanese description");
+
+            nodeService.setProperty(nodeRef, PROP_DESCRIPTION, localizedDescription);
+            return null;
+        });
+
+        resource = getNodeResource(2);
+        NodeResource resourceBefore = getNodeResourceBefore(2);
+
+        assertEquals("default description", getProperty(resource, description));
+        assertEquals("default description", getLocalizedProperty(resource, description, defaultLocale));
+        assertEquals("german description", getLocalizedProperty(resource, description, germanLocale));
+        assertEquals("japanese description", getLocalizedProperty(resource, description, japaneseLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, defaultLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, germanLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, japaneseLocale));
+
+        retryingTransactionHelper.doInTransaction(() -> {
+            final MLText localizedDescription = new MLText(frenchLocale, "french description added");
+            localizedDescription.addValue(defaultLocale, "default description modified");
+            localizedDescription.addValue(japaneseLocale, "japanese description");
+
+            nodeService.setProperty(nodeRef, PROP_DESCRIPTION, localizedDescription);
+            return null;
+        });
+
+        resource = getNodeResource(3);
+        resourceBefore = getNodeResourceBefore(3);
+
+        assertEquals("default description modified", getProperty(resource, description));
+        assertEquals("default description modified", getLocalizedProperty(resource, description, defaultLocale));
+        assertEquals("french description added", getLocalizedProperty(resource, description, frenchLocale));
+        assertEquals("japanese description", getLocalizedProperty(resource, description, japaneseLocale));
+        assertFalse(containsLocalizedProperty(resource, description, germanLocale));
+        assertEquals("default description", getLocalizedProperty(resourceBefore, description, defaultLocale));
+        assertEquals("german description", getLocalizedProperty(resourceBefore, description, germanLocale));
+        assertNull(getLocalizedProperty(resourceBefore, description, frenchLocale));
+        assertFalse(containsLocalizedProperty(resourceBefore, description, japaneseLocale));
+    }
+
+    @Test
     public void testUpdateContentTitle()
     {
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
@@ -296,8 +353,11 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         });
 
         resource = getNodeResource(2);
+        NodeResource resourceBefore = getNodeResourceBefore(2);
         title = getProperty(resource, "cm:title");
         assertEquals("test title", title);
+        assertEquals("test title", getLocalizedProperty(resource, "cm:title", defaultLocale));
+        assertNull(getLocalizedProperty(resourceBefore, "cm:title", defaultLocale));
 
         // update content cm:title property again with "new test title" value
         retryingTransactionHelper.doInTransaction(() -> {
@@ -308,10 +368,13 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         resource = getNodeResource(3);
         title = getProperty(resource, "cm:title");
         assertEquals("new test title", title);
+        assertEquals("new test title", getLocalizedProperty(resource, "cm:title", defaultLocale));
 
-        NodeResource resourceBefore = getNodeResourceBefore(3);
+
+        resourceBefore = getNodeResourceBefore(3);
         title = getProperty(resourceBefore, "cm:title");
         assertEquals("Wrong old property.", "test title", title);
+        assertEquals("test title", getLocalizedProperty(resourceBefore, "cm:title", defaultLocale));
         assertNotNull(resourceBefore.getModifiedAt());
     }
 
@@ -354,7 +417,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // update content cm:description property with "test_description" value
         retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "test description");
+            nodeService.setProperty(nodeRef, PROP_DESCRIPTION, "test description");
             return null;
         });
 
@@ -492,7 +555,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
                 QName.createQName(TEST_NAMESPACE, GUID.generate()),
                 ContentModel.TYPE_CONTENT).getChildRef();
 
-            nodeService.setProperty(node1, ContentModel.PROP_DESCRIPTION, "test description");
+            nodeService.setProperty(node1, PROP_DESCRIPTION, "test description");
             return null;
         });
         //Create and update node are done in the same transaction so one event is expected

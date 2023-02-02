@@ -28,6 +28,7 @@ package org.alfresco.transform.registry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClient4Factory;
 import org.alfresco.repo.content.transform.LocalPassThroughTransform;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.config.TransformConfig;
@@ -39,7 +40,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -111,7 +111,7 @@ public class CombinedConfig extends CombinedTransformConfig
         boolean successReadingConfig = true;
         try
         {
-            try (CloseableHttpClient httpclient = HttpClients.createDefault())
+            try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient())
             {
                 try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {

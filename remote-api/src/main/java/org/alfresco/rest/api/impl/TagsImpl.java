@@ -162,8 +162,9 @@ public class TagsImpl implements Tags
 
     public NodeRef validateTag(String tagId)
     {
-    	NodeRef tagNodeRef = nodes.validateNode(tagId);
-    	if(tagNodeRef == null)
+		NodeRef tagNodeRef = nodes.validateNode(tagId);
+		String tagName = taggingService.getTagName(tagNodeRef);
+    	if( tagNodeRef == null || !taggingService.isTag(tagNodeRef.getStoreRef(), tagName))
     	{
     		throw new EntityNotFoundException(tagId);
     	}

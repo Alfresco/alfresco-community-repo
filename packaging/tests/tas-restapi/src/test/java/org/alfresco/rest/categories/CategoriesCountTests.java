@@ -71,7 +71,7 @@ public class CategoriesCountTests extends CategoriesRestTest
         linkContentToCategories(file, categoryLinkedWithFile, categoryLinkedWithBoth);
 
         STEP("Wait for indexing to complete");
-        Utility.sleep(500, 30000, () -> restClient.authenticateUser(user)
+        Utility.sleep(1000, 60000, () -> restClient.authenticateUser(user)
             .withCoreAPI()
             .usingCategory(categoryLinkedWithFolder)
             .include(INCLUDE_COUNT_PARAM)

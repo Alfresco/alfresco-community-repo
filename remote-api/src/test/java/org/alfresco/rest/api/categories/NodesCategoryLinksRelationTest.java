@@ -47,6 +47,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class NodesCategoryLinksRelationTest
 {
     private static final String CONTENT_ID = "content-node-id";
+    private static final String CATEGORY_ID = "category-id";
 
     @Mock
     private Categories categoriesMock;
@@ -87,5 +88,15 @@ public class NodesCategoryLinksRelationTest
         assertThat(actualCategories)
             .isNotNull()
             .isEqualTo(List.of(categoryMock));
+    }
+
+    @Test
+    public void testDelete()
+    {
+        // when
+        objectUnderTest.delete(CONTENT_ID, CATEGORY_ID, parametersMock);
+
+        then(categoriesMock).should().unlinkNodeFromCategory(CONTENT_ID, CATEGORY_ID);
+        then(categoriesMock).shouldHaveNoMoreInteractions();
     }
 }

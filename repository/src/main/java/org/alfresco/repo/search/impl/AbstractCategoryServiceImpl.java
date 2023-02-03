@@ -626,21 +626,12 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
     @Override
     @Experimental
-    public Map<String, Integer> getCategoriesCount(final StoreRef storeRef, final String... categoryIds)
+    public Map<String, Integer> getCategoriesCount(final StoreRef storeRef)
     {
         final String idPrefix = storeRef + "/";
         final StringJoiner queryBuilder = new StringJoiner(" ");
         queryBuilder.add("ASPECT:\"" + ContentModel.ASPECT_GEN_CLASSIFIABLE + "\"");
         queryBuilder.add("AND NOT ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY + "\"");
-        if (categoryIds.length > 0)
-        {
-            final StringJoiner queryCategories = new StringJoiner(" OR ", "AND (", ")");
-            for (String categoryId : categoryIds)
-            {
-                queryCategories.add("@cm\\:categories:\"" + idPrefix + categoryId + "\"");
-            }
-            queryBuilder.add(queryCategories.toString());
-        }
 
         final SearchParameters searchParameters = new SearchParameters();
         searchParameters.addStore(storeRef);
@@ -655,9 +646,8 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         try
         {
             resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(searchParameters);
-            final Map<String, Integer> searchResult = Optional.ofNullable(resultSet.getFieldFacet("cm:categories")).orElse(Collections.emptyList())
+            return Optional.ofNullable(resultSet.getFieldFacet("cm:categories")).orElse(Collections.emptyList())
                 .stream().collect(Collectors.toMap(pair -> pair.getFirst().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
-            return searchResult;
         }
         finally
         {

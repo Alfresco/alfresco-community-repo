@@ -104,7 +104,6 @@ public class CategoriesImpl implements Categories
 
         if (includeCount)
         {
-            //final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef, category.getId());
             final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }
@@ -142,7 +141,6 @@ public class CategoriesImpl implements Categories
 
         if (includeCount)
         {
-            //final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef, categories.stream().map(Category::getId).toArray(String[]::new));
             final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef);
             categories.forEach(category -> category.setCount(categoriesCount.getOrDefault(category.getId(), 0)));
         }

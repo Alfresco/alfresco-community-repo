@@ -45,7 +45,6 @@ import org.testng.annotations.Test;
 
 public class CategoriesCountTests extends CategoriesRestTest
 {
-    private static final int SECONDS_5 = 5;
 
     private RestCategoryModel categoryLinkedWithFolder;
     private RestCategoryModel categoryLinkedWithFile;
@@ -71,8 +70,15 @@ public class CategoriesCountTests extends CategoriesRestTest
         linkContentToCategories(folder, categoryLinkedWithFolder, categoryLinkedWithBoth);
         linkContentToCategories(file, categoryLinkedWithFile, categoryLinkedWithBoth);
 
-        STEP("Wait for " + SECONDS_5 + " s for indexing to take place");
-        Utility.waitToLoopTime(SECONDS_5);
+        STEP("Wait for indexing to complete");
+        Utility.sleep(500, 30000, () -> restClient.authenticateUser(user)
+            .withCoreAPI()
+            .usingCategory(categoryLinkedWithFolder)
+            .include(INCLUDE_COUNT_PARAM)
+            .getCategory()
+            .assertThat()
+            .field(FIELD_COUNT)
+            .isNot(0));
     }
 
     /**

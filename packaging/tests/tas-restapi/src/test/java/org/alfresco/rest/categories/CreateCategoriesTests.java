@@ -244,7 +244,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(rootCategory)
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .createSingleCategory(aCategory);
 
         restClient.assertStatusCodeIs(CREATED);

@@ -45,7 +45,7 @@ import org.testng.annotations.BeforeClass;
 
 abstract class CategoriesRestTest extends RestTest
 {
-    protected static final String PARAM_INCLUDE_COUNT = "count";
+    protected static final String INCLUDE_COUNT_PARAM = "count";
     protected static final String ROOT_CATEGORY_ID = "-root-";
     protected static final String CATEGORY_NAME_PREFIX = "CategoryName";
     protected static final String FIELD_NAME = "name";

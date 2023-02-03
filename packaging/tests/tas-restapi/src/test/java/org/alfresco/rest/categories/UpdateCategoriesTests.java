@@ -249,7 +249,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(createdCategory)
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .updateCategory(fixedCategoryModel);
 
         restClient.assertStatusCodeIs(OK);

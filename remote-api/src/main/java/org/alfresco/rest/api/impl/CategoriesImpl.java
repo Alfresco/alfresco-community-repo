@@ -104,6 +104,7 @@ public class CategoriesImpl implements Categories
 
         if (includeCount)
         {
+            //final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef, category.getId());
             final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }

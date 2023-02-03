@@ -85,7 +85,7 @@ public class CategoriesCountTests extends CategoriesRestTest
         final RestCategoryModel actualCategory = restClient.authenticateUser(user)
             .withCoreAPI()
             .usingCategory(categoryLinkedWithBoth)
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .getCategory();
 
         restClient.assertStatusCodeIs(OK);
@@ -103,7 +103,7 @@ public class CategoriesCountTests extends CategoriesRestTest
         final RestCategoryModel actualCategory = restClient.authenticateUser(user)
             .withCoreAPI()
             .usingCategory(notLinkedCategory)
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .getCategory();
 
         restClient.assertStatusCodeIs(OK);
@@ -122,7 +122,7 @@ public class CategoriesCountTests extends CategoriesRestTest
         final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)
             .withCoreAPI()
             .usingCategory(parentCategory)
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .getCategoryChildren();
 
         restClient.assertStatusCodeIs(OK);
@@ -149,7 +149,7 @@ public class CategoriesCountTests extends CategoriesRestTest
         final RestCategoryModel aCategory = createCategoryModelWithName(categoryName);
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .usingCategory(rootCategory)
             .createSingleCategory(aCategory);
 
@@ -171,7 +171,7 @@ public class CategoriesCountTests extends CategoriesRestTest
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(categoryLinkedWithBoth)
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .updateCategory(fixedCategoryModel);
 
         restClient.assertStatusCodeIs(OK);
@@ -191,7 +191,7 @@ public class CategoriesCountTests extends CategoriesRestTest
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
             .withCoreAPI()
             .usingCategory(notLinkedCategory)
-            .include(PARAM_INCLUDE_COUNT)
+            .include(INCLUDE_COUNT_PARAM)
             .updateCategory(fixedCategoryModel);
 
         restClient.assertStatusCodeIs(OK);

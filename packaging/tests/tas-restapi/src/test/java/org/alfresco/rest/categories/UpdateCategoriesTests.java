@@ -235,7 +235,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
     }
 
     /**
-     * Check weather count present in update category request will be ignored.
+     * Check whether count present in update category request will be ignored.
      */
     @Test(groups = { TestGroup.REST_API})
     public void testUpdateCategory_verifyIfCountInRequestIsIgnored()

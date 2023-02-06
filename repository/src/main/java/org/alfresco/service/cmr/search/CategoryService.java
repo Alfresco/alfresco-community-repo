@@ -26,9 +26,7 @@
 package org.alfresco.service.cmr.search;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.alfresco.api.AlfrescoPublicApi;

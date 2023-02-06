@@ -84,7 +84,7 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Verify count for a category linked with file and folder.
      */
-    @Test(groups = {TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testGetCategoryById_includeCount()
     {
         STEP("Get linked category and verify if count is higher than 0");
@@ -102,7 +102,7 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Verify count for a category not linked with any content.
      */
-    @Test(groups = {TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testGetCategoryById_includeCountForNonLinkedCategory()
     {
         STEP("Get non-linked category and verify if count is 0");
@@ -120,7 +120,7 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Verify count for three categories: linked with file, linked with folder and third not linked to any content.
      */
-    @Test(groups = {TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testGetCategories_includeCount()
     {
         STEP("Get few categories and verify its counts");
@@ -146,7 +146,7 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Create category and verify that its count is 0.
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testCreateCategory_includingCount()
     {
         STEP("Create a category under root and verify if count is 0");
@@ -168,7 +168,7 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Update category linked to file and folder and verify that its count is 2.
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testUpdateCategory_includeCount()
     {
         STEP("Update linked category and verify if count is higher than 0");
@@ -188,7 +188,7 @@ public class CategoriesCountTests extends CategoriesRestTest
     /**
      * Update category not linked to any content and verify that its count is 0.
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testUpdateCategory_includeCountForNonLinkedCategory()
     {
         STEP("Update non-linked category and verify if count is 0");

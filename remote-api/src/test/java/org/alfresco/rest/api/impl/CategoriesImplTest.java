@@ -40,6 +40,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -76,6 +77,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -232,12 +234,12 @@ public class CategoriesImplTest
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
         given(nodesMock.getNode(any())).willReturn(createNode());
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
-        given(categoryServiceMock.getCategoriesCount(any())).willReturn(Map.of(CATEGORY_ID, 1));
+        given(categoryServiceMock.getTopCategories(any(), any(), anyInt())).willReturn(List.of(new Pair<>(CATEGORY_NODE_REF, 1)));
 
         // when
         final Category actualCategory = objectUnderTest.getCategoryById(CATEGORY_ID, INCLUDE_COUNT);
 
-        then(categoryServiceMock).should().getCategoriesCount(STORE_REF_WORKSPACE_SPACESSTORE);
+        then(categoryServiceMock).should().getTopCategories(STORE_REF_WORKSPACE_SPACESSTORE, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE);
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
 
         assertThat(actualCategory)
@@ -605,12 +607,12 @@ public class CategoriesImplTest
         final List<ChildAssociationRef> childAssociationRefMocks = prepareChildAssocMocks(childrenCount, parentCategoryNodeRef);
         given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(childAssociationRefMocks);
         childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
-        given(categoryServiceMock.getCategoriesCount(any())).willReturn(Map.of(CATEGORY_ID.concat("-1"), 2));
+        given(categoryServiceMock.getTopCategories(any(), any(), anyInt())).willReturn(List.of(new Pair<>(createNodeRefWithId(CATEGORY_ID.concat("-1")), 2)));
 
         // when
         final List<Category> actualCategoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, INCLUDE_COUNT);
 
-        then(categoryServiceMock).should().getCategoriesCount(STORE_REF_WORKSPACE_SPACESSTORE);
+        then(categoryServiceMock).should().getTopCategories(STORE_REF_WORKSPACE_SPACESSTORE, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE);
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
 
         assertThat(actualCategoryChildren)
@@ -728,12 +730,12 @@ public class CategoriesImplTest
         given(nodesMock.getNode(any())).willReturn(createNode(categoryNewName));
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
         given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
-        given(categoryServiceMock.getCategoriesCount(any())).willReturn(Map.of(CATEGORY_ID, 1));
+        given(categoryServiceMock.getTopCategories(any(), any(), anyInt())).willReturn(List.of(new Pair<>(CATEGORY_NODE_REF, 1)));
 
         // when
         final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, fixedCategory, INCLUDE_COUNT);
 
-        then(categoryServiceMock).should().getCategoriesCount(STORE_REF_WORKSPACE_SPACESSTORE);
+        then(categoryServiceMock).should().getTopCategories(STORE_REF_WORKSPACE_SPACESSTORE, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE);
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
 
         assertThat(actualCategory)

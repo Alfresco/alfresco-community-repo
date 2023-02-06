@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -104,7 +105,7 @@ public class CategoriesImpl implements Categories
 
         if (includeCount)
         {
-            final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef);
+            final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }
 
@@ -141,7 +142,7 @@ public class CategoriesImpl implements Categories
 
         if (includeCount)
         {
-            final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef);
+            final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             categories.forEach(category -> category.setCount(categoriesCount.getOrDefault(category.getId(), 0)));
         }
 
@@ -163,7 +164,7 @@ public class CategoriesImpl implements Categories
 
         if (includeCount)
         {
-            final Map<String, Integer> categoriesCount = categoryService.getCategoriesCount(storeRef);
+            final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }
 
@@ -457,5 +458,19 @@ public class CategoriesImpl implements Categories
             final Collection<NodeRef> allCategories = mergeCategories(currentCategories, categoryNodeRefs);
             nodeService.setProperty(nodeRef, ContentModel.PROP_CATEGORIES, (Serializable) allCategories);
         }
+    }
+
+    /**
+     * Get categories by usage count. Result is a map of category IDs (short form - UUID) as key and usage count as value.
+     *
+     * @param storeRef Reference to node store.
+     * @return Map of categories IDs and usage count.
+     */
+    private Map<String, Integer> getCategoriesCount(final StoreRef storeRef)
+    {
+        final String idPrefix = storeRef + "/";
+        return categoryService.getTopCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE)
+            .stream()
+            .collect(Collectors.toMap(pair -> pair.getFirst().toString().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
     }
 }

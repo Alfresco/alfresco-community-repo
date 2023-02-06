@@ -261,17 +261,4 @@ public interface CategoryService
     {
         return Optional.empty();
     }
-
-    /**
-     * Get categories by usage count. Result is a map of category IDs (short form - UUID) as key and usage count as value.
-     *
-     * @param storeRef Reference to node store.
-     * @return Map of categories IDs and usage count.
-     */
-    @Experimental
-    @Auditable(parameters = {"storeRef"})
-    default Map<String, Integer> getCategoriesCount(StoreRef storeRef)
-    {
-        return Collections.emptyMap();
-    }
 }

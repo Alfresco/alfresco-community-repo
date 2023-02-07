@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
+import static org.alfresco.rest.api.impl.CategoriesImpl.INCLUDE_COUNT_PARAM;
 import static org.alfresco.rest.api.impl.CategoriesImpl.INVALID_NODE_TYPE;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_A_VALID_CATEGORY;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_NULL_OR_EMPTY;
@@ -66,6 +67,7 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -98,8 +100,6 @@ public class CategoriesImplTest
     private static final Category CATEGORY = createDefaultCategory();
     private static final String CONTENT_NODE_ID = "content-node-id";
     private static final NodeRef CONTENT_NODE_REF = createNodeRefWithId(CONTENT_NODE_ID);
-    private static final boolean INCLUDE_COUNT = true;
-    private static final boolean OMIT_COUNT = false;
 
     @Mock
     private Nodes nodesMock;
@@ -117,6 +117,8 @@ public class CategoriesImplTest
     private PermissionService permissionServiceMock;
     @Mock
     private TypeConstraint typeConstraint;
+    @Mock
+    private Parameters parametersMock;
 
     @InjectMocks
     private CategoriesImpl objectUnderTest;
@@ -131,6 +133,7 @@ public class CategoriesImplTest
         given(typeConstraint.matches(any())).willReturn(true);
         given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.ALLOWED);
+        //given(parametersMock.getInclude()).willReturn(Co);
     }
 
     @Test
@@ -142,7 +145,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getParentAssocs(categoryRootNodeRef)).willReturn(List.of(categoryChildAssociationRefMock));
 
         //when
-        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getCategoryById(CAT_ROOT_NODE_ID, OMIT_COUNT));
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getCategoryById(CAT_ROOT_NODE_ID, parametersMock));
 
         then(nodesMock).should().validateNode(CAT_ROOT_NODE_ID);
         then(nodesMock).should().isSubClass(categoryRootNodeRef, ContentModel.TYPE_CATEGORY, false);
@@ -165,7 +168,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false))
                 .willReturn(dummyChildren);
         //when
-        final Category category = objectUnderTest.getCategoryById(CATEGORY_ID, OMIT_COUNT);
+        final Category category = objectUnderTest.getCategoryById(CATEGORY_ID, parametersMock);
 
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
@@ -201,7 +204,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false))
                 .willReturn(Collections.emptyList());
         //when
-        final Category category = objectUnderTest.getCategoryById(CATEGORY_ID, OMIT_COUNT);
+        final Category category = objectUnderTest.getCategoryById(CATEGORY_ID, parametersMock);
 
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().isSubClass(CATEGORY_NODE_REF, ContentModel.TYPE_CATEGORY, false);
@@ -234,10 +237,11 @@ public class CategoriesImplTest
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
         given(nodesMock.getNode(any())).willReturn(createNode());
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_COUNT_PARAM));
         given(categoryServiceMock.getTopCategories(any(), any(), anyInt())).willReturn(List.of(new Pair<>(CATEGORY_NODE_REF, 1)));
 
         // when
-        final Category actualCategory = objectUnderTest.getCategoryById(CATEGORY_ID, INCLUDE_COUNT);
+        final Category actualCategory = objectUnderTest.getCategoryById(CATEGORY_ID, parametersMock);
 
         then(categoryServiceMock).should().getTopCategories(STORE_REF_WORKSPACE_SPACESSTORE, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE);
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
@@ -257,7 +261,7 @@ public class CategoriesImplTest
         given(nodesMock.isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(false);
 
         //when
-        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getCategoryById(CATEGORY_ID, OMIT_COUNT));
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getCategoryById(CATEGORY_ID, parametersMock));
 
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false);
@@ -274,7 +278,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(CATEGORY_ID)).willThrow(EntityNotFoundException.class);
 
         //when
-        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.getCategoryById(CATEGORY_ID, OMIT_COUNT));
+        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.getCategoryById(CATEGORY_ID, parametersMock));
 
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -293,7 +297,7 @@ public class CategoriesImplTest
         given(nodesMock.isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
 
         //when
-        objectUnderTest.deleteCategoryById(CATEGORY_ID);
+        objectUnderTest.deleteCategoryById(CATEGORY_ID, parametersMock);
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -313,7 +317,7 @@ public class CategoriesImplTest
         given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
 
         //when
-        assertThrows(PermissionDeniedException.class, () -> objectUnderTest.deleteCategoryById(CATEGORY_ID));
+        assertThrows(PermissionDeniedException.class, () -> objectUnderTest.deleteCategoryById(CATEGORY_ID, parametersMock));
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -331,7 +335,7 @@ public class CategoriesImplTest
         given(nodesMock.isSubClass(categoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(false);
 
         //when
-        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.deleteCategoryById(CATEGORY_ID));
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.deleteCategoryById(CATEGORY_ID, parametersMock));
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -352,7 +356,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getParentAssocs(categoryRootNodeRef)).willReturn(List.of(categoryChildAssociationRefMock));
 
         //when
-        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.deleteCategoryById(CAT_ROOT_NODE_ID));
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.deleteCategoryById(CAT_ROOT_NODE_ID, parametersMock));
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -381,7 +385,7 @@ public class CategoriesImplTest
                 .willReturn(Collections.emptyList());
 
         //when
-        final List<Category> createdCategories = objectUnderTest.createSubcategories(PATH_ROOT, prepareCategories(), OMIT_COUNT);
+        final List<Category> createdCategories = objectUnderTest.createSubcategories(PATH_ROOT, prepareCategories(), parametersMock);
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -421,7 +425,7 @@ public class CategoriesImplTest
                 .willReturn(Collections.emptyList());
 
         //when
-        final List<Category> createdCategories = objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), OMIT_COUNT);
+        final List<Category> createdCategories = objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock);
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -458,10 +462,11 @@ public class CategoriesImplTest
         given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
         given(nodesMock.getNode(any())).willReturn(createNode());
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_COUNT_PARAM));
         final List<Category> categoryModels = prepareCategories().stream().peek(category -> category.setCount(1)).collect(Collectors.toList());
 
         // when
-        final List<Category> actualCreatedCategories = objectUnderTest.createSubcategories(PARENT_ID, categoryModels, INCLUDE_COUNT);
+        final List<Category> actualCreatedCategories = objectUnderTest.createSubcategories(PARENT_ID, categoryModels, parametersMock);
 
         then(categoryServiceMock).should().createCategory(any(), any());
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
@@ -482,7 +487,7 @@ public class CategoriesImplTest
 
         //when
         assertThrows(PermissionDeniedException.class,
-                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), OMIT_COUNT));
+                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock));
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -500,7 +505,7 @@ public class CategoriesImplTest
 
         //when
         assertThrows(InvalidArgumentException.class,
-                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), OMIT_COUNT));
+                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock));
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -518,7 +523,7 @@ public class CategoriesImplTest
 
         //when
         assertThrows(EntityNotFoundException.class,
-                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), OMIT_COUNT));
+                () -> objectUnderTest.createSubcategories(PARENT_ID, prepareCategories(), parametersMock));
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -540,7 +545,7 @@ public class CategoriesImplTest
         childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
 
         //when
-        final List<Category> categoryChildren = objectUnderTest.getCategoryChildren(PATH_ROOT, OMIT_COUNT);
+        final List<Category> categoryChildren = objectUnderTest.getCategoryChildren(PATH_ROOT, parametersMock);
 
         then(categoryServiceMock).should().getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
@@ -574,7 +579,7 @@ public class CategoriesImplTest
         childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
 
         //when
-        final List<Category> categoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, OMIT_COUNT);
+        final List<Category> categoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock);
 
         then(nodesMock).should().validateNode(PARENT_ID);
         then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
@@ -607,10 +612,11 @@ public class CategoriesImplTest
         final List<ChildAssociationRef> childAssociationRefMocks = prepareChildAssocMocks(childrenCount, parentCategoryNodeRef);
         given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(childAssociationRefMocks);
         childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_COUNT_PARAM));
         given(categoryServiceMock.getTopCategories(any(), any(), anyInt())).willReturn(List.of(new Pair<>(createNodeRefWithId(CATEGORY_ID.concat("-1")), 2)));
 
         // when
-        final List<Category> actualCategoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, INCLUDE_COUNT);
+        final List<Category> actualCategoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock);
 
         then(categoryServiceMock).should().getTopCategories(STORE_REF_WORKSPACE_SPACESSTORE, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE);
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
@@ -632,7 +638,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(Collections.emptyList());
 
         //when
-        final List<Category> categoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, OMIT_COUNT);
+        final List<Category> categoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock);
 
         then(nodesMock).should().validateNode(PARENT_ID);
         then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
@@ -654,7 +660,7 @@ public class CategoriesImplTest
         given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(false);
 
         //when
-        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getCategoryChildren(PARENT_ID, OMIT_COUNT));
+        assertThrows(InvalidArgumentException.class, () -> objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock));
 
         then(nodesMock).should().validateNode(PARENT_ID);
         then(nodesMock).should().isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false);
@@ -671,7 +677,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(PARENT_ID)).willThrow(EntityNotFoundException.class);
 
         //when
-        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.getCategoryChildren(PARENT_ID, OMIT_COUNT));
+        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock));
 
 
         then(nodesMock).should().validateNode(PARENT_ID);
@@ -695,7 +701,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
 
         // when
-        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, fixedCategory, OMIT_COUNT);
+        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, fixedCategory, parametersMock);
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
@@ -730,10 +736,11 @@ public class CategoriesImplTest
         given(nodesMock.getNode(any())).willReturn(createNode(categoryNewName));
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
         given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_COUNT_PARAM));
         given(categoryServiceMock.getTopCategories(any(), any(), anyInt())).willReturn(List.of(new Pair<>(CATEGORY_NODE_REF, 1)));
 
         // when
-        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, fixedCategory, INCLUDE_COUNT);
+        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, fixedCategory, parametersMock);
 
         then(categoryServiceMock).should().getTopCategories(STORE_REF_WORKSPACE_SPACESSTORE, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE);
         then(categoryServiceMock).shouldHaveNoMoreInteractions();
@@ -751,7 +758,7 @@ public class CategoriesImplTest
         given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
 
         // when
-        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY, OMIT_COUNT));
+        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY, parametersMock));
 
         then(nodesMock).shouldHaveNoInteractions();
         then(nodeServiceMock).shouldHaveNoInteractions();
@@ -763,7 +770,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(any(String.class))).willThrow(EntityNotFoundException.class);
 
         // when
-        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY, OMIT_COUNT));
+        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY, parametersMock));
 
         then(nodeServiceMock).shouldHaveNoInteractions();
     }
@@ -774,7 +781,7 @@ public class CategoriesImplTest
         given(nodesMock.isSubClass(any(), any(), eq(false))).willReturn(false);
 
         // when
-        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY, OMIT_COUNT))
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, CATEGORY, parametersMock))
             .withMessageContaining(NOT_A_VALID_CATEGORY);
 
         then(nodeServiceMock).shouldHaveNoInteractions();
@@ -788,7 +795,7 @@ public class CategoriesImplTest
         given(categoryChildAssociationRefMock.getQName()).willReturn(ContentModel.ASPECT_GEN_CLASSIFIABLE);
 
         // when
-        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(PATH_ROOT, CATEGORY, OMIT_COUNT))
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(PATH_ROOT, CATEGORY, parametersMock))
             .withMessageContaining(NOT_A_VALID_CATEGORY);
 
         then(categoryServiceMock).should().getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -811,7 +818,7 @@ public class CategoriesImplTest
             final Category categoryWithoutName = createCategoryOnlyWithName(invalidName);
 
             // when
-            assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithoutName, OMIT_COUNT))
+            assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithoutName, parametersMock))
                 .withMessageContaining(NOT_NULL_OR_EMPTY);
         }
     }
@@ -830,7 +837,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
 
         // when
-        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithInvalidId, OMIT_COUNT);
+        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithInvalidId, parametersMock);
 
         final Category expectedCategory = createDefaultCategoryWithName(categoryNewName);
         assertThat(actualCategory)
@@ -852,7 +859,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
 
         // when
-        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithInvalidParentId, OMIT_COUNT);
+        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithInvalidParentId, parametersMock);
 
         final Category expectedCategory = createDefaultCategoryWithName(categoryNewName);
         assertThat(actualCategory)
@@ -874,7 +881,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
 
         // when
-        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithInvalidHasChildren, OMIT_COUNT);
+        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, categoryWithInvalidHasChildren, parametersMock);
 
         final Category expectedCategory = createDefaultCategoryWithName(categoryNewName);
         assertThat(actualCategory)
@@ -892,7 +899,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
 
         // when
-        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks);
+        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks, parametersMock);
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
@@ -927,7 +934,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.hasAspect(any(), any())).willReturn(true);
 
         // when
-        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY));
+        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock);
 
         then(nodesMock).should().getNode(CATEGORY_ID);
         then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
@@ -961,7 +968,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(categoryParentAssociation, secondCategoryParentAssociation);
 
         // when
-        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks);
+        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks, parametersMock);
 
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().validateNode(secondCategoryId);
@@ -992,7 +999,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn(previousCategories);
 
         // when
-        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY));
+        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock);
 
         final Serializable expectedCategories = (Serializable) Set.of(otherCategoryNodeRef, CATEGORY_NODE_REF);
         then(nodeServiceMock).should().setProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES, expectedCategories);
@@ -1008,7 +1015,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(CONTENT_NODE_ID)).willThrow(EntityNotFoundException.class);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock));
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).shouldHaveNoInteractions();
@@ -1023,7 +1030,7 @@ public class CategoriesImplTest
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.DENIED);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock));
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
@@ -1039,7 +1046,7 @@ public class CategoriesImplTest
         given(typeConstraint.matches(any())).willReturn(false);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY)));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock));
 
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
@@ -1054,7 +1061,7 @@ public class CategoriesImplTest
         final List<Category> categoryLinks = Collections.emptyList();
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks, parametersMock));
 
         then(nodesMock).shouldHaveNoInteractions();
         then(permissionServiceMock).shouldHaveNoInteractions();
@@ -1075,7 +1082,7 @@ public class CategoriesImplTest
         categoryLinks.add(categoryLinkWithEmptyId);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks, parametersMock));
 
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
@@ -1093,7 +1100,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
 
         // when
-        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks);
+        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks, parametersMock);
 
         final Map<QName, Serializable> expectedProperties = Map.of(ContentModel.PROP_CATEGORIES, (Serializable) List.of(CATEGORY_NODE_REF));
         then(nodeServiceMock).should().addAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE, expectedProperties);
@@ -1109,7 +1116,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.hasAspect(CONTENT_NODE_REF,ContentModel.ASPECT_GEN_CLASSIFIABLE)).willReturn(true);
 
         // when
-        objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID, CATEGORY_ID);
+        objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID, CATEGORY_ID, parametersMock);
 
         then(nodesMock).should().validateNode(CATEGORY_ID);
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
@@ -1128,7 +1135,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.hasAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE)).willReturn(false);
 
         //when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID,CATEGORY_ID));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID, CATEGORY_ID, parametersMock));
 
         then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF,ContentModel.ASPECT_GEN_CLASSIFIABLE);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
@@ -1147,7 +1154,7 @@ public class CategoriesImplTest
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
 
         // when
-        final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID);
+        final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock);
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
@@ -1173,7 +1180,7 @@ public class CategoriesImplTest
         given(nodesMock.validateNode(CONTENT_NODE_ID)).willThrow(EntityNotFoundException.class);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock));
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(nodeServiceMock).shouldHaveNoInteractions();
@@ -1187,7 +1194,7 @@ public class CategoriesImplTest
         given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.DENIED);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock));
 
         then(nodesMock).should().validateNode(CONTENT_NODE_ID);
         then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
@@ -1203,7 +1210,7 @@ public class CategoriesImplTest
         given(typeConstraint.matches(any())).willReturn(false);
 
         // when
-        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID));
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock));
 
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
@@ -1219,7 +1226,7 @@ public class CategoriesImplTest
             given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn((Serializable) nullOrEmptyList);
 
             // when
-            final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID);
+            final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock);
 
             assertThat(actualCategories).isNotNull().isEmpty();
         });

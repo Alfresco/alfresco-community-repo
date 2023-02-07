@@ -55,7 +55,6 @@ public class SubcategoriesRelationTest
     private static final String CATEGORY_ID = "category-node-id";
     private static final String CATEGORY_NAME = "categoryName";
     private static final String SUBCATEGORY_NAME_PREFIX = "childCategoryName";
-    private static final boolean INCLUDE_COUNT = true;
 
     @Mock
     private Categories categoriesMock;
@@ -65,38 +64,32 @@ public class SubcategoriesRelationTest
     @InjectMocks
     private SubcategoriesRelation objectUnderTest;
 
-    @Before
-    public void setUp() throws Exception
-    {
-        given(parametersMock.getInclude()).willReturn(List.of("count"));
-    }
-
     @Test
     public void testCreateSubcategory()
     {
         final Category categoryToCreate = Category.builder().name(CATEGORY_NAME).create();
         final Category category = Category.builder().name(CATEGORY_NAME).parentId(PARENT_CATEGORY_ID).hasChildren(false).id(CATEGORY_ID).create();
         final List<Category> categoriesToCreate = List.of(categoryToCreate);
-        given(categoriesMock.createSubcategories(any(), any(), anyBoolean())).willCallRealMethod();
-        given(categoriesMock.createSubcategories(any(), any(), any(), anyBoolean())).willReturn(List.of(category));
+        given(categoriesMock.createSubcategories(any(), any(), any())).willCallRealMethod();
+        given(categoriesMock.createSubcategories(any(), any(), any(), any())).willReturn(List.of(category));
 
         //when
         List<Category> categories = objectUnderTest.create(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
 
-        then(categoriesMock).should().createSubcategories(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, categoriesToCreate, INCLUDE_COUNT);
+        then(categoriesMock).should().createSubcategories(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
         assertEquals(List.of(category), categories);
     }
 
     @Test
     public void testGetCategoryChildren() {
         final List<Category> categoryChildren = getCategories(3);
-        given(categoriesMock.getCategoryChildren(any(), anyBoolean())).willCallRealMethod();
-        given(categoriesMock.getCategoryChildren(any(), any(), anyBoolean())).willReturn(categoryChildren);
+        given(categoriesMock.getCategoryChildren(any(), any())).willCallRealMethod();
+        given(categoriesMock.getCategoryChildren(any(), any(), any())).willReturn(categoryChildren);
 
         //when
         final CollectionWithPagingInfo<Category> returnedChildren = objectUnderTest.readAll(PARENT_CATEGORY_ID, parametersMock);
 
-        then(categoriesMock).should().getCategoryChildren(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, INCLUDE_COUNT);
+        then(categoriesMock).should().getCategoryChildren(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, parametersMock);
         assertEquals(categoryChildren, returnedChildren.getCollection());
     }
 

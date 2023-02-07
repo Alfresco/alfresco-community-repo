@@ -48,6 +48,7 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -67,6 +68,7 @@ import org.apache.commons.lang3.StringUtils;
 @Experimental
 public class CategoriesImpl implements Categories
 {
+    static final String INCLUDE_COUNT_PARAM = "count";
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
@@ -93,7 +95,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public Category getCategoryById(final StoreRef storeRef, final String id, final boolean includeCount)
+    public Category getCategoryById(final StoreRef storeRef, final String id, final Parameters parameters)
     {
         final NodeRef nodeRef = getCategoryNodeRef(storeRef, id);
         if (isRootCategory(nodeRef))
@@ -103,7 +105,7 @@ public class CategoriesImpl implements Categories
 
         final Category category = mapToCategory(nodeRef);
 
-        if (includeCount)
+        if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
         {
             final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
@@ -113,7 +115,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public List<Category> createSubcategories(final StoreRef storeRef, final String parentCategoryId, final List<Category> categories, final boolean includeCount)
+    public List<Category> createSubcategories(final StoreRef storeRef, final String parentCategoryId, final List<Category> categories, final Parameters parameters)
     {
         verifyAdminAuthority();
         final NodeRef parentNodeRef = getCategoryNodeRef(storeRef, parentCategoryId);
@@ -122,7 +124,7 @@ public class CategoriesImpl implements Categories
                 .map(c -> createCategoryNodeRef(parentNodeRef, c))
                 .map(this::mapToCategory)
                 .peek(category -> {
-                    if (includeCount)
+                    if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
                     {
                         category.setCount(0);
                     }
@@ -131,7 +133,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public List<Category> getCategoryChildren(final StoreRef storeRef, final String parentCategoryId, final boolean includeCount)
+    public List<Category> getCategoryChildren(final StoreRef storeRef, final String parentCategoryId, final Parameters parameters)
     {
         final NodeRef parentNodeRef = getCategoryNodeRef(storeRef, parentCategoryId);
         final List<Category> categories = nodeService.getChildAssocs(parentNodeRef).stream()
@@ -140,7 +142,7 @@ public class CategoriesImpl implements Categories
             .map(this::mapToCategory)
             .collect(Collectors.toList());
 
-        if (includeCount)
+        if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
         {
             final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             categories.forEach(category -> category.setCount(categoriesCount.getOrDefault(category.getId(), 0)));
@@ -150,7 +152,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public Category updateCategoryById(final StoreRef storeRef, final String id, final Category fixedCategoryModel, final boolean includeCount)
+    public Category updateCategoryById(final StoreRef storeRef, final String id, final Category fixedCategoryModel, final Parameters parameters)
     {
         verifyAdminAuthority();
         final NodeRef categoryNodeRef = getCategoryNodeRef(storeRef, id);
@@ -162,7 +164,7 @@ public class CategoriesImpl implements Categories
         validateCategoryFields(fixedCategoryModel);
         final Category category = mapToCategory(changeCategoryName(categoryNodeRef, fixedCategoryModel.getName()));
 
-        if (includeCount)
+        if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
         {
             final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
@@ -172,7 +174,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public void deleteCategoryById(final StoreRef storeRef, final String id)
+    public void deleteCategoryById(final StoreRef storeRef, final String id, final Parameters parameters)
     {
         verifyAdminAuthority();
         final NodeRef nodeRef = getCategoryNodeRef(storeRef, id);
@@ -185,7 +187,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public List<Category> listCategoriesForNode(final String nodeId)
+    public List<Category> listCategoriesForNode(final String nodeId, final Parameters parameters)
     {
         final NodeRef contentNodeRef = nodes.validateNode(nodeId);
         verifyReadPermission(contentNodeRef);
@@ -202,7 +204,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public List<Category> linkNodeToCategories(final StoreRef storeRef, final String nodeId, final List<Category> categoryLinks)
+    public List<Category> linkNodeToCategories(final StoreRef storeRef, final String nodeId, final List<Category> categoryLinks, final Parameters parameters)
     {
         if (CollectionUtils.isEmpty(categoryLinks))
         {
@@ -232,7 +234,7 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public void unlinkNodeFromCategory(final StoreRef storeRef, final String nodeId, final String categoryId)
+    public void unlinkNodeFromCategory(final StoreRef storeRef, final String nodeId, final String categoryId, final Parameters parameters)
     {
         final NodeRef categoryNodeRef = getCategoryNodeRef(storeRef, categoryId);
         final NodeRef contentNodeRef = nodes.validateNode(nodeId);

@@ -62,12 +62,12 @@ public class NodesCategoryLinksRelationTest
     @Test
     public void testReadAll()
     {
-        given(categoriesMock.listCategoriesForNode(any())).willReturn(List.of(categoryMock));
+        given(categoriesMock.listCategoriesForNode(any(), any())).willReturn(List.of(categoryMock));
 
         // when
         final CollectionWithPagingInfo<Category> actualCategoriesPage = objectUnderTest.readAll(CONTENT_ID, parametersMock);
 
-        then(categoriesMock).should().listCategoriesForNode(CONTENT_ID);
+        then(categoriesMock).should().listCategoriesForNode(CONTENT_ID, parametersMock);
         then(categoriesMock).shouldHaveNoMoreInteractions();
         assertThat(actualCategoriesPage)
             .isNotNull()
@@ -78,12 +78,12 @@ public class NodesCategoryLinksRelationTest
     @Test
     public void testCreate()
     {
-        given(categoriesMock.linkNodeToCategories(any(), any())).willReturn(List.of(categoryMock));
+        given(categoriesMock.linkNodeToCategories(any(), any(), any())).willReturn(List.of(categoryMock));
 
         // when
         final List<Category> actualCategories = objectUnderTest.create(CONTENT_ID, List.of(categoryMock), parametersMock);
 
-        then(categoriesMock).should().linkNodeToCategories(CONTENT_ID, List.of(categoryMock));
+        then(categoriesMock).should().linkNodeToCategories(CONTENT_ID, List.of(categoryMock), parametersMock);
         then(categoriesMock).shouldHaveNoMoreInteractions();
         assertThat(actualCategories)
             .isNotNull()
@@ -96,7 +96,7 @@ public class NodesCategoryLinksRelationTest
         // when
         objectUnderTest.delete(CONTENT_ID, CATEGORY_ID, parametersMock);
 
-        then(categoriesMock).should().unlinkNodeFromCategory(CONTENT_ID, CATEGORY_ID);
+        then(categoriesMock).should().unlinkNodeFromCategory(CONTENT_ID, CATEGORY_ID, parametersMock);
         then(categoriesMock).shouldHaveNoMoreInteractions();
     }
 }

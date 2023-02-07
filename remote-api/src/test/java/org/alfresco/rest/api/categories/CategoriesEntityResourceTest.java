@@ -51,7 +51,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class CategoriesEntityResourceTest
 {
     private static final String CATEGORY_ID = "category-node-id";
-    private static final boolean INCLUDE_COUNT = true;
 
     @Mock
     private Categories categoriesMock;
@@ -63,46 +62,40 @@ public class CategoriesEntityResourceTest
     @InjectMocks
     private CategoriesEntityResource objectUnderTest;
 
-    @Before
-    public void setUp() throws Exception
-    {
-        given(parametersMock.getInclude()).willReturn(List.of("count"));
-    }
-
     @Test
     public void testReadCategoryById()
     {
-        given(categoriesMock.getCategoryById(any(), anyBoolean())).willCallRealMethod();
-        given(categoriesMock.getCategoryById(any(), any(), anyBoolean())).willReturn(categoryMock);
+        given(categoriesMock.getCategoryById(any(), any())).willCallRealMethod();
+        given(categoriesMock.getCategoryById(any(), any(), any())).willReturn(categoryMock);
 
         //when
         final Category category = objectUnderTest.readById(CATEGORY_ID, parametersMock);
 
-        then(categoriesMock).should().getCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, INCLUDE_COUNT);
+        then(categoriesMock).should().getCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, parametersMock);
         assertEquals(categoryMock, category);
     }
 
     @Test
     public void testUpdateCategoryById()
     {
-        given(categoriesMock.updateCategoryById(any(), any(), anyBoolean())).willCallRealMethod();
-        given(categoriesMock.updateCategoryById(any(), any(), any(), anyBoolean())).willReturn(categoryMock);
+        given(categoriesMock.updateCategoryById(any(), any(), any())).willCallRealMethod();
+        given(categoriesMock.updateCategoryById(any(), any(), any(), any())).willReturn(categoryMock);
 
         // when
         final Category actualCategory = objectUnderTest.update(CATEGORY_ID, categoryMock, parametersMock);
 
-        then(categoriesMock).should().updateCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, categoryMock, INCLUDE_COUNT);
+        then(categoriesMock).should().updateCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, categoryMock, parametersMock);
         assertThat(actualCategory).isNotNull();
     }
 
     @Test
     public void testDeleteCategoryById()
     {
-        willCallRealMethod().given(categoriesMock).deleteCategoryById(any());
+        willCallRealMethod().given(categoriesMock).deleteCategoryById(any(), any());
 
         // when
         objectUnderTest.delete(CATEGORY_ID, parametersMock);
 
-        then(categoriesMock).should().deleteCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID);
+        then(categoriesMock).should().deleteCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, parametersMock);
     }
 }

@@ -31,31 +31,32 @@ import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_S
 import java.util.List;
 
 import org.alfresco.rest.api.model.Category;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 @Experimental
 public interface Categories
 {
-    Category getCategoryById(StoreRef storeRef, String id, boolean includeCount);
+    Category getCategoryById(StoreRef storeRef, String id, Parameters parameters);
 
-    default Category getCategoryById(String id, boolean includeCount)
+    default Category getCategoryById(String id, Parameters parameters)
     {
-        return getCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, id, includeCount);
+        return getCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, id, parameters);
     }
 
-    List<Category> createSubcategories(StoreRef storeRef, String parentCategoryId, List<Category> categories, boolean includeCount);
+    List<Category> createSubcategories(StoreRef storeRef, String parentCategoryId, List<Category> categories, Parameters parameters);
 
-    default List<Category> createSubcategories(String parentCategoryId, List<Category> categories, boolean includeCount)
+    default List<Category> createSubcategories(String parentCategoryId, List<Category> categories, Parameters parameters)
     {
-        return createSubcategories(STORE_REF_WORKSPACE_SPACESSTORE, parentCategoryId, categories, includeCount);
+        return createSubcategories(STORE_REF_WORKSPACE_SPACESSTORE, parentCategoryId, categories, parameters);
     }
 
-    List<Category> getCategoryChildren(StoreRef storeRef, String parentCategoryId, boolean includeCount);
+    List<Category> getCategoryChildren(StoreRef storeRef, String parentCategoryId, Parameters parameters);
 
-    default List<Category> getCategoryChildren(String parentCategoryId, boolean includeCount)
+    default List<Category> getCategoryChildren(String parentCategoryId, Parameters parameters)
     {
-        return getCategoryChildren(STORE_REF_WORKSPACE_SPACESSTORE, parentCategoryId, includeCount);
+        return getCategoryChildren(STORE_REF_WORKSPACE_SPACESSTORE, parentCategoryId, parameters);
     }
 
     /**
@@ -67,18 +68,18 @@ public interface Categories
      * @param includeCount Include category usage count in response.
      * @return Updated category.
      */
-    Category updateCategoryById(StoreRef storeRef, String id, Category fixedCategoryModel, boolean includeCount);
+    Category updateCategoryById(StoreRef storeRef, String id, Category fixedCategoryModel, Parameters parameters);
 
-    default Category updateCategoryById(String id, Category fixedCategoryModel, boolean includeCount)
+    default Category updateCategoryById(String id, Category fixedCategoryModel, Parameters parameters)
     {
-        return updateCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, id, fixedCategoryModel, includeCount);
+        return updateCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, id, fixedCategoryModel, parameters);
     }
 
-    void deleteCategoryById(StoreRef storeRef, String id);
+    void deleteCategoryById(StoreRef storeRef, String id, Parameters parameters);
 
-    default void deleteCategoryById(String id)
+    default void deleteCategoryById(String id, Parameters parameters)
     {
-        deleteCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, id);
+        deleteCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, id, parameters);
     }
 
     /**
@@ -88,7 +89,7 @@ public interface Categories
      * @param nodeId Node ID.
      * @return Categories linked from node.
      */
-    List<Category> listCategoriesForNode(String nodeId);
+    List<Category> listCategoriesForNode(String nodeId, Parameters parameters);
 
     /**
      * Link node to categories. Change permission on node is required.
@@ -99,11 +100,11 @@ public interface Categories
      * @param categoryLinks Category IDs to which content should be linked to.
      * @return Linked to categories.
      */
-    List<Category> linkNodeToCategories(StoreRef storeRef, String nodeId, List<Category> categoryLinks);
+    List<Category> linkNodeToCategories(StoreRef storeRef, String nodeId, List<Category> categoryLinks, Parameters parameters);
 
-    default List<Category> linkNodeToCategories(String nodeId, List<Category> categoryLinks)
+    default List<Category> linkNodeToCategories(String nodeId, List<Category> categoryLinks, Parameters parameters)
     {
-        return linkNodeToCategories(STORE_REF_WORKSPACE_SPACESSTORE, nodeId, categoryLinks);
+        return linkNodeToCategories(STORE_REF_WORKSPACE_SPACESSTORE, nodeId, categoryLinks, parameters);
     }
 
     /**
@@ -113,10 +114,10 @@ public interface Categories
      * @param nodeId Node ID.
      * @param categoryId Category ID from which content node should be unlinked from.
      */
-    void unlinkNodeFromCategory(StoreRef storeRef, String nodeId, String categoryId);
+    void unlinkNodeFromCategory(StoreRef storeRef, String nodeId, String categoryId, Parameters parameters);
 
-    default void unlinkNodeFromCategory(String nodeId, String categoryId)
+    default void unlinkNodeFromCategory(String nodeId, String categoryId, Parameters parameters)
     {
-        unlinkNodeFromCategory(STORE_REF_WORKSPACE_SPACESSTORE, nodeId, categoryId);
+        unlinkNodeFromCategory(STORE_REF_WORKSPACE_SPACESSTORE, nodeId, categoryId, parameters);
     }
 }

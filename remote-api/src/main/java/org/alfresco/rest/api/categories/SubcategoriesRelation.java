@@ -42,7 +42,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>,
                                               RelationshipResourceAction.Read<Category>
 {
-    private static final String INCLUDE_COUNT_PARAM = "count";
 
     private final Categories categories;
 
@@ -60,8 +59,7 @@ public class SubcategoriesRelation implements RelationshipResourceAction.Create<
     @Override
     public List<Category> create(String parentCategoryId, List<Category> categoryList, Parameters parameters)
     {
-        final boolean includeCount = parameters.getInclude().contains(INCLUDE_COUNT_PARAM);
-        return categories.createSubcategories(parentCategoryId, categoryList, includeCount);
+        return categories.createSubcategories(parentCategoryId, categoryList, parameters);
     }
 
     /**
@@ -73,7 +71,6 @@ public class SubcategoriesRelation implements RelationshipResourceAction.Create<
     @Override
     public CollectionWithPagingInfo<Category> readAll(String parentCategoryId, Parameters parameters)
     {
-        final boolean includeCount = parameters.getInclude().contains(INCLUDE_COUNT_PARAM);
-        return ListPage.of(categories.getCategoryChildren(parentCategoryId, includeCount), parameters.getPaging());
+        return ListPage.of(categories.getCategoryChildren(parentCategoryId, parameters), parameters.getPaging());
     }
 }

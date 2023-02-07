@@ -234,7 +234,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
     /**
      * Check weather count present in create category request will be ignored.
      */
-    @Test(groups = {TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testCreateCategoryUnderRoot_verifyIfCountInRequestIsIgnored()
     {
         STEP("Try to create a category with filled count under root");

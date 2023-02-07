@@ -237,7 +237,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
     /**
      * Check whether count present in update category request will be ignored.
      */
-    @Test(groups = { TestGroup.REST_API})
+    @Test(groups = { TestGroup.REST_API })
     public void testUpdateCategory_verifyIfCountInRequestIsIgnored()
     {
         STEP("Prepare a category under root category");

@@ -45,7 +45,6 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
                                                  EntityResourceAction.Update<Category>,
                                                  EntityResourceAction.Delete
 {
-    private static final String INCLUDE_COUNT_PARAM = "count";
 
     private final Categories categories;
 
@@ -65,8 +64,7 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     @Override
     public Category readById(String id, Parameters parameters) throws EntityNotFoundException
     {
-        final boolean includeCount = parameters.getInclude().contains(INCLUDE_COUNT_PARAM);
-        return categories.getCategoryById(id, includeCount);
+        return categories.getCategoryById(id, parameters);
     }
 
     /**
@@ -80,8 +78,7 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     @Override
     public Category update(String id, Category categoryModel, Parameters parameters)
     {
-        final boolean includeCount = parameters.getInclude().contains(INCLUDE_COUNT_PARAM);
-        return categories.updateCategoryById(id, categoryModel, includeCount);
+        return categories.updateCategoryById(id, categoryModel, parameters);
     }
 
     /**
@@ -95,6 +92,6 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     @Override
     public void delete(String id, Parameters parameters)
     {
-        categories.deleteCategoryById(id);
+        categories.deleteCategoryById(id, parameters);
     }
 }

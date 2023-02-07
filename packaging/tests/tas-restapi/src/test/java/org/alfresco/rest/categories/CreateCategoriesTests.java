@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.categories;
 
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -38,7 +39,6 @@ import java.util.stream.IntStream;
 
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
-import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -56,7 +56,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
     {
         STEP("Create a category under root category (as admin)");
         final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
-        final RestCategoryModel aCategory = createCategoryModelWithName(RandomData.getRandomName("Category"));
+        final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingCategory(rootCategory)
@@ -92,7 +92,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
     {
         STEP("Create a category under root category (as admin)");
         final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
-        final RestCategoryModel aCategory = createCategoryModelWithName(RandomData.getRandomName("Category"));
+        final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingCategory(rootCategory)
@@ -140,7 +140,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
     {
         STEP("Create a category under root category (as admin)");
         final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
-        final RestCategoryModel aCategory = createCategoryModelWithName(RandomData.getRandomName("Category"));
+        final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
         final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingCategory(rootCategory)
@@ -186,7 +186,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
     {
         STEP("Create a category under root category (as user)");
         final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
-        final RestCategoryModel aCategory = createCategoryModelWithName(RandomData.getRandomName("Category"));
+        final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
         restClient.authenticateUser(user)
                 .withCoreAPI()
                 .usingCategory(rootCategory)
@@ -203,7 +203,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
         STEP("Create a category under non existing category node (as admin)");
         final String id = "non-existing-node-id";
         final RestCategoryModel rootCategory = createCategoryModelWithId(id);
-        final RestCategoryModel aCategory = createCategoryModelWithName(RandomData.getRandomName("Category"));
+        final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
         restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingCategory(rootCategory)
@@ -223,7 +223,7 @@ public class CreateCategoriesTests extends CategoriesRestTest
 
         STEP("Create a category under folder node (as admin)");
         final RestCategoryModel rootCategory = createCategoryModelWithId(folder.getNodeRef());
-        final RestCategoryModel aCategory = createCategoryModelWithName(RandomData.getRandomName("Category"));
+        final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
         restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingCategory(rootCategory)
@@ -231,10 +231,31 @@ public class CreateCategoriesTests extends CategoriesRestTest
         restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Node id does not refer to a valid category");
     }
 
+    /**
+     * Check weather count present in create category request will be ignored.
+     */
+    @Test(groups = { TestGroup.REST_API })
+    public void testCreateCategoryUnderRoot_verifyIfCountInRequestIsIgnored()
+    {
+        STEP("Try to create a category with filled count under root");
+        final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
+        final RestCategoryModel aCategory = createCategoryModelWithName(getRandomName("Category"));
+        aCategory.setCount(2);
+        final RestCategoryModel createdCategory = restClient.authenticateUser(dataUser.getAdminUser())
+            .withCoreAPI()
+            .usingCategory(rootCategory)
+            .include(INCLUDE_COUNT_PARAM)
+            .createSingleCategory(aCategory);
+
+        restClient.assertStatusCodeIs(CREATED);
+        createdCategory.assertThat().field(FIELD_NAME).is(aCategory.getName());
+        createdCategory.assertThat().field(FIELD_COUNT).is(0);
+    }
+
     static List<RestCategoryModel> getCategoriesToCreate(final int count)
     {
         return IntStream.range(0, count)
-            .mapToObj(i -> RestCategoryModel.builder().name(RandomData.getRandomName("SubCategory")).create())
+            .mapToObj(i -> RestCategoryModel.builder().name(getRandomName("SubCategory")).create())
             .collect(Collectors.toList());
     }
 }

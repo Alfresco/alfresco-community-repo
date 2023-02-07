@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,7 +26,10 @@
 
 package org.alfresco.rest.api.categories;
 
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -37,8 +40,8 @@ import java.util.stream.IntStream;
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -67,39 +70,37 @@ public class SubcategoriesRelationTest
         final Category categoryToCreate = Category.builder().name(CATEGORY_NAME).create();
         final Category category = Category.builder().name(CATEGORY_NAME).parentId(PARENT_CATEGORY_ID).hasChildren(false).id(CATEGORY_ID).create();
         final List<Category> categoriesToCreate = List.of(categoryToCreate);
-        given(categoriesMock.createSubcategories(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock)).willReturn(List.of(category));
+        given(categoriesMock.createSubcategories(any(), any(), any())).willCallRealMethod();
+        given(categoriesMock.createSubcategories(any(), any(), any(), any())).willReturn(List.of(category));
 
         //when
         List<Category> categories = objectUnderTest.create(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
 
-        then(categoriesMock).should().createSubcategories(PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
-        then(categoriesMock).shouldHaveNoMoreInteractions();
+        then(categoriesMock).should().createSubcategories(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, categoriesToCreate, parametersMock);
         assertEquals(List.of(category), categories);
     }
 
     @Test
     public void testGetCategoryChildren() {
-        final CollectionWithPagingInfo<Category> categoryChildren = getCategories(3);
-        given(categoriesMock.getCategoryChildren(PARENT_CATEGORY_ID, parametersMock)).willReturn(categoryChildren);
+        final List<Category> categoryChildren = getCategories(3);
+        given(categoriesMock.getCategoryChildren(any(), any())).willCallRealMethod();
+        given(categoriesMock.getCategoryChildren(any(), any(), any())).willReturn(categoryChildren);
 
         //when
         final CollectionWithPagingInfo<Category> returnedChildren = objectUnderTest.readAll(PARENT_CATEGORY_ID, parametersMock);
 
-        then(categoriesMock).should().getCategoryChildren(PARENT_CATEGORY_ID, parametersMock);
-        then(categoriesMock).shouldHaveNoMoreInteractions();
-        assertEquals(categoryChildren, returnedChildren);
+        then(categoriesMock).should().getCategoryChildren(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_CATEGORY_ID, parametersMock);
+        assertEquals(categoryChildren, returnedChildren.getCollection());
     }
 
-    private CollectionWithPagingInfo<Category> getCategories(final int count)
+    private List<Category> getCategories(final int count)
     {
-        return CollectionWithPagingInfo.asPaged(Paging.DEFAULT,
-                IntStream.range(0, count)
-                        .mapToObj(i -> Category.builder().name(SUBCATEGORY_NAME_PREFIX + "-" + i)
-                            .parentId(PARENT_CATEGORY_ID)
-                            .hasChildren(false)
-                            .id(CATEGORY_ID + "-" + i)
-                            .create())
-                        .collect(Collectors.toList())
-        );
+        return IntStream.range(0, count)
+            .mapToObj(i -> Category.builder().name(SUBCATEGORY_NAME_PREFIX + "-" + i)
+                .parentId(PARENT_CATEGORY_ID)
+                .hasChildren(false)
+                .id(CATEGORY_ID + "-" + i)
+                .create())
+            .collect(Collectors.toList());
     }
 }

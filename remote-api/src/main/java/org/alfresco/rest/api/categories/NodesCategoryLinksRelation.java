@@ -63,7 +63,7 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
     @Override
     public CollectionWithPagingInfo<Category> readAll(String nodeId, Parameters parameters)
     {
-        return ListPage.of(categories.listCategoriesForNode(nodeId), parameters.getPaging());
+        return ListPage.of(categories.listCategoriesForNode(nodeId, parameters), parameters.getPaging());
     }
 
     /**
@@ -77,7 +77,7 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
     @Override
     public List<Category> create(String nodeId, List<Category> categoryLinks, Parameters parameters)
     {
-        return categories.linkNodeToCategories(nodeId, categoryLinks);
+        return categories.linkNodeToCategories(nodeId, categoryLinks, parameters);
     }
 
     /**
@@ -93,5 +93,4 @@ public class NodesCategoryLinksRelation implements RelationshipResourceAction.Cr
     {
         categories.unlinkNodeFromCategory(nodeId, categoryId, parameters);
     }
-
 }

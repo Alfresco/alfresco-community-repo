@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,9 +26,8 @@
 
 package org.alfresco.rest.api.categories;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;
@@ -36,6 +35,7 @@ import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RelationshipResource(name = "subcategories",  entityResource = CategoriesEntityResource.class, title = "Subcategories")
@@ -69,8 +69,8 @@ public class SubcategoriesRelation implements RelationshipResourceAction.Create<
             description = "Lists direct children of a parent category",
             successStatus = HttpServletResponse.SC_OK)
     @Override
-    public CollectionWithPagingInfo<Category> readAll(String parentCategoryId, Parameters params)
+    public CollectionWithPagingInfo<Category> readAll(String parentCategoryId, Parameters parameters)
     {
-        return categories.getCategoryChildren(parentCategoryId, params);
+        return ListPage.of(categories.getCategoryChildren(parentCategoryId, parameters), parameters.getPaging());
     }
 }

@@ -38,7 +38,7 @@ import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 @EntityResource(name="tags", title = "Tags")
-public class TagsEntityResource implements EntityResourceAction.Read<Tag>, EntityResourceAction.ReadById<Tag>, EntityResourceAction.Update<Tag>, InitializingBean
+public class TagsEntityResource implements EntityResourceAction.Read<Tag>, EntityResourceAction.ReadById<Tag>, EntityResourceAction.Update<Tag>, EntityResourceAction.Delete, InitializingBean
 {
     private Tags tags;
 
@@ -76,5 +76,11 @@ public class TagsEntityResource implements EntityResourceAction.Read<Tag>, Entit
 	public Tag readById(String id, Parameters parameters) throws EntityNotFoundException
 	{
 		return tags.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
+	}
+
+	@Override
+	public void delete(String id, Parameters parameters)
+	{
+		tags.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
 	}
 }

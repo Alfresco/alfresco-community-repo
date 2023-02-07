@@ -42,12 +42,14 @@ import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
@@ -61,10 +63,13 @@ import org.alfresco.util.TypeConstraint;
 public class TagsImpl implements Tags
 {
 	private static final Object PARAM_INCLUDE_COUNT = "count";
-    private Nodes nodes;
+	private Nodes nodes;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
-	
+	private AuthorityService authorityService;
+
+	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
+
 	public void setTypeConstraint(TypeConstraint typeConstraint)
 	{
 		this.typeConstraint = typeConstraint;
@@ -78,6 +83,11 @@ public class TagsImpl implements Tags
     public void setTaggingService(TaggingService taggingService)
     {
 		this.taggingService = taggingService;
+	}
+
+	public void setAuthorityService(AuthorityService authorityService)
+	{
+		this.authorityService = authorityService;
 	}
 
 	public List<Tag> addTags(String nodeId, final List<Tag> tags)
@@ -127,6 +137,18 @@ public class TagsImpl implements Tags
     	String tagValue = taggingService.getTagName(existingTagNodeRef);
     	taggingService.removeTag(nodeRef, tagValue);
     }
+
+    @Override
+	public void deleteTagById(StoreRef storeRef, String tagId) {
+		if (!authorityService.hasAdminAuthority())
+		{
+			throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_TAG);
+		}
+
+		NodeRef tagNodeRef = validateTag(storeRef, tagId);
+		String tagValue = taggingService.getTagName(tagNodeRef);
+		taggingService.deleteTag(storeRef, tagValue);
+	}
 
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {

@@ -16,11 +16,10 @@
 
       <image.name>alfresco/alfresco-governance-repository-community-base</image.name>
 
-      <local.registry.host>127.0.0.1</local.registry.host>
-      <local.registry.port>5000</local.registry.port>
+      <local.registry>127.0.0.1:5000</local.registry>
       <base.image>alfresco/alfresco-community-repo-base</base.image>
       <base.image.tag>${image.tag}</base.image.tag>
-      <builder.name>insecure-builder</builder.name>
+      <builder.name>entitled-builder</builder.name>
    </properties>
 
    <dependencies>
@@ -560,8 +559,7 @@
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
-                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
-                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
+                                  <BASE_IMAGE>${local.registry}/${base.image}:${base.image.tag}</BASE_IMAGE>
                                </args>
                             </build>
                          </image>
@@ -590,8 +588,7 @@
                          <configuration>
                             <executable>${basedir}/scripts/prepare_buildx.sh</executable>
                             <arguments>
-                               <argument>${local.registry.host}</argument>
-                               <argument>${local.registry.port}</argument>
+                               <argument>${local.registry}</argument>
                                <argument>${base.image}</argument>
                                <argument>${base.image.tag}</argument>
                                <argument>${builder.name}</argument>
@@ -635,8 +632,7 @@
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
-                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
-                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
+                                  <BASE_IMAGE>${local.registry}/${base.image}:${base.image.tag}</BASE_IMAGE>
                                </args>
                             </build>
                          </image>
@@ -648,8 +644,7 @@
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
-                                  <BASE_IMAGE>${base.image}:${base.image.tag}</BASE_IMAGE>
-                                  <LOCAL_REGISTRY>${local.registry.host}:${local.registry.port}</LOCAL_REGISTRY>
+                                  <BASE_IMAGE>${local.registry}/${base.image}:${base.image.tag}</BASE_IMAGE>
                                </args>
                             </build>
                          </image>
@@ -679,8 +674,7 @@
                             <configuration>
                                <executable>${basedir}/scripts/prepare_buildx.sh</executable>
                                <arguments>
-                                  <argument>${local.registry.host}</argument>
-                                  <argument>${local.registry.port}</argument>
+                                  <argument>${local.registry}</argument>
                                   <argument>${base.image}</argument>
                                   <argument>${base.image.tag}</argument>
                                   <argument>${builder.name}</argument>

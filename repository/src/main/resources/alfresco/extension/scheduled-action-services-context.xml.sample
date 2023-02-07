@@ -34,7 +34,7 @@
                         <value>{http://www.alfresco.org/model/content/1.0}categories</value>
                     </key>
                     <!-- Note - FreeMarker ${..} entries must be escaped in Spring context files -->
-                    <value>\$\{selectSingleNode('workspace://SpacesStore', 'lucene', 'PATH:"/cm:generalclassifiable/cm:Languages/cm:English"' )\}</value>
+                    <value>\$\{selectSingleNode('workspace://SpacesStore', 'lucene', 'PATH:"/cm:categoryRoot/cm:generalclassifiable/cm:Languages/cm:English"' )\}</value>
                 </entry>
             </map>
         </property>

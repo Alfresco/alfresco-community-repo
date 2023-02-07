@@ -230,7 +230,7 @@ var Filters =
                filterData = filterData.slice(0, -1);
             }
             filterQuery = this.constructPathQuery(parsedArgs);
-            filterParams.query = filterQuery + " +PATH:\"/cm:generalclassifiable" + Filters.iso9075EncodePath(filterData) + "/member\"";
+            filterParams.query = filterQuery + " +PATH:\"/cm:categoryRoot/cm:generalclassifiable" + Filters.iso9075EncodePath(filterData) + "/member\"";
             break;
 
          default: // "path"

@@ -1220,7 +1220,7 @@ public class MultiTDemoTest extends TestCase
         }
         
         // Find all root categories
-        String query = "PATH:\"/cm:generalclassifiable/*\"";
+        String query = "PATH:\"/cm:categoryRoot/cm:generalclassifiable/*\"";
         ResultSet resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, query);
         int cnt = resultSet.length();
         
@@ -1246,7 +1246,7 @@ public class MultiTDemoTest extends TestCase
         assertEquals(cnt, resultSet.length());
         resultSet.close();
         
-        String queryMembers = "PATH:\"/cm:generalclassifiable//cm:catA/member\"";
+        String queryMembers = "PATH:\"/cm:categoryRoot/cm:generalclassifiable//cm:catA/member\"";
         resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, queryMembers);
         assertEquals(0, resultSet.length());
         resultSet.close();
@@ -1273,7 +1273,7 @@ public class MultiTDemoTest extends TestCase
         assertEquals(1, categories.size());
         
         // test ETHREEOH-210
-        queryMembers = "PATH:\"/cm:generalclassifiable//cm:CatA/member\"";
+        queryMembers = "PATH:\"/cm:categoryRoot/cm:generalclassifiable//cm:CatA/member\"";
         resultSet = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, queryMembers);
         assertEquals(1, resultSet.length());
         resultSet.close();

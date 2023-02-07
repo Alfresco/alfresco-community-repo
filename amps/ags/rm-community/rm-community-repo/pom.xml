@@ -542,9 +542,38 @@
          </build>
       </profile>
 
+      <profile>
+         <id>build-docker-images</id>
+         <!-- builds "image:latest" locally -->
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>io.fabric8</groupId>
+                  <artifactId>docker-maven-plugin</artifactId>
+                  <configuration>
+                     <images>
+                        <image>
+                           <name>${image.name}:${image.tag}</name>
+                        </image>
+                     </images>
+                  </configuration>
+                  <executions>
+                     <execution>
+                        <id>build-image</id>
+                        <phase>package</phase>
+                        <goals>
+                           <goal>build</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+
        <profile>
-          <id>build-docker-images</id>
-          <!-- builds "image:latest" locally -->
+          <id>build-multiarch-docker-images</id>
+          <!-- builds multi Architecture "images:latest" locally -->
           <build>
              <plugins>
                 <plugin>

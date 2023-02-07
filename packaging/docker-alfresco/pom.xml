@@ -157,6 +157,35 @@
         </profile>
 
         <profile>
+            <id>build-multiarch-docker-images</id>
+            <!-- builds multi Architecture "image:latest" locally -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <name>${image.name}:${image.tag}</name>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>push-docker-images</id>
             <!-- publishes "image:latest" on Quay & DockerHub -->
             <build>

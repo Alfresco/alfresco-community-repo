@@ -37,8 +37,6 @@ import org.alfresco.encryption.AlfrescoKeyStoreImpl;
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.HttpClientFactory.NonBlockingHttpParamsFactory;
-import org.apache.commons.httpclient.params.DefaultHttpParams;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -81,7 +79,7 @@ public class HttpClient4Factory
         this.keyResourceLoader = keyResourceLoader;
     }
 
-    private static SSLContext createSSLContext()
+    private SSLContext createSSLContext()
     {
         KeyManager[] keyManagers = keyStore.createKeyManagers();
         TrustManager[] trustManagers = trustStore.createTrustManagers();
@@ -98,7 +96,7 @@ public class HttpClient4Factory
         }
     };
 
-    public static CloseableHttpClient createHttpClient()
+    public CloseableHttpClient createHttpClient()
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
         clientBuilder.setSSLContext(createSSLContext());

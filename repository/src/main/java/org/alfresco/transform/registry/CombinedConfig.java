@@ -40,6 +40,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -109,9 +110,10 @@ public class CombinedConfig extends CombinedTransformConfig
         String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
+        HttpClient4Factory clientFactory = new HttpClient4Factory();
         try
         {
-            try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient())
+            try (CloseableHttpClient httpclient = clientFactory.createHttpClient())
             {
                 try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {

@@ -132,7 +132,7 @@
         <property name="connectionTimeout" value="${solr.http.connection.timeout}"/>
     </bean>
 
-    <bean id="HttpClient4Factory" class="org.alfresco.httpclient.HttpClient4Factory" init-method="init">
+    <bean id="httpClient4Factory" class="org.alfresco.httpclient.HttpClient4Factory" init-method="init">
         <property name="sslEncryptionParameters" ref="sslEncryptionParameters"/>
         <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
     </bean>

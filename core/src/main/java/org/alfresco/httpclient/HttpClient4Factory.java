@@ -47,16 +47,21 @@ public class HttpClient4Factory
     protected static final String TLS_PROTOCOL = "TLS";
 
     private SSLEncryptionParameters sslEncryptionParameters;
+
+    public void setSslEncryptionParameters(SSLEncryptionParameters sslEncryptionParameters)
+    {
+        this.sslEncryptionParameters = sslEncryptionParameters;
+    }
+
+    public void setKeyResourceLoader(KeyResourceLoader keyResourceLoader)
+    {
+        this.keyResourceLoader = keyResourceLoader;
+    }
+
     private KeyResourceLoader keyResourceLoader;
 
     private AlfrescoKeyStore keyStore;
     private AlfrescoKeyStore trustStore;
-
-    public HttpClient4Factory(SSLEncryptionParameters sslEncryptionParameters, KeyResourceLoader keyResourceLoader)
-    {
-        this.sslEncryptionParameters = sslEncryptionParameters;
-        this.keyResourceLoader = keyResourceLoader;
-    }
 
     public void init()
     {

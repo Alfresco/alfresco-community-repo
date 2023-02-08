@@ -57,10 +57,6 @@ public class HttpClient4Factory
         this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
     }
 
-    public HttpClient4Factory()
-    {
-    }
-
     public HttpClient4Factory(SSLEncryptionParameters sslEncryptionParameters, KeyResourceLoader keyResourceLoader)
     {
         this.sslEncryptionParameters = sslEncryptionParameters;

@@ -50,13 +50,6 @@ public class HttpClient4Factory
     private AlfrescoKeyStore keyStore;
     private AlfrescoKeyStore trustStore;
 
-
-    public void init()
-    {
-        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
-        this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
-    }
-
     public HttpClient4Factory(SSLEncryptionParameters sslEncryptionParameters, KeyResourceLoader keyResourceLoader)
     {
         this.sslEncryptionParameters = sslEncryptionParameters;
@@ -65,14 +58,10 @@ public class HttpClient4Factory
         init();
     }
 
-    public void setSslEncryptionParameters(SSLEncryptionParameters sslEncryptionParameters)
+    public void init()
     {
-        this.sslEncryptionParameters = sslEncryptionParameters;
-    }
-
-    public void setKeyResourceLoader(KeyResourceLoader keyResourceLoader)
-    {
-        this.keyResourceLoader = keyResourceLoader;
+        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
+        this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
     }
 
     private SSLContext createSSLContext()

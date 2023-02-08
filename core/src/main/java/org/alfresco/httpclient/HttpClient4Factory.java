@@ -47,8 +47,8 @@ public class HttpClient4Factory
     private SSLEncryptionParameters sslEncryptionParameters;
     private KeyResourceLoader keyResourceLoader;
 
-    private static AlfrescoKeyStore keyStore;
-    private static AlfrescoKeyStore trustStore;
+    private AlfrescoKeyStore keyStore;
+    private AlfrescoKeyStore trustStore;
 
 
     public void init()

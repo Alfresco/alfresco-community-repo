@@ -132,11 +132,6 @@
         <property name="connectionTimeout" value="${solr.http.connection.timeout}"/>
     </bean>
 
-    <bean id="httpClient4Factory" class="org.alfresco.httpclient.HttpClient4Factory" init-method="init">
-        <property name="sslEncryptionParameters" ref="sslEncryptionParameters"/>
-        <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
-    </bean>
-
     <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init">
       <property name="solrHost" value="${solr.host}"/>
       <property name="solrPort" value="${solr.port}"/>

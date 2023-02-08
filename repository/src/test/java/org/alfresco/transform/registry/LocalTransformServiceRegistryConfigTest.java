@@ -265,7 +265,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
      */
     private void retrieveLocalTransformList(String path)
     {
-        CombinedConfig combinedConfig = new CombinedConfig(log, registry);
+        CombinedConfig combinedConfig = new CombinedConfig(log, registry, registry.getHttpClientFactory());
         combinedConfig.addLocalConfig(path);
         combinedConfig.register(registry);
 
@@ -388,7 +388,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
     private void register(String path) throws IOException
     {
-        CombinedConfig combinedConfig = new CombinedConfig(log, registry);
+        CombinedConfig combinedConfig = new CombinedConfig(log, registry, registry.getHttpClientFactory());
         combinedConfig.addLocalConfig(path);
         combinedConfig.register((TransformServiceRegistryImpl)registry);
     }

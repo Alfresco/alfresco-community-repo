@@ -118,7 +118,8 @@
         <property name="mimetypeService" ref="MimetypeService" />
         <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
         <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
-        <property name="shutdownIndicator" ref="shutdownIndicator"></property>
+        <property name="shutdownIndicator" ref="shutdownIndicator" />
+        <property name="httpClientFactory" ref="httpClient4Factory" />
     </bean>
 
     <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />

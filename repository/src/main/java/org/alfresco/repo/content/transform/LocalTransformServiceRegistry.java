@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.alfresco.httpclient.HttpClient4Factory;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.transform.config.TransformOptionGroup;
@@ -77,6 +78,17 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     private boolean strictMimeTypeCheck;
     private Map<String, Set<String>> strictMimetypeExceptions;
     private boolean retryTransformOnDifferentMimeType;
+    private HttpClient4Factory httpClientFactory;
+
+    public void setHttpClientFactory(HttpClient4Factory httpClientFactory)
+    {
+        this.httpClientFactory = httpClientFactory;
+    }
+
+    public HttpClient4Factory getHttpClientFactory()
+    {
+        return httpClientFactory;
+    }
 
     public void setPipelineConfigDir(String pipelineConfigDir)
     {
@@ -134,7 +146,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     @Override
     public boolean readConfig() throws IOException
     {
-        CombinedConfig combinedConfig = new CombinedConfig(getLog(), this);
+        CombinedConfig combinedConfig = new CombinedConfig(getLog(), this, httpClientFactory);
         List<String> urls = getTEngineUrlsSortedByName();
         boolean successReadingConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
         successReadingConfig &= combinedConfig.addLocalConfig("alfresco/transforms");

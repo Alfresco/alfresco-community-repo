@@ -68,8 +68,11 @@ public class CombinedConfig extends CombinedTransformConfig
     private ConfigFileFinder configFileFinder;
     private int tEngineCount;
 
-    public CombinedConfig(Log log, AbstractTransformRegistry registry)
+    private final HttpClient4Factory httpClientFactory;
+
+    public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClient4Factory httpClientFactory)
     {
+        this.httpClientFactory = httpClientFactory;
         this.log = log;
 
         configFileFinder = new ConfigFileFinder(jsonObjectMapper)
@@ -110,10 +113,9 @@ public class CombinedConfig extends CombinedTransformConfig
         String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
-        HttpClient4Factory clientFactory = new HttpClient4Factory();
         try
         {
-            try (CloseableHttpClient httpclient = clientFactory.createHttpClient())
+            try (CloseableHttpClient httpclient = httpClientFactory.createHttpClient())
             {
                 try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {

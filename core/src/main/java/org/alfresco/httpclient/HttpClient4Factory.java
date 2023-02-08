@@ -56,8 +56,6 @@ public class HttpClient4Factory
     {
         this.sslEncryptionParameters = sslEncryptionParameters;
         this.keyResourceLoader = keyResourceLoader;
-
-        init();
     }
 
     public void init()

@@ -44,6 +44,8 @@ import org.apache.http.impl.client.HttpClients;
 
 public class HttpClient4Factory
 {
+    protected static final String TLS_PROTOCOL = "TLS";
+
     private SSLEncryptionParameters sslEncryptionParameters;
     private KeyResourceLoader keyResourceLoader;
 
@@ -71,7 +73,7 @@ public class HttpClient4Factory
 
         try
         {
-            SSLContext sslcontext = SSLContext.getInstance("TLS");
+            SSLContext sslcontext = SSLContext.getInstance(TLS_PROTOCOL);
             sslcontext.init(keyManagers, trustManagers, null);
             return sslcontext;
         }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -34,6 +34,7 @@ public class Category
     private String name;
     private String parentId;
     private boolean hasChildren;
+    private Integer count;
 
     public String getId()
     {
@@ -80,20 +81,38 @@ public class Category
         this.hasChildren = hasChildren;
     }
 
+    public Integer getCount()
+    {
+        return count;
+    }
+
+    public void setCount(Integer count)
+    {
+        this.count = count;
+    }
+
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Category category = (Category) o;
-        return hasChildren == category.hasChildren && Objects.equals(id, category.id) && name.equals(category.name) &&
-                Objects.equals(parentId, category.parentId);
+        return hasChildren == category.hasChildren && Objects.equals(id, category.id) && Objects.equals(name, category.name) && Objects.equals(parentId, category.parentId)
+            && Objects.equals(count, category.count);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, parentId, hasChildren);
+        return Objects.hash(id, name, parentId, hasChildren, count);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Category{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", parentId='" + parentId + '\'' + ", hasChildren=" + hasChildren + ", count=" + count + '}';
     }
 
     public static Builder builder()
@@ -107,6 +126,7 @@ public class Category
         private String name;
         private String parentId;
         private boolean hasChildren;
+        private Integer count;
 
         public Builder id(String id)
         {
@@ -132,6 +152,12 @@ public class Category
             return this;
         }
 
+        public Builder count(Integer count)
+        {
+            this.count = count;
+            return this;
+        }
+
         public Category create()
         {
             final Category category = new Category();
@@ -139,6 +165,7 @@ public class Category
             category.setName(name);
             category.setParentId(parentId);
             category.setHasChildren(hasChildren);
+            category.setCount(count);
             return category;
         }
     }

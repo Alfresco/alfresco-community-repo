@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,15 +26,21 @@
 
 package org.alfresco.rest.api.categories;
 
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.willCallRealMethod;
+
+import java.util.List;
 
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -45,6 +51,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class CategoriesEntityResourceTest
 {
     private static final String CATEGORY_ID = "category-node-id";
+
     @Mock
     private Categories categoriesMock;
     @Mock
@@ -58,26 +65,37 @@ public class CategoriesEntityResourceTest
     @Test
     public void testReadCategoryById()
     {
-        given(categoriesMock.getCategoryById(CATEGORY_ID, parametersMock)).willReturn(categoryMock);
+        given(categoriesMock.getCategoryById(any(), any())).willCallRealMethod();
+        given(categoriesMock.getCategoryById(any(), any(), any())).willReturn(categoryMock);
 
         //when
         final Category category = objectUnderTest.readById(CATEGORY_ID, parametersMock);
 
-        then(categoriesMock).should().getCategoryById(CATEGORY_ID, parametersMock);
-        then(categoriesMock).shouldHaveNoMoreInteractions();
+        then(categoriesMock).should().getCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, parametersMock);
         assertEquals(categoryMock, category);
     }
 
     @Test
     public void testUpdateCategoryById()
     {
-        given(categoriesMock.updateCategoryById(any(), any())).willReturn(categoryMock);
+        given(categoriesMock.updateCategoryById(any(), any(), any())).willCallRealMethod();
+        given(categoriesMock.updateCategoryById(any(), any(), any(), any())).willReturn(categoryMock);
 
         // when
         final Category actualCategory = objectUnderTest.update(CATEGORY_ID, categoryMock, parametersMock);
 
-        then(categoriesMock).should().updateCategoryById(CATEGORY_ID, categoryMock);
-        then(categoriesMock).shouldHaveNoMoreInteractions();
+        then(categoriesMock).should().updateCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, categoryMock, parametersMock);
         assertThat(actualCategory).isNotNull();
+    }
+
+    @Test
+    public void testDeleteCategoryById()
+    {
+        willCallRealMethod().given(categoriesMock).deleteCategoryById(any(), any());
+
+        // when
+        objectUnderTest.delete(CATEGORY_ID, parametersMock);
+
+        then(categoriesMock).should().deleteCategoryById(STORE_REF_WORKSPACE_SPACESSTORE, CATEGORY_ID, parametersMock);
     }
 }

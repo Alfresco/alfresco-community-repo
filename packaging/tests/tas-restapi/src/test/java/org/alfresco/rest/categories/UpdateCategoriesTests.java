@@ -79,7 +79,7 @@ public class UpdateCategoriesTests extends CategoriesRestTest
         final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
 
         STEP("Prepare as admin a subcategory of root's child category");
-        final RestCategoryModel createdSubcategory = prepareCategoryUnder(createdCategory.getId());
+        final RestCategoryModel createdSubcategory = prepareCategoryUnder(createdCategory);
 
         STEP("Update as admin newly created subcategory");
         final String categoryNewName = getRandomName(CATEGORY_NEW_NAME_PREFIX);
@@ -232,5 +232,28 @@ public class UpdateCategoriesTests extends CategoriesRestTest
 
         restClient.assertStatusCodeIs(OK);
         updatedCategory.assertThat().field(FIELD_NAME).is(categoryNewName);
+    }
+
+    /**
+     * Check whether count present in update category request will be ignored.
+     */
+    @Test(groups = { TestGroup.REST_API })
+    public void testUpdateCategory_verifyIfCountInRequestIsIgnored()
+    {
+        STEP("Prepare a category under root category");
+        final RestCategoryModel createdCategory = prepareCategoryUnderRoot();
+
+        STEP("Try to update newly created category providing new name and count number");
+        final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(getRandomName(CATEGORY_NEW_NAME_PREFIX));
+        fixedCategoryModel.setCount(2);
+        final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
+            .withCoreAPI()
+            .usingCategory(createdCategory)
+            .include(INCLUDE_COUNT_PARAM)
+            .updateCategory(fixedCategoryModel);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedCategory.assertThat().field(FIELD_ID).is(createdCategory.getId());
+        updatedCategory.assertThat().field(FIELD_COUNT).is(0);
     }
 }

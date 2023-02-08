@@ -41,4 +41,6 @@ public interface Tags
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params);
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag);
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params);
+
+    void deleteTagById(StoreRef storeRef, String tagId);
 }

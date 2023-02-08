@@ -200,7 +200,7 @@ public class TagsImpl implements Tags
     		throw new EntityNotFoundException(tagId);
     	}
 		String tag = taggingService.getTagName(tagNodeRef);
-		if(taggingService.isTag(storeRef,tag)==false)
+		if(!taggingService.isTag(storeRef,tag))
 		{
 			throw new EntityNotFoundException(tagId);
 		}

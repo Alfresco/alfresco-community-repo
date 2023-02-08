@@ -554,6 +554,11 @@
                      <images>
                         <image>
                            <name>${image.name}:${image.tag}</name>
+                           <build>
+                              <args>
+                                 <BASE_IMAGE>alfresco/alfresco-community-repo-base:${image.tag}</BASE_IMAGE>
+                              </args>
+                           </build>
                         </image>
                      </images>
                   </configuration>

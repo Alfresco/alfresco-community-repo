@@ -40,6 +40,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.beans.factory.annotation.Value;
 
 
 public class HttpClient4Factory
@@ -47,6 +48,17 @@ public class HttpClient4Factory
     protected static final String TLS_PROTOCOL = "TLS";
 
     private SSLEncryptionParameters sslEncryptionParameters;
+    private KeyResourceLoader keyResourceLoader;
+    private Boolean mTLSEnabled;
+
+    private AlfrescoKeyStore keyStore;
+    private AlfrescoKeyStore trustStore;
+
+    public void init()
+    {
+        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
+        this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
+    }
 
     public void setSslEncryptionParameters(SSLEncryptionParameters sslEncryptionParameters)
     {
@@ -57,16 +69,11 @@ public class HttpClient4Factory
     {
         this.keyResourceLoader = keyResourceLoader;
     }
-
-    private KeyResourceLoader keyResourceLoader;
-
-    private AlfrescoKeyStore keyStore;
-    private AlfrescoKeyStore trustStore;
-
-    public void init()
+    
+    public void setmTLSEnabled(String mTLSEnabled)
     {
-        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
-        this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
+        System.out.println(mTLSEnabled);
+        this.mTLSEnabled = Boolean.parseBoolean(mTLSEnabled);
     }
 
     private SSLContext createSSLContext()
@@ -89,9 +96,13 @@ public class HttpClient4Factory
     public CloseableHttpClient createHttpClient()
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
-        clientBuilder.setSSLContext(createSSLContext());
+
+        if(mTLSEnabled)
+        {
+            clientBuilder.setSSLContext(createSSLContext());
+        }
 
         return clientBuilder.build();
     };
-
+    
 }

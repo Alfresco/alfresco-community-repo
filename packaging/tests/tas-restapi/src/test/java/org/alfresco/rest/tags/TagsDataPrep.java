@@ -1,6 +1,5 @@
 package org.alfresco.rest.tags;
 
-import java.util.Date;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestTagModel;
@@ -35,6 +34,7 @@ public class TagsDataPrep extends RestTest
     public void init() throws Exception
     {
         adminUserModel = dataUser.getAdminUser();
+        userModel = dataUser.createRandomTestUser();
         //Create public site
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
         usersWithRoles = dataUser.usingAdmin().addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
@@ -59,5 +59,24 @@ public class TagsDataPrep extends RestTest
                                   .and().entriesListContains("tag", folderTagValue.toLowerCase());
             });
 
+    }
+
+    protected RestTagModel createTagForDocument(FileModel document)
+    {
+        String documentTagValue = RandomData.getRandomName("tag");
+        return restClient.withCoreAPI().usingResource(document).addTag(documentTagValue);
+    }
+
+    protected RestTagModel createTagModelWithId(final String id)
+    {
+        return createTagModelWithIdAndName(id, RandomData.getRandomName("tag"));
+    }
+
+    protected RestTagModel createTagModelWithIdAndName(final String id, final String tagName)
+    {
+        return RestTagModel.builder()
+                .id(id)
+                .tagName(tagName)
+                .create();
     }
 }

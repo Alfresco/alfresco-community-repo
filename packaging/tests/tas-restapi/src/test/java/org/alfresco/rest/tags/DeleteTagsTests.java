@@ -31,7 +31,7 @@ public class DeleteTagsTests extends TagsDataPrep
     }
 
     /**
-     * Attempt to delete a tag as a regular user and received BAD_REQUEST
+     * Attempt to delete a tag as a regular user and receive 403 error
      */
     @Test(groups = {TestGroup.REST_API})
     public void testDeleteTagAsRegularUser_andFail()

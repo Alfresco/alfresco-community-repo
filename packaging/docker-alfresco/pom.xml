@@ -135,7 +135,7 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <configuration>
+                        <configuration combine.self="override">
                             <images>
                                 <image>
                                     <name>${image.name}:${image.tag}</name>

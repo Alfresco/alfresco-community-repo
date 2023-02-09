@@ -18,7 +18,6 @@
 
       <local.registry>127.0.0.1:5000</local.registry>
       <base.image>alfresco/alfresco-community-repo-base</base.image>
-      <base.image.tag>${image.tag}</base.image.tag>
       <builder.name>entitled-builder</builder.name>
    </properties>
 
@@ -550,14 +549,15 @@
                <plugin>
                   <groupId>io.fabric8</groupId>
                   <artifactId>docker-maven-plugin</artifactId>
-                  <configuration>
+                  <configuration combine.self="override">
                      <images>
                         <image>
                            <name>${image.name}:${image.tag}</name>
                            <build>
                               <args>
-                                 <BASE_IMAGE>alfresco/alfresco-community-repo-base:${image.tag}</BASE_IMAGE>
+                                 <BASE_IMAGE>${base.image}:${image.tag}</BASE_IMAGE>
                               </args>
+                              <contextDir>${project.basedir}</contextDir>
                            </build>
                         </image>
                      </images>
@@ -593,7 +593,7 @@
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
-                                  <BASE_IMAGE>${local.registry}/${base.image}:${base.image.tag}</BASE_IMAGE>
+                                  <BASE_IMAGE>${local.registry}/${base.image}:${image.tag}</BASE_IMAGE>
                                </args>
                             </build>
                          </image>
@@ -624,7 +624,6 @@
                             <arguments>
                                <argument>${local.registry}</argument>
                                <argument>${base.image}</argument>
-                               <argument>${base.image.tag}</argument>
                                <argument>${builder.name}</argument>
                                <argument>${image.registry}</argument>
                                <argument>${image.name}</argument>
@@ -666,7 +665,7 @@
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
-                                  <BASE_IMAGE>${local.registry}/${base.image}:${base.image.tag}</BASE_IMAGE>
+                                  <BASE_IMAGE>${local.registry}/${base.image}:${image.tag}</BASE_IMAGE>
                                </args>
                             </build>
                          </image>
@@ -678,7 +677,7 @@
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
-                                  <BASE_IMAGE>${local.registry}/${base.image}:${base.image.tag}</BASE_IMAGE>
+                                  <BASE_IMAGE>${local.registry}/${base.image}:${image.tag}</BASE_IMAGE>
                                </args>
                             </build>
                          </image>
@@ -710,7 +709,6 @@
                                <arguments>
                                   <argument>${local.registry}</argument>
                                   <argument>${base.image}</argument>
-                                  <argument>${base.image.tag}</argument>
                                   <argument>${builder.name}</argument>
                                   <argument>${image.registry}</argument>
                                   <argument>${image.name}</argument>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,9 +27,13 @@ package org.alfresco.rest.api.impl;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tagging.NonExistentTagException;
@@ -47,12 +51,14 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * Centralises access to tag services and maps between representations.
@@ -63,12 +69,13 @@ import org.alfresco.util.TypeConstraint;
 public class TagsImpl implements Tags
 {
 	private static final Object PARAM_INCLUDE_COUNT = "count";
-	private Nodes nodes;
+	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
+	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
+
+    private Nodes nodes;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
 	private AuthorityService authorityService;
-
-	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
 
 	public void setTypeConstraint(TypeConstraint typeConstraint)
 	{
@@ -140,10 +147,7 @@ public class TagsImpl implements Tags
 
     @Override
 	public void deleteTagById(StoreRef storeRef, String tagId) {
-		if (!authorityService.hasAdminAuthority())
-		{
-			throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_TAG);
-		}
+		verifyAdminAuthority();
 
 		NodeRef tagNodeRef = validateTag(storeRef, tagId);
 		String tagValue = taggingService.getTagName(tagNodeRef);
@@ -253,4 +257,38 @@ public class TagsImpl implements Tags
 
     	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
+
+	@Experimental
+	@Override
+	public List<Tag> createTags(final StoreRef storeRef, final List<Tag> tags, final Parameters parameters)
+	{
+		verifyAdminAuthority();
+		final List<String> tagNames = Optional.ofNullable(tags).orElse(Collections.emptyList()).stream()
+			.filter(Objects::nonNull)
+			.map(Tag::getTag)
+			.distinct()
+			.collect(Collectors.toList());
+
+		if (CollectionUtils.isEmpty(tagNames))
+		{
+			throw new InvalidArgumentException(NOT_A_VALID_TAG);
+		}
+
+		return taggingService.createTags(storeRef, tagNames).stream()
+			.map(pair -> Tag.builder().tag(pair.getFirst()).nodeRef(pair.getSecond()).create())
+			.peek(tag -> {
+				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
+				{
+					tag.setCount(0);
+				}
+			}).collect(Collectors.toList());
+	}
+
+	private void verifyAdminAuthority()
+	{
+		if (!authorityService.hasAdminAuthority())
+		{
+			throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_TAG);
+		}
+	}
 }

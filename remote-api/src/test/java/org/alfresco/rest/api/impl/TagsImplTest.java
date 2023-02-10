@@ -23,16 +23,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
+import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,16 +57,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertThrows;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-
 @RunWith(MockitoJUnitRunner.class)
 public class TagsImplTest
 {
     private static final String TAG_ID = "tag-node-id";
     private static final String TAG_NAME = "tag-dummy-name";
-    private static final NodeRef TAG_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,TAG_ID);
+    private static final NodeRef TAG_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
     @Mock
     private Nodes nodesMock;
@@ -57,6 +70,8 @@ public class TagsImplTest
     private AuthorityService authorityServiceMock;
     @Mock
     private TaggingService taggingServiceMock;
+    @Mock
+    private Parameters parametersMock;
 
     @InjectMocks
     private TagsImpl objectUnderTest;
@@ -115,5 +130,163 @@ public class TagsImplTest
         then(nodesMock).shouldHaveNoMoreInteractions();
 
         then(taggingServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testCreateTags()
+    {
+        final List<String> tagNames = List.of("tag1", "99gat");
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+
+        //when
+        final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(taggingServiceMock).should().createTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, tagNames);
+        then(taggingServiceMock).shouldHaveNoMoreInteractions();
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        assertThat(actualCreatedTags)
+            .isNotNull()
+            .isEqualTo(expectedTags);
+    }
+
+    @Test
+    public void testCreateTags_withoutPermission()
+    {
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
+
+        //when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(List.of(createTag(TAG_NAME)), parametersMock));
+
+        then(authorityServiceMock).should().hasAdminAuthority();
+        then(authorityServiceMock).shouldHaveNoMoreInteractions();
+        then(taggingServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(PermissionDeniedException.class)
+            .hasMessageContaining(NO_PERMISSION_TO_MANAGE_A_TAG);
+    }
+
+    @Test
+    public void testCreateTags_passingNullInsteadList()
+    {
+        //when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(null, parametersMock));
+
+        then(taggingServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(InvalidArgumentException.class)
+            .hasMessageContaining(NOT_A_VALID_TAG);
+    }
+
+    @Test
+    public void testCreateTags_passingEmptyList()
+    {
+        //when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(Collections.emptyList(), parametersMock));
+
+        then(taggingServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(InvalidArgumentException.class)
+            .hasMessageContaining(NOT_A_VALID_TAG);
+    }
+
+    @Test
+    public void testCreateTags_passingListOfNulls()
+    {
+        //when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(Collections.singletonList(null), parametersMock));
+
+        then(taggingServiceMock).shouldHaveNoInteractions();
+        assertThat(actualException)
+            .isInstanceOf(InvalidArgumentException.class)
+            .hasMessageContaining(NOT_A_VALID_TAG);
+    }
+
+    @Test
+    public void testCreateTags_whileTagAlreadyExists()
+    {
+        given(taggingServiceMock.createTags(any(), any())).willThrow(new DuplicateChildNodeNameException(null, null, TAG_NAME, null));
+
+        //when
+        final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(List.of(createTag(TAG_NAME)), parametersMock));
+
+        then(taggingServiceMock).should().createTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, List.of(TAG_NAME));
+        then(taggingServiceMock).shouldHaveNoMoreInteractions();
+        assertThat(actualException).isInstanceOf(DuplicateChildNodeNameException.class);
+    }
+
+    @Test
+    public void testCreateTags_withRepeatedTagName()
+    {
+        final List<String> tagNames = List.of(TAG_NAME, TAG_NAME);
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+
+        //when
+        final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
+
+        then(taggingServiceMock).should().createTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, List.of(TAG_NAME));
+        final List<Tag> expectedTags = List.of(createTagWithNodeRef(TAG_NAME));
+        assertThat(actualCreatedTags)
+            .isNotNull()
+            .isEqualTo(expectedTags);
+    }
+
+    @Test
+    public void testCreateTags_includingCount()
+    {
+        final List<String> tagNames = List.of("tag1", "99gat");
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
+
+        //when
+        final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
+
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
+            .peek(tag -> tag.setCount(0))
+            .collect(Collectors.toList());
+        assertThat(actualCreatedTags)
+            .isNotNull()
+            .isEqualTo(expectedTags);
+    }
+
+    private static List<Pair<String, NodeRef>> createTagAndNodeRefPairs(final List<String> tagNames)
+    {
+        return tagNames.stream()
+            .map(tagName -> createPair(tagName, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID.concat("-").concat(tagName))))
+            .collect(Collectors.toList());
+    }
+
+    private static Pair<String, NodeRef> createPair(final String tagName, final NodeRef nodeRef)
+    {
+        return new Pair<>(tagName, nodeRef);
+    }
+
+    private static List<Tag> createTags(final List<String> tagNames)
+    {
+        return tagNames.stream().map(TagsImplTest::createTag).collect(Collectors.toList());
+    }
+
+    private static List<Tag> createTagsWithNodeRefs(final List<String> tagNames)
+    {
+        return tagNames.stream().map(TagsImplTest::createTagWithNodeRef).collect(Collectors.toList());
+    }
+
+    private static Tag createTag(final String tagName)
+    {
+        return Tag.builder()
+            .tag(tagName)
+            .create();
+    }
+
+    private static Tag createTagWithNodeRef(final String tagName)
+    {
+        return Tag.builder()
+            .nodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID.concat("-").concat(tagName)))
+            .tag(tagName)
+            .create();
     }
 }

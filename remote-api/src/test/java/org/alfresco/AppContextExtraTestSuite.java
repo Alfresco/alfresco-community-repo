@@ -50,6 +50,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class,
     org.alfresco.rest.api.RulesUnitTests.class,
     org.alfresco.rest.api.CategoriesUnitTests.class,
+    org.alfresco.rest.api.TagsUnitTests.class,
     org.alfresco.rest.api.impl.ContentStorageInformationImplTest.class,
     org.alfresco.rest.api.nodes.NodeStorageInfoRelationTest.class,
     org.alfresco.rest.api.search.ResultMapperTests.class,

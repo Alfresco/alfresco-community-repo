@@ -133,7 +133,6 @@ public class CategoriesImplTest
         given(typeConstraint.matches(any())).willReturn(true);
         given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(AccessStatus.ALLOWED);
-        //given(parametersMock.getInclude()).willReturn(Co);
     }
 
     @Test

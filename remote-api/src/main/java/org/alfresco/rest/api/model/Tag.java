@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,6 +24,8 @@
  * #L%
  */
 package org.alfresco.rest.api.model;
+
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -109,7 +111,7 @@ public class Tag implements Comparable<Tag>
 
 	/*
 	 * Tags are equal if they have the same NodeRef
-	 * 
+	 *
 	 * (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
@@ -134,7 +136,45 @@ public class Tag implements Comparable<Tag>
 	@Override
 	public String toString()
 	{
-		return "Tag [nodeRef=" + nodeRef + ", tag=" + tag + "]";
+		return "Tag{" + "nodeRef=" + nodeRef + ", tag='" + tag + '\'' + ", count=" + count + '}';
 	}
-	
+
+	public static Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static class Builder
+	{
+		private NodeRef nodeRef;
+		private String tag;
+		private Integer count;
+
+		public Builder nodeRef(NodeRef nodeRef)
+		{
+			this.nodeRef = nodeRef;
+			return this;
+		}
+
+		public Builder tag(String tag)
+		{
+			this.tag = tag;
+			return this;
+		}
+
+		public Builder count(Integer count)
+		{
+			this.count = count;
+			return this;
+		}
+
+		public Tag create()
+		{
+			final Tag tag = new Tag();
+			tag.setNodeRef(nodeRef);
+			tag.setTag(this.tag);
+			tag.setCount(count);
+			return tag;
+		}
+	}
 }

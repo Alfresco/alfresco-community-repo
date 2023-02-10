@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,12 @@
  */
 package org.alfresco.rest.requests.coreAPI;
 
+import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
+
+import java.util.List;
+
+import io.restassured.RestAssured;
+import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestDownloadsModel;
@@ -49,8 +55,7 @@ import org.alfresco.rest.requests.Trashcan;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-
-import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
 
 /**
  * Defines the entire Rest Core API
@@ -170,6 +175,30 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     public Networks usingNetworks()
     {
         return new Networks(restWrapper);
+    }
+
+    /**
+     * Create a single orphan tag.
+     *
+     * @param tag Tag model to create.
+     * @return Created tag.
+     */
+    public RestTagModel createSingleTag(RestTagModel tag)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, tag.toJson(), "tags/");
+        return restWrapper.processModel(RestTagModel.class, request);
+    }
+
+    /**
+     * Create several orphan tags in one request.
+     *
+     * @param tags Tags models to create.
+     * @return Created tags.
+     */
+    public RestTagModelsCollection createTags(List<RestTagModel> tags)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, arrayToJson(tags), "tags/");
+        return restWrapper.processModels(RestTagModelsCollection.class, request);
     }
 
     public Tags usingTag(RestTagModel tag)

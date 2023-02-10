@@ -11,12 +11,9 @@ import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
-@Test(groups = {TestGroup.REQUIRE_SOLR})
 public class TagsDataPrep extends RestTest
 {
 
@@ -33,6 +30,7 @@ public class TagsDataPrep extends RestTest
     @BeforeClass
     public void init() throws Exception
     {
+        //Create users
         adminUserModel = dataUser.getAdminUser();
         userModel = dataUser.createRandomTestUser();
         //Create public site

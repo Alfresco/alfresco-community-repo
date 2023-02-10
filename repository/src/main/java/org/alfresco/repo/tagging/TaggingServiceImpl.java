@@ -453,6 +453,10 @@ public class TaggingServiceImpl implements TaggingService,
     
     public String getTagName(NodeRef nodeRef)
     {
+        if(nodeRef == null)
+        {
+            throw new EntityNotFoundException(nodeRef);
+        }
         return (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
     

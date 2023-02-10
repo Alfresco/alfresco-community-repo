@@ -70,7 +70,7 @@ public class CreateTagsTests extends RestTest
     public void testCreateSingleTag()
     {
         STEP("Create single tag as admin");
-        final RestTagModel tagModel = createTagModelWithRandomName();
+        final RestTagModel tagModel = createTagModelWithName(getRandomName("99gat").toLowerCase());
         final RestTagModel createdTag = restClient.authenticateUser(admin).withCoreAPI().createSingleTag(tagModel);
 
         restClient.assertStatusCodeIs(CREATED);

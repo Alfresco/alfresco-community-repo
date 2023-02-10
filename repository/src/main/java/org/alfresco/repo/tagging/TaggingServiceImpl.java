@@ -1581,7 +1581,6 @@ public class TaggingServiceImpl implements TaggingService,
     @Override
     public List<Pair<String, NodeRef>> createTags(final StoreRef storeRef, final List<String> tagNames)
     {
-        // unit tests ?
         updateTagBehaviour.disable();
         createTagBehaviour.disable();
         try

@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
@@ -453,10 +454,6 @@ public class TaggingServiceImpl implements TaggingService,
     
     public String getTagName(NodeRef nodeRef)
     {
-        if(nodeRef == null)
-        {
-            throw new EntityNotFoundException(nodeRef);
-        }
         return (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
     }
     

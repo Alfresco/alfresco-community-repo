@@ -242,11 +242,11 @@ public class TagsImpl implements Tags
 
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
-		NodeRef nodeRef = nodes.validateNode(nodeId);
-		if(nodeRef == null)
-		{
-			throw new EntityNotFoundException(nodeId);
-		}
+    	NodeRef nodeRef = nodes.validateNode(nodeId);
+    	if(nodeRef == null)
+    	{
+    		throw new EntityNotFoundException(nodeId);
+    	}
 
 		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
     	Integer totalItems = results.getTotalResultCount().getFirst();

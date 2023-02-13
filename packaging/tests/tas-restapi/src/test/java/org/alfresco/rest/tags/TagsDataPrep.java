@@ -70,11 +70,11 @@ public class TagsDataPrep extends RestTest
         return createTagModelWithIdAndName(id, RandomData.getRandomName("tag"));
     }
 
-    protected RestTagModel createTagModelWithIdAndName(final String id, final String tagName)
+    protected RestTagModel createTagModelWithIdAndName(final String id, final String tag)
     {
         return RestTagModel.builder()
                 .id(id)
-                .tagName(tagName)
+                .tag(tag)
                 .create();
     }
 }

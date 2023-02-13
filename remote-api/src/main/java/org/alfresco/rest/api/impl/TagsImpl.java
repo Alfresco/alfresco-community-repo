@@ -256,7 +256,7 @@ public class TagsImpl implements Tags
     		throw new EntityNotFoundException(nodeId);
     	}
 
-    	PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
+		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
     	Integer totalItems = results.getTotalResultCount().getFirst();
     	List<Pair<NodeRef, String>> page = results.getPage();
     	List<Tag> tags = new ArrayList<Tag>(page.size());

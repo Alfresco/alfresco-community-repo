@@ -69,7 +69,7 @@ public class TagsImplTest
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
     }
 
-    @Test
+    @Test(expected = EntityNotFoundException.class)
     public void testDeleteTagById()
     {
         //when

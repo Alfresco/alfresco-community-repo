@@ -143,16 +143,16 @@ public class ZipDownloadExporter extends BaseExporter
     @Override
     public void startNode(NodeRef nodeRef)
     {
-        this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        Date createdUtcTimestamp = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
-        Date modifiedUtcTimestamp = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         TimeZone time_zone_default = TimeZone.getDefault();
         SimpleDateFormat formatter= new SimpleDateFormat("dd MMM yyyy HH:mm:ss z");
         formatter.setTimeZone(time_zone_default);
+        this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        String createdUtcTimestamp = formatter.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED));
+        String modifiedUtcTimestamp = formatter.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED));
         try
         {
-            this.zipTimestampCreated = formatter.parse(formatter.format(createdUtcTimestamp));
-            this.zipTimestampModified = formatter.parse(formatter.format(modifiedUtcTimestamp));
+            this.zipTimestampCreated = formatter.parse(createdUtcTimestamp);
+            this.zipTimestampModified = formatter.parse(modifiedUtcTimestamp);
         }
         catch( ParseException e)
         {

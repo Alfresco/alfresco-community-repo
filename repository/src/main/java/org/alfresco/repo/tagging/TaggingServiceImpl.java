@@ -1586,11 +1586,11 @@ public class TaggingServiceImpl implements TaggingService,
         try
         {
             return tagNames.stream()
+                .map(String::toLowerCase)
                 .peek(tagName -> categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, tagName, false).stream()
                     .filter(association -> Objects.nonNull(association.getChildRef()))
                     .findAny()
                     .ifPresent(association -> { throw new DuplicateChildNodeNameException(association.getParentRef(), association.getTypeQName(), tagName, null); }))
-                .map(String::toLowerCase)
                 .map(tagName -> new Pair<>(tagName, getTagNodeRef(storeRef, tagName, true)))
                 .collect(Collectors.toList());
         }

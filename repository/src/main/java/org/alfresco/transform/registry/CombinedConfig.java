@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClient4Factory;
+import org.alfresco.httpclient.HttpClientException;
 import org.alfresco.repo.content.transform.LocalPassThroughTransform;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.config.TransformConfig;
@@ -96,7 +97,7 @@ public class CombinedConfig extends CombinedTransformConfig
         boolean successReadingConfig = true;
         for (String url : urls)
         {
-            if (addRemoteConfig(url, remoteType))
+            if (addRemoteConfig(url, remoteType) && isUrlHttps(url))
             {
                 tEngineCount++ ;
             }
@@ -106,6 +107,16 @@ public class CombinedConfig extends CombinedTransformConfig
             }
         }
         return successReadingConfig;
+    }
+
+    private boolean isUrlHttps(String url)
+    {
+        if(httpClientFactory.ismTLSEnabled() && !url.startsWith("https"))
+        {
+            String msg = String.format("mTLS is enabled but provided URL:'$s' has not secured protocol", url);
+            throw new HttpClientException(msg);
+        } else
+            return true;
     }
 
     private boolean addRemoteConfig(String baseUrl, String remoteType)

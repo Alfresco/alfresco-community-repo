@@ -40,7 +40,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.beans.factory.annotation.Value;
 
 
 public class HttpClient4Factory
@@ -50,6 +49,11 @@ public class HttpClient4Factory
     private SSLEncryptionParameters sslEncryptionParameters;
     private KeyResourceLoader keyResourceLoader;
     private Boolean mTLSEnabled;
+
+    private int maxTotalConnections = 40;
+    private int maxHostConnections = 40;
+    private Integer socketTimeout = null;
+    private int connectionTimeout = 0;
 
     private AlfrescoKeyStore keyStore;
     private AlfrescoKeyStore trustStore;
@@ -76,6 +80,11 @@ public class HttpClient4Factory
         this.mTLSEnabled = Boolean.parseBoolean(mTLSEnabled);
     }
 
+    public Boolean ismTLSEnabled()
+    {
+        return mTLSEnabled;
+    }
+
     private SSLContext createSSLContext()
     {
         KeyManager[] keyManagers = keyStore.createKeyManagers();
@@ -97,10 +106,12 @@ public class HttpClient4Factory
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
 
-        if(mTLSEnabled)
+        if(ismTLSEnabled())
         {
             clientBuilder.setSSLContext(createSSLContext());
         }
+
+        clientBuilder.setMaxConnTotal(maxTotalConnections);
 
         return clientBuilder.build();
     };

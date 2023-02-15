@@ -121,7 +121,7 @@ public class HttpClient4Factory
         {
             throw new AlfrescoRuntimeException("Unable to create SSL context", e);
         }
-    };
+    }
 
     public CloseableHttpClient createHttpClient()
     {
@@ -141,8 +141,7 @@ public class HttpClient4Factory
                 .build();
         clientBuilder.setDefaultRequestConfig(requestConfig);
 
-
         return clientBuilder.build();
-    };
+    }
     
 }

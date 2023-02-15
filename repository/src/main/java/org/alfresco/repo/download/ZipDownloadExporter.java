@@ -32,13 +32,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.attribute.FileTime;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.TimeZone;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -143,21 +140,9 @@ public class ZipDownloadExporter extends BaseExporter
     @Override
     public void startNode(NodeRef nodeRef)
     {
-        TimeZone time_zone_default = TimeZone.getDefault();
-        SimpleDateFormat formatter= new SimpleDateFormat("dd MMM yyyy HH:mm:ss z");
-        formatter.setTimeZone(time_zone_default);
         this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        String createdUtcTimestamp = formatter.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED));
-        String modifiedUtcTimestamp = formatter.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED));
-        try
-        {
-            this.zipTimestampCreated = formatter.parse(createdUtcTimestamp);
-            this.zipTimestampModified = formatter.parse(modifiedUtcTimestamp);
-        }
-        catch( ParseException e)
-        {
-            throw new ExporterException("Unexpected ParseException adding folder timestamp entry", e);
-        }
+        this.zipTimestampCreated = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
+        this.zipTimestampModified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         path.push(new Pair<String, NodeRef>(currentName, nodeRef));
         if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER))
         {

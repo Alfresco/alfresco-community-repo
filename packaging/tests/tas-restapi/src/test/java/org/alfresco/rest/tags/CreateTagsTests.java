@@ -128,7 +128,7 @@ public class CreateTagsTests extends RestTest
         final String repeatedTagName = getRandomName(TAG_NAME_PREFIX).toLowerCase();
         final List<RestTagModel> tagModels = List.of(
             createTagModelWithName(repeatedTagName),
-            createTagModelWithRandomName(),
+            createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase()),
             createTagModelWithName(repeatedTagName)
         );
 
@@ -173,13 +173,17 @@ public class CreateTagsTests extends RestTest
     public void testCreateTag_usingAlreadyExistingTagName()
     {
         STEP("Create some tag in the system");
-        final RestTagModel alreadyExistingTag = prepareOrphanTag();
+        final RestTagModel tagToCreate = createTagModelWithRandomName();
+        final RestTagModel alreadyExistingTag = prepareOrphanTag(tagToCreate);
+        // set original name instead the case lowered one
+        alreadyExistingTag.setTag(tagToCreate.getTag());
 
         STEP("Try to use already existing tag to create duplicate and expect 409");
         restClient.authenticateUser(admin).withCoreAPI().createSingleTag(alreadyExistingTag);
 
-        restClient.assertStatusCodeIs(CONFLICT);
-        restClient.assertLastError().containsSummary("Duplicate child name not allowed: " + alreadyExistingTag.getTag());
+        restClient
+            .assertStatusCodeIs(CONFLICT)
+            .assertLastError().containsSummary("Duplicate child name not allowed: " + alreadyExistingTag.getTag().toLowerCase());
     }
 
     /**
@@ -189,7 +193,7 @@ public class CreateTagsTests extends RestTest
     public void testCreateTag_includingCount()
     {
         STEP("Create single tag as admin including count and verify if it is 0");
-        final RestTagModel tagModel = createTagModelWithRandomName();
+        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
         final RestTagModel createdTag = restClient.authenticateUser(admin).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -198,9 +202,13 @@ public class CreateTagsTests extends RestTest
             .assertThat().field(FIELD_COUNT).is(0);
     }
 
-    private RestTagModel prepareOrphanTag()
+    private RestTagModel prepareOrphanTagWithRandomName()
     {
-        final RestTagModel tagModel = createTagModelWithRandomName();
+        return prepareOrphanTag(createTagModelWithRandomName());
+    }
+
+    private RestTagModel prepareOrphanTag(final RestTagModel tagModel)
+    {
         final RestTagModel tag = restClient.authenticateUser(admin).withCoreAPI().createSingleTag(tagModel);
         restClient.assertStatusCodeIs(CREATED);
         return tag;
@@ -208,7 +216,7 @@ public class CreateTagsTests extends RestTest
 
     private static RestTagModel createTagModelWithRandomName()
     {
-        return createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        return createTagModelWithName(getRandomName(TAG_NAME_PREFIX));
     }
 
     private static RestTagModel createTagModelWithName(final String tagName)

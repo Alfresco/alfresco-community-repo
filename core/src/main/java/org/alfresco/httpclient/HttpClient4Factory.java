@@ -37,6 +37,7 @@ import org.alfresco.encryption.AlfrescoKeyStoreImpl;
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -72,6 +73,26 @@ public class HttpClient4Factory
     public void setKeyResourceLoader(KeyResourceLoader keyResourceLoader)
     {
         this.keyResourceLoader = keyResourceLoader;
+    }
+
+    public void setMaxTotalConnections(int maxTotalConnections)
+    {
+        this.maxTotalConnections = maxTotalConnections;
+    }
+
+    public void setMaxHostConnections(int maxHostConnections)
+    {
+        this.maxHostConnections = maxHostConnections;
+    }
+
+    public void setSocketTimeout(Integer socketTimeout)
+    {
+        this.socketTimeout = socketTimeout;
+    }
+
+    public void setConnectionTimeout(int connectionTimeout)
+    {
+        this.connectionTimeout = connectionTimeout;
     }
     
     public void setmTLSEnabled(String mTLSEnabled)
@@ -112,6 +133,14 @@ public class HttpClient4Factory
         }
 
         clientBuilder.setMaxConnTotal(maxTotalConnections);
+        clientBuilder.setMaxConnPerRoute(maxHostConnections);
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(connectionTimeout)
+                .setSocketTimeout(socketTimeout)
+                .build();
+        clientBuilder.setDefaultRequestConfig(requestConfig);
+
 
         return clientBuilder.build();
     };

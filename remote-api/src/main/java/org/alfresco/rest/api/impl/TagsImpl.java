@@ -179,7 +179,7 @@ public class TagsImpl implements Tags
         for (Pair<NodeRef, String> pair : page)
         {
             Tag selectedTag = new Tag(pair.getFirst(), pair.getSecond());
-			selectedTag.setCount(tagsByCountMap.get(selectedTag.getTag())==null?0:tagsByCountMap.get(selectedTag.getTag()));
+            selectedTag.setCount(tagsByCountMap.get(selectedTag.getTag())==null?0:tagsByCountMap.get(selectedTag.getTag()));
             tags.add(selectedTag);
         }
 

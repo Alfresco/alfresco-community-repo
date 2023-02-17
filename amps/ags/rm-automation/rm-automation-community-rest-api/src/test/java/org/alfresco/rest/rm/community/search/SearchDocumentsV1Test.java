@@ -72,7 +72,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
         cmisQueryModel.setLanguage("cmis");
 
         RestRequestQueryModel aftsQueryModel = new RestRequestQueryModel();
-        aftsQueryModel.setQuery("cm:name:*" + SEARCH_TERM);
+        aftsQueryModel.setQuery("cm:name:*" + SEARCH_TERM + ".txt");
         aftsQueryModel.setLanguage("afts");
 
         return new RestRequestQueryModel[][] {

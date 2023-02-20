@@ -198,8 +198,6 @@ jobs:
         run: |
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
-      - name: "Set transformers tag"
-        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
@@ -248,8 +246,6 @@ jobs:
           java-version: "11"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Set transformers tag"
-        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
         run: |
           if [ -e ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh ]; then

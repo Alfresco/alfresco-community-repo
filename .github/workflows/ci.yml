@@ -162,3 +162,48 @@ jobs:
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
+
+  remote_api_app_context_test_suites:
+    name: Remote-api - ${{ matrix.testSuite }}
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - testSuite: AppContext01TestSuite
+            compose-profile: default
+          - testSuite: AppContext02TestSuite
+            compose-profile: with-transform-core-aio
+          - testSuite: AppContext03TestSuite
+            compose-profile: with-transform-core-aio
+          - testSuite: AppContext04TestSuite
+            compose-profile: with-transform-core-aio
+          - testSuite: AppContextExtraTestSuite
+            compose-profile: default
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: |
+          bash ./scripts/ci/init.sh
+          bash ./scripts/ci/build.sh
+      - name: "Set transformers tag"
+        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: "Set up the environment"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
+      - name: "Run tests"
+        run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+

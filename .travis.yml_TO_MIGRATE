@@ -44,15 +44,6 @@ install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 jobs:
   include:
 
-    - name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
-      if: commit_message !~ /\[skip repo\]/
-      script:
-        - travis_retry mvn -B test -pl core,data-model
-        - travis_retry mvn -B test -pl repository -Dtest=AllUnitTestsSuite
-
-
-
-
     - name: "Repository - Messaging tests"
       if: commit_message !~ /\[skip repo\]/
       before_script:

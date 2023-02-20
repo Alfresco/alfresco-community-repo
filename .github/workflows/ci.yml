@@ -46,8 +46,8 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_10_9_tests:
-    name: "Repository - PostgreSQL 10.9 tests"
+  repository_postgresql_tests:
+    name: "Repository - PostgreSQL ${{ matrix.version }} tests"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -56,6 +56,10 @@ jobs:
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ '10.9', '11.7', '11.12', '12.4', '12.7', '13.1', '13.3' ]
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
@@ -64,172 +68,10 @@ jobs:
           java-version: "11"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 10.9 database"
+      - name: "Run PostgreSQL ${{ matrix.version }} database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
-          POSTGRES_VERSION: 10.9
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_11_7_tests:
-    name: "Repository - PostgreSQL 11.7 tests"
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 11.7 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 11.7
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_11_12_tests:
-    name: "Repository - PostgreSQL 11.12 tests"
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 11.12 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 11.12
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_12_4_tests:
-    name: "Repository - PostgreSQL 12.4 tests"
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 12.4 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 12.4
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_12_7_tests:
-    name: "Repository - PostgreSQL 12.7 tests"
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 12.7 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 12.7
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_13_1_tests:
-    name: "Repository - PostgreSQL 13.1 tests"
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 13.1 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 13.1
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_postgresql_13_3_tests:
-    name: "Repository - PostgreSQL 13.3 tests"
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 13.3 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 13.3
+          POSTGRES_VERSION: ${{ matrix.version }}
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"

@@ -1,0 +1,74 @@
+name: Alfresco Community Repo CI
+
+on:
+  pull_request:
+    branches:
+      - feature/**
+      - fix/**
+      - master
+      - release/**
+  push:
+    branches:
+      - feature/**
+      - fix/**
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
+  LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+  TAS_ENVIRONMENT: ./packaging/tests/environment
+  TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
+
+jobs:
+  prepare:
+    name: "Prepare"
+    runs-on: ubuntu-latest
+    if: >
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        - with:
+            - java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Prepare maven cache and check compilation"
+        run: bash ./scripts/ci/prepare.sh
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_postgresql_10_9_tests:
+    name: "Repository - PostgreSQL 10.9 tests"
+    runs-on: ubuntu-latest
+    needs: [prepare] <--
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        - with:
+            - java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run PostgreSQL 10.9 database"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
+        env:
+          POSTGRES_VERSION: 10.9
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh

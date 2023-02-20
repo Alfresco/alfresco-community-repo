@@ -300,3 +300,79 @@ jobs:
         run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
+
+  tas_tests:
+    name: ${{ matrix.test-name }}
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    # TAS tests are generally skipped on feature branches as they will be repeated on the enterprise repo or community packaging builds
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      !contains(github.event.head_commit.message, '[skip tas]')) ||
+      contains(github.event.head_commit.message, '[tas]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test-name: "REST API TAS tests part1"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part1
+            docker-compose: docker-compose-minimal+transforms.yml
+          - test-name: "REST API TAS tests part2"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part2
+            docker-compose: docker-compose-minimal+transforms.yml
+          - test-name: "REST API TAS tests part3"
+            pom-dir: tas-restapi
+            test-profile: run-restapi-part3
+            docker-compose: docker-compose-minimal+transforms.yml
+          - test-name: "CMIS TAS tests - BROWSER binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-browser
+            docker-compose: docker-compose-minimal+transforms.yml
+          - test-name: "CMIS TAS tests - ATOM binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-atom
+            docker-compose: docker-compose-minimal+transforms.yml
+          - test-name: "CMIS TAS tests - WEBSERVICES binding"
+            pom-dir: tas-cmis
+            test-profile: run-cmis-webservices
+            docker-compose: docker-compose-minimal+transforms.yml
+          - test-name: "Email TAS tests"
+            pom-dir: tas-email
+            docker-compose: docker-compose-minimal.yml
+          - test-name: "WebDAV TAS tests"
+            pom-dir: tas-webdav
+            docker-compose: docker-compose-minimal.yml
+          - test-name: "Integration TAS tests"
+            pom-dir: tas-integration
+            docker-compose: docker-compose-minimal.yml
+    env:
+      REQUIRES_LOCAL_IMAGES: true
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+      - name: "Build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: |
+          bash ./scripts/ci/init.sh
+          bash ./scripts/ci/build.sh
+      - name: "Set up the environment"
+        run: |
+          ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/${{ matrix.docker-compose }}
+          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      - name: "Run tests"
+        id: tests
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: mvn -B install -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+      - name: "Print output after success"
+        if: ${{ always() && steps.tests.outcome == 'success' }}
+        run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
+      - name: "Print output after failure"
+        if: ${{ always() && steps.tests.outcome == 'failure' }}
+        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh

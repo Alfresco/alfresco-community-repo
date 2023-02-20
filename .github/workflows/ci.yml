@@ -275,8 +275,8 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
         run: |
-          mvn -B test -pl core,data-model -am -DfailIfNoTests=false
-          mvn -B test -pl repository -am -Dtest=AllUnitTestsSuite -DfailIfNoTests=false
+          mvn -B test -pl core,data-model
+          mvn -B test -pl repository -Dtest=AllUnitTestsSuite
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

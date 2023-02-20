@@ -43,13 +43,6 @@ install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 
 jobs:
   include:
-
-    - name: "Repository - Messaging tests"
-      if: commit_message !~ /\[skip repo\]/
-      before_script:
-        - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
-      script: travis_wait 20 mvn -B test -pl repository -Dtest=CamelRoutesTest,CamelComponentsTest
-
     - name: "REST API TAS tests part1"
       # TAS tests are generally skipped on feature branches as they will be repeated on the enterprise repo or community packaging builds
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/

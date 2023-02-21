@@ -94,9 +94,6 @@ public class TagsImplTest
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
             .peek(tag -> tag.setCount(0))
             .collect(Collectors.toList());
-        assertThat(actualCreatedTags)
-            .isNotNull()
-            .isEqualTo(expectedTags);
         assertEquals(expectedTags, actualCreatedTags);
     }
 

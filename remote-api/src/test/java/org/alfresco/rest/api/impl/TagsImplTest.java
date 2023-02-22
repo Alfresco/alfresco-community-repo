@@ -29,6 +29,7 @@ import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
 import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -82,6 +83,18 @@ public class TagsImplTest
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
         given(nodesMock.validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willReturn(TAG_NODE_REF);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
+    }
+    @Test
+    public void testGetTags() {
+        final List<String> tagNames = List.of("testTag","tag11");
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
+        final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
+            .peek(tag -> tag.setCount(0))
+            .collect(Collectors.toList());
+        assertEquals(expectedTags, actualCreatedTags);
     }
 
     @Test

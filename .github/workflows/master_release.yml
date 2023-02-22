@@ -1,0 +1,79 @@
+name: Master/Release branch workflow
+
+on:
+  push:
+    branches:
+      - master
+      - release/**
+
+env:
+  GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+  GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+  GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
+
+jobs:
+  run_ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+  push_to_nexus:
+    name: "Push to Nexus"
+    runs-on: ubuntu-latest
+    needs: [run_ci]
+    if: >
+      !failure() &&
+      !contains(github.event.head_commit.message, '[no release]') &&
+      github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.33.0
+        with:
+          username: ${{ env.GIT_USERNAME }}
+          email: ${{ env.GIT_EMAIL }}
+          global: true
+      - name: "Release"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: |
+          bash scripts/ci/verify_release_tag.sh
+          bash scripts/ci/maven_release.sh
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+  update_downstream:
+    name: "Update alfresco-enterprise-repo"
+    runs-on: ubuntu-latest
+    needs: [push_to_nexus]
+    if: >
+      !failure() &&
+      !contains(github.event.head_commit.message, '[no downstream]') &&
+      github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.33.0
+        with:
+          username: ${{ env.GIT_USERNAME }}
+          email: ${{ env.GIT_EMAIL }}
+          global: true
+      - name: "Update downstream"
+        run: bash ./scripts/ci/update_downstream.sh
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh

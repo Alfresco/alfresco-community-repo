@@ -41,7 +41,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -97,7 +96,7 @@ public class CombinedConfig extends CombinedTransformConfig
         boolean successReadingConfig = true;
         for (String url : urls)
         {
-            if (addRemoteConfig(url, remoteType) && isUrlHttps(url))
+            if (validateUrlForMTLS(url) && addRemoteConfig(url, remoteType))
             {
                 tEngineCount++ ;
             }
@@ -109,7 +108,7 @@ public class CombinedConfig extends CombinedTransformConfig
         return successReadingConfig;
     }
 
-    private boolean isUrlHttps(String url)
+    private boolean validateUrlForMTLS(String url)
     {
         if(httpClientFactory.ismTLSEnabled() && !url.startsWith("https"))
         {
@@ -126,7 +125,7 @@ public class CombinedConfig extends CombinedTransformConfig
         boolean successReadingConfig = true;
         try
         {
-            try (CloseableHttpClient httpclient = httpClientFactory.createHttpClient())
+            try (CloseableHttpClient httpclient = httpClientFactory.createHttpClient("transform"))
             {
                 try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {

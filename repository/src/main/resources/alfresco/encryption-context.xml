@@ -130,6 +130,7 @@
    <bean id="httpClient4Factory" class="org.alfresco.httpclient.HttpClient4Factory" init-method="init">
       <property name="sslEncryptionParameters" ref="sslEncryptionParameters" />
       <property name="keyResourceLoader" ref="springKeyResourceLoader" />
-      <property name="mTLSEnabled" value="${httpClientFactory.mtls.enabled}" />
+      <property name="mTLSEnabled" value="${httpclient.config.transform.mTLSEnabled}" />
+      <property name="properties" ref="global-properties" />
    </bean>
 </beans>

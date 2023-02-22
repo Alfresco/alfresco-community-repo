@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,10 +25,19 @@
  */
 package org.alfresco.rest.framework.resource.parameters.where;
 
+import static org.alfresco.rest.antlr.WhereClauseParser.BETWEEN;
+import static org.alfresco.rest.antlr.WhereClauseParser.EQUALS;
+import static org.alfresco.rest.antlr.WhereClauseParser.EXISTS;
+import static org.alfresco.rest.antlr.WhereClauseParser.IN;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.antlr.runtime.tree.CommonTree;
@@ -146,7 +155,7 @@ public abstract class QueryHelper
         if (tree != null)
         {
             switch (tree.getType()) {
-            case WhereClauseParser.EXISTS:
+            case EXISTS:
                 if (WhereClauseParser.PROPERTYNAME == tree.getChild(0).getType())
                 {
                     callback.exists(tree.getChild(0).getText(), negated);
@@ -160,7 +169,7 @@ public abstract class QueryHelper
                     return;
                 }
                 break;
-            case WhereClauseParser.IN:
+            case IN:
                 if (WhereClauseParser.PROPERTYNAME == tree.getChild(0).getType())
                 {
                     List<Tree> children = getChildren(tree);
@@ -174,14 +183,14 @@ public abstract class QueryHelper
                     return;
                 }
                 break;
-            case WhereClauseParser.BETWEEN:
+            case BETWEEN:
                 if (WhereClauseParser.PROPERTYNAME == tree.getChild(0).getType())
                 {
                     callback.between(tree.getChild(0).getText(), stripQuotes(tree.getChild(1).getText()), stripQuotes(tree.getChild(2).getText()), negated);
                     return;
                 }
                 break;
-            case WhereClauseParser.EQUALS: //fall through (comparison)
+            case EQUALS: //fall through (comparison)
             case WhereClauseParser.LESSTHAN: //fall through (comparison)
             case WhereClauseParser.GREATERTHAN: //fall through (comparison)
             case WhereClauseParser.LESSTHANOREQUALS: //fall through (comparison)
@@ -285,5 +294,146 @@ public abstract class QueryHelper
             return toBeStripped.substring(1,toBeStripped.length()-1);
         }
         return toBeStripped; //default to return the String unchanged.
+    }
+
+    public static QueryResolver.QueryWalkerSpecifier resolve(final Query query)
+    {
+        return new QueryResolver.QueryWalkerSpecifier(query);
+    }
+
+    /**
+     * Helper class allowing WHERE query splitting using query walker. By default {@link BasicQueryWalker} is used, but different walker can be specified.
+     *
+     */
+    public static class QueryResolver<R extends QueryResolver<?>>
+    {
+        private R self;
+        private final Query query;
+        private BasicQueryWalker queryWalker;
+        private Function<Collection<String>, BasicQueryWalker> orQueryWalkerSupplier;
+        private boolean clausesNegatable = true;
+        private boolean validateLeniently = false;
+
+        private QueryResolver(final Query query)
+        {
+            this.query = query;
+        }
+
+        /**
+         * Specifies that query properties and comparison types should NOT be verified strictly.
+         */
+        public R leniently()
+        {
+            this.validateLeniently = true;
+            return self;
+        }
+
+        /**
+         * Specifies that clause types negations are not allowed in query.
+         */
+        public R withoutNegations()
+        {
+            this.clausesNegatable = false;
+            return self;
+        }
+
+        /**
+         * Get property with expected values.
+         * @param propertyName Property name.
+         * @return Map composed of all comparators and compared values.
+         */
+        public WhereProperty getProperty(final String propertyName)
+        {
+            processQuery(propertyName);
+            return this.queryWalker.getProperty(propertyName);
+        }
+
+        /**
+         * Get multiple properties with it's expected values.
+         * @param propertyNames Property names.
+         * @return List of maps composed of all comparators and compared values.
+         */
+        public List<WhereProperty> getProperties(final String... propertyNames)
+        {
+            processQuery(propertyNames);
+            return queryWalker.getProperties(propertyNames);
+        }
+
+        /**
+         * Get multiple properties with it's expected values.
+         * @param propertyNames Property names.
+         * @return Map composed of property names and maps composed of all comparators and compared values.
+         */
+        public Map<String, WhereProperty> getPropertiesAsMap(final String... propertyNames)
+        {
+            processQuery(propertyNames);
+            return queryWalker.getPropertiesAsMap(propertyNames);
+        }
+
+        private void processQuery(final String... propertyNames)
+        {
+            if (queryWalker == null)
+            {
+                if (orQueryWalkerSupplier != null)
+                {
+                    queryWalker = orQueryWalkerSupplier.apply(Set.of(propertyNames));
+                }
+                else
+                {
+                    queryWalker = new BasicQueryWalker(propertyNames);
+                }
+            }
+            queryWalker.setClausesNegatable(clausesNegatable);
+            queryWalker.setValidateStrictly(!validateLeniently);
+            walk(query, queryWalker);
+        }
+
+        protected void setSelf(R self)
+        {
+            this.self = self;
+        }
+
+        protected void setQueryWalker(BasicQueryWalker queryWalker)
+        {
+            this.queryWalker = queryWalker;
+        }
+
+        protected void setQueryWalkerSupplier(Function<Collection<String>, BasicQueryWalker> basicOrWalkerSupplier)
+        {
+            this.orQueryWalkerSupplier = basicOrWalkerSupplier;
+        }
+
+        public static class QueryWalkerSpecifier extends QueryResolver<QueryWalkerSpecifier>
+        {
+            private QueryWalkerSpecifier(Query query)
+            {
+                super(query);
+                this.setSelf(this);
+            }
+
+            /**
+             * Specifies that OR operator instead of AND should be used while resolving the query.
+             */
+            public QueryResolver<? extends QueryResolver<?>> usingOrOperator()
+            {
+                this.setQueryWalkerSupplier((propertyNames) -> new BasicQueryWalker(propertyNames)
+                {
+                    @Override
+                    public void or() {/*Enable OR support, disable AND support*/}
+                    @Override
+                    public void and() {throw UNSUPPORTED;}
+                });
+                return this;
+            }
+
+            /**
+             * Allows to specify other query walker, which should be used to resolve the query.
+             */
+            public <T extends BasicQueryWalker> QueryResolver<? extends QueryResolver<?>> usingWalker(final T queryWalker)
+            {
+                this.setQueryWalker(queryWalker);
+                return this;
+            }
+        }
     }
 }

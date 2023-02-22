@@ -39,7 +39,7 @@ public class TagsDataPrep extends RestTest
         document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
-        documentTagValue = RandomData.getRandomName("tag");
+        documentTagValue = RandomData.getRandomName("gat");
         documentTagValue2 = RandomData.getRandomName("tag");
         folderTagValue = RandomData.getRandomName("tag");
 

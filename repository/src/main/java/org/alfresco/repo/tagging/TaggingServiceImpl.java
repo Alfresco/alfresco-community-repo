@@ -914,14 +914,19 @@ public class TaggingServiceImpl implements TaggingService,
         return new EmptyPagingResults<Pair<NodeRef, String>>();
     }
 
+    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
+    {
+        return getTags(storeRef, pagingRequest, null);
+    }
+
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.StoreRef, org.alfresco.query.PagingRequest)
      */
-    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
+    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> namesFilter)
     {
         ParameterCheck.mandatory("storeRef", storeRef);
 
-    	PagingResults<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true);
+    	PagingResults<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true, namesFilter);
         final List<Pair<NodeRef, String>> result = new ArrayList<Pair<NodeRef, String>>(rootCategories.getPage().size());
         for (ChildAssociationRef rootCategory : rootCategories.getPage())
         {

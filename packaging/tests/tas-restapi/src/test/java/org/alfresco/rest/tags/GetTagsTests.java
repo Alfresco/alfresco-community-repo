@@ -1,5 +1,7 @@
 package org.alfresco.rest.tags;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
@@ -225,5 +227,93 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         returnedCollection.assertThat().entriesListIsNotEmpty()
                 .and().entriesListDoesNotContain("tag", removedTag.toLowerCase());
+    }
+
+    /**
+     * Get tags with names filter using EQUALS and expect one item in result.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withSingleNameFilter()
+    {
+        STEP("Get tags with names filter using EQUALS and expect one item in result");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+            .withParams("where=(name='" + documentTag.getTag() + "')")
+            .withCoreAPI()
+            .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat()
+            .entriesListCountIs(1).and()
+            .entriesListContains("tag", documentTagValue.toLowerCase());
+    }
+
+    /**
+     * Get tags with names filter using IN and expect two items in result.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withTwoNameFilters()
+    {
+        STEP("Get tags with names filter using IN and expect two items in result");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+            .withParams("where=(name IN ('" + documentTag.getTag() + "', '" + folderTag.getTag() + "'))")
+            .withCoreAPI()
+            .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat()
+            .entriesListCountIs(2).and()
+            .entriesListContains("tag", documentTagValue.toLowerCase()).and()
+            .entriesListContains("tag", folderTagValue.toLowerCase());
+    }
+
+    /**
+     * Get tags with names filter using EQUALS (in fact contains) and expect two item in result.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_whichNamesStartsWithTag()
+    {
+        STEP("Get tags with names filter using EQUALS (in fact contains) and expect two item in result");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+            .withParams("where=(name=tag)")
+            .withCoreAPI()
+            .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat()
+            .entriesListCountIs(2).and()
+            .entriesListContains("tag", documentTagValue2.toLowerCase()).and()
+            .entriesListContains("tag", folderTagValue.toLowerCase());
+    }
+
+    /**
+     * Try to get tags with names filter using EQUALS and wrong property name and expect 400 (Bad Request).
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withWrongWherePropertyNameAndExpect400()
+    {
+        STEP("Try to get tags with names filter using EQUALS and wrong property name and expect 400");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+            .withParams("where=(tag=gat)")
+            .withCoreAPI()
+            .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+            .assertLastError().containsSummary("");
+    }
+
+    /**
+     * Try to get tags with names filter using EQUALS and IN at the same time and expect 400 (Bad Request).
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_bothEqualsAndInNotAllowed()
+    {
+        STEP("Try to get tags with names filter using EQUALS and IN at the same time and expect 400");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+            .withParams("where=(name=tag AND name IN ('" + documentTag.getTag() + "', '" + folderTag.getTag() + "'))")
+            .withCoreAPI()
+            .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+            .assertLastError().containsSummary("");
     }
 }

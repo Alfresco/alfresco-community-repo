@@ -27,15 +27,13 @@ package org.alfresco.rest.workflow.api.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.resource.parameters.where.QueryHelper.WalkerCallbackAdapter;
+import org.alfresco.rest.framework.resource.parameters.where.BasicQueryWalker;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -55,7 +53,7 @@ import org.apache.commons.beanutils.ConvertUtils;
  * @author Frederik Heremans
  * @author Tijs Rademakers
  */
-public class MapBasedQueryWalker extends WalkerCallbackAdapter
+public class MapBasedQueryWalker extends BasicQueryWalker
 {
     private Set<String> supportedEqualsParameters;
 
@@ -68,18 +66,6 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     private Set<String> supportedLessThanParameters;
 
     private Set<String> supportedLessThanOrEqualParameters;
-
-    private Map<String, String> equalsProperties;
-
-    private Map<String, String> matchesProperties;
-    
-    private Map<String, String> greaterThanProperties;
-    
-    private Map<String, String> greaterThanOrEqualProperties;
-    
-    private Map<String, String> lessThanProperties;
-    
-    private Map<String, String> lessThanOrEqualProperties;
     
     private List<QueryVariableHolder> variableProperties;
     
@@ -91,46 +77,29 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
 
     public MapBasedQueryWalker(Set<String> supportedEqualsParameters, Set<String> supportedMatchesParameters)
     {
+        super();
         this.supportedEqualsParameters = supportedEqualsParameters;
         this.supportedMatchesParameters = supportedMatchesParameters;
-        this.equalsProperties = new HashMap<String, String>();
-        this.matchesProperties = new HashMap<String, String>();
     }
 
     public void setSupportedGreaterThanParameters(Set<String> supportedGreaterThanParameters)
     {
         this.supportedGreaterThanParameters = supportedGreaterThanParameters;
-        if (greaterThanProperties == null)
-        {
-            greaterThanProperties = new HashMap<String, String>();
-        }
     }
 
     public void setSupportedGreaterThanOrEqualParameters(Set<String> supportedGreaterThanOrEqualParameters)
     {
         this.supportedGreaterThanOrEqualParameters = supportedGreaterThanOrEqualParameters;
-        if (greaterThanOrEqualProperties == null)
-        {
-            greaterThanOrEqualProperties = new HashMap<String, String>();
-        }
     }
 
     public void setSupportedLessThanParameters(Set<String> supportedLessThanParameters)
     {
         this.supportedLessThanParameters = supportedLessThanParameters;
-        if (lessThanProperties == null)
-        {
-            lessThanProperties = new HashMap<String, String>();
-        }
     }
 
     public void setSupportedLessThanOrEqualParameters(Set<String> supportedLessThanOrEqualParameters)
     {
         this.supportedLessThanOrEqualParameters = supportedLessThanOrEqualParameters;
-        if (lessThanOrEqualProperties == null)
-        {
-            lessThanOrEqualProperties = new HashMap<String, String>();
-        }
     }
     
     public void enableVariablesSupport(NamespaceService namespaceService, DictionaryService dictionaryService)
@@ -166,7 +135,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         }
         else if (supportedMatchesParameters != null && supportedMatchesParameters.contains(property))
         {
-            matchesProperties.put(property, value);
+            this.addProperties(property, WhereClauseParser.MATCHES, value);
         }
         else
         {
@@ -188,7 +157,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             if (supportedEqualsParameters != null && supportedEqualsParameters.contains(propertyName))
             {
-                equalsProperties.put(propertyName, propertyValue);
+                this.addProperties(propertyName, type, propertyValue);
             }
             else
             {
@@ -199,7 +168,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             if (supportedMatchesParameters != null && supportedMatchesParameters.contains(propertyName))
             {
-                matchesProperties.put(propertyName, propertyValue);
+                this.addProperties(propertyName, type, propertyValue);
             }
             else
             {
@@ -210,7 +179,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             if (supportedGreaterThanParameters != null && supportedGreaterThanParameters.contains(propertyName))
             {
-                greaterThanProperties.put(propertyName, propertyValue);
+                this.addProperties(propertyName, type, propertyValue);
             }
             else
             {
@@ -221,7 +190,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             if (supportedGreaterThanOrEqualParameters != null && supportedGreaterThanOrEqualParameters.contains(propertyName))
             {
-                greaterThanOrEqualProperties.put(propertyName, propertyValue);
+                this.addProperties(propertyName, type, propertyValue);
             }
             else
             {
@@ -232,7 +201,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             if (supportedLessThanParameters != null && supportedLessThanParameters.contains(propertyName))
             {
-                lessThanProperties.put(propertyName, propertyValue);
+                this.addProperties(propertyName, type, propertyValue);
             }
             else
             {
@@ -243,7 +212,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             if (supportedLessThanOrEqualParameters != null && supportedLessThanOrEqualParameters.contains(propertyName))
             {
-                lessThanOrEqualProperties.put(propertyName, propertyValue);
+                this.addProperties(propertyName, type, propertyValue);
             }
             else
             {
@@ -268,29 +237,13 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
 
     public String getProperty(String propertyName, int type)
     {
-        if (type == WhereClauseParser.EQUALS)
+        final Set<Integer> supportedClauseTypes = Set.of(WhereClauseParser.EQUALS, WhereClauseParser.MATCHES, WhereClauseParser.GREATERTHAN,
+            WhereClauseParser.GREATERTHANOREQUALS, WhereClauseParser.LESSTHAN, WhereClauseParser.LESSTHANOREQUALS);
+        if (supportedClauseTypes.contains(type) && this.containsProperty(propertyName, type, false))
         {
-            return equalsProperties.get(propertyName);
-        }
-        else if (type == WhereClauseParser.MATCHES)
-        {
-            return matchesProperties.get(propertyName);
-        }
-        else if (type == WhereClauseParser.GREATERTHAN && greaterThanProperties != null)
-        {
-            return greaterThanProperties.get(propertyName);
-        }
-        else if (type == WhereClauseParser.GREATERTHANOREQUALS && greaterThanOrEqualProperties != null)
-        {
-            return greaterThanOrEqualProperties.get(propertyName);
-        }
-        else if (type == WhereClauseParser.LESSTHAN && lessThanProperties != null)
-        {
-            return lessThanProperties.get(propertyName);
-        }
-        else if (type == WhereClauseParser.LESSTHANOREQUALS && lessThanOrEqualProperties != null)
-        {
-            return lessThanOrEqualProperties.get(propertyName);
+            return this.getProperty(propertyName).getExpectedValuesFor(type, false).stream().findFirst().orElseThrow(
+                () -> new IllegalArgumentException("type " + type + " is not supported")
+            );
         }
         else
         {
@@ -337,6 +290,15 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
                     + returnType.getSimpleName());
         }
     }
+
+    @Override
+    public void exists(String propertyName, boolean negated) { throw UNSUPPORTED;}
+
+    @Override
+    public void between(String propertyName, String firstValue, String secondValue, boolean negated) { throw UNSUPPORTED;}
+
+    @Override
+    public void in(String propertyName, boolean negated, String... propertyValues) { throw UNSUPPORTED;}
 
     @Override
     public void and()

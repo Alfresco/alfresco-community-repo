@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -168,7 +169,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
 	public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
     {
-    	return getChildren(categoryRef, mode, depth, false, null, queryFetchSize);
+    	return getChildren(categoryRef, mode, depth, false, (Collection<String>) null, queryFetchSize);
     }
     
     public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, String filter)
@@ -177,6 +178,11 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     }
 
     private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, String filter, int fetchSize)
+    {
+        return getChildren(categoryRef, mode, depth, sortByName, Optional.ofNullable(filter).map(Set::of).orElse(null), fetchSize);
+    }
+
+    private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, Collection<String> namesFilter, int fetchSize)
     {
         if (categoryRef == null)
         {
@@ -221,9 +227,11 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
                 luceneQuery.append("+TYPE:\"" + ContentModel.TYPE_CATEGORY.toString() + "\"");
                 break;
             }
-            if (filter != null)
+            if (CollectionUtils.isNotEmpty(namesFilter))
             {
-                luceneQuery.append(" " + "+@cm\\:name:\"*" + filter + "*\"");
+                final StringJoiner filterJoiner = new StringJoiner(" OR ", " +(", ")");
+                namesFilter.forEach(nameFilter -> filterJoiner.add("@cm\\:name:\"*" + nameFilter + "*\""));
+                luceneQuery.append(filterJoiner);
             }
 
             // Get a searcher that will include Categories added in this transaction
@@ -391,10 +399,15 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
     public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
     {
-        return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null);
+        return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, (Collection<String>) null);
     }
 
     public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter)
+    {
+        return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, Set.of(filter));
+    }
+
+    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, Collection<String> namesFilter)
     {
         final List<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
         Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
@@ -407,7 +420,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
         OUTER: for(NodeRef nodeRef : nodeRefs)
         {
-        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, filter, skipCount + maxItems + 1);
+        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, namesFilter, skipCount + maxItems + 1);
         	for(ChildAssociationRef child : children)
         	{
         		count++;

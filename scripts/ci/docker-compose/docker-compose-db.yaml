@@ -25,7 +25,7 @@ services:
   mysql:
     profiles: ["mysql"]
     image: mysql:${MYSQL_VERSION}
-    command: --transaction-isolation='READ-COMMITTED'
+    command: ${MYSQL_COMMAND}
     environment:
       - MYSQL_ROOT_PASSWORD=alfresco
       - MYSQL_USER=alfresco

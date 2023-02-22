@@ -219,6 +219,7 @@ jobs:
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
         env:
           MYSQL_VERSION: 5.7.28
+          MYSQL_PARAMS: --transaction-isolation='READ-COMMITTED' --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
@@ -247,6 +248,7 @@ jobs:
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
         env:
           MYSQL_VERSION: 8
+          MYSQL_PARAMS: --transaction-isolation='READ-COMMITTED'
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"

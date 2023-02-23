@@ -311,16 +311,16 @@ public abstract class QueryHelper
     }
 
     /**
-     * Helper class allowing WHERE query resolving using query walker. By default {@link BasicQueryWalker} is used, but different walker can be specified.
+     * Helper class allowing WHERE query resolving using query walker. By default {@link BasicQueryWalker} is used, but different walker can be supplied.
      */
     public static abstract class QueryResolver<S extends QueryResolver<?>>
     {
         private final Query query;
         protected WalkerCallback queryWalker;
         protected Function<Collection<String>, BasicQueryWalker> orQueryWalkerSupplier;
-        protected abstract S self();
         protected boolean clausesNegatable = true;
         protected boolean validateLeniently = false;
+        protected abstract S self();
 
         public QueryResolver(Query query)
         {
@@ -361,6 +361,9 @@ public abstract class QueryHelper
             walk(query, queryWalker);
         }
 
+        /**
+         * Helper class providing methods related with default query walker {@link BasicQueryWalker}.
+         */
         public static class Default<R extends Default<?>> extends QueryResolver<R>
         {
             public Default(Query query)
@@ -427,6 +430,9 @@ public abstract class QueryHelper
             }
         }
 
+        /**
+         * Helper class allowing to specify custom {@link WalkerCallback} implementation or {@link BasicQueryWalker} extension.
+         */
         public static class Custom extends Default<Custom>
         {
             public Custom(Query query)

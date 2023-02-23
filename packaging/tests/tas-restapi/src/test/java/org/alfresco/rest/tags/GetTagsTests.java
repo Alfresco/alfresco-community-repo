@@ -298,7 +298,7 @@ public class GetTagsTests extends TagsDataPrep
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary("");
+            .assertLastError().containsSummary("Where query error: property with name: tag is not expected");
     }
 
     /**
@@ -314,6 +314,6 @@ public class GetTagsTests extends TagsDataPrep
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary("");
+            .assertLastError().containsSummary("Where query error: cannot use '=' (EQUALS) and 'IN' clauses with same property: name");
     }
 }

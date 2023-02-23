@@ -267,7 +267,7 @@ public class TagsImpl implements Tags
     		tags.add(new Tag(pair.getFirst(), pair.getSecond()));
     	}
 
-    	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? 0 : totalItems.intValue()));
+    	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
 
 	@Experimental

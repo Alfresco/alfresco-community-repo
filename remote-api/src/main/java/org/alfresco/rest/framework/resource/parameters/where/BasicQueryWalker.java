@@ -198,6 +198,12 @@ public class BasicQueryWalker extends QueryHelper.WalkerCallbackAdapter
         return this.properties.containsKey(propertyName) && this.properties.get(propertyName).containsType(clauseType, negated);
     }
 
+    @Override
+    public Collection<String> getProperty(String propertyName, int type, boolean negated)
+    {
+        return this.getProperty(propertyName).getExpectedValuesFor(type, negated);
+    }
+
     public WhereProperty getProperty(final String propertyName)
     {
         if (validateStrictly && !this.containsProperty(propertyName))

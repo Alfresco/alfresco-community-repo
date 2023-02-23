@@ -29,12 +29,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
-import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
+import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.junit.Test;
 
 /**
@@ -438,12 +439,33 @@ public class QueryResolverTest
     @Test
     public void testResolveQuery_usingCustomQueryWalker()
     {
+        final Query query = queryExtractor.getWhereClause("(propName=testValue)");
+
+        //when
+        final Collection<String> propertyValues = QueryHelper
+            .resolve(query)
+            .usingWalker(new MapBasedQueryWalker(Set.of("propName"), null))
+            .getProperty("propName", WhereClauseParser.EQUALS, false);
+
+        assertThat(propertyValues).containsOnly("testValue");
+    }
+
+    @Test
+    public void testResolveQuery_usingCustomBasicQueryWalkerExtension()
+    {
         final Query query = queryExtractor.getWhereClause("(propName=testValue OR propName=testValue2)");
 
         //when
         final WhereProperty property = QueryHelper
             .resolve(query)
-            .usingWalker(new MapBasedQueryWalkerOrSupported(Set.of("propName"), null))
+            .usingWalker(new BasicQueryWalker("propName")
+            {
+                @Override
+                public void or() {}
+                @Override
+                public void and() {throw UNSUPPORTED;}
+            })
+            .withoutNegations()
             .getProperty("propName");
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isTrue();

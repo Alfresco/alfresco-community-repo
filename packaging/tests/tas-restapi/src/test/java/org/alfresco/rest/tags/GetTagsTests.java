@@ -309,7 +309,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Try to get tags with names filter using EQUALS and IN at the same time and expect 400");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(name=tag AND name IN ('" + documentTag.getTag() + "', '" + folderTag.getTag() + "'))")
+            .withParams("where=(name=tag AND name IN ('tag-', 'gat'))")
             .withCoreAPI()
             .getTags();
 

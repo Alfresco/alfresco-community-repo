@@ -54,14 +54,19 @@ public abstract class QueryHelper
     /**
      * An interface used when walking a query tree.  Calls are made to methods when the particular clause is encountered.
      */
-    public static interface WalkerCallback
+    public interface WalkerCallback
     {
+        InvalidQueryException UNSUPPORTED = new InvalidQueryException("Unsupported Predicate");
+
         /**
          * Called any time an EXISTS clause is encountered.
          * @param propertyName Name of the property
          * @param negated returns true if "NOT EXISTS" was used
          */
-        void exists(String propertyName, boolean negated);
+        default void exists(String propertyName, boolean negated)
+        {
+            throw UNSUPPORTED;
+        }
 
         /**
          * Called any time a BETWEEN clause is encountered.
@@ -70,12 +75,18 @@ public abstract class QueryHelper
          * @param secondValue String
          * @param negated returns true if "NOT BETWEEN" was used
          */
-        void between(String propertyName, String firstValue, String secondValue, boolean negated);
+        default void between(String propertyName, String firstValue, String secondValue, boolean negated)
+        {
+            throw UNSUPPORTED;
+        }
 
         /**
          * One of EQUALS LESSTHAN GREATERTHAN LESSTHANOREQUALS GREATERTHANOREQUALS;
          */
-        void comparison(int type, String propertyName, String propertyValue, boolean negated);
+        default void comparison(int type, String propertyName, String propertyValue, boolean negated)
+        {
+            throw UNSUPPORTED;
+        }
 
         /**
          * Called any time an IN clause is encountered.
@@ -83,7 +94,10 @@ public abstract class QueryHelper
          * @param negated returns true if "NOT IN" was used
          * @param propertyValues the property values
          */
-        void in(String property, boolean negated, String... propertyValues);
+        default void in(String property, boolean negated, String... propertyValues)
+        {
+            throw UNSUPPORTED;
+        }
 
         /**
          * Called any time a MATCHES clause is encountered.
@@ -91,42 +105,37 @@ public abstract class QueryHelper
          * @param propertyValue String
          * @param negated returns true if "NOT MATCHES" was used
          */
-        void matches(String property, String propertyValue, boolean negated);
+        default void matches(String property, String propertyValue, boolean negated)
+        {
+            throw UNSUPPORTED;
+        }
 
         /**
          * Called any time an AND is encountered.
-         */  
-        void and();
+         */
+        default void and()
+        {
+            throw UNSUPPORTED;
+        }
         /**
          * Called any time an OR is encountered.
-         */  
-        void or();
+         */
+        default void or()
+        {
+            throw UNSUPPORTED;
+        }
+
+        default Collection<String> getProperty(String propertyName, int type, boolean negated)
+        {
+            return Collections.emptyList();
+        }
     }
 
     /**
      * Default implementation.  Override the methods you are interested in. If you don't
      * override the methods then an InvalidQueryException will be thrown.
      */
-    public static class WalkerCallbackAdapter implements WalkerCallback
-    {
-        private static final String UNSUPPORTED_TEXT = "Unsupported Predicate";
-        protected static final InvalidQueryException UNSUPPORTED = new InvalidQueryException(UNSUPPORTED_TEXT);
-
-        @Override
-        public void exists(String propertyName, boolean negated) { throw UNSUPPORTED;}
-        @Override
-        public void between(String propertyName, String firstValue, String secondValue, boolean negated) { throw UNSUPPORTED;}
-        @Override
-        public void comparison(int type, String propertyName, String propertyValue, boolean negated) { throw UNSUPPORTED;}
-        @Override
-        public void in(String propertyName, boolean negated, String... propertyValues) { throw UNSUPPORTED;}
-        @Override
-        public void matches(String property, String value, boolean negated)  { throw UNSUPPORTED;}
-        @Override
-        public void and() {throw UNSUPPORTED;}
-        @Override
-        public void or() {throw UNSUPPORTED;}
-    }
+    public static class WalkerCallbackAdapter implements WalkerCallback {}
 
     /**
      * Walks a query with a callback for each operation
@@ -296,81 +305,42 @@ public abstract class QueryHelper
         return toBeStripped; //default to return the String unchanged.
     }
 
-    public static QueryResolver.QueryWalkerSpecifier resolve(final Query query)
+    public static QueryResolver.Custom resolve(final Query query)
     {
-        return new QueryResolver.QueryWalkerSpecifier(query);
+        return new QueryResolver.Custom(query);
     }
 
     /**
-     * Helper class allowing WHERE query splitting using query walker. By default {@link BasicQueryWalker} is used, but different walker can be specified.
-     *
+     * Helper class allowing WHERE query resolving using query walker. By default {@link BasicQueryWalker} is used, but different walker can be specified.
      */
-    public static class QueryResolver<R extends QueryResolver<?>>
+    public static abstract class QueryResolver<S extends QueryResolver<?>>
     {
-        private R self;
         private final Query query;
-        private BasicQueryWalker queryWalker;
-        private Function<Collection<String>, BasicQueryWalker> orQueryWalkerSupplier;
-        private boolean clausesNegatable = true;
-        private boolean validateLeniently = false;
+        protected WalkerCallback queryWalker;
+        protected Function<Collection<String>, BasicQueryWalker> orQueryWalkerSupplier;
+        protected abstract S self();
+        protected boolean clausesNegatable = true;
+        protected boolean validateLeniently = false;
 
-        private QueryResolver(final Query query)
+        public QueryResolver(Query query)
         {
             this.query = query;
         }
 
         /**
-         * Specifies that query properties and comparison types should NOT be verified strictly.
-         */
-        public R leniently()
-        {
-            this.validateLeniently = true;
-            return self;
-        }
-
-        /**
-         * Specifies that clause types negations are not allowed in query.
-         */
-        public R withoutNegations()
-        {
-            this.clausesNegatable = false;
-            return self;
-        }
-
-        /**
-         * Get property with expected values.
+         * Get property expected values.
          * @param propertyName Property name.
+         * @param clauseType Property comparison type.
+         * @param negated Comparison type negation.
          * @return Map composed of all comparators and compared values.
          */
-        public WhereProperty getProperty(final String propertyName)
+        public Collection<String> getProperty(final String propertyName, final int clauseType, final boolean negated)
         {
             processQuery(propertyName);
-            return this.queryWalker.getProperty(propertyName);
+            return queryWalker.getProperty(propertyName, clauseType, negated);
         }
 
-        /**
-         * Get multiple properties with it's expected values.
-         * @param propertyNames Property names.
-         * @return List of maps composed of all comparators and compared values.
-         */
-        public List<WhereProperty> getProperties(final String... propertyNames)
-        {
-            processQuery(propertyNames);
-            return queryWalker.getProperties(propertyNames);
-        }
-
-        /**
-         * Get multiple properties with it's expected values.
-         * @param propertyNames Property names.
-         * @return Map composed of property names and maps composed of all comparators and compared values.
-         */
-        public Map<String, WhereProperty> getPropertiesAsMap(final String... propertyNames)
-        {
-            processQuery(propertyNames);
-            return queryWalker.getPropertiesAsMap(propertyNames);
-        }
-
-        private void processQuery(final String... propertyNames)
+        protected void processQuery(final String... propertyNames)
         {
             if (queryWalker == null)
             {
@@ -383,55 +353,123 @@ public abstract class QueryHelper
                     queryWalker = new BasicQueryWalker(propertyNames);
                 }
             }
-            queryWalker.setClausesNegatable(clausesNegatable);
-            queryWalker.setValidateStrictly(!validateLeniently);
+            if (queryWalker instanceof BasicQueryWalker)
+            {
+                ((BasicQueryWalker) queryWalker).setClausesNegatable(clausesNegatable);
+                ((BasicQueryWalker) queryWalker).setValidateStrictly(!validateLeniently);
+            }
             walk(query, queryWalker);
         }
 
-        protected void setSelf(R self)
+        public static class Default<R extends Default<?>> extends QueryResolver<R>
         {
-            this.self = self;
-        }
-
-        protected void setQueryWalker(BasicQueryWalker queryWalker)
-        {
-            this.queryWalker = queryWalker;
-        }
-
-        protected void setQueryWalkerSupplier(Function<Collection<String>, BasicQueryWalker> basicOrWalkerSupplier)
-        {
-            this.orQueryWalkerSupplier = basicOrWalkerSupplier;
-        }
-
-        public static class QueryWalkerSpecifier extends QueryResolver<QueryWalkerSpecifier>
-        {
-            private QueryWalkerSpecifier(Query query)
+            public Default(Query query)
             {
                 super(query);
-                this.setSelf(this);
+            }
+
+            @SuppressWarnings("unchecked")
+            @Override
+            protected R self()
+            {
+                return (R) this;
+            }
+
+            /**
+             * Specifies that query properties and comparison types should NOT be verified strictly.
+             */
+            public R leniently()
+            {
+                this.validateLeniently = true;
+                return self();
+            }
+
+            /**
+             * Specifies that clause types negations are not allowed in query.
+             */
+            public R withoutNegations()
+            {
+                this.clausesNegatable = false;
+                return self();
+            }
+
+            /**
+             * Get property with expected values.
+             * @param propertyName Property name.
+             * @return Map composed of all comparators and compared values.
+             */
+            public WhereProperty getProperty(final String propertyName)
+            {
+                processQuery(propertyName);
+                return ((BasicQueryWalker) this.queryWalker).getProperty(propertyName);
+            }
+
+            /**
+             * Get multiple properties with it's expected values.
+             * @param propertyNames Property names.
+             * @return List of maps composed of all comparators and compared values.
+             */
+            public List<WhereProperty> getProperties(final String... propertyNames)
+            {
+                processQuery(propertyNames);
+                return ((BasicQueryWalker) this.queryWalker).getProperties(propertyNames);
+            }
+
+            /**
+             * Get multiple properties with it's expected values.
+             * @param propertyNames Property names.
+             * @return Map composed of property names and maps composed of all comparators and compared values.
+             */
+            public Map<String, WhereProperty> getPropertiesAsMap(final String... propertyNames)
+            {
+                processQuery(propertyNames);
+                return ((BasicQueryWalker) this.queryWalker).getPropertiesAsMap(propertyNames);
+            }
+        }
+
+        public static class Custom extends Default<Custom>
+        {
+            public Custom(Query query)
+            {
+                super(query);
+            }
+
+            @Override
+            protected Custom self()
+            {
+                return this;
             }
 
             /**
              * Specifies that OR operator instead of AND should be used while resolving the query.
              */
-            public QueryResolver<? extends QueryResolver<?>> usingOrOperator()
+            public Default<? extends Default<?>> usingOrOperator()
             {
-                this.setQueryWalkerSupplier((propertyNames) -> new BasicQueryWalker(propertyNames)
+                this.orQueryWalkerSupplier = (propertyNames) -> new BasicQueryWalker(propertyNames)
                 {
                     @Override
                     public void or() {/*Enable OR support, disable AND support*/}
                     @Override
                     public void and() {throw UNSUPPORTED;}
-                });
+                };
                 return this;
             }
 
             /**
-             * Allows to specify other query walker, which should be used to resolve the query.
+             * Allows to specify custom {@link BasicQueryWalker} extension, which should be used to resolve the query.
              */
-            public <T extends BasicQueryWalker> QueryResolver<? extends QueryResolver<?>> usingWalker(final T queryWalker)
+            public <T extends BasicQueryWalker> Default<? extends Default<?>> usingWalker(final T queryWalker)
             {
-                this.setQueryWalker(queryWalker);
+                this.queryWalker = queryWalker;
+                return this;
+            }
+
+            /**
+             * Allows to specify custom {@link WalkerCallback} implementation, which should be used to resolve the query.
+             */
+            public <T extends WalkerCallback> QueryResolver<? extends QueryResolver<?>> usingWalker(final T queryWalker)
+            {
+                this.queryWalker = queryWalker;
                 return this;
             }
         }

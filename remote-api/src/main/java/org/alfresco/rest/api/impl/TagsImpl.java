@@ -104,6 +104,8 @@ public class TagsImpl implements Tags
 			{
 				throw new UnsupportedResourceOperationException("Cannot tag this node");
 			}
+			List<Pair<String, Integer>> tagsByCount = null;
+			Map<String, Integer> tagsByCountMap = new HashMap<String, Integer>();
 
 	        List<String> tagValues = new AbstractList<String>()
             {
@@ -124,9 +126,19 @@ public class TagsImpl implements Tags
             {
 		        List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
 		        List<Tag> ret = new ArrayList<Tag>(tags.size());
+				tagsByCount = taggingService.findTaggedNodesAndCountByTagName(nodeRef.getStoreRef());
+				if (tagsByCount != null)
+				{
+					for (Pair<String, Integer> tagByCountElem : tagsByCount)
+					{
+						tagsByCountMap.put(tagByCountElem.getFirst(), tagByCountElem.getSecond());
+					}
+				}
 		        for(Pair<String, NodeRef> pair : tagNodeRefs)
 		        {
-		        	ret.add(new Tag(pair.getSecond(), pair.getFirst()));
+					Tag createdTag=new Tag(pair.getSecond(), pair.getFirst());
+					createdTag.setCount(Optional.ofNullable(tagsByCountMap.get(createdTag.getTag())).orElse(0));
+		        	ret.add(createdTag);
 		        }
 		        return ret;
             }
@@ -255,7 +267,7 @@ public class TagsImpl implements Tags
     		tags.add(new Tag(pair.getFirst(), pair.getSecond()));
     	}
 
-    	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
+    	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? 0 : totalItems.intValue()));
     }
 
 	@Experimental

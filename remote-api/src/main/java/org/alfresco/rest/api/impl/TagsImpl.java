@@ -165,7 +165,7 @@ public class TagsImpl implements Tags
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
 	    Paging paging = params.getPaging();
-		Collection<String> namesFilter = resolveNamesQuery(params.getQuery());
+	    Collection<String> namesFilter = resolveNamesQuery(params.getQuery());
 	    PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilter);
 
         Integer totalItems = results.getTotalResultCount().getFirst();

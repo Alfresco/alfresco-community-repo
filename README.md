@@ -1,6 +1,6 @@
 # alfresco-community-repo
 
-[![Build Status](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml/badge.svg?branch=master)](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml)
+[![Build Status](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml/badge.svg?branch=7.3.1)](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml)
 
 #### Alfresco Core
 

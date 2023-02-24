@@ -50,13 +50,12 @@ public class TagsDataPrep extends RestTest
 
         // Allow indexing to complete.
         Utility.sleep(500, 60000, () ->
-            {
-                returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-                returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
-                                  .and().entriesListContains("tag", documentTagValue2.toLowerCase())
-                                  .and().entriesListContains("tag", folderTagValue.toLowerCase());
-            });
-
+        {
+            returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
+            returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
+                              .and().entriesListContains("tag", documentTagValue2.toLowerCase())
+                              .and().entriesListContains("tag", folderTagValue.toLowerCase());
+        });
     }
 
     protected RestTagModel createTagForDocument(FileModel document)

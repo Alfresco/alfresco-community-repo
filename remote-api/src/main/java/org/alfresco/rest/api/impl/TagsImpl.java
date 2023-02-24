@@ -57,6 +57,7 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
+import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -307,7 +308,7 @@ public class TagsImpl implements Tags
 	 */
 	private Collection<String> resolveNamesQuery(final Query namesQuery)
 	{
-		if (namesQuery != null)
+		if (namesQuery != null && namesQuery != QueryImpl.EMPTY)
 		{
 			final Map<Integer, Collection<String>> properties = QueryHelper
 				.resolve(namesQuery)

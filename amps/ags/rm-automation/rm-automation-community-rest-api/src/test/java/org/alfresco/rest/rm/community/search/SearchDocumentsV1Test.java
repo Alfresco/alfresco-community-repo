@@ -72,7 +72,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
         cmisQueryModel.setLanguage("cmis");
 
         RestRequestQueryModel aftsQueryModel = new RestRequestQueryModel();
-        aftsQueryModel.setQuery("cm:name:*" + SEARCH_TERM);
+        aftsQueryModel.setQuery("cm:name:*" + SEARCH_TERM + ".txt");
         aftsQueryModel.setLanguage("afts");
 
         return new RestRequestQueryModel[][] {
@@ -107,7 +107,7 @@ public class SearchDocumentsV1Test extends BaseRMRestTest
     private void waitIndexing() throws Exception
     {
         RestRequestQueryModel queryType = new RestRequestQueryModel();
-        queryType.setQuery("cm:name:*" + SEARCH_TERM);
+        queryType.setQuery("cm:name:*" + SEARCH_TERM + ".txt");
         queryType.setLanguage("afts");
         Utility.sleep(1000, 80000, () ->
         {

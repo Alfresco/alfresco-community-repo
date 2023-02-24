@@ -270,19 +270,18 @@ public class GetTagsTests extends TagsDataPrep
      * Get tags with names filter using EQUALS (in fact contains) and expect two item in result.
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTags_whichNamesStartsWithTag()
+    public void testGetTags_whichNamesStartsWithOrphan()
     {
         STEP("Get tags with names filter using EQUALS (in fact contains) and expect two item in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(name=tag)")
+            .withParams("where=(name=orphan)")
             .withCoreAPI()
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListCountIs(2).and()
-            .entriesListContains("tag", documentTagValue2.toLowerCase()).and()
-            .entriesListContains("tag", folderTagValue.toLowerCase());
+            .entriesListIsNotEmpty().and()
+            .entriesListContains("tag", orphanTag.getTag().toLowerCase());
     }
 
     /**

@@ -24,7 +24,7 @@ public class TagsDataPrep extends RestTest
     protected static FileModel document;
     protected static FolderModel folder;
     protected static String documentTagValue, documentTagValue2, folderTagValue;
-    protected static RestTagModel documentTag, documentTag2, folderTag, returnedModel;
+    protected static RestTagModel documentTag, documentTag2, folderTag, orphanTag, returnedModel;
     protected static RestTagModelsCollection returnedCollection;
 
     @BeforeClass
@@ -39,7 +39,7 @@ public class TagsDataPrep extends RestTest
         document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
-        documentTagValue = RandomData.getRandomName("gat");
+        documentTagValue = RandomData.getRandomName("tag");
         documentTagValue2 = RandomData.getRandomName("tag");
         folderTagValue = RandomData.getRandomName("tag");
 
@@ -47,6 +47,7 @@ public class TagsDataPrep extends RestTest
         documentTag = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue);
         documentTag2 = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue2);
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
+        orphanTag = restClient.withCoreAPI().createSingleTag(RestTagModel.builder().tag(RandomData.getRandomName("orphan-tag")).create());
 
         // Allow indexing to complete.
         Utility.sleep(500, 60000, () ->

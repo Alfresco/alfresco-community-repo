@@ -305,9 +305,9 @@ public abstract class QueryHelper
         return toBeStripped; //default to return the String unchanged.
     }
 
-    public static QueryResolver.Custom resolve(final Query query)
+    public static QueryResolver.WalkerSpecifier resolve(final Query query)
     {
-        return new QueryResolver.Custom(query);
+        return new QueryResolver.WalkerSpecifier(query);
     }
 
     /**
@@ -364,9 +364,9 @@ public abstract class QueryHelper
         /**
          * Helper class providing methods related with default query walker {@link BasicQueryWalker}.
          */
-        public static class Default<R extends Default<?>> extends QueryResolver<R>
+        public static class DefaultWalkerOperations<R extends DefaultWalkerOperations<?>> extends QueryResolver<R>
         {
-            public Default(Query query)
+            public DefaultWalkerOperations(Query query)
             {
                 super(query);
             }
@@ -433,15 +433,15 @@ public abstract class QueryHelper
         /**
          * Helper class allowing to specify custom {@link WalkerCallback} implementation or {@link BasicQueryWalker} extension.
          */
-        public static class Custom extends Default<Custom>
+        public static class WalkerSpecifier extends DefaultWalkerOperations<WalkerSpecifier>
         {
-            public Custom(Query query)
+            public WalkerSpecifier(Query query)
             {
                 super(query);
             }
 
             @Override
-            protected Custom self()
+            protected WalkerSpecifier self()
             {
                 return this;
             }
@@ -449,7 +449,7 @@ public abstract class QueryHelper
             /**
              * Specifies that OR operator instead of AND should be used while resolving the query.
              */
-            public Default<? extends Default<?>> usingOrOperator()
+            public DefaultWalkerOperations<? extends DefaultWalkerOperations<?>> usingOrOperator()
             {
                 this.orQueryWalkerSupplier = (propertyNames) -> new BasicQueryWalker(propertyNames)
                 {
@@ -464,7 +464,7 @@ public abstract class QueryHelper
             /**
              * Allows to specify custom {@link BasicQueryWalker} extension, which should be used to resolve the query.
              */
-            public <T extends BasicQueryWalker> Default<? extends Default<?>> usingWalker(final T queryWalker)
+            public <T extends BasicQueryWalker> DefaultWalkerOperations<? extends DefaultWalkerOperations<?>> usingWalker(final T queryWalker)
             {
                 this.queryWalker = queryWalker;
                 return this;

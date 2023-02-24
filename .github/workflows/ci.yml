@@ -380,3 +380,26 @@ jobs:
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
+
+  share_services_test_suite:
+    name: Share Services - ShareServicesTestSuite
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run Postgres 13.3 database"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
+      - name: "Run tests"
+        run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh

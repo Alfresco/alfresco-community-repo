@@ -44,11 +44,6 @@ install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 jobs:
   include:
 
-    - name: "Share Services - ShareServicesTestSuite"
-      if: commit_message !~ /\[skip repo\]/
-      before_script:
-        - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
-      script: travis_wait 20 mvn -B test -pl :alfresco-share-services -Dtest=ShareServicesTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "AGS Unit & Integration Tests 01 (PostgreSQL)"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/

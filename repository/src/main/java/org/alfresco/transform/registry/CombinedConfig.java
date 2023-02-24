@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClient4Factory;
-import org.alfresco.httpclient.HttpClientException;
+import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.repo.content.transform.LocalPassThroughTransform;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.config.TransformConfig;
@@ -68,11 +68,11 @@ public class CombinedConfig extends CombinedTransformConfig
     private ConfigFileFinder configFileFinder;
     private int tEngineCount;
 
-    private final HttpClient4Factory httpClientFactory;
+    HttpClientConfig httpClientConfig;
 
-    public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClient4Factory httpClientFactory)
+    public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClientConfig httpClientConfig)
     {
-        this.httpClientFactory = httpClientFactory;
+        this.httpClientConfig = httpClientConfig;
         this.log = log;
 
         configFileFinder = new ConfigFileFinder(jsonObjectMapper)
@@ -96,7 +96,7 @@ public class CombinedConfig extends CombinedTransformConfig
         boolean successReadingConfig = true;
         for (String url : urls)
         {
-            if (validateUrlForMTLS(url) && addRemoteConfig(url, remoteType))
+            if (addRemoteConfig(url, remoteType))
             {
                 tEngineCount++ ;
             }
@@ -108,16 +108,6 @@ public class CombinedConfig extends CombinedTransformConfig
         return successReadingConfig;
     }
 
-    private boolean validateUrlForMTLS(String url)
-    {
-        if(httpClientFactory.ismTLSEnabled() && !url.startsWith("https"))
-        {
-            String msg = String.format("mTLS is enabled but provided URL:'$s' has not secured protocol", url);
-            throw new HttpClientException(msg);
-        } else
-            return true;
-    }
-
     private boolean addRemoteConfig(String baseUrl, String remoteType)
     {
         String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
@@ -125,7 +115,7 @@ public class CombinedConfig extends CombinedTransformConfig
         boolean successReadingConfig = true;
         try
         {
-            try (CloseableHttpClient httpclient = httpClientFactory.createHttpClient("transform"))
+            try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
             {
                 try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {

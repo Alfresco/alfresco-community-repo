@@ -20,7 +20,7 @@
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
       <property name="retryTransformOnDifferentMimeType" value="false"/>
-      <property name="httpClientFactory" ref="httpClient4Factory" />
+      <property name="httpClientConfig" ref="httpClientConfigTransform" />
    </bean>
 
 </beans>

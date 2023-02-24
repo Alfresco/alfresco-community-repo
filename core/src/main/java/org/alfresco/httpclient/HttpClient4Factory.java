@@ -27,20 +27,10 @@
 
 package org.alfresco.httpclient;
 
-
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import org.alfresco.encryption.AlfrescoKeyStore;
-import org.alfresco.encryption.AlfrescoKeyStoreImpl;
-import org.alfresco.encryption.KeyResourceLoader;
-import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -53,54 +43,10 @@ public class HttpClient4Factory
     protected static final String TLS_PROTOCOL = "TLS";
     protected static final String HTTPCLIENT_CONFIG = "httpclient.config.";
 
-    private SSLEncryptionParameters sslEncryptionParameters;
-    private KeyResourceLoader keyResourceLoader;
-    private Properties properties;
-
-    private Boolean mTLSEnabled;
-
-    private AlfrescoKeyStore keyStore;
-    private AlfrescoKeyStore trustStore;
-
-    public void init()
+    private static SSLContext createSSLContext(HttpClientConfig config)
     {
-        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
-        this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
-    }
-
-    public void setSslEncryptionParameters(SSLEncryptionParameters sslEncryptionParameters)
-    {
-        this.sslEncryptionParameters = sslEncryptionParameters;
-    }
-
-    public void setKeyResourceLoader(KeyResourceLoader keyResourceLoader)
-    {
-        this.keyResourceLoader = keyResourceLoader;
-    }
-
-    /**
-     * The Alfresco global properties.
-     */
-    public void setProperties(Properties properties)
-    {
-        this.properties = properties;
-    }
-
-    public void setmTLSEnabled(String mTLSEnabled)
-    {
-        System.out.println(mTLSEnabled);
-        this.mTLSEnabled = Boolean.parseBoolean(mTLSEnabled);
-    }
-
-    public Boolean ismTLSEnabled()
-    {
-        return mTLSEnabled;
-    }
-
-    private SSLContext createSSLContext()
-    {
-        KeyManager[] keyManagers = keyStore.createKeyManagers();
-        TrustManager[] trustManagers = trustStore.createTrustManagers();
+        KeyManager[] keyManagers = config.getKeyStore().createKeyManagers();
+        TrustManager[] trustManagers = config.getTrustStore().createTrustManagers();
 
         try
         {
@@ -114,62 +60,30 @@ public class HttpClient4Factory
         }
     }
 
-    public CloseableHttpClient createHttpClient(String serviceName)
+    public static CloseableHttpClient createHttpClient(HttpClientConfig config)
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
 
-        HttpClientConfig config = new HttpClientConfig(serviceName);
-
-        if(config.mTLSEnabled)
+        if(Boolean.parseBoolean(config.getConfig().get("mTLSEnabled")))
         {
-            clientBuilder.setSSLContext(createSSLContext());
+            clientBuilder.setSSLContext(createSSLContext(config));
         }
 
-        clientBuilder.setMaxConnTotal(config.maxTotalConnections);
-        clientBuilder.setMaxConnPerRoute(config.maxHostConnections);
+        clientBuilder.setMaxConnTotal(Integer.parseInt(config.getConfig().get("maxTotalConnections")));
+        clientBuilder.setMaxConnPerRoute(Integer.parseInt(config.getConfig().get("maxHostConnections")));
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(config.connectionTimeout)
-                .setSocketTimeout(config.socketTimeout)
+                .setConnectTimeout(Integer.parseInt(config.getConfig().get("connectionTimeout")))
+                .setSocketTimeout(Integer.parseInt(config.getConfig().get("socketTimeout")))
                 .build();
         clientBuilder.setDefaultRequestConfig(requestConfig);
 
         return clientBuilder.build();
     }
 
-    class HttpClientConfig {
-        Boolean mTLSEnabled;
-        int maxTotalConnections;
-        int maxHostConnections;
-        Integer socketTimeout;
-        int connectionTimeout;
+//    private String getPropertyValue(String propertyName, String defaultValue)
+//    {
+//        return Optional.ofNullable(config.get(propertyName)).orElse(defaultValue);
+//    }
 
-        private final Map<String, String> config;
-
-        HttpClientConfig(String serviceName) {
-            config = retrieveConfig(serviceName);
-
-            maxTotalConnections = Integer.parseInt(getPropertyValue("maxTotalConnections", "40"));
-            maxHostConnections = Integer.parseInt(getPropertyValue("maxHostConnections", "40"));
-            socketTimeout = Integer.parseInt(getPropertyValue("socketTimeout", "0"));
-            connectionTimeout = Integer.parseInt(getPropertyValue("connectionTimeout", "0"));
-            mTLSEnabled = Boolean.parseBoolean(getPropertyValue("mTLSEnabled", "false"));
-        }
-
-        private Map<String, String> retrieveConfig(String serviceName)
-        {
-            return properties.keySet().stream()
-                             .filter(key -> key instanceof String)
-                             .map(Object::toString)
-                             .filter(key -> key.startsWith(HTTPCLIENT_CONFIG + serviceName))
-                             .collect(Collectors.toMap(
-                                     key -> key.replace(HTTPCLIENT_CONFIG + serviceName + ".", ""),
-                                     key -> properties.getProperty(key, null)));
-        }
-
-        private String getPropertyValue(String propertyName, String defaultValue)
-        {
-            return Optional.ofNullable(config.get(propertyName)).orElse(defaultValue);
-        }
-    }
 }

@@ -40,16 +40,3 @@ stages:
 
 before_install: travis_retry bash scripts/travis/init.sh
 install: travis_retry travis_wait 40 bash scripts/travis/build.sh
-
-jobs:
-  include:
-    - name: "Push to Nexus"
-      stage: release
-      before_script: bash scripts/travis/verify_release_tag.sh
-      script: travis_wait 40 bash scripts/travis/maven_release.sh
-
-    - name: "Update alfresco-enterprise-repo"
-      stage: update_downstream
-      install: skip
-      script: bash scripts/travis/update_downstream.sh
-

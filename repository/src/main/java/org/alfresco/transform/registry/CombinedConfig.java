@@ -93,10 +93,11 @@ public class CombinedConfig extends CombinedTransformConfig
 
     public boolean addRemoteConfig(List<String> urls, String remoteType)
     {
+        CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig);
         boolean successReadingConfig = true;
         for (String url : urls)
         {
-            if (addRemoteConfig(url, remoteType))
+            if (addRemoteConfig(httpclient, url, remoteType))
             {
                 tEngineCount++ ;
             }
@@ -108,71 +109,65 @@ public class CombinedConfig extends CombinedTransformConfig
         return successReadingConfig;
     }
 
-    private boolean addRemoteConfig(String baseUrl, String remoteType)
+    private boolean addRemoteConfig(CloseableHttpClient httpclient, String baseUrl, String remoteType)
     {
         String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
         try
         {
-            try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
+            try (CloseableHttpResponse response = execute(httpclient, httpGet))
             {
-                try (CloseableHttpResponse response = execute(httpclient, httpGet))
+                StatusLine statusLine = response.getStatusLine();
+                if (statusLine == null)
                 {
-                    StatusLine statusLine = response.getStatusLine();
-                    if (statusLine == null)
+                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned no status ");
+                }
+                HttpEntity resEntity = response.getEntity();
+                if (resEntity != null)
+                {
+                    int statusCode = statusLine.getStatusCode();
+                    if (statusCode == 200)
                     {
-                        throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned no status ");
-                    }
-                    HttpEntity resEntity = response.getEntity();
-                    if (resEntity != null)
-                    {
-                        int statusCode = statusLine.getStatusCode();
-                        if (statusCode == 200)
+                        try
                         {
-                            try
+                            String content = getContent(resEntity);
+                            try (StringReader reader = new StringReader(content))
                             {
-                                String content = getContent(resEntity);
-                                try (StringReader reader = new StringReader(content))
+                                int transformCount = transformerCount();
+                                configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
+                                if (transformCount == transformerCount())
                                 {
-                                    int transformCount = transformerCount();
-                                    configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
-                                    if (transformCount == transformerCount())
-                                    {
-                                        successReadingConfig = false;
-                                    }
+                                    successReadingConfig = false;
                                 }
+                            }
 
-                                EntityUtils.consume(resEntity);
-                            }
-                            catch (IOException e)
-                            {
-                                throw new AlfrescoRuntimeException("Failed to read the returned content from "+
-                                        remoteType+" on " + url, e);
-                            }
+                            EntityUtils.consume(resEntity);
                         }
-                        else
+                        catch (IOException e)
                         {
-                            String message = getErrorMessage(resEntity);
-                            throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned a " + statusCode +
-                                    " status " + message);
+                            throw new AlfrescoRuntimeException("Failed to read the returned content from "+
+                                    remoteType+" on " + url, e);
                         }
                     }
                     else
                     {
-                        throw new AlfrescoRuntimeException(remoteType+" on " + url+" did not return an entity " + url);
+                        String message = getErrorMessage(resEntity);
+                        throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned a " + statusCode +
+                                " status " + message);
                     }
                 }
-                catch (IOException e)
+                else
                 {
-                    throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
-                            " on " + url, e);
+                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" did not return an entity " + url);
                 }
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException(remoteType+" on " + url+" failed to create an HttpClient", e);
+                throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
+                        " on " + url, e);
             }
+
         }
         catch (AlfrescoRuntimeException e)
         {

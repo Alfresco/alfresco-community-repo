@@ -8,6 +8,13 @@
       parent="baseTransformationRenderingEngine">
    </bean>
 
+   <bean id="httpClientConfigTransform" class="org.alfresco.httpclient.HttpClientConfig" init-method="init" >
+      <property name="sslEncryptionParameters" ref="sslEncryptionParameters" />
+      <property name="keyResourceLoader" ref="springKeyResourceLoader" />
+      <property name="properties" ref="global-properties" />
+      <property name="serviceName" value="transform" />
+   </bean>
+
 <!-- Keep it simple. Disable retries when the mimetype is wrong and we can transform what it is actually -->
    <bean id="localTransformServiceRegistry" class="org.alfresco.repo.content.transform.LocalTransformServiceRegistry" >
       <property name="jsonObjectMapper" ref="localTransformServiceRegistryJsonObjectMapper" />

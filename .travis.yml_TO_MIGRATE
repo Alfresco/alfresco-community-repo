@@ -43,47 +43,6 @@ install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 
 jobs:
   include:
-
-
-    - name: "AGS Unit & Integration Tests 01 (PostgreSQL)"
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
-
-    - name: "AGS        Integration Tests 02 (PostgreSQL)"
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
-
-    - name: "AGS        Integration Tests 03 (PostgreSQL)"
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
-
-    - name: "AGS Unit & Integration Tests 01 (MySQL) "
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
-
-    - name: "AGS        Integration Tests 02 (MySQL) "
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
-
-    - name: "AGS        Integration Tests 03 (MySQL) "
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-      script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
-
-    - name: "AGS Community Rest API Tests"
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-      addons:
-        artifacts:
-          paths:
-            - ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log
-            - alfresco.log
-            - solr.log
-          target_paths: community/${TRAVIS_BUILD_NUMBER}/${TRAVIS_JOB_NAME}
-      before_script:
-        - ${TAS_SCRIPTS}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
-        - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
-      script: travis_wait 40 mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags
-      after_script: bash amps/ags/travis/scripts/getLogs.sh
-
     - name: "Push to Nexus"
       stage: release
       before_script: bash scripts/travis/verify_release_tag.sh

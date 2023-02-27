@@ -66,7 +66,6 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.CUT_OFF_ASPECT;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -84,26 +83,29 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Autowired
     private RecordFoldersAPI recordFoldersAPI;
     private final static  String TEST_PREFIX = generateTestPrefix(DispositionScheduleLinkedRecordsTest.class);
-    private RecordCategory Category1,catsameLevel1,catsameLevel2;
+    private RecordCategory Category1;
     private RecordCategoryChild CopyCatFolder,folder1,CatFolder,folder2;
     private static final String categoryRM3077 = TEST_PREFIX + "RM-3077_manager_sees_me";
     private static final String copyCategoryRM3077 = "Copy_of_" + categoryRM3077;
     private static final String folderRM3077 = "RM-3077_folder_"+ categoryRM3077;
     private static final String copyFolderRM3077 = "Copy_of_" + folderRM3077;
-    private final String electronicRecord = "RM-2937 electronic 2 record";
     private final String folder = TEST_PREFIX + "RM-2937 folder ghosting";
-    private static final String categoryRecordsRM2526 = TEST_PREFIX + "RM-2526_category_records_immediately";
-    private static final String category2RecordsRM2526 = TEST_PREFIX + "RM-2526_category_2_records_1_day";
     private static final String firstCategoryRM3060 = TEST_PREFIX + "RM-3060_category_record";
     private static final String secondCategoryRM3060 = "Copy_of_" + firstCategoryRM3060;
     private static final String firstFolderRM3060 = TEST_PREFIX + "RM-3060_folder";
     private static final String secondFolderRM3060 = TEST_PREFIX + "RM-3060_disposition_on_Record_Level";
     private static final String electronicRecordRM3060 = TEST_PREFIX + "RM-3060_electronic_1_record";
     private static final String nonElectronicRecordRM3060 = TEST_PREFIX + "RM-3060_non-electronic_record";
+    private static final String firstCategoryRM1622 = TEST_PREFIX + "RM-1622_category_record";
+    private static final String secondCategoryRM1622 = "Copy_of_" + firstCategoryRM1622;;
+    private static final String firstFolderRM1622 = TEST_PREFIX + "RM-1622_folder";
+    private static final String electronicRecordRM1622 = TEST_PREFIX + "RM-1622_electronic_1_record";
+    private static final String secondFolderRM1622 = TEST_PREFIX + "RM-1622_disposition_on_Record_Level";
     private static final String TRANSFER_LOCATION = TEST_PREFIX + "RM-3060_transferred_records";
     public static final String TRANSFER_TYPE = "rma:transferred";
     private FilePlan filePlanModel;
     private UserModel rmAdmin, rmManager;
+
     @BeforeClass(alwaysRun = true)
     public void setupDispositionScheduleLinkedRecordsTest() {
         createRMSiteIfNotExists();
@@ -368,35 +370,35 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
 
         // create a category with retention applied on records level
         RecordCategory catsameLevel1  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
-            .createRootRecordCategory(RecordCategory.builder().name(firstCategoryRM3060).build(),
-                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+                                                           .createRootRecordCategory(RecordCategory.builder().name(firstCategoryRM1622).build(),
+                                                               RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
         RecordCategory catsameLevel2  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
-            .createRootRecordCategory(RecordCategory.builder().name(secondCategoryRM3060).build(),
-                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+                                                           .createRootRecordCategory(RecordCategory.builder().name(secondCategoryRM1622).build(),
+                                                               RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
 
         // create retention schedule applied on records for category 1
-        dispositionScheduleService.createCategoryRetentionSchedule(firstCategoryRM3060, true);
+        dispositionScheduleService.createCategoryRetentionSchedule(firstCategoryRM1622, true);
 
         // with retain immediately after record creation date and cut 1 day after record creation date
-        dispositionScheduleService.addCutOffAfterPeriodStep(firstCategoryRM3060, "day|1", DATE_FILED);
+        dispositionScheduleService.addCutOffAfterPeriodStep(firstCategoryRM1622, "day|1", DATE_FILED);
 
 
-        // create a folder on the category firstCategoryRM3060 with a complete electronic record
-        RecordCategoryChild firstFolderRecordCategoryChild = createRecordFolder(catsameLevel1.getId(),firstFolderRM3060);
-        Record firstElectronicRecord = createElectronicRecord(firstFolderRecordCategoryChild.getId(),electronicRecordRM3060);
+        // create a folder on the category firstCategoryRM1622 with a complete electronic record
+        RecordCategoryChild firstFolderRecordCategoryChild = createRecordFolder(catsameLevel1.getId(),firstFolderRM1622);
+        Record firstElectronicRecord = createElectronicRecord(firstFolderRecordCategoryChild.getId(),electronicRecordRM1622);
 
         String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(),firstFolderRM3060, electronicRecordRM3060);
+            getDataUser().getAdminUser().getPassword(),firstFolderRM1622, electronicRecordRM1622);
         String elRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + firstCategoryRM3060 + "/" + firstFolderRM3060);
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + firstCategoryRM1622 + "/" + firstFolderRM1622);
 
         recordsAPI.completeRecord(getDataUser().getAdminUser().getUsername(),
             getDataUser().getAdminUser().getPassword(), elRecordFullName);
 
-        // create a folder on the category secondCategoryRM3060 with a non electronic record
-        RecordCategoryChild secondFolderRecordCategoryChild = createRecordFolder(catsameLevel2.getId(),secondFolderRM3060);
+        // create a folder on the category secondCategoryRM1622 with a non electronic record
+        RecordCategoryChild secondFolderRecordCategoryChild = createRecordFolder(catsameLevel2.getId(),secondFolderRM1622);
         String elRecordNameNodeRefs = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + firstCategoryRM3060 + "/" + firstFolderRM3060);
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + firstCategoryRM1622 + "/" + firstFolderRM1622);
 
 
         // link it to the folder in second category through the details page
@@ -404,8 +406,8 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + firstElectronicRecord.getId());
 
         linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,secondCategoryRM3060 + "/" +
-                secondFolderRM3060, recordLists);
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,secondCategoryRM1622 + "/" +
+                secondFolderRM1622, recordLists);
 
         // edit disposition date
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),

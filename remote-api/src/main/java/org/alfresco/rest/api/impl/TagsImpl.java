@@ -104,12 +104,11 @@ public class TagsImpl implements Tags
 			{
 				throw new UnsupportedResourceOperationException("Cannot tag this node");
 			}
-			List<Pair<String, Integer>> tagsByCount = null;
-			Map<String, Integer> tagsByCountMap = new HashMap<String, Integer>();
 
 	        List<String> tagValues = new AbstractList<String>()
             {
                 @Override
+
                 public String get(int arg0)
                 {
                 	String tag = tags.get(arg0).getTag();
@@ -126,18 +125,12 @@ public class TagsImpl implements Tags
             {
 		        List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
 		        List<Tag> ret = new ArrayList<Tag>(tags.size());
-				tagsByCount = taggingService.findTaggedNodesAndCountByTagName(nodeRef.getStoreRef());
-				if (tagsByCount != null)
-				{
-					for (Pair<String, Integer> tagByCountElem : tagsByCount)
-					{
-						tagsByCountMap.put(tagByCountElem.getFirst(), tagByCountElem.getSecond());
-					}
-				}
+				List<Pair<String, Integer>> tagsCountPairList = taggingService.findTaggedNodesAndCountByTagName(nodeRef.getStoreRef());
+				Map<String, Integer> tagsCountMap = tagsCountPairList.stream().collect(Collectors.toMap(Pair::getFirst,Pair::getSecond));
 		        for(Pair<String, NodeRef> pair : tagNodeRefs)
 		        {
 					Tag createdTag=new Tag(pair.getSecond(), pair.getFirst());
-					createdTag.setCount(Optional.ofNullable(tagsByCountMap.get(createdTag.getTag())).orElse(0));
+					createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).map(cnt->cnt+1).orElse(1));
 		        	ret.add(createdTag);
 		        }
 		        return ret;

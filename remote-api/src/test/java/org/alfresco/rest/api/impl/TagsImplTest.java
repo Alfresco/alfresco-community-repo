@@ -35,11 +35,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -51,6 +53,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.TypeConstraint;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,17 +65,22 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class TagsImplTest
 {
     private static final String TAG_ID = "tag-node-id";
+    private static final String NODE_ID = "node-id";
     private static final String TAG_NAME = "tag-dummy-name";
     private static final NodeRef TAG_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
     @Mock
     private Nodes nodesMock;
     @Mock
+    private Node createdNodeMock;
+    @Mock
     private AuthorityService authorityServiceMock;
     @Mock
     private TaggingService taggingServiceMock;
     @Mock
     private Parameters parametersMock;
+    @Mock
+    private TypeConstraint typeConstraint;
 
     @InjectMocks
     private TagsImpl objectUnderTest;
@@ -81,9 +89,22 @@ public class TagsImplTest
     public void setup()
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        given(nodesMock.validateNode(NODE_ID)).willReturn(TAG_NODE_REF);
         given(nodesMock.validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willReturn(TAG_NODE_REF);
+        given(nodesMock.getNode(any())).willReturn(createdNodeMock);
+        given(createdNodeMock.getNodeId()).willReturn(NODE_ID);
+        given(typeConstraint.matches(any())).willReturn(true);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
+        given(taggingServiceMock.findTaggedNodesAndCountByTagName(any())).willReturn(createTagsCountPairList());
     }
+
+    public List<Pair<String,Integer>> createTagsCountPairList()
+    {
+        List<Pair<String,Integer>> tagsCountPairList = new ArrayList<>();
+        tagsCountPairList.add(new Pair<>("tag-node-id",1));
+        return tagsCountPairList;
+    }
+
     @Test
     public void testGetTags() {
         final List<String> tagNames = List.of("testTag","tag11");
@@ -159,10 +180,10 @@ public class TagsImplTest
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
         then(taggingServiceMock).should().createTags(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, tagNames);
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
-        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
-                                            .peek(tag -> tag.setCount(0))
-                                            .collect(Collectors.toList());
-        assertEquals(expectedTags, actualCreatedTags);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        assertThat(actualCreatedTags)
+            .isNotNull()
+            .isEqualTo(expectedTags);
     }
 
     @Test
@@ -302,4 +323,19 @@ public class TagsImplTest
             .tag(tagName)
             .create();
     }
+
+    @Test
+    public void testAddTagsToNode()
+    {
+        final List<String> tagNames = List.of("tag1");
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+        final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
+        then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        assertThat(actualCreatedTags)
+                .isNotNull()
+                .isEqualTo(expectedTags);
+    }
+
 }

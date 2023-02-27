@@ -35,7 +35,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -95,14 +94,6 @@ public class TagsImplTest
         given(createdNodeMock.getNodeId()).willReturn(NODE_ID);
         given(typeConstraint.matches(any())).willReturn(true);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
-        given(taggingServiceMock.findTaggedNodesAndCountByTagName(any())).willReturn(createTagsCountPairList());
-    }
-
-    public List<Pair<String,Integer>> createTagsCountPairList()
-    {
-        List<Pair<String,Integer>> tagsCountPairList = new ArrayList<>();
-        tagsCountPairList.add(new Pair<>("tag-node-id",1));
-        return tagsCountPairList;
     }
 
     @Test
@@ -327,9 +318,24 @@ public class TagsImplTest
     @Test
     public void testAddTagsToNode()
     {
-        final List<String> tagNames = List.of("tag1");
+        final List<String> tagNames = List.of("tag1","tag2");
         final List<Tag> tagsToCreate = createTags(tagNames);
         given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+        final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
+        then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        assertThat(actualCreatedTags)
+                .isNotNull()
+                .isEqualTo(expectedTags);
+    }
+
+    @Test
+    public void testAddTagsToNodeWithResponseNotIndexed()
+    {
+        final List<String> tagNames = List.of("tag1","tag2");
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+        given(taggingServiceMock.findTaggedNodesAndCountByTagName(any())).willReturn(Collections.emptyList());
         final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
         then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);

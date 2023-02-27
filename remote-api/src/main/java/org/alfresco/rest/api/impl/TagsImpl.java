@@ -130,7 +130,8 @@ public class TagsImpl implements Tags
 		        for(Pair<String, NodeRef> pair : tagNodeRefs)
 		        {
 					Tag createdTag=new Tag(pair.getSecond(), pair.getFirst());
-					createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).map(cnt->cnt+1).orElse(1));
+					// The new use of the tag will not be indexed yet, so add one to whatever count we get back
+					createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).orElse(0) + 1);
 		        	ret.add(createdTag);
 		        }
 		        return ret;

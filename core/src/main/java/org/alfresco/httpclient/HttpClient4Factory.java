@@ -47,6 +47,7 @@ public class HttpClient4Factory
     protected static final String HTTPCLIENT_CONFIG = "httpclient.config.";
     protected static final String HTTPS_PROTOCOL = "https";
     protected static final String HTTP_TARGET_HOST = "http.target_host";
+    protected static final String TLSV_1_2 = "TLSv1.2";
 
     private static SSLContext createSSLContext(HttpClientConfig config)
     {
@@ -81,7 +82,7 @@ public class HttpClient4Factory
 
             SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(
                     createSSLContext(config),
-                    new String[] { "TLSv1.2", "TLSv1.3" },
+                    new String[] { TLSV_1_2, "TLSv1.3" },
                     null,
                     SSLConnectionSocketFactory.getDefaultHostnameVerifier());
             clientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);

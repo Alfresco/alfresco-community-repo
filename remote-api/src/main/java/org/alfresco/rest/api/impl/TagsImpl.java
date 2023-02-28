@@ -285,7 +285,8 @@ public class TagsImpl implements Tags
 			.peek(tag -> {
 				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
 				{
-					tag.setCount(1);
+					// this method creates orphan tags, which are not related with any content so setting count to 0.
+					tag.setCount(0);
 				}
 			}).collect(Collectors.toList());
 	}

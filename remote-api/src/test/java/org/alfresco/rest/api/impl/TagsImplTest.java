@@ -104,7 +104,7 @@ public class TagsImplTest
         given(parametersMock.getInclude()).willReturn(List.of("count"));
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
-            .peek(tag -> tag.setCount(1))
+            .peek(tag -> tag.setCount(0))
             .collect(Collectors.toList());
         assertEquals(expectedTags, actualCreatedTags);
     }
@@ -271,7 +271,7 @@ public class TagsImplTest
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
-            .peek(tag -> tag.setCount(1))
+            .peek(tag -> tag.setCount(0))
             .collect(Collectors.toList());
         assertThat(actualCreatedTags)
             .isNotNull()

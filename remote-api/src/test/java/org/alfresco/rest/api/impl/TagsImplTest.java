@@ -104,7 +104,7 @@ public class TagsImplTest
         given(parametersMock.getInclude()).willReturn(List.of("count"));
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
-            .peek(tag -> tag.setCount(0))
+            .peek(tag -> tag.setCount(1))
             .collect(Collectors.toList());
         assertEquals(expectedTags, actualCreatedTags);
     }
@@ -271,7 +271,7 @@ public class TagsImplTest
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
-            .peek(tag -> tag.setCount(0))
+            .peek(tag -> tag.setCount(1))
             .collect(Collectors.toList());
         assertThat(actualCreatedTags)
             .isNotNull()
@@ -323,7 +323,7 @@ public class TagsImplTest
         given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
         final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
         then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
-        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream().peek(tag -> tag.setCount(1)).collect(Collectors.toList());;
         assertThat(actualCreatedTags)
                 .isNotNull()
                 .isEqualTo(expectedTags);
@@ -338,7 +338,7 @@ public class TagsImplTest
         given(taggingServiceMock.findTaggedNodesAndCountByTagName(any())).willReturn(Collections.emptyList());
         final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
         then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
-        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream().peek(tag -> tag.setCount(1)).collect(Collectors.toList());;
         assertThat(actualCreatedTags)
                 .isNotNull()
                 .isEqualTo(expectedTags);

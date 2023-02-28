@@ -285,7 +285,7 @@ public class TagsImpl implements Tags
 			.peek(tag -> {
 				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
 				{
-					tag.setCount(0);
+					tag.setCount(1);
 				}
 			}).collect(Collectors.toList());
 	}

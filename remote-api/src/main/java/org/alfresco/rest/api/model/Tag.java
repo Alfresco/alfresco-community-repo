@@ -130,6 +130,20 @@ public class Tag implements Comparable<Tag>
 				return false;
 		} else if (!nodeRef.equals(other.nodeRef))
 			return false;
+		if(tag==null)
+		{
+			if(other.tag != null)
+				return false;
+		}
+		else if (!tag.equals(other.tag))
+			return false;
+		if (count == null)
+		{
+			if (other.count != null)
+				return false;
+		}
+		else if (!count.equals(other.count))
+			return false;
 		return true;
 	}
 

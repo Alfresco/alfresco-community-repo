@@ -538,7 +538,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
         String pageUrl = clientApp.getProperty("resetPasswordPageUrl");
 
-        if(clientApp.getName().equals("workspace"))
+        if(!StringUtils.isEmpty(clientApp.getProperty("workspaceUrl")))
         {
             String workspaceUrl = clientApp.getProperty("workspaceUrl");
 

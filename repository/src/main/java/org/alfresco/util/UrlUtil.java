@@ -41,6 +41,10 @@ public class UrlUtil
     public static final Pattern PATTERN = Pattern.compile("\\$\\{shareUrl\\}");
     // ${alfrescoUrl} placeholder
     public static final Pattern REPO_PATTERN = Pattern.compile("\\$\\{alfrescoUrl\\}");
+
+    public static final Pattern WORKSPACE_PATTERN = Pattern.compile("\\$\\{repoBaseUrl\\}");
+
+
     /**
      * Builds up the Url to Alfresco based on the settings in the 
      *  {@link SysAdminParams}. 
@@ -153,29 +157,28 @@ public class UrlUtil
      * @return Adw Url such as https://col.ab.or.ate/#/
      *  or http://localhost:8081/#/
      */
-    public static String getAdwUrl(SysAdminParams sysAdminParams)
+    public static String getWorkspaceUrl(SysAdminParams sysAdminParams)
     {
         return buildUrl(
                 sysAdminParams.getAlfrescoProtocol(),
                 sysAdminParams.getAlfrescoHost(),
-                sysAdminParams.getAlfrescoPort(),
-                "#");
+                sysAdminParams.getAlfrescoPort(),"");
     }
 
     /**
-     * Replaces the adw url placeholder, namely {@literal ${alfrescoUrl}}, with <b>adw</b> url.
+     * Replaces the repo base url placeholder, namely {@literal ${repoBaseUrl}}, with <b>workspace</b> url.
      *
-     * @param value          the string value which contains the share url placeholder
+     * @param value          the string value which contains the repoBase url placeholder
      * @param sysAdminParams the {@code SysAdminParams} object
      * @return if the given {@code value} contains share url placeholder,
      * the placeholder is replaced with share url; otherwise, the given {@code value} is simply returned
      */
 
-    public static String replaceAdwUrlPlaceholder(String value, SysAdminParams sysAdminParams)
+    public static String replaceRepoBaseUrlPlaceholder(String value, SysAdminParams sysAdminParams)
     {
         if (value != null)
         {
-            return REPO_PATTERN.matcher(value).replaceAll(getAdwUrl(sysAdminParams));
+            return WORKSPACE_PATTERN.matcher(value).replaceAll(getWorkspaceUrl(sysAdminParams));
         }
         return value;
     }

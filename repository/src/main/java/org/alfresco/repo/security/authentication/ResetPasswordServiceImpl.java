@@ -373,7 +373,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
         final ClientApp clientApp = getClientAppConfig(clientName);
         Map<String, Serializable> emailTemplateModel = Collections.singletonMap(FTL_RESET_PASSWORD_URL,
-                    createResetPasswordUrl(clientApp, id, key, userName));
+                    createResetPasswordUrl(clientApp, id, key));
 
         final String templatePath = emailHelper.getEmailTemplate(clientName,
                     getResetPasswordEmailTemplate(clientApp),
@@ -504,7 +504,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         return UrlUtil.replaceShareUrlPlaceholder(url, sysAdminParams);
     }
 
-    private String getAdwUrl(String url, String propName)
+    private String getRepoBaseUrl(String url, String propName)
     {
         if (url == null)
         {
@@ -516,7 +516,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         {
             url = url.substring(0, url.length() - 1);
         }
-        return UrlUtil.replaceAdwUrlPlaceholder(url, sysAdminParams);
+        return UrlUtil.replaceRepoBaseUrlPlaceholder(url, sysAdminParams);
     }
 
     protected String getResetPasswordEmailTemplate(ClientApp clientApp)
@@ -532,17 +532,21 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     /**
      * This method creates a URL for the 'reset password' link which appears in the email
      */
-    protected String createResetPasswordUrl(ClientApp clientApp, final String id, final String key, final String userName)
+    protected String createResetPasswordUrl(ClientApp clientApp, final String id, final String key)
     {
         StringBuilder sb = new StringBuilder(100);
 
         String pageUrl = clientApp.getProperty("resetPasswordPageUrl");
 
-        if(clientApp.getName().equals("adw")) {
-            sb.append(getAdwUrl(pageUrl, ""));
-            LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
-            sb.append("?key=").append(key)
-                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id)).append("&userName=").append(userName);
+        if(clientApp.getName().equals("workspace"))
+        {
+            String workspaceUrl = clientApp.getProperty("workspaceUrl");
+
+                sb.append(getRepoBaseUrl(workspaceUrl,""));
+                LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
+                sb.append("?key=").append(key)
+                        .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
+
 
         }
         else {

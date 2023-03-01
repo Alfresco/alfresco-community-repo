@@ -335,7 +335,6 @@ public class TagsImplTest
         final List<String> tagNames = List.of("tag1","tag2");
         final List<Tag> tagsToCreate = createTags(tagNames);
         given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
-        given(taggingServiceMock.findTaggedNodesAndCountByTagName(any())).willReturn(Collections.emptyList());
         final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
         then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream().peek(tag -> tag.setCount(1)).collect(Collectors.toList());;

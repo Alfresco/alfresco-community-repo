@@ -12,6 +12,9 @@
 
     <properties>
         <image.name>alfresco/alfresco-community-repo-base</image.name>
+        <local.registry>127.0.0.1:5000</local.registry>
+        <builder.name>entitled-builder</builder.name>
+        <scripts.directory>${project.parent.parent.basedir}/scripts</scripts.directory>
     </properties>
 
     <build>
@@ -158,7 +161,6 @@
 
         <profile>
             <id>build-multiarch-docker-images</id>
-            <!-- builds multi Architecture "image:latest" locally -->
             <build>
                 <plugins>
                     <plugin>
@@ -167,17 +169,45 @@
                         <configuration>
                             <images>
                                 <image>
-                                    <name>${image.name}:${image.tag}</name>
+                                    <name>${local.registry}/${image.name}:${image.tag}</name>
+                                    <build>
+                                        <buildx>
+                                            <builderName>${builder.name}</builderName>
+                                        </buildx>
+                                    </build>
                                 </image>
                             </images>
                         </configuration>
                         <executions>
                             <execution>
-                                <id>build-image</id>
-                                <phase>package</phase>
+                                <id>build-push-image</id>
+                                <phase>install</phase>
                                 <goals>
                                     <goal>build</goal>
+                                    <goal>push</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <executions>
+                            <execution>
+                                <id>prepare-buildx</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${scripts.directory}/prepare_buildx.sh</executable>
+                                    <arguments>
+                                        <argument>${builder.name}</argument>
+                                        <argument>${image.registry}</argument>
+                                        <argument>${image.name}</argument>
+                                        <argument>${image.tag}</argument>
+                                    </arguments>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>

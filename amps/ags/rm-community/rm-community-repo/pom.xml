@@ -19,6 +19,7 @@
       <local.registry>127.0.0.1:5000</local.registry>
       <base.image>alfresco/alfresco-community-repo-base</base.image>
       <builder.name>entitled-builder</builder.name>
+      <scripts.directory>${project.parent.parent.parent.parent.basedir}/scripts</scripts.directory>
    </properties>
 
    <dependencies>
@@ -578,7 +579,6 @@
 
        <profile>
           <id>build-multiarch-docker-images</id>
-          <!-- builds multi Architecture "images:latest" locally -->
           <build>
              <plugins>
                 <plugin>
@@ -587,7 +587,7 @@
                    <configuration>
                       <images>
                          <image>
-                            <name>${image.name}:${image.tag}</name>
+                            <name>${local.registry}/${image.name}:${image.tag}</name>
                             <build>
                                <buildx>
                                   <builderName>${builder.name}</builderName>
@@ -601,10 +601,11 @@
                    </configuration>
                    <executions>
                       <execution>
-                         <id>build-image</id>
-                         <phase>package</phase>
+                         <id>build-push-image</id>
+                         <phase>install</phase>
                          <goals>
                             <goal>build</goal>
+                            <goal>push</goal>
                          </goals>
                       </execution>
                    </executions>
@@ -620,25 +621,13 @@
                             <goal>exec</goal>
                          </goals>
                          <configuration>
-                            <executable>${basedir}/scripts/prepare_buildx.sh</executable>
+                            <executable>${scripts.directory}/prepare_buildx.sh</executable>
                             <arguments>
-                               <argument>${local.registry}</argument>
-                               <argument>${base.image}</argument>
                                <argument>${builder.name}</argument>
                                <argument>${image.registry}</argument>
                                <argument>${image.name}</argument>
                                <argument>${image.tag}</argument>
                             </arguments>
-                         </configuration>
-                      </execution>
-                      <execution>
-                         <id>clear</id>
-                         <phase>install</phase>
-                         <goals>
-                            <goal>exec</goal>
-                         </goals>
-                         <configuration>
-                            <executable>${basedir}/scripts/remove_local_registry.sh</executable>
                          </configuration>
                       </execution>
                    </executions>
@@ -705,10 +694,8 @@
                                <goal>exec</goal>
                             </goals>
                             <configuration>
-                               <executable>${basedir}/scripts/prepare_buildx.sh</executable>
+                               <executable>${scripts.directory}/prepare_buildx.sh</executable>
                                <arguments>
-                                  <argument>${local.registry}</argument>
-                                  <argument>${base.image}</argument>
                                   <argument>${builder.name}</argument>
                                   <argument>${image.registry}</argument>
                                   <argument>${image.name}</argument>
@@ -716,16 +703,6 @@
                                </arguments>
                             </configuration>
                         </execution>
-                        <execution>
-                           <id>clear</id>
-                           <phase>install</phase>
-                           <goals>
-                              <goal>exec</goal>
-                           </goals>
-                           <configuration>
-                              <executable>${basedir}/scripts/remove_local_registry.sh</executable>
-                           </configuration>
-                         </execution>
                      </executions>
                  </plugin>
              </plugins>

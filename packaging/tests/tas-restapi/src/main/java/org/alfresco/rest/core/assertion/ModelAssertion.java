@@ -333,6 +333,22 @@ public class ModelAssertion<T>
             return (T) model;
         }
 
+        public T containsOnce(String value)
+        {
+            final String fieldContent = fieldValue.toString();
+            final int i = fieldContent.indexOf(value);
+            if (i == -1)
+            {
+                Assert.fail(errorMessage("does NOT contain at all the expected value: " + value + ", Current Value: " + fieldValue.toString()));
+            }
+            if (i != fieldContent.lastIndexOf(value))
+            {
+                Assert.fail(errorMessage("contains more than one expected value: " + value + ", Current Value: " + fieldValue.toString()));
+            }
+
+            return (T) model;
+        }
+
         public T notContains(String value)
         {
             if (fieldValue.toString().contains(value))

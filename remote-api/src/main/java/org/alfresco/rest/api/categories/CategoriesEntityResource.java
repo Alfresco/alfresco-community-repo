@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -45,6 +45,7 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
                                                  EntityResourceAction.Update<Category>,
                                                  EntityResourceAction.Delete
 {
+
     private final Categories categories;
 
     public CategoriesEntityResource(Categories categories)
@@ -77,7 +78,7 @@ public class CategoriesEntityResource implements EntityResourceAction.ReadById<C
     @Override
     public Category update(String id, Category categoryModel, Parameters parameters)
     {
-        return categories.updateCategoryById(id, categoryModel);
+        return categories.updateCategoryById(id, categoryModel, parameters);
     }
 
     /**

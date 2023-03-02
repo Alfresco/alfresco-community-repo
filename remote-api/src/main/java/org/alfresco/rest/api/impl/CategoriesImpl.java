@@ -32,6 +32,7 @@ import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISS
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +46,8 @@ import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -61,6 +60,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -68,11 +68,13 @@ import org.apache.commons.lang3.StringUtils;
 @Experimental
 public class CategoriesImpl implements Categories
 {
+    static final String INCLUDE_COUNT_PARAM = "count";
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
+    static final String NO_PERMISSION_TO_CHANGE_CONTENT = "Current user does not have change permission to content";
     static final String NOT_NULL_OR_EMPTY = "Category name must not be null or empty";
-    static final String INVALID_NODE_TYPE = "Cannot categorize this node type";
+    static final String INVALID_NODE_TYPE = "Cannot categorize this type of node";
 
     private final AuthorityService authorityService;
     private final CategoryService categoryService;
@@ -81,8 +83,8 @@ public class CategoriesImpl implements Categories
     private final PermissionService permissionService;
     private final TypeConstraint typeConstraint;
 
-    public CategoriesImpl(AuthorityService authorityService, CategoryService categoryService, Nodes nodes, NodeService nodeService, PermissionService permissionService,
-    TypeConstraint typeConstraint)
+    public CategoriesImpl(AuthorityService authorityService, CategoryService categoryService, Nodes nodes, NodeService nodeService,
+        PermissionService permissionService, TypeConstraint typeConstraint)
     {
         this.authorityService = authorityService;
         this.categoryService = categoryService;
@@ -93,63 +95,89 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public Category getCategoryById(final String id, final Parameters params)
+    public Category getCategoryById(final StoreRef storeRef, final String id, final Parameters parameters)
     {
-        final NodeRef nodeRef = getCategoryNodeRef(id);
+        final NodeRef nodeRef = getCategoryNodeRef(storeRef, id);
         if (isRootCategory(nodeRef))
         {
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
         }
 
-        return mapToCategory(nodeRef);
+        final Category category = mapToCategory(nodeRef);
+
+        if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
+        {
+            final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
+            category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
+        }
+
+        return category;
     }
 
     @Override
-    public List<Category> createSubcategories(String parentCategoryId, List<Category> categories, Parameters parameters)
+    public List<Category> createSubcategories(final StoreRef storeRef, final String parentCategoryId, final List<Category> categories, final Parameters parameters)
     {
         verifyAdminAuthority();
-        final NodeRef parentNodeRef = getCategoryNodeRef(parentCategoryId);
-        final List<NodeRef> categoryNodeRefs = categories.stream()
+        final NodeRef parentNodeRef = getCategoryNodeRef(storeRef, parentCategoryId);
+
+        return categories.stream()
                 .map(c -> createCategoryNodeRef(parentNodeRef, c))
-                .collect(Collectors.toList());
-        return categoryNodeRefs.stream()
                 .map(this::mapToCategory)
+                .peek(category -> {
+                    if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
+                    {
+                        category.setCount(0);
+                    }
+                })
                 .collect(Collectors.toList());
     }
 
     @Override
-    public CollectionWithPagingInfo<Category> getCategoryChildren(String parentCategoryId, Parameters params)
+    public List<Category> getCategoryChildren(final StoreRef storeRef, final String parentCategoryId, final Parameters parameters)
     {
-        final NodeRef parentNodeRef = getCategoryNodeRef(parentCategoryId);
-        final List<ChildAssociationRef> childCategoriesAssocs = nodeService.getChildAssocs(parentNodeRef).stream()
-                .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
-                .collect(Collectors.toList());
-        final List<Category> categories = childCategoriesAssocs.stream()
-                .map(c -> mapToCategory(c.getChildRef()))
-                .collect(Collectors.toList());
-        return ListPage.of(categories, params.getPaging());
+        final NodeRef parentNodeRef = getCategoryNodeRef(storeRef, parentCategoryId);
+        final List<Category> categories = nodeService.getChildAssocs(parentNodeRef).stream()
+            .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
+            .map(ChildAssociationRef::getChildRef)
+            .map(this::mapToCategory)
+            .collect(Collectors.toList());
+
+        if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
+        {
+            final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
+            categories.forEach(category -> category.setCount(categoriesCount.getOrDefault(category.getId(), 0)));
+        }
+
+        return categories;
     }
 
     @Override
-    public Category updateCategoryById(final String id, final Category fixedCategoryModel)
+    public Category updateCategoryById(final StoreRef storeRef, final String id, final Category fixedCategoryModel, final Parameters parameters)
     {
         verifyAdminAuthority();
-        final NodeRef categoryNodeRef = getCategoryNodeRef(id);
+        final NodeRef categoryNodeRef = getCategoryNodeRef(storeRef, id);
         if (isRootCategory(categoryNodeRef))
         {
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
         }
 
         validateCategoryFields(fixedCategoryModel);
+        final Category category = mapToCategory(changeCategoryName(categoryNodeRef, fixedCategoryModel.getName()));
 
-        return mapToCategory(changeCategoryName(categoryNodeRef, fixedCategoryModel.getName()));
+        if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
+        {
+            final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
+            category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
+        }
+
+        return category;
     }
 
     @Override
-    public void deleteCategoryById(String id, Parameters parameters)
+    public void deleteCategoryById(final StoreRef storeRef, final String id, final Parameters parameters)
     {
         verifyAdminAuthority();
-        final NodeRef nodeRef = getCategoryNodeRef(id);
+        final NodeRef nodeRef = getCategoryNodeRef(storeRef, id);
         if (isRootCategory(nodeRef))
         {
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{id});
@@ -159,7 +187,24 @@ public class CategoriesImpl implements Categories
     }
 
     @Override
-    public List<Category> linkNodeToCategories(final String nodeId, final List<Category> categoryLinks)
+    public List<Category> listCategoriesForNode(final String nodeId, final Parameters parameters)
+    {
+        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        verifyReadPermission(contentNodeRef);
+        verifyNodeType(contentNodeRef);
+
+        final Serializable currentCategories = nodeService.getProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
+        if (currentCategories == null)
+        {
+            return Collections.emptyList();
+        }
+        final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
+
+        return actualCategories.stream().map(this::mapToCategory).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Category> linkNodeToCategories(final StoreRef storeRef, final String nodeId, final List<Category> categoryLinks, final Parameters parameters)
     {
         if (CollectionUtils.isEmpty(categoryLinks))
         {
@@ -174,7 +219,8 @@ public class CategoriesImpl implements Categories
             .filter(Objects::nonNull)
             .map(Category::getId)
             .filter(StringUtils::isNotEmpty)
-            .map(this::getCategoryNodeRef)
+            .distinct()
+            .map(id -> getCategoryNodeRef(storeRef, id))
             .collect(Collectors.toList());
 
         if (CollectionUtils.isEmpty(categoryNodeRefs) || isRootCategoryPresent(categoryNodeRefs))
@@ -187,6 +233,35 @@ public class CategoriesImpl implements Categories
         return categoryNodeRefs.stream().map(this::mapToCategory).collect(Collectors.toList());
     }
 
+    @Override
+    public void unlinkNodeFromCategory(final StoreRef storeRef, final String nodeId, final String categoryId, final Parameters parameters)
+    {
+        final NodeRef categoryNodeRef = getCategoryNodeRef(storeRef, categoryId);
+        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        verifyChangePermission(contentNodeRef);
+        verifyNodeType(contentNodeRef);
+
+        if (isCategoryAspectMissing(contentNodeRef))
+        {
+            throw new InvalidArgumentException("Node with id: " + nodeId + " does not belong to a category");
+        }
+        if (isRootCategory(categoryNodeRef))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_CATEGORY, new String[]{categoryId});
+        }
+
+        final Collection<NodeRef> allCategories = removeCategory(contentNodeRef, categoryNodeRef);
+
+        if (allCategories.size()==0)
+        {
+            nodeService.removeAspect(contentNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+            nodeService.removeProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
+            return;
+        }
+
+        nodeService.setProperty(contentNodeRef, ContentModel.PROP_CATEGORIES, (Serializable) allCategories);
+    }
+
     private void verifyAdminAuthority()
     {
         if (!authorityService.hasAdminAuthority())
@@ -195,11 +270,19 @@ public class CategoriesImpl implements Categories
         }
     }
 
+    private void verifyReadPermission(final NodeRef nodeRef)
+    {
+        if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+        {
+            throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
+        }
+    }
+
     private void verifyChangePermission(final NodeRef nodeRef)
     {
         if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
         {
-            throw new PermissionDeniedException(NO_PERMISSION_TO_READ_CONTENT);
+            throw new PermissionDeniedException(NO_PERMISSION_TO_CHANGE_CONTENT);
         }
     }
 
@@ -207,7 +290,7 @@ public class CategoriesImpl implements Categories
     {
         if (!typeConstraint.matches(nodeRef))
         {
-            throw new UnsupportedResourceOperationException(INVALID_NODE_TYPE);
+            throw new InvalidNodeTypeException(INVALID_NODE_TYPE);
         }
     }
 
@@ -215,13 +298,14 @@ public class CategoriesImpl implements Categories
      * This method gets category NodeRef for a given category id.
      * If '-root-' is passed as category id, then it's retrieved as a call to {@link org.alfresco.service.cmr.search.CategoryService#getRootCategoryNodeRef}
      * In all other cases it's retrieved as a node of a category type {@link #validateCategoryNode(String)}
+     * @param storeRef Reference to node store.
      * @param nodeId category node id
      * @return NodRef of category node
      */
-    private NodeRef getCategoryNodeRef(String nodeId)
+    private NodeRef getCategoryNodeRef(StoreRef storeRef, String nodeId)
     {
         return PATH_ROOT.equals(nodeId) ?
-                categoryService.getRootCategoryNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE)
+                categoryService.getRootCategoryNodeRef(storeRef)
                         .orElseThrow(() -> new EntityNotFoundException(nodeId)) :
                 validateCategoryNode(nodeId);
     }
@@ -342,6 +426,22 @@ public class CategoriesImpl implements Categories
     }
 
     /**
+     * Remove specified category from present categories.
+     * @param contentNodeRef the nodeRef that contains the categories.
+     * @param categoryToRemove category that should be removed.
+     * @return updated category list.
+     */
+    private Collection<NodeRef> removeCategory(final NodeRef contentNodeRef, final NodeRef categoryToRemove)
+    {
+        final Serializable currentCategories = nodeService.getProperty(contentNodeRef, ContentModel.PROP_CATEGORIES);
+        final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
+        final Collection<NodeRef> updatedCategories = new HashSet<>(actualCategories);
+        updatedCategories.remove(categoryToRemove);
+
+        return updatedCategories;
+    }
+
+    /**
      * Add to or update node's property cm:categories containing linked category references.
      *
      * @param nodeRef Node reference.
@@ -360,5 +460,19 @@ public class CategoriesImpl implements Categories
             final Collection<NodeRef> allCategories = mergeCategories(currentCategories, categoryNodeRefs);
             nodeService.setProperty(nodeRef, ContentModel.PROP_CATEGORIES, (Serializable) allCategories);
         }
+    }
+
+    /**
+     * Get categories by usage count. Result is a map of category IDs (short form - UUID) as key and usage count as value.
+     *
+     * @param storeRef Reference to node store.
+     * @return Map of categories IDs and usage count.
+     */
+    private Map<String, Integer> getCategoriesCount(final StoreRef storeRef)
+    {
+        final String idPrefix = storeRef + "/";
+        return categoryService.getTopCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE)
+            .stream()
+            .collect(Collectors.toMap(pair -> pair.getFirst().toString().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
     }
 }

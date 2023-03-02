@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,8 @@
 package org.alfresco.rest.model;
 
 import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -73,4 +75,65 @@ public class RestTagModel extends TagModel implements IRestModel<RestTagModel>
         this.count = count;
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RestTagModel tagModel = (RestTagModel) o;
+        return Objects.equals(id, tagModel.id) && Objects.equals(tag, tagModel.tag) && Objects.equals(count, tagModel.count);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, tag, count);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestTagModel{" + "id='" + id + ", tag='" + tag + '\'' + ", count=" + count + '\'' + '}';
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String id;
+        private String tag;
+        private Integer count;
+
+        public Builder id(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public Builder tag(String tag)
+        {
+            this.tag = tag;
+            return this;
+        }
+
+        public Builder count(Integer count)
+        {
+            this.count = count;
+            return this;
+        }
+
+        public RestTagModel create()
+        {
+            final RestTagModel tag = new RestTagModel();
+            tag.setId(id);
+            tag.setTag(this.tag);
+            tag.setCount(count);
+            return tag;
+        }
+    }
 }    

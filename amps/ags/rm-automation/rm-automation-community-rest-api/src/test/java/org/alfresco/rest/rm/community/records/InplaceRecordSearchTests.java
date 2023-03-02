@@ -33,7 +33,9 @@ import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.json.JSONObject;
@@ -97,9 +99,10 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
     @Test
     public void searchForInplaceRecord() {
         // And a document that isn't a record
+        final String fileName = "File" + RandomData.getRandomAlphanumeric();
         uploadedDocbyCollabUser = dataContent.usingSite(privateSite)
             .usingUser(siteCollaborator)
-            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            .createContent(new FileModel(fileName, FileType.fromName(fileName + "." + CMISUtil.DocumentType.TEXT_PLAIN.extention)));
 
         assertNotNull(uploadedDocbyCollabUser.getNodeRef());
 

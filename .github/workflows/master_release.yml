@@ -27,16 +27,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: [run_ci]
     if: >
-      !failure() &&
+      !(failure() || cancelled()) &&
       !contains(github.event.head_commit.message, '[no release]') &&
       github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+        with:
+          persist-credentials: false
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.33.0
         with:
           username: ${{ env.GIT_USERNAME }}
           email: ${{ env.GIT_EMAIL }}
@@ -53,16 +55,18 @@ jobs:
     runs-on: ubuntu-latest
     needs: [push_to_nexus]
     if: >
-      !failure() &&
+      !(failure() || cancelled()) &&
       !contains(github.event.head_commit.message, '[no downstream]') &&
       github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+        with:
+          persist-credentials: false
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/configure-git-author@v1.33.0
         with:
           username: ${{ env.GIT_USERNAME }}
           email: ${{ env.GIT_EMAIL }}

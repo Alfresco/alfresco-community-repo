@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,7 +26,6 @@
 package org.alfresco.repo.tagging;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
@@ -41,9 +40,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
@@ -64,11 +64,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -1575,4 +1577,27 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
 
+    @Experimental
+    @Override
+    public List<Pair<String, NodeRef>> createTags(final StoreRef storeRef, final List<String> tagNames)
+    {
+        updateTagBehaviour.disable();
+        createTagBehaviour.disable();
+        try
+        {
+            return tagNames.stream()
+                .map(String::toLowerCase)
+                .peek(tagName -> categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, tagName, false).stream()
+                    .filter(association -> Objects.nonNull(association.getChildRef()))
+                    .findAny()
+                    .ifPresent(association -> { throw new DuplicateChildNodeNameException(association.getParentRef(), association.getTypeQName(), tagName, null); }))
+                .map(tagName -> new Pair<>(tagName, getTagNodeRef(storeRef, tagName, true)))
+                .collect(Collectors.toList());
+        }
+        finally
+        {
+            updateTagBehaviour.enable();
+            createTagBehaviour.enable();
+        }
+    }
 }

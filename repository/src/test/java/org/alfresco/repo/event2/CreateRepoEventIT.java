@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,6 +38,7 @@ import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -50,7 +51,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
 {
-
     @Autowired
     private NodeDAO nodeDAO;
 
@@ -63,6 +63,9 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_TITLE, "test title");
         propertyMap.put(ContentModel.PROP_NAME, name);
+        final MLText localizedDescription = new MLText(germanLocale, "german description");
+        localizedDescription.addValue(defaultLocale, "default description");
+        propertyMap.put(ContentModel.PROP_DESCRIPTION, localizedDescription);
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
 
         final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
@@ -91,6 +94,10 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(nodeResource.getPrimaryHierarchy());
         assertNotNull("Default aspects were not added. ", nodeResource.getAspectNames());
         assertEquals("test title", getProperty(nodeResource, "cm:title"));
+        assertEquals("test title", getLocalizedProperty(nodeResource, "cm:title", defaultLocale));
+        assertEquals("default description", getProperty(nodeResource, "cm:description"));
+        assertEquals("default description", getLocalizedProperty(nodeResource, "cm:description", defaultLocale));
+        assertEquals("german description", getLocalizedProperty(nodeResource, "cm:description", germanLocale));
         assertNull("There is no content.", nodeResource.getContent());
 
         assertNotNull("Missing createdByUser property.", nodeResource.getCreatedByUser());

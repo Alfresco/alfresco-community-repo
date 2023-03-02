@@ -542,8 +542,8 @@ public class Node extends ModelRequest<Node>
                 renditionId);
         RestResponse response = restWrapper.process(request);
         int retry = 0;
-        //Multiplied by '4' because AI rendition test cases need more time (~30 seconds) - see ACS-2158
-        while (Integer.valueOf(response.getStatusCode()).equals(HttpStatus.NOT_FOUND.value()) && retry < (4 * Utility.retryCountSeconds))
+        //Multiplied by '8' because AI rendition test cases need more time (~30 seconds) - see ACS-2158
+        while (!Integer.valueOf(response.getStatusCode()).equals(HttpStatus.OK.value()) && retry < (8 * Utility.retryCountSeconds))
         {
             Utility.waitToLoopTime(1);
             response = restWrapper.process(request);
@@ -1113,6 +1113,17 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
+     * Get linked categories performing GET cal on "/nodes/{nodeId}/category-links"
+     *
+     * @return categories which are linked from content
+     */
+    public RestCategoryModelsCollection getLinkedCategories()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/category-links", repoModel.getNodeRef());
+        return restWrapper.processModels(RestCategoryModelsCollection.class, request);
+    }
+
+    /**
      * Link content to category performing POST call on "/nodes/{nodeId}/category-links"
      *
      * @param categoryLink - contains category ID
@@ -1134,5 +1145,16 @@ public class Node extends ModelRequest<Node>
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, arrayToJson(categoryLinks), "nodes/{nodeId}/category-links", repoModel.getNodeRef());
         return restWrapper.processModels(RestCategoryModelsCollection.class, request);
+    }
+
+    /**
+     * Unlink content from a category performing a DELETE call on "nodes/{nodeId}/category-links/{categoryId}"
+     *
+     * @param categoryId the id of the category to be unlinked from content
+     */
+    public void unlinkFromCategory(String categoryId)
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/category-links/{categoryId}", repoModel.getNodeRef(), categoryId);
+        restWrapper.processEmptyModel(request);
     }
 }

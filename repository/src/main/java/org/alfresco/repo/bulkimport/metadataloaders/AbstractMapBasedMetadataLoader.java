@@ -30,12 +30,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.bulkimport.ImportableItem.ContentAndMetadata;
 import org.alfresco.repo.bulkimport.MetadataLoader;
 import org.alfresco.repo.bulkimport.impl.FileUtils;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
@@ -60,6 +62,9 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
     
     private final static String DEFAULT_MULTI_VALUED_SEPARATOR = ",";
     
+    private final List<QName> TYPES_TO_HANDLE_EMPTY_VALUE = List.of(DataTypeDefinition.DATE, DataTypeDefinition.DATETIME,
+            DataTypeDefinition.FLOAT, DataTypeDefinition.DOUBLE, DataTypeDefinition.INT, DataTypeDefinition.LONG);
+
     protected final NamespaceService  namespaceService;
     protected final DictionaryService dictionaryService; 
     protected final String            multiValuedSeparator;
@@ -164,7 +169,7 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
                         else
                         {
                             // Single value property
-                            metadata.addProperty(name, metadataProperties.get(key));
+                            metadata.addProperty(name, handleValue(propertyDefinition, metadataProperties.get(key)));
                         }
                     }
                     else
@@ -185,6 +190,19 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
                 log.warn("Metadata file '" + metadataFilePath + "' is not readable.");
             }
         }
+    }
+
+    private Serializable handleValue(PropertyDefinition pd, Serializable value)
+    {
+        if (pd != null && TYPES_TO_HANDLE_EMPTY_VALUE.contains(pd.getDataType().getName()))
+        {
+            if (value != null && value.toString().trim().length() == 0)
+            {
+                value = null;
+            }
+        }
+
+        return value;
     }
 
 }

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>20.58-SNAPSHOT</version>
+    <version>20.90-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -53,17 +53,17 @@
         <dependency.alfresco-transform-service.version>2.0.0</dependency.alfresco-transform-service.version>
         <dependency.alfresco-transform-core.version>3.0.0</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.5</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.16</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.18</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.3.23</dependency.spring.version>
+        <dependency.spring.version>5.3.25</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.14.0</dependency.jackson.version>
-        <dependency.cxf.version>3.5.4</dependency.cxf.version>
+        <dependency.cxf.version>3.5.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.33</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.9.0</dependency.mockito-core.version>
-        <dependency.assertj.version>3.23.1</dependency.assertj.version>
+        <dependency.assertj.version>3.24.2</dependency.assertj.version>
         <dependency.org-json.version>20220320</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
@@ -109,18 +109,18 @@
         <dependency.jakarta-json-path.version>2.7.0</dependency.jakarta-json-path.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.4.0-A1</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.6.0-A1</alfresco.aos-module.version>
+        <alfresco.googledrive.version>3.4.0-M1</alfresco.googledrive.version>
+        <alfresco.aos-module.version>1.6.0-M1</alfresco.aos-module.version>
         <alfresco.api-explorer.version>7.3.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
 
-        <dependency.postgresql.version>42.5.0</dependency.postgresql.version>
+        <dependency.postgresql.version>42.5.2</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.57</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.58</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.2.0</dependency.rest-assured.version>
         <dependency.tas-email.version>1.11</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.7</dependency.tas-webdav.version>

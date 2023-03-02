@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -44,7 +45,10 @@ import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -275,7 +279,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
     HashMap<String, String> prefixLookup = new HashMap<String, String>();
 
-    private String getPrefix(String uri)
+    protected String getPrefix(String uri)
     {
         String prefix = prefixLookup.get(uri);
         if (prefix == null)
@@ -545,6 +549,58 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     }
 
     public abstract List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);
+
+    /**
+     * Creates search query parameters used to get top categories.
+     * Can be used as a base both wih SOLR and ES.
+     * @param storeRef Node store reference
+     * @param aspectName Aspect name. "cm:generalclassifiable" aspect should be used for usual cases.
+     *                   It is possible to use a custom aspect but it must have valid category property
+     * @param count Will be used as faceted results limit, when system has very many categories this must be reflecting that number
+     * @return SearchParameters to perform search for top categories.
+     */
+    protected SearchParameters createSearchTopCategoriesParameters(StoreRef storeRef, QName aspectName, int count) {
+        final AspectDefinition aspectDefinition = dictionaryService.getAspect(aspectName);
+        if(aspectDefinition == null)
+        {
+            throw new IllegalStateException("Unknown aspect");
+        }
+        final Map<QName, PropertyDefinition> aspectProperties = aspectDefinition.getProperties();
+        final Optional<QName> catProperty = aspectProperties.entrySet().stream()
+                //for backwards compatibility I'm leaving the part where we get custom category aspects
+                .filter(ap -> ContentModel.ASPECT_GEN_CLASSIFIABLE.isMatch(aspectName) || isValidCategoryTypeProperty(aspectName, ap))
+                .map(Map.Entry::getKey)
+                .findFirst();
+
+        return catProperty.map(cp -> {
+            final String field = "@" + cp;
+            final SearchParameters sp = new SearchParameters();
+            sp.addStore(storeRef);
+            sp.setQuery(cp + ":*");
+            //we only care about faceted results and don't need query results so we can limit them to minimum
+            sp.setMaxItems(1);
+            sp.setSkipCount(0);
+            final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(field);
+            ff.setLimitOrNull(count < 0 ? null : count);
+            sp.addFieldFacet(ff);
+            return sp;
+        })
+                .orElseThrow(() -> new IllegalStateException("Aspect does not have category property mirroring the aspect name"));
+    }
+
+    /**
+     * Checks whether given aspect property definition is valid category property
+
+     * @param aspectName Aspect name
+     * @param propertyDef Aspect property definition.
+     * @return is valid category property
+     */
+    private boolean isValidCategoryTypeProperty(QName aspectName, Map.Entry<QName, PropertyDefinition> propertyDef)
+    {
+        return propertyDef.getKey().getNamespaceURI().equals(aspectName.getNamespaceURI()) &&
+                propertyDef.getKey().getLocalName().equals(aspectName.getLocalName()) &&
+                DataTypeDefinition.CATEGORY.equals(propertyDef.getValue().getDataType().getName());
+    }
 
     @Override
     @Experimental

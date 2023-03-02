@@ -35,11 +35,11 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Prepare environment"
+      - name: "Prepare maven cache and check compilation"
         run: bash ./scripts/ci/prepare.sh
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
@@ -49,16 +49,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request') &&
+      ((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.33.0
+        continue-on-error: true
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
       - name: "Clean Maven cache"
@@ -74,8 +75,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
@@ -111,8 +112,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -132,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
       github.event_name != 'pull_request' &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]')) &&
@@ -144,8 +145,8 @@ jobs:
         version: ['10.2.18', '10.4', '10.5']
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -162,7 +163,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]')) &&
@@ -170,8 +171,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.6 database"
@@ -188,7 +189,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[latest db]') ||
       contains(github.event.head_commit.message, '[db]')) &&
@@ -196,8 +197,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -214,15 +215,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
       !contains(github.event.head_commit.message, '[skip db]')) ||
       contains(github.event.head_commit.message, '[db]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 13.7 database"
@@ -246,8 +247,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.4 database"
@@ -269,8 +270,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -314,8 +315,8 @@ jobs:
             mvn-options: '-Dindex.subsystem.name=solr6'
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -336,7 +337,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip tas]')) ||
       contains(github.event.head_commit.message, '[tas]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -373,8 +374,8 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -410,8 +411,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 14.4 database"
@@ -426,7 +427,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]')) ||
       contains(github.event.head_commit.message, '[ags]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -439,8 +440,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -457,7 +458,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]')) ||
       contains(github.event.head_commit.message, '[ags on MySQL]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -470,8 +471,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -488,7 +489,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || contains(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]') && !contains(github.event.head_commit.message, '[skip tas]')) ||
       (contains(github.event.head_commit.message, '[ags]') && contains(github.event.head_commit.message, '[tas]'))) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -497,8 +498,8 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.30.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.30.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

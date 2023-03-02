@@ -35,10 +35,12 @@ import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @RelationshipResource(name = "subcategories",  entityResource = CategoriesEntityResource.class, title = "Subcategories")
-public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>
+public class SubcategoriesRelation implements RelationshipResourceAction.Create<Category>,
+                                              RelationshipResourceAction.Read<Category>
 {
 
     private final Categories categories;
@@ -48,6 +50,9 @@ public class SubcategoriesRelation implements RelationshipResourceAction.Create<
         this.categories = categories;
     }
 
+    /**
+     * POST /categories/{categoryId}/subcategories
+     */
     @WebApiDescription(title = "Create a category",
             description = "Creates one or more categories under a parent category",
             successStatus = HttpServletResponse.SC_CREATED)
@@ -55,5 +60,17 @@ public class SubcategoriesRelation implements RelationshipResourceAction.Create<
     public List<Category> create(String parentCategoryId, List<Category> categoryList, Parameters parameters)
     {
         return categories.createSubcategories(parentCategoryId, categoryList, parameters);
+    }
+
+    /**
+     * GET /categories/{categoryId}/subcategories
+     */
+    @WebApiDescription(title = "List category direct children",
+            description = "Lists direct children of a parent category",
+            successStatus = HttpServletResponse.SC_OK)
+    @Override
+    public CollectionWithPagingInfo<Category> readAll(String parentCategoryId, Parameters params)
+    {
+        return categories.getCategoryChildren(parentCategoryId, params);
     }
 }

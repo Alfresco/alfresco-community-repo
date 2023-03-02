@@ -1,0 +1,8 @@
+logger.alfresco-repo-content-transform-TransformerDebug.name=org.alfresco.repo.content.transform.TransformerDebug
+logger.alfresco-repo-content-transform-TransformerDebug.level=debug
+
+logger.alfresco-util-exec-RuntimeExecBootstrapBean.name=org.alfresco.util.exec.RuntimeExecBootstrapBean
+logger.alfresco-util-exec-RuntimeExecBootstrapBean.level=debug
+
+logger.alfresco-util-exec-RuntimeExec.name=org.alfresco.util.exec.RuntimeExec
+logger.alfresco-util-exec-RuntimeExec.level=debug

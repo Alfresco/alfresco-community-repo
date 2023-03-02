@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -63,6 +64,7 @@ import javax.json.JsonObject;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestActionConstraintModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
+import org.alfresco.rest.model.RestPaginationModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.constants.UserRole;
@@ -265,6 +267,38 @@ public class CreateRulesTests extends RulesRestTest
                 rules.getEntries().get(i).onModel()
                     .assertThat().field("id").isNotNull()
                     .assertThat().field("name").is(ruleNames.get(i)));
+    }
+
+    /** Check we can create over 100 rules and get them all back in response. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createOver100Rules()
+    {
+        STEP("Create a list of 120 rules in one POST request");
+        final int ruleCount = 120;
+        final String ruleNamePrefix = "multiRule";
+        final List<RestRuleModel> ruleModels = IntStream.rangeClosed(1, ruleCount)
+                .mapToObj(i -> rulesUtils.createRuleModel(ruleNamePrefix + i))
+                .collect(Collectors.toList());
+
+        final FolderModel aFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(aFolder).usingDefaultRuleSet()
+                .createListOfRules(ruleModels);
+
+        restClient.assertStatusCodeIs(CREATED);
+
+        assertEquals("Unexpected number of rules received in response.", ruleCount, rules.getEntries().size());
+        IntStream.range(0, ruleModels.size()).forEach(i ->
+                rules.getEntries().get(i).onModel()
+                        .assertThat().field("id").isNotNull()
+                        .assertThat().field("name").is(ruleNamePrefix + (i + 1)));
+
+        rules.getPagination()
+                .assertThat().field("count").is(ruleCount)
+                .assertThat().field("totalItems").is(ruleCount)
+                .assertThat().field("maxItems").is(ruleCount)
+                .assertThat().field("skipCount").is(0)
+                .assertThat().field("hasMoreItems").is(false);
+
     }
 
     /** Try to create several rules with an error in one of them. */

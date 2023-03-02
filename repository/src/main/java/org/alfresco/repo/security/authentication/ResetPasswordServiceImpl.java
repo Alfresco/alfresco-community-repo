@@ -540,14 +540,12 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
         if(!StringUtils.isEmpty(clientApp.getProperty("workspaceUrl")))
         {
-            String workspaceUrl = clientApp.getProperty("workspaceUrl");
-
-                sb.append(getRepoBaseUrl(workspaceUrl,""));
-                LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
-                sb.append("?key=").append(key)
-                        .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
-
-
+            String workspaceUrlPlaceholder = clientApp.getProperty("workspaceUrlPlaceholder");
+            String workSpaceUrl = getRepoBaseUrl(workspaceUrlPlaceholder,"");
+            sb.append(UrlUtil.replaceWorkSpaceUrlPlaceholder(pageUrl,workSpaceUrl));
+            LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
+            sb.append("?key=").append(key)
+                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
         }
         else {
             if (StringUtils.isEmpty(pageUrl)) {

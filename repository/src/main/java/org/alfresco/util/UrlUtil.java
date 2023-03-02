@@ -42,7 +42,9 @@ public class UrlUtil
     // ${alfrescoUrl} placeholder
     public static final Pattern REPO_PATTERN = Pattern.compile("\\$\\{alfrescoUrl\\}");
 
-    public static final Pattern WORKSPACE_PATTERN = Pattern.compile("\\$\\{repoBaseUrl\\}");
+    public static final Pattern REPOBASE_PATTERN = Pattern.compile("\\$\\{repoBaseUrl\\}");
+
+    public static final Pattern WORKSPACE_PATTERN = Pattern.compile("\\$\\{workspaceUrl\\}");
 
 
     /**
@@ -159,10 +161,32 @@ public class UrlUtil
      */
     public static String getWorkspaceUrl(SysAdminParams sysAdminParams)
     {
-        return buildUrl(
+        return buildWorkspaceUrl(
                 sysAdminParams.getAlfrescoProtocol(),
                 sysAdminParams.getAlfrescoHost(),
-                sysAdminParams.getAlfrescoPort(),"");
+                sysAdminParams.getAlfrescoPort());
+    }
+
+    protected static String buildWorkspaceUrl(String workSpaceProtocol, String workspaceHost, int workspacePort) {
+        StringBuilder workspaceUrl = new StringBuilder();
+        workspaceUrl.append(workSpaceProtocol);
+        workspaceUrl.append("://");
+        workspaceUrl.append(workspaceHost);
+        if ("http".equals(workSpaceProtocol) && workspacePort == 80)
+        {
+            // Not needed
+        }
+        else if ("https".equals(workSpaceProtocol) && workspacePort == 443)
+        {
+            // Not needed
+        }
+        else
+        {
+            workspaceUrl.append(':');
+            workspaceUrl.append(workspacePort);
+        }
+
+        return workspaceUrl.toString();
     }
 
     /**
@@ -178,9 +202,18 @@ public class UrlUtil
     {
         if (value != null)
         {
-            return WORKSPACE_PATTERN.matcher(value).replaceAll(getWorkspaceUrl(sysAdminParams));
+            return REPOBASE_PATTERN.matcher(value).replaceAll(getWorkspaceUrl(sysAdminParams));
         }
         return value;
+    }
+
+    public static String replaceWorkSpaceUrlPlaceholder(String pageUrl,String workspaceUrl)
+    {
+        if (pageUrl != null)
+        {
+            return WORKSPACE_PATTERN.matcher(pageUrl).replaceAll(workspaceUrl);
+        }
+        return pageUrl;
     }
 
 }

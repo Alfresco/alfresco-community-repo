@@ -547,8 +547,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
             sb.append("?key=").append(key)
                     .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
         }
-        else {
-            if (StringUtils.isEmpty(pageUrl)) {
+        else if(StringUtils.isEmpty(pageUrl)) {
                 sb.append(UrlUtil.getShareUrl(sysAdminParams));
 
                 LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
@@ -560,7 +559,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
             sb.append("?key=").append(key)
                     .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
-        }
+
         return sb.toString();
     }
 

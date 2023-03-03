@@ -188,24 +188,25 @@ public class TagsImpl implements Tags
 
     public NodeRef validateTag(String tagId)
     {
-    	NodeRef tagNodeRef = nodes.validateNode(tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
-    }
+		NodeRef tagNodeRef = nodes.validateNode(tagId);
+		String tagName = taggingService.getTagName(tagNodeRef);
+		if( tagNodeRef == null || !taggingService.isTag(tagNodeRef.getStoreRef(), tagName))
+		{
+			throw new EntityNotFoundException(tagId);
+		}
+		return tagNodeRef;
+	}
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
-    	NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
-    }
-
+		NodeRef tagNodeRef = nodes.validateNode(storeRef,tagId);
+		String tagName = taggingService.getTagName(tagNodeRef);
+		if( tagNodeRef == null || !taggingService.isTag(tagNodeRef.getStoreRef(), tagName))
+		{
+			throw new EntityNotFoundException(tagId);
+		}
+		return tagNodeRef;
+	}
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag)
     {
     	try
@@ -245,7 +246,10 @@ public class TagsImpl implements Tags
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
 		NodeRef nodeRef = validateTag(nodeId);
-
+		if( nodeRef == null )
+		{
+			throw new EntityNotFoundException(nodeId);
+		}
 		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
     	Integer totalItems = results.getTotalResultCount().getFirst();
     	List<Pair<NodeRef, String>> page = results.getPage();

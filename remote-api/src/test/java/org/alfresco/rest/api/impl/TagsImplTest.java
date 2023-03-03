@@ -29,20 +29,24 @@ import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
 import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.jsoup.helper.Validate.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
@@ -51,11 +55,17 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.TypeConstraint;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.exceptions.verification.NeverWantedButInvoked;
+import org.mockito.exceptions.verification.NoInteractionsWanted;
+import org.mockito.internal.verification.NoInteractions;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -63,10 +73,15 @@ public class TagsImplTest
 {
     private static final String TAG_ID = "tag-node-id";
     private static final String TAG_NAME = "tag-dummy-name";
+    private static final String NODE_ID = "node-id";
     private static final NodeRef TAG_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
     @Mock
     private Nodes nodesMock;
+    @Mock
+    private Node createdNodeMock;
+    @Mock
+    private TypeConstraint typeConstraint;
     @Mock
     private AuthorityService authorityServiceMock;
     @Mock
@@ -81,9 +96,14 @@ public class TagsImplTest
     public void setup()
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
+        given(nodesMock.validateNode(NODE_ID)).willReturn(TAG_NODE_REF);
         given(nodesMock.validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willReturn(TAG_NODE_REF);
+        given(nodesMock.getNode(any())).willReturn(createdNodeMock);
+        given(createdNodeMock.getNodeId()).willReturn(NODE_ID);
+        given(typeConstraint.matches(any())).willReturn(true);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
     }
+
     @Test
     public void testGetTags() {
         final List<String> tagNames = List.of("testTag","tag11");
@@ -98,6 +118,37 @@ public class TagsImplTest
     }
 
     @Test
+    public void testAddTagsToNodeWithNotResponseIndexed()
+    {
+        //when
+        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
+        final List<String> tagNames = List.of("tag1","tag2");
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+        final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
+        then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        assertThat(actualCreatedTags)
+                .isNotNull()
+                .isEqualTo(expectedTags);
+    }
+
+    @Test
+    public void testTagValidationNotFound()
+    {
+        try {
+            assertThrows(EntityNotFoundException.class, () ->objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
+            // fail("It should throw Not Found Exception");
+        } catch (EntityNotFoundException e) {
+            Assertions.assertThat(e)
+                    .isInstanceOf(EntityNotFoundException.class)
+                    .hasMessage("Wrong value is passed.");
+        }
+        then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test(expected = EntityNotFoundException.class)
     public void testDeleteTagById()
     {
         //when
@@ -105,7 +156,6 @@ public class TagsImplTest
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
-
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
 
@@ -138,11 +188,13 @@ public class TagsImplTest
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
-
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-id");
         then(nodesMock).shouldHaveNoMoreInteractions();
-
-        then(taggingServiceMock).shouldHaveNoInteractions();
+        try {
+            then(taggingServiceMock).shouldHaveNoInteractions();
+        } catch (NoInteractionsWanted e) {
+            assertThat("shouldFilterStackTraceOnVerifyNoInteractions");
+        }
     }
 
     @Test

@@ -76,17 +76,11 @@ function remoteBranchExists() {
   local REMOTE_REPO="${1}"
   local BRANCH="${2}"
 
-  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH_NAME}" &>/dev/null
+  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH}" &>/dev/null
 }
 
 function identifyUpstreamSourceBranch() {
   local UPSTREAM_REPO="${1}"
-
-  # if it's a pull request, use the source branch name (if it exists)
-  if isPullRequestBuild && remoteBranchExists "${UPSTREAM_REPO}" "${PULL_REQUEST_BRANCH}" ; then
-    echo "${PULL_REQUEST_BRANCH}"
-    exit 0
-  fi
 
   # otherwise use the current branch name (or in case of PRs, the target branch name)
   if remoteBranchExists "${UPSTREAM_REPO}" "${BRANCH_NAME}" ; then
@@ -181,7 +175,7 @@ function retieveLatestTag() {
 
   local LOCAL_PATH="/tmp/$(basename "${REPO%.git}")"
 
-  git clone -q -b "${BRANCH_NAME}" "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REPO}" "${LOCAL_PATH}"
+  git clone -q -b "${BRANCH}" "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REPO}" "${LOCAL_PATH}"
 
   pushd "${LOCAL_PATH}" >/dev/null
   git describe --abbrev=0 --tags

@@ -1,0 +1,40 @@
+version: "3"
+
+services:
+  postgres:
+    profiles: ["postgres"]
+    image: postgres:${POSTGRES_VERSION}
+    environment:
+      - POSTGRES_PASSWORD=alfresco
+      - POSTGRES_USER=alfresco
+      - POSTGRES_DB=alfresco
+    command: postgres -c max_connections=300
+    ports:
+      - "5433:5432"
+  mariadb:
+    profiles: ["mariadb"]
+    image: mariadb:${MARIADB_VERSION}
+    command: --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      - MYSQL_ROOT_PASSWORD=alfresco
+      - MYSQL_USER=alfresco
+      - MYSQL_DATABASE=alfresco
+      - MYSQL_PASSWORD=alfresco
+    ports:
+      - "3307:3306"
+  mysql:
+    profiles: ["mysql"]
+    image: mysql:${MYSQL_VERSION}
+    command: --transaction-isolation='READ-COMMITTED'
+    environment:
+      - MYSQL_ROOT_PASSWORD=alfresco
+      - MYSQL_USER=alfresco
+      - MYSQL_DATABASE=alfresco
+      - MYSQL_PASSWORD=alfresco
+    ports:
+      - "3307:3306"
+  activemq:
+    image: alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
+    ports:
+      - "5672:5672" # AMQP
+      - "61616:61616" # OpenWire

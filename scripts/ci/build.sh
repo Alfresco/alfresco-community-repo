@@ -6,7 +6,7 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
-if isBranchBuild && [ "${TRAVIS_BRANCH}" = "master" ] && [ "${TRAVIS_BUILD_STAGE_NAME,,}" = "release" ] ; then
+if isBranchBuild && [ "${BRANCH_NAME}" = "master" ] && [ "${BUILD_STAGE_NAME,,}" = "release" ] ; then
   # update ":latest" image tags on remote repositories by using the maven *internal* profile
   PROFILES="-Pinternal"
 else

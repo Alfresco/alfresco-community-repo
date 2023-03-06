@@ -6,9 +6,9 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
-#Fetch the latest changes, as Travis will only checkout the PR commit
-git fetch origin "${TRAVIS_BRANCH}"
-git checkout "${TRAVIS_BRANCH}"
+#Fetch the latest changes, as GHA will only checkout the PR commit
+git fetch origin "${BRANCH_NAME}"
+git checkout "${BRANCH_NAME}"
 git pull
 
 # Retrieve the current Community version - latest tag on the current branch
@@ -16,7 +16,7 @@ VERSION="$(git describe --abbrev=0 --tags)"
 
 DOWNSTREAM_REPO="github.com/Alfresco/alfresco-enterprise-repo.git"
 
-cloneRepo "${DOWNSTREAM_REPO}" "${TRAVIS_BRANCH}"
+cloneRepo "${DOWNSTREAM_REPO}" "${BRANCH_NAME}"
 
 cd "$(dirname "${BASH_SOURCE[0]}")/../../../$(basename "${DOWNSTREAM_REPO%.git}")"
 

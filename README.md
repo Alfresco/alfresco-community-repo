@@ -1,6 +1,6 @@
 # alfresco-community-repo
 
-[![Build Status](https://travis-ci.com/Alfresco/alfresco-community-repo.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-community-repo)
+[![Build Status](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml/badge.svg?branch=release/7.0.1)](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml)
 
 This project contains the bulk of the [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository) code.
 

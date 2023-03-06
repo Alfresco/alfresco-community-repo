@@ -2,18 +2,18 @@
 set +vx
 
 function isPullRequestBuild() {
-  test "${TRAVIS_PULL_REQUEST}" != "false"
+  test "${PULL_REQUEST}" != "false"
 }
 
 function isBranchBuild() {
-  test "${TRAVIS_PULL_REQUEST}" = "false"
+  test "${PULL_REQUEST}" = "false"
 }
 
 function cloneRepo() {
   local REPO="${1}"
   local TAG_OR_BRANCH="${2}"
 
-  printf "Clonning \"%s\" on %s\n" "${TAG_OR_BRANCH}" "${REPO}"
+  printf "Cloning \"%s\" on %s\n" "${TAG_OR_BRANCH}" "${REPO}"
 
   # clone the repository branch/tag
   pushd "$(dirname "${BASH_SOURCE[0]}")/../../../" >/dev/null
@@ -76,21 +76,21 @@ function remoteBranchExists() {
   local REMOTE_REPO="${1}"
   local BRANCH="${2}"
 
-  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH}" &>/dev/null
+  git ls-remote --exit-code --heads "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REMOTE_REPO}" "${BRANCH_NAME}" &>/dev/null
 }
 
 function identifyUpstreamSourceBranch() {
   local UPSTREAM_REPO="${1}"
 
   # if it's a pull request, use the source branch name (if it exists)
-  if isPullRequestBuild && remoteBranchExists "${UPSTREAM_REPO}" "${TRAVIS_PULL_REQUEST_BRANCH}" ; then
-    echo "${TRAVIS_PULL_REQUEST_BRANCH}"
+  if isPullRequestBuild && remoteBranchExists "${UPSTREAM_REPO}" "${PULL_REQUEST_BRANCH}" ; then
+    echo "${PULL_REQUEST_BRANCH}"
     exit 0
   fi
 
   # otherwise use the current branch name (or in case of PRs, the target branch name)
-  if remoteBranchExists "${UPSTREAM_REPO}" "${TRAVIS_BRANCH}" ; then
-    echo "${TRAVIS_BRANCH}"
+  if remoteBranchExists "${UPSTREAM_REPO}" "${BRANCH_NAME}" ; then
+    echo "${BRANCH_NAME}"
     exit 0
   fi
 
@@ -181,7 +181,7 @@ function retieveLatestTag() {
 
   local LOCAL_PATH="/tmp/$(basename "${REPO%.git}")"
 
-  git clone -q -b "${BRANCH}" "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REPO}" "${LOCAL_PATH}"
+  git clone -q -b "${BRANCH_NAME}" "https://${GIT_USERNAME}:${GIT_PASSWORD}@${REPO}" "${LOCAL_PATH}"
 
   pushd "${LOCAL_PATH}" >/dev/null
   git describe --abbrev=0 --tags

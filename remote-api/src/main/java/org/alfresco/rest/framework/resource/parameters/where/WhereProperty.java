@@ -27,6 +27,7 @@ package org.alfresco.rest.framework.resource.parameters.where;
 
 import static java.util.function.Predicate.not;
 
+import static org.alfresco.rest.framework.resource.parameters.where.BasicQueryWalker.MISSING_ANY_CLAUSE_OF_TYPE;
 import static org.alfresco.rest.framework.resource.parameters.where.BasicQueryWalker.MISSING_CLAUSE_TYPE;
 
 import java.util.Arrays;
@@ -34,8 +35,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.rest.antlr.WhereClauseParser;
 
@@ -100,13 +101,21 @@ public class WhereProperty extends HashMap<WhereProperty.ClauseType, Collection<
 
     public Collection<String> getExpectedValuesFor(final ClauseType clauseType)
     {
-        verifyClausesPresence(clauseType);
+        verifyAllClausesPresence(clauseType);
         return this.get(clauseType);
     }
 
-    public HashMap<ClauseType, Collection<String>> getExpectedValuesFor(final ClauseType... clauseTypes)
+    public HashMap<ClauseType, Collection<String>> getExpectedValuesForAllOf(final ClauseType... clauseTypes)
     {
-        verifyClausesPresence(clauseTypes);
+        verifyAllClausesPresence(clauseTypes);
+        return Arrays.stream(clauseTypes)
+            .distinct()
+            .collect(Collectors.toMap(type -> type, this::get, (type1, type2) -> type1, MultiTypeNegatableValuesMap::new));
+    }
+
+    public HashMap<ClauseType, Collection<String>> getExpectedValuesForAnyOf(final ClauseType... clauseTypes)
+    {
+        verifyAnyClausesPresence(clauseTypes);
         return Arrays.stream(clauseTypes)
             .distinct()
             .collect(Collectors.toMap(type -> type, this::get, (type1, type2) -> type1, MultiTypeNegatableValuesMap::new));
@@ -114,13 +123,13 @@ public class WhereProperty extends HashMap<WhereProperty.ClauseType, Collection<
 
     public Collection<String> getExpectedValuesFor(final int clauseType, final boolean negated)
     {
-        verifyClausesPresence(ClauseType.of(clauseType, negated));
+        verifyAllClausesPresence(ClauseType.of(clauseType, negated));
         return this.get(ClauseType.of(clauseType, negated));
     }
 
     public NegatableValuesMap getExpectedValuesFor(final int clauseType)
     {
-        verifyClausesPresence(clauseType);
+        verifyAllClausesPresence(clauseType);
         final NegatableValuesMap values = new NegatableValuesMap();
         final ClauseType type = ClauseType.of(clauseType);
         final ClauseType negatedType = type.negate();
@@ -135,9 +144,20 @@ public class WhereProperty extends HashMap<WhereProperty.ClauseType, Collection<
         return values;
     }
 
-    public MultiTypeNegatableValuesMap getExpectedValuesFor(final int... clauseTypes)
+    public MultiTypeNegatableValuesMap getExpectedValuesForAllOf(final int... clauseTypes)
     {
-        verifyClausesPresence(clauseTypes);
+        verifyAllClausesPresence(clauseTypes);
+        return getExpectedValuesFor(clauseTypes);
+    }
+
+    public MultiTypeNegatableValuesMap getExpectedValuesForAnyOf(final int... clauseTypes)
+    {
+        verifyAnyClausesPresence(clauseTypes);
+        return getExpectedValuesFor(clauseTypes);
+    }
+
+    private MultiTypeNegatableValuesMap getExpectedValuesFor(final int... clauseTypes)
+    {
         final MultiTypeNegatableValuesMap values = new MultiTypeNegatableValuesMap();
         Arrays.stream(clauseTypes).distinct().forEach(clauseType -> {
             final ClauseType type = ClauseType.of(clauseType);
@@ -156,17 +176,14 @@ public class WhereProperty extends HashMap<WhereProperty.ClauseType, Collection<
     }
 
     /**
-     * Verify if specified clause types are present in this map, if not throw {@link InvalidQueryException}.
-     * Types treated exceptionally: EQUALS, IN - one of both must be present if both are specified.
+     * Verify if all specified clause types are present in this map, if not than throw {@link InvalidQueryException}.
      */
-    private void verifyClausesPresence(final ClauseType... clauseTypes)
+    private void verifyAllClausesPresence(final ClauseType... clauseTypes)
     {
         if (validateStrictly)
         {
             Arrays.stream(clauseTypes).distinct().forEach(clauseType -> {
-                if (!Set.of(ClauseType.EQUALS, ClauseType.IN).contains(clauseType) && !this.containsType(clauseType)
-                    || clauseType == ClauseType.EQUALS && Arrays.asList(clauseTypes).contains(ClauseType.IN) && !this.containsAnyOfTypes(ClauseType.EQUALS, ClauseType.IN)
-                    || clauseType == ClauseType.IN && Arrays.asList(clauseTypes).contains(ClauseType.EQUALS) && !this.containsAnyOfTypes(ClauseType.EQUALS, ClauseType.IN))
+                if (!this.containsType(clauseType))
                 {
                     throw new InvalidQueryException(String.format(MISSING_CLAUSE_TYPE, this.name, WhereClauseParser.tokenNames[clauseType.getTypeNumber()]));
                 }
@@ -175,22 +192,55 @@ public class WhereProperty extends HashMap<WhereProperty.ClauseType, Collection<
     }
 
     /**
-     * Verify if specified clause types are present in this map, if not throw {@link InvalidQueryException}.
+     * Verify if all specified clause types are present in this map, if not than throw {@link InvalidQueryException}.
      * Exception is thrown when both, negated and non-negated types are missing.
-     * Types treated exceptionally: EQUALS, IN - one of both must be present if both are specified.
      */
-    private void verifyClausesPresence(final int... clauseTypes)
+    private void verifyAllClausesPresence(final int... clauseTypes)
     {
         if (validateStrictly)
         {
             Arrays.stream(clauseTypes).distinct().forEach(clauseType -> {
-                if (!Set.of(WhereClauseParser.EQUALS, WhereClauseParser.IN).contains(clauseType) && !this.containsType(clauseType, false) && !this.containsType(clauseType, true)
-                    || clauseType == WhereClauseParser.EQUALS && Arrays.stream(clauseTypes).anyMatch(type -> type == WhereClauseParser.IN) && !this.containsAnyOfTypes(ClauseType.EQUALS, ClauseType.NOT_EQUALS, ClauseType.IN, ClauseType.NOT_IN)
-                    || clauseType == WhereClauseParser.IN && Arrays.stream(clauseTypes).anyMatch(type -> type == WhereClauseParser.EQUALS) && !this.containsAnyOfTypes(ClauseType.EQUALS, ClauseType.NOT_EQUALS, ClauseType.IN, ClauseType.NOT_IN))
+                if (!this.containsType(clauseType, false) && !this.containsType(clauseType, true))
                 {
                     throw new InvalidQueryException(String.format(MISSING_CLAUSE_TYPE, this.name, WhereClauseParser.tokenNames[clauseType]));
                 }
             });
+        }
+    }
+
+    /**
+     * Verify if any of specified clause types are present in this map, if not than throw {@link InvalidQueryException}.
+     */
+    private void verifyAnyClausesPresence(final ClauseType... clauseTypes)
+    {
+        if (validateStrictly)
+        {
+            if (!this.containsAnyOfTypes(clauseTypes))
+            {
+                throw new InvalidQueryException(String.format(MISSING_ANY_CLAUSE_OF_TYPE,
+                    this.name, Arrays.stream(clauseTypes).map(type -> WhereClauseParser.tokenNames[type.getTypeNumber()]).collect(Collectors.toList())));
+            }
+        }
+    }
+
+    /**
+     * Verify if any of specified clause types are present in this map, if not than throw {@link InvalidQueryException}.
+     * Exception is thrown when both, negated and non-negated types are missing.
+     */
+    private void verifyAnyClausesPresence(final int... clauseTypes)
+    {
+        if (validateStrictly)
+        {
+            final Collection<ClauseType> expectedTypes = Arrays.stream(clauseTypes)
+                .distinct()
+                .boxed()
+                .flatMap(type -> Stream.of(ClauseType.of(type), ClauseType.of(type, true)))
+                .collect(Collectors.toSet());
+            if (!this.containsAnyOfTypes(expectedTypes.toArray(ClauseType[]::new)))
+            {
+                throw new InvalidQueryException(String.format(MISSING_ANY_CLAUSE_OF_TYPE,
+                    this.name, Arrays.stream(clauseTypes).mapToObj(type -> WhereClauseParser.tokenNames[type]).collect(Collectors.toList())));
+            }
         }
     }
 

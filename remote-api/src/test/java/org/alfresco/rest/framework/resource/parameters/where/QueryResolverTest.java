@@ -506,12 +506,12 @@ public class QueryResolverTest
 
         assertThat(properties.get(0).containsType(WhereClauseParser.EQUALS, false)).isTrue();
         assertThat(properties.get(0).containsType(WhereClauseParser.IN, false)).isFalse();
-        assertThat(properties.get(0).getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.EQUALS)).containsOnly("testValue");
-        assertThat(properties.get(0).getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.IN)).isFalse();
+        assertThat(properties.get(0).getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.EQUALS)).containsOnly("testValue");
+        assertThat(properties.get(0).getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.IN)).isFalse();
         assertThat(properties.get(1).containsType(WhereClauseParser.EQUALS, false)).isFalse();
         assertThat(properties.get(1).containsType(WhereClauseParser.IN, false)).isTrue();
-        assertThat(properties.get(1).getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.EQUALS)).isFalse();
-        assertThat(properties.get(1).getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.IN)).containsOnly("testValue2", "testValue3");
+        assertThat(properties.get(1).getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.EQUALS)).isFalse();
+        assertThat(properties.get(1).getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.IN)).containsOnly("testValue2", "testValue3");
     }
 
     @Test
@@ -526,8 +526,8 @@ public class QueryResolverTest
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isTrue();
         assertThat(property.containsType(WhereClauseParser.IN, false)).isFalse();
-        assertThat(property.getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.EQUALS)).containsOnly("testValue");
-        assertThat(property.getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.IN)).isFalse();
+        assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.EQUALS)).containsOnly("testValue");
+        assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.IN)).isFalse();
     }
 
     @Test
@@ -542,8 +542,8 @@ public class QueryResolverTest
 
         assertThat(property.containsType(WhereClauseParser.EQUALS, false)).isFalse();
         assertThat(property.containsType(WhereClauseParser.IN, false)).isTrue();
-        assertThat(property.getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.EQUALS)).isFalse();
-        assertThat(property.getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.IN)).containsOnly("testValue");
+        assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().containsKey(WhereClauseParser.EQUALS)).isFalse();
+        assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated().get(WhereClauseParser.IN)).containsOnly("testValue");
     }
 
     @Test
@@ -557,7 +557,7 @@ public class QueryResolverTest
             .getProperty("propName");
 
         assertThatExceptionOfType(InvalidQueryException.class)
-            .isThrownBy(() -> property.getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN));
+            .isThrownBy(() -> property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN));
     }
 
     @Test
@@ -570,7 +570,7 @@ public class QueryResolverTest
             .resolve(query)
             .getProperty("propName");
 
-        assertThat(property.getExpectedValuesFor(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated(WhereClauseParser.EQUALS)).containsOnly("testValue");
+        assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated(WhereClauseParser.EQUALS)).containsOnly("testValue");
     }
 
     @Test
@@ -616,5 +616,32 @@ public class QueryResolverTest
         assertThat(properties.get(4).getExpectedValuesFor(WhereProperty.ClauseType.MATCHES)).containsOnly("*@mail.com");
         assertThat(properties.get(5).containsType(WhereProperty.ClauseType.EXISTS)).isTrue();
         assertThat(properties.get(5).getExpectedValuesFor(WhereProperty.ClauseType.EXISTS)).isEmpty();
+    }
+
+    @Test
+    public void testResolveQuery_clauseTypeOptional()
+    {
+        final Query query = queryExtractor.getWhereClause("(propName MATCHES (testValue))");
+
+        //when
+        final WhereProperty property = QueryHelper
+            .resolve(query)
+            .getProperty("propName");
+
+        assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.MATCHES).skipNegated(WhereClauseParser.MATCHES)).containsOnly("testValue");
+    }
+
+    @Test
+    public void testResolveQuery_optionalClauseTypesNotPresent()
+    {
+        final Query query = queryExtractor.getWhereClause("(propName=testValue AND propName MATCHES (testValue))");
+
+        //when
+        final WhereProperty property = QueryHelper
+            .resolve(query)
+            .getProperty("propName");
+
+        assertThatExceptionOfType(InvalidQueryException.class)
+            .isThrownBy(() -> property.getExpectedValuesForAnyOf(WhereClauseParser.IN));
     }
 }

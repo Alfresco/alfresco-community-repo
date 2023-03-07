@@ -83,11 +83,12 @@ public interface TaggingService
      *
      * @param storeRef StoreRef
      * @param pagingRequest PagingRequest
-     * @param namesFiler PagingRequest
+     * @param exactNamesFilter PagingRequest
+     * @param alikeNamesFilter PagingRequest
      * @return PagingResults
      */
     @NotAuditable
-    default PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> namesFiler)
+    default PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         return new EmptyPagingResults<>();
     }

@@ -105,15 +105,15 @@ public class TagsImplTest
     public void testGetTags()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any())).willReturn(pagingResultsMock);
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
         given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
         given(pagingResultsMock.getPage()).willReturn(List.of(new Pair<>(TAG_NODE_REF, TAG_NAME)));
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull());
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull(), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
-        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME));
+        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream().peek(tag -> tag.setCount(0)).collect(Collectors.toList());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -121,7 +121,7 @@ public class TagsImplTest
     public void testGetTags_verifyIfCountIsZero()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any())).willReturn(pagingResultsMock);
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
         given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
         given(pagingResultsMock.getPage()).willReturn(List.of(new Pair<>(TAG_NODE_REF, TAG_NAME)));
         given(parametersMock.getInclude()).willReturn(List.of("count"));
@@ -139,14 +139,14 @@ public class TagsImplTest
     public void testGetTags_withEqualsClauseWhereQuery()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(name=expectedName)"));
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any())).willReturn(pagingResultsMock);
+        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag=expectedName)"));
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
         given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
 
         //when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), eq(Set.of("expectedname")));
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), eq(Set.of("expectedname")), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actualTags).isNotNull();
     }
@@ -155,14 +155,30 @@ public class TagsImplTest
     public void testGetTags_withInClauseWhereQuery()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(name IN (expectedName1, expectedName2))"));
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any())).willReturn(pagingResultsMock);
+        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag IN (expectedName1, expectedName2))"));
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
         given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
 
         //when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), eq(Set.of("expectedname1", "expectedname2")));
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), eq(Set.of("expectedname1", "expectedname2")), isNull());
+        then(taggingServiceMock).shouldHaveNoMoreInteractions();
+        assertThat(actualTags).isNotNull();
+    }
+
+    @Test
+    public void testGetTags_withMatchesClauseWhereQuery()
+    {
+        given(parametersMock.getPaging()).willReturn(pagingMock);
+        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag MATCHES ('expectedName*'))"));
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
+        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
+
+        //when
+        final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
+
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull(), eq(Set.of("expectedname*")));
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actualTags).isNotNull();
     }
@@ -171,7 +187,7 @@ public class TagsImplTest
     public void testGetTags_withBothInAndEqualsClausesInSingleWhereQuery()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(name=expectedName AND name IN (expectedName1, expectedName2))"));
+        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag=expectedName AND tag IN (expectedName1, expectedName2))"));
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
@@ -184,7 +200,7 @@ public class TagsImplTest
     public void testGetTags_withOtherClauseInWhereQuery()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(name MATCHES ('expectedName'))"));
+        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag BETWEEN ('expectedName', 'expectedName2'))"));
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
@@ -197,7 +213,7 @@ public class TagsImplTest
     public void testGetTags_withNotEqualsClauseInWhereQuery()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(NOT name=expectedName)"));
+        given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(NOT tag=expectedName)"));
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
@@ -270,7 +286,7 @@ public class TagsImplTest
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
         assertThat(actualCreatedTags)
-            .isNotNull()
+            .isNotNull().usingRecursiveComparison()
             .isEqualTo(expectedTags);
     }
 

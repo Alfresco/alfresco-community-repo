@@ -47,9 +47,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class BasicQueryWalker extends QueryHelper.WalkerCallbackAdapter
 {
-    private static final String EQUALS_AND_IN_NOT_ALLOWED_TOGETHER = "Where query error: cannot use '=' (EQUALS) and 'IN' clauses with same property: %s";
+    private static final String EQUALS_AND_IN_NOT_ALLOWED_TOGETHER = "Where query error: cannot use '=' (EQUALS) AND 'IN' clauses with same property: %s";
     private static final String MISSING_PROPERTY = "Where query error: property with name: %s not present";
     static final String MISSING_CLAUSE_TYPE = "Where query error: property with name: %s expects clause: %s";
+    static final String MISSING_ANY_CLAUSE_OF_TYPE = "Where query error: property with name: %s expects at least one of clauses: %s";
     private static final String PROPERTY_NOT_EXPECTED = "Where query error: property with name: %s is not expected";
     private static final String PROPERTY_NOT_NEGATABLE = "Where query error: property with name: %s cannot be negated";
     private static final String PROPERTY_NAMES_EMPTY = "Cannot verify WHERE query without expected property names";
@@ -107,7 +108,7 @@ public class BasicQueryWalker extends QueryHelper.WalkerCallbackAdapter
     {
         verifyPropertyExpectedness(propertyName);
         verifyClausesNegatability(negated, propertyName);
-        if (WhereClauseParser.EQUALS == type && containsProperty(propertyName, WhereClauseParser.IN, negated))
+        if (WhereClauseParser.EQUALS == type && isAndSupported() && containsProperty(propertyName, WhereClauseParser.IN, negated))
         {
             throw new InvalidQueryException(String.format(EQUALS_AND_IN_NOT_ALLOWED_TOGETHER, propertyName));
         }
@@ -120,7 +121,7 @@ public class BasicQueryWalker extends QueryHelper.WalkerCallbackAdapter
     {
         verifyPropertyExpectedness(propertyName);
         verifyClausesNegatability(negated, propertyName);
-        if (containsProperty(propertyName, WhereClauseParser.EQUALS, negated))
+        if (isAndSupported() && containsProperty(propertyName, WhereClauseParser.EQUALS, negated))
         {
             throw new InvalidQueryException(String.format(EQUALS_AND_IN_NOT_ALLOWED_TOGETHER, propertyName));
         }
@@ -166,6 +167,19 @@ public class BasicQueryWalker extends QueryHelper.WalkerCallbackAdapter
         if (!clausesNegatable && negated)
         {
             throw new InvalidQueryException(String.format(PROPERTY_NOT_NEGATABLE, propertyName));
+        }
+    }
+
+    protected boolean isAndSupported()
+    {
+        try
+        {
+            and();
+            return true;
+        }
+        catch (InvalidQueryException ignore)
+        {
+            return false;
         }
     }
 

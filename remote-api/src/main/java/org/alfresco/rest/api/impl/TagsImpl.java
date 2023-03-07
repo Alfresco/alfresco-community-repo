@@ -27,12 +27,14 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.antlr.WhereClauseParser.EQUALS;
 import static org.alfresco.rest.antlr.WhereClauseParser.IN;
+import static org.alfresco.rest.antlr.WhereClauseParser.MATCHES;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -76,7 +78,7 @@ import org.apache.commons.collections.CollectionUtils;
 public class TagsImpl implements Tags
 {
 	private static final String PARAM_INCLUDE_COUNT = "count";
-	private static final String PARAM_WHERE_NAME = "name";
+	private static final String PARAM_WHERE_TAG = "tag";
 	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
 
@@ -166,8 +168,8 @@ public class TagsImpl implements Tags
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
 	    Paging paging = params.getPaging();
-	    Collection<String> namesFilter = resolveNamesQuery(params.getQuery());
-	    PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilter);
+	    Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
+		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilters.get(EQUALS), namesFilters.get(MATCHES));
 
         Integer totalItems = results.getTotalResultCount().getFirst();
         List<Pair<NodeRef, String>> page = results.getPage();
@@ -302,31 +304,36 @@ public class TagsImpl implements Tags
 	}
 
 	/**
-	 * Method resolves where query by either EQUALS or IN clauses.
+	 * Method resolves where query looking for clauses: EQUALS, IN or MATCHES.
+	 * Expected values for EQUALS and IN will be merged under EQUALS clause.
 	 * @param namesQuery Where query with expected tag name(s).
-	 * @return Expected tag names.
+	 * @return Map of expected exact and alike tag names.
 	 */
-	private Collection<String> resolveNamesQuery(final Query namesQuery)
+	private Map<Integer, Collection<String>> resolveTagNamesQuery(final Query namesQuery)
 	{
-		if (namesQuery != null && namesQuery != QueryImpl.EMPTY)
+		if (namesQuery == null || namesQuery == QueryImpl.EMPTY)
 		{
-			final Map<Integer, Collection<String>> properties = QueryHelper
-				.resolve(namesQuery)
-				.withoutNegations()
-				.getProperty(PARAM_WHERE_NAME)
-				.getExpectedValuesFor(EQUALS, IN)
-				.skipNegated();
-
-			if (properties.containsKey(EQUALS))
-			{
-				return properties.get(EQUALS).stream().map(String::toLowerCase).collect(Collectors.toSet());
-			}
-			else if (properties.containsKey(IN))
-			{
-				return properties.get(IN).stream().map(String::toLowerCase).collect(Collectors.toSet());
-			}
+			return Collections.emptyMap();
 		}
 
-		return null;
+		final Map<Integer, Collection<String>> properties = QueryHelper
+			.resolve(namesQuery)
+			.usingOrOperator()
+			.withoutNegations()
+			.getProperty(PARAM_WHERE_TAG)
+			.getExpectedValuesForAnyOf(EQUALS, IN, MATCHES)
+			.skipNegated();
+
+		return properties.entrySet().stream()
+			.collect(Collectors.groupingBy((entry) -> {
+				if (entry.getKey() == EQUALS || entry.getKey() == IN)
+				{
+					return EQUALS;
+				}
+				else
+				{
+					return MATCHES;
+				}
+			}, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
 	}
 }

@@ -237,7 +237,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Get tags with names filter using EQUALS and expect one item in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(name='" + documentTag.getTag() + "')")
+            .withParams("where=(tag='" + documentTag.getTag() + "')")
             .withCoreAPI()
             .getTags();
 
@@ -255,7 +255,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Get tags with names filter using IN and expect two items in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(name IN ('" + documentTag.getTag() + "', '" + folderTag.getTag() + "'))")
+            .withParams("where=(tag IN ('" + documentTag.getTag() + "', '" + folderTag.getTag() + "'))")
             .withCoreAPI()
             .getTags();
 
@@ -267,21 +267,38 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Get tags with names filter using EQUALS (in fact contains) and expect two item in result.
+     * Get tags with names filter using MATCHES and expect one item in result.
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_whichNamesStartsWithOrphan()
     {
-        STEP("Get tags with names filter using EQUALS (in fact contains) and expect two item in result");
+        STEP("Get tags with names filter using MATCHES and expect one item in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(name=orphan)")
+            .withParams("where=(tag MATCHES ('orphan*'))")
             .withCoreAPI()
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListIsNotEmpty().and()
+            .entriesListCountIs(1).and()
             .entriesListContains("tag", orphanTag.getTag().toLowerCase());
+    }
+
+    /**
+     * Get tags with names filter using EQUALS and MATCHES and expect four items in result.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withExactNameAndAlikeFilters()
+    {
+        STEP("Get tags with names filter using EQUALS and MATCHES and expect four items in result");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+            .withParams("where=(tag='" + orphanTag.getTag() + "' OR tag MATCHES ('tag*'))")
+            .withCoreAPI()
+            .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat()
+            .entriesListCountIs(4);
     }
 
     /**
@@ -292,19 +309,19 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Try to get tags with names filter using EQUALS and wrong property name and expect 400");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag=gat)")
+            .withParams("where=(name=gat)")
             .withCoreAPI()
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary("Where query error: property with name: tag is not expected");
+            .assertLastError().containsSummary("Where query error: property with name: name is not expected");
     }
 
     /**
      * Try to get tags with names filter using EQUALS and IN at the same time and expect 400 (Bad Request).
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTags_bothEqualsAndInNotAllowed()
+    public void testGetTags_queryAndOperatorNotSupported()
     {
         STEP("Try to get tags with names filter using EQUALS and IN at the same time and expect 400");
         returnedCollection = restClient.authenticateUser(adminUserModel)
@@ -313,6 +330,6 @@ public class GetTagsTests extends TagsDataPrep
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-            .assertLastError().containsSummary("Where query error: cannot use '=' (EQUALS) and 'IN' clauses with same property: name");
+            .assertLastError().containsSummary("An invalid WHERE query was received. Unsupported Predicate");
     }
 }

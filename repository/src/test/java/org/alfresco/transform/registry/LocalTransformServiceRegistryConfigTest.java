@@ -90,9 +90,6 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 {
     public static final String HARD_CODED_VALUE = "hard coded value";
 
-    @Mock
-    RestTemplate restTemplate;
-
     private class TestLocalTransformServiceRegistry extends LocalTransformServiceRegistry
     {
         private boolean mockSuccessReadingConfig = true;
@@ -215,8 +212,6 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
     private Properties properties = new Properties();
 
-    private HttpClientConfig httpClientConfig = new HttpClientConfig();
-
     @Mock private TransformerDebug transformerDebug;
     @Mock private MimetypeMap mimetypeMap;
 
@@ -250,7 +245,6 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         registry.setPipelineConfigDir("");
         registry.setCronExpression(null); // just read it once
         registry.afterPropertiesSet();
-        registry.setHttpClientConfig(httpClientConfig);
         return registry;
     }
 
@@ -310,20 +304,6 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         properties.setProperty(LOCAL_TRANSFORM + "imagemagick" + URL, "http://localhost:8091/");
         properties.setProperty(LOCAL_TRANSFORM + "libreoffice" + URL, "http://localhost:8092/");
         properties.setProperty(LOCAL_TRANSFORM + "tika" + URL, "http://localhost:8093/");
-        properties.setProperty("httpclient.config.transform.mTLSEnabled", "true");
-        properties.setProperty("httpclient.config.transform.maxTotalConnections", "40");
-        properties.setProperty("httpclient.config.transform.maxHostConnections", "40");
-        properties.setProperty("httpclient.config.transform.socketTimeout", "0");
-        properties.setProperty("httpclient.config.transform.connectionTimeout", "0");
-
-        //Create http client config
-        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-
-        httpClientConfig.setProperties(properties);
-        httpClientConfig.setServiceName("transform");
-        httpClientConfig.setKeyResourceLoader((KeyResourceLoader) ctx.getBean("springKeyResourceLoader"));
-        httpClientConfig.setSslEncryptionParameters((SSLEncryptionParameters) ctx.getBean("sslEncryptionParameters"));
-        httpClientConfig.init();
 
         // ImageMagick supported Source and Target List:
         imagemagickSupportedTransformation = new HashMap<>();
@@ -963,18 +943,4 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         assertNotNull("Should supported csv to png", pipelineTransform);
     }
 
-    @Test
-    public void testHttpClientFactoryForTransform() throws IOException
-    {
-        CloseableHttpClient httpClient = HttpClient4Factory.createHttpClient(registry.getHttpClientConfig());
-        String testUrl = "https://localhost:8080/request";
-
-        HttpGet getRequest = new HttpGet(testUrl);
-
-        Mockito.when(restTemplate.getForEntity(testUrl, String.class)).then(Object::toString)
-          .thenReturn(new ResponseEntity("Ok", HttpStatus.OK));
-
-        httpClient.execute(getRequest);
-
-    }
 }

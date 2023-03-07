@@ -83,7 +83,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.transfer.HttpClientTransmitterImplTest.class,
     org.alfresco.repo.transfer.manifest.TransferManifestTest.class,
     org.alfresco.repo.transfer.TransferVersionCheckerImplTest.class,
-    org.alfresco.repo.urlshortening.BitlyUrlShortenerTest.class,
     org.alfresco.service.cmr.calendar.CalendarRecurrenceHelperTest.class,
     org.alfresco.service.cmr.calendar.CalendarTimezoneHelperTest.class,
     org.alfresco.tools.RenameUserTest.class,

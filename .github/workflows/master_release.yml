@@ -77,9 +77,3 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
-
- #   - name: "Trigger alfresco-enterprise-repo build"
- #     stage: trigger_downstream
- #     before_install: skip
- #     install: skip
- #     script: bash scripts/travis/trigger_travis.sh "Alfresco" "alfresco-enterprise-repo" "${TRAVIS_BRANCH}"

@@ -132,13 +132,25 @@ public class TagsImplTest
                 .isNotNull()
                 .isEqualTo(expectedTags);
     }
+    @Test
+    public void testAddTagsToNode()
+    {
+        final List<String> tagNames = List.of("tag3","tag4");
+        final List<Tag> tagsToCreate = createTags(tagNames);
+        given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+        final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
+        then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
+        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
+        assertThat(actualCreatedTags)
+                .isNotNull()
+                .isEqualTo(expectedTags);
+    }
 
     @Test
     public void testTagValidationNotFound()
     {
         try {
             assertThrows(EntityNotFoundException.class, () ->objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
-            // fail("It should throw Not Found Exception");
         } catch (EntityNotFoundException e) {
             Assertions.assertThat(e)
                     .isInstanceOf(EntityNotFoundException.class)
@@ -165,18 +177,31 @@ public class TagsImplTest
     }
 
     @Test
+    public void testDeleteNodeAndTagById_NotFound()
+    {
+        //when
+        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.deleteTag(NODE_ID, TAG_ID));
+        then(authorityServiceMock).shouldHaveNoInteractions();
+        then(taggingServiceMock).should().getTagName(TAG_NODE_REF);
+        try {
+            then(taggingServiceMock).shouldHaveNoInteractions();
+            fail("Exception to be thrown");
+        }
+        catch (NoInteractionsWanted e) {
+            assertThat(e.getMessage().contains("No interactions wanted"));
+        }
+    }
+
+    @Test
     public void testDeleteTagById_asNonAdminUser()
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
-
         //when
         assertThrows(PermissionDeniedException.class, () -> objectUnderTest.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
-
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
 
         then(nodesMock).shouldHaveNoInteractions();
-
         then(taggingServiceMock).shouldHaveNoInteractions();
     }
 
@@ -203,7 +228,6 @@ public class TagsImplTest
         final List<String> tagNames = List.of("tag1", "99gat");
         final List<Tag> tagsToCreate = createTags(tagNames);
         given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
-
         //when
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
@@ -220,7 +244,7 @@ public class TagsImplTest
     @Test
     public void testCreateTags_withoutPermission()
     {
-        given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
+       given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(List.of(createTag(TAG_NAME)), parametersMock));

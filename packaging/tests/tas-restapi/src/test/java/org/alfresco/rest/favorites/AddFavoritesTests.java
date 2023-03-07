@@ -14,7 +14,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 public class AddFavoritesTests extends RestTest

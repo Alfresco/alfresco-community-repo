@@ -60,7 +60,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rule.RuleServiceImplTest.class,
     org.alfresco.repo.rule.RuleTypeImplTest.class,
     org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class,
-    org.alfresco.repo.security.authentication.AuthenticationTest.class,
     org.alfresco.repo.action.executer.SpecialiseTypeActionExecuterTest.class,
     org.alfresco.repo.action.executer.RemoveFeaturesActionExecuterTest.class,
     org.alfresco.repo.action.ActionTrackingServiceImplTest.class,

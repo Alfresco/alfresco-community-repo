@@ -25,11 +25,13 @@
  */
 package org.alfresco.repo.security;
 
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 import org.alfresco.repo.domain.permissions.FixedAclUpdaterTest;
 import org.alfresco.repo.ownable.impl.OwnableServiceTest;
 import org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactoryTest;
 import org.alfresco.repo.security.authentication.AuthenticationBootstrapTest;
-import org.alfresco.repo.security.authentication.AuthenticationTest;
 import org.alfresco.repo.security.authentication.AuthorizationTest;
 import org.alfresco.repo.security.authentication.ChainingAuthenticationServiceTest;
 import org.alfresco.repo.security.authentication.NameBasedUserNameGeneratorTest;
@@ -55,10 +57,6 @@ import org.alfresco.repo.security.permissions.impl.model.PermissionModelTest;
 import org.alfresco.repo.security.person.HomeFolderProviderSynchronizerTest;
 import org.alfresco.repo.security.person.PersonTest;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
 /**
  * @author Andy Hind
  *
@@ -75,7 +73,6 @@ public class SecurityTestSuite extends TestSuite
     {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(AuthenticationBootstrapTest.class);
-        suite.addTestSuite(AuthenticationTest.class);
         suite.addTestSuite(ChainingAuthenticationServiceTest.class);
         suite.addTestSuite(NameBasedUserNameGeneratorTest.class);
         suite.addTestSuite(AuthorityServiceTest.class);

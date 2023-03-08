@@ -2073,9 +2073,9 @@ public class AuthenticationTest extends TestCase
     }
 
     /**
-     * For on premise the default is MD4, for cloud BCRYPT10
+     * Check that the default password hashing algorithm is BCRYPT10.
      */
-    public void testDefaultEncodingIsMD4()
+    public void testDefaultEncoding()
     {
         assertNotNull(compositePasswordEncoder);
         assertEquals("bcrypt10", compositePasswordEncoder.getPreferredEncoding());

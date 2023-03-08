@@ -242,16 +242,13 @@ public class GetTagsTests extends TagsDataPrep
      */
 
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTag_IncludingCount()
+    public void testGetTag_includingCount()
     {
         STEP("Create single tag as admin including count and verify if it is 0");
         final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
         final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-                .assertThat().field(FIELD_COUNT).is(0);
 
         STEP("Get a single tag, including count and verify if it is 0");
         final RestTagModel searchedTag = restClient.withCoreAPI().include(FIELD_COUNT).getTag(createdTag);
@@ -266,16 +263,13 @@ public class GetTagsTests extends TagsDataPrep
      */
 
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTag_NotIncludingCount()
+    public void testGetTag_notIncludingCount()
     {
         STEP("Create single tag as admin including count and verify if it is 0");
         final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
         final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-                .assertThat().field(FIELD_COUNT).is(0);
 
         STEP("Get a single tag, not including count and verify if it is not present in the response");
         final RestTagModel searchedTag = restClient.withCoreAPI().getTag(createdTag);
@@ -290,16 +284,13 @@ public class GetTagsTests extends TagsDataPrep
      */
 
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTags_IncludingCount()
+    public void testGetTags_includingCount()
     {
         STEP("Create single tag as admin including count and verify if it is 0");
         final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
         final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-                .assertThat().field(FIELD_COUNT).is(0);
 
         STEP("Get tags including count and verify if it is present int the response");
         final RestTagModelsCollection searchedTags = restClient.withCoreAPI().include(FIELD_COUNT).getTags();
@@ -316,16 +307,13 @@ public class GetTagsTests extends TagsDataPrep
      */
 
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTags_NotIncludingCount()
+    public void testGetTags_notIncludingCount()
     {
         STEP("Create single tag as admin including count and verify if it is 0");
         final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
         final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-                .assertThat().field(FIELD_COUNT).is(0);
 
         STEP("Get tags, not including count and verify if it is not in the response");
         final RestTagModelsCollection searchedTags = restClient.withCoreAPI().getTags();

@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 
 export DOCKER_COMPOSE_PATH=$1
-export CLEAN_UP="$2"
+export DOCKER_COMPOSES=""
+export CLEAN_UP=""
+
+for var in "$@"
+do
+  if [ "$var" == "no-clean-up" ]
+  then
+    export CLEAN_UP="$var"
+  else
+    export DOCKER_COMPOSES+="--file $var "
+  fi
+done
 
 if [ -z "$DOCKER_COMPOSE_PATH" ]
 then
@@ -15,8 +26,8 @@ fi
 # The second parameter can be used to avoid doing a clean up if we are doing a restart test.
 if [ "$CLEAN_UP" != "no-clean-up" ]
 then
-  docker-compose --file "${DOCKER_COMPOSE_PATH}" kill
-  docker-compose --file "${DOCKER_COMPOSE_PATH}" rm -f
+  docker-compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") kill
+  docker-compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") rm -f
 
   export GENERATED_IMAGES=$(docker images | grep '^environment_' | awk '{ print $3 }')
   if [ -n "$GENERATED_IMAGES" ]
@@ -28,7 +39,7 @@ fi
 echo "Starting ACS stack in ${DOCKER_COMPOSE_PATH}"
 
 # .env files are picked up from project directory correctly on docker-compose 1.23.0+
-docker-compose --file "${DOCKER_COMPOSE_PATH}" --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") up -d
+docker-compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") up -d
 
 if [ $? -eq 0 ]
 then

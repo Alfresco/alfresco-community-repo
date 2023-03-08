@@ -25,10 +25,6 @@
                     <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
                 </pluginRepository>
             </pluginRepositories>
-            <properties>
-                <!-- WhiteSource token -->
-                <org.whitesource.orgToken>${env.WHITESOURCE_API_KEY}</org.whitesource.orgToken>
-            </properties>
         </profile>
     </profiles>
 

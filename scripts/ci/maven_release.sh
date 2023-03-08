@@ -6,14 +6,14 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 
 # Use full history for release
-git checkout -B "${TRAVIS_BRANCH}"
+git checkout -B "${BRANCH_NAME}"
 # Add email to link commits to user
 git config user.email "${GIT_EMAIL}"
 
 # Run the release plugin - with "[skip ci]" in the release commit message
 mvn -B \
   -PfullBuild,all-tas-tests \
-  "-Darguments=-PfullBuild,all-tas-tests -DskipTests -Dbuild-number=${TRAVIS_BUILD_NUMBER}" \
+  "-Darguments=-PfullBuild,all-tas-tests -DskipTests -Dbuild-number=${BUILD_NUMBER}" \
   release:clean release:prepare release:perform \
   -DscmCommentPrefix="[maven-release-plugin][skip ci] " \
   -Dusername="${GIT_USERNAME}" \

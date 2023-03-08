@@ -11,19 +11,11 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetTagsTests extends TagsDataPrep
 {
-
-    @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
-        init();
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tags using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
     public void getTagsWithManagerRole() throws Exception
@@ -221,7 +213,7 @@ public class GetTagsTests extends TagsDataPrep
         RestTagModel deletedTag = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().usingResource(document).addTag(removedTag);
 
-        restClient.withCoreAPI().usingResource(document).deleteTag(deletedTag);
+        restClient.authenticateUser(adminUserModel).withCoreAPI().usingTag(deletedTag).deleteTag();
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
@@ -230,7 +222,7 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Get tags with names filter using EQUALS and expect one item in result.
+     * Verify if exact name filter can be applied.
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withSingleNameFilter()
@@ -248,7 +240,7 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Get tags with names filter using IN and expect two items in result.
+     * Verify if multiple names can be applied as a filter.
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withTwoNameFilters()
@@ -267,7 +259,7 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Get tags with names filter using MATCHES and expect one item in result.
+     * Verify if alike name filter can be applied.
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_whichNamesStartsWithOrphan()
@@ -285,7 +277,7 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Get tags with names filter using EQUALS and MATCHES and expect four items in result.
+     * Verify that tags can be filtered by exact name and alike name at the same time.
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withExactNameAndAlikeFilters()
@@ -302,7 +294,24 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Try to get tags with names filter using EQUALS and wrong property name and expect 400 (Bad Request).
+     * Verify if multiple alike filters can be applied.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withTwoAlikeFilters()
+    {
+        STEP("Get tags applying names filter using MATCHES twice and expect four items in result");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+            .withParams("where=(tag MATCHES ('orphan*') OR tag MATCHES ('tag*'))")
+            .withCoreAPI()
+            .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat()
+            .entriesListCountIs(4);
+    }
+
+    /**
+     * Verify that providing incorrect filed name in where query will result with 400 (Bad Request).
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withWrongWherePropertyNameAndExpect400()
@@ -318,12 +327,12 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Try to get tags with names filter using EQUALS and IN at the same time and expect 400 (Bad Request).
+     * Verify tht AND operator is not supported in where query and expect 400 (Bad Request).
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_queryAndOperatorNotSupported()
     {
-        STEP("Try to get tags with names filter using EQUALS and IN at the same time and expect 400");
+        STEP("Try to get tags applying names filter using AND operator and expect 400");
         returnedCollection = restClient.authenticateUser(adminUserModel)
             .withParams("where=(name=tag AND name IN ('tag-', 'gat'))")
             .withCoreAPI()

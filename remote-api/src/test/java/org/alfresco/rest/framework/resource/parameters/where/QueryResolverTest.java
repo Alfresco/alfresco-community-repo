@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -484,14 +485,16 @@ public class QueryResolverTest
     }
 
     @Test
-    public void testResolveQuery_equalsOrInNotAllowedTogether()
+    public void testResolveQuery_equalsOrInAllowedTogether()
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue OR propName IN (testValue2, testValue3))");
 
         //when
-        final Throwable actualException = catchThrowable(() -> QueryHelper.resolve(query).usingOrOperator().getProperty("propName"));
+        final WhereProperty whereProperty = QueryHelper.resolve(query).usingOrOperator().getProperty("propName");
 
-        assertThat(actualException).isInstanceOf(InvalidQueryException.class);
+        assertThat(whereProperty).isNotNull();
+        assertThat(whereProperty.getExpectedValuesForAllOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated())
+            .isEqualTo(Map.of(WhereClauseParser.EQUALS, Set.of("testValue"), WhereClauseParser.IN, Set.of("testValue2", "testValue3")));
     }
 
     @Test
@@ -557,11 +560,11 @@ public class QueryResolverTest
             .getProperty("propName");
 
         assertThatExceptionOfType(InvalidQueryException.class)
-            .isThrownBy(() -> property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN));
+            .isThrownBy(() -> property.getExpectedValuesForAllOf(WhereClauseParser.EQUALS, WhereClauseParser.MATCHES));
     }
 
     @Test
-    public void testResolveQuery_clauseTypeUnexpected()
+    public void testResolveQuery_ignoreUnexpectedClauseType()
     {
         final Query query = queryExtractor.getWhereClause("(propName=testValue AND propName MATCHES (testValue))");
 
@@ -570,7 +573,7 @@ public class QueryResolverTest
             .resolve(query)
             .getProperty("propName");
 
-        assertThat(property.getExpectedValuesForAnyOf(WhereClauseParser.EQUALS, WhereClauseParser.IN).skipNegated(WhereClauseParser.EQUALS)).containsOnly("testValue");
+        assertThat(property.getExpectedValuesForAllOf(WhereClauseParser.EQUALS).skipNegated(WhereClauseParser.EQUALS)).containsOnly("testValue");
     }
 
     @Test
@@ -643,5 +646,21 @@ public class QueryResolverTest
 
         assertThatExceptionOfType(InvalidQueryException.class)
             .isThrownBy(() -> property.getExpectedValuesForAnyOf(WhereClauseParser.IN));
+    }
+
+    @Test
+    public void testResolveQuery_matchesOrMatchesAllowed()
+    {
+        final Query query = queryExtractor.getWhereClause("(propName MATCHES ('test*') OR propName MATCHES ('*value*'))");
+
+        //when
+        final Collection<String> expectedValues = QueryHelper
+            .resolve(query)
+            .usingOrOperator()
+            .getProperty("propName")
+            .getExpectedValuesFor(WhereClauseParser.MATCHES)
+            .skipNegated();
+
+        assertThat(expectedValues).containsOnly("test*", "*value*");
     }
 }

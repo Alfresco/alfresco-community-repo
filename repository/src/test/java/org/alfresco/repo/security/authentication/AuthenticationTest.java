@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
@@ -48,7 +47,6 @@ import net.sf.acegisecurity.DisabledException;
 import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParamsImpl;
@@ -2076,44 +2074,49 @@ public class AuthenticationTest extends TestCase
 
     /**
      * For on premise the default is MD4, for cloud BCRYPT10
-     *
-     * @throws Exception
      */
-    public void testDefaultEncodingIsMD4() throws Exception
+    public void testDefaultEncodingIsMD4()
     {
         assertNotNull(compositePasswordEncoder);
-        assertEquals("md4", compositePasswordEncoder.getPreferredEncoding());
+        assertEquals("bcrypt10", compositePasswordEncoder.getPreferredEncoding());
     }
 
     /**
-     * For on premise the default is MD4, get it
-     *
-     * @throws Exception
+     * Test password encoding with MD4 without a salt.
      */
-    public void testGetsMD4Password() throws Exception
+    public void testGetsMD4Password()
     {
-        String user = "mduzer";
-        String rawPass = "roarPazzw0rd";
-        assertEquals("md4", compositePasswordEncoder.getPreferredEncoding());
-        dao.createUser(user, null, rawPass.toCharArray());
-        NodeRef userNodeRef = getRepositoryAuthenticationDao().getUserOrNull(user);
-        assertNotNull(userNodeRef);
-        String pass = dao.getMD4HashedPassword(user);
-        assertNotNull(pass);
-        assertTrue(compositePasswordEncoder.matches("md4", rawPass, pass, null));
+        String defaultPreferredEncoding = compositePasswordEncoder.getPreferredEncoding();
+        compositePasswordEncoder.setPreferredEncoding("md4");
 
-        Map<QName, Serializable> properties = nodeService.getProperties(userNodeRef);
-        properties.remove(ContentModel.PROP_PASSWORD_HASH);
-        properties.remove(ContentModel.PROP_HASH_INDICATOR);
-        properties.remove(ContentModel.PROP_PASSWORD);
-        properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-        String encoded =  compositePasswordEncoder.encode("md4",new String(rawPass), null);
-        properties.put(ContentModel.PROP_PASSWORD, encoded);
-        nodeService.setProperties(userNodeRef, properties);
-        pass = dao.getMD4HashedPassword(user);
-        assertNotNull(pass);
-        assertEquals(encoded, pass);
-        dao.deleteUser(user);
+        try
+        {
+            String user = "mduzer";
+            String rawPass = "roarPazzw0rd";
+            dao.createUser(user, null, rawPass.toCharArray());
+            NodeRef userNodeRef = getRepositoryAuthenticationDao().getUserOrNull(user);
+            assertNotNull(userNodeRef);
+            String pass = dao.getMD4HashedPassword(user);
+            assertNotNull(pass);
+            assertTrue(compositePasswordEncoder.matches("md4", rawPass, pass, null));
+
+            Map<QName, Serializable> properties = nodeService.getProperties(userNodeRef);
+            properties.remove(ContentModel.PROP_PASSWORD_HASH);
+            properties.remove(ContentModel.PROP_HASH_INDICATOR);
+            properties.remove(ContentModel.PROP_PASSWORD);
+            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+            String encoded = compositePasswordEncoder.encodePassword("md4", rawPass, List.of("md4"));
+            properties.put(ContentModel.PROP_PASSWORD, encoded);
+            nodeService.setProperties(userNodeRef, properties);
+            pass = dao.getMD4HashedPassword(user);
+            assertNotNull(pass);
+            assertEquals(encoded, pass);
+            dao.deleteUser(user);
+        }
+        finally
+        {
+            compositePasswordEncoder.setPreferredEncoding(defaultPreferredEncoding);
+        }
     }
 
     /**

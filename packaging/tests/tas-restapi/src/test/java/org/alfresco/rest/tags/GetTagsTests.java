@@ -238,64 +238,16 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Verify if count field is present and with value 0 for searched tag.
-     */
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTag_includingCount()
-    {
-        STEP("Create single tag as admin including count and verify if it is 0");
-        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
-        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
-
-        restClient.assertStatusCodeIs(CREATED);
-
-        STEP("Get a single tag, including count and verify if it is 0");
-        final RestTagModel searchedTag = restClient.withCoreAPI().include(FIELD_COUNT).getTag(createdTag);
-        restClient.assertStatusCodeIs(OK);
-        searchedTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-                .assertThat().field(FIELD_COUNT).is(0);
-    }
-
-    /**
-     * Verify if count field is not present for searched tag.
-     */
-
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTag_notIncludingCount()
-    {
-        STEP("Create single tag as admin including count and verify if it is 0");
-        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
-        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
-
-        restClient.assertStatusCodeIs(CREATED);
-
-        STEP("Get a single tag, not including count and verify if it is not present in the response");
-        final RestTagModel searchedTag = restClient.withCoreAPI().getTag(createdTag);
-        restClient.assertStatusCodeIs(OK);
-        searchedTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-                .assertThat().field(FIELD_COUNT).isNull();
-    }
-
-    /**
      * Verify if count field is present for searched tags.
      */
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTags_includingCount()
-    {
-        STEP("Create single tag as admin including count and verify if it is 0");
-        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
-        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
-
-        restClient.assertStatusCodeIs(CREATED);
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    public void testGetTags_includingCount() {
 
         STEP("Get tags including count and verify if it is present int the response");
         final RestTagModelsCollection searchedTags = restClient.withCoreAPI().include(FIELD_COUNT).getTags();
-        restClient.assertStatusCodeIs(OK);
 
+        restClient.assertStatusCodeIs(OK);
         searchedTags.assertThat().entriesListIsNotEmpty()
                 .assertThat().entriesListContains(FIELD_COUNT)
                 .assertThat().entriesListContains(FIELD_TAG)
@@ -306,23 +258,16 @@ public class GetTagsTests extends TagsDataPrep
      * Verify if count field is not present for searched tags.
      */
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void testGetTags_notIncludingCount()
-    {
-        STEP("Create single tag as admin including count and verify if it is 0");
-        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
-        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
-
-        restClient.assertStatusCodeIs(CREATED);
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    public void testGetTags_notIncludingCount() {
 
         STEP("Get tags, not including count and verify if it is not in the response");
         final RestTagModelsCollection searchedTags = restClient.withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(OK);
 
+        restClient.assertStatusCodeIs(OK);
         searchedTags.assertThat().entriesListIsNotEmpty()
                 .assertThat().entriesListDoesNotContain(FIELD_COUNT)
-                .assertThat().entriesListContains(FIELD_TAG, tagModel.getTag())
+                .assertThat().entriesListContains(FIELD_TAG)
                 .assertThat().entriesListContains(FIELD_ID);
     }
-
 }

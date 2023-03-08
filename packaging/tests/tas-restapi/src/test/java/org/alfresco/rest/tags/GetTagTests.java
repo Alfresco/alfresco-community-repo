@@ -10,9 +10,19 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
+
 @Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetTagTests extends TagsDataPrep
 {
+
+    private static final String FIELD_ID = "id";
+    private static final String FIELD_TAG = "tag";
+    private static final String FIELD_COUNT = "count";
+    private static final String TAG_NAME_PREFIX = "tag-name";
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify admin user gets tag using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
@@ -127,5 +137,47 @@ public class GetTagTests extends TagsDataPrep
                 .containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"))
                 .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
                 .stackTraceIs(RestErrorModel.STACKTRACE);
+    }
+
+    /**
+     * Verify if count field is present and with value 0 for searched tag.
+     */
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    public void testGetTag_includingCount() {
+        STEP("Create single tag as admin");
+        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().createSingleTag(tagModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+
+        STEP("Get a single tag, including count and verify if it is 0");
+        final RestTagModel searchedTag = restClient.withCoreAPI().include(FIELD_COUNT).getTag(createdTag);
+
+        restClient.assertStatusCodeIs(OK);
+        searchedTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).is(0);
+    }
+
+    /**
+     * Verify if count field is not present for searched tag.
+     */
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
+    public void testGetTag_notIncludingCount() {
+        STEP("Create single tag as admin");
+        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().createSingleTag(tagModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+
+        STEP("Get a single tag, not including count and verify if it is not present in the response");
+        final RestTagModel searchedTag = restClient.withCoreAPI().getTag(createdTag);
+
+        restClient.assertStatusCodeIs(OK);
+        searchedTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).isNull();
     }
 }

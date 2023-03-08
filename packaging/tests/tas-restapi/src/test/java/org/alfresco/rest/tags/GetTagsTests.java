@@ -12,9 +12,19 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import static org.alfresco.utility.data.RandomData.getRandomName;
+import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
+
 @Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetTagsTests extends TagsDataPrep
 {
+
+    private static final String FIELD_ID = "id";
+    private static final String FIELD_TAG = "tag";
+    private static final String FIELD_COUNT = "count";
+    private static final String TAG_NAME_PREFIX = "tag-name";
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -28,7 +38,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", documentTagValue.toLowerCase())
             .and().entriesListContains("tag", documentTagValue2.toLowerCase());
@@ -40,7 +50,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", documentTagValue.toLowerCase())
             .and().entriesListContains("tag", documentTagValue2.toLowerCase());
@@ -52,7 +62,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", documentTagValue.toLowerCase())
             .and().entriesListContains("tag", documentTagValue2.toLowerCase());
@@ -64,7 +74,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", documentTagValue.toLowerCase())
             .and().entriesListContains("tag", documentTagValue2.toLowerCase());
@@ -109,7 +119,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
                 .and().entriesListContains("tag", documentTagValue.toLowerCase())
                 .and().entriesListContains("tag", documentTagValue2.toLowerCase());
@@ -122,7 +132,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
                 .and().entriesListContains("tag", folderTagValue.toLowerCase());
     }
@@ -135,7 +145,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("maxItems=5000&properties=tag").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
                 .and().entriesListContains("tag", documentTagValue.toLowerCase())
                 .and().entriesListContains("tag", documentTagValue2.toLowerCase())
@@ -148,12 +158,12 @@ public class GetTagsTests extends TagsDataPrep
     public void useSkipCountCheckPagination() throws Exception
     {
         returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
 
         RestTagModel firstTag = returnedCollection.getEntries().get(0).onModel();
         RestTagModel secondTag = returnedCollection.getEntries().get(1).onModel();
         RestTagModelsCollection tagsWithSkipCount = restClient.withParams("skipCount=2").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
 
         tagsWithSkipCount.assertThat().entriesListDoesNotContain("tag", firstTag.getTag())
                 .assertThat().entriesListDoesNotContain("tag", secondTag.getTag());
@@ -166,12 +176,12 @@ public class GetTagsTests extends TagsDataPrep
     public void useMaxItemsParameterCheckPagination() throws Exception
     {
         returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
 
         RestTagModel firstTag = returnedCollection.getEntries().get(0).onModel();
         RestTagModel secondTag = returnedCollection.getEntries().get(1).onModel();
         RestTagModelsCollection tagsWithMaxItems = restClient.withParams("maxItems=2").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
 
         tagsWithMaxItems.assertThat().entriesListContains("tag", firstTag.getTag())
                 .assertThat().entriesListContains("tag", secondTag.getTag())
@@ -186,7 +196,7 @@ public class GetTagsTests extends TagsDataPrep
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("skipCount=20000").withCoreAPI().getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsEmpty()
                 .getPagination().assertThat().field("maxItems").is(100)
                 .and().field("hasMoreItems").is("false")
@@ -214,7 +224,7 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void checkThatDeletedTagIsNotRetrievedAnymore() throws Exception
     {
-        String removedTag = RandomData.getRandomName("tag3");
+        String removedTag = getRandomName("tag3");
 
         RestTagModel deletedTag = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().usingResource(document).addTag(removedTag);
@@ -226,4 +236,105 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection.assertThat().entriesListIsNotEmpty()
                 .and().entriesListDoesNotContain("tag", removedTag.toLowerCase());
     }
+
+    /**
+     * Verify if count field is present and with value 0 for searched tag.
+     */
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTag_IncludingCount()
+    {
+        STEP("Create single tag as admin including count and verify if it is 0");
+        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).is(0);
+
+        STEP("Get a single tag, including count and verify if it is 0");
+        final RestTagModel searchedTag = restClient.withCoreAPI().include(FIELD_COUNT).getTag(createdTag);
+        restClient.assertStatusCodeIs(OK);
+        searchedTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).is(0);
+    }
+
+    /**
+     * Verify if count field is not present for searched tag.
+     */
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTag_NotIncludingCount()
+    {
+        STEP("Create single tag as admin including count and verify if it is 0");
+        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).is(0);
+
+        STEP("Get a single tag, not including count and verify if it is not present in the response");
+        final RestTagModel searchedTag = restClient.withCoreAPI().getTag(createdTag);
+        restClient.assertStatusCodeIs(OK);
+        searchedTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).isNull();
+    }
+
+    /**
+     * Verify if count field is present for searched tags.
+     */
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_IncludingCount()
+    {
+        STEP("Create single tag as admin including count and verify if it is 0");
+        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).is(0);
+
+        STEP("Get tags including count and verify if it is present int the response");
+        final RestTagModelsCollection searchedTags = restClient.withCoreAPI().include(FIELD_COUNT).getTags();
+        restClient.assertStatusCodeIs(OK);
+
+        searchedTags.assertThat().entriesListIsNotEmpty()
+                .assertThat().entriesListContains(FIELD_COUNT)
+                .assertThat().entriesListContains(FIELD_TAG)
+                .assertThat().entriesListContains(FIELD_ID);
+    }
+
+    /**
+     * Verify if count field is not present for searched tags.
+     */
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_NotIncludingCount()
+    {
+        STEP("Create single tag as admin including count and verify if it is 0");
+        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().include(FIELD_COUNT).createSingleTag(tagModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        createdTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
+                .assertThat().field(FIELD_ID).isNotEmpty()
+                .assertThat().field(FIELD_COUNT).is(0);
+
+        STEP("Get tags, not including count and verify if it is not in the response");
+        final RestTagModelsCollection searchedTags = restClient.withCoreAPI().getTags();
+        restClient.assertStatusCodeIs(OK);
+
+        searchedTags.assertThat().entriesListIsNotEmpty()
+                .assertThat().entriesListDoesNotContain(FIELD_COUNT)
+                .assertThat().entriesListContains(FIELD_TAG, tagModel.getTag())
+                .assertThat().entriesListContains(FIELD_ID);
+    }
+
 }

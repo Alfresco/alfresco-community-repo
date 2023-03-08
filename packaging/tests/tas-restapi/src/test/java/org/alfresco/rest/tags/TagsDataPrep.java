@@ -77,4 +77,9 @@ public class TagsDataPrep extends RestTest
                 .tag(tag)
                 .create();
     }
+
+    protected RestTagModel createTagModelWithName(final String tagName)
+    {
+        return RestTagModel.builder().tag(tagName).create();
+    }
 }

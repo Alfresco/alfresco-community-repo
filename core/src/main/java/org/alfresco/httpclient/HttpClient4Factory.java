@@ -34,6 +34,7 @@ import javax.net.ssl.TrustManager;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -48,6 +49,13 @@ public class HttpClient4Factory
     protected static final String HTTPS_PROTOCOL = "https";
     protected static final String HTTP_TARGET_HOST = "http.target_host";
     protected static final String TLSV_1_2 = "TLSv1.2";
+
+    public static HttpRequestInterceptor httpRequestInterceptor;
+
+    public static void setHttpRequestInterceptor(HttpRequestInterceptor httpRequestInterceptor)
+    {
+        HttpClient4Factory.httpRequestInterceptor = httpRequestInterceptor;
+    }
 
     private static SSLContext createSSLContext(HttpClientConfig config)
     {
@@ -86,6 +94,11 @@ public class HttpClient4Factory
                     null,
                     SSLConnectionSocketFactory.getDefaultHostnameVerifier());
             clientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
+        }
+
+        if(httpRequestInterceptor != null)
+        {
+            clientBuilder.addInterceptorLast(httpRequestInterceptor);
         }
 
         clientBuilder.setMaxConnTotal(Integer.parseInt(config.getConfig().get("maxTotalConnections")));

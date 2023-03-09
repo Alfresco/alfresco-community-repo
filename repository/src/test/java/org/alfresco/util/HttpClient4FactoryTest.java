@@ -26,23 +26,28 @@
 
 package org.alfresco.util;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 
+import org.alfresco.encryption.AlfrescoKeyStore;
 import org.alfresco.encryption.KeyResourceLoader;
+import org.alfresco.encryption.KeyStoreKeyProviderTest;
+import org.alfresco.encryption.KeyStoreParameters;
+import org.alfresco.encryption.SpringKeyResourceLoader;
 import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.alfresco.httpclient.HttpClient4Factory;
 import org.alfresco.httpclient.HttpClientConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpCoreContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -52,15 +57,16 @@ import org.springframework.web.client.RestTemplate;
  */
 public class HttpClient4FactoryTest
 {
-    @Mock
-    RestTemplate restTemplate;
-
     private Properties properties = new Properties();
 
     private HttpClientConfig httpClientConfig = new HttpClientConfig();
 
     @Before
     public void setUp() {
+        String ALIAS_ONE = "mykey1";
+        String ALIAS_TWO = "mykey2";
+        String FILE_ONE = "classpath:alfresco/keystore-tests/ks-test-1.jks";
+
         properties.setProperty("httpclient.config.transform.mTLSEnabled", "true");
         properties.setProperty("httpclient.config.transform.maxTotalConnections", "40");
         properties.setProperty("httpclient.config.transform.maxHostConnections", "40");
@@ -70,6 +76,16 @@ public class HttpClient4FactoryTest
         //Create http client config
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
+//        Map<String, String> passwords = new HashMap<String, String>(5);
+//        passwords.put(AlfrescoKeyStore.KEY_KEYSTORE_PASSWORD, "ksPwd1");
+//        passwords.put(ALIAS_ONE, "aliasPwd1");
+//        passwords.put(ALIAS_TWO, "aliasPwd2");
+//        KeyResourceLoader keyResourceLoader = new TestKeyResourceLoader(passwords);
+//
+//        KeyStoreParameters encryptionParameters = new KeyStoreParameters(null, "test", "JCEKS", "SunJCE", null, FILE_ONE);
+//
+//        SSLEncryptionParameters sslEncryptionParameters = new SSLEncryptionParameters(encryptionParameters, encryptionParameters);
+//
         httpClientConfig.setProperties(properties);
         httpClientConfig.setServiceName("transform");
         httpClientConfig.setKeyResourceLoader((KeyResourceLoader) ctx.getBean("springKeyResourceLoader"));
@@ -81,15 +97,46 @@ public class HttpClient4FactoryTest
     @Test
     public void testHttpClientFactoryForTransform() throws IOException
     {
+        HttpClient4Factory.setHttpRequestInterceptor((request, context) -> {
+            context.toString();
+        });
         CloseableHttpClient httpClient = HttpClient4Factory.createHttpClient(httpClientConfig);
-        String testUrl = "http://localhost:8080/request";
+        String testUrl = "https://localhost:8000/request";
 
         HttpGet getRequest = new HttpGet(testUrl);
-
-        Mockito.when(restTemplate.getForEntity(testUrl, String.class)).then(Object::toString)
-               .thenReturn(new ResponseEntity("Ok", HttpStatus.OK));
-
         httpClient.execute(getRequest);
+    }
 
+    private static class TestKeyResourceLoader extends SpringKeyResourceLoader
+    {
+        private Properties props;
+
+        TestKeyResourceLoader(Map<String, String> passwords)
+        {
+            StringBuilder aliases = new StringBuilder();
+            props = new Properties();
+
+            int i = 0;
+            for(Map.Entry<String, String> password : passwords.entrySet())
+            {
+                props.put(password.getKey() + ".password", password.getValue());
+
+                aliases.append(password.getKey());
+                if(i < passwords.size() - 1)
+                {
+                    aliases.append(",");
+                    i++;
+                }
+            }
+
+            props.put("aliases", aliases.toString());
+        }
+
+        @Override
+        public Properties loadKeyMetaData(String keyMetaDataFileLocation)
+                throws IOException, FileNotFoundException
+        {
+            return props;
+        }
     }
 }

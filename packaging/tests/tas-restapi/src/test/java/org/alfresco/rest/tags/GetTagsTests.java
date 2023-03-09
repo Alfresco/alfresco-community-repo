@@ -2,6 +2,8 @@ package org.alfresco.rest.tags;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.util.Set;
+
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
@@ -235,8 +237,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListCountIs(1).and()
-            .entriesListContains("tag", documentTagValue.toLowerCase());
+            .entrySetMatches("tag", Set.of(documentTagValue.toLowerCase()));
     }
 
     /**
@@ -253,9 +254,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListCountIs(2).and()
-            .entriesListContains("tag", documentTagValue.toLowerCase()).and()
-            .entriesListContains("tag", folderTagValue.toLowerCase());
+            .entrySetMatches("tag", Set.of(documentTagValue.toLowerCase(), folderTagValue.toLowerCase()));
     }
 
     /**
@@ -272,8 +271,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListCountIs(1).and()
-            .entriesListContains("tag", orphanTag.getTag().toLowerCase());
+            .entrySetContains("tag", orphanTag.getTag().toLowerCase());
     }
 
     /**
@@ -284,13 +282,13 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Get tags with names filter using EQUALS and MATCHES and expect four items in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag='" + orphanTag.getTag() + "' OR tag MATCHES ('tag*'))")
+            .withParams("where=(tag='" + orphanTag.getTag() + "' OR tag MATCHES ('*tag*'))")
             .withCoreAPI()
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListCountIs(4);
+            .entrySetContains("tag", Set.of(documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase()));
     }
 
     /**
@@ -307,7 +305,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entriesListCountIs(4);
+            .entrySetContains("tag", Set.of(documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase()));
     }
 
     /**

@@ -30,7 +30,10 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.alfresco.rest.core.IRestModelsCollection;
 import org.alfresco.utility.exception.TestConfigurationException;
@@ -117,7 +120,7 @@ public class ModelsCollectionAssertion<C>
     return (C) modelCollection;
   }
 
-    @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   public C entriesListDoesNotContain(String key, String value)
   {
     boolean exist = false;
@@ -141,6 +144,53 @@ public class ModelsCollectionAssertion<C>
         String.format("Entry with key: %s and value %s was found in list", key, value));
 
     return (C) modelCollection;
+  }
+
+  public C entrySetContains(String key, String... expectedValues)
+  {
+    return entrySetContains(key, Arrays.stream(expectedValues).collect(Collectors.toSet()));
+  }
+
+  @SuppressWarnings("unchecked")
+  public C entrySetContains(String key, Collection<String> expectedValues)
+  {
+    Collection<String> actualValues = ((List<Model>) modelCollection.getEntries()).stream()
+        .map(model -> extractValueAsString(model, key))
+        .collect(Collectors.toSet());
+
+    Assert.assertTrue(actualValues.containsAll(expectedValues), String.format("Entry with key: \"%s\" is expected to contain values: %s, but actual values are: %s",
+        key, expectedValues, actualValues));
+
+    return (C) modelCollection;
+  }
+
+  @SuppressWarnings("unchecked")
+  public C entrySetMatches(String key, Collection<String> expectedValues)
+  {
+    Collection<String> actualValues = ((List<Model>) modelCollection.getEntries()).stream()
+        .map(model -> extractValueAsString(model, key))
+        .collect(Collectors.toSet());
+
+    Assert.assertEqualsNoOrder(actualValues, expectedValues, String.format("Entry with key: \"%s\" is expected to match values: %s, but actual values are: %s",
+        key, expectedValues, actualValues));
+
+    return (C) modelCollection;
+  }
+
+  private String extractValueAsString(Model model, String key)
+  {
+    String fieldValue;
+    Object modelObject = loadModel(model);
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      String jsonInString = mapper.writeValueAsString(modelObject);
+      fieldValue = JsonPath.with(jsonInString).get(key);
+    } catch (Exception e) {
+      throw new TestConfigurationException(String.format(
+          "You try to assert field [%s] that doesn't exist in class: [%s]. Exception: %s, Please check your code!",
+          key, getClass().getCanonicalName(), e.getMessage()));
+    }
+    return fieldValue;
   }
 
   @SuppressWarnings("unchecked")

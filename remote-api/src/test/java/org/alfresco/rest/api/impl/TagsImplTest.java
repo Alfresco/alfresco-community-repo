@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -52,7 +51,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
-import org.alfresco.util.TypeConstraint;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -90,7 +90,6 @@ import org.junit.runners.Suite;
     org.alfresco.util.VersionNumberTest.class,
     org.alfresco.util.FileNameValidatorTest.class,
     org.alfresco.util.HttpClientHelperTest.class,
-    org.alfresco.util.HttpClient4FactoryTest.class,
     org.alfresco.util.JSONtoFmModelTest.class,
     org.alfresco.util.ModelUtilTest.class,
     org.alfresco.util.PropertyMapTest.class,

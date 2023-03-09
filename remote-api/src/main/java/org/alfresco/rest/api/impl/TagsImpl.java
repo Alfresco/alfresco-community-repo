@@ -189,12 +189,7 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(String tagId)
     {
 		NodeRef tagNodeRef = nodes.validateNode(tagId);
-		String tagName = taggingService.getTagName(tagNodeRef);
-		if( tagNodeRef == null || !taggingService.isTag(tagNodeRef.getStoreRef(), tagName))
-		{
-			throw new EntityNotFoundException(tagId);
-		}
-		return tagNodeRef;
+		return validateTag(tagNodeRef.getStoreRef(), tagId);
 	}
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
@@ -245,7 +240,7 @@ public class TagsImpl implements Tags
 
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
-		NodeRef nodeRef = validateTag(nodeId);
+		NodeRef nodeRef = nodes.validateNode(nodeId);
 		if( nodeRef == null )
 		{
 			throw new EntityNotFoundException(nodeId);

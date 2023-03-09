@@ -65,15 +65,10 @@ public class TagsImplTest
 {
     private static final String TAG_ID = "tag-node-id";
     private static final String TAG_NAME = "tag-dummy-name";
-    private static final String NODE_ID = "node-id";
     private static final NodeRef TAG_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
     @Mock
     private Nodes nodesMock;
-    @Mock
-    private Node createdNodeMock;
-    @Mock
-    private TypeConstraint typeConstraint;
     @Mock
     private AuthorityService authorityServiceMock;
     @Mock

@@ -12,8 +12,6 @@
 
     <properties>
         <image.name>alfresco/alfresco-community-repo-base</image.name>
-        <local.registry>127.0.0.1:5000</local.registry>
-        <builder.name>entitled-builder</builder.name>
         <scripts.directory>${project.parent.parent.basedir}/scripts</scripts.directory>
     </properties>
 

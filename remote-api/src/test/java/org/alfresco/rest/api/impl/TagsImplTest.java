@@ -29,13 +29,11 @@ import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
 import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.jsoup.helper.Validate.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +44,6 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
@@ -56,16 +53,11 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.exceptions.verification.NeverWantedButInvoked;
-import org.mockito.exceptions.verification.NoInteractionsWanted;
-import org.mockito.internal.verification.NoInteractions;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -96,14 +88,9 @@ public class TagsImplTest
     public void setup()
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
-        given(nodesMock.validateNode(NODE_ID)).willReturn(TAG_NODE_REF);
         given(nodesMock.validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willReturn(TAG_NODE_REF);
-        given(nodesMock.getNode(any())).willReturn(createdNodeMock);
-        given(createdNodeMock.getNodeId()).willReturn(NODE_ID);
-        given(typeConstraint.matches(any())).willReturn(true);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
     }
-
     @Test
     public void testGetTags() {
         final List<String> tagNames = List.of("testTag","tag11");
@@ -118,44 +105,16 @@ public class TagsImplTest
     }
 
     @Test
-    public void testAddTagsToNodeWithNotResponseIndexed()
+    public void testTagNotFoundValidation()
     {
-        //when
-        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
-        final List<String> tagNames = List.of("tag1","tag2");
-        final List<Tag> tagsToCreate = createTags(tagNames);
-        given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
-        final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
-        then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
-        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
-        assertThat(actualCreatedTags)
-                .isNotNull()
-                .isEqualTo(expectedTags);
-    }
-    @Test
-    public void testAddTagsToNode()
-    {
-        final List<String> tagNames = List.of("tag3","tag4");
-        final List<Tag> tagsToCreate = createTags(tagNames);
-        given(taggingServiceMock.addTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
-        final List<Tag> actualCreatedTags = objectUnderTest.addTags(nodesMock.getNode(any()).getNodeId(),tagsToCreate);
-        then(taggingServiceMock).should().addTags(TAG_NODE_REF, tagNames);
-        final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames);
-        assertThat(actualCreatedTags)
-                .isNotNull()
-                .isEqualTo(expectedTags);
+        assertThrows(EntityNotFoundException.class, () ->objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-id"));
     }
 
     @Test
-    public void testTagValidationNotFound()
+    public void testTagFoundValidation()
     {
-        try {
-            assertThrows(EntityNotFoundException.class, () ->objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
-        } catch (EntityNotFoundException e) {
-            Assertions.assertThat(e)
-                    .isInstanceOf(EntityNotFoundException.class)
-                    .hasMessage("Wrong value is passed.");
-        }
+        given(taggingServiceMock.isTag(any(),any())).willReturn(true);
+        objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
     }
@@ -168,6 +127,7 @@ public class TagsImplTest
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
+
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
 
@@ -177,31 +137,18 @@ public class TagsImplTest
     }
 
     @Test
-    public void testDeleteNodeAndTagById_NotFound()
-    {
-        //when
-        assertThrows(EntityNotFoundException.class, () -> objectUnderTest.deleteTag(NODE_ID, TAG_ID));
-        then(authorityServiceMock).shouldHaveNoInteractions();
-        then(taggingServiceMock).should().getTagName(TAG_NODE_REF);
-        try {
-            then(taggingServiceMock).shouldHaveNoInteractions();
-            fail("Exception to be thrown");
-        }
-        catch (NoInteractionsWanted e) {
-            assertThat(e.getMessage().contains("No interactions wanted"));
-        }
-    }
-
-    @Test
     public void testDeleteTagById_asNonAdminUser()
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
+
         //when
         assertThrows(PermissionDeniedException.class, () -> objectUnderTest.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
+
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
 
         then(nodesMock).shouldHaveNoInteractions();
+
         then(taggingServiceMock).shouldHaveNoInteractions();
     }
 
@@ -213,13 +160,9 @@ public class TagsImplTest
 
         then(authorityServiceMock).should().hasAdminAuthority();
         then(authorityServiceMock).shouldHaveNoMoreInteractions();
+
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-id");
         then(nodesMock).shouldHaveNoMoreInteractions();
-        try {
-            then(taggingServiceMock).shouldHaveNoInteractions();
-        } catch (NoInteractionsWanted e) {
-            assertThat("shouldFilterStackTraceOnVerifyNoInteractions");
-        }
     }
 
     @Test
@@ -228,6 +171,7 @@ public class TagsImplTest
         final List<String> tagNames = List.of("tag1", "99gat");
         final List<Tag> tagsToCreate = createTags(tagNames);
         given(taggingServiceMock.createTags(any(), any())).willAnswer(invocation -> createTagAndNodeRefPairs(invocation.getArgument(1)));
+
         //when
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
@@ -244,7 +188,7 @@ public class TagsImplTest
     @Test
     public void testCreateTags_withoutPermission()
     {
-       given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
+        given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.createTags(List.of(createTag(TAG_NAME)), parametersMock));

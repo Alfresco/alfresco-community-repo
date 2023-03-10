@@ -35,8 +35,6 @@
         <build-number>local</build-number>
         <image.tag>latest</image.tag>
         <image.registry>quay.io</image.registry>
-        <builder.name>entitled-builder</builder.name>
-        <local.registry>127.0.0.1:5000</local.registry>
 
         <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -919,21 +917,6 @@
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
                     <version>0.42.0</version>
-                    <configuration>
-                        <images>
-                            <image>
-                                <build>
-                                    <buildx>
-                                        <platforms>
-                                            <platform>linux/amd64</platform>
-                                            <platform>linux/arm64</platform>
-                                        </platforms>
-                                    </buildx>
-                                    <contextDir>${project.basedir}</contextDir>
-                                </build>
-                            </image>
-                        </images>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>

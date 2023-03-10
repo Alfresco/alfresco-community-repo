@@ -547,7 +547,7 @@
                <plugin>
                   <groupId>io.fabric8</groupId>
                   <artifactId>docker-maven-plugin</artifactId>
-                  <configuration combine.self="override">
+                  <configuration>
                      <images>
                         <image>
                            <name>${image.name}:${image.tag}</name>
@@ -587,8 +587,13 @@
                             <name>${local.registry}/${image.name}:${image.tag}</name>
                             <build>
                                <buildx>
+                                  <platforms>
+                                     <platform>linux/amd64</platform>
+                                     <platform>linux/arm64</platform>
+                                  </platforms>
                                   <builderName>${builder.name}</builderName>
                                </buildx>
+                               <contextDir>${project.basedir}</contextDir>
                                <args>
                                   <BASE_IMAGE>${local.registry}/${base.image}:${image.tag}</BASE_IMAGE>
                                </args>
@@ -648,11 +653,16 @@
                             <name>${image.registry}/${image.name}:${image.tag}</name>
                             <build>
                                <buildx>
+                                  <platforms>
+                                     <platform>linux/amd64</platform>
+                                     <platform>linux/arm64</platform>
+                                  </platforms>
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
                                   <BASE_IMAGE>${local.registry}/${base.image}:${image.tag}</BASE_IMAGE>
                                </args>
+                               <contextDir>${project.basedir}</contextDir>
                             </build>
                          </image>
                          <image>
@@ -660,11 +670,16 @@
                             <name>${image.name}:${image.tag}</name>
                             <build>
                                <buildx>
+                                  <platforms>
+                                     <platform>linux/amd64</platform>
+                                     <platform>linux/arm64</platform>
+                                  </platforms>
                                   <builderName>${builder.name}</builderName>
                                </buildx>
                                <args>
                                   <BASE_IMAGE>${local.registry}/${base.image}:${image.tag}</BASE_IMAGE>
                                </args>
+                               <contextDir>${project.basedir}</contextDir>
                             </build>
                          </image>
                       </images>

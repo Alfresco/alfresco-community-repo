@@ -136,7 +136,7 @@
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
-                        <configuration combine.self="override">
+                        <configuration>
                             <images>
                                 <image>
                                     <name>${image.name}:${image.tag}</name>
@@ -170,8 +170,13 @@
                                     <name>${local.registry}/${image.name}:${image.tag}</name>
                                     <build>
                                         <buildx>
+                                            <platforms>
+                                                <platform>linux/amd64</platform>
+                                                <platform>linux/arm64</platform>
+                                            </platforms>
                                             <builderName>${builder.name}</builderName>
                                         </buildx>
+                                        <contextDir>${project.basedir}</contextDir>
                                     </build>
                                 </image>
                             </images>
@@ -226,10 +231,28 @@
                                 <!-- Quay image -->
                                 <image>
                                     <name>${image.registry}/${image.name}:${image.tag}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>linux/amd64</platform>
+                                                <platform>linux/arm64</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <contextDir>${project.basedir}</contextDir>
+                                    </build>
                                 </image>
                                 <!-- DockerHub image -->
                                 <image>
                                     <name>${image.name}:${image.tag}</name>
+                                    <build>
+                                        <buildx>
+                                            <platforms>
+                                                <platform>linux/amd64</platform>
+                                                <platform>linux/arm64</platform>
+                                            </platforms>
+                                        </buildx>
+                                        <contextDir>${project.basedir}</contextDir>
+                                    </build>
                                 </image>
                             </images>
                         </configuration>

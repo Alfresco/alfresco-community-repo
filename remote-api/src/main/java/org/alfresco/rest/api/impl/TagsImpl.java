@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tagging.NonExistentTagException;
 import org.alfresco.repo.tagging.TagExistsException;
@@ -53,6 +54,7 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -73,6 +75,7 @@ public class TagsImpl implements Tags
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
 
     private Nodes nodes;
+	private NodeService nodeService;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
 	private AuthorityService authorityService;
@@ -85,6 +88,10 @@ public class TagsImpl implements Tags
 	public void setNodes(Nodes nodes) 
     {
 		this.nodes = nodes;
+	}
+	public void setNodeService(NodeService nodeService)
+	{
+		this.nodeService = nodeService;
 	}
 	
     public void setTaggingService(TaggingService taggingService)
@@ -188,20 +195,19 @@ public class TagsImpl implements Tags
 
     public NodeRef validateTag(String tagId)
     {
-		NodeRef tagNodeRef = nodes.validateNode(tagId);
-		return validateTag(tagNodeRef.getStoreRef(), tagId);
+        NodeRef tagNodeRef = nodes.validateNode(tagId);
+        return validateTag(tagNodeRef.getStoreRef(), tagId);
 	}
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
-		NodeRef tagNodeRef = nodes.validateNode(storeRef,tagId);
-		String tagName = taggingService.getTagName(tagNodeRef);
-		if( tagNodeRef == null || !taggingService.isTag(tagNodeRef.getStoreRef(), tagName))
-		{
-			throw new EntityNotFoundException(tagId);
-		}
-		return tagNodeRef;
-	}
+        NodeRef tagNodeRef = nodes.validateNode(storeRef,tagId);
+        if ( tagNodeRef == null || nodeService.hasAspect(tagNodeRef, ContentModel.ASPECT_TAGGABLE))
+        {
+            throw new EntityNotFoundException(tagId);
+        }
+        return tagNodeRef;
+    }
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag)
     {
     	try

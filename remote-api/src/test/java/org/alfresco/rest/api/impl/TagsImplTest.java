@@ -47,6 +47,7 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -67,6 +68,8 @@ public class TagsImplTest
 
     @Mock
     private Nodes nodesMock;
+    @Mock
+    private NodeService nodeServiceMock;
     @Mock
     private AuthorityService authorityServiceMock;
     @Mock
@@ -100,19 +103,11 @@ public class TagsImplTest
     @Test
     public void testTagNotFoundValidation()
     {
-        assertThrows(EntityNotFoundException.class, () ->objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-id"));
+        given(nodeServiceMock.hasAspect(any(),any())).willReturn(true);
+        assertThrows(EntityNotFoundException.class, () ->objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
     }
 
     @Test
-    public void testTagFoundValidation()
-    {
-        given(taggingServiceMock.isTag(any(),any())).willReturn(true);
-        objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
-        then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
-        then(nodesMock).shouldHaveNoMoreInteractions();
-    }
-
-    @Test(expected = EntityNotFoundException.class)
     public void testDeleteTagById()
     {
         //when

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -33,30 +33,29 @@ import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.authorization.client.util.HttpResponseException;
 
 /**
  *
- * Authenticates a user against Keycloak.
- * Keycloak's {@link AuthzClient} is used to retrieve an access token for the provided user credentials,
- * user is set as the current user if the user's access token can be obtained.
+ * Authenticates a user against Identity Service (Keycloak).
+ * {@link OAuth2Client} is used to verify provided user credentials. User is set as the current user if the user
+ * credentials are valid.
  * <br>
- * The AuthzClient can be null in which case this authenticator will just fall through to the next one in the chain.
+ * The {@link IdentityServiceAuthenticationComponent#oAuth2Client} can be null in which case this authenticator will
+ * just fall through to the next one in the chain.
  *
  */
 public class IdentityServiceAuthenticationComponent extends AbstractAuthenticationComponent implements ActivateableBean
 {
     private final Log logger = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
-    /** client used to authenticate user credentials against Keycloak **/
-    private AuthzClient authzClient;
+    /** client used to authenticate user credentials against Authorization Server **/
+    private OAuth2Client oAuth2Client;
     /** enabled flag for the identity service subsystem**/
     private boolean active;
     private boolean allowGuestLogin;
 
-    public void setAuthenticatorAuthzClient(AuthzClient authenticatorAuthzClient)
+    public void setOAuth2Client(OAuth2Client oAuth2Client)
     {
-        this.authzClient = authenticatorAuthzClient;
+        this.oAuth2Client = oAuth2Client;
     }
 
     public void setAllowGuestLogin(boolean allowGuestLogin)
@@ -67,7 +66,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
 
-        if (authzClient == null)
+        if (oAuth2Client == null)
         {
             if (logger.isDebugEnabled())
             {
@@ -80,20 +79,20 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         try
         {
             // Attempt to get an access token using the user credentials
-            authzClient.obtainAccessToken(userName, new String(password));
+            oAuth2Client.verifyCredentialsUsingResourceOwnerPasswordCredentialsFlow(userName, new String(password));
 
             // Successfully obtained access token so treat as authenticated user
             setCurrentUser(userName);
         }
-        catch (HttpResponseException e)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Failed to authenticate user against Keycloak. Status: " + e.getStatusCode() + " Reason: "+ e.getReasonPhrase());
-            }
-
-            throw new AuthenticationException("Failed to authenticate user against Keycloak.", e);
-        }
+//        catch (HttpResponseException e)
+//        {
+//            if (logger.isDebugEnabled())
+//            {
+//                logger.debug("Failed to authenticate user against Keycloak. Status: " + e.getStatusCode() + " Reason: "+ e.getReasonPhrase());
+//            }
+//
+//            throw new AuthenticationException("Failed to authenticate user against Keycloak.", e);
+//        }
         catch (RuntimeException e)
         {
             Throwable cause = ExceptionStackUtil.getCause(e, ConnectException.class);
@@ -128,5 +127,10 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     protected boolean implementationAllowsGuestLogin()
     {
         return allowGuestLogin;
+    }
+
+    interface OAuth2Client
+    {
+        void verifyCredentialsUsingResourceOwnerPasswordCredentialsFlow(String userName, String password);
     }
 }

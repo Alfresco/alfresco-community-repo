@@ -84,7 +84,11 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         }
         catch (CredentialsVerificationException e)
         {
-            throw new AuthenticationException("Failed to authenticate user against OAuth2 Authorization Server.", e);
+            throw new AuthenticationException("Failed to verify user credentials against the OAuth2 Authorization Server.", e);
+        }
+        catch (RuntimeException e)
+        {
+            throw new AuthenticationException("Failed to verify user credentials.", e);
         }
     }
 

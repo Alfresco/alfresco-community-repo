@@ -197,12 +197,12 @@ public class TagsImpl implements Tags
     {
         NodeRef tagNodeRef = nodes.validateNode(tagId);
         return validateTag(tagNodeRef.getStoreRef(), tagId);
-	}
+    }
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
         NodeRef tagNodeRef = nodes.validateNode(storeRef,tagId);
-        if ( tagNodeRef == null || nodeService.hasAspect(tagNodeRef, ContentModel.ASPECT_TAGGABLE))
+        if (tagNodeRef == null || nodeService.hasAspect(tagNodeRef, ContentModel.ASPECT_TAGGABLE))
         {
             throw new EntityNotFoundException(tagId);
         }

@@ -160,7 +160,7 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
         return true;
     }
 
-    private static class SpringOAuth2Client implements OAuth2Client
+    static class SpringOAuth2Client implements OAuth2Client
     {
         private static final String CLIENT_REGISTRATION_ID = "ids";
         private final Supplier<OAuth2AuthorizedClientManager> authorizedClientManagerSupplier;

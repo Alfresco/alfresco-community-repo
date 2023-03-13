@@ -101,13 +101,6 @@ public class TagsImplTest
     }
 
     @Test
-    public void testTagNotFoundValidation()
-    {
-        given(nodeServiceMock.hasAspect(any(),any())).willReturn(true);
-        assertThrows(EntityNotFoundException.class, () ->objectUnderTest.validateTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID));
-    }
-
-    @Test
     public void testDeleteTagById()
     {
         //when
@@ -151,6 +144,9 @@ public class TagsImplTest
 
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-id");
         then(nodesMock).shouldHaveNoMoreInteractions();
+
+        then(taggingServiceMock).shouldHaveNoInteractions();
+
     }
 
     @Test

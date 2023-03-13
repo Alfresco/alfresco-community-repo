@@ -196,7 +196,11 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(String tagId)
     {
         NodeRef tagNodeRef = nodes.validateNode(tagId);
-        return validateTag(tagNodeRef.getStoreRef(), tagId);
+		if (tagNodeRef == null || nodeService.hasAspect(tagNodeRef, ContentModel.ASPECT_TAGGABLE))
+		{
+			throw new EntityNotFoundException(tagId);
+		}
+		return tagNodeRef;
     }
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
@@ -247,10 +251,6 @@ public class TagsImpl implements Tags
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
 		NodeRef nodeRef = nodes.validateNode(nodeId);
-		if( nodeRef == null )
-		{
-			throw new EntityNotFoundException(nodeId);
-		}
 		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
     	Integer totalItems = results.getTotalResultCount().getFirst();
     	List<Pair<NodeRef, String>> page = results.getPage();

@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,6 +35,8 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
@@ -41,12 +44,17 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder.PasswordGrantBuilder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.endpoint.DefaultPasswordTokenResponseClient;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -82,16 +90,6 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
         {
             return null;
         }
-        //TODO:
-        // * Configure TCP connection timeouts identityServiceConfig.getClientConnectionTimeout()/identityServiceConfig.getClientSocketTimeout()
-        // * Log debug data:
-        //        if (logger.isDebugEnabled())
-        //        {
-        //            logger.debug(" Created Keycloak AuthzClient");
-        //            logger.debug(" Keycloak AuthzClient server URL: " + authzClient.getConfiguration().getAuthServerUrl());
-        //            logger.debug(" Keycloak AuthzClient realm: " + authzClient.getConfiguration().getRealm());
-        //            logger.debug(" Keycloak AuthzClient resource: " + authzClient.getConfiguration().getResource());
-        //        }
 
         // The OAuth2AuthorizedClientManager isn't created upfront to make the code resilient to Identity Service being down.
         // If it's down the Application Context will start and when it's back online it can be used.
@@ -107,7 +105,7 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
         // * There is only one Authorization Server/Client pair (SingleClientRegistration)
 
         final ClientRegistration clientRegistration = ClientRegistrations
-                .fromOidcIssuerLocation(identityServiceConfig.getOidcIssuerUrl())
+                .fromIssuerLocation(identityServiceConfig.getIssuerUrl())
                 .clientId(identityServiceConfig.getResource())
                 .clientSecret(identityServiceConfig.getClientSecret())
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
@@ -119,10 +117,35 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
                 new AuthorizedClientServiceOAuth2AuthorizedClientManager(
                         new SingleClientRegistration(clientRegistration),
                         new NoStoredAuthorizedClient());
-        oauth2.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder().password().build());
+        oauth2.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder()
+                                                                                .password(this::configureTimeouts)
+                                                                                .build());
         oauth2.setContextAttributesMapper(OAuth2AuthorizeRequest::getAttributes);
 
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug(" Created OAuth2 Client");
+            LOGGER.debug(" OAuth2 Issuer URL: " + clientRegistration.getProviderDetails().getIssuerUri());
+            LOGGER.debug(" OAuth2 ClientId: " + clientRegistration.getClientId());
+        }
+
         return oauth2;
+    }
+
+    private void configureTimeouts(PasswordGrantBuilder builder)
+    {
+        final SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(identityServiceConfig.getClientConnectionTimeout());
+        requestFactory.setReadTimeout(identityServiceConfig.getClientSocketTimeout());
+
+        final RestTemplate restTemplate = new RestTemplate(Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
+        restTemplate.setRequestFactory(requestFactory);
+        restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+
+        final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
+        client.setRestOperations(restTemplate);
+
+        builder.accessTokenResponseClient(client);
     }
 
     @Override

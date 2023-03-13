@@ -125,7 +125,7 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
         }
     }
 
-    String getOidcIssuerUrl()
+    String getIssuerUrl()
     {
         return UriComponentsBuilder.fromUriString(getAuthServerUrl())
                             .pathSegment("realms", getRealm())

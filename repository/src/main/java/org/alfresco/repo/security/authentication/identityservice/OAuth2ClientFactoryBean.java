@@ -27,7 +27,6 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -53,6 +52,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
@@ -117,10 +117,10 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
                 new AuthorizedClientServiceOAuth2AuthorizedClientManager(
                         new SingleClientRegistration(clientRegistration),
                         new NoStoredAuthorizedClient());
+        oauth2.setContextAttributesMapper(OAuth2AuthorizeRequest::getAttributes);
         oauth2.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder()
                                                                                 .password(this::configureTimeouts)
                                                                                 .build());
-        oauth2.setContextAttributesMapper(OAuth2AuthorizeRequest::getAttributes);
 
         if (LOGGER.isDebugEnabled())
         {
@@ -168,23 +168,44 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
 
         public SpringOAuth2Client(Supplier<OAuth2AuthorizedClientManager> authorizedClientManagerSupplier)
         {
-
             this.authorizedClientManagerSupplier = Objects.requireNonNull(authorizedClientManagerSupplier);
         }
 
         @Override
-        public void verifyCredentialsUsingResourceOwnerPasswordCredentialsFlow(String userName, String password)
+        public void verifyCredentials(String userName, String password)
         {
-            final OAuth2AuthorizedClientManager clientManager = getAuthorizedClientManager();
-            final OAuth2AuthorizeRequest authRequest = OAuth2AuthorizeRequest
-                    .withClientRegistrationId(CLIENT_REGISTRATION_ID)
-                    .principal(userName)
-                    .attribute(OAuth2AuthorizationContext.USERNAME_ATTRIBUTE_NAME, userName)
-                    .attribute(OAuth2AuthorizationContext.PASSWORD_ATTRIBUTE_NAME, password)
-                    .build();
+            final OAuth2AuthorizedClientManager clientManager;
+            try
+            {
+                clientManager = getAuthorizedClientManager();
+            }
+            catch (RuntimeException e)
+            {
+                LOGGER.warn("Failed to instantiate OAuth2AuthorizedClientManager.", e);
+                throw new CredentialsVerificationException("Unable to use the Authorization Server.", e);
+            }
 
-            final OAuth2AuthorizedClient authorizedClient = clientManager.authorize(authRequest);
-            Optional.ofNullable(authorizedClient).map(OAuth2AuthorizedClient::getAccessToken).orElseThrow(() -> new RuntimeException("asdf"));
+            final OAuth2AuthorizedClient authorizedClient;
+            try
+            {
+                final OAuth2AuthorizeRequest authRequest = createPasswordCredentialsRequest(userName, password);
+                authorizedClient = clientManager.authorize(authRequest);
+            }
+            catch (OAuth2AuthorizationException e)
+            {
+                LOGGER.debug("Failed to authorize against Authorization Server. Reason: " + e.getError() + ".");
+                throw new CredentialsVerificationException("Authorization against the Authorization Server failed with " + e.getError() + ".", e);
+            }
+            catch (RuntimeException e)
+            {
+                LOGGER.warn("Failed to authorize against Authorization Server. Reason: " + e.getMessage());
+                throw new CredentialsVerificationException("Failed to authorize against Authorization Server.", e);
+            }
+
+            if (authorizedClient == null || authorizedClient.getAccessToken() == null)
+            {
+                throw new CredentialsVerificationException("Resource Owner Password Credentials is not supported by the Authorization Server.");
+            }
         }
 
         private OAuth2AuthorizedClientManager getAuthorizedClientManager()
@@ -196,6 +217,16 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
             }
             return authorizedClientManager
                     .updateAndGet(prev -> prev != null ? prev : authorizedClientManagerSupplier.get());
+        }
+
+        private OAuth2AuthorizeRequest createPasswordCredentialsRequest(String userName, String password)
+        {
+            return OAuth2AuthorizeRequest
+                    .withClientRegistrationId(CLIENT_REGISTRATION_ID)
+                    .principal(userName)
+                    .attribute(OAuth2AuthorizationContext.USERNAME_ATTRIBUTE_NAME, userName)
+                    .attribute(OAuth2AuthorizationContext.PASSWORD_ATTRIBUTE_NAME, password)
+                    .build();
         }
     }
 

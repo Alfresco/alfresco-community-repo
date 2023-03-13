@@ -35,6 +35,7 @@ import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client.CredentialsVerificationException;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -85,22 +86,22 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authenticationContext.clearCurrentSecurityContext();
     }
 
-//    @Test (expected=AuthenticationException.class)
-//    public void testAuthenticationFail()
-//    {
-//        doThrow(new HttpResponseException("Unauthorized", 401, "Unauthorized", null))
-//                .when(mockOAuth2Client)
-//                .verifyCredentialsUsingResourceOwnerPasswordCredentialsFlow("username", "password");
-//
-//        authComponent.authenticateImpl("username", "password".toCharArray());
-//    }
+    @Test (expected=AuthenticationException.class)
+    public void testAuthenticationFail()
+    {
+        doThrow(new CredentialsVerificationException("Failed"))
+                .when(mockOAuth2Client)
+                .verifyCredentials("username", "password");
+
+        authComponent.authenticateImpl("username", "password".toCharArray());
+    }
 
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_connectionException()
     {
-        doThrow(new RuntimeException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
+        doThrow(new CredentialsVerificationException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
                 .when(mockOAuth2Client)
-                .verifyCredentialsUsingResourceOwnerPasswordCredentialsFlow("username", "password");
+                .verifyCredentials("username", "password");
 
         try
         {
@@ -119,7 +120,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         doThrow(new RuntimeException("Some other errors!"))
                 .when(mockOAuth2Client)
-                .verifyCredentialsUsingResourceOwnerPasswordCredentialsFlow("username", "password");
+                .verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
     }
@@ -127,7 +128,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testAuthenticationPass()
     {
-        doNothing().when(mockOAuth2Client).verifyCredentialsUsingResourceOwnerPasswordCredentialsFlow("username", "password");
+        doNothing().when(mockOAuth2Client).verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 
@@ -136,7 +137,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     }
 
     @Test (expected= AuthenticationException.class)
-    public void testFallthroughWhenAuthzClientIsNull()
+    public void testFallthroughWhenOAuth2ClientIsNull()
     {
         authComponent.setOAuth2Client(null);
         authComponent.authenticateImpl("username", "password".toCharArray());

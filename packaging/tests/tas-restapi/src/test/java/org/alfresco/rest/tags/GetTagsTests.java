@@ -288,7 +288,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetContains("tag", Set.of(documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase()));
+            .entrySetContains("tag", documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase());
     }
 
     /**
@@ -305,7 +305,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetContains("tag", Set.of(documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase()));
+            .entrySetContains("tag", documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase());
     }
 
     /**

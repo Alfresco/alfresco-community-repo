@@ -427,7 +427,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         boolean moreItems = false;
 
         final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = (nodeRef) -> {
-            final List<ChildAssociationRef> childNodes = new ArrayList<>();
+            final Set<ChildAssociationRef> childNodes = new HashSet<>();
             if (CollectionUtils.isEmpty(exactNamesFilter) && CollectionUtils.isEmpty(alikeNamesFilter))
             {
                 // lookup in DB without filtering
@@ -447,7 +447,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
                 }
             }
 
-            Stream<ChildAssociationRef> childNodesStream = childNodes.stream().distinct();
+            Stream<ChildAssociationRef> childNodesStream = childNodes.stream();
             if (sortByName)
             {
                 childNodesStream = childNodesStream.sorted(Comparator.comparing(tag -> tag.getQName().getLocalName()));

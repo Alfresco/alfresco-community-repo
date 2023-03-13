@@ -267,6 +267,9 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         }
     }
 
+    /**
+     * Get expected value for property and comparison type. This class supports only non-negated comparisons, thus parameter negated is ignored in bellow method.
+     */
     @Override
     public Collection<String> getProperty(String propertyName, int type, boolean negated)
     {

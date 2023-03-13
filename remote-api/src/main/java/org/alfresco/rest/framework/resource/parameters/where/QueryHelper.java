@@ -127,7 +127,7 @@ public abstract class QueryHelper
 
         default Collection<String> getProperty(String propertyName, int type, boolean negated)
         {
-            return Collections.emptyList();
+            throw UNSUPPORTED;
         }
     }
 

@@ -43,7 +43,8 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 public class IdentityServiceConfig extends AdapterConfig implements InitializingBean
 {
-    private static Log logger = LogFactory.getLog(IdentityServiceConfig.class);
+    private static final Log LOGGER = LogFactory.getLog(IdentityServiceConfig.class);
+    private static final String REALMS = "realms";
     private static final String SECRET = "secret";
     private static final String CREDENTIALS_SECRET = "identity-service.credentials.secret";
     private static final String CREDENTIALS_PROVIDER = "identity-service.credentials.provider";
@@ -97,7 +98,7 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        // programatically build the more complex objects i.e. credentials
+        // programmatically build the more complex objects i.e. credentials
         Map<String, Object> credentials = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         
         String secret = this.globalProperties.getProperty(CREDENTIALS_SECRET);
@@ -118,9 +119,9 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
         {
             this.setCredentials(credentials);
             
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("Created credentials map from config: " + credentials);
+                LOGGER.debug("Created credentials map from config: " + credentials);
             }
         }
     }
@@ -128,7 +129,7 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
     String getIssuerUrl()
     {
         return UriComponentsBuilder.fromUriString(getAuthServerUrl())
-                            .pathSegment("realms", getRealm())
+                            .pathSegment(REALMS, getRealm())
                             .build()
                             .toString();
     }

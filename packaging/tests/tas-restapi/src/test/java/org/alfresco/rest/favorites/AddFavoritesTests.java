@@ -14,7 +14,6 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 public class AddFavoritesTests extends RestTest
@@ -355,7 +354,6 @@ public class AddFavoritesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
             description = "Verify add file favorite with tag id returns status code 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
-    @Ignore
     public void addFileFavoriteUsingTagId() throws Exception
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);

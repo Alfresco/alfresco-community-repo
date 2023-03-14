@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.IndexerAndSearcher;
@@ -477,7 +478,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
             }
         }
 
-        return createPagingResult(associations, moreItems);
+        return new ListBackedPagingResults<>(associations, moreItems);
     }
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)
@@ -643,35 +644,5 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
                 .filter(ca -> ca.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE))
                 .map(ChildAssociationRef::getChildRef)
                 .findFirst();
-    }
-
-    private <T> PagingResults<T> createPagingResult(final List<T> associations, final boolean hasMoreItems)
-    {
-        return new PagingResults<T>()
-        {
-            @Override
-            public List<T> getPage()
-            {
-                return associations;
-            }
-
-            @Override
-            public boolean hasMoreItems()
-            {
-                return hasMoreItems;
-            }
-
-            @Override
-            public Pair<Integer, Integer> getTotalResultCount()
-            {
-                return new Pair<>(null, null);
-            }
-
-            @Override
-            public String getQueryExecutionId()
-            {
-                return null;
-            }
-        };
     }
 }

@@ -172,7 +172,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-json</artifactId>
-            <version>3.0.12</version>
+            <version>3.0.16</version>
         </dependency>
 
        <dependency>

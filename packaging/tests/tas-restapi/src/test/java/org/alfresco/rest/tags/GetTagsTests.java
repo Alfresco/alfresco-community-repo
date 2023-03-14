@@ -309,7 +309,7 @@ public class GetTagsTests extends TagsDataPrep
     }
 
     /**
-     * Verify that providing incorrect filed name in where query will result with 400 (Bad Request).
+  * Verify that providing incorrect field name in where query will result with 400 (Bad Request).
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withWrongWherePropertyNameAndExpect400()

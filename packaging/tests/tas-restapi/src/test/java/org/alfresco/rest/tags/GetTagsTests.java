@@ -188,7 +188,7 @@ public class GetTagsTests extends TagsDataPrep
                 .and().field("hasMoreItems").is("false")
                 .and().field("count").is("0")
                 .and().field("skipCount").is(20000)
-                .and().field("totalItems").isNull();
+                .and().field("totalItems").is(0);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,

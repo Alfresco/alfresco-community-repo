@@ -44,7 +44,6 @@ import org.apache.http.impl.client.HttpClients;
 public class HttpClient4Factory
 {
     protected static final String TLS_PROTOCOL = "TLS";
-    protected static final String HTTPCLIENT_CONFIG = "httpclient.config.";
     protected static final String HTTPS_PROTOCOL = "https";
     protected static final String HTTP_TARGET_HOST = "http.target_host";
     protected static final String TLS_V_1_2 = "TLSv1.2";
@@ -71,7 +70,7 @@ public class HttpClient4Factory
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
 
-        if(Boolean.parseBoolean(config.getConfig().get("mTLSEnabled")))
+        if(config.getBooleanProperty("mTLSEnabled"))
         {
             clientBuilder.addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
                 if (!((HttpHost) context.getAttribute(HTTP_TARGET_HOST)).getSchemeName().equals(HTTPS_PROTOCOL))
@@ -89,12 +88,12 @@ public class HttpClient4Factory
             clientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
         }
 
-        clientBuilder.setMaxConnTotal(Integer.parseInt(config.getConfig().get("maxTotalConnections")));
-        clientBuilder.setMaxConnPerRoute(Integer.parseInt(config.getConfig().get("maxHostConnections")));
+        clientBuilder.setMaxConnTotal(config.getIntegerProperty("maxTotalConnections"));
+        clientBuilder.setMaxConnPerRoute(config.getIntegerProperty("maxHostConnections"));
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Integer.parseInt(config.getConfig().get("connectionTimeout")))
-                .setSocketTimeout(Integer.parseInt(config.getConfig().get("socketTimeout")))
+                .setConnectTimeout(config.getIntegerProperty("connectionTimeout"))
+                .setSocketTimeout(config.getIntegerProperty("socketTimeout"))
                 .build();
         clientBuilder.setDefaultRequestConfig(requestConfig);
 

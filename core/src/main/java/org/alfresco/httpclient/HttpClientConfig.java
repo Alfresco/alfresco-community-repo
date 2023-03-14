@@ -38,6 +38,8 @@ import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 
 public class HttpClientConfig
 {
+    private static final String HTTPCLIENT_CONFIG = "httpclient.config.";
+
     private Properties properties;
     private String serviceName;
 
@@ -62,9 +64,9 @@ public class HttpClientConfig
         return properties.keySet().stream()
                                             .filter(key -> key instanceof String)
                                             .map(Object::toString)
-                                            .filter(key -> key.startsWith(HttpClient4Factory.HTTPCLIENT_CONFIG + serviceName))
+                                            .filter(key -> key.startsWith(HTTPCLIENT_CONFIG + serviceName))
                                             .collect(Collectors.toMap(
-                                                    key -> key.replace(HttpClient4Factory.HTTPCLIENT_CONFIG + serviceName + ".", ""),
+                                                    key -> key.replace(HTTPCLIENT_CONFIG + serviceName + ".", ""),
                                                     key -> properties.getProperty(key, null)));
     }
 
@@ -101,5 +103,15 @@ public class HttpClientConfig
     public Map<String, String> getConfig()
     {
         return config;
+    }
+
+    public Integer getIntegerProperty(String propertyName)
+    {
+        return Integer.parseInt(config.get(propertyName));
+    }
+
+    public Boolean getBooleanProperty(String propertyName)
+    {
+        return Boolean.parseBoolean(config.get(propertyName));
     }
 }

@@ -116,7 +116,7 @@ jobs:
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco  -Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss,SSS
+        run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
       - name: "Output durations"

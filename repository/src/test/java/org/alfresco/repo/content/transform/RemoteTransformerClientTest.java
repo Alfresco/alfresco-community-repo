@@ -80,7 +80,7 @@ public class RemoteTransformerClientTest
     @Mock private StatusLine mockStatusLine;
     @Mock private HttpEntity mockReqEntity;
 
-    @Spy private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test", HttpClientConfig.getNonMtlsDefaultInstance());
+    @Spy private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test", new HttpClientConfig());
 
     private String sourceMimetype = "application/msword";
     private String sourceExtension = "doc";

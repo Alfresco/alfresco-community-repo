@@ -111,21 +111,6 @@ public class HttpClientConfig
                                                     key -> properties.getProperty(key, null)));
     }
 
-    /**
-     * @return HttpClientConfig instance with default values for testing purpose.
-     */
-    public static HttpClientConfig getNonMtlsDefaultInstance()
-    {
-        HttpClientConfig httpClientConfig = new HttpClientConfig();
-        httpClientConfig.getConfig().put("mTLSEnabled", "false");
-        httpClientConfig.getConfig().put("maxTotalConnections", "40");
-        httpClientConfig.getConfig().put("maxHostConnections", "40");
-        httpClientConfig.getConfig().put("socketTimeout", "0");
-        httpClientConfig.getConfig().put("connectionTimeout", "0");
-
-        return new HttpClientConfig();
-    }
-
     public Integer getIntegerProperty(String propertyName)
     {
         return Integer.parseInt(config.get(propertyName));

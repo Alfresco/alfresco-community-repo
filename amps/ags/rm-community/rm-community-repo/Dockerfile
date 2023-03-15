@@ -1,3 +1,4 @@
+ARG BASE_IMAGE
 # BUILD STAGE AGS
 FROM debian:11-slim AS AGSBUILDER
 
@@ -12,7 +13,7 @@ RUN unzip -q /build/gs-api-explorer-*.war -d /build/gs-api-explorer && \
     chmod -R g-w,o= /build
 
 # ACTUAL IMAGE
-FROM alfresco/alfresco-community-repo-base:${image.tag}
+FROM ${BASE_IMAGE}
 
 # Alfresco user does not have permissions to modify webapps or configuration. Switch to root.
 # The access will be fixed after all operations are done.

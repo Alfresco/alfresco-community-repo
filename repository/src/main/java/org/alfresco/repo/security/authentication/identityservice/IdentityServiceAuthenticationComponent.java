@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,38 +25,35 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import java.net.ConnectException;
-
-import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client.CredentialsVerificationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.authorization.client.util.HttpResponseException;
 
 /**
  *
- * Authenticates a user against Keycloak.
- * Keycloak's {@link AuthzClient} is used to retrieve an access token for the provided user credentials,
- * user is set as the current user if the user's access token can be obtained.
+ * Authenticates a user against Identity Service (Keycloak).
+ * {@link OAuth2Client} is used to verify provided user credentials. User is set as the current user if the user
+ * credentials are valid.
  * <br>
- * The AuthzClient can be null in which case this authenticator will just fall through to the next one in the chain.
+ * The {@link IdentityServiceAuthenticationComponent#oAuth2Client} can be null in which case this authenticator will
+ * just fall through to the next one in the chain.
  *
  */
 public class IdentityServiceAuthenticationComponent extends AbstractAuthenticationComponent implements ActivateableBean
 {
-    private final Log logger = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
-    /** client used to authenticate user credentials against Keycloak **/
-    private AuthzClient authzClient;
+    private final Log LOGGER = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
+    /** client used to authenticate user credentials against Authorization Server **/
+    private OAuth2Client oAuth2Client;
     /** enabled flag for the identity service subsystem**/
     private boolean active;
     private boolean allowGuestLogin;
 
-    public void setAuthenticatorAuthzClient(AuthzClient authenticatorAuthzClient)
+    public void setOAuth2Client(OAuth2Client oAuth2Client)
     {
-        this.authzClient = authenticatorAuthzClient;
+        this.oAuth2Client = oAuth2Client;
     }
 
     public void setAllowGuestLogin(boolean allowGuestLogin)
@@ -67,49 +64,31 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
 
-        if (authzClient == null)
+        if (oAuth2Client == null)
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("AuthzClient was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property. ");
+                LOGGER.debug("OAuth2Client was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property.");
             }
 
-            throw new AuthenticationException("User not authenticated because AuthzClient was not set.");
+            throw new AuthenticationException("User not authenticated because OAuth2Client was not set.");
         }
 
         try
         {
-            // Attempt to get an access token using the user credentials
-            authzClient.obtainAccessToken(userName, new String(password));
+            // Attempt to verify user credentials
+            oAuth2Client.verifyCredentials(userName, new String(password));
 
-            // Successfully obtained access token so treat as authenticated user
+            // Verification was successful so treat as authenticated user
             setCurrentUser(userName);
         }
-        catch (HttpResponseException e)
+        catch (CredentialsVerificationException e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Failed to authenticate user against Keycloak. Status: " + e.getStatusCode() + " Reason: "+ e.getReasonPhrase());
-            }
-
-            throw new AuthenticationException("Failed to authenticate user against Keycloak.", e);
+            throw new AuthenticationException("Failed to verify user credentials against the OAuth2 Authorization Server.", e);
         }
         catch (RuntimeException e)
         {
-            Throwable cause = ExceptionStackUtil.getCause(e, ConnectException.class);
-            if (cause != null)
-            {
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn("Couldn't connect to Keycloak server to authenticate user. Reason: " + cause.getMessage());
-                }
-                throw new AuthenticationException("Couldn't connect to Keycloak server to authenticate user.", cause);
-            }
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Error occurred while authenticating user against Keycloak. Reason: " + e.getMessage());
-            }
-            throw new AuthenticationException("Error occurred while authenticating user against Keycloak.", e);
+            throw new AuthenticationException("Failed to verify user credentials.", e);
         }
     }
 
@@ -128,5 +107,33 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     protected boolean implementationAllowsGuestLogin()
     {
         return allowGuestLogin;
+    }
+
+    /**
+     * An abstraction for acting as an OAuth2 Client
+     */
+    interface OAuth2Client
+    {
+        /**
+         * The OAuth2's Client role is only used to verify the user credentials (Resource Owner Password
+         * Credentials Flow) this is why there is an explicit method for verifying these.
+         * @param userName user's name
+         * @param password user's password
+         * @throws CredentialsVerificationException when the verification failed or couldn't be performed
+         */
+        void verifyCredentials(String userName, String password);
+
+        class CredentialsVerificationException extends RuntimeException
+        {
+            CredentialsVerificationException(String message)
+            {
+                super(message);
+            }
+
+            CredentialsVerificationException(String message, Throwable cause)
+            {
+                super(message, cause);
+            }
+        }
     }
 }

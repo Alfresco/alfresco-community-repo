@@ -136,6 +136,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.impl.solr.facet.FacetQNameUtilsTest.class,
     org.alfresco.util.BeanExtenderUnitTest.class,
     org.alfresco.repo.solr.SOLRTrackingComponentUnitTest.class,
+    org.alfresco.repo.security.authentication.identityservice.SpringOAuth2ClientUnitTest.class,
     org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
     org.alfresco.repo.security.authentication.PasswordHashingTest.class,
     org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,

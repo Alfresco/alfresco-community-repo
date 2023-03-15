@@ -21,12 +21,12 @@
       <property name="allowGuestLogin">
          <value>${identity-service.authentication.allowGuestLogin}</value>
       </property>
-      <property name="authenticatorAuthzClient">
-         <ref bean="authenticatorAuthzClient"/>
+      <property name="oAuth2Client">
+         <ref bean="oAuth2Client"/>
       </property>
    </bean>
 
-   <bean name="authenticatorAuthzClient" class="org.alfresco.repo.security.authentication.identityservice.AuthenticatorAuthzClientFactoryBean">
+   <bean name="oAuth2Client" class="org.alfresco.repo.security.authentication.identityservice.OAuth2ClientFactoryBean">
       <property name="identityServiceConfig">
          <ref bean="identityServiceConfig" />
       </property>

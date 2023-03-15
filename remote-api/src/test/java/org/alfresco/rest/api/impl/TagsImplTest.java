@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -268,6 +269,17 @@ public class TagsImplTest
         assertThat(actualCreatedTags)
             .isNotNull()
             .isEqualTo(expectedTags);
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void testGetTagByIdNotFoundValidation()
+    {
+        given(nodeServiceMock.hasAspect(TAG_NODE_REF, ContentModel.ASPECT_TAGGABLE)).willReturn(true);
+        objectUnderTest.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,TAG_ID);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(taggingServiceMock).shouldHaveNoInteractions();
     }
 
     private static List<Pair<String, NodeRef>> createTagAndNodeRefPairs(final List<String> tagNames)

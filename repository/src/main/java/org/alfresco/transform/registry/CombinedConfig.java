@@ -68,7 +68,7 @@ public class CombinedConfig extends CombinedTransformConfig
     private ConfigFileFinder configFileFinder;
     private int tEngineCount;
 
-    HttpClientConfig httpClientConfig;
+    private final HttpClientConfig httpClientConfig;
 
     public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClientConfig httpClientConfig)
     {
@@ -91,22 +91,23 @@ public class CombinedConfig extends CombinedTransformConfig
         return configFileFinder.readFiles(path, log);
     }
 
-    public boolean addRemoteConfig(List<String> urls, String remoteType)
+    public boolean addRemoteConfig(List<String> urls, String remoteType) throws IOException
     {
-        CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig);
-        boolean successReadingConfig = true;
-        for (String url : urls)
+        try(CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
         {
-            if (addRemoteConfig(httpclient, url, remoteType))
+            boolean successReadingConfig = true;
+            for (String url : urls)
             {
-                tEngineCount++ ;
+                if (addRemoteConfig(httpclient, url, remoteType))
+                {
+                    tEngineCount++;
+                } else
+                {
+                    successReadingConfig = false;
+                }
             }
-            else
-            {
-                successReadingConfig = false;
-            }
+            return successReadingConfig;
         }
-        return successReadingConfig;
     }
 
     private boolean addRemoteConfig(CloseableHttpClient httpclient, String baseUrl, String remoteType)

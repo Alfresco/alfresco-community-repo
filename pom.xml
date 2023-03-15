@@ -242,6 +242,12 @@
             </dependency>
 
             <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${dependency.jakarta-json-path.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>jakarta.xml.rpc</groupId>
                 <artifactId>jakarta.xml.rpc-api</artifactId>
                 <version>${dependency.jakarta-rpc-api.version}</version>

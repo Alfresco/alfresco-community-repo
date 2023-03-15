@@ -95,7 +95,6 @@
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
-            <version>${dependency.jakarta-json-path.version}</version>
         </dependency>
     </dependencies>
 

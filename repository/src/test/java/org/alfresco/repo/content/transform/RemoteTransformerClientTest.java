@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
@@ -79,7 +80,7 @@ public class RemoteTransformerClientTest
     @Mock private StatusLine mockStatusLine;
     @Mock private HttpEntity mockReqEntity;
 
-    @Spy private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test");
+    @Spy private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test", HttpClientConfig.getNonMtlsDefaultInstance());
 
     private String sourceMimetype = "application/msword";
     private String sourceExtension = "doc";

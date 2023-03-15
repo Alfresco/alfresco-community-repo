@@ -35,10 +35,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 
 
 public class HttpClient4Factory
@@ -68,6 +70,11 @@ public class HttpClient4Factory
 
     public static CloseableHttpClient createHttpClient(HttpClientConfig config)
     {
+        return createHttpClient(config, null);
+    }
+
+    public static CloseableHttpClient createHttpClient(HttpClientConfig config, HttpClientConnectionManager connectionManager)
+    {
         HttpClientBuilder clientBuilder = HttpClients.custom();
 
         if(config.getBooleanProperty("mTLSEnabled"))
@@ -88,14 +95,21 @@ public class HttpClient4Factory
             clientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
         }
 
-        clientBuilder.setMaxConnTotal(config.getIntegerProperty("maxTotalConnections"));
-        clientBuilder.setMaxConnPerRoute(config.getIntegerProperty("maxHostConnections"));
+        if(connectionManager != null)
+        {
+            clientBuilder.setConnectionManager(connectionManager);
+        }
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(config.getIntegerProperty("connectionTimeout"))
-                .setSocketTimeout(config.getIntegerProperty("socketTimeout"))
-                .build();
+               .setConnectTimeout(config.getIntegerProperty("connectionTimeout"))
+               .setSocketTimeout(config.getIntegerProperty("socketTimeout"))
+               .setConnectionRequestTimeout(config.getIntegerProperty("connectionRequestTimeout"))
+               .build();
+
         clientBuilder.setDefaultRequestConfig(requestConfig);
+        clientBuilder.setMaxConnTotal(config.getIntegerProperty("maxTotalConnections"));
+        clientBuilder.setMaxConnPerRoute(config.getIntegerProperty("maxHostConnections"));
+        clientBuilder.setRetryHandler(new StandardHttpRequestRetryHandler(5, false));
 
         return clientBuilder.build();
     }

@@ -45,6 +45,13 @@ public class ListBackedPagingResults<R> implements PagingResults<R>
         size = list.size();
         hasMore = false;
     }
+
+    public ListBackedPagingResults(List<R> list, boolean hasMore)
+    {
+        this(list);
+        this.hasMore = hasMore;
+    }
+
     public ListBackedPagingResults(List<R> list, PagingRequest paging)
     {
         // Excerpt

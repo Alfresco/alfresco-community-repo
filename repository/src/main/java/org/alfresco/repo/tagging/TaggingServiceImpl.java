@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
@@ -914,51 +915,23 @@ public class TaggingServiceImpl implements TaggingService,
         return new EmptyPagingResults<Pair<NodeRef, String>>();
     }
 
+    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
+    {
+        return getTags(storeRef, pagingRequest, null, null);
+    }
+
     /**
      * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.StoreRef, org.alfresco.query.PagingRequest)
      */
-    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
+    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         ParameterCheck.mandatory("storeRef", storeRef);
 
-    	PagingResults<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true);
-        final List<Pair<NodeRef, String>> result = new ArrayList<Pair<NodeRef, String>>(rootCategories.getPage().size());
-        for (ChildAssociationRef rootCategory : rootCategories.getPage())
-        {
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
-            result.add(new Pair<NodeRef, String>(rootCategory.getChildRef(), name));
-        }
-        final boolean hasMoreItems = rootCategories.hasMoreItems();
-        final Pair<Integer, Integer> totalResultCount = rootCategories.getTotalResultCount();
-        final String queryExecutionId = rootCategories.getQueryExecutionId();
-        rootCategories = null;
+        PagingResults<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true,
+            exactNamesFilter, alikeNamesFilter);
 
-        return new PagingResults<Pair<NodeRef, String>>()
-        {
-        	@Override
-        	public List<Pair<NodeRef, String>> getPage()
-        	{
-        		return result;
-        	}
-
-        	@Override
-        	public boolean hasMoreItems()
-        	{
-        		return hasMoreItems;
-        	}
-
-        	@Override
-        	public Pair<Integer, Integer> getTotalResultCount()
-        	{
-        		return totalResultCount;
-        	}
-
-        	@Override
-        	public String getQueryExecutionId()
-        	{
-        		return queryExecutionId;
-        	}
-        };
+        return mapPagingResult(rootCategories,
+            (childAssociation) -> new Pair<>(childAssociation.getChildRef(), childAssociation.getQName().getLocalName()));
     }
     
     /**
@@ -1599,5 +1572,37 @@ public class TaggingServiceImpl implements TaggingService,
             updateTagBehaviour.enable();
             createTagBehaviour.enable();
         }
+    }
+
+    private <T, R> PagingResults<R> mapPagingResult(final PagingResults<T> pagingResults, final Function<T, R> mapper)
+    {
+        return new PagingResults<R>()
+        {
+            @Override
+            public List<R> getPage()
+            {
+                return pagingResults.getPage().stream()
+                    .map(mapper)
+                    .collect(Collectors.toList());
+            }
+
+            @Override
+            public boolean hasMoreItems()
+            {
+                return pagingResults.hasMoreItems();
+            }
+
+            @Override
+            public Pair<Integer, Integer> getTotalResultCount()
+            {
+                return pagingResults.getTotalResultCount();
+            }
+
+            @Override
+            public String getQueryExecutionId()
+            {
+                return pagingResults.getQueryExecutionId();
+            }
+        };
     }
 }

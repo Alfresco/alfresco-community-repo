@@ -24,7 +24,7 @@ public class TagsDataPrep extends RestTest
     protected static FileModel document;
     protected static FolderModel folder;
     protected static String documentTagValue, documentTagValue2, folderTagValue;
-    protected static RestTagModel documentTag, documentTag2, folderTag, returnedModel;
+    protected static RestTagModel documentTag, documentTag2, folderTag, orphanTag, returnedModel;
     protected static RestTagModelsCollection returnedCollection;
 
     @BeforeClass
@@ -47,16 +47,17 @@ public class TagsDataPrep extends RestTest
         documentTag = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue);
         documentTag2 = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue2);
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
+        orphanTag = restClient.withCoreAPI().createSingleTag(RestTagModel.builder().tag(RandomData.getRandomName("orphan-tag")).create());
 
         // Allow indexing to complete.
         Utility.sleep(500, 60000, () ->
-            {
-                returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-                returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
-                                  .and().entriesListContains("tag", documentTagValue2.toLowerCase())
-                                  .and().entriesListContains("tag", folderTagValue.toLowerCase());
-            });
-
+        {
+            returnedCollection = restClient.withParams("maxItems=10000", "where=(tag MATCHES ('*tag*'))")
+                .withCoreAPI().getTags();
+            returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
+                              .and().entriesListContains("tag", documentTagValue2.toLowerCase())
+                              .and().entriesListContains("tag", folderTagValue.toLowerCase());
+        });
     }
 
     protected RestTagModel createTagForDocument(FileModel document)

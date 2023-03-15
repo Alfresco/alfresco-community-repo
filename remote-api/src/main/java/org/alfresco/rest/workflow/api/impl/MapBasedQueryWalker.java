@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,6 +27,7 @@ package org.alfresco.rest.workflow.api.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,7 @@ import org.apache.commons.beanutils.ConvertUtils;
  * {@link InvalidArgumentException} is thrown unless the method
  * {@link #handleUnmatchedComparison(int, String, String)} returns true (default
  * implementation returns false).
- * 
+ *
  * @author Frederik Heremans
  * @author Tijs Rademakers
  */
@@ -72,21 +73,21 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     private Map<String, String> equalsProperties;
 
     private Map<String, String> matchesProperties;
-    
+
     private Map<String, String> greaterThanProperties;
-    
+
     private Map<String, String> greaterThanOrEqualProperties;
-    
+
     private Map<String, String> lessThanProperties;
-    
+
     private Map<String, String> lessThanOrEqualProperties;
-    
+
     private List<QueryVariableHolder> variableProperties;
-    
+
     private boolean variablesEnabled;
-    
+
     private NamespaceService namespaceService;
-    
+
     private DictionaryService dictionaryService;
 
     public MapBasedQueryWalker(Set<String> supportedEqualsParameters, Set<String> supportedMatchesParameters)
@@ -132,7 +133,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
             lessThanOrEqualProperties = new HashMap<String, String>();
         }
     }
-    
+
     public void enableVariablesSupport(NamespaceService namespaceService, DictionaryService dictionaryService)
     {
         variablesEnabled = true;
@@ -148,7 +149,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         this.dictionaryService = dictionaryService;
         variableProperties = new ArrayList<QueryVariableHolder>();
     }
-    
+
     public List<QueryVariableHolder> getVariableProperties() {
         return variableProperties;
     }
@@ -158,9 +159,9 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     {
         if(negated)
         {
-            throw new InvalidArgumentException("Cannot use negated matching for property: " + property); 
+            throw new InvalidArgumentException("Cannot use negated matching for property: " + property);
         }
-        if (variablesEnabled && property.startsWith("variables/")) 
+        if (variablesEnabled && property.startsWith("variables/"))
         {
             processVariable(property, value, WhereClauseParser.MATCHES);
         }
@@ -170,19 +171,19 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         }
         else
         {
-            throw new InvalidArgumentException("Cannot use matching for property: " + property); 
+            throw new InvalidArgumentException("Cannot use matching for property: " + property);
         }
     }
-    
+
     @Override
     public void comparison(int type, String propertyName, String propertyValue, boolean negated)
     {
-        if (variablesEnabled && propertyName.startsWith("variables/")) 
+        if (variablesEnabled && propertyName.startsWith("variables/"))
         {
             processVariable(propertyName, propertyValue, type);
             return;
         }
-        
+
         boolean throwError = false;
         if (type == WhereClauseParser.EQUALS)
         {
@@ -255,15 +256,24 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
             throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
         }
 
-        if (throwError) 
-        { 
+        if (throwError)
+        {
             throw new InvalidArgumentException("framework.exception.InvalidProperty", new Object[] {propertyName, propertyValue, WhereClauseParser.tokenNames[type]});
         }
         else if (negated)
         {
             // Throw error for the unsupported negation only if the property was valid for comparison, show the more meaningful error first.
-            throw new InvalidArgumentException("Cannot use NOT for " + WhereClauseParser.tokenNames[type] + " comparison."); 
+            throw new InvalidArgumentException("Cannot use NOT for " + WhereClauseParser.tokenNames[type] + " comparison.");
         }
+    }
+
+    /**
+     * Get expected value for property and comparison type. This class supports only non-negated comparisons, thus parameter negated is ignored in bellow method.
+     */
+    @Override
+    public Collection<String> getProperty(String propertyName, int type, boolean negated)
+    {
+        return Set.of(this.getProperty(propertyName, type));
     }
 
     public String getProperty(String propertyName, int type)
@@ -300,7 +310,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
 
     /**
      * Get the property value, converted to the requested type.
-     * 
+     *
      * @param propertyName name of the parameter
      * @param type int
      * @param returnType type of object to return
@@ -334,7 +344,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             // Conversion failed, wrap in Illegal
             throw new InvalidArgumentException("Query property value for '" + propertyName + "' should be a valid "
-                    + returnType.getSimpleName());
+                + returnType.getSimpleName());
         }
     }
 
@@ -345,7 +355,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         // method indicates that AND is
         // supported. OR is not supported at the same time.
     }
-    
+
     protected void processVariable(String propertyName, String propertyValue, int type)
     {
         String localPropertyName = propertyName.replaceFirst("variables/", "");
@@ -353,25 +363,25 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         DataTypeDefinition dataTypeDefinition = null;
         // variable scope global is default
         String scopeDef = "global";
-        
+
         // look for variable scope
         if (localPropertyName.contains("local/"))
         {
             scopeDef = "local";
             localPropertyName = localPropertyName.replaceFirst("local/", "");
         }
-    
+
         if (localPropertyName.contains("global/"))
         {
             localPropertyName = localPropertyName.replaceFirst("global/", "");
         }
-        
+
         // look for variable type definition
-        if ((propertyValue.contains("_") || propertyValue.contains(":")) && propertyValue.contains(" ")) 
+        if ((propertyValue.contains("_") || propertyValue.contains(":")) && propertyValue.contains(" "))
         {
             int indexOfSpace = propertyValue.indexOf(' ');
-            if ((propertyValue.contains("_") && indexOfSpace > propertyValue.indexOf("_")) || 
-                    (propertyValue.contains(":") && indexOfSpace > propertyValue.indexOf(":")))
+            if ((propertyValue.contains("_") && indexOfSpace > propertyValue.indexOf("_")) ||
+                (propertyValue.contains(":") && indexOfSpace > propertyValue.indexOf(":")))
             {
                 String typeDef = propertyValue.substring(0, indexOfSpace);
                 try
@@ -386,7 +396,7 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
                 }
             }
         }
-        
+
         if (dataTypeDefinition != null && "java.util.Date".equalsIgnoreCase(dataTypeDefinition.getJavaClassName()))
         {
             // fix for different ISO 8601 Date format classes in Alfresco (org.alfresco.util and Spring Surf)
@@ -396,18 +406,18 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         {
             actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, propertyValue);
         }
-        else 
+        else
         {
             actualValue = propertyValue;
         }
-        
+
         variableProperties.add(new QueryVariableHolder(localPropertyName, type, actualValue, scopeDef));
     }
 
     /**
      * Called when unsupported property is encountered or comparison operator
      * other than equals.
-     * 
+     *
      * @return true, if the comparison is handles successfully. False, if an
      *         exception should be thrown because the comparison can't be
      *         handled.
@@ -416,25 +426,25 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     {
         return false;
     }
-    
+
     public static class QueryVariableHolder implements Serializable
     {
         private static final long serialVersionUID = 1L;
-        
+
         private String propertyName;
         private int operator;
         private Object propertyValue;
         private String scope;
-        
+
         public QueryVariableHolder() {}
-        
+
         public QueryVariableHolder(String propertyName, int operator, Object propertyValue, String scope) {
             this.propertyName = propertyName;
             this.operator = operator;
             this.propertyValue = propertyValue;
             this.scope = scope;
         }
-        
+
         public String getPropertyName()
         {
             return propertyName;

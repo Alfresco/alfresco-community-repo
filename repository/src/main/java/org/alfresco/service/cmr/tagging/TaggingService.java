@@ -25,10 +25,12 @@
  */
 package org.alfresco.service.cmr.tagging;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.api.AlfrescoPublicApi; 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
@@ -75,6 +77,21 @@ public interface TaggingService
      */
     @NotAuditable
     PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
+
+    /**
+     * Get a paged list of tags filtered by name
+     *
+     * @param storeRef StoreRef
+     * @param pagingRequest PagingRequest
+     * @param exactNamesFilter PagingRequest
+     * @param alikeNamesFilter PagingRequest
+     * @return PagingResults
+     */
+    @NotAuditable
+    default PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        return new EmptyPagingResults<>();
+    }
     
     /** 
      * Get all the tags currently available that match the provided filter.

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,6 +26,7 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeMap;
 
@@ -33,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Class to hold configuration for the Identity Service.
@@ -41,8 +43,9 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class IdentityServiceConfig extends AdapterConfig implements InitializingBean
 {
-    private static Log logger = LogFactory.getLog(IdentityServiceConfig.class);
-    
+    private static final Log LOGGER = LogFactory.getLog(IdentityServiceConfig.class);
+    private static final String REALMS = "realms";
+    private static final String SECRET = "secret";
     private static final String CREDENTIALS_SECRET = "identity-service.credentials.secret";
     private static final String CREDENTIALS_PROVIDER = "identity-service.credentials.provider";
     
@@ -95,13 +98,13 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        // programatically build the more complex objects i.e. credentials
+        // programmatically build the more complex objects i.e. credentials
         Map<String, Object> credentials = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         
         String secret = this.globalProperties.getProperty(CREDENTIALS_SECRET);
         if (secret != null && !secret.isEmpty())
         {
-            credentials.put("secret", secret);
+            credentials.put(SECRET, secret);
         }
         
         String provider = this.globalProperties.getProperty(CREDENTIALS_PROVIDER);
@@ -116,10 +119,27 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
         {
             this.setCredentials(credentials);
             
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("Created credentials map from config: " + credentials);
+                LOGGER.debug("Created credentials map from config: " + credentials);
             }
         }
+    }
+
+    String getIssuerUrl()
+    {
+        return UriComponentsBuilder.fromUriString(getAuthServerUrl())
+                            .pathSegment(REALMS, getRealm())
+                            .build()
+                            .toString();
+    }
+
+    public String getClientSecret()
+    {
+        return Optional.ofNullable(getCredentials())
+                .map(c -> c.get(SECRET))
+                .filter(String.class::isInstance)
+                .map(String.class::cast)
+                .orElse("");
     }
 }

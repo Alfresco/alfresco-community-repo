@@ -51,40 +51,6 @@ public class HttpClientConfig
 
     private Map<String, String> config;
 
-    public void init()
-    {
-        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
-        this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
-
-        config = retrieveConfig(serviceName);
-    }
-
-    private Map<String, String> retrieveConfig(String serviceName)
-    {
-        return properties.keySet().stream()
-                                            .filter(key -> key instanceof String)
-                                            .map(Object::toString)
-                                            .filter(key -> key.startsWith(HTTPCLIENT_CONFIG + serviceName))
-                                            .collect(Collectors.toMap(
-                                                    key -> key.replace(HTTPCLIENT_CONFIG + serviceName + ".", ""),
-                                                    key -> properties.getProperty(key, null)));
-    }
-
-    /**
-     * @return HttpClientConfig instance with default values for testing purpose.
-     */
-    public static HttpClientConfig getNonMtlsDefaultInstance()
-    {
-        HttpClientConfig httpClientConfig = new HttpClientConfig();
-        httpClientConfig.getConfig().put("mTLSEnabled", "false");
-        httpClientConfig.getConfig().put("maxTotalConnections", "40");
-        httpClientConfig.getConfig().put("maxHostConnections", "40");
-        httpClientConfig.getConfig().put("socketTimeout", "0");
-        httpClientConfig.getConfig().put("connectionTimeout", "0");
-
-        return new HttpClientConfig();
-    }
-
     public void setProperties(Properties properties)
     {
         this.properties = properties;
@@ -118,6 +84,46 @@ public class HttpClientConfig
     public Map<String, String> getConfig()
     {
         return config;
+    }
+
+
+    public void init()
+    {
+        this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
+        this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
+
+        config = retrieveConfig(serviceName);
+    }
+
+    /**
+     * Method used for retrieving HttpClient config from Global Properties
+     * @param serviceName name of used service
+     * @return map of properties
+     */
+    private Map<String, String> retrieveConfig(String serviceName)
+    {
+        return properties.keySet().stream()
+                                            .filter(key -> key instanceof String)
+                                            .map(Object::toString)
+                                            .filter(key -> key.startsWith(HTTPCLIENT_CONFIG + serviceName))
+                                            .collect(Collectors.toMap(
+                                                    key -> key.replace(HTTPCLIENT_CONFIG + serviceName + ".", ""),
+                                                    key -> properties.getProperty(key, null)));
+    }
+
+    /**
+     * @return HttpClientConfig instance with default values for testing purpose.
+     */
+    public static HttpClientConfig getNonMtlsDefaultInstance()
+    {
+        HttpClientConfig httpClientConfig = new HttpClientConfig();
+        httpClientConfig.getConfig().put("mTLSEnabled", "false");
+        httpClientConfig.getConfig().put("maxTotalConnections", "40");
+        httpClientConfig.getConfig().put("maxHostConnections", "40");
+        httpClientConfig.getConfig().put("socketTimeout", "0");
+        httpClientConfig.getConfig().put("connectionTimeout", "0");
+
+        return new HttpClientConfig();
     }
 
     public Integer getIntegerProperty(String propertyName)

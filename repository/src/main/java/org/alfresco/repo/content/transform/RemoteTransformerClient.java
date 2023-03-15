@@ -30,6 +30,8 @@ import java.io.InputStream;
 import java.util.StringJoiner;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClient4Factory;
+import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
@@ -57,6 +59,8 @@ import org.apache.http.util.EntityUtils;
  */
 public class RemoteTransformerClient
 {
+    private final HttpClientConfig httpClientConfig;
+
     private final String name;
     private final String baseUrl;
 
@@ -70,10 +74,11 @@ public class RemoteTransformerClient
     // Only changed once on success. This is stored so it can always be returned.
     private Pair<Boolean, String> checkResult = new Pair<>(null, null);
 
-    public RemoteTransformerClient(String name, String baseUrl)
+    public RemoteTransformerClient(String name, String baseUrl, HttpClientConfig httpClientConfig)
     {
         this.name = name;
         this.baseUrl = baseUrl == null || baseUrl.trim().isEmpty() ? null : baseUrl.trim();
+        this.httpClientConfig = httpClientConfig;
     }
 
     public void setStartupRetryPeriodSeconds(int startupRetryPeriodSeconds)
@@ -129,7 +134,7 @@ public class RemoteTransformerClient
 
         try
         {
-            try (CloseableHttpClient httpclient = HttpClients.createDefault())
+            try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
             {
                 try (CloseableHttpResponse response = execute(httpclient, httppost))
                 {

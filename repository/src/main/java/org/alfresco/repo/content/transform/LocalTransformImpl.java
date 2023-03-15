@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -60,11 +61,12 @@ public class LocalTransformImpl extends AbstractLocalTransform
                               boolean retryTransformOnDifferentMimeType,
                               Set<TransformOption> transformsTransformOptions,
                               LocalTransformServiceRegistry localTransformServiceRegistry, String baseUrl,
+                              HttpClientConfig httpClientConfig,
                               int startupRetryPeriodSeconds)
     {
         super(name, transformerDebug, mimetypeService, strictMimeTypeCheck, strictMimetypeExceptions,
                 retryTransformOnDifferentMimeType, transformsTransformOptions, localTransformServiceRegistry);
-        remoteTransformerClient = new RemoteTransformerClient(name, baseUrl);
+        remoteTransformerClient = new RemoteTransformerClient(name, baseUrl, httpClientConfig);
         remoteTransformerClient.setStartupRetryPeriodSeconds(startupRetryPeriodSeconds);
 
         checkAvailability();

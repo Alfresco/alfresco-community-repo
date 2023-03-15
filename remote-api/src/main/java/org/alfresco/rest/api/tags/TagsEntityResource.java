@@ -59,9 +59,8 @@ public class TagsEntityResource implements EntityResourceAction.Read<Tag>,
     }
 
 	/**
-	 * 
 	 * Returns a paged list of all currently used tags in the store workspace://SpacesStore for the current tenant.
-	 * 
+	 * GET /tags
 	 */
 	@Override
     @WebApiDescription(title="A paged list of all tags in the network.")

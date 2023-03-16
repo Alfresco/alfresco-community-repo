@@ -109,6 +109,7 @@
         <dependency.jakarta-mail-api.version>1.6.5</dependency.jakarta-mail-api.version>
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
         <dependency.jakarta-json-path.version>2.7.0</dependency.jakarta-json-path.version>
+        <dependency.json-smart.version>2.4.8</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.4.0-M1</alfresco.googledrive.version>
@@ -245,6 +246,11 @@
                 <groupId>com.jayway.jsonpath</groupId>
                 <artifactId>json-path</artifactId>
                 <version>${dependency.jakarta-json-path.version}</version>
+            </dependency>
+            <dependency>
+                <groupId> net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>${dependency.json-smart.version}</version>
             </dependency>
 
             <dependency>

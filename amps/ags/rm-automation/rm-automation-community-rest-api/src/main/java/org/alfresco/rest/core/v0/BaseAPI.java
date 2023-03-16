@@ -512,13 +512,39 @@ public abstract class BaseAPI
         try
         {
             HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
-            assertEquals("POST request to " + requestUrl + " was not successful.", expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
+            assertEquals("POST request to " + requestUrl + " was not successful. Response: " + responseBodyToJson(httpResponse), expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
             return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)
         {
             throw new IllegalArgumentException("doPostRequest failed", error);
         }
+    }
+
+    /**
+     * Try to convert the response body to a JSON object.
+     *
+     * @param response The response.
+     * @return The JSON object or null if it was not possible to convert the response.
+     */
+    private JSONObject responseBodyToJson(HttpResponse response)
+    {
+        try
+        {
+            try
+            {
+                return new JSONObject(EntityUtils.toString(response.getEntity()));
+            }
+            catch (JSONException error)
+            {
+                LOGGER.error("Converting message body to JSON failed. Body: {}", response.getEntity().getContent(), error);
+            }
+        }
+        catch (ParseException | IOException error)
+        {
+            LOGGER.error("Parsing message body failed.", error);
+        }
+        return null;
     }
 
     /**
@@ -558,18 +584,7 @@ public abstract class BaseAPI
             HttpResponse response = client.execute(adminUser, adminPassword, request);
             LOGGER.info("Response: {}", response.getStatusLine());
 
-            try
-            {
-                responseBody = new JSONObject(EntityUtils.toString(response.getEntity()));
-            }
-            catch (JSONException error)
-            {
-                LOGGER.error("Converting message body to JSON failed. Body: {}", responseBody, error);
-            }
-            catch (ParseException | IOException error)
-            {
-                LOGGER.error("Parsing message body failed.", error);
-            }
+            responseBody = responseBodyToJson(response);
 
             switch (response.getStatusLine().getStatusCode())
             {

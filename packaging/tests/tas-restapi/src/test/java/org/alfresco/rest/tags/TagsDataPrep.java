@@ -14,6 +14,8 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
 
+import java.util.List;
+
 public class TagsDataPrep extends RestTest
 {
 
@@ -22,7 +24,8 @@ public class TagsDataPrep extends RestTest
     protected static ListUserWithRoles usersWithRoles;
     protected static SiteModel siteModel;
     protected static FileModel document;
-    protected static FolderModel folder;
+    protected static FolderModel folder, folder2;
+    protected static RestTagModelsCollection restTagModelsCollection;
     protected static String documentTagValue, documentTagValue2, folderTagValue;
     protected static RestTagModel documentTag, documentTag2, folderTag, orphanTag, returnedModel;
     protected static RestTagModelsCollection returnedCollection;
@@ -38,6 +41,7 @@ public class TagsDataPrep extends RestTest
         usersWithRoles = dataUser.usingAdmin().addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
         document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
+        folder2 = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
         documentTagValue = RandomData.getRandomName("tag").toLowerCase();
         documentTagValue2 = RandomData.getRandomName("tag").toLowerCase();
@@ -48,6 +52,7 @@ public class TagsDataPrep extends RestTest
         documentTag2 = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue2);
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
         orphanTag = restClient.withCoreAPI().createSingleTag(RestTagModel.builder().tag(RandomData.getRandomName("orphan-tag").toLowerCase()).create());
+        restTagModelsCollection = restClient.withCoreAPI().usingResource(folder2).addTags(folderTagValue, documentTagValue);
 
         // Allow indexing to complete.
         Utility.sleep(500, 60000, () ->

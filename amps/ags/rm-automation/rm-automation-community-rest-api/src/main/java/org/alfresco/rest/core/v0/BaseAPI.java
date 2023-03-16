@@ -512,7 +512,12 @@ public abstract class BaseAPI
         try
         {
             HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
-            assertEquals("POST request to " + requestUrl + " was not successful. Response: " + responseBodyToJson(httpResponse), expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
+            if (httpResponse.getStatusLine().getStatusCode() != expectedStatusCode)
+            {
+                // It's only possible to stream the response body once, so ensure we only do this if the test has failed.
+                JSONObject responseJson = responseBodyToJson(httpResponse);
+                assertEquals("POST request to " + requestUrl + " was not successful. Response: " + responseJson, expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
+            }
             return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)

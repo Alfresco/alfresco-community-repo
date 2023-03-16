@@ -12,49 +12,6 @@
             </list>
         </property>
    </bean>
-   
-     <!-- Email Server -->
-    <bean id="emailServer" class="org.alfresco.email.server.impl.subetha.SubethaEmailServer">
-        <property name="enabled">
-            <value>${email.server.enabled}</value>
-        </property>
-        <property name="domain">
-            <value>${email.server.domain}</value>
-        </property>
-        <property name="port">
-            <value>${email.server.port}</value>
-        </property>
-        <property name="maxConnections">
-            <value>${email.server.connections.max}</value>
-        </property>
-        <property name="blockedSenders">
-            <value>${email.server.blocked.senders}</value>
-        </property>
-        <property name="allowedSenders">
-            <value>${email.server.allowed.senders}</value>
-        </property>
-        <property name="enableTLS">
-            <value>${email.server.enableTLS}</value>
-        </property>
-        <property name="hideTLS">
-            <value>${email.server.hideTLS}</value>
-        </property>
-        <property name="requireTLS">
-            <value>${email.server.requireTLS}</value>
-        </property>
-        <property name="authenticate">
-            <value>${email.server.auth.enabled}</value>
-        </property>
-        <property name="emailService">
-            <ref bean="EmailService" />
-        </property>
-        <property name="authenticationComponent">
-            <ref bean="authenticationComponent" />
-        </property>
-        <property name="unknownUser">
-           <value>${email.inbound.unknownUser}</value>
-        </property>
-    </bean>
 
    <alias name="emailService" alias="EmailService"/>
 

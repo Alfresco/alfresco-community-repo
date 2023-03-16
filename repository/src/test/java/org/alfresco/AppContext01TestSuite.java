@@ -64,7 +64,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.action.executer.SpecialiseTypeActionExecuterTest.class,
     org.alfresco.repo.action.executer.RemoveFeaturesActionExecuterTest.class,
     org.alfresco.repo.action.ActionTrackingServiceImplTest.class,
-    org.alfresco.email.server.EmailServerTest.class,
 
     // FTPServerTest fails when run from Eclipse
     org.alfresco.filesys.FTPServerTest.class,

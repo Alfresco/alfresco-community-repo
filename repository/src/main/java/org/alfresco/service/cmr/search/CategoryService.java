@@ -122,7 +122,7 @@ public interface CategoryService
      * @param sortByName boolean
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName"})
-    PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
+    Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
     
     /**
      * Get a paged list of the root categories for an aspect/classification
@@ -135,7 +135,7 @@ public interface CategoryService
      * @return
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "filter"})
-    PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter);
+    Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter);
 
     /**
      * Get a paged list of the root categories for an aspect/classification supporting multiple name filters.
@@ -148,12 +148,19 @@ public interface CategoryService
      * @param alikeNamesFilter
      * @return
      */
+//    @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "exactNamesFilter", "alikeNamesFilter"})
+//    default PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
+//        Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+//    {
+//        return new EmptyPagingResults<>();
+//    }
+
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "exactNamesFilter", "alikeNamesFilter"})
-    default PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
-        Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
-    {
-        return new EmptyPagingResults<>();
+    default Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
+                                                              Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter) {
+        return null;
     }
+
 
     /**
      * Get the root categories for an aspect/classification with names that start with filter

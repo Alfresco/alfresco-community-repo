@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.tagging;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.EmptyPagingResults;
@@ -78,7 +79,7 @@ public interface TaggingService
      * @return PagingResults
      */
     @NotAuditable
-    PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
+    List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
 
     /**
      * Get a paged list of tags filtered by name
@@ -90,10 +91,7 @@ public interface TaggingService
      * @return PagingResults
      */
     @NotAuditable
-    default PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
-    {
-        return new EmptyPagingResults<>();
-    }
+    List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter);
     
     /** 
      * Get all the tags currently available that match the provided filter.
@@ -327,8 +325,15 @@ public interface TaggingService
      */
     @NotAuditable
     Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, String filter, int fromTag, int pageSize);
-    
-    
+
+    /**
+     *
+     * @param storeRef              node reference
+     * @param parametersInclude     the 'include' part of the parameters
+     * @return List of pairs of tag nodeRefs and tag names
+     */
+    List<Pair<NodeRef, String>> getTags(StoreRef storeRef, List<String> parametersInclude);
+
     /**
      * Get tagged nodes and count of nodes group by tag name
      * 
@@ -362,6 +367,14 @@ public interface TaggingService
     {
         return Collections.emptyList();
     }
+
+    /**
+     *
+     * @param storeRef
+     * @param tagsByCountMap
+     * @return a map with each tag name and its count
+     */
+    Map<String, Long> calculateCount(StoreRef storeRef, Map<String, Long> tagsByCountMap);
 }
 
 

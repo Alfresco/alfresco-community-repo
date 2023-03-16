@@ -118,7 +118,7 @@ public class TaggingServiceImpl implements TaggingService,
     protected static final String TAGGING_AUDIT_ROOT_PATH = "/tagging";
     protected static final String TAGGING_AUDIT_KEY_NODEREF = "node";
     protected static final String TAGGING_AUDIT_KEY_TAGS = "tags";
-
+    
     private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
     
 	private static Collator collator = Collator.getInstance();
@@ -138,6 +138,9 @@ public class TaggingServiceImpl implements TaggingService,
     private static final String TAG_DETAILS_DELIMITER = "|";
     /** Next tag delimiter */
     private static final String NEXT_TAG_DELIMITER = "\n";
+    /** Parameters Include count */
+    private static final String PARAM_INCLUDE_COUNT = "count";
+
 
     private static Set<String> FORBIDDEN_TAGS_SEQUENCES = new HashSet<String>(Arrays.asList(new String[] {NEXT_TAG_DELIMITER, TAG_DETAILS_DELIMITER}));
 
@@ -680,6 +683,20 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
 
+    public Map<String, Long> calculateCount(StoreRef storeRef, Map<String, Long> tagsByCountMap)
+    {
+        List<Pair<String, Integer>> tagsByCount = findTaggedNodesAndCountByTagName(storeRef);
+        if (tagsByCount != null)
+        {
+            for (Pair<String, Integer> tagByCountElem : tagsByCount)
+            {
+                tagsByCountMap.put(tagByCountElem.getFirst(), Long.valueOf(tagByCountElem.getSecond()));
+            }
+        }
+        return tagsByCountMap;
+    }
+
+
     /**
      * @see TaggingService#hasTag(NodeRef, String)
      */
@@ -940,7 +957,22 @@ public class TaggingServiceImpl implements TaggingService,
         return new EmptyPagingResults<Pair<NodeRef, String>>();
     }
 
-    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
+    public List<Pair<NodeRef, String>> getTags(StoreRef storeRef, List<String> parametersInclude)
+    {
+        ParameterCheck.mandatory("storeRef", storeRef);
+        Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
+        List<Pair<NodeRef, String>> result = new ArrayList<>(rootCategories.size());
+
+        for (ChildAssociationRef rootCategory : rootCategories)
+        {
+            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+            result.add(new Pair<>(rootCategory.getChildRef(), name));
+        }
+
+        return result;
+    }
+
+    public List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
     {
         return getTags(storeRef, pagingRequest, null, null);
     }
@@ -948,15 +980,20 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see TaggingService#getTags(StoreRef, PagingRequest)
      */
-    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    public List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         ParameterCheck.mandatory("storeRef", storeRef);
-
-        PagingResults<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true,
+        Collection<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true,
             exactNamesFilter, alikeNamesFilter);
+        List<Pair<NodeRef, String>> result = new ArrayList<>(rootCategories.size());
 
-        return mapPagingResult(rootCategories,
-            (childAssociation) -> new Pair<>(childAssociation.getChildRef(), childAssociation.getQName().getLocalName()));
+        for (ChildAssociationRef rootCategory : rootCategories)
+        {
+            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+            result.add(new Pair<>(rootCategory.getChildRef(), name));
+        }
+
+        return result;
     }
     
     /**

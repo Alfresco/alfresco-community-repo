@@ -392,18 +392,18 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         throw new UnsupportedOperationException();
     }
 
-    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
     {
         return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null, null);
     }
 
-    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter)
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter)
     {
         final Collection<String> alikeNamesFilter = Optional.ofNullable(filter).map(f -> "*".concat(f).concat("*")).map(Set::of).orElse(null);
         return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null, alikeNamesFilter);
     }
 
-    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
         Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         final Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
@@ -446,26 +446,35 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
         {
             Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
-            for(ChildAssociationRef child : children)
-            {
-                count++;
-
-                if(count <= skipCount)
-                {
-                    continue;
-                }
-
-                if(count > size)
-                {
-                    moreItems = true;
-                    break OUTER_LOOP;
-                }
-
-                associations.add(child);
-            }
+            associations.addAll(children);
         }
 
-        return new ListBackedPagingResults<>(associations, moreItems);
+        return associations;
+
+
+//        OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
+//        {
+//            Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
+//            for(ChildAssociationRef child : children)
+//            {
+//                count++;
+//
+//                if(count <= skipCount)
+//                {
+//                    continue;
+//                }
+//
+//                if(count > size)
+//                {
+//                    moreItems = true;
+//                    break OUTER_LOOP;
+//                }
+//
+//                associations.add(child);
+//            }
+//        }
+//
+//        return new ListBackedPagingResults<>(associations, moreItems);
     }
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)

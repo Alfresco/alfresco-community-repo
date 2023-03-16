@@ -1159,7 +1159,7 @@
             on z.parent_node_id = #{parentNode.id}
             and z.child_node_id = a.parent_node_id
             where c.child_node_id = a.child_node_id
-        );
+        )
     </select>
     
     <select id="select_ChildAssocsByPropertyValue" parameterType="ChildProperty" resultMap="result_ChildAssoc">

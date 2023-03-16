@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-parent</artifactId>
-      <version>20.105</version>
+      <version>20.106-SNAPSHOT</version>
    </parent>
 
    <modules>

@@ -355,7 +355,14 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
     protected Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName aspectQName)
     {
-        return getRootCategoryNodeRef(storeRef, aspectQName).stream().collect(Collectors.toSet());
+        try
+        {
+            return getRootCategoryNodeRef(storeRef, aspectQName).stream().collect(Collectors.toSet());
+        }
+        catch (CategoryServiceException ignore)
+        {
+            return Collections.emptySet();
+        }
     }
 
     public Collection<ChildAssociationRef> getClassifications(StoreRef storeRef)

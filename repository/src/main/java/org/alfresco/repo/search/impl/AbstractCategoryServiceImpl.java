@@ -353,29 +353,9 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         return assocs;
     }
 
-    protected Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName qname)
+    protected Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName aspectQName)
     {
-        ResultSet resultSet = null;
-        try
-        {
-            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene",
-                    "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"", null);
-            
-            Set<NodeRef> nodeRefs = new HashSet<NodeRef>(resultSet.length());
-            for (ResultSetRow row : resultSet)
-            {
-                nodeRefs.add(row.getNodeRef());
-            }
-            
-            return nodeRefs;
-        }
-        finally
-        {
-            if (resultSet != null)
-            {
-                resultSet.close();
-            }
-        }
+        return getRootCategoryNodeRef(storeRef, aspectQName).stream().collect(Collectors.toSet());
     }
 
     public Collection<ChildAssociationRef> getClassifications(StoreRef storeRef)
@@ -631,18 +611,23 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     @Experimental
     public Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
     {
+        return getRootCategoryNodeRef(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+    }
+
+    private Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef, final QName childNodeType)
+    {
         final NodeRef rootNode = nodeService.getRootNode(storeRef);
         final ChildAssociationRef categoryRoot = nodeService.getChildAssocs(rootNode, Set.of(ContentModel.TYPE_CATEGORYROOT)).stream()
-                .findFirst()
-                .orElseThrow(() -> new CategoryServiceException(NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND));
+            .findFirst()
+            .orElseThrow(() -> new CategoryServiceException(NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND));
         final List<ChildAssociationRef> categoryRootAssocs = nodeService.getChildAssocs(categoryRoot.getChildRef());
         if (CollectionUtils.isEmpty(categoryRootAssocs))
         {
             throw new CategoryServiceException(CATEGORY_ROOT_NODE_NOT_FOUND);
         }
         return categoryRootAssocs.stream()
-                .filter(ca -> ca.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE))
-                .map(ChildAssociationRef::getChildRef)
-                .findFirst();
+            .filter(ca -> ca.getQName().equals(childNodeType))
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst();
     }
 }

@@ -28,6 +28,7 @@
 package org.alfresco.httpclient;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -81,12 +82,6 @@ public class HttpClientConfig
         return trustStore;
     }
 
-    public Map<String, String> getConfig()
-    {
-        return config;
-    }
-
-
     public void init()
     {
         this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
@@ -111,13 +106,51 @@ public class HttpClientConfig
                                                     key -> properties.getProperty(key, null)));
     }
 
-    public Integer getIntegerProperty(String propertyName)
+    private Integer getIntegerProperty(String propertyName)
     {
-        return Integer.parseInt(config.get(propertyName));
+        String keyValue = Optional.ofNullable(config.get(propertyName)).orElseThrow(() -> {
+            String msg = String.format("Required property: '%s' is empty.", propertyName);
+            throw new HttpClientException(msg);
+        });
+            return Integer.parseInt(keyValue);
     }
 
-    public Boolean getBooleanProperty(String propertyName)
+    private Boolean getBooleanProperty(String propertyName)
     {
-        return Boolean.parseBoolean(config.get(propertyName));
+        String keyValue = Optional.ofNullable(config.get(propertyName)).orElseThrow(() -> {
+            String msg = String.format("Required property: '%s' is empty.", propertyName);
+            throw new HttpClientException(msg);
+        });
+        return Boolean.parseBoolean(keyValue);
+    }
+
+    public Integer getConnectionTimeout()
+    {
+        return getIntegerProperty("connectionTimeout");
+    }
+
+    public Integer getSocketTimeout()
+    {
+        return getIntegerProperty("socketTimeout");
+    }
+
+    public Integer getConnectionRequestTimeout()
+    {
+        return getIntegerProperty("connectionRequestTimeout");
+    }
+
+    public Integer getMaxTotalConnections()
+    {
+        return getIntegerProperty("maxTotalConnections");
+    }
+
+    public Integer getMaxHostConnections()
+    {
+        return getIntegerProperty("maxHostConnections");
+    }
+
+    public Boolean isMTLSEnabled()
+    {
+        return getBooleanProperty("mTLSEnabled");
     }
 }

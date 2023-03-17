@@ -77,12 +77,12 @@ public class HttpClient4Factory
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
 
-        if(config.getBooleanProperty("mTLSEnabled"))
+        if(config.isMTLSEnabled())
         {
             clientBuilder.addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
                 if (!((HttpHost) context.getAttribute(HTTP_TARGET_HOST)).getSchemeName().equals(HTTPS_PROTOCOL))
                 {
-                    String msg = "mTLS is enabled but provided URL has not secured protocol";
+                    String msg = "mTLS is enabled but provided URL does not used a secured protocol";
                     throw new HttpClientException(msg);
                 }
             });
@@ -101,14 +101,14 @@ public class HttpClient4Factory
         }
 
         RequestConfig requestConfig = RequestConfig.custom()
-               .setConnectTimeout(config.getIntegerProperty("connectionTimeout"))
-               .setSocketTimeout(config.getIntegerProperty("socketTimeout"))
-               .setConnectionRequestTimeout(config.getIntegerProperty("connectionRequestTimeout"))
+               .setConnectTimeout(config.getConnectionTimeout())
+               .setSocketTimeout(config.getSocketTimeout())
+               .setConnectionRequestTimeout(config.getConnectionRequestTimeout())
                .build();
 
         clientBuilder.setDefaultRequestConfig(requestConfig);
-        clientBuilder.setMaxConnTotal(config.getIntegerProperty("maxTotalConnections"));
-        clientBuilder.setMaxConnPerRoute(config.getIntegerProperty("maxHostConnections"));
+        clientBuilder.setMaxConnTotal(config.getMaxTotalConnections());
+        clientBuilder.setMaxConnPerRoute(config.getMaxHostConnections());
         clientBuilder.setRetryHandler(new StandardHttpRequestRetryHandler(5, false));
 
         return clientBuilder.build();

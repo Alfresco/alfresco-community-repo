@@ -126,5 +126,4 @@
     <bean id="keyStoreChecker" class="org.alfresco.encryption.KeyStoreChecker">
         <property name="mainKeyStore" ref="keyStore"/>
     </bean>
-
 </beans>

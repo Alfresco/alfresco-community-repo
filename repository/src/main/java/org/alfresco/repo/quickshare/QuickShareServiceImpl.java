@@ -712,8 +712,15 @@ public class QuickShareServiceImpl implements QuickShareService,
         {
             logger.debug("QuickShare - retrieved metadata: "+sharedId+" ["+nodeRef+"]["+model+"]");
         }
-        //model.put("nodeRef", nodeRef)
-        
+        HashMap<String, Object> itemMap = new HashMap<>();
+        itemMap = (HashMap<String, Object>) model.get("item");
+        Date expiryDate= (Date)itemMap.get("expiryDate");
+        DateTime now = DateTime.now();
+        if (now.isAfter(expiryDate.getTime()))
+        {
+            NodeRef expiryActionNodeRef = getQuickShareLinkExpiryActionNode(sharedId);
+            deleteQuickShareLinkExpiryAction(expiryActionNodeRef);
+        }
         return model;
     }
 

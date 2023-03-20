@@ -96,7 +96,7 @@
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.63</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
-        <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
+        <dependency.maven-artifact.version>3.9.1</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
 
         <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>

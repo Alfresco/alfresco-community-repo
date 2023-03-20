@@ -34,8 +34,7 @@ import java.net.ConnectException;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client.CredentialsVerificationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -65,7 +64,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Autowired
     private PersonService personService;
 
-    private OAuth2Client mockOAuth2Client;
+    private IdentityServiceFacade mockIdentityServiceFacade;
 
     @Before
     public void setUp()
@@ -76,8 +75,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authComponent.setNodeService(nodeService);
         authComponent.setPersonService(personService);
 
-        mockOAuth2Client = mock(OAuth2Client.class);
-        authComponent.setOAuth2Client(mockOAuth2Client);
+        mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
+        authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);
     }
 
     @After
@@ -90,7 +89,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     public void testAuthenticationFail()
     {
         doThrow(new CredentialsVerificationException("Failed"))
-                .when(mockOAuth2Client)
+                .when(mockIdentityServiceFacade)
                 .verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
@@ -100,7 +99,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     public void testAuthenticationFail_connectionException()
     {
         doThrow(new CredentialsVerificationException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
-                .when(mockOAuth2Client)
+                .when(mockIdentityServiceFacade)
                 .verifyCredentials("username", "password");
 
         try
@@ -119,7 +118,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     public void testAuthenticationFail_otherException()
     {
         doThrow(new RuntimeException("Some other errors!"))
-                .when(mockOAuth2Client)
+                .when(mockIdentityServiceFacade)
                 .verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
@@ -128,18 +127,18 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testAuthenticationPass()
     {
-        doNothing().when(mockOAuth2Client).verifyCredentials("username", "password");
+        doNothing().when(mockIdentityServiceFacade).verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 
         // Check that the authenticated user has been set
         assertEquals("User has not been set as expected.","username", authenticationContext.getCurrentUserName());
     }
-
+    
     @Test (expected= AuthenticationException.class)
-    public void testFallthroughWhenOAuth2ClientIsNull()
+    public void testFallthroughWhenIdentityServiceFacadeIsNull()
     {
-        authComponent.setOAuth2Client(null);
+        authComponent.setIdentityServiceFacade(null);
         authComponent.authenticateImpl("username", "password".toCharArray());
     }
 

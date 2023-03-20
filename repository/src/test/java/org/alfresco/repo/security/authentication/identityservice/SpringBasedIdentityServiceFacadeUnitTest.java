@@ -36,14 +36,14 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
 
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client.CredentialsVerificationException;
-import org.alfresco.repo.security.authentication.identityservice.OAuth2ClientFactoryBean.SpringOAuth2Client;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.SpringBasedIdentityServiceFacade;
 import org.junit.Test;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 
-public class SpringOAuth2ClientUnitTest
+public class SpringBasedIdentityServiceFacadeUnitTest
 {
     private static final String USER_NAME = "user";
     private static final String PASSWORD = "password";
@@ -56,24 +56,24 @@ public class SpringOAuth2ClientUnitTest
         final OAuth2AuthorizedClientManager authClientManager = mock(OAuth2AuthorizedClientManager.class);
         when(authClientManager.authorize(any())).thenReturn(authorizedClient);
 
-        final SpringOAuth2Client client = new SpringOAuth2Client(faultySupplier(3, authClientManager));
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(faultySupplier(3, authClientManager));
 
         assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> client.verifyCredentials(USER_NAME, PASSWORD))
+                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
                 .havingCause().withNoCause().withMessage("Expected failure #1");
         verifyNoInteractions(authClientManager);
 
         assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> client.verifyCredentials(USER_NAME, PASSWORD))
+                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
                 .havingCause().withNoCause().withMessage("Expected failure #2");
         verifyNoInteractions(authClientManager);
 
         assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> client.verifyCredentials(USER_NAME, PASSWORD))
+                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
                 .havingCause().withNoCause().withMessage("Expected failure #3");
         verifyNoInteractions(authClientManager);
 
-        client.verifyCredentials(USER_NAME, PASSWORD);
+        facade.verifyCredentials(USER_NAME, PASSWORD);
         verify(authClientManager).authorize(argThat(r -> r.getPrincipal() != null && USER_NAME.equals(r.getPrincipal().getPrincipal())));
     }
 
@@ -83,10 +83,10 @@ public class SpringOAuth2ClientUnitTest
         final OAuth2AuthorizedClientManager authClientManager = mock(OAuth2AuthorizedClientManager.class);
         when(authClientManager.authorize(any())).thenThrow(new RuntimeException("Expected"));
 
-        final SpringOAuth2Client client = new SpringOAuth2Client(() -> authClientManager);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(() -> authClientManager);
 
         assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> client.verifyCredentials(USER_NAME, PASSWORD))
+                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
                 .havingCause().withNoCause().withMessage("Expected");
     }
 
@@ -100,11 +100,11 @@ public class SpringOAuth2ClientUnitTest
         final Supplier<OAuth2AuthorizedClientManager> supplier = mock(Supplier.class);
         when(supplier.get()).thenReturn(authClientManager);
 
-        final SpringOAuth2Client client = new SpringOAuth2Client(supplier);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(supplier);
 
-        client.verifyCredentials(USER_NAME, PASSWORD);
-        client.verifyCredentials(USER_NAME, PASSWORD);
-        client.verifyCredentials(USER_NAME, PASSWORD);
+        facade.verifyCredentials(USER_NAME, PASSWORD);
+        facade.verifyCredentials(USER_NAME, PASSWORD);
+        facade.verifyCredentials(USER_NAME, PASSWORD);
         verify(supplier, times(1)).get();
         verify(authClientManager, times(3)).authorize(any());
     }

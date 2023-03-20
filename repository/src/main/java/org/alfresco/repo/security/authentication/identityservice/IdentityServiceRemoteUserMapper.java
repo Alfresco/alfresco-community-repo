@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,17 +27,17 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Optional;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.spi.AuthOutcome;
 import org.keycloak.representations.AccessToken;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 /**
  * A {@link RemoteUserMapper} implementation that detects and validates JWTs
@@ -57,9 +57,9 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
 
     /** The person service. */
     private PersonService personService;
-    
-    /** The Keycloak deployment object */
-    private KeycloakDeployment keycloakDeployment;
+
+    private BearerTokenResolver bearerTokenResolver;
+    private IdentityServiceFacade identityServiceFacade;
 
     /**
      * Sets the active flag
@@ -91,10 +91,15 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     {
         this.personService = personService;
     }
-    
-    public void setIdentityServiceDeployment(KeycloakDeployment deployment)
+
+    public void setBearerTokenResolver(BearerTokenResolver bearerTokenResolver)
     {
-        this.keycloakDeployment = deployment;
+        this.bearerTokenResolver = bearerTokenResolver;
+    }
+
+    public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
+    {
+        this.identityServiceFacade = identityServiceFacade;
     }
 
     /*
@@ -163,44 +168,25 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
      */
     private String extractUserFromHeader(HttpServletRequest request)
     {
-        String userName = null;
-        
-        IdentityServiceHttpFacade facade = new IdentityServiceHttpFacade(request);
-        
         // try authenticating with bearer token first
         if (logger.isDebugEnabled())
         {
             logger.debug("Trying bearer token...");
         }
-    
-        AlfrescoBearerTokenRequestAuthenticator tokenAuthenticator = 
-                    new AlfrescoBearerTokenRequestAuthenticator(this.keycloakDeployment);
-        AuthOutcome tokenOutcome = tokenAuthenticator.authenticate(facade);
-        
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Bearer token outcome: " + tokenOutcome);
-        }
-        
-        if (tokenOutcome == AuthOutcome.FAILED && !isValidationFailureSilent)
-        {
-            throw new AuthenticationException("Token validation failed: " + 
-                        tokenAuthenticator.getValidationFailureDescription());
-        }
-        
-        if (tokenOutcome == AuthOutcome.AUTHENTICATED)
-        {
-            userName = extractUserFromToken(tokenAuthenticator.getToken());
-        }
-        else
+
+        final String bearerToken = bearerTokenResolver.resolve(request);
+        final Optional<String> username = identityServiceFacade.extractUsernameFromToken(bearerToken);
+
+        if (username.isEmpty())
         {
             if (logger.isDebugEnabled())
             {
                 logger.debug("User could not be authenticated by IdentityServiceRemoteUserMapper.");
             }
+            return null;
         }
-        
-        return userName;
+
+        return username.get();
     }
     
     private String extractUserFromToken(AccessToken jwt)

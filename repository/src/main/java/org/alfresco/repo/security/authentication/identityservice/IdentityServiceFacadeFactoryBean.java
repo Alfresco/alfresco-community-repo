@@ -27,10 +27,10 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -47,27 +47,32 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProvider
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.endpoint.DefaultPasswordTokenResponseClient;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.web.client.RestTemplate;
 
 /**
  *
- * Creates an instance of {@link OAuth2Client}. <br>
- * The creation of {@link OAuth2Client} requires connection to the Identity Service (Keycloak), disable this factory if
- * the server cannot be reached. <br>
+ * Creates an instance of {@link IdentityServiceFacade}. <br>
  * This factory can return a null if it is disabled.
  *
  */
-public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
+public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentityServiceFacade>
 {
 
-    private static final Log LOGGER = LogFactory.getLog(OAuth2ClientFactoryBean.class);
+    private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
     private IdentityServiceConfig identityServiceConfig;
     private boolean enabled;
 
@@ -82,7 +87,7 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
     }
 
     @Override
-    public OAuth2Client getObject() throws Exception
+    public IdentityServiceFacade getObject() throws Exception
     {
         // The creation of the client can be disabled for testing or when the username/password authentication is not required,
         // for instance when Keycloak is configured for 'bearer only' authentication or Direct Access Grants are disabled.
@@ -93,7 +98,7 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
 
         // The OAuth2AuthorizedClientManager isn't created upfront to make the code resilient to Identity Service being down.
         // If it's down the Application Context will start and when it's back online it can be used.
-        return new SpringOAuth2Client(this::createOAuth2AuthorizedClientManager);
+        return new SpringBasedIdentityServiceFacade(this::createOAuth2AuthorizedClientManager);
     }
 
     private OAuth2AuthorizedClientManager createOAuth2AuthorizedClientManager()
@@ -110,7 +115,7 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
                 .clientSecret(identityServiceConfig.getClientSecret())
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .registrationId(SpringOAuth2Client.CLIENT_REGISTRATION_ID)
+                .registrationId(SpringBasedIdentityServiceFacade.CLIENT_REGISTRATION_ID)
                 .build();
 
         final AuthorizedClientServiceOAuth2AuthorizedClientManager oauth2 =
@@ -151,7 +156,7 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
     @Override
     public Class<?> getObjectType()
     {
-        return OAuth2Client.class;
+        return IdentityServiceFacade.class;
     }
 
     @Override
@@ -160,13 +165,13 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
         return true;
     }
 
-    static class SpringOAuth2Client implements OAuth2Client
+    static class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     {
         private static final String CLIENT_REGISTRATION_ID = "ids";
         private final Supplier<OAuth2AuthorizedClientManager> authorizedClientManagerSupplier;
         private final AtomicReference<OAuth2AuthorizedClientManager> authorizedClientManager = new AtomicReference<>();
 
-        public SpringOAuth2Client(Supplier<OAuth2AuthorizedClientManager> authorizedClientManagerSupplier)
+        public SpringBasedIdentityServiceFacade(Supplier<OAuth2AuthorizedClientManager> authorizedClientManagerSupplier)
         {
             this.authorizedClientManagerSupplier = Objects.requireNonNull(authorizedClientManagerSupplier);
         }
@@ -206,6 +211,24 @@ public class OAuth2ClientFactoryBean implements FactoryBean<OAuth2Client>
             {
                 throw new CredentialsVerificationException("Resource Owner Password Credentials is not supported by the Authorization Server.");
             }
+
+            OidcIdTokenDecoderFactory decoderFactory = new OidcIdTokenDecoderFactory();
+            decoderFactory.setJwtValidatorFactory(c -> new DelegatingOAuth2TokenValidator<>(
+                    new JwtTimestampValidator(),
+                    new JwtIssuerValidator(c.getProviderDetails().getIssuerUri()),
+                    new JwtClaimValidator<String>("typ", "Bearer"::equals),
+                    new JwtClaimValidator<String>(JwtClaimNames.SUB, Objects::nonNull)
+
+            ));
+            JwtDecoder decoder = decoderFactory.createDecoder(authorizedClient.getClientRegistration());
+            System.err.println("Decoding: " + authorizedClient.getAccessToken().getTokenValue());
+            System.err.println("Decoded: " + decoder.decode(authorizedClient.getAccessToken().getTokenValue()));
+        }
+
+        @Override
+        public Optional<String> extractUsernameFromToken(String token)
+        {
+            return Optional.empty();
         }
 
         private OAuth2AuthorizedClientManager getAuthorizedClientManager()

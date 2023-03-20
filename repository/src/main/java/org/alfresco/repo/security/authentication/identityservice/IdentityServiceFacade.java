@@ -50,7 +50,19 @@ interface IdentityServiceFacade
      */
     Optional<String> extractUsernameFromToken(String token);
 
-    class CredentialsVerificationException extends RuntimeException
+    class IdentityServiceFacadeException extends RuntimeException
+    {
+        IdentityServiceFacadeException(String message)
+        {
+            super(message);
+        }
+
+        IdentityServiceFacadeException(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
+    }
+    class CredentialsVerificationException extends IdentityServiceFacadeException
     {
         CredentialsVerificationException(String message)
         {
@@ -58,6 +70,19 @@ interface IdentityServiceFacade
         }
 
         CredentialsVerificationException(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
+    }
+
+    class TokenException extends IdentityServiceFacadeException
+    {
+        TokenException(String message)
+        {
+            super(message);
+        }
+
+        TokenException(String message, Throwable cause)
         {
             super(message, cause);
         }

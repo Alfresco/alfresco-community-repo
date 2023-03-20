@@ -25,12 +25,19 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -54,8 +61,10 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -71,10 +80,9 @@ import org.springframework.web.client.RestTemplate;
  */
 public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentityServiceFacade>
 {
-
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
-    private IdentityServiceConfig identityServiceConfig;
     private boolean enabled;
+    private SpringBasedIdentityServiceFacadeFactory factory;
 
     public void setEnabled(boolean enabled)
     {
@@ -83,7 +91,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
     public void setIdentityServiceConfig(IdentityServiceConfig identityServiceConfig)
     {
-        this.identityServiceConfig = identityServiceConfig;
+        factory = new SpringBasedIdentityServiceFacadeFactory(identityServiceConfig);
     }
 
     @Override
@@ -96,61 +104,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             return null;
         }
 
-        // The OAuth2AuthorizedClientManager isn't created upfront to make the code resilient to Identity Service being down.
-        // If it's down the Application Context will start and when it's back online it can be used.
-        return new SpringBasedIdentityServiceFacade(this::createOAuth2AuthorizedClientManager);
-    }
-
-    private OAuth2AuthorizedClientManager createOAuth2AuthorizedClientManager()
-    {
-        //Here we preserve the behaviour of previously used Keycloak Adapter
-        // * Client is authenticating itself using basic auth
-        // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
-        // * There is no caching of authenticated clients (NoStoredAuthorizedClient)
-        // * There is only one Authorization Server/Client pair (SingleClientRegistration)
-
-        final ClientRegistration clientRegistration = ClientRegistrations
-                .fromIssuerLocation(identityServiceConfig.getIssuerUrl())
-                .clientId(identityServiceConfig.getResource())
-                .clientSecret(identityServiceConfig.getClientSecret())
-                .authorizationGrantType(AuthorizationGrantType.PASSWORD)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .registrationId(SpringBasedIdentityServiceFacade.CLIENT_REGISTRATION_ID)
-                .build();
-
-        final AuthorizedClientServiceOAuth2AuthorizedClientManager oauth2 =
-                new AuthorizedClientServiceOAuth2AuthorizedClientManager(
-                        new SingleClientRegistration(clientRegistration),
-                        new NoStoredAuthorizedClient());
-        oauth2.setContextAttributesMapper(OAuth2AuthorizeRequest::getAttributes);
-        oauth2.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder()
-                                                                                .password(this::configureTimeouts)
-                                                                                .build());
-
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug(" Created OAuth2 Client");
-            LOGGER.debug(" OAuth2 Issuer URL: " + clientRegistration.getProviderDetails().getIssuerUri());
-            LOGGER.debug(" OAuth2 ClientId: " + clientRegistration.getClientId());
-        }
-
-        return oauth2;
-    }
-
-    private void configureTimeouts(PasswordGrantBuilder builder)
-    {
-        final SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(identityServiceConfig.getClientConnectionTimeout());
-        requestFactory.setReadTimeout(identityServiceConfig.getClientSocketTimeout());
-
-        final RestTemplate restTemplate = new RestTemplate(Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
-        restTemplate.setRequestFactory(requestFactory);
-        restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
-
-        final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
-        client.setRestOperations(restTemplate);
-
-        builder.accessTokenResponseClient(client);
+        return new LazyInstantiatingIdentityServiceFacade(factory::createIdentityServiceFacade);
     }
 
     @Override
@@ -165,36 +119,221 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         return true;
     }
 
-    static class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
+    private static IdentityServiceFacadeException authorizationServerCantBeUsedException(RuntimeException cause)
     {
-        private static final String CLIENT_REGISTRATION_ID = "ids";
-        private final Supplier<OAuth2AuthorizedClientManager> authorizedClientManagerSupplier;
-        private final AtomicReference<OAuth2AuthorizedClientManager> authorizedClientManager = new AtomicReference<>();
+        return new IdentityServiceFacadeException("Unable to use the Authorization Server.", cause);
+    }
 
-        public SpringBasedIdentityServiceFacade(Supplier<OAuth2AuthorizedClientManager> authorizedClientManagerSupplier)
+    // The target facade is created lazily to improve resiliency on Identity Service
+    // (Keycloak/Authorization Server) failures when Spring Context is starting up.
+    static class LazyInstantiatingIdentityServiceFacade implements IdentityServiceFacade
+    {
+        private final AtomicReference<IdentityServiceFacade> targetFacade = new AtomicReference<>();
+        private final Supplier<IdentityServiceFacade> targetFacadeCreator;
+
+        LazyInstantiatingIdentityServiceFacade(Supplier<IdentityServiceFacade> targetFacadeCreator)
         {
-            this.authorizedClientManagerSupplier = Objects.requireNonNull(authorizedClientManagerSupplier);
+            this.targetFacadeCreator = requireNonNull(targetFacadeCreator);
         }
 
         @Override
-        public void verifyCredentials(String userName, String password)
+        public void verifyCredentials(String username, String password)
         {
-            final OAuth2AuthorizedClientManager clientManager;
+            getTargetFacade().verifyCredentials(username, password);
+        }
+
+        @Override
+        public Optional<String> extractUsernameFromToken(String token)
+        {
+            return getTargetFacade().extractUsernameFromToken(token);
+        }
+
+        private IdentityServiceFacade getTargetFacade()
+        {
+            return ofNullable(targetFacade.get())
+                    .orElseGet(() -> targetFacade.updateAndGet(prev ->
+                            ofNullable(prev).orElseGet(this::createTargetFacade)));
+        }
+
+        private IdentityServiceFacade createTargetFacade()
+        {
             try
             {
-                clientManager = getAuthorizedClientManager();
+                return targetFacadeCreator.get();
+            }
+            catch (IdentityServiceFacadeException e)
+            {
+                throw e;
             }
             catch (RuntimeException e)
             {
-                LOGGER.warn("Failed to instantiate OAuth2AuthorizedClientManager.", e);
-                throw new CredentialsVerificationException("Unable to use the Authorization Server.", e);
+                LOGGER.warn("Failed to instantiate IdentityServiceFacade.", e);
+                throw authorizationServerCantBeUsedException(e);
+            }
+        }
+    }
+
+    private static class SpringBasedIdentityServiceFacadeFactory
+    {
+        private static final long CLOCK_SKEW_MS = 0;
+        private final IdentityServiceConfig config;
+
+        SpringBasedIdentityServiceFacadeFactory(IdentityServiceConfig config)
+        {
+            this.config = Objects.requireNonNull(config);
+        }
+
+        private IdentityServiceFacade createIdentityServiceFacade()
+        {
+            //Here we preserve the behaviour of previously used Keycloak Adapter
+            // * Client is authenticating itself using basic auth
+            // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
+            // * There is no caching of authenticated clients (NoStoredAuthorizedClient)
+            // * There is only one Authorization Server/Client pair (SingleClientRegistration)
+
+            final RestTemplate restTemplate = createRestTemplate();
+            final ClientRegistration clientRegistration = createClientRegistration(restTemplate);
+            final OAuth2AuthorizedClientManager clientManager = createAuthorizedClientManager(restTemplate, clientRegistration);
+            final JwtDecoder jwtDecoder = createJwtDecoder(clientRegistration);
+
+            return new SpringBasedIdentityServiceFacade(clientManager, jwtDecoder);
+        }
+
+        private RestTemplate createRestTemplate()
+        {
+            final SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+            requestFactory.setConnectTimeout(config.getClientConnectionTimeout());
+            requestFactory.setReadTimeout(config.getClientSocketTimeout());
+
+            final RestTemplate restTemplate = new RestTemplate(Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
+            restTemplate.setRequestFactory(requestFactory);
+            restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
+
+            return restTemplate;
+        }
+
+        private ClientRegistration createClientRegistration(RestTemplate restTemplate)
+        {
+            try
+            {
+                return ClientRegistrations
+                        .fromIssuerLocation(config.getIssuerUrl())
+                        .clientId(config.getResource())
+                        .clientSecret(config.getClientSecret())
+                        .authorizationGrantType(AuthorizationGrantType.PASSWORD)
+                        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                        .registrationId(SpringBasedIdentityServiceFacade.CLIENT_REGISTRATION_ID)
+                        .build();
+            }
+            catch (RuntimeException e)
+            {
+                LOGGER.warn("Failed to create ClientRegistration.", e);
+                throw authorizationServerCantBeUsedException(e);
+            }
+        }
+
+        private OAuth2AuthorizedClientManager createAuthorizedClientManager(RestTemplate restTemplate, ClientRegistration clientRegistration)
+        {
+            final AuthorizedClientServiceOAuth2AuthorizedClientManager manager =
+                    new AuthorizedClientServiceOAuth2AuthorizedClientManager(
+                            new SingleClientRegistration(clientRegistration),
+                            new NoStoredAuthorizedClient());
+
+            final Consumer<PasswordGrantBuilder> passwordGrantConfigurer = b -> {
+                final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
+                client.setRestOperations(restTemplate);
+                b.accessTokenResponseClient(client);
+
+                b.clockSkew(Duration.of(CLOCK_SKEW_MS, ChronoUnit.MILLIS));
+            };
+            manager.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder()
+                                                                                     .password(passwordGrantConfigurer)
+                                                                                     .build());
+            manager.setContextAttributesMapper(OAuth2AuthorizeRequest::getAttributes);
+
+            return manager;
+        }
+
+        private JwtDecoder createJwtDecoder(ClientRegistration clientRegistration)
+        {
+            final OidcIdTokenDecoderFactory decoderFactory = new OidcIdTokenDecoderFactory();
+            decoderFactory.setJwtValidatorFactory(c -> new DelegatingOAuth2TokenValidator<>(
+                    new JwtTimestampValidator(Duration.of(CLOCK_SKEW_MS, ChronoUnit.MILLIS)),
+                    new JwtIssuerValidator(c.getProviderDetails().getIssuerUri()),
+                    new JwtClaimValidator<String>("typ", "Bearer"::equals),
+                    new JwtClaimValidator<String>(JwtClaimNames.SUB, Objects::nonNull)
+
+            ));
+            try
+            {
+                return decoderFactory.createDecoder(clientRegistration);
+            }
+            catch (RuntimeException e)
+            {
+                LOGGER.warn("Failed to create JwtDecoder.", e);
+                throw authorizationServerCantBeUsedException(e);
+            }
+        }
+
+        private static class NoStoredAuthorizedClient implements OAuth2AuthorizedClientService
+        {
+
+            @Override
+            public <T extends OAuth2AuthorizedClient> T loadAuthorizedClient(String clientRegistrationId, String principalName)
+            {
+                return null;
             }
 
+            @Override
+            public void saveAuthorizedClient(OAuth2AuthorizedClient authorizedClient, Authentication principal)
+            {
+                //do nothing
+            }
+
+            @Override
+            public void removeAuthorizedClient(String clientRegistrationId, String principalName)
+            {
+                //do nothing
+            }
+        }
+
+        private static class SingleClientRegistration implements ClientRegistrationRepository
+        {
+            private final ClientRegistration clientRegistration;
+
+            private SingleClientRegistration(ClientRegistration clientRegistration)
+            {
+                this.clientRegistration = requireNonNull(clientRegistration);
+            }
+
+            @Override
+            public ClientRegistration findByRegistrationId(String registrationId)
+            {
+                return Objects.equals(registrationId, clientRegistration.getRegistrationId()) ? clientRegistration : null;
+            }
+        }
+    }
+
+    static class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
+    {
+        static final String CLIENT_REGISTRATION_ID = "ids";
+        private final OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
+        private JwtDecoder jwtDecoder;
+
+        SpringBasedIdentityServiceFacade(OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager, JwtDecoder jwtDecoder)
+        {
+            this.oAuth2AuthorizedClientManager = requireNonNull(oAuth2AuthorizedClientManager);
+            this.jwtDecoder = requireNonNull(jwtDecoder);
+        }
+
+        @Override
+        public void verifyCredentials(String username, String password)
+        {
             final OAuth2AuthorizedClient authorizedClient;
             try
             {
-                final OAuth2AuthorizeRequest authRequest = createPasswordCredentialsRequest(userName, password);
-                authorizedClient = clientManager.authorize(authRequest);
+                final OAuth2AuthorizeRequest authRequest = createPasswordCredentialsRequest(username, password);
+                authorizedClient = oAuth2AuthorizedClientManager.authorize(authRequest);
             }
             catch (OAuth2AuthorizationException e)
             {
@@ -211,35 +350,29 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 throw new CredentialsVerificationException("Resource Owner Password Credentials is not supported by the Authorization Server.");
             }
-
-            OidcIdTokenDecoderFactory decoderFactory = new OidcIdTokenDecoderFactory();
-            decoderFactory.setJwtValidatorFactory(c -> new DelegatingOAuth2TokenValidator<>(
-                    new JwtTimestampValidator(),
-                    new JwtIssuerValidator(c.getProviderDetails().getIssuerUri()),
-                    new JwtClaimValidator<String>("typ", "Bearer"::equals),
-                    new JwtClaimValidator<String>(JwtClaimNames.SUB, Objects::nonNull)
-
-            ));
-//            JwtDecoder decoder = decoderFactory.createDecoder(authorizedClient.getClientRegistration());
-//            System.err.println("Decoding: " + authorizedClient.getAccessToken().getTokenValue());
-//            System.err.println("Decoded: " + decoder.decode(authorizedClient.getAccessToken().getTokenValue()));
         }
 
         @Override
         public Optional<String> extractUsernameFromToken(String token)
         {
-            return Optional.empty();
-        }
-
-        private OAuth2AuthorizedClientManager getAuthorizedClientManager()
-        {
-            final OAuth2AuthorizedClientManager current = authorizedClientManager.get();
-            if (current != null)
+            final Jwt validToken;
+            try
             {
-                return current;
+                 validToken = jwtDecoder.decode(requireNonNull(token));
             }
-            return authorizedClientManager
-                    .updateAndGet(prev -> prev != null ? prev : authorizedClientManagerSupplier.get());
+            catch (RuntimeException e)
+            {
+                throw new TokenException("Failed to decode token. " + e.getMessage(), e);
+            }
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Bearer token outcome: " + validToken);
+            }
+            return Optional.ofNullable(validToken)
+                           .map(Jwt::getClaims)
+                           .map(c -> c.get("preferred_username"))
+                           .filter(String.class::isInstance)
+                           .map(String.class::cast);
         }
 
         private OAuth2AuthorizeRequest createPasswordCredentialsRequest(String userName, String password)
@@ -250,44 +383,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .attribute(OAuth2AuthorizationContext.USERNAME_ATTRIBUTE_NAME, userName)
                     .attribute(OAuth2AuthorizationContext.PASSWORD_ATTRIBUTE_NAME, password)
                     .build();
-        }
-    }
-
-    private static class NoStoredAuthorizedClient implements OAuth2AuthorizedClientService
-    {
-
-        @Override
-        public <T extends OAuth2AuthorizedClient> T loadAuthorizedClient(String clientRegistrationId, String principalName)
-        {
-            return null;
-        }
-
-        @Override
-        public void saveAuthorizedClient(OAuth2AuthorizedClient authorizedClient, Authentication principal)
-        {
-            //do nothing
-        }
-
-        @Override
-        public void removeAuthorizedClient(String clientRegistrationId, String principalName)
-        {
-            //do nothing
-        }
-    }
-
-    private static class SingleClientRegistration implements ClientRegistrationRepository
-    {
-        private final ClientRegistration clientRegistration;
-
-        private SingleClientRegistration(ClientRegistration clientRegistration)
-        {
-            this.clientRegistration = Objects.requireNonNull(clientRegistration);
-        }
-
-        @Override
-        public ClientRegistration findByRegistrationId(String registrationId)
-        {
-            return Objects.equals(registrationId, clientRegistration.getRegistrationId()) ? clientRegistration : null;
         }
     }
 }

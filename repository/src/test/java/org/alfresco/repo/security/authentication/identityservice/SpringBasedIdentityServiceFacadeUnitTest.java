@@ -27,63 +27,30 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.function.Supplier;
-
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.SpringBasedIdentityServiceFacade;
 import org.junit.Test;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 public class SpringBasedIdentityServiceFacadeUnitTest
 {
     private static final String USER_NAME = "user";
     private static final String PASSWORD = "password";
-
-    @Test
-    public void shouldRecoverFromInitialAuthorizationServerUnavailability()
-    {
-        final OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
-        when(authorizedClient.getAccessToken()).thenReturn(mock(OAuth2AccessToken.class));
-        final OAuth2AuthorizedClientManager authClientManager = mock(OAuth2AuthorizedClientManager.class);
-        when(authClientManager.authorize(any())).thenReturn(authorizedClient);
-
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(faultySupplier(3, authClientManager));
-
-        assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
-                .havingCause().withNoCause().withMessage("Expected failure #1");
-        verifyNoInteractions(authClientManager);
-
-        assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
-                .havingCause().withNoCause().withMessage("Expected failure #2");
-        verifyNoInteractions(authClientManager);
-
-        assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
-                .havingCause().withNoCause().withMessage("Expected failure #3");
-        verifyNoInteractions(authClientManager);
-
-        facade.verifyCredentials(USER_NAME, PASSWORD);
-        verify(authClientManager).authorize(argThat(r -> r.getPrincipal() != null && USER_NAME.equals(r.getPrincipal().getPrincipal())));
-    }
+    private static final String TOKEN = "tEsT-tOkEn";
 
     @Test
     public void shouldThrowVerificationExceptionOnFailure()
     {
         final OAuth2AuthorizedClientManager authClientManager = mock(OAuth2AuthorizedClientManager.class);
+        final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
         when(authClientManager.authorize(any())).thenThrow(new RuntimeException("Expected"));
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(() -> authClientManager);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(authClientManager, jwtDecoder);
 
         assertThatExceptionOfType(CredentialsVerificationException.class)
                 .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
@@ -91,34 +58,16 @@ public class SpringBasedIdentityServiceFacadeUnitTest
     }
 
     @Test
-    public void shouldAvoidCreatingMultipleInstanceOfOAuth2AuthorizedClientManager()
+    public void shouldThrowTokenExceptionOnFailure()
     {
-        final OAuth2AuthorizedClient authorizedClient = mock(OAuth2AuthorizedClient.class);
-        when(authorizedClient.getAccessToken()).thenReturn(mock(OAuth2AccessToken.class));
         final OAuth2AuthorizedClientManager authClientManager = mock(OAuth2AuthorizedClientManager.class);
-        when(authClientManager.authorize(any())).thenReturn(authorizedClient);
-        final Supplier<OAuth2AuthorizedClientManager> supplier = mock(Supplier.class);
-        when(supplier.get()).thenReturn(authClientManager);
+        final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
+        when(jwtDecoder.decode(TOKEN)).thenThrow(new RuntimeException("Expected"));
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(supplier);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(authClientManager, jwtDecoder);
 
-        facade.verifyCredentials(USER_NAME, PASSWORD);
-        facade.verifyCredentials(USER_NAME, PASSWORD);
-        facade.verifyCredentials(USER_NAME, PASSWORD);
-        verify(supplier, times(1)).get();
-        verify(authClientManager, times(3)).authorize(any());
+        assertThatExceptionOfType(TokenException.class)
+                .isThrownBy(() -> facade.extractUsernameFromToken(TOKEN))
+                .havingCause().withNoCause().withMessage("Expected");
     }
-
-    private Supplier<OAuth2AuthorizedClientManager> faultySupplier(int numberOfInitialFailures, OAuth2AuthorizedClientManager authClientManager)
-    {
-        final int[] counter = new int[]{0};
-        return () -> {
-            if (counter[0]++ < numberOfInitialFailures)
-            {
-                throw new RuntimeException("Expected failure #" + counter[0]);
-            }
-            return authClientManager;
-        };
-    }
-
 }

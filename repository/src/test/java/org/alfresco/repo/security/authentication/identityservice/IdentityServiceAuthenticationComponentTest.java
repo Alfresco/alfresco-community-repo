@@ -134,7 +134,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         // Check that the authenticated user has been set
         assertEquals("User has not been set as expected.","username", authenticationContext.getCurrentUserName());
     }
-    
+
     @Test (expected= AuthenticationException.class)
     public void testFallthroughWhenIdentityServiceFacadeIsNull()
     {

@@ -220,9 +220,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     new JwtClaimValidator<String>(JwtClaimNames.SUB, Objects::nonNull)
 
             ));
-            JwtDecoder decoder = decoderFactory.createDecoder(authorizedClient.getClientRegistration());
-            System.err.println("Decoding: " + authorizedClient.getAccessToken().getTokenValue());
-            System.err.println("Decoded: " + decoder.decode(authorizedClient.getAccessToken().getTokenValue()));
+//            JwtDecoder decoder = decoderFactory.createDecoder(authorizedClient.getClientRegistration());
+//            System.err.println("Decoding: " + authorizedClient.getAccessToken().getTokenValue());
+//            System.err.println("Decoded: " + decoder.decode(authorizedClient.getAccessToken().getTokenValue()));
         }
 
         @Override

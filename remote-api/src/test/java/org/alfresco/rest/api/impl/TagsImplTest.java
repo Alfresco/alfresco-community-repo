@@ -55,8 +55,10 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.where.InvalidQueryException;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -72,13 +74,19 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class TagsImplTest
 {
     private static final String TAG_ID = "tag-node-id";
+    private static final String PARENT_NODE_ID = "tag:tag-root";
     private static final String TAG_NAME = "tag-dummy-name";
     private static final NodeRef TAG_NODE_REF = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID.concat("-").concat(TAG_NAME));
+    private static final NodeRef TAG_PARENT_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_NODE_ID);
 
     private final RecognizedParamsExtractor queryExtractor = new RecognizedParamsExtractor() {};
 
     @Mock
     private Nodes nodesMock;
+    @Mock
+    private ChildAssociationRef primaryParentMock;
+    @Mock
+    private NodeService nodeServiceMock;
     @Mock
     private AuthorityService authorityServiceMock;
     @Mock
@@ -99,6 +107,7 @@ public class TagsImplTest
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
         given(nodesMock.validateNode(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willReturn(TAG_NODE_REF);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
+        given(nodeServiceMock.getPrimaryParent(TAG_NODE_REF)).willReturn(primaryParentMock);
     }
 
     @Test
@@ -226,6 +235,7 @@ public class TagsImplTest
     public void testDeleteTagById()
     {
         //when
+        given(primaryParentMock.getParentRef()).willReturn(TAG_PARENT_NODE_REF);
         objectUnderTest.deleteTagById(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
         then(authorityServiceMock).should().hasAdminAuthority();
@@ -389,6 +399,17 @@ public class TagsImplTest
         assertThat(actualCreatedTags)
             .isNotNull()
             .isEqualTo(expectedTags);
+    }
+
+    @Test(expected = EntityNotFoundException.class)
+    public void testGetTagByIdNotFoundValidation()
+    {
+        given(primaryParentMock.getParentRef()).willReturn(TAG_NODE_REF);
+        objectUnderTest.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,TAG_ID);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(taggingServiceMock).shouldHaveNoInteractions();
     }
 
     private static List<Pair<String, NodeRef>> createTagAndNodeRefPairs(final List<String> tagNames)

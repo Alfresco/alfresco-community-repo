@@ -62,6 +62,7 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -81,8 +82,10 @@ public class TagsImpl implements Tags
 	private static final String PARAM_WHERE_TAG = "tag";
 	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
+	private final NodeRef tagParentNodeRef = new NodeRef("workspace://SpacesStore/tag:tag-root");
 
     private Nodes nodes;
+	private NodeService nodeService;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
 	private AuthorityService authorityService;
@@ -95,6 +98,10 @@ public class TagsImpl implements Tags
 	public void setNodes(Nodes nodes) 
     {
 		this.nodes = nodes;
+	}
+	public void setNodeService(NodeService nodeService)
+	{
+		this.nodeService = nodeService;
 	}
 	
     public void setTaggingService(TaggingService taggingService)
@@ -200,7 +207,7 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(tagId);
-    	if(tagNodeRef == null)
+    	if(tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
     	{
     		throw new EntityNotFoundException(tagId);
     	}
@@ -210,7 +217,7 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
-    	if(tagNodeRef == null)
+    	if(tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
     	{
     		throw new EntityNotFoundException(tagId);
     	}

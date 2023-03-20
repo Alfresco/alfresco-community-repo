@@ -41,7 +41,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tagging.NonExistentTagException;
 import org.alfresco.repo.tagging.TagExistsException;
@@ -83,7 +82,7 @@ public class TagsImpl implements Tags
 	private static final String PARAM_WHERE_TAG = "tag";
 	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
-
+	private final NodeRef tagParentNodeRef = new NodeRef("workspace://SpacesStore/tag:tag-root");
     private Nodes nodes;
 	private NodeService nodeService;
 	private TaggingService taggingService;
@@ -207,7 +206,7 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(String tagId)
     {
         NodeRef tagNodeRef = nodes.validateNode(tagId);
-		if (tagNodeRef == null || nodeService.hasAspect(tagNodeRef, ContentModel.ASPECT_TAGGABLE))
+		if (tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
 		{
 			throw new EntityNotFoundException(tagId);
 		}
@@ -217,7 +216,7 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
         NodeRef tagNodeRef = nodes.validateNode(storeRef,tagId);
-        if (tagNodeRef == null || nodeService.hasAspect(tagNodeRef, ContentModel.ASPECT_TAGGABLE))
+        if (tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
         {
             throw new EntityNotFoundException(tagId);
         }

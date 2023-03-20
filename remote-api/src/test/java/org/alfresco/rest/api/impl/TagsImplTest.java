@@ -64,11 +64,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class TagsImplTest
 {
     private static final String TAG_ID = "tag-node-id";
+    private static final String PARENT_NODE_ID = "tag:tag-root";
     private static final String TAG_NAME = "tag-dummy-name";
     private static final NodeRef TAG_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
+    private static final NodeRef TAG_PARENT_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_NODE_ID);
 
     @Mock
     private Nodes nodesMock;
+    @Mock
+    private ChildAssociationRef primaryParentMock;
     @Mock
     private NodeService nodeServiceMock;
     @Mock
@@ -87,6 +91,7 @@ public class TagsImplTest
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
         given(nodesMock.validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willReturn(TAG_NODE_REF);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
+        given(nodeServiceMock.getPrimaryParent(TAG_NODE_REF)).willReturn(primaryParentMock);
     }
     @Test
     public void testGetTags() {
@@ -104,6 +109,7 @@ public class TagsImplTest
     @Test
     public void testDeleteTagById()
     {
+        given(primaryParentMock.getParentRef()).willReturn(TAG_PARENT_NODE_REF);
         //when
         objectUnderTest.deleteTagById(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
@@ -274,7 +280,7 @@ public class TagsImplTest
     @Test(expected = EntityNotFoundException.class)
     public void testGetTagByIdNotFoundValidation()
     {
-        given(nodeServiceMock.hasAspect(TAG_NODE_REF, ContentModel.ASPECT_TAGGABLE)).willReturn(true);
+        given(primaryParentMock.getParentRef()).willReturn(TAG_NODE_REF);
         objectUnderTest.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,TAG_ID);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);

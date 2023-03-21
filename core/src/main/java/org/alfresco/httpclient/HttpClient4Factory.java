@@ -82,7 +82,7 @@ public class HttpClient4Factory
             clientBuilder.addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
                 if (!((HttpHost) context.getAttribute(HTTP_TARGET_HOST)).getSchemeName().equals(HTTPS_PROTOCOL))
                 {
-                    String msg = "mTLS is enabled but provided URL does not used a secured protocol";
+                    String msg = "mTLS is enabled but provided URL does not use a secured protocol";
                     throw new HttpClientException(msg);
                 }
             });

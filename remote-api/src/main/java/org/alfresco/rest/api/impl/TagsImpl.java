@@ -212,6 +212,20 @@ public class TagsImpl implements Tags
 			}
 		}
 
+		if(!sorting.isEmpty() && sorting.get(0).column.equals("tag"))
+		{
+			boolean sortAsc = sorting.get(0).asc;
+
+			if(sortAsc)
+			{
+				tagsList.sort(Comparator.comparing(Tag::getTag));
+			}
+			else
+			{
+				tagsList.sort(Comparator.comparing(Tag::getTag).reversed());
+			}
+		}
+
 		List<Tag> pagedTags = new ArrayList<>();
 		int count = 0;
 

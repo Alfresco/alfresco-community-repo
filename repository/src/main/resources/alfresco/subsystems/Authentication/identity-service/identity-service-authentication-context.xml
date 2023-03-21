@@ -204,12 +204,6 @@
          <value>${identity-service.client-socket-timeout:2000}</value>
       </property>
    </bean>
-
-   <bean name="identityServiceDeployment" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceDeploymentFactoryBean">
-      <property name="identityServiceConfig">
-         <ref bean="identityServiceConfig" />
-      </property>
-   </bean>
    
    <!-- Enable control over mapping between request and user ID -->
    <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper">

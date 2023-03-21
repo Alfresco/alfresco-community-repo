@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.InvalidResetPasswordWorkflowException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
@@ -62,10 +63,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import javax.mail.internet.MimeMessage;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.EmptyStackException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Tests for {@link ResetPasswordServiceImpl}
@@ -494,4 +492,60 @@ public class ResetPasswordServiceImplTest
         }
     }
 
+    @Test
+    public void testCreateResetPassword() throws Exception
+    {
+        // Try the credential before change of password
+        authenticateUser(testPerson.userName, testPerson.password);
+
+        // Make sure to run as system
+        AuthenticationUtil.clearCurrentSecurityContext();
+        AuthenticationUtil.setRunAsUserSystem();
+
+        resetPasswordService.requestReset(testPerson.userName, "workspace");
+        assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
+        // Check the email
+        MimeMessage msg = emailUtil.getLastEmail();
+        assertNotNull("There should be an email.", msg);
+        assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
+        // Check the recipient is the person who requested the reset password
+        assertEquals(testPerson.email, msg.getAllRecipients()[0].toString());
+        //Check the sender is what we set as default
+        assertEquals(DEFAULT_SENDER, msg.getFrom()[0].toString());
+        // There should be a subject
+        assertNotNull("There should be a subject.", msg.getSubject());
+        // Check the default email subject - (check that we are sending the right email)
+        String emailSubjectKey = getDeclaredField(SendResetPasswordEmailDelegate.class, "EMAIL_SUBJECT_KEY");
+        assertNotNull(emailSubjectKey);
+        assertEquals(msg.getSubject(), I18NUtil.getMessage(emailSubjectKey));
+
+        // Check the reset password url.
+        String resetPasswordUrl = (String) emailUtil.getLastEmailTemplateModelValue("reset_password_url");
+        assertNotNull("Wrong email is sent.", resetPasswordUrl);
+        // Get the workflow id and key
+        Pair<String, String> pair = getWorkflowIdAndKeyFromUrl(resetPasswordUrl);
+        assertNotNull("Workflow Id can't be null.",pair.getFirst());
+        assertNotNull("Workflow Key can't be null.", pair.getSecond());
+
+        String clientName = "workspace";
+        String userEmail = resetPasswordService.validateUserAndGetEmail(testPerson.userName);
+        ClientApp clientApp = resetPasswordService.getClientAppConfig(clientName);
+
+        Map<String, Serializable> emailTemplateModel = Collections.singletonMap("reset_password_url",
+                resetPasswordService.createResetPasswordUrl(clientApp,pair.getFirst(),pair.getSecond()));
+
+        String EMAIL_TEMPLATE_PATH = "alfresco/templates/reset-password-email-templates/forgot-password-email-template.ftl";
+        String EMAIL_SUBJECT_KEY = "reset-password-request.email.subject";
+        ResetPasswordServiceImpl.ResetPasswordEmailDetails emailRequest = new ResetPasswordServiceImpl.ResetPasswordEmailDetails()
+                .setUserName(testPerson.userName)
+                .setUserEmail(userEmail)
+                .setTemplatePath(EMAIL_TEMPLATE_PATH)
+                .setTemplateAssetsUrl(clientApp.getTemplateAssetsUrl())
+                .setEmailSubject(EMAIL_SUBJECT_KEY)
+                .setTemplateModel(emailTemplateModel);
+
+        resetPasswordService.sendEmail(emailRequest);
+        assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
+
+    }
 }

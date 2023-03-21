@@ -95,6 +95,7 @@ public class HttpClientConfig
         this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
 
         config = retrieveConfig(serviceName);
+        checkUnsupportedProperties(config);
     }
 
     /**
@@ -104,21 +105,20 @@ public class HttpClientConfig
      */
     private Map<String, String> retrieveConfig(String serviceName)
     {
-        Map<String, String> config = properties.keySet().stream()
+        return properties.keySet().stream()
                 .filter(key -> key instanceof String)
                 .map(Object::toString)
                 .filter(key -> key.startsWith(HTTPCLIENT_CONFIG + serviceName))
                 .collect(Collectors.toMap(
                         key -> key.replace(HTTPCLIENT_CONFIG + serviceName + ".", ""),
                         key -> properties.getProperty(key, null)));
+    }
 
-        Set<String> unsupportedProperties = config.keySet().stream()
-                                      .filter(propertyName -> !HttpClientProperties.isPropertyNameSupported(propertyName))
-                                      .collect(Collectors.toSet());
-
-        LOGGER.warn("Those properties are not supported: " + unsupportedProperties);
-
-        return config;
+    private void checkUnsupportedProperties(Map<String, String> config)
+    {
+        config.keySet().stream()
+              .filter(propertyName -> !HttpClientProperties.isPropertyNameSupported(propertyName))
+              .forEach(propertyName -> LOGGER.warn(String.format("For service [%s], an unsupported property [%s] is set", serviceName, propertyName)));
     }
 
     private Integer getIntegerProperty(String propertyName)

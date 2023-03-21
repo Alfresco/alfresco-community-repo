@@ -42,7 +42,6 @@ import junit.framework.TestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenException;
 import org.alfresco.service.cmr.security.PersonService;
-import org.junit.Test;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 
 /**
@@ -55,8 +54,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
-    @Test
-    public void testValidToken() throws Exception
+    public void testValidToken()
     {
         final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("VaLiD-ToKeN", () -> "johny"));
 
@@ -66,7 +64,6 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         assertEquals("johny", user);
     }
 
-    @Test
     public void testWrongTokenWithSilentValidation()
     {
         final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenException("Expected ");}));
@@ -78,7 +75,6 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         assertNull(user);
     }
 
-    @Test
     public void testWrongTokenWithoutSilentValidation()
     {
         final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenException("Expected");}));

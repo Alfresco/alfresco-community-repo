@@ -63,7 +63,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import javax.mail.internet.MimeMessage;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Collections;
 
 /**
  * Tests for {@link ResetPasswordServiceImpl}

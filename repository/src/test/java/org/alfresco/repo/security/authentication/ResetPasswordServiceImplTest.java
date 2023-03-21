@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.InvalidResetPasswordWorkflowException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
@@ -67,7 +66,6 @@ import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Collections;
 
 /**
  * Tests for {@link ResetPasswordServiceImpl}

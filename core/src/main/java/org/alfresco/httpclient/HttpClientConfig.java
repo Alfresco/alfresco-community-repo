@@ -169,7 +169,7 @@ public class HttpClientConfig
         return getBooleanProperty(HttpClientProperties.MTLS_ENABLED.propertyName);
     }
 
-    public enum HttpClientProperties
+    private enum HttpClientProperties
     {
         CONNECTION_TIMEOUT("connectionTimeout"),
         SOCKET_TIMEOUT("socketTimeout"),

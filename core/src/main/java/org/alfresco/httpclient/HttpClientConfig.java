@@ -46,7 +46,7 @@ public class HttpClientConfig
 {
     private static final String HTTPCLIENT_CONFIG = "httpclient.config.";
 
-    protected static final Log logger = LogFactory.getLog(HttpClientConfig.class);
+    protected static final Log LOGGER = LogFactory.getLog(HttpClientConfig.class);
 
     private Properties properties;
     private String serviceName;
@@ -116,7 +116,7 @@ public class HttpClientConfig
                                       .filter(propertyName -> !HttpClientProperties.isPropertyNameSupported(propertyName))
                                       .collect(Collectors.toSet());
 
-        logger.warn("Those properties are not supported: " + unsupportedProperties);
+        LOGGER.warn("Those properties are not supported: " + unsupportedProperties);
 
         return config;
     }
@@ -125,6 +125,7 @@ public class HttpClientConfig
     {
         String keyValue = Optional.ofNullable(config.get(propertyName)).orElseThrow(() -> {
             String msg = String.format("Required property: '%s' is empty.", propertyName);
+            LOGGER.error(msg);
             throw new HttpClientException(msg);
         });
             return Integer.parseInt(keyValue);
@@ -134,6 +135,7 @@ public class HttpClientConfig
     {
         String keyValue = Optional.ofNullable(config.get(propertyName)).orElseThrow(() -> {
             String msg = String.format("Required property: '%s' is empty.", propertyName);
+            LOGGER.error(msg);
             throw new HttpClientException(msg);
         });
         return Boolean.parseBoolean(keyValue);

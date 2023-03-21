@@ -27,19 +27,26 @@
 
 package org.alfresco.httpclient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alfresco.encryption.AlfrescoKeyStore;
 import org.alfresco.encryption.AlfrescoKeyStoreImpl;
 import org.alfresco.encryption.KeyResourceLoader;
 import org.alfresco.encryption.ssl.SSLEncryptionParameters;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class HttpClientConfig
 {
     private static final String HTTPCLIENT_CONFIG = "httpclient.config.";
+
+    protected static final Log logger = LogFactory.getLog(HttpClientConfig.class);
 
     private Properties properties;
     private String serviceName;
@@ -97,13 +104,21 @@ public class HttpClientConfig
      */
     private Map<String, String> retrieveConfig(String serviceName)
     {
-        return properties.keySet().stream()
-                                            .filter(key -> key instanceof String)
-                                            .map(Object::toString)
-                                            .filter(key -> key.startsWith(HTTPCLIENT_CONFIG + serviceName))
-                                            .collect(Collectors.toMap(
-                                                    key -> key.replace(HTTPCLIENT_CONFIG + serviceName + ".", ""),
-                                                    key -> properties.getProperty(key, null)));
+        Map<String, String> config = properties.keySet().stream()
+                .filter(key -> key instanceof String)
+                .map(Object::toString)
+                .filter(key -> key.startsWith(HTTPCLIENT_CONFIG + serviceName))
+                .collect(Collectors.toMap(
+                        key -> key.replace(HTTPCLIENT_CONFIG + serviceName + ".", ""),
+                        key -> properties.getProperty(key, null)));
+
+        Set<String> unsupportedProperties = config.keySet().stream()
+                                      .filter(propertyName -> !HttpClientProperties.isPropertyNameSupported(propertyName))
+                                      .collect(Collectors.toSet());
+
+        logger.warn("Those properties are not supported: " + unsupportedProperties);
+
+        return config;
     }
 
     private Integer getIntegerProperty(String propertyName)
@@ -126,31 +141,64 @@ public class HttpClientConfig
 
     public Integer getConnectionTimeout()
     {
-        return getIntegerProperty("connectionTimeout");
+        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT.propertyName);
     }
 
     public Integer getSocketTimeout()
     {
-        return getIntegerProperty("socketTimeout");
+        return getIntegerProperty(HttpClientProperties.SOCKET_TIMEOUT.propertyName);
     }
 
     public Integer getConnectionRequestTimeout()
     {
-        return getIntegerProperty("connectionRequestTimeout");
+        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT.propertyName);
     }
 
     public Integer getMaxTotalConnections()
     {
-        return getIntegerProperty("maxTotalConnections");
+        return getIntegerProperty(HttpClientProperties.MAX_TOTAL_CONNECTIONS.propertyName);
     }
 
     public Integer getMaxHostConnections()
     {
-        return getIntegerProperty("maxHostConnections");
+        return getIntegerProperty(HttpClientProperties.MAX_HOST_CONNECTIONS.propertyName);
     }
 
     public Boolean isMTLSEnabled()
     {
-        return getBooleanProperty("mTLSEnabled");
+        return getBooleanProperty(HttpClientProperties.MTLS_ENABLED.propertyName);
+    }
+
+    public enum HttpClientProperties
+    {
+        CONNECTION_TIMEOUT("connectionTimeout"),
+        SOCKET_TIMEOUT("socketTimeout"),
+        CONNECTION_REQUEST_TIMEOUT("connectionRequestTimeout"),
+        MAX_TOTAL_CONNECTIONS("maxTotalConnections"),
+        MAX_HOST_CONNECTIONS("maxHostConnections"),
+        MTLS_ENABLED("mTLSEnabled");
+
+        private final String propertyName;
+
+        HttpClientProperties(String propertyName)
+        {
+            this.propertyName = propertyName;
+        }
+
+        public String getPropertyName() {
+            return this.propertyName;
+        }
+
+        private static final List<String> supportedProperties = new ArrayList<>();
+
+        static {
+            for (HttpClientProperties property : HttpClientProperties.values()) {
+                supportedProperties.add(property.getPropertyName());
+            }
+        }
+
+        public static boolean isPropertyNameSupported(String propertyName) {
+            return supportedProperties.contains(propertyName);
+        }
     }
 }

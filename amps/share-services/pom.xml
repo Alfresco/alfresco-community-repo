@@ -32,6 +32,10 @@
                     <groupId>javax.servlet</groupId>
                     <artifactId>jstl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -97,6 +101,10 @@
                 <exclusion>
                     <groupId>javax.servlet</groupId>
                     <artifactId>jstl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-collections</groupId>
+                    <artifactId>commons-collections</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

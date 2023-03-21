@@ -406,7 +406,7 @@ public class TagsImplTest
     {
         given(primaryParentMock.getParentRef()).willReturn(TAG_NODE_REF);
         objectUnderTest.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,TAG_ID);
-        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
         then(nodesMock).should().validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(taggingServiceMock).shouldHaveNoInteractions();

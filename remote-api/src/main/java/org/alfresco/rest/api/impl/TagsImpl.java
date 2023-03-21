@@ -207,21 +207,13 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(tagId);
-    	if(tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
+		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
-    	if(tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
+		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
 
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag)
@@ -342,5 +334,14 @@ public class TagsImpl implements Tags
 					return MATCHES;
 				}
 			}, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
+	}
+
+	private NodeRef checkTagRootAsNodePrimaryParent(String tagId, NodeRef tagNodeRef)
+	{
+		if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
+		{
+			throw new EntityNotFoundException(tagId);
+		}
+		return tagNodeRef;
 	}
 }

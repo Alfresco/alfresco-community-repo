@@ -62,6 +62,7 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -81,8 +82,10 @@ public class TagsImpl implements Tags
 	private static final String PARAM_WHERE_TAG = "tag";
 	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
+	private final NodeRef tagParentNodeRef = new NodeRef("workspace://SpacesStore/tag:tag-root");
 
     private Nodes nodes;
+	private NodeService nodeService;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
 	private AuthorityService authorityService;
@@ -95,6 +98,10 @@ public class TagsImpl implements Tags
 	public void setNodes(Nodes nodes) 
     {
 		this.nodes = nodes;
+	}
+	public void setNodeService(NodeService nodeService)
+	{
+		this.nodeService = nodeService;
 	}
 	
     public void setTaggingService(TaggingService taggingService)
@@ -200,21 +207,13 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
+		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
+		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
 
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag)
@@ -255,8 +254,7 @@ public class TagsImpl implements Tags
 
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
-		NodeRef nodeRef = validateTag(nodeId);
-
+		NodeRef nodeRef = nodes.validateNode(nodeId);
 		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
     	Integer totalItems = results.getTotalResultCount().getFirst();
     	List<Pair<NodeRef, String>> page = results.getPage();
@@ -335,5 +333,14 @@ public class TagsImpl implements Tags
 					return MATCHES;
 				}
 			}, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
+	}
+
+	private NodeRef checkTagRootAsNodePrimaryParent(String tagId, NodeRef tagNodeRef)
+	{
+		if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
+		{
+			throw new EntityNotFoundException(tagId);
+		}
+		return tagNodeRef;
 	}
 }

@@ -28,32 +28,32 @@ package org.alfresco.repo.security.authentication.identityservice;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponent.OAuth2Client.CredentialsVerificationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  *
- * Authenticates a user against Identity Service (Keycloak).
- * {@link OAuth2Client} is used to verify provided user credentials. User is set as the current user if the user
- * credentials are valid.
+ * Authenticates a user against Identity Service (Keycloak/Authorization Server).
+ * {@link IdentityServiceFacade} is used to verify provided user credentials. User is set as the current user if the
+ * user credentials are valid.
  * <br>
- * The {@link IdentityServiceAuthenticationComponent#oAuth2Client} can be null in which case this authenticator will
- * just fall through to the next one in the chain.
+ * The {@link IdentityServiceAuthenticationComponent#identityServiceFacade} can be null in which case this authenticator
+ * will just fall through to the next one in the chain.
  *
  */
 public class IdentityServiceAuthenticationComponent extends AbstractAuthenticationComponent implements ActivateableBean
 {
     private final Log LOGGER = LogFactory.getLog(IdentityServiceAuthenticationComponent.class);
     /** client used to authenticate user credentials against Authorization Server **/
-    private OAuth2Client oAuth2Client;
+    private IdentityServiceFacade identityServiceFacade;
     /** enabled flag for the identity service subsystem**/
     private boolean active;
     private boolean allowGuestLogin;
 
-    public void setOAuth2Client(OAuth2Client oAuth2Client)
+    public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
     {
-        this.oAuth2Client = oAuth2Client;
+        this.identityServiceFacade = identityServiceFacade;
     }
 
     public void setAllowGuestLogin(boolean allowGuestLogin)
@@ -63,21 +63,20 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
 
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
-
-        if (oAuth2Client == null)
+        if (identityServiceFacade == null)
         {
             if (LOGGER.isDebugEnabled())
             {
-                LOGGER.debug("OAuth2Client was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property.");
+                LOGGER.debug("IdentityServiceFacade was not set, possibly due to the 'identity-service.authentication.enable-username-password-authentication=false' property.");
             }
 
-            throw new AuthenticationException("User not authenticated because OAuth2Client was not set.");
+            throw new AuthenticationException("User not authenticated because IdentityServiceFacade was not set.");
         }
 
         try
         {
             // Attempt to verify user credentials
-            oAuth2Client.verifyCredentials(userName, new String(password));
+            identityServiceFacade.verifyCredentials(userName, new String(password));
 
             // Verification was successful so treat as authenticated user
             setCurrentUser(userName);
@@ -107,33 +106,5 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     protected boolean implementationAllowsGuestLogin()
     {
         return allowGuestLogin;
-    }
-
-    /**
-     * An abstraction for acting as an OAuth2 Client
-     */
-    interface OAuth2Client
-    {
-        /**
-         * The OAuth2's Client role is only used to verify the user credentials (Resource Owner Password
-         * Credentials Flow) this is why there is an explicit method for verifying these.
-         * @param userName user's name
-         * @param password user's password
-         * @throws CredentialsVerificationException when the verification failed or couldn't be performed
-         */
-        void verifyCredentials(String userName, String password);
-
-        class CredentialsVerificationException extends RuntimeException
-        {
-            CredentialsVerificationException(String message)
-            {
-                super(message);
-            }
-
-            CredentialsVerificationException(String message, Throwable cause)
-            {
-                super(message, cause);
-            }
-        }
     }
 }

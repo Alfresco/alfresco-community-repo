@@ -189,7 +189,7 @@ public class CategoriesImpl implements Categories
     @Override
     public List<Category> listCategoriesForNode(final String nodeId, final Parameters parameters)
     {
-        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        final NodeRef contentNodeRef = nodes.validateOrLookupNode(nodeId, null);
         verifyReadPermission(contentNodeRef);
         verifyNodeType(contentNodeRef);
 
@@ -211,7 +211,7 @@ public class CategoriesImpl implements Categories
             throw new InvalidArgumentException(NOT_A_VALID_CATEGORY);
         }
 
-        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        final NodeRef contentNodeRef = nodes.validateOrLookupNode(nodeId, null);
         verifyChangePermission(contentNodeRef);
         verifyNodeType(contentNodeRef);
 
@@ -237,7 +237,7 @@ public class CategoriesImpl implements Categories
     public void unlinkNodeFromCategory(final StoreRef storeRef, final String nodeId, final String categoryId, final Parameters parameters)
     {
         final NodeRef categoryNodeRef = getCategoryNodeRef(storeRef, categoryId);
-        final NodeRef contentNodeRef = nodes.validateNode(nodeId);
+        final NodeRef contentNodeRef = nodes.validateOrLookupNode(nodeId, null);
         verifyChangePermission(contentNodeRef);
         verifyNodeType(contentNodeRef);
 

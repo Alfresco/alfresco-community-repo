@@ -128,7 +128,7 @@ public class CategoriesImplTest
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(true);
         given(nodesMock.validateNode(CATEGORY_ID)).willReturn(CATEGORY_NODE_REF);
-        given(nodesMock.validateNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willReturn(CONTENT_NODE_REF);
         given(nodesMock.isSubClass(any(), any(), anyBoolean())).willReturn(true);
         given(typeConstraint.matches(any())).willReturn(true);
         given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
@@ -900,7 +900,7 @@ public class CategoriesImplTest
         // when
         final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, categoryLinks, parametersMock);
 
-        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID, null);
         then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
@@ -1011,12 +1011,12 @@ public class CategoriesImplTest
     @Test
     public void testLinkNodeToCategories_withInvalidNodeId()
     {
-        given(nodesMock.validateNode(CONTENT_NODE_ID)).willThrow(EntityNotFoundException.class);
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willThrow(EntityNotFoundException.class);
 
         // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock));
 
-        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID, null);
         then(permissionServiceMock).shouldHaveNoInteractions();
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
@@ -1031,7 +1031,7 @@ public class CategoriesImplTest
         // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock));
 
-        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID, null);
         then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
@@ -1118,7 +1118,7 @@ public class CategoriesImplTest
         objectUnderTest.unlinkNodeFromCategory(CONTENT_NODE_ID, CATEGORY_ID, parametersMock);
 
         then(nodesMock).should().validateNode(CATEGORY_ID);
-        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID, null);
         then(permissionServiceMock).should().hasPermission(CONTENT_NODE_REF, PermissionService.CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
@@ -1155,7 +1155,7 @@ public class CategoriesImplTest
         // when
         final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock);
 
-        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID, null);
         then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(typeConstraint).should().matches(CONTENT_NODE_REF);
@@ -1176,12 +1176,12 @@ public class CategoriesImplTest
     @Test
     public void testListCategoriesForNode_withInvalidNodeId()
     {
-        given(nodesMock.validateNode(CONTENT_NODE_ID)).willThrow(EntityNotFoundException.class);
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willThrow(EntityNotFoundException.class);
 
         // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock));
 
-        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID, null);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)
             .isInstanceOf(EntityNotFoundException.class);
@@ -1195,7 +1195,7 @@ public class CategoriesImplTest
         // when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock));
 
-        then(nodesMock).should().validateNode(CONTENT_NODE_ID);
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID, null);
         then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
         then(nodeServiceMock).shouldHaveNoInteractions();
         assertThat(actualException)

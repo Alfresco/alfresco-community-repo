@@ -540,22 +540,24 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
         if(!StringUtils.isEmpty(clientApp.getProperty("workspaceUrl")))
         {
-            String workspaceUrlPlaceholder = clientApp.getProperty("workspaceUrlPlaceholder");
+            String workspaceUrlPlaceholder = clientApp.getProperty("workspaceUrl");
             String workSpaceUrl = getRepoBaseUrl(workspaceUrlPlaceholder,"");
             sb.append(UrlUtil.replaceWorkSpaceUrlPlaceholder(pageUrl,workSpaceUrl));
             LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
-            sb.append("?key=").append(key)
-                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
-        }
-        else if(StringUtils.isEmpty(pageUrl)) {
-                sb.append(UrlUtil.getShareUrl(sysAdminParams));
 
-                LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
+        }
+        else if(StringUtils.isEmpty(pageUrl))
+        {
+            sb.append(UrlUtil.getShareUrl(sysAdminParams));
+
+            LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
                         + "]. The default base url of Share will be used [" + sb.toString() + "]");
-            } else {
-                // We pass an empty string as we know that the pageUrl is not null
-                sb.append(getUrl(pageUrl, ""));
-            }
+        }
+        else
+        {
+            // We pass an empty string as we know that the pageUrl is not null
+            sb.append(getUrl(pageUrl, ""));
+        }
 
             sb.append("?key=").append(key)
                     .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));

@@ -24,7 +24,6 @@ public class GetTagsTests extends TagsDataPrep
     private static final String FIELD_ID = "id";
     private static final String FIELD_TAG = "tag";
     private static final String FIELD_COUNT = "count";
-    private static final String TAG_NAME_PREFIX = "tag-name";
 
     @BeforeClass (alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -357,10 +356,9 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Verify if count field is present for searched tags.
      */
-
     @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void testGetTags_includingCount() {
-
+    public void testGetTags_includingCount()
+    {
         STEP("Get tags including count and verify if it is present int the response");
         final RestTagModelsCollection searchedTags = restClient.withCoreAPI().include(FIELD_COUNT).getTags();
 
@@ -374,10 +372,9 @@ public class GetTagsTests extends TagsDataPrep
     /**
      * Verify if count field is not present for searched tags.
      */
-
     @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void testGetTags_notIncludingCount() {
-
+    public void testGetTags_notIncludingCount()
+    {
         STEP("Get tags, not including count and verify if it is not in the response");
         final RestTagModelsCollection searchedTags = restClient.withCoreAPI().getTags();
 

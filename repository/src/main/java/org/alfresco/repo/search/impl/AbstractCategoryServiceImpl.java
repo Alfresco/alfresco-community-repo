@@ -25,8 +25,10 @@
  */
 package org.alfresco.repo.search.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,10 +37,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.IndexerAndSearcher;
@@ -64,8 +70,10 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.alfresco.util.collections.Function;
 import org.apache.commons.collections.CollectionUtils;
 
 /**
@@ -168,7 +176,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
 	public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
     {
-    	return getChildren(categoryRef, mode, depth, false, null, queryFetchSize);
+    	return getChildren(categoryRef, mode, depth, false, (Collection<String>) null, queryFetchSize);
     }
     
     public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, String filter)
@@ -177,6 +185,12 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     }
 
     private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, String filter, int fetchSize)
+    {
+        Collection<String> matchingFilter = Optional.ofNullable(filter).map(f -> "*".concat(f).concat("*")).map(Set::of).orElse(null);
+        return getChildren(categoryRef, mode, depth, sortByName, matchingFilter, fetchSize);
+    }
+
+    private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, Collection<String> namesFilter, int fetchSize)
     {
         if (categoryRef == null)
         {
@@ -218,12 +232,14 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
                     luceneQuery.append("/");
                 }
                 luceneQuery.append("*").append("\" ");
-                luceneQuery.append("+TYPE:\"" + ContentModel.TYPE_CATEGORY.toString() + "\"");
+                luceneQuery.append("+TYPE:\"" + ContentModel.TYPE_CATEGORY + "\"");
                 break;
             }
-            if (filter != null)
+            if (CollectionUtils.isNotEmpty(namesFilter))
             {
-                luceneQuery.append(" " + "+@cm\\:name:\"*" + filter + "*\"");
+                final StringJoiner filterJoiner = new StringJoiner(" OR ", " +(", ")");
+                namesFilter.forEach(nameFilter -> filterJoiner.add("@cm\\:name:\"" + nameFilter + "\""));
+                luceneQuery.append(filterJoiner);
             }
 
             // Get a searcher that will include Categories added in this transaction
@@ -337,28 +353,15 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         return assocs;
     }
 
-    protected Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName qname)
+    protected Set<NodeRef> getClassificationNodes(StoreRef storeRef, QName aspectQName)
     {
-        ResultSet resultSet = null;
         try
         {
-            resultSet = indexerAndSearcher.getSearcher(storeRef, false).query(storeRef, "lucene",
-                    "PATH:\"/" + getPrefix(qname.getNamespaceURI()) + ISO9075.encode(qname.getLocalName()) + "\"", null);
-            
-            Set<NodeRef> nodeRefs = new HashSet<NodeRef>(resultSet.length());
-            for (ResultSetRow row : resultSet)
-            {
-                nodeRefs.add(row.getNodeRef());
-            }
-            
-            return nodeRefs;
+            return getRootCategoryNodeRef(storeRef, aspectQName).stream().collect(Collectors.toSet());
         }
-        finally
+        catch (CategoryServiceException ignore)
         {
-            if (resultSet != null)
-            {
-                resultSet.close();
-            }
+            return Collections.emptySet();
         }
     }
 
@@ -391,69 +394,78 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
     public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
     {
-        return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null);
+        return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null, null);
     }
 
     public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter)
     {
-        final List<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
-        Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
+        final Collection<String> alikeNamesFilter = Optional.ofNullable(filter).map(f -> "*".concat(f).concat("*")).map(Set::of).orElse(null);
+        return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null, alikeNamesFilter);
+    }
 
+    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
+        Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        final Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
+        final List<ChildAssociationRef> associations = new LinkedList<>();
         final int skipCount = pagingRequest.getSkipCount();
         final int maxItems = pagingRequest.getMaxItems();
         final int size = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? CannedQueryPageDetails.DEFAULT_PAGE_SIZE : skipCount + maxItems);
         int count = 0;
         boolean moreItems = false;
 
-        OUTER: for(NodeRef nodeRef : nodeRefs)
-        {
-        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, filter, skipCount + maxItems + 1);
-        	for(ChildAssociationRef child : children)
-        	{
-        		count++;
+        final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = (nodeRef) -> {
+            final Set<ChildAssociationRef> childNodes = new HashSet<>();
+            if (CollectionUtils.isEmpty(exactNamesFilter) && CollectionUtils.isEmpty(alikeNamesFilter))
+            {
+                // lookup in DB without filtering
+                childNodes.addAll(nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_SUBCATEGORIES, RegexQNamePattern.MATCH_ALL));
+            }
+            else
+            {
+                if (CollectionUtils.isNotEmpty(exactNamesFilter))
+                {
+                    // lookup in DB filtering by name
+                    childNodes.addAll(nodeService.getChildrenByName(nodeRef, ContentModel.ASSOC_SUBCATEGORIES, exactNamesFilter));
+                }
+                if (CollectionUtils.isNotEmpty(alikeNamesFilter))
+                {
+                    // lookup using search engin filtering by name
+                    childNodes.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, alikeNamesFilter, skipCount + maxItems + 1));
+                }
+            }
 
-	            if(count <= skipCount)
-	            {
-	            	continue;
-	            }
-	            
-	            if(count > size)
-	            {
-	            	moreItems = true;
-	            	break OUTER;
-	            }
-
-	            assocs.add(child);
-        	}
-        }
-        
-        final boolean hasMoreItems = moreItems;
-        return new PagingResults<ChildAssociationRef>()
-        {
-			@Override
-			public List<ChildAssociationRef> getPage()
-			{
-				return assocs;
-			}
-
-			@Override
-			public boolean hasMoreItems()
-			{
-				return hasMoreItems;
-			}
-
-			@Override
-			public Pair<Integer, Integer> getTotalResultCount()
-			{
-				return new Pair<Integer, Integer>(null, null);
-			}
-
-			@Override
-			public String getQueryExecutionId()
-			{
-				return null;
-			}
+            Stream<ChildAssociationRef> childNodesStream = childNodes.stream();
+            if (sortByName)
+            {
+                childNodesStream = childNodesStream.sorted(Comparator.comparing(tag -> tag.getQName().getLocalName()));
+            }
+            return childNodesStream.collect(Collectors.toList());
         };
+
+        OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
+        {
+            Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
+            for(ChildAssociationRef child : children)
+            {
+                count++;
+
+                if(count <= skipCount)
+                {
+                    continue;
+                }
+
+                if(count > size)
+                {
+                    moreItems = true;
+                    break OUTER_LOOP;
+                }
+
+                associations.add(child);
+            }
+        }
+
+        return new ListBackedPagingResults<>(associations, moreItems);
     }
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)
@@ -606,18 +618,23 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     @Experimental
     public Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
     {
+        return getRootCategoryNodeRef(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+    }
+
+    private Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef, final QName childNodeType)
+    {
         final NodeRef rootNode = nodeService.getRootNode(storeRef);
         final ChildAssociationRef categoryRoot = nodeService.getChildAssocs(rootNode, Set.of(ContentModel.TYPE_CATEGORYROOT)).stream()
-                .findFirst()
-                .orElseThrow(() -> new CategoryServiceException(NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND));
+            .findFirst()
+            .orElseThrow(() -> new CategoryServiceException(NODE_WITH_CATEGORY_ROOT_TYPE_NOT_FOUND));
         final List<ChildAssociationRef> categoryRootAssocs = nodeService.getChildAssocs(categoryRoot.getChildRef());
         if (CollectionUtils.isEmpty(categoryRootAssocs))
         {
             throw new CategoryServiceException(CATEGORY_ROOT_NODE_NOT_FOUND);
         }
         return categoryRootAssocs.stream()
-                .filter(ca -> ca.getQName().equals(ContentModel.ASPECT_GEN_CLASSIFIABLE))
-                .map(ChildAssociationRef::getChildRef)
-                .findFirst();
+            .filter(ca -> ca.getQName().equals(childNodeType))
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst();
     }
 }

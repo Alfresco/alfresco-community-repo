@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,14 +25,16 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -41,9 +43,6 @@ import org.alfresco.util.BaseSpringTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.authorization.client.util.HttpResponseException;
-import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
@@ -65,7 +64,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Autowired
     private PersonService personService;
 
-    private AuthzClient mockAuthzClient;
+    private IdentityServiceFacade mockIdentityServiceFacade;
 
     @Before
     public void setUp()
@@ -76,8 +75,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authComponent.setNodeService(nodeService);
         authComponent.setPersonService(personService);
 
-        mockAuthzClient = mock(AuthzClient.class);
-        authComponent.setAuthenticatorAuthzClient(mockAuthzClient);
+        mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
+        authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);
     }
 
     @After
@@ -89,8 +88,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test (expected=AuthenticationException.class)
     public void testAuthenticationFail()
     {
-        when(mockAuthzClient.obtainAccessToken("username", "password"))
-                .thenThrow(new HttpResponseException("Unauthorized", 401, "Unauthorized", null));
+        doThrow(new CredentialsVerificationException("Failed"))
+                .when(mockIdentityServiceFacade)
+                .verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
     }
@@ -98,8 +98,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_connectionException()
     {
-        when(mockAuthzClient.obtainAccessToken("username", "password")).thenThrow(
-                    new RuntimeException("Couldn't connect to server", new ConnectException("ConnectionRefused")));
+        doThrow(new CredentialsVerificationException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
+                .when(mockIdentityServiceFacade)
+                .verifyCredentials("username", "password");
 
         try
         {
@@ -116,8 +117,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test (expected=AuthenticationException.class)
     public void testAuthenticationFail_otherException()
     {
-        when(mockAuthzClient.obtainAccessToken("username", "password"))
-                    .thenThrow(new RuntimeException("Some other errors!"));
+        doThrow(new RuntimeException("Some other errors!"))
+                .when(mockIdentityServiceFacade)
+                .verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
     }
@@ -125,8 +127,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testAuthenticationPass()
     {
-        when(mockAuthzClient.obtainAccessToken("username", "password"))
-                .thenReturn(new AccessTokenResponse());
+        doNothing().when(mockIdentityServiceFacade).verifyCredentials("username", "password");
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 
@@ -135,9 +136,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     }
 
     @Test (expected= AuthenticationException.class)
-    public void testFallthroughWhenAuthzClientIsNull()
+    public void testFallthroughWhenIdentityServiceFacadeIsNull()
     {
-        authComponent.setAuthenticatorAuthzClient(null);
+        authComponent.setIdentityServiceFacade(null);
         authComponent.authenticateImpl("username", "password".toCharArray());
     }
 

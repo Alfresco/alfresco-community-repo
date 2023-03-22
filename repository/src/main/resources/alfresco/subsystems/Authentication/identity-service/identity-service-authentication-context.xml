@@ -21,12 +21,12 @@
       <property name="allowGuestLogin">
          <value>${identity-service.authentication.allowGuestLogin}</value>
       </property>
-      <property name="authenticatorAuthzClient">
-         <ref bean="authenticatorAuthzClient"/>
+      <property name="identityServiceFacade">
+         <ref bean="identityServiceFacade"/>
       </property>
    </bean>
 
-   <bean name="authenticatorAuthzClient" class="org.alfresco.repo.security.authentication.identityservice.AuthenticatorAuthzClientFactoryBean">
+   <bean name="identityServiceFacade" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean">
       <property name="identityServiceConfig">
          <ref bean="identityServiceConfig" />
       </property>
@@ -204,12 +204,6 @@
          <value>${identity-service.client-socket-timeout:2000}</value>
       </property>
    </bean>
-
-   <bean name="identityServiceDeployment" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceDeploymentFactoryBean">
-      <property name="identityServiceConfig">
-         <ref bean="identityServiceConfig" />
-      </property>
-   </bean>
    
    <!-- Enable control over mapping between request and user ID -->
    <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper">
@@ -222,8 +216,11 @@
       <property name="personService">
          <ref bean="PersonService" />
       </property>
-      <property name="identityServiceDeployment">
-         <ref bean="identityServiceDeployment" />
+      <property name="bearerTokenResolver">
+         <bean class="org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver" />
+      </property>
+      <property name="identityServiceFacade">
+         <ref bean="identityServiceFacade" />
       </property>
    </bean>
 

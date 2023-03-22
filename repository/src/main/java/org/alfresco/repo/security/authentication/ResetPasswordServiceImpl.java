@@ -544,8 +544,8 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
             String workSpaceUrl = getRepoBaseUrl(workspaceUrlPlaceholder,"");
             sb.append(UrlUtil.replaceWorkSpaceUrlPlaceholder(pageUrl,workSpaceUrl));
             LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
-            sb.append("?key=").append(key)
-                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
+            /*sb.append("?key=").append(key)
+                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));*/
         }
         else if(StringUtils.isEmpty(pageUrl)) {
                 sb.append(UrlUtil.getShareUrl(sysAdminParams));

@@ -129,6 +129,7 @@ public class ResetPasswordServiceImplTest
         transactionHelper.doInTransaction((RetryingTransactionCallback<Void>) () ->
         {
             createUser(testPerson);
+            createUser(testPersonForWorkspace);
             return null;
         });
 

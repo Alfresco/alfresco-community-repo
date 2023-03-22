@@ -33,7 +33,7 @@ public class GetTagsTests extends TagsDataPrep
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tags using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    public void getTagsWithManagerRole() throws Exception
+    public void getTagsWithManagerRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
@@ -45,7 +45,7 @@ public class GetTagsTests extends TagsDataPrep
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Collaborator role gets tags using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void getTagsWithCollaboratorRole() throws Exception
+    public void getTagsWithCollaboratorRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
@@ -57,7 +57,7 @@ public class GetTagsTests extends TagsDataPrep
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Contributor role gets tags using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void getTagsWithContributorRole() throws Exception
+    public void getTagsWithContributorRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
@@ -69,7 +69,7 @@ public class GetTagsTests extends TagsDataPrep
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Consumer role gets tags using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void getTagsWithConsumerRole() throws Exception
+    public void getTagsWithConsumerRole()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
@@ -82,7 +82,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 //    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void failedAuthenticationReturnsUnauthorizedStatus() throws Exception
+    public void failedAuthenticationReturnsUnauthorizedStatus()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         userModel = dataUser.createRandomTestUser();
@@ -96,7 +96,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that if maxItems is invalid status code returned is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void maxItemsInvalidValueTest() throws Exception
+    public void maxItemsInvalidValueTest()
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=abc").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, "abc"));
@@ -105,7 +105,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that if skipCount is invalid status code returned is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void skipCountInvalidValueTest() throws Exception
+    public void skipCountInvalidValueTest()
     {
         restClient.authenticateUser(adminUserModel).withParams("skipCount=abc").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_SKIPCOUNT, "abc"));
@@ -114,7 +114,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that file tag is retrieved")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void fileTagIsRetrieved() throws Exception
+    public void fileTagIsRetrieved()
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
@@ -127,7 +127,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that folder tag is retrieved")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void folderTagIsRetrieved() throws Exception
+    public void folderTagIsRetrieved()
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
@@ -140,7 +140,7 @@ public class GetTagsTests extends TagsDataPrep
             description = "Verify site Manager is able to get tags using properties parameter."
                     + "Check that properties filter is applied.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void siteManagerIsAbleToRetrieveTagsWithPropertiesParameter() throws Exception
+    public void siteManagerIsAbleToRetrieveTagsWithPropertiesParameter()
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("maxItems=5000&properties=tag").withCoreAPI().getTags();
@@ -154,7 +154,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "With admin get tags and use skipCount parameter. Check pagination")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void useSkipCountCheckPagination() throws Exception
+    public void useSkipCountCheckPagination()
     {
         returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
@@ -172,7 +172,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "With admin get tags and use maxItems parameter. Check pagination")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void useMaxItemsParameterCheckPagination() throws Exception
+    public void useMaxItemsParameterCheckPagination()
     {
         returnedCollection = restClient.authenticateUser(adminUserModel).withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
@@ -191,7 +191,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "With manager get tags and use high skipCount parameter. Check pagination")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void useHighSkipCountCheckPagination() throws Exception
+    public void useHighSkipCountCheckPagination()
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("skipCount=20000").withCoreAPI().getTags();
@@ -207,7 +207,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "With Collaborator user get tags and use maxItems with value zero. Check default error model schema")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void useMaxItemsWithValueZeroCheckDefaultErrorModelSchema() throws Exception
+    public void useMaxItemsWithValueZeroCheckDefaultErrorModelSchema()
     {
         returnedCollection = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withParams("maxItems=0").withCoreAPI().getTags();
@@ -221,7 +221,7 @@ public class GetTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "With Manager user delete tag. Check it is not retrieved anymore.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void checkThatDeletedTagIsNotRetrievedAnymore() throws Exception
+    public void checkThatDeletedTagIsNotRetrievedAnymore()
     {
         String removedTag = getRandomName("tag3");
 

@@ -359,7 +359,7 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTags_includingCount()
     {
-        STEP("Get tags including count and verify if it is present int the response");
+        STEP("Get tags including count and verify if it is present in the response");
         final RestTagModelsCollection searchedTags = restClient.withCoreAPI().include(FIELD_COUNT).getTags();
 
         restClient.assertStatusCodeIs(OK);

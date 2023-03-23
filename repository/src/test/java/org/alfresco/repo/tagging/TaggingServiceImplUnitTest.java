@@ -91,7 +91,7 @@ public class TaggingServiceImplUnitTest
     @Before
     public void setUp() throws Exception
     {
-        AlfrescoTransactionSupport.bindResource(TAG_UPDATES, new HashMap<>(10));
+        AlfrescoTransactionSupport.bindResource(TAG_UPDATES, new HashMap<>());
         taggingService.init();
     }
 

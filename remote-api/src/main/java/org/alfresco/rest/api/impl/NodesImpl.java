@@ -651,7 +651,7 @@ public class NodesImpl implements Nodes
 
     public NodeRef validateOrLookupNode(String nodeId)
     {
-        return validateOrLookupNode(nodeId);
+        return validateOrLookupNode(nodeId, null);
     }
 
     public NodeRef validateOrLookupNode(String nodeId, String path)

@@ -4,8 +4,6 @@ import org.alfresco.utility.data.AisToken;
 import org.alfresco.utility.data.auth.DataAIS;
 import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
-import org.keycloak.authorization.client.util.HttpResponseException;
-import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,9 +84,9 @@ public class AuthParameterProviderFactory
             parameters.put(SessionParameter.OAUTH_REFRESH_TOKEN, aisToken.getRefreshToken());
             parameters.put(SessionParameter.OAUTH_EXPIRATION_TIMESTAMP, String.valueOf(System.currentTimeMillis()
                     + (aisToken.getExpiresIn() * 1000))); // getExpiresIn is in seconds
-            parameters.put(SessionParameter.OAUTH_TOKEN_ENDPOINT, cmisProperties.aisProperty().getAdapterConfig().getAuthServerUrl()
+            parameters.put(SessionParameter.OAUTH_TOKEN_ENDPOINT, cmisProperties.aisProperty().getAuthServerUrl()
                     + "/realms/alfresco/protocol/openid-connect/token");
-            parameters.put(SessionParameter.OAUTH_CLIENT_ID, cmisProperties.aisProperty().getAdapterConfig().getResource());
+            parameters.put(SessionParameter.OAUTH_CLIENT_ID, cmisProperties.aisProperty().getResource());
             return parameters;
         }
 
@@ -110,10 +108,10 @@ public class AuthParameterProviderFactory
                 // Attempt to get an access token for userModel from AIS
                 aisToken = dataAIS.perform().getAccessToken(userModel);
             }
-            catch (HttpResponseException e)
+            catch (AssertionError e)
             {
                 // Trying to authenticate with invalid user credentials so return an invalid access token
-                if (e.getStatusCode() == 401)
+                if (e.getMessage().contains("invalid_grant"))
                 {
                     STEP(String.format("%s Invalid user credentials were provided %s:%s. Using invalid token for reqest.",
                             STEP_PREFIX, userModel.getUsername(), userModel.getPassword()));

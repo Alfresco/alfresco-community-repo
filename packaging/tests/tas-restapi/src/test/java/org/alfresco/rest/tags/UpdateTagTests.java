@@ -282,7 +282,7 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTag(orphanTag).update(newTagName);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedModel.assertThat().field("tag").is(randomTag);
+        returnedModel.assertThat().field("tag").is(newTagName);
         returnedModel.assertThat().field("id").isNotNull();
     }
 }

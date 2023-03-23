@@ -716,7 +716,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         Map<String, Object> itemMap = (Map<String, Object>) model.get("item");
         Date expiryDate= (Date)itemMap.get("expiryDate");
         DateTime now = DateTime.now();
-        if (now.isAfter(expiryDate.getTime()))
+        if (expiryDate != null && now.isAfter(expiryDate.getTime()))
         {
             NodeRef expiryActionNodeRef = getQuickShareLinkExpiryActionNode(sharedId);
             deleteQuickShareLinkExpiryAction(expiryActionNodeRef);

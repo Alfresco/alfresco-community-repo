@@ -129,7 +129,7 @@ public class TagsImplTest
 
         then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull(), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
-        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream().collect(toList());
+        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME));
         assertEquals(expectedTags, actualTags.getCollection());
     }
 

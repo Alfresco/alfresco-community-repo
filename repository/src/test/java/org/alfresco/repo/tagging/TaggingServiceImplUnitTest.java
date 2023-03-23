@@ -163,7 +163,7 @@ public class TaggingServiceImplUnitTest
         //when
         taggingService.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME, newTagName);
 
-        then(nodeServiceMock).should(never()).setProperty(CONTENT_NODE_REF, PROP_TAGS, currentTagsMock);
+        then(nodeServiceMock).should(never()).setProperty(any(), any(), any());
         then(categoryServiceMock).should().deleteCategory(TAG_NODE_REF);
         then(categoryServiceMock).should().getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, newTagName, true);
     }

@@ -410,9 +410,6 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         final List<ChildAssociationRef> associations = new LinkedList<>();
         final int skipCount = pagingRequest.getSkipCount();
         final int maxItems = pagingRequest.getMaxItems();
-        final int size = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? CannedQueryPageDetails.DEFAULT_PAGE_SIZE : skipCount + maxItems);
-        int count = 0;
-        boolean moreItems = false;
 
         final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = (nodeRef) -> {
             final Set<ChildAssociationRef> childNodes = new HashSet<>();
@@ -430,7 +427,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
                 }
                 if (CollectionUtils.isNotEmpty(alikeNamesFilter))
                 {
-                    // lookup using search engin filtering by name
+                    // lookup using search engine filtering by name
                     childNodes.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, alikeNamesFilter, skipCount + maxItems + 1));
                 }
             }
@@ -450,31 +447,6 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         }
 
         return associations;
-
-
-//        OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
-//        {
-//            Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
-//            for(ChildAssociationRef child : children)
-//            {
-//                count++;
-//
-//                if(count <= skipCount)
-//                {
-//                    continue;
-//                }
-//
-//                if(count > size)
-//                {
-//                    moreItems = true;
-//                    break OUTER_LOOP;
-//                }
-//
-//                associations.add(child);
-//            }
-//        }
-//
-//        return new ListBackedPagingResults<>(associations, moreItems);
     }
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)

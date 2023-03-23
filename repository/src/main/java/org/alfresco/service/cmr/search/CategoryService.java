@@ -148,13 +148,6 @@ public interface CategoryService
      * @param alikeNamesFilter
      * @return
      */
-//    @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "exactNamesFilter", "alikeNamesFilter"})
-//    default PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
-//        Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
-//    {
-//        return new EmptyPagingResults<>();
-//    }
-
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "exactNamesFilter", "alikeNamesFilter"})
     default Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
                                                               Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter) {

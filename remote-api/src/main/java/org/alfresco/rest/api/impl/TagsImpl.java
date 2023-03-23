@@ -181,15 +181,11 @@ public class TagsImpl implements Tags
 
 		Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
 		List<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilters.get(EQUALS), namesFilters.get(MATCHES));
-
-        //Integer totalItems = results.getTotalResultCount().getFirst();
-        //List<Pair<NodeRef, String>> page = results.getPage();
 		List<Tag> tagsList = results.stream().map(pair -> new Tag(pair.getFirst(), pair.getSecond())).collect(Collectors.toList());
-        //List<Pair<String, Integer>> tagsByCount;
         Map<String, Long> tagsByCountMap = new HashMap<>();
+
 		if(params.getInclude().contains(PARAM_INCLUDE_COUNT))
 		{
-			//Map<String, Integer> tagsByCountMap = new HashMap<>();
 			tagsByCountMap = taggingService.calculateCount(storeRef, tagsByCountMap);
 
 			for (Tag tag : tagsList)

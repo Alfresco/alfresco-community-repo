@@ -61,7 +61,7 @@ public class NodeTagsRelation implements RelationshipResourceAction.Create<Tag>,
 	@WebApiDescription(title="Adds one or more tags to the node with id 'nodeId'.")
     public List<Tag> create(String nodeId, List<Tag> tagsToCreate, Parameters parameters)
 	{
-	    return tags.addTags(nodeId, tagsToCreate);
+	    return tags.addTags(nodeId, tagsToCreate, parameters);
 	}
 
 	@Override

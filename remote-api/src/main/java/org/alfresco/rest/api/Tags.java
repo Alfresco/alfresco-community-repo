@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 
 public interface Tags
 {
-    List<Tag> addTags(String nodeId, List<Tag> tags);
+    List<Tag> addTags(String nodeId, List<Tag> tags, Parameters parameters);
     Tag getTag(StoreRef storeRef, String tagId);
     void deleteTag(String nodeId, String tagId);
     CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params);

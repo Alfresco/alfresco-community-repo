@@ -96,7 +96,7 @@ public class TagsImpl implements Tags
 		this.typeConstraint = typeConstraint;
 	}
 
-	public void setNodes(Nodes nodes) 
+	public void setNodes(Nodes nodes)
     {
 		this.nodes = nodes;
 	}
@@ -115,7 +115,7 @@ public class TagsImpl implements Tags
 		this.authorityService = authorityService;
 	}
 
-    public List<Tag> addTags(String nodeId, final List<Tag> tags)
+    public List<Tag> addTags(String nodeId, final List<Tag> tags, final Parameters parameters)
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
         if (!typeConstraint.matches(nodeRef))
@@ -128,9 +128,15 @@ public class TagsImpl implements Tags
         {
             List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
             List<Tag> ret = new ArrayList<>(tags.size());
+			List<Pair<String, Integer>> tagsCountPairList = taggingService.findTaggedNodesAndCountByTagName(nodeRef.getStoreRef());
+			Map<String, Integer> tagsCountMap = tagsCountPairList.stream().collect(Collectors.toMap(Pair::getFirst,Pair::getSecond));
             for (Pair<String, NodeRef> pair : tagNodeRefs)
             {
-                ret.add(new Tag(pair.getSecond(), pair.getFirst()));
+				Tag createdTag = new Tag(pair.getSecond(), pair.getFirst());
+				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT)) {
+					createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).orElse(0) + 1);
+				}
+                ret.add(createdTag);
             }
             return ret;
         }

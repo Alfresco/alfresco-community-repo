@@ -429,7 +429,7 @@ public class TagsImplTest
         List<Tag> tags = tagNames.stream().map(name -> Tag.builder().tag(name).create()).collect(toList());
         given(taggingServiceMock.addTags(CONTENT_NODE_REF, tagNames)).willReturn(pairs);
 
-        List<Tag> actual = objectUnderTest.addTags(CONTENT_NODE_ID, tags);
+        List<Tag> actual = objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
 
         List<Tag> expected = pairs.stream().map(pair -> new Tag(pair.getSecond(), pair.getFirst())).collect(toList());
         assertEquals("Unexpected tags returned.", expected, actual);
@@ -441,7 +441,7 @@ public class TagsImplTest
         given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willThrow(new InvalidArgumentException());
         List<Tag> tags = List.of(Tag.builder().tag("tag1").create());
 
-        objectUnderTest.addTags(CONTENT_NODE_ID, tags);
+        objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
     }
 
     @Test(expected = UnsupportedResourceOperationException.class)
@@ -452,7 +452,7 @@ public class TagsImplTest
 
         List<Tag> tags = List.of(Tag.builder().tag("tag1").create());
 
-        objectUnderTest.addTags(CONTENT_NODE_ID, tags);
+        objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
     }
 
     @Test

@@ -185,7 +185,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 String rootNodeId = parameters.getParameter(PARAM_ROOT_NODE_ID);
                 if (rootNodeId != null)
                 {
-                    NodeRef nodeRef = nodes.validateOrLookupNode(rootNodeId, null);
+                    NodeRef nodeRef = nodes.validateOrLookupNode(rootNodeId);
                     query.append("PATH:\"").append(getQNamePath(nodeRef.getId())).append("//*\" AND (");
                 }
                 if (term != null)

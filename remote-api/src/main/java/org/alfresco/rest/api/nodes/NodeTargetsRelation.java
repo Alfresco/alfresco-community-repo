@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
+
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Node;
@@ -39,8 +41,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-
-import java.util.List;
 
 /**
  * Node Targets
@@ -64,7 +64,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
     @WebApiDescription(title = "Return a paged list of target nodes based on (peer) assocs")
     public CollectionWithPagingInfo<Node> readAll(String sourceNodeId, Parameters parameters)
     {
-        NodeRef sourceNodeRef = nodes.validateOrLookupNode(sourceNodeId, null);
+        NodeRef sourceNodeRef = nodes.validateOrLookupNode(sourceNodeId);
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 

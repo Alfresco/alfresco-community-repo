@@ -159,6 +159,7 @@ public class TaggingServiceImplUnitTest
         final String newTagName = "new-tag-name";
         given(searchServiceMock.query(any(), any(String.class), any(String.class))).willReturn(resultSetMock);
         given(resultSetMock.getNodeRefs()).willReturn(Collections.emptyList());
+        given(categoryServiceMock.getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, TAG_NAME, false)).willReturn(childAssociationsOf(TAG_NODE_REF));
 
         //when
         taggingService.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME, newTagName);

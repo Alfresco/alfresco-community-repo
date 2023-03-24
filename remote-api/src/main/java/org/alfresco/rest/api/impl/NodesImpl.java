@@ -649,11 +649,6 @@ public class NodesImpl implements Nodes
         return nodeService.getPrimaryParent(nodeRef).getParentRef();
     }
 
-    public NodeRef validateOrLookupNode(String nodeId)
-    {
-        return validateOrLookupNode(nodeId, null);
-    }
-
     public NodeRef validateOrLookupNode(String nodeId, String path)
     {
         NodeRef parentNodeRef;

@@ -219,7 +219,10 @@ public interface Nodes
      * @throws InvalidArgumentException if the specified node id is not a valid format.
      * @throws EntityNotFoundException if the specified node was not found in the database.
      */
-    NodeRef validateOrLookupNode(String nodeId);
+    default NodeRef validateOrLookupNode(String nodeId)
+    {
+        return validateOrLookupNode(nodeId, null);
+    }
     NodeRef validateOrLookupNode(String nodeId, String path);
 
     boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);

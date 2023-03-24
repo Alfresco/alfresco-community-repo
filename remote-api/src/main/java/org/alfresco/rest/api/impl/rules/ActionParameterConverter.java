@@ -173,7 +173,7 @@ public class ActionParameterConverter
             }
             else if (typeQName.isMatch(DataTypeDefinition.NODE_REF))
             {
-                NodeRef nodeRef = nodes.validateOrLookupNode(stringValue, null);
+                NodeRef nodeRef = nodes.validateOrLookupNode(stringValue);
                 if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
                 {
                     throw new EntityNotFoundException(stringValue);

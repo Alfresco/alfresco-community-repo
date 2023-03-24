@@ -422,7 +422,7 @@ public class TagsImplTest
     @Test
     public void testAddTags()
     {
-        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willReturn(CONTENT_NODE_REF);
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(typeConstraintMock.matches(CONTENT_NODE_REF)).willReturn(true);
         List<Pair<String, NodeRef>> pairs = List.of(new Pair<>("tagA", new NodeRef("tag://A/")), new Pair<>("tagB", new NodeRef("tag://B/")));
         List<String> tagNames = pairs.stream().map(Pair::getFirst).collect(toList());
@@ -438,7 +438,7 @@ public class TagsImplTest
     @Test(expected = InvalidArgumentException.class)
     public void testAddTagsToInvalidNode()
     {
-        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willThrow(new InvalidArgumentException());
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willThrow(new InvalidArgumentException());
         List<Tag> tags = List.of(Tag.builder().tag("tag1").create());
 
         objectUnderTest.addTags(CONTENT_NODE_ID, tags);
@@ -447,7 +447,7 @@ public class TagsImplTest
     @Test(expected = UnsupportedResourceOperationException.class)
     public void testAddTagsToWrongTypeOfNode()
     {
-        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willReturn(CONTENT_NODE_REF);
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(typeConstraintMock.matches(CONTENT_NODE_REF)).willReturn(false);
 
         List<Tag> tags = List.of(Tag.builder().tag("tag1").create());
@@ -458,7 +458,7 @@ public class TagsImplTest
     @Test
     public void testGetTagsForNode()
     {
-        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willReturn(CONTENT_NODE_REF);
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(parametersMock.getPaging()).willReturn(pagingMock);
         List<Pair<NodeRef, String>> pairs = List.of(new Pair<>(new NodeRef("tag://A/"), "tagA"), new Pair<>(new NodeRef("tag://B/"), "tagB"));
         given(taggingServiceMock.getTags(eq(CONTENT_NODE_REF), any(PagingRequest.class))).willReturn(pagingResultsMock);
@@ -474,7 +474,7 @@ public class TagsImplTest
     @Test (expected = InvalidArgumentException.class)
     public void testGetTagsFromInvalidNode()
     {
-        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID, null)).willThrow(new InvalidArgumentException());
+        given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willThrow(new InvalidArgumentException());
 
         objectUnderTest.getTags(CONTENT_NODE_ID, parametersMock);
     }

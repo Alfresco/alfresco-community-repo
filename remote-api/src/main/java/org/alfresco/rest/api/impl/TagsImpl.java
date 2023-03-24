@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.api.impl;
 
-import static java.util.stream.Collectors.toList;
-
 import static org.alfresco.rest.antlr.WhereClauseParser.EQUALS;
 import static org.alfresco.rest.antlr.WhereClauseParser.IN;
 import static org.alfresco.rest.antlr.WhereClauseParser.MATCHES;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -115,30 +114,44 @@ public class TagsImpl implements Tags
 		this.authorityService = authorityService;
 	}
 
-    public List<Tag> addTags(String nodeId, final List<Tag> tags)
-    {
-        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
-        if (!typeConstraint.matches(nodeRef))
-        {
-            throw new UnsupportedResourceOperationException("Cannot tag this node");
-        }
+	public List<Tag> addTags(String nodeId, final List<Tag> tags)
+	{
+	        NodeRef nodeRef = nodes.validateNode(nodeId);
+			if(!typeConstraint.matches(nodeRef))
+			{
+				throw new UnsupportedResourceOperationException("Cannot tag this node");
+			}
 
-        List<String> tagValues = tags.stream().map(Tag::getTag).collect(toList());
-        try
-        {
-            List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
-            List<Tag> ret = new ArrayList<>(tags.size());
-            for (Pair<String, NodeRef> pair : tagNodeRefs)
+	        List<String> tagValues = new AbstractList<String>()
             {
-                ret.add(new Tag(pair.getSecond(), pair.getFirst()));
+                @Override
+                public String get(int arg0)
+                {
+                	String tag = tags.get(arg0).getTag();
+                    return tag;
+                }
+    
+                @Override
+                public int size()
+                {
+                    return tags.size();
+                }
+            };
+            try
+            {
+		        List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
+		        List<Tag> ret = new ArrayList<Tag>(tags.size());
+		        for(Pair<String, NodeRef> pair : tagNodeRefs)
+		        {
+		        	ret.add(new Tag(pair.getSecond(), pair.getFirst()));
+		        }
+		        return ret;
             }
-            return ret;
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new InvalidArgumentException(e.getMessage());
-        }
-    }
+            catch(IllegalArgumentException e)
+            {
+            	throw new InvalidArgumentException(e.getMessage());
+            }
+	}
 	
     public void deleteTag(String nodeId, String tagId)
     {
@@ -241,17 +254,17 @@ public class TagsImpl implements Tags
 
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
-        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
-        PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
-        Integer totalItems = results.getTotalResultCount().getFirst();
-        List<Pair<NodeRef, String>> page = results.getPage();
-        List<Tag> tags = new ArrayList<>(page.size());
-        for(Pair<NodeRef, String> pair : page)
-        {
-            tags.add(new Tag(pair.getFirst(), pair.getSecond()));
-        }
+		NodeRef nodeRef = nodes.validateNode(nodeId);
+		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
+    	Integer totalItems = results.getTotalResultCount().getFirst();
+    	List<Pair<NodeRef, String>> page = results.getPage();
+    	List<Tag> tags = new ArrayList<Tag>(page.size());
+    	for(Pair<NodeRef, String> pair : page)
+    	{
+    		tags.add(new Tag(pair.getFirst(), pair.getSecond()));
+    	}
 
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
+    	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
 
 	@Experimental
@@ -263,7 +276,7 @@ public class TagsImpl implements Tags
 			.filter(Objects::nonNull)
 			.map(Tag::getTag)
 			.distinct()
-			.collect(toList());
+			.collect(Collectors.toList());
 
 		if (CollectionUtils.isEmpty(tagNames))
 		{
@@ -277,7 +290,7 @@ public class TagsImpl implements Tags
 				{
 					tag.setCount(0);
 				}
-			}).collect(toList());
+			}).collect(Collectors.toList());
 	}
 
 	private void verifyAdminAuthority()

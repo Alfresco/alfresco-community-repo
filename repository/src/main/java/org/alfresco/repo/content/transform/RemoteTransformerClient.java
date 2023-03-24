@@ -237,7 +237,7 @@ public class RemoteTransformerClient
 
         try
         {
-            try (CloseableHttpClient httpclient = HttpClients.createDefault())
+            try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
             {
                 try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {

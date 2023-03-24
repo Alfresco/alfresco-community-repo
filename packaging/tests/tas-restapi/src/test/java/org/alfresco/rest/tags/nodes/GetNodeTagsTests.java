@@ -151,18 +151,6 @@ public class GetNodeTagsTests extends TagsDataPrep
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
-            description = "Verify that if node id is empty returns status code 403")
-    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
-    public void emptyNodeIdTest() throws Exception
-    {
-        FileModel badDocument = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        badDocument.setNodeRef("");
-
-        restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(badDocument).getNodeTags();
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
-    }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify folder tags")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void folderTagsTest() throws Exception

@@ -30,7 +30,6 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import org.alfresco.utility.data.AisToken;
 import org.alfresco.utility.data.auth.DataAIS;
 import org.alfresco.utility.model.UserModel;
-import org.keycloak.authorization.client.util.HttpResponseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,12 +85,11 @@ public class RestAisAuthentication
             // Attempt to get an access token for userModel from AIS
             aisToken = dataAIS.perform().getAccessToken(userModel);
         }
-        catch (HttpResponseException e)
+        catch (AssertionError e)
         {
             // Trying to authenticate with invalid user credentials or disabled
             // user so return an invalid access token
-            String httpResponse = new String(e.getBytes());
-            if (e.getStatusCode() == 401 || httpResponse.contains(USER_DISABLED_MSG))
+            if (e.getMessage().contains("invalid_grant"))
             {
                 STEP(String.format("%s User disabled or invalid user credentials were provided %s:%s. Using invalid token for request.", STEP_PREFIX,
                         userModel.getUsername(), userModel.getPassword()));

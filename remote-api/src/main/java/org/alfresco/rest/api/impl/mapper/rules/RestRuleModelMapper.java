@@ -134,7 +134,7 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
     public org.alfresco.service.cmr.rule.Rule toServiceModel(Rule restRuleModel)
     {
         final org.alfresco.service.cmr.rule.Rule serviceRule = new org.alfresco.service.cmr.rule.Rule();
-        final NodeRef nodeRef = (restRuleModel.getId() != null) ? nodes.validateOrLookupNode(restRuleModel.getId(), null) : null;
+        final NodeRef nodeRef = (restRuleModel.getId() != null) ? nodes.validateOrLookupNode(restRuleModel.getId()) : null;
         serviceRule.setNodeRef(nodeRef);
         serviceRule.setTitle(restRuleModel.getName());
         serviceRule.setDescription(restRuleModel.getDescription());

@@ -39,6 +39,8 @@ import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -208,6 +210,19 @@ public interface Nodes
     NodeRef validateNode(StoreRef storeRef, String nodeId);
     NodeRef validateNode(String nodeId);
     NodeRef validateNode(NodeRef nodeRef);
+
+    /**
+     * Check that the specified id refers to a valid node.
+     *
+     * @param nodeId The node id to look up using SpacesStore or an alias like -root-.
+     * @return The node ref.
+     * @throws InvalidArgumentException if the specified node id is not a valid format.
+     * @throws EntityNotFoundException if the specified node was not found in the database.
+     */
+    default NodeRef validateOrLookupNode(String nodeId)
+    {
+        return validateOrLookupNode(nodeId, null);
+    }
     NodeRef validateOrLookupNode(String nodeId, String path);
 
     boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);

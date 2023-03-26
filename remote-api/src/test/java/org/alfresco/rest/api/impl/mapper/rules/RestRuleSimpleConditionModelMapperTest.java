@@ -275,7 +275,7 @@ public class RestRuleSimpleConditionModelMapperTest
     {
         final SimpleCondition simpleCondition = createSimpleCondition(PARAM_CATEGORY);
         final NodeRef defaultNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARAMETER_DEFAULT);
-        given(nodesMock.validateOrLookupNode(PARAMETER_DEFAULT, null)).willReturn(defaultNodeRef);
+        given(nodesMock.validateOrLookupNode(PARAMETER_DEFAULT)).willReturn(defaultNodeRef);
 
         // when
         final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);

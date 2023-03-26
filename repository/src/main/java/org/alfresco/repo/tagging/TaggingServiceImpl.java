@@ -505,41 +505,41 @@ public class TaggingServiceImpl implements TaggingService,
     
     public NodeRef changeTag(StoreRef storeRef, String existingTag, String newTag)
     {
-    	if(existingTag == null)
+    	if (existingTag == null)
     	{
     		throw new TaggingException("Existing tag cannot be null");
     	}
     	
-    	if(newTag == null)
+    	if (newTag == null)
     	{
     		throw new TaggingException("New tag cannot be null");
     	}
 
-    	if(existingTag.equals(newTag))
+    	if (existingTag.equals(newTag))
     	{
     		throw new TaggingException("New and existing tags are the same");
     	}
     	
-    	if(getTagNodeRef(storeRef, existingTag) == null)
+    	if (getTagNodeRef(storeRef, existingTag) == null)
     	{
     		throw new NonExistentTagException("Tag " + existingTag + " not found");
     	}
     	
-    	if(getTagNodeRef(storeRef, newTag) != null)
+    	if (getTagNodeRef(storeRef, newTag) != null)
     	{
     		throw new TagExistsException("Tag " + newTag + " already exists");
     	}
 
     	List<NodeRef> taggedNodes = findTaggedNodes(storeRef, existingTag);
-    	for(NodeRef nodeRef : taggedNodes)
-    	{
-    		removeTag(nodeRef, existingTag);
-    		addTag(nodeRef, newTag);
-    	}
+        for (NodeRef nodeRef : taggedNodes)
+        {
+            removeTag(nodeRef, existingTag);
+            addTag(nodeRef, newTag);
+        }
 
     	deleteTag(storeRef, existingTag);
 
-    	return getTagNodeRef(storeRef, newTag);
+        return getTagNodeRef(storeRef, newTag, true);
     }
 
     /**

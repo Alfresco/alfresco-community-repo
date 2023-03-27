@@ -47,9 +47,11 @@ public class LocalTransformClientWithMTLSIntegrationTest extends LocalTransformC
         System.setProperty("httpclient.config.transform.mTLSEnabled", "true");
         System.setProperty("ssl-keystore.password", "password");
         System.setProperty("ssl-truststore.password", "password");
-//        System.setProperty("metadata-keystore.password", "kT9X6oe68t");
-//        System.setProperty("metadata-keystore.aliases", "metadata");
-//        System.setProperty("metadata-keystore.metadata.password", "kT9X6oe68t");
+        System.setProperty("encryption.ssl.keystore.location", "${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.keystore");
+        System.setProperty("encryption.ssl.truststore.location", "${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.truststore");
+        System.setProperty("metadata-keystore.password", "password");
+        System.setProperty("metadata-keystore.aliases", "metadata");
+        System.setProperty("metadata-keystore.metadata.password", "password");
     }
 
 }

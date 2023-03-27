@@ -37,10 +37,8 @@ import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.notNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.notNull;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
@@ -186,7 +184,7 @@ public class ResultMapperTests
         when(sr.getVersionService()).thenReturn(versionService);
         when(sr.getNodeService()).thenReturn(nodeService);
 
-        when(nodes.validateOrLookupNode(nullable(String.class), nullable(String.class))).thenAnswer(invocation ->
+        when(nodes.validateOrLookupNode(nullable(String.class))).thenAnswer(invocation ->
         {
             Object[] args = invocation.getArguments();
             String aNode = (String)args[0];

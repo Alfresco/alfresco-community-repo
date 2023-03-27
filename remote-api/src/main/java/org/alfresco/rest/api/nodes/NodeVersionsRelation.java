@@ -25,6 +25,13 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -64,13 +71,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Node Versions - version history
@@ -117,7 +117,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     @WebApiDescription(title = "Return version history as a paged list of version node infos")
     public CollectionWithPagingInfo<Node> readAll(String nodeId, Parameters parameters)
     {
-        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
+        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
 
         VersionHistory vh = versionService.getVersionHistory(nodeRef);
 
@@ -293,7 +293,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
 
     public Version findVersion(String nodeId, String versionLabelId)
     {
-        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
+        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
         VersionHistory vh = versionService.getVersionHistory(nodeRef);
         if (vh != null) 
         {

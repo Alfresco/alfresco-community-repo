@@ -25,11 +25,12 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static java.util.stream.Collectors.toList;
+
 import static org.alfresco.rest.antlr.WhereClauseParser.EQUALS;
 import static org.alfresco.rest.antlr.WhereClauseParser.IN;
 import static org.alfresco.rest.antlr.WhereClauseParser.MATCHES;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -62,6 +63,7 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
@@ -81,8 +83,10 @@ public class TagsImpl implements Tags
 	private static final String PARAM_WHERE_TAG = "tag";
 	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
+	private final NodeRef tagParentNodeRef = new NodeRef("workspace://SpacesStore/tag:tag-root");
 
     private Nodes nodes;
+	private NodeService nodeService;
 	private TaggingService taggingService;
 	private TypeConstraint typeConstraint;
 	private AuthorityService authorityService;
@@ -96,6 +100,10 @@ public class TagsImpl implements Tags
     {
 		this.nodes = nodes;
 	}
+	public void setNodeService(NodeService nodeService)
+	{
+		this.nodeService = nodeService;
+	}
 	
     public void setTaggingService(TaggingService taggingService)
     {
@@ -107,44 +115,30 @@ public class TagsImpl implements Tags
 		this.authorityService = authorityService;
 	}
 
-	public List<Tag> addTags(String nodeId, final List<Tag> tags)
-	{
-	        NodeRef nodeRef = nodes.validateNode(nodeId);
-			if(!typeConstraint.matches(nodeRef))
-			{
-				throw new UnsupportedResourceOperationException("Cannot tag this node");
-			}
+    public List<Tag> addTags(String nodeId, final List<Tag> tags)
+    {
+        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
+        if (!typeConstraint.matches(nodeRef))
+        {
+            throw new UnsupportedResourceOperationException("Cannot tag this node");
+        }
 
-	        List<String> tagValues = new AbstractList<String>()
+        List<String> tagValues = tags.stream().map(Tag::getTag).collect(toList());
+        try
+        {
+            List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
+            List<Tag> ret = new ArrayList<>(tags.size());
+            for (Pair<String, NodeRef> pair : tagNodeRefs)
             {
-                @Override
-                public String get(int arg0)
-                {
-                	String tag = tags.get(arg0).getTag();
-                    return tag;
-                }
-    
-                @Override
-                public int size()
-                {
-                    return tags.size();
-                }
-            };
-            try
-            {
-		        List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
-		        List<Tag> ret = new ArrayList<Tag>(tags.size());
-		        for(Pair<String, NodeRef> pair : tagNodeRefs)
-		        {
-		        	ret.add(new Tag(pair.getSecond(), pair.getFirst()));
-		        }
-		        return ret;
+                ret.add(new Tag(pair.getSecond(), pair.getFirst()));
             }
-            catch(IllegalArgumentException e)
-            {
-            	throw new InvalidArgumentException(e.getMessage());
-            }
-	}
+            return ret;
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new InvalidArgumentException(e.getMessage());
+        }
+    }
 	
     public void deleteTag(String nodeId, String tagId)
     {
@@ -200,21 +194,13 @@ public class TagsImpl implements Tags
     public NodeRef validateTag(String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
+		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
     	NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
-    	if(tagNodeRef == null)
-    	{
-    		throw new EntityNotFoundException(tagId);
-    	}
-    	return tagNodeRef;
+		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
 
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag)
@@ -255,18 +241,17 @@ public class TagsImpl implements Tags
 
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
-		NodeRef nodeRef = validateTag(nodeId);
+        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
+        PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
+        Integer totalItems = results.getTotalResultCount().getFirst();
+        List<Pair<NodeRef, String>> page = results.getPage();
+        List<Tag> tags = new ArrayList<>(page.size());
+        for(Pair<NodeRef, String> pair : page)
+        {
+            tags.add(new Tag(pair.getFirst(), pair.getSecond()));
+        }
 
-		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(nodeRef, Util.getPagingRequest(params.getPaging()));
-    	Integer totalItems = results.getTotalResultCount().getFirst();
-    	List<Pair<NodeRef, String>> page = results.getPage();
-    	List<Tag> tags = new ArrayList<Tag>(page.size());
-    	for(Pair<NodeRef, String> pair : page)
-    	{
-    		tags.add(new Tag(pair.getFirst(), pair.getSecond()));
-    	}
-
-    	return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
 
 	@Experimental
@@ -278,7 +263,7 @@ public class TagsImpl implements Tags
 			.filter(Objects::nonNull)
 			.map(Tag::getTag)
 			.distinct()
-			.collect(Collectors.toList());
+			.collect(toList());
 
 		if (CollectionUtils.isEmpty(tagNames))
 		{
@@ -292,7 +277,7 @@ public class TagsImpl implements Tags
 				{
 					tag.setCount(0);
 				}
-			}).collect(Collectors.toList());
+			}).collect(toList());
 	}
 
 	private void verifyAdminAuthority()
@@ -335,5 +320,14 @@ public class TagsImpl implements Tags
 					return MATCHES;
 				}
 			}, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
+	}
+
+	private NodeRef checkTagRootAsNodePrimaryParent(String tagId, NodeRef tagNodeRef)
+	{
+		if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
+		{
+			throw new EntityNotFoundException(tagId);
+		}
+		return tagNodeRef;
 	}
 }

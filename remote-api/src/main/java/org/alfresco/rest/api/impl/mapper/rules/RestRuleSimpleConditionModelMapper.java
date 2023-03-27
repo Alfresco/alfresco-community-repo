@@ -129,7 +129,7 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
                 parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
                 try
                 {
-                    parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodes.validateOrLookupNode(parameter, null));
+                    parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodes.validateOrLookupNode(parameter));
                 } catch (EntityNotFoundException e) {
                     throw new InvalidArgumentException(CATEGORY_INVALID_MSG);
                 }

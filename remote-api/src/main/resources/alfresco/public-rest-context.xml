@@ -858,6 +858,7 @@
         <property name="taggingService" ref="TaggingService" />
         <property name="authorityService" ref="AuthorityService" />
         <property name="typeConstraint" ref="nodeTypeConstraint" />
+        <property name="nodeService" ref="NodeService"/>
     </bean>
 
     <bean id="Tags" class="org.springframework.aop.framework.ProxyFactoryBean">

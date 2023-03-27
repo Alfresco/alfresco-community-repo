@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
+
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
@@ -40,8 +42,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-
-import java.util.List;
 
 /**
  * Node Secondary Children
@@ -71,7 +71,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
     @WebApiDescription(title = "Return a paged list of secondary child nodes based on child assocs")
     public CollectionWithPagingInfo<Node> readAll(String parentNodeId, Parameters parameters)
     {
-        NodeRef parentNodeRef = nodes.validateOrLookupNode(parentNodeId, null);
+        NodeRef parentNodeRef = nodes.validateOrLookupNode(parentNodeId);
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 

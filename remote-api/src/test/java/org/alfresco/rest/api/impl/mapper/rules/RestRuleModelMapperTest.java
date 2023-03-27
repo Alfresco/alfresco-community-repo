@@ -134,7 +134,7 @@ public class RestRuleModelMapperTest
         // when
         final org.alfresco.service.cmr.rule.Rule actualRuleModel = objectUnderTest.toServiceModel(rule);
 
-        then(nodesMock).should().validateOrLookupNode(RULE_ID, null);
+        then(nodesMock).should().validateOrLookupNode(RULE_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(actionMapperMock).should().toServiceModel(List.of(action));
         then(actionMapperMock).shouldHaveNoMoreInteractions();

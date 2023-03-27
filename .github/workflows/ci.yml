@@ -326,10 +326,10 @@ jobs:
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"
-      if: ${{ matrix.mtls }}
-      run: |
-       git clone -b "feature/extending_mtls_support" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
-       bash ./scripts/ci/generate_keystores.sh
+        if: ${{ matrix.mtls }}
+        run: |
+         git clone -b "feature/extending_mtls_support" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
+         bash ./scripts/ci/generate_keystores.sh
       - name: "Set up the environment"
         run: |
           if [ -e ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh ]; then

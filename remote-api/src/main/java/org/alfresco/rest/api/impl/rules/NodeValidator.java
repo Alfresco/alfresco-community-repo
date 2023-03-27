@@ -72,7 +72,7 @@ public class NodeValidator
     {
         try
         {
-            final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
+            final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId);
             validatePermission(requireChangePermission, nodeRef);
             verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 

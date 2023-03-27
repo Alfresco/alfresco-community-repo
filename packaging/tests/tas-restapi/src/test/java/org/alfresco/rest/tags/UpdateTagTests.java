@@ -1,5 +1,7 @@
 package org.alfresco.rest.tags;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.Utility;
@@ -41,6 +43,7 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(randomTag);
+        returnedModel.assertThat().field("id").isNotNull();
     }
 
     @TestRail(section = { TestGroup.REST_API,
@@ -158,8 +161,8 @@ public class UpdateTagTests extends TagsDataPrep
     {
         String invalidTagBody = ".\"/<>*";
         RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
-            Utility.sleep(500, 20000, () ->
-            {
+        Utility.sleep(500, 20000, () ->
+        {
             restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
             restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                     .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
@@ -178,6 +181,7 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(largeStringTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(largeStringTag);
+        returnedModel.assertThat().field("id").isNotNull();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -192,6 +196,7 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(shortStringTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(shortStringTag);
+        returnedModel.assertThat().field("id").isNotNull();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -206,6 +211,7 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(specialCharsString);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(specialCharsString);
+        returnedModel.assertThat().field("id").isNotNull();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -223,6 +229,7 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingTag(oldExistingTag).update(existingTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(existingTag);
+        returnedModel.assertThat().field("id").isNotNull();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -242,6 +249,7 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.withCoreAPI().usingTag(newTagModel).update(newTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(newTag);
+        returnedModel.assertThat().field("id").isNotNull();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -255,11 +263,26 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTag(oldTag).update(newTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedModel.assertThat().field("tag").is(newTag);
+        returnedModel.assertThat().field("id").isNotNull();
 
         restClient.withCoreAPI().usingResource(document).deleteTag(returnedModel);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
         restClient.withCoreAPI().usingResource(document).addTag(newTag);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
+        description = "Verify Admin user updates orphan tags and status code is 200")
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
+    public void adminIsAbleToUpdateOrphanTag()
+    {
+        STEP("Update orphan tag and expect 200");
+        final String newTagName = RandomData.getRandomName("new");
+        returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTag(orphanTag).update(newTagName);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedModel.assertThat().field("tag").is(newTagName);
+        returnedModel.assertThat().field("id").isNotNull();
     }
 }

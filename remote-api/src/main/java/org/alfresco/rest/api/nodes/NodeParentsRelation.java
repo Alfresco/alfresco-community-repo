@@ -25,6 +25,11 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
@@ -40,11 +45,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Node Parents
@@ -67,7 +67,7 @@ public class NodeParentsRelation extends AbstractNodeRelation implements Relatio
     @WebApiDescription(title = "Return a list of parent nodes based on child assocs")
     public CollectionWithPagingInfo<Node> readAll(String childNodeId, Parameters parameters)
     {
-        NodeRef childNodeRef = nodes.validateOrLookupNode(childNodeId, null);
+        NodeRef childNodeRef = nodes.validateOrLookupNode(childNodeId);
 
         QNamePattern assocTypeQNameParam = RegexQNamePattern.MATCH_ALL;
 

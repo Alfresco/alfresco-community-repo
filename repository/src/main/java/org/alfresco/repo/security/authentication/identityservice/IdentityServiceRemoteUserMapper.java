@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,17 +27,19 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Optional;
+
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.keycloak.adapters.KeycloakDeployment;
-import org.keycloak.adapters.spi.AuthOutcome;
-import org.keycloak.representations.AccessToken;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 /**
  * A {@link RemoteUserMapper} implementation that detects and validates JWTs
@@ -47,7 +49,7 @@ import org.keycloak.representations.AccessToken;
  */
 public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 {
-    private static Log logger = LogFactory.getLog(IdentityServiceRemoteUserMapper.class);
+    private static final Log LOGGER = LogFactory.getLog(IdentityServiceRemoteUserMapper.class);
     
     /** Is the mapper enabled */
     private boolean isEnabled;
@@ -57,9 +59,9 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
 
     /** The person service. */
     private PersonService personService;
-    
-    /** The Keycloak deployment object */
-    private KeycloakDeployment keycloakDeployment;
+
+    private BearerTokenResolver bearerTokenResolver;
+    private IdentityServiceFacade identityServiceFacade;
 
     /**
      * Sets the active flag
@@ -91,58 +93,57 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     {
         this.personService = personService;
     }
-    
-    public void setIdentityServiceDeployment(KeycloakDeployment deployment)
+
+    public void setBearerTokenResolver(BearerTokenResolver bearerTokenResolver)
     {
-        this.keycloakDeployment = deployment;
+        this.bearerTokenResolver = bearerTokenResolver;
+    }
+
+    public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
+    {
+        this.identityServiceFacade = identityServiceFacade;
     }
 
     /*
      * (non-Javadoc)
      * @see org.alfresco.web.app.servlet.RemoteUserMapper#getRemoteUser(javax.servlet.http.HttpServletRequest)
      */
+    @Override
     public String getRemoteUser(HttpServletRequest request)
     {
+        LOGGER.trace("Retrieving username from http request...");
+
+        if (!this.isEnabled)
+        {
+            LOGGER.debug("IdentityServiceRemoteUserMapper is disabled, returning null.");
+            return null;
+        }
         try
         {
-            if (logger.isTraceEnabled())
-            {
-                logger.trace("Retrieving username from http request...");
-            }
-
-            if (!this.isEnabled)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("IdentityServiceRemoteUserMapper is disabled, returning null.");
-                }
-
-                return null;
-            }
-
             String headerUserId = extractUserFromHeader(request);
 
             if (headerUserId != null)
             {
                 // Normalize the user ID taking into account case sensitivity settings
                 String normalizedUserId =  normalizeUserId(headerUserId);
-
-                if (logger.isTraceEnabled())
-                {
-                    logger.trace("Returning userId: " + AuthenticationUtil.maskUsername(normalizedUserId));
-                }
+                LOGGER.trace("Returning userId: " + AuthenticationUtil.maskUsername(normalizedUserId));
 
                 return normalizedUserId;
             }
         }
-        catch (Exception e)
+        catch (TokenException e)
         {
-            logger.error("Failed to authenticate user using IdentityServiceRemoteUserMapper: " + e.getMessage(), e);
+            if (!isValidationFailureSilent)
+            {
+                throw new AuthenticationException("Failed to extract username from token: " + e.getMessage(), e);
+            }
+            LOGGER.error("Failed to authenticate user using IdentityServiceRemoteUserMapper: " + e.getMessage(), e);
         }
-        if (logger.isTraceEnabled())
+        catch (RuntimeException e)
         {
-            logger.trace("Could not identify a userId. Returning null.");
+            LOGGER.error("Failed to authenticate user using IdentityServiceRemoteUserMapper: " + e.getMessage(), e);
         }
+        LOGGER.trace("Could not identify a userId. Returning null.");
         return null;
     }
 
@@ -163,57 +164,32 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
      */
     private String extractUserFromHeader(HttpServletRequest request)
     {
-        String userName = null;
-        
-        IdentityServiceHttpFacade facade = new IdentityServiceHttpFacade(request);
-        
         // try authenticating with bearer token first
-        if (logger.isDebugEnabled())
+        LOGGER.debug("Trying bearer token...");
+
+        final String bearerToken;
+        try
         {
-            logger.debug("Trying bearer token...");
+            bearerToken = bearerTokenResolver.resolve(request);
         }
-    
-        AlfrescoBearerTokenRequestAuthenticator tokenAuthenticator = 
-                    new AlfrescoBearerTokenRequestAuthenticator(this.keycloakDeployment);
-        AuthOutcome tokenOutcome = tokenAuthenticator.authenticate(facade);
-        
-        if (logger.isDebugEnabled())
+        catch (OAuth2AuthenticationException e)
         {
-            logger.debug("Bearer token outcome: " + tokenOutcome);
+            LOGGER.debug("Failed to resolve Bearer token.", e);
+            return null;
         }
-        
-        if (tokenOutcome == AuthOutcome.FAILED && !isValidationFailureSilent)
+
+        final Optional<String> possibleUsername = Optional.ofNullable(bearerToken)
+                                                          .flatMap(identityServiceFacade::extractUsernameFromToken);
+        if (possibleUsername.isEmpty())
         {
-            throw new AuthenticationException("Token validation failed: " + 
-                        tokenAuthenticator.getValidationFailureDescription());
+            LOGGER.debug("User could not be authenticated by IdentityServiceRemoteUserMapper.");
+            return null;
         }
-        
-        if (tokenOutcome == AuthOutcome.AUTHENTICATED)
-        {
-            userName = extractUserFromToken(tokenAuthenticator.getToken());
-        }
-        else
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("User could not be authenticated by IdentityServiceRemoteUserMapper.");
-            }
-        }
-        
-        return userName;
-    }
-    
-    private String extractUserFromToken(AccessToken jwt)
-    {
-        // retrieve the preferred_username claim
-        String userName = jwt.getPreferredUsername();
-        
-        if (logger.isTraceEnabled())
-        {
-            logger.trace("Extracted username: " + AuthenticationUtil.maskUsername(userName));
-        }
-        
-        return userName;
+
+        String username = possibleUsername.get();
+        LOGGER.trace("Extracted username: " + AuthenticationUtil.maskUsername(username));
+
+        return username;
     }
     
     /**
@@ -238,9 +214,9 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
             }
         }, AuthenticationUtil.getSystemUserName());
         
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("Normalized user name for '" + AuthenticationUtil.maskUsername(userId) + "': " + AuthenticationUtil.maskUsername(normalized));
+            LOGGER.debug("Normalized user name for '" + AuthenticationUtil.maskUsername(userId) + "': " + AuthenticationUtil.maskUsername(normalized));
         }
         
         return normalized == null ? userId : normalized;

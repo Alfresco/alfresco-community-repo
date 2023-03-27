@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,6 +31,7 @@ import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.NodeResource;
 import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -48,6 +49,9 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
         String localName = GUID.generate();
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_TITLE, "test title");
+        final MLText localizedDescription = new MLText(germanLocale, "german description");
+        localizedDescription.addValue(defaultLocale, "default description");
+        propertyMap.put(ContentModel.PROP_DESCRIPTION, localizedDescription);
         NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
 
         NodeResource createdResource = getNodeResource(1);
@@ -62,10 +66,16 @@ public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
 
         deleteNode(nodeRef);
         final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(2);
+        final NodeResource nodeResource = getNodeResource(resultRepoEvent);
 
         assertEquals("Repo event type:", EventType.NODE_DELETED.getType(), resultRepoEvent.getType());
-        assertEquals(createdResource.getId(), getNodeResource(resultRepoEvent).getId());
+        assertEquals(createdResource.getId(), nodeResource.getId());
         assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, createdResource.getPrimaryAssocQName());
+        assertEquals("test title", getProperty(nodeResource, "cm:title"));
+        assertEquals("test title", getLocalizedProperty(nodeResource, "cm:title", defaultLocale));
+        assertEquals("default description", getProperty(nodeResource, "cm:description"));
+        assertEquals("default description", getLocalizedProperty(nodeResource, "cm:description", defaultLocale));
+        assertEquals("german description", getLocalizedProperty(nodeResource, "cm:description", germanLocale));
 
         // There should be no resourceBefore
         EventData<NodeResource> eventData = getEventData(resultRepoEvent);

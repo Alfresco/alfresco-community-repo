@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -49,6 +49,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.WebDAVHelperTest.class,
     org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class,
     org.alfresco.rest.api.RulesUnitTests.class,
+    org.alfresco.rest.api.CategoriesUnitTests.class,
+    org.alfresco.rest.api.TagsUnitTests.class,
     org.alfresco.rest.api.impl.ContentStorageInformationImplTest.class,
     org.alfresco.rest.api.nodes.NodeStorageInfoRelationTest.class,
     org.alfresco.rest.api.search.ResultMapperTests.class,

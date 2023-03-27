@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,6 +24,8 @@
  * #L%
  */
 package org.alfresco.rest.api.model;
+
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -99,42 +101,64 @@ public class Tag implements Comparable<Tag>
 	}
 
 	@Override
-	public int hashCode()
+	public boolean equals(Object o)
 	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((nodeRef == null) ? 0 : nodeRef.hashCode());
-		return result;
+		if (this == o)
+			return true;
+		if (o == null || getClass() != o.getClass())
+			return false;
+		Tag tag1 = (Tag) o;
+		return Objects.equals(nodeRef, tag1.nodeRef) && Objects.equals(tag, tag1.tag) && Objects.equals(count, tag1.count);
 	}
 
-	/*
-	 * Tags are equal if they have the same NodeRef
-	 * 
-	 * (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
-	public boolean equals(Object obj)
+	public int hashCode()
 	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Tag other = (Tag) obj;
-		if (nodeRef == null) {
-			if (other.nodeRef != null)
-				return false;
-		} else if (!nodeRef.equals(other.nodeRef))
-			return false;
-		return true;
+		return Objects.hash(nodeRef, tag, count);
 	}
 
 	@Override
 	public String toString()
 	{
-		return "Tag [nodeRef=" + nodeRef + ", tag=" + tag + "]";
+		return "Tag{" + "nodeRef=" + nodeRef + ", tag='" + tag + '\'' + ", count=" + count + '}';
 	}
-	
+
+	public static Builder builder()
+	{
+		return new Builder();
+	}
+
+	public static class Builder
+	{
+		private NodeRef nodeRef;
+		private String tag;
+		private Integer count;
+
+		public Builder nodeRef(NodeRef nodeRef)
+		{
+			this.nodeRef = nodeRef;
+			return this;
+		}
+
+		public Builder tag(String tag)
+		{
+			this.tag = tag;
+			return this;
+		}
+
+		public Builder count(Integer count)
+		{
+			this.count = count;
+			return this;
+		}
+
+		public Tag create()
+		{
+			final Tag tag = new Tag();
+			tag.setNodeRef(nodeRef);
+			tag.setTag(this.tag);
+			tag.setCount(count);
+			return tag;
+		}
+	}
 }

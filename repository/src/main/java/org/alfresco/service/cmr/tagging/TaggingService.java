@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,16 @@
  */
 package org.alfresco.service.cmr.tagging;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.api.AlfrescoPublicApi; 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -73,6 +77,21 @@ public interface TaggingService
      */
     @NotAuditable
     PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
+
+    /**
+     * Get a paged list of tags filtered by name
+     *
+     * @param storeRef StoreRef
+     * @param pagingRequest PagingRequest
+     * @param exactNamesFilter PagingRequest
+     * @param alikeNamesFilter PagingRequest
+     * @return PagingResults
+     */
+    @NotAuditable
+    default PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        return new EmptyPagingResults<>();
+    }
     
     /** 
      * Get all the tags currently available that match the provided filter.
@@ -317,6 +336,20 @@ public interface TaggingService
     @NotAuditable
     List<Pair<String, Integer>> findTaggedNodesAndCountByTagName(StoreRef storeRef);
 
+    /**
+     * Creates orphan tags. Tag names case will be lowered.
+     *
+     * @param storeRef Reference to node store.
+     * @param tagNames List of tag names.
+     * @return {@link List} of {@link Pair}s of tag names and node references.
+     * @throws org.alfresco.service.cmr.repository.DuplicateChildNodeNameException if tag already exists.
+     */
+    @Experimental
+    @Auditable(parameters = {"tagNames"})
+    default List<Pair<String, NodeRef>> createTags(StoreRef storeRef, List<String> tagNames)
+    {
+        return Collections.emptyList();
+    }
 }
 
 

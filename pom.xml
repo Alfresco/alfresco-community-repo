@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>20.50-SNAPSHOT</version>
+    <version>20.119-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -35,6 +35,8 @@
         <build-number>local</build-number>
         <image.tag>latest</image.tag>
         <image.registry>quay.io</image.registry>
+        <builder.name>entitled-builder</builder.name>
+        <local.registry>127.0.0.1:5000</local.registry>
 
         <java.version>11</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -45,7 +47,7 @@
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-trashcan-cleaner.version>2.4.1</dependency.alfresco-trashcan-cleaner.version>
-        <dependency.alfresco-jlan.version>7.2</dependency.alfresco-jlan.version>
+        <dependency.alfresco-jlan.version>7.4</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
         <dependency.alfresco-messaging-repo.version>1.2.20</dependency.alfresco-messaging-repo.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
@@ -53,18 +55,18 @@
         <dependency.alfresco-transform-service.version>2.0.0</dependency.alfresco-transform-service.version>
         <dependency.alfresco-transform-core.version>3.0.0</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.5</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.16</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.18</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.3.23</dependency.spring.version>
+        <dependency.spring.version>5.3.25</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.14.0</dependency.jackson.version>
-        <dependency.cxf.version>3.5.4</dependency.cxf.version>
+        <dependency.jackson.version>2.15.0-rc1</dependency.jackson.version>
+        <dependency.cxf.version>3.5.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.33</dependency.webscripts.version>
+        <dependency.webscripts.version>8.38</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.9.0</dependency.mockito-core.version>
-        <dependency.assertj.version>3.23.1</dependency.assertj.version>
-        <dependency.org-json.version>20220320</dependency.org-json.version>
+        <dependency.assertj.version>3.24.2</dependency.assertj.version>
+        <dependency.org-json.version>20230227</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.9</dependency.gson.version>
@@ -74,20 +76,20 @@
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.3</dependency.slf4j.version>
         <dependency.log4j.version>2.19.0</dependency.log4j.version>
-        <dependency.gytheio.version>0.17</dependency.gytheio.version>
-        <dependency.groovy.version>3.0.12</dependency.groovy.version>
+        <dependency.gytheio.version>0.18</dependency.gytheio.version>
+        <dependency.groovy.version>3.0.16</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>5.7.5</dependency.spring-security.version>
+        <dependency.spring-security.version>5.8.2</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.keycloak.version>18.0.0</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.18.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.79.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
-        <dependency.netty.qpid.version>4.1.72.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
-        <dependency.netty-tcnative.version>2.0.53.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
-        <dependency.activemq.version>5.17.1</dependency.activemq.version>
+        <dependency.camel.version>3.20.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.netty.version>4.1.87.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
+        <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
+        <dependency.activemq.version>5.17.4</dependency.activemq.version>
         <dependency.apache-compress.version>1.22</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
@@ -107,20 +109,21 @@
         <dependency.jakarta-mail-api.version>1.6.5</dependency.jakarta-mail-api.version>
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
         <dependency.jakarta-json-path.version>2.7.0</dependency.jakarta-json-path.version>
+        <dependency.json-smart.version>2.4.8</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.4.0-A1</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.6.0-A1</alfresco.aos-module.version>
+        <alfresco.googledrive.version>3.4.0-M1</alfresco.googledrive.version>
+        <alfresco.aos-module.version>1.6.0-M1</alfresco.aos-module.version>
         <alfresco.api-explorer.version>7.3.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
 
-        <dependency.postgresql.version>42.5.0</dependency.postgresql.version>
+        <dependency.postgresql.version>42.5.2</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.57</dependency.tas-utility.version>
+        <dependency.tas-utility.version>4.0.0</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.2.0</dependency.rest-assured.version>
         <dependency.tas-email.version>1.11</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.7</dependency.tas-webdav.version>
@@ -237,6 +240,17 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>jakarta.json</artifactId>
                 <version>${dependency.jakarta-json-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.jayway.jsonpath</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${dependency.jakarta-json-path.version}</version>
+            </dependency>
+            <dependency>
+                <groupId> net.minidev</groupId>
+                <artifactId>json-smart</artifactId>
+                <version>${dependency.json-smart.version}</version>
             </dependency>
 
             <dependency>
@@ -384,7 +398,7 @@
             <dependency>
                 <groupId>commons-fileupload</groupId>
                 <artifactId>commons-fileupload</artifactId>
-                <version>1.4</version>
+                <version>1.5</version>
             </dependency>
 
             <dependency>
@@ -516,7 +530,7 @@
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
-                <version>1.32</version>
+                <version>2.0</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -899,6 +913,13 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-bom</artifactId>
+                <version>${dependency.spring-security.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -916,7 +937,7 @@
                 <plugin>
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.40.2</version>
+                    <version>0.42.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>

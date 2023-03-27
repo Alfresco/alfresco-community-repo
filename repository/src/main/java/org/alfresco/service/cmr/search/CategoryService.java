@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
@@ -135,6 +136,24 @@ public interface CategoryService
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "filter"})
     PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter);
+
+    /**
+     * Get a paged list of the root categories for an aspect/classification supporting multiple name filters.
+     *
+     * @param storeRef
+     * @param aspectName
+     * @param pagingRequest
+     * @param sortByName
+     * @param exactNamesFilter
+     * @param alikeNamesFilter
+     * @return
+     */
+    @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "exactNamesFilter", "alikeNamesFilter"})
+    default PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
+        Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        return new EmptyPagingResults<>();
+    }
 
     /**
      * Get the root categories for an aspect/classification with names that start with filter

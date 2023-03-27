@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,6 +32,7 @@ import static org.awaitility.Awaitility.await;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import javax.jms.ConnectionFactory;
 
@@ -47,6 +48,7 @@ import org.alfresco.repo.event.v1.model.Resource;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -88,6 +90,11 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     private static final   String             TOPIC_NAME      = "alfresco.repo.event2";
     private static final   String             CAMEL_ROUTE     = "jms:topic:" + TOPIC_NAME;
     private static final   CamelContext       CAMEL_CONTEXT   = new DefaultCamelContext();
+
+    protected final Locale defaultLocale = new Locale(MLText.getDefaultLocale().getLanguage());
+    protected final Locale germanLocale = new Locale(Locale.GERMAN.getLanguage(), "XX");
+    protected final Locale frenchLocale = new Locale(Locale.FRENCH.getLanguage());
+    protected final Locale japaneseLocale = new Locale(Locale.JAPANESE.getLanguage(), "YY", "ZZ");
 
     private static boolean isCamelConfigured;
     private static DataFormat dataFormat;
@@ -386,6 +393,20 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         assertNotNull(resource);
         assertNotNull(resource.getProperties());
         return (T) resource.getProperties().get(propertyName);
+    }
+
+    protected String getLocalizedProperty(NodeResource resource, String propertyName, Locale locale)
+    {
+        assertTrue(containsLocalizedProperty(resource, propertyName, locale));
+        return resource.getLocalizedProperties().get(propertyName).get(locale.toString());
+    }
+
+    protected boolean containsLocalizedProperty(NodeResource resource, String propertyName, Locale locale)
+    {
+        assertNotNull(resource);
+        assertNotNull(resource.getLocalizedProperties());
+        assertNotNull(resource.getLocalizedProperties().get(propertyName));
+        return resource.getLocalizedProperties().get(propertyName).containsKey(locale.toString());
     }
 
     /**

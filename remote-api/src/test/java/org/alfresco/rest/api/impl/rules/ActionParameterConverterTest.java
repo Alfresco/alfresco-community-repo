@@ -44,7 +44,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
@@ -129,8 +128,8 @@ public class ActionParameterConverterTest
     @Before
     public void setUp()
     {
-        given(nodes.validateOrLookupNode(DUMMY_FOLDER_NODE_ID, null)).willReturn(DUMMY_FOLDER_NODE);
-        given(nodes.validateOrLookupNode(DUMMY_SCRIPT_NODE_ID, null)).willReturn(DUMMY_SCRIPT_NODE);
+        given(nodes.validateOrLookupNode(DUMMY_FOLDER_NODE_ID)).willReturn(DUMMY_FOLDER_NODE);
+        given(nodes.validateOrLookupNode(DUMMY_SCRIPT_NODE_ID)).willReturn(DUMMY_SCRIPT_NODE);
         given(permissionService.hasReadPermission(DUMMY_FOLDER_NODE)).willReturn(ALLOWED);
         given(permissionService.hasReadPermission(DUMMY_SCRIPT_NODE)).willReturn(ALLOWED);
     }
@@ -598,7 +597,7 @@ public class ActionParameterConverterTest
         String permissionDeniedNodeId = "permission://denied/node";
         final Map<String, Serializable> params = Map.of(PARAM_DESTINATION_FOLDER, permissionDeniedNodeId);
         NodeRef permissionDeniedNode = new NodeRef(permissionDeniedNodeId);
-        given(nodes.validateOrLookupNode(permissionDeniedNodeId, null)).willReturn(permissionDeniedNode);
+        given(nodes.validateOrLookupNode(permissionDeniedNodeId)).willReturn(permissionDeniedNode);
         given(permissionService.hasReadPermission(permissionDeniedNode)).willReturn(DENIED);
 
         given(actionService.getActionDefinition(name)).willReturn(actionDefinition);

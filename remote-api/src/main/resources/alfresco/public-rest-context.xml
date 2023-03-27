@@ -177,6 +177,7 @@
                 <entry key="org.alfresco.service.cmr.dictionary.InvalidTypeException" value="409" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.ArchivedContentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_PRECONDITION_FAILED}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.RestoreInProgressException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException" value="#{T(org.apache.http.HttpStatus).SC_UNPROCESSABLE_ENTITY}" />
             </map>
         </property>
     </bean>
@@ -834,6 +835,8 @@
         <constructor-arg name="categoryService" ref="CategoryService"/>
         <constructor-arg name="nodes" ref="nodes"/>
         <constructor-arg name="nodeService" ref="NodeService"/>
+        <constructor-arg name="permissionService" ref="PermissionService"/>
+        <constructor-arg name="typeConstraint" ref="nodeTypeConstraint"/>
     </bean>
 
     <bean id="Categories" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -853,7 +856,9 @@
     <bean id="tags" class="org.alfresco.rest.api.impl.TagsImpl">
         <property name="nodes" ref="nodes" />
         <property name="taggingService" ref="TaggingService" />
+        <property name="authorityService" ref="AuthorityService" />
         <property name="typeConstraint" ref="nodeTypeConstraint" />
+        <property name="nodeService" ref="NodeService"/>
     </bean>
 
     <bean id="Tags" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1102,6 +1107,10 @@
     </bean>
 
     <bean class="org.alfresco.rest.api.categories.SubcategoriesRelation">
+        <constructor-arg name="categories" ref="Categories"/>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.categories.NodesCategoryLinksRelation">
         <constructor-arg name="categories" ref="Categories"/>
     </bean>
 

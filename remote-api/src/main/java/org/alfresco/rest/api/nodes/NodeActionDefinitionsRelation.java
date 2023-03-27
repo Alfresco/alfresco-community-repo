@@ -31,12 +31,8 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RelationshipResource(name = "action-definitions",  entityResource = NodesEntityResource.class, title = "Node action definitions")
 public class NodeActionDefinitionsRelation extends AbstractNodeRelation
@@ -59,7 +55,7 @@ public class NodeActionDefinitionsRelation extends AbstractNodeRelation
     @Override
     public CollectionWithPagingInfo<ActionDefinition> readAll(String entityResourceId, Parameters params)
     {
-        NodeRef parentNodeRef = nodes.validateOrLookupNode(entityResourceId, null);
+        NodeRef parentNodeRef = nodes.validateOrLookupNode(entityResourceId);
         return actions.getActionDefinitions(parentNodeRef, params);
     }
 }

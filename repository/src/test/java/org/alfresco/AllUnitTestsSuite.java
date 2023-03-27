@@ -25,6 +25,8 @@
  */
 package org.alfresco;
 
+import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -84,7 +86,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.transfer.HttpClientTransmitterImplTest.class,
     org.alfresco.repo.transfer.manifest.TransferManifestTest.class,
     org.alfresco.repo.transfer.TransferVersionCheckerImplTest.class,
-    org.alfresco.repo.urlshortening.BitlyUrlShortenerTest.class,
     org.alfresco.service.cmr.calendar.CalendarRecurrenceHelperTest.class,
     org.alfresco.service.cmr.calendar.CalendarTimezoneHelperTest.class,
     org.alfresco.tools.RenameUserTest.class,
@@ -137,6 +138,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.impl.solr.facet.FacetQNameUtilsTest.class,
     org.alfresco.util.BeanExtenderUnitTest.class,
     org.alfresco.repo.solr.SOLRTrackingComponentUnitTest.class,
+    LazyInstantiatingIdentityServiceFacadeUnitTest.class,
+    SpringBasedIdentityServiceFacadeUnitTest.class,
     org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
     org.alfresco.repo.security.authentication.PasswordHashingTest.class,
     org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,
@@ -244,7 +247,8 @@ import org.junit.runners.Suite;
 
     org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
 
-    org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class
+    org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class,
+    org.alfresco.repo.tagging.TaggingServiceImplUnitTest.class
 })
 public class AllUnitTestsSuite
 {

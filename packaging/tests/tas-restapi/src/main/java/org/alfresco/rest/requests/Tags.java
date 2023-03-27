@@ -82,4 +82,15 @@ public class Tags extends ModelRequest<Tags>
 
         return restWrapper.processModel(RestTagModel.class, request);
     }
+
+    /**
+     * Delete tag.
+     * - DELETE /tags/{tagId}
+     */
+    public void deleteTag()
+    {
+        RestRequest request = RestRequest.
+                simpleRequest(HttpMethod.DELETE, "/tags/{tagId}", tag.getId());
+        restWrapper.processEmptyModel(request);
+    }
 }

@@ -695,7 +695,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     {
         if (versionLabelId != null)
         {
-            nodeRef = nodes.validateOrLookupNode(nodeRef.getId(), null);
+            nodeRef = nodes.validateOrLookupNode(nodeRef.getId());
             VersionHistory vh = versionService.getVersionHistory(nodeRef);
             if (vh != null)
             {

@@ -101,7 +101,7 @@ public class NodeValidatorTest
     public void setUp() throws Exception
     {
         MockitoAnnotations.openMocks(this);
-        given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), any())).willReturn(folderNodeRef);
+        given(nodesMock.validateOrLookupNode(FOLDER_NODE_ID)).willReturn(folderNodeRef);
         given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
         given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(nodesMock.nodeMatches(any(), any(), any())).willReturn(true);
@@ -115,7 +115,7 @@ public class NodeValidatorTest
         // when
         final NodeRef nodeRef = nodeValidator.validateFolderNode(FOLDER_NODE_ID, false);
 
-        then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID, null);
+        then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID);
         then(nodesMock).should().nodeMatches(folderNodeRef, Set.of(TYPE_FOLDER), null);
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(permissionServiceMock).should().hasReadPermission(folderNodeRef);
@@ -128,13 +128,13 @@ public class NodeValidatorTest
     @Test
     public void testValidateFolderNode_notExistingFolder()
     {
-        given(nodesMock.validateOrLookupNode(any(), any())).willThrow(new EntityNotFoundException(FOLDER_NODE_ID));
+        given(nodesMock.validateOrLookupNode(FOLDER_NODE_ID)).willThrow(new EntityNotFoundException(FOLDER_NODE_ID));
 
         //when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
             () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
 
-        then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID, null);
+        then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).shouldHaveNoInteractions();
     }
@@ -148,7 +148,7 @@ public class NodeValidatorTest
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
             () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
 
-        then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID, null);
+        then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID);
         then(nodesMock).should().nodeMatches(folderNodeRef, Set.of(TYPE_FOLDER), null);
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).shouldHaveNoInteractions();
@@ -431,9 +431,10 @@ public class NodeValidatorTest
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
     }
 
-    private void resetNodesMock() {
+    private void resetNodesMock()
+    {
         reset(nodesMock);
-        given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), any())).willReturn(folderNodeRef);
+        given(nodesMock.validateOrLookupNode(FOLDER_NODE_ID)).willReturn(folderNodeRef);
         given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
         given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(nodesMock.nodeMatches(ruleSetNodeRef, Set.of(ContentModel.TYPE_SYSTEM_FOLDER), null)).willReturn(true);

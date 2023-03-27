@@ -1356,7 +1356,7 @@ public class NodesImpl implements Nodes
 
             private void calculateRelativePath(String parentFolderNodeId, Node node)
             {
-                NodeRef rootNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+                NodeRef rootNodeRef = validateOrLookupNode(parentFolderNodeId);
                 try
                 {
                     // get the path elements
@@ -1741,7 +1741,7 @@ public class NodesImpl implements Nodes
     @Override
     public void deleteNode(String nodeId, Parameters parameters)
     {
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        NodeRef nodeRef = validateOrLookupNode(nodeId);
 
         if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {
@@ -1785,7 +1785,7 @@ public class NodesImpl implements Nodes
         validateProperties(nodeInfo.getProperties(), EXCLUDED_NS,  Arrays.asList());
 
         // check that requested parent node exists and it's type is a (sub-)type of folder
-        NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId);
 
         // node name - mandatory
         String nodeName = nodeInfo.getName();
@@ -2290,7 +2290,7 @@ public class NodesImpl implements Nodes
         validateAspects(nodeInfo.getAspectNames(), EXCLUDED_NS, EXCLUDED_ASPECTS);
         validateProperties(nodeInfo.getProperties(), EXCLUDED_NS,  Arrays.asList());
 
-        final NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        final NodeRef nodeRef = validateOrLookupNode(nodeId);
 
         QName nodeTypeQName = getNodeType(nodeRef);
 
@@ -2402,6 +2402,9 @@ public class NodesImpl implements Nodes
             // Check inherit from parent value and if it's changed set the new value
             if (nodePerms.getIsInheritanceEnabled() != null)
             {
+                // If inheritance flag is being disabled, the site manager needs to have permission
+                setSiteManagerPermission(nodeRef, nodePerms);
+
                 if (nodePerms.getIsInheritanceEnabled() != permissionService.getInheritParentPermissions(nodeRef))
                 {
                     permissionService.setInheritParentPermissions(nodeRef, nodePerms.getIsInheritanceEnabled());
@@ -2520,8 +2523,8 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("Missing targetParentId");
         }
 
-        final NodeRef parentNodeRef = validateOrLookupNode(targetParentId, null);
-        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
+        final NodeRef parentNodeRef = validateOrLookupNode(targetParentId);
+        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId);
 
         FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
         return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
@@ -2763,6 +2766,34 @@ public class NodesImpl implements Nodes
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
     }
 
+    private void setSiteManagerPermission(NodeRef nodeRef, NodePermissions nodePerms)
+    {
+        if (nodeRef != null && nodePerms != null)
+        {
+            try
+            {
+                if (nodePerms.getIsInheritanceEnabled() != null && !nodePerms.getIsInheritanceEnabled())
+                {
+                    SiteInfo containingSite = siteService.getSite(nodeRef);
+
+                    if (containingSite != null)
+                    {
+                        String thisSiteGroupPrefix = siteService.getSiteGroup(containingSite.getShortName());
+                        final String siteManagerAuthority = thisSiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
+                        AuthenticationUtil.runAsSystem(() -> {
+                            permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
+                            return null;
+                        });
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.error("Error setting site manager permission on " + nodeRef, e);
+            }
+        }
+    }
+
     private Node updateExistingFile(NodeRef parentNodeRef, NodeRef nodeRef, String fileName, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
     {
         boolean isVersioned = versionService.isVersioned(nodeRef);
@@ -2923,7 +2954,7 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("The request content-type is not multipart: "+parentFolderNodeId);
         }
 
-        NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId);
         if (!nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
             throw new InvalidArgumentException("NodeId of folder is expected: " + parentNodeRef.getId());
@@ -3354,7 +3385,7 @@ public class NodesImpl implements Nodes
     @Override
     public Node lock(String nodeId, LockInfo lockInfo, Parameters parameters)
     {
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        NodeRef nodeRef = validateOrLookupNode(nodeId);
 
         if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {
@@ -3393,7 +3424,7 @@ public class NodesImpl implements Nodes
     @Override
     public Node unlock(String nodeId, Parameters parameters)
     {
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        NodeRef nodeRef = validateOrLookupNode(nodeId);
 
         if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {

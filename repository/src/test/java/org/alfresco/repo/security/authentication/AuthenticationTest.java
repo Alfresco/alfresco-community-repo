@@ -26,15 +26,12 @@
 package org.alfresco.repo.security.authentication;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
@@ -48,7 +45,6 @@ import net.sf.acegisecurity.DisabledException;
 import net.sf.acegisecurity.LockedException;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParamsImpl;
@@ -519,50 +515,48 @@ public class AuthenticationTest extends TestCase
         assertTrue("The user should exist", dao.userExists(userName));
     }
 
-    public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException
+    public void testCreateAndyUserAndUpdatePassword()
     {
         RepositoryAuthenticationDao dao = createRepositoryAuthenticationDao();
         
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 
-        UserDetails AndyDetails = (UserDetails) dao.loadUserByUsername("Andy");
-        assertNotNull(AndyDetails);
-        assertEquals("Andy", AndyDetails.getUsername());
-        // assertNotNull(dao.getSalt(AndyDetails));
-        assertTrue(AndyDetails.isAccountNonExpired());
-        assertTrue(AndyDetails.isAccountNonLocked());
-        assertTrue(AndyDetails.isCredentialsNonExpired());
-        assertTrue(AndyDetails.isEnabled());
-        assertNotSame("cabbage", AndyDetails.getPassword());
-        assertTrue(compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"cabbage", AndyDetails.getPassword(), null));
-        assertEquals(1, AndyDetails.getAuthorities().length);
+        RepositoryAuthenticatedUser andyDetails = (RepositoryAuthenticatedUser) dao.loadUserByUsername("Andy");
+        assertNotNull("User unexpectedly null", andyDetails);
+        assertEquals("Unexpected username", "Andy", andyDetails.getUsername());
+        Object originalSalt = andyDetails.getSalt();
+        assertNotNull("Salt was not generated", originalSalt);
+        assertTrue("Account unexpectedly expired", andyDetails.isAccountNonExpired());
+        assertTrue("Account unexpectedly locked", andyDetails.isAccountNonLocked());
+        assertTrue("Credentials unexpectedly expired", andyDetails.isCredentialsNonExpired());
+        assertTrue("User unexpectedly disabled", andyDetails.isEnabled());
+        assertNotSame("Password was not hashed", "cabbage", andyDetails.getPassword());
+        assertTrue("Failed to recalculate same password hash", compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"cabbage", andyDetails.getPassword(), originalSalt));
+        assertEquals("User does not have a single authority", 1, andyDetails.getAuthorities().length);
 
-        // Object oldSalt = dao.getSalt(AndyDetails);
         dao.updateUser("Andy", "carrot".toCharArray());
-        UserDetails newDetails = (UserDetails) dao.loadUserByUsername("Andy");
-        assertNotNull(newDetails);
-        assertEquals("Andy", newDetails.getUsername());
-        // assertNotNull(dao.getSalt(newDetails));
-        assertTrue(newDetails.isAccountNonExpired());
-        assertTrue(newDetails.isAccountNonLocked());
-        assertTrue(newDetails.isCredentialsNonExpired());
-        assertTrue(newDetails.isEnabled());
-        assertNotSame("carrot", newDetails.getPassword());
-        assertEquals(1, newDetails.getAuthorities().length);
+        RepositoryAuthenticatedUser newDetails = (RepositoryAuthenticatedUser) dao.loadUserByUsername("Andy");
+        assertNotNull("New details were null", newDetails);
+        assertEquals("New details contain wrong username", "Andy", newDetails.getUsername());
+        Object updatedSalt = newDetails.getSalt();
+        assertNotNull("New details contain null salt", updatedSalt);
+        assertTrue("Updated account is expired", newDetails.isAccountNonExpired());
+        assertTrue("Updated account is locked", newDetails.isAccountNonLocked());
+        assertTrue("Updated account has expired credentials", newDetails.isCredentialsNonExpired());
+        assertTrue("Updated account is not enabled", newDetails.isEnabled());
+        assertNotSame("Updated account contains unhashed password", "carrot", newDetails.getPassword());
+        assertEquals("Updated account should have a single authority", 1, newDetails.getAuthorities().length);
+        assertTrue("Failed to validate updated password hash", compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"carrot", newDetails.getPassword(), updatedSalt));
+        assertNotSame("Expected salt to be replaced when password was updated", originalSalt, updatedSalt);
 
-        assertNotSame(AndyDetails.getPassword(), newDetails.getPassword());
-        RepositoryAuthenticatedUser rau = (RepositoryAuthenticatedUser) newDetails;
-        assertTrue(compositePasswordEncoder.matchesPassword("carrot", newDetails.getPassword(), null, rau.getHashIndicator()));
-        // assertNotSame(oldSalt, dao.getSalt(newDetails));
-
-        //Update again
-        dao.updateUser("Andy", "potato".toCharArray());
-        newDetails = (UserDetails) dao.loadUserByUsername("Andy");
-        assertNotNull(newDetails);
-        assertEquals("Andy", newDetails.getUsername());
-        rau = (RepositoryAuthenticatedUser) newDetails;
-        assertTrue(compositePasswordEncoder.matchesPassword("potato", newDetails.getPassword(), null, rau.getHashIndicator()));
+        // Update back to first password again.
+        dao.updateUser("Andy", "cabbage".toCharArray());
+        RepositoryAuthenticatedUser thirdDetails = (RepositoryAuthenticatedUser) dao.loadUserByUsername("Andy");
+        Object thirdSalt = thirdDetails.getSalt();
+        assertNotSame("New salt should not match original salt", thirdSalt, originalSalt);
+        assertNotSame("New salt should not match previous salt", thirdSalt, updatedSalt);
+        assertTrue("New password hash was not reproducible", compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(), "cabbage", thirdDetails.getPassword(), thirdSalt));
 
         dao.deleteUser("Andy");
         assertFalse("Should not be a cache entry for 'Andy'.", authenticationCache.contains("Andy"));
@@ -1989,131 +1983,142 @@ public class AuthenticationTest extends TestCase
      * Tests the scenario where a user logs in after the system has been upgraded.
      * Their password should get re-hashed using the preferred encoding.
      */
-    public void testRehashedPasswordOnAuthentication() throws Exception
+    public void testRehashedPasswordOnAuthentication()
     {
-        // create the Andy authentication
-        assertNull(authenticationComponent.getCurrentAuthentication());
-        authenticationComponent.setSystemUserAsCurrentUser();
-        pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
-        
-        // find the node representing the Andy user and it's properties
-        NodeRef andyUserNodeRef = getRepositoryAuthenticationDao(). getUserOrNull("Andy");
-        assertNotNull(andyUserNodeRef);
-        
-        // ensure the properties are in the state we're expecting
-        Map<QName, Serializable> userProps = nodeService.getProperties(andyUserNodeRef);
-        String passwordProp = (String)userProps.get(ContentModel.PROP_PASSWORD);
-        assertNull("Expected the password property to be null", passwordProp);
-        String password2Prop = (String)userProps.get(ContentModel.PROP_PASSWORD_SHA256);
-        assertNull("Expected the password2 property to be null", password2Prop);
-        String passwordHashProp = (String)userProps.get(ContentModel.PROP_PASSWORD_HASH);
-        assertNotNull("Expected the passwordHash property to be populated", passwordHashProp);
-        List<String> hashIndicatorProp = (List<String>)userProps.get(ContentModel.PROP_HASH_INDICATOR);
-        assertNotNull("Expected the hashIndicator property to be populated", hashIndicatorProp);
-     
-        // re-generate an md4 hashed password
-        MD4PasswordEncoderImpl md4PasswordEncoder = new MD4PasswordEncoderImpl();
-        String md4Password = md4PasswordEncoder.encodePassword("auth1", null);
-        
-        // re-generate a sha256 hashed password
-        String salt = (String)userProps.get(ContentModel.PROP_SALT);
-        ShaPasswordEncoderImpl sha256PasswordEncoder = new ShaPasswordEncoderImpl(256);
-        String sha256Password = sha256PasswordEncoder.encodePassword("auth1", salt);
-        
-        // change the underlying user object to represent state in previous release
-        userProps.put(ContentModel.PROP_PASSWORD, md4Password);
-        userProps.put(ContentModel.PROP_PASSWORD_SHA256, sha256Password);
-        userProps.remove(ContentModel.PROP_PASSWORD_HASH);
-        userProps.remove(ContentModel.PROP_HASH_INDICATOR);
-        nodeService.setProperties(andyUserNodeRef, userProps);
-        
-        // make sure the changes took effect
-        Map<QName, Serializable> updatedProps = nodeService.getProperties(andyUserNodeRef);
-        String usernameProp = (String)updatedProps.get(ContentModel.PROP_USER_USERNAME);
-        assertEquals("Expected the username property to be 'Andy'", "Andy", usernameProp);
-        passwordProp = (String)updatedProps.get(ContentModel.PROP_PASSWORD);
-        assertNotNull("Expected the password property to be populated", passwordProp);
-        password2Prop = (String)updatedProps.get(ContentModel.PROP_PASSWORD_SHA256);
-        assertNotNull("Expected the password2 property to be populated", password2Prop);
-        passwordHashProp = (String)updatedProps.get(ContentModel.PROP_PASSWORD_HASH);
-        assertNull("Expected the passwordHash property to be null", passwordHashProp);
-        hashIndicatorProp = (List<String>)updatedProps.get(ContentModel.PROP_HASH_INDICATOR);
-        assertNull("Expected the hashIndicator property to be null", hashIndicatorProp);
-        
-        // authenticate the user
-        authenticationComponent.clearCurrentSecurityContext();
-        pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
-        assertEquals("Andy", authenticationService.getCurrentUserName());
-        
-        // commit the transaction to invoke the password hashing of the user
-        userTransaction.commit();
-        
-        // start another transaction and change to system user
-        userTransaction = transactionService.getUserTransaction();
-        userTransaction.begin();
-        authenticationComponent.setSystemUserAsCurrentUser();
-        
-        // verify that the new properties are populated and the old ones are cleaned up
-        Map<QName, Serializable> upgradedProps = nodeService.getProperties(andyUserNodeRef);
-        passwordProp = (String)upgradedProps.get(ContentModel.PROP_PASSWORD);
-        assertNull("Expected the password property to be null", passwordProp);
-        password2Prop = (String)upgradedProps.get(ContentModel.PROP_PASSWORD_SHA256);
-        assertNull("Expected the password2 property to be null", password2Prop);
-        passwordHashProp = (String)upgradedProps.get(ContentModel.PROP_PASSWORD_HASH);
-        assertNotNull("Expected the passwordHash property to be populated", passwordHashProp);
-        hashIndicatorProp = (List<String>)upgradedProps.get(ContentModel.PROP_HASH_INDICATOR);
-        assertNotNull("Expected the hashIndicator property to be populated", hashIndicatorProp);
-        assertTrue("Expected there to be a single hash indicator entry", (hashIndicatorProp.size() == 1));
-        String preferredEncoding = compositePasswordEncoder.getPreferredEncoding();
-        String hashEncoding = (String)hashIndicatorProp.get(0);
-        assertEquals("Expected hash indicator to be '" + preferredEncoding + "' but it was: " + hashEncoding, 
+        // This test requires upgrading from md4 to sha256 hashing.
+        String defaultPreferredEncoding = compositePasswordEncoder.getPreferredEncoding();
+        compositePasswordEncoder.setPreferredEncoding("md4");
+
+        try
+        {
+            // create the Andy authentication
+            assertNull(authenticationComponent.getCurrentAuthentication());
+            authenticationComponent.setSystemUserAsCurrentUser();
+            pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
+
+            // find the node representing the Andy user and its properties
+            NodeRef andyUserNodeRef = getRepositoryAuthenticationDao().getUserOrNull("Andy");
+            assertNotNull(andyUserNodeRef);
+
+            // ensure the properties are in the state we're expecting
+            Map<QName, Serializable> userProps = nodeService.getProperties(andyUserNodeRef);
+            String passwordProp = (String) userProps.get(ContentModel.PROP_PASSWORD);
+            assertNull("Expected the password property to be null", passwordProp);
+            String password2Prop = (String) userProps.get(ContentModel.PROP_PASSWORD_SHA256);
+            assertNull("Expected the password2 property to be null", password2Prop);
+            String passwordHashProp = (String) userProps.get(ContentModel.PROP_PASSWORD_HASH);
+            assertNotNull("Expected the passwordHash property to be populated", passwordHashProp);
+            List<String> hashIndicatorProp = (List<String>) userProps.get(ContentModel.PROP_HASH_INDICATOR);
+            assertNotNull("Expected the hashIndicator property to be populated", hashIndicatorProp);
+
+            // re-generate an md4 hashed password
+            MD4PasswordEncoderImpl md4PasswordEncoder = new MD4PasswordEncoderImpl();
+            String md4Password = md4PasswordEncoder.encodePassword("auth1", null);
+
+            // re-generate a sha256 hashed password
+            String salt = (String) userProps.get(ContentModel.PROP_SALT);
+            ShaPasswordEncoderImpl sha256PasswordEncoder = new ShaPasswordEncoderImpl(256);
+            String sha256Password = sha256PasswordEncoder.encodePassword("auth1", salt);
+
+            // change the underlying user object to represent state in previous release
+            userProps.put(ContentModel.PROP_PASSWORD, md4Password);
+            userProps.put(ContentModel.PROP_PASSWORD_SHA256, sha256Password);
+            userProps.remove(ContentModel.PROP_PASSWORD_HASH);
+            userProps.remove(ContentModel.PROP_HASH_INDICATOR);
+            nodeService.setProperties(andyUserNodeRef, userProps);
+
+            // make sure the changes took effect
+            Map<QName, Serializable> updatedProps = nodeService.getProperties(andyUserNodeRef);
+            String usernameProp = (String) updatedProps.get(ContentModel.PROP_USER_USERNAME);
+            assertEquals("Expected the username property to be 'Andy'", "Andy", usernameProp);
+            passwordProp = (String) updatedProps.get(ContentModel.PROP_PASSWORD);
+            assertNotNull("Expected the password property to be populated", passwordProp);
+            password2Prop = (String) updatedProps.get(ContentModel.PROP_PASSWORD_SHA256);
+            assertNotNull("Expected the password2 property to be populated", password2Prop);
+            passwordHashProp = (String) updatedProps.get(ContentModel.PROP_PASSWORD_HASH);
+            assertNull("Expected the passwordHash property to be null", passwordHashProp);
+            hashIndicatorProp = (List<String>) updatedProps.get(ContentModel.PROP_HASH_INDICATOR);
+            assertNull("Expected the hashIndicator property to be null", hashIndicatorProp);
+
+            // authenticate the user
+            authenticationComponent.clearCurrentSecurityContext();
+            pubAuthenticationService.authenticate("Andy", "auth1".toCharArray());
+            assertEquals("Andy", authenticationService.getCurrentUserName());
+
+            // commit the transaction to invoke the password hashing of the user
+            userTransaction.commit();
+
+            // start another transaction and change to system user
+            userTransaction = transactionService.getUserTransaction();
+            userTransaction.begin();
+            authenticationComponent.setSystemUserAsCurrentUser();
+
+            // verify that the new properties are populated and the old ones are cleaned up
+            Map<QName, Serializable> upgradedProps = nodeService.getProperties(andyUserNodeRef);
+            passwordProp = (String) upgradedProps.get(ContentModel.PROP_PASSWORD);
+            assertNull("Expected the password property to be null", passwordProp);
+            password2Prop = (String) upgradedProps.get(ContentModel.PROP_PASSWORD_SHA256);
+            assertNull("Expected the password2 property to be null", password2Prop);
+            passwordHashProp = (String) upgradedProps.get(ContentModel.PROP_PASSWORD_HASH);
+            assertNotNull("Expected the passwordHash property to be populated", passwordHashProp);
+            hashIndicatorProp = (List<String>) upgradedProps.get(ContentModel.PROP_HASH_INDICATOR);
+            assertNotNull("Expected the hashIndicator property to be populated", hashIndicatorProp);
+            assertTrue("Expected there to be a single hash indicator entry", (hashIndicatorProp.size() == 1));
+            String preferredEncoding = compositePasswordEncoder.getPreferredEncoding();
+            String hashEncoding = hashIndicatorProp.get(0);
+            assertEquals("Expected hash indicator to be '" + preferredEncoding + "' but it was: " + hashEncoding,
                     preferredEncoding, hashEncoding);
-        
-        // delete the user and clear the security context
-        this.deleteAndy();
-        authenticationComponent.clearCurrentSecurityContext();
+
+            // delete the user and clear the security context
+            this.deleteAndy();
+            authenticationComponent.clearCurrentSecurityContext();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        finally
+        {
+            compositePasswordEncoder.setPreferredEncoding(defaultPreferredEncoding);
+        }
     }
 
     /**
-     * For on premise the default is MD4, for cloud BCRYPT10
-     *
-     * @throws Exception
+     * Test password encoding with MD4 without a salt.
      */
-    public void testDefaultEncodingIsMD4() throws Exception
+    public void testGetsMD4Password()
     {
-        assertNotNull(compositePasswordEncoder);
-        assertEquals("md4", compositePasswordEncoder.getPreferredEncoding());
-    }
+        String defaultPreferredEncoding = compositePasswordEncoder.getPreferredEncoding();
+        compositePasswordEncoder.setPreferredEncoding("md4");
 
-    /**
-     * For on premise the default is MD4, get it
-     *
-     * @throws Exception
-     */
-    public void testGetsMD4Password() throws Exception
-    {
-        String user = "mduzer";
-        String rawPass = "roarPazzw0rd";
-        assertEquals("md4", compositePasswordEncoder.getPreferredEncoding());
-        dao.createUser(user, null, rawPass.toCharArray());
-        NodeRef userNodeRef = getRepositoryAuthenticationDao().getUserOrNull(user);
-        assertNotNull(userNodeRef);
-        String pass = dao.getMD4HashedPassword(user);
-        assertNotNull(pass);
-        assertTrue(compositePasswordEncoder.matches("md4", rawPass, pass, null));
+        try
+        {
+            String user = "mduzer";
+            String rawPass = "roarPazzw0rd";
+            dao.createUser(user, null, rawPass.toCharArray());
+            NodeRef userNodeRef = getRepositoryAuthenticationDao().getUserOrNull(user);
+            assertNotNull(userNodeRef);
+            String pass = dao.getMD4HashedPassword(user);
+            assertNotNull(pass);
+            assertTrue(compositePasswordEncoder.matches("md4", rawPass, pass, null));
 
-        Map<QName, Serializable> properties = nodeService.getProperties(userNodeRef);
-        properties.remove(ContentModel.PROP_PASSWORD_HASH);
-        properties.remove(ContentModel.PROP_HASH_INDICATOR);
-        properties.remove(ContentModel.PROP_PASSWORD);
-        properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-        String encoded =  compositePasswordEncoder.encode("md4",new String(rawPass), null);
-        properties.put(ContentModel.PROP_PASSWORD, encoded);
-        nodeService.setProperties(userNodeRef, properties);
-        pass = dao.getMD4HashedPassword(user);
-        assertNotNull(pass);
-        assertEquals(encoded, pass);
-        dao.deleteUser(user);
+            Map<QName, Serializable> properties = nodeService.getProperties(userNodeRef);
+            properties.remove(ContentModel.PROP_PASSWORD_HASH);
+            properties.remove(ContentModel.PROP_HASH_INDICATOR);
+            properties.remove(ContentModel.PROP_PASSWORD);
+            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+            String encoded = compositePasswordEncoder.encodePassword("md4", rawPass, List.of("md4"));
+            properties.put(ContentModel.PROP_PASSWORD, encoded);
+            nodeService.setProperties(userNodeRef, properties);
+            pass = dao.getMD4HashedPassword(user);
+            assertNotNull(pass);
+            assertEquals(encoded, pass);
+            dao.deleteUser(user);
+        }
+        finally
+        {
+            compositePasswordEncoder.setPreferredEncoding(defaultPreferredEncoding);
+        }
     }
 
     /**

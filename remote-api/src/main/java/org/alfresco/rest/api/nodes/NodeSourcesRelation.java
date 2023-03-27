@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
+
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -34,8 +36,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QNamePattern;
-
-import java.util.List;
 
 /**
  * Node Sources - list node (peer) associations from target to sources
@@ -54,7 +54,7 @@ public class NodeSourcesRelation extends AbstractNodeRelation implements Relatio
     @WebApiDescription(title = "Return a paged list of sources nodes based on (peer) assocs")
     public CollectionWithPagingInfo<Node> readAll(String targetNodeId, Parameters parameters)
     {
-        NodeRef targetNodeRef = nodes.validateOrLookupNode(targetNodeId, null);
+        NodeRef targetNodeRef = nodes.validateOrLookupNode(targetNodeId);
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 

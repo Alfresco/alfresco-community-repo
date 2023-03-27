@@ -316,6 +316,7 @@ jobs:
           - testSuite: MTLSTestSuite
             compose-profile: with-mtls-transform-core-aio
             mtls: true
+            mvn-options: '-Dencryption.ssl.keystore.location=${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0

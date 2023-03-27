@@ -42,13 +42,9 @@ public class LocalTransformClientWithMTLSIntegrationTest extends LocalTransformC
         local();
 
         System.setProperty("localTransform.core-aio.url", "https://localhost:8090/");
-//        System.setProperty("encryption.ssl.keystore.location", "/Users/Kacper.Magdziarz@hyland.com/IdeaProjects/alfresco-community-repo/repository/src/test/resources/alfresco/mtls/alfresco.keystore");
-//        System.setProperty("encryption.ssl.truststore.location", "/Users/Kacper.Magdziarz@hyland.com/IdeaProjects/alfresco-community-repo/repository/src/test/resources/alfresco/mtls/alfresco.truststore");
         System.setProperty("httpclient.config.transform.mTLSEnabled", "true");
         System.setProperty("ssl-keystore.password", "password");
         System.setProperty("ssl-truststore.password", "password");
-        System.setProperty("encryption.ssl.keystore.location", "${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.keystore");
-        System.setProperty("encryption.ssl.truststore.location", "${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.truststore");
         System.setProperty("metadata-keystore.password", "password");
         System.setProperty("metadata-keystore.aliases", "metadata");
         System.setProperty("metadata-keystore.metadata.password", "password");

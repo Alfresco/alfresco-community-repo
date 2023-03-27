@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
 
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.LazyInstantiatingIdentityServiceFacade;
 import org.junit.Test;
@@ -50,22 +51,23 @@ public class LazyInstantiatingIdentityServiceFacadeUnitTest
         final LazyInstantiatingIdentityServiceFacade facade = new LazyInstantiatingIdentityServiceFacade(faultySupplier(3, targetFacade));
 
         assertThatExceptionOfType(IdentityServiceFacadeException.class)
-                .isThrownBy(() -> facade.extractUsernameFromToken(TOKEN))
+                .isThrownBy(() -> facade.decodeToken(TOKEN))
                 .havingCause().withNoCause().withMessage("Expected failure #1");
         verifyNoInteractions(targetFacade);
 
         assertThatExceptionOfType(IdentityServiceFacadeException.class)
-                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
+                .isThrownBy(() -> facade.decodeToken(TOKEN))
                 .havingCause().withNoCause().withMessage("Expected failure #2");
         verifyNoInteractions(targetFacade);
 
         assertThatExceptionOfType(IdentityServiceFacadeException.class)
-                .isThrownBy(() -> facade.extractUsernameFromToken(TOKEN))
+                .isThrownBy(() -> facade.decodeToken(TOKEN))
                 .havingCause().withNoCause().withMessage("Expected failure #3");
         verifyNoInteractions(targetFacade);
 
-        facade.verifyCredentials(USER_NAME, PASSWORD);
-        verify(targetFacade).verifyCredentials(USER_NAME, PASSWORD);
+        final AuthorizationGrant grant = AuthorizationGrant.password(USER_NAME, PASSWORD);
+        facade.authorize(grant);
+        verify(targetFacade).authorize(grant);
     }
 
     @Test
@@ -77,14 +79,14 @@ public class LazyInstantiatingIdentityServiceFacadeUnitTest
 
         final LazyInstantiatingIdentityServiceFacade facade = new LazyInstantiatingIdentityServiceFacade(supplier);
 
-        facade.verifyCredentials(USER_NAME, PASSWORD);
-        facade.extractUsernameFromToken(TOKEN);
-        facade.verifyCredentials(USER_NAME, PASSWORD);
-        facade.extractUsernameFromToken(TOKEN);
-        facade.verifyCredentials(USER_NAME, PASSWORD);
+        facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD));
+        facade.decodeToken(TOKEN);
+        facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD));
+        facade.decodeToken(TOKEN);
+        facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD));
         verify(supplier, times(1)).get();
-        verify(targetFacade, times(3)).verifyCredentials(USER_NAME, PASSWORD);
-        verify(targetFacade, times(2)).extractUsernameFromToken(TOKEN);
+        verify(targetFacade, times(3)).authorize(AuthorizationGrant.password(USER_NAME, PASSWORD));
+        verify(targetFacade, times(2)).decodeToken(TOKEN);
     }
 
     private Supplier<IdentityServiceFacade> faultySupplier(int numberOfInitialFailures, IdentityServiceFacade facade)

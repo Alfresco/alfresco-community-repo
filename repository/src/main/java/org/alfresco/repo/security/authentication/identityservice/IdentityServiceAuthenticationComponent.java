@@ -28,7 +28,8 @@ package org.alfresco.repo.security.authentication.identityservice;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AbstractAuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -76,12 +77,12 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         try
         {
             // Attempt to verify user credentials
-            identityServiceFacade.verifyCredentials(userName, new String(password));
+            identityServiceFacade.authorize(AuthorizationGrant.password(userName, new String(password)));
 
             // Verification was successful so treat as authenticated user
             setCurrentUser(userName);
         }
-        catch (CredentialsVerificationException e)
+        catch (IdentityServiceFacadeException e)
         {
             throw new AuthenticationException("Failed to verify user credentials against the OAuth2 Authorization Server.", e);
         }

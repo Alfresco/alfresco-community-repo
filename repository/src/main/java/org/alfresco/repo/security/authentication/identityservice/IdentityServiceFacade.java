@@ -25,34 +25,36 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import java.util.Optional;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+
+import java.time.Instant;
+import java.util.Objects;
 
 /**
  * Allows to interact with the Identity Service
  */
-interface IdentityServiceFacade
+public interface IdentityServiceFacade
 {
     /**
-     * Verifies provided user credentials. The OAuth2's Client role is only used to verify the user credentials (Resource Owner Password
-     * Credentials Flow) this is why there is an explicit method for verifying these.
-     *
-     * @param username user's name
-     * @param password user's password
-     * @throws CredentialsVerificationException when the verification failed or couldn't be performed
+     * Returns {@link AccessToken} based authorization for provided {@link AuthorizationGrant}.
+     * @param grant the OAuth2 grant provided by the Resource Owner.
+     * @return {@link AccessTokenAuthorization} containing access token and optional refresh token.
+     * @throws {@link AuthorizationException} when provided grant cannot be exchanged for the access token.
      */
-    void verifyCredentials(String username, String password);
+    AccessTokenAuthorization authorize(AuthorizationGrant grant) throws AuthorizationException;
 
     /**
-     * Extracts username from provided token
-     *
-     * @param token token representation
-     * @return possible username
+     * Decodes the access token into the {@link DecodedAccessToken} which contains claims connected with a given token.
+     * @param token {@link String} with encoded access token value.
+     * @return {@link DecodedAccessToken} containing decoded claims.
+     * @throws {@link TokenDecodingException} when token decoding failed.
      */
-    Optional<String> extractUsernameFromToken(String token);
+    DecodedAccessToken decodeToken(String token) throws TokenDecodingException;
 
     class IdentityServiceFacadeException extends RuntimeException
     {
-        IdentityServiceFacadeException(String message)
+        public IdentityServiceFacadeException(String message)
         {
             super(message);
         }
@@ -62,29 +64,149 @@ interface IdentityServiceFacade
             super(message, cause);
         }
     }
-    class CredentialsVerificationException extends IdentityServiceFacadeException
+
+    class AuthorizationException extends IdentityServiceFacadeException
     {
-        CredentialsVerificationException(String message)
+        AuthorizationException(String message)
         {
             super(message);
         }
 
-        CredentialsVerificationException(String message, Throwable cause)
+        AuthorizationException(String message, Throwable cause)
         {
             super(message, cause);
         }
     }
 
-    class TokenException extends IdentityServiceFacadeException
+    class TokenDecodingException extends IdentityServiceFacadeException
     {
-        TokenException(String message)
+        TokenDecodingException(String message)
         {
             super(message);
         }
 
-        TokenException(String message, Throwable cause)
+        TokenDecodingException(String message, Throwable cause)
         {
             super(message, cause);
+        }
+    }
+
+    /**
+     * Represents access token authorization with optional refresh token.
+     */
+    interface AccessTokenAuthorization
+    {
+        /**
+         * Required {@link AccessToken}
+         * @return {@link AccessToken}
+         */
+        AccessToken getAccessToken();
+
+        /**
+         * Optional refresh token.
+         * @return Refresh token or {@code null}
+         */
+        String getRefreshTokenValue();
+    }
+
+    interface AccessToken {
+        String getTokenValue();
+        Instant getExpiresAt();
+    }
+
+    interface DecodedAccessToken extends AccessToken
+    {
+        Object getClaim(String claim);
+    }
+
+    class AuthorizationGrant {
+        private final String username;
+        private final String password;
+        private final String refreshToken;
+        private final String authorizationCode;
+        private final String redirectUri;
+
+        private AuthorizationGrant(String username, String password, String refreshToken, String authorizationCode, String redirectUri)
+        {
+            this.username = username;
+            this.password = password;
+            this.refreshToken = refreshToken;
+            this.authorizationCode = authorizationCode;
+            this.redirectUri = redirectUri;
+        }
+
+        public static AuthorizationGrant password(String username, String password)
+        {
+            return new AuthorizationGrant(requireNonNull(username), requireNonNull(password), null, null, null);
+        }
+
+        public static AuthorizationGrant refreshToken(String refreshToken)
+        {
+            return new AuthorizationGrant(null, null, requireNonNull(refreshToken), null, null);
+        }
+
+        static AuthorizationGrant authorizationCode(String authorizationCode, String redirectUri)
+        {
+            return new AuthorizationGrant(null, null, null, requireNonNull(authorizationCode), requireNonNull(redirectUri));
+        }
+
+        boolean isPassword()
+        {
+            return nonNull(username);
+        }
+
+        boolean isRefreshToken()
+        {
+            return nonNull(refreshToken);
+        }
+
+        boolean isAuthorizationCode()
+        {
+            return nonNull(authorizationCode);
+        }
+
+        String getUsername()
+        {
+            return username;
+        }
+
+        String getPassword()
+        {
+            return password;
+        }
+
+        String getRefreshToken()
+        {
+            return refreshToken;
+        }
+
+        String getAuthorizationCode()
+        {
+            return authorizationCode;
+        }
+
+        String getRedirectUri()
+        {
+            return redirectUri;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AuthorizationGrant that = (AuthorizationGrant) o;
+            return Objects.equals(username, that.username) &&
+                    Objects.equals(password, that.password) &&
+                    Objects.equals(refreshToken, that.refreshToken) &&
+                    Objects.equals(authorizationCode, that.authorizationCode) &&
+                    Objects.equals(redirectUri, that.redirectUri);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(username, password, refreshToken, authorizationCode, redirectUri);
         }
     }
 }

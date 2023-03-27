@@ -34,7 +34,8 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +51,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 {
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceRemoteUserMapper.class);
+    static final String USERNAME_CLAIM = "preferred_username";
     
     /** Is the mapper enabled */
     private boolean isEnabled;
@@ -131,7 +133,7 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
                 return normalizedUserId;
             }
         }
-        catch (TokenException e)
+        catch (IdentityServiceFacadeException e)
         {
             if (!isValidationFailureSilent)
             {
@@ -160,7 +162,7 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
      * Extracts the user name from the JWT in the given request.
      * 
      * @param request The request containing the JWT
-     * @return The user name or null if it can not be determined
+     * @return The username or null if it can not be determined
      */
     private String extractUserFromHeader(HttpServletRequest request)
     {
@@ -178,8 +180,11 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
             return null;
         }
 
-        final Optional<String> possibleUsername = Optional.ofNullable(bearerToken)
-                                                          .flatMap(identityServiceFacade::extractUsernameFromToken);
+        final DecodedAccessToken token = identityServiceFacade.decodeToken(bearerToken);
+
+        final Optional<String> possibleUsername = Optional.ofNullable(token.getClaim(USERNAME_CLAIM))
+                                                          .filter(String.class::isInstance)
+                                                          .map(String.class::cast);
         if (possibleUsername.isEmpty())
         {
             LOGGER.debug("User could not be authenticated by IdentityServiceRemoteUserMapper.");

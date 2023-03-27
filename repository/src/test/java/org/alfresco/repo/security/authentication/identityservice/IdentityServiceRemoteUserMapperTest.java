@@ -27,11 +27,13 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import static java.util.Optional.ofNullable;
 
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper.USERNAME_CLAIM;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Vector;
 import java.util.function.Supplier;
@@ -40,7 +42,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import junit.framework.TestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 
@@ -66,7 +69,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
 
     public void testWrongTokenWithSilentValidation()
     {
-        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenException("Expected ");}));
+        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenDecodingException("Expected ");}));
         mapper.setValidationFailureSilent(true);
 
         HttpServletRequest mockRequest = createMockTokenRequest("WrOnG-ToKeN");
@@ -77,7 +80,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
 
     public void testWrongTokenWithoutSilentValidation()
     {
-        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenException("Expected");}));
+        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenDecodingException("Expected");}));
         mapper.setValidationFailureSilent(false);
 
         HttpServletRequest mockRequest = createMockTokenRequest("WrOnG-ToKeN");
@@ -90,10 +93,8 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
     private IdentityServiceRemoteUserMapper givenMapper(Map<String, Supplier<String>> tokenToUser)
     {
         final IdentityServiceFacade facade = mock(IdentityServiceFacade.class);
-        when(facade.extractUsernameFromToken(anyString()))
-                .thenAnswer(i ->
-                        ofNullable(tokenToUser.get(i.getArgument(0, String.class)))
-                                .map(Supplier::get));
+        when(facade.decodeToken(anyString()))
+                .thenAnswer(i -> new TestDecodedToken(tokenToUser.get(i.getArgument(0, String.class))));
 
         final PersonService personService = mock(PersonService.class);
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
@@ -131,5 +132,35 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
                 .thenReturn(authHeaderValues.isEmpty() ? null : authHeaderValues.get(0));
         
         return mockRequest;
+    }
+
+    private static class TestDecodedToken implements DecodedAccessToken
+    {
+
+        private final Supplier<String> usernameSupplier;
+
+        public TestDecodedToken(Supplier<String> usernameSupplier)
+        {
+
+            this.usernameSupplier = usernameSupplier;
+        }
+
+        @Override
+        public String getTokenValue()
+        {
+            return "TEST";
+        }
+
+        @Override
+        public Instant getExpiresAt()
+        {
+            return Instant.now();
+        }
+
+        @Override
+        public Object getClaim(String claim)
+        {
+            return USERNAME_CLAIM.equals(claim) ? usernameSupplier.get() : null;
+        }
     }
 }

@@ -158,21 +158,25 @@ public class TagsImpl implements Tags
 		taggingService.deleteTag(storeRef, tagValue);
 	}
 
-	@Override
+    @Override
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
-	    Paging paging = params.getPaging();
-	    Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
-		PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilters.get(EQUALS), namesFilters.get(MATCHES));
+        Paging paging = params.getPaging();
+        Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
+        PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilters.get(EQUALS), namesFilters.get(MATCHES));
 
         Integer totalItems = results.getTotalResultCount().getFirst();
         List<Pair<NodeRef, String>> page = results.getPage();
         List<Tag> tags = new ArrayList<>(page.size());
-        List<Pair<String, Integer>> tagsByCount;
-        Map<String, Integer> tagsByCountMap = new HashMap<>();
+        for (Pair<NodeRef, String> pair : page)
+        {
+            Tag selectedTag = new Tag(pair.getFirst(), pair.getSecond());
+            tags.add(selectedTag);
+        }
         if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
         {
-            tagsByCount = taggingService.findTaggedNodesAndCountByTagName(storeRef);
+            List<Pair<String, Integer>> tagsByCount = taggingService.findTaggedNodesAndCountByTagName(storeRef);
+            Map<String, Integer> tagsByCountMap = new HashMap<>();
             if (tagsByCount != null)
             {
                 for (Pair<String, Integer> tagByCountElem : tagsByCount)
@@ -180,12 +184,7 @@ public class TagsImpl implements Tags
                     tagsByCountMap.put(tagByCountElem.getFirst(), tagByCountElem.getSecond());
                 }
             }
-        }
-        for (Pair<NodeRef, String> pair : page)
-        {
-            Tag selectedTag = new Tag(pair.getFirst(), pair.getSecond());
-            selectedTag.setCount(Optional.ofNullable(tagsByCountMap.get(selectedTag.getTag())).orElse(0));
-            tags.add(selectedTag);
+            tags.forEach(tag -> tag.setCount(Optional.ofNullable(tagsByCountMap.get(tag.getTag())).orElse(0)));
         }
 
         return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), totalItems);

@@ -129,7 +129,7 @@ public class TagsImplTest
 
         then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull(), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
-        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream().peek(tag -> tag.setCount(0)).collect(toList());
+        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME));
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -148,6 +148,30 @@ public class TagsImplTest
         final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream()
             .peek(tag -> tag.setCount(0))
             .collect(toList());
+        assertEquals(expectedTags, actualTags.getCollection());
+    }
+
+    /** Check that we can get counts for two tags - one in use and one not applied to any nodes. */
+    @Test
+    public void testGetTags_verifyCountPopulatedCorrectly()
+    {
+        NodeRef tagNodeA = new NodeRef("tag://A/");
+        NodeRef tagNodeB = new NodeRef("tag://B/");
+        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "tagA"), new Pair<>(tagNodeB, "tagB"));
+
+        given(parametersMock.getPaging()).willReturn(pagingMock);
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
+        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
+        given(pagingResultsMock.getPage()).willReturn(tagPairs);
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
+        // Only tagA is included in the returned list since tagB is not in use.
+        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("tagA", 5)));
+
+        final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
+
+        then(taggingServiceMock).should().findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE);
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("tagA").nodeRef(tagNodeA).count(5).create(),
+                                               Tag.builder().tag("tagB").nodeRef(tagNodeB).count(0).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 

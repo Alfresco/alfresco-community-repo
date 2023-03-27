@@ -120,81 +120,91 @@ public class HttpClientConfig
               .forEach(propertyName -> LOGGER.warn(String.format("For service [%s], an unsupported property [%s] is set", serviceName, propertyName)));
     }
 
-    private Integer getIntegerProperty(String propertyName)
+    private Integer getIntegerProperty(HttpClientProperties property)
     {
-        String keyValue = Optional.ofNullable(config.get(propertyName)).orElseThrow(() -> {
-            String msg = String.format("Required property: '%s' is empty.", propertyName);
-            LOGGER.error(msg);
-            throw new HttpClientException(msg);
-        });
-            return Integer.parseInt(keyValue);
+        return Integer.parseInt(extractValueFromConfig(property));
     }
 
-    private Boolean getBooleanProperty(String propertyName)
+    private Boolean getBooleanProperty(HttpClientProperties property)
     {
-        String keyValue = Optional.ofNullable(config.get(propertyName)).orElseThrow(() -> {
-            String msg = String.format("Required property: '%s' is empty.", propertyName);
-            LOGGER.error(msg);
-            throw new HttpClientException(msg);
-        });
-        return Boolean.parseBoolean(keyValue);
+        return Boolean.parseBoolean(extractValueFromConfig(property));
+    }
+
+    private String extractValueFromConfig(HttpClientProperties property)
+    {
+        String keyValue;
+        if(property.isRequired)
+        {
+            keyValue = Optional.ofNullable(config.get(property.name)).orElseThrow(() -> {
+                String msg = String.format("Required property: '%s' is empty.", property.name);
+                LOGGER.error(msg);
+                throw new HttpClientException(msg);
+            });
+        } else {
+            keyValue = config.getOrDefault(property.name, "0");
+        }
+        return keyValue;
     }
 
     public Integer getConnectionTimeout()
     {
-        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT.propertyName);
+        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT);
     }
 
     public Integer getSocketTimeout()
     {
-        return getIntegerProperty(HttpClientProperties.SOCKET_TIMEOUT.propertyName);
+        return getIntegerProperty(HttpClientProperties.SOCKET_TIMEOUT);
     }
 
     public Integer getConnectionRequestTimeout()
     {
-        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT.propertyName);
+        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT);
     }
 
     public Integer getMaxTotalConnections()
     {
-        return getIntegerProperty(HttpClientProperties.MAX_TOTAL_CONNECTIONS.propertyName);
+        return getIntegerProperty(HttpClientProperties.MAX_TOTAL_CONNECTIONS);
     }
 
     public Integer getMaxHostConnections()
     {
-        return getIntegerProperty(HttpClientProperties.MAX_HOST_CONNECTIONS.propertyName);
+        return getIntegerProperty(HttpClientProperties.MAX_HOST_CONNECTIONS);
     }
 
     public Boolean isMTLSEnabled()
     {
-        return getBooleanProperty(HttpClientProperties.MTLS_ENABLED.propertyName);
+        return getBooleanProperty(HttpClientProperties.MTLS_ENABLED);
+    }
+
+    public boolean isHostnameVerificationDisabled()
+    {
+        return getBooleanProperty(HttpClientProperties.HOSTNAME_VERIFICATION_DISABLED);
     }
 
     private enum HttpClientProperties
     {
-        CONNECTION_TIMEOUT("connectionTimeout"),
-        SOCKET_TIMEOUT("socketTimeout"),
-        CONNECTION_REQUEST_TIMEOUT("connectionRequestTimeout"),
-        MAX_TOTAL_CONNECTIONS("maxTotalConnections"),
-        MAX_HOST_CONNECTIONS("maxHostConnections"),
-        MTLS_ENABLED("mTLSEnabled");
+        CONNECTION_TIMEOUT("connectionTimeout", true),
+        SOCKET_TIMEOUT("socketTimeout", true),
+        CONNECTION_REQUEST_TIMEOUT("connectionRequestTimeout", true),
+        MAX_TOTAL_CONNECTIONS("maxTotalConnections", true),
+        MAX_HOST_CONNECTIONS("maxHostConnections", true),
+        HOSTNAME_VERIFICATION_DISABLED("hostnameVerificationDisabled", false),
+        MTLS_ENABLED("mTLSEnabled", true);
 
-        private final String propertyName;
+        private final String name;
+        private final Boolean isRequired;
 
-        HttpClientProperties(String propertyName)
+        HttpClientProperties(String propertyName, Boolean isRequired)
         {
-            this.propertyName = propertyName;
-        }
-
-        public String getPropertyName() {
-            return this.propertyName;
+            this.name = propertyName;
+            this.isRequired = isRequired;
         }
 
         private static final List<String> supportedProperties = new ArrayList<>();
 
         static {
             for (HttpClientProperties property : HttpClientProperties.values()) {
-                supportedProperties.add(property.getPropertyName());
+                supportedProperties.add(property.name);
             }
         }
 

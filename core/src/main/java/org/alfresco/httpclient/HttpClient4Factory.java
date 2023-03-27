@@ -36,6 +36,7 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -93,6 +94,14 @@ public class HttpClient4Factory
                     null,
                     SSLConnectionSocketFactory.getDefaultHostnameVerifier());
             clientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
+        }
+
+        /**
+         * Allows all hostname if property is set to true.
+         */
+        if(config.isHostnameVerificationDisabled())
+        {
+            clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
         }
 
         if(connectionManager != null)

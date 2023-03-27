@@ -45,7 +45,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tagging.NonExistentTagException;
 import org.alfresco.repo.tagging.TagExistsException;
@@ -175,10 +175,6 @@ public class TagsImpl implements Tags
 	    Paging paging = params.getPaging();
 		List<SortColumn> sorting = params.getSorting();
 
-		final int skipCount = paging.getSkipCount();
-		final int maxItems = paging.getMaxItems();
-		final int size = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? CannedQueryPageDetails.DEFAULT_PAGE_SIZE : skipCount + maxItems);
-
 		Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
 		List<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilters.get(EQUALS), namesFilters.get(MATCHES));
 		List<Tag> tagsList = results.stream().map(pair -> new Tag(pair.getFirst(), pair.getSecond())).collect(Collectors.toList());
@@ -193,59 +189,19 @@ public class TagsImpl implements Tags
 				tag.setCount(Optional.ofNullable(tagsByCountMap.get(tag.getTag())).orElse(0L) + 1);
 			}
 
-			if(!sorting.isEmpty() && sorting.get(0).column.equals(PARAM_INCLUDE_COUNT))
-			{
-				boolean sortAsc = sorting.get(0).asc;
-
-				if(sortAsc)
-				{
-					tagsList.sort(Comparator.comparingLong(Tag::getCount));
-				}
-				else
-				{
-					tagsList.sort(Comparator.comparingLong(Tag::getCount).reversed());
-				}
-			}
 		}
 
-		if(!sorting.isEmpty() && sorting.get(0).column.equals("tag"))
+		if(!sorting.isEmpty())
 		{
 			boolean sortAsc = sorting.get(0).asc;
+			String sortBy = sorting.get(0).column;
 
-			if(sortAsc)
-			{
-				tagsList.sort(Comparator.comparing(Tag::getTag));
-			}
-			else
-			{
-				tagsList.sort(Comparator.comparing(Tag::getTag).reversed());
-			}
+			tagsList = sortTags(tagsList, sortBy, sortAsc);
 		}
 
-		List<Tag> pagedTags = new ArrayList<>();
-		int count = 0;
+		ListBackedPagingResults listBackedPagingResults = new ListBackedPagingResults(tagsList, Util.getPagingRequest(params.getPaging()));
 
-		for(Tag tag : tagsList)
-		{
-			count++;
-			if(count <= skipCount)
-			{
-				continue;
-			}
-
-			pagedTags.add(tag);
-
-			if(count >= size)
-			{
-				break;
-			}
-		}
-
-		Integer totalItems = pagedTags.size();
-		int end = skipCount + maxItems;
-		boolean hasMoreItems = end < totalItems;
-
-		return CollectionWithPagingInfo.asPaged(paging, pagedTags, hasMoreItems, totalItems);
+		return CollectionWithPagingInfo.asPaged(paging, listBackedPagingResults.getPage(), listBackedPagingResults.hasMoreItems(), (Integer) listBackedPagingResults.getTotalResultCount().getFirst());
     }
 
     public NodeRef validateTag(String tagId)
@@ -404,5 +360,26 @@ public class TagsImpl implements Tags
 			throw new EntityNotFoundException(tagId);
 		}
 		return tagNodeRef;
+	}
+
+	private List<Tag> sortTags(List<Tag> tagsList, String sortBy, boolean sortAsc)
+	{
+		if(sortBy.equals(PARAM_WHERE_TAG))
+		{
+			tagsList.sort(Comparator.comparing(Tag::getTag));
+		}
+
+		//first check that count exists and then check if we should sort by count
+		else if(tagsList.get(0).getCount()!=null && sortBy.equals(PARAM_INCLUDE_COUNT))
+		{
+			tagsList.sort(Comparator.comparingLong(Tag::getCount));
+		}
+
+		if(!sortAsc)
+		{
+			Collections.reverse(tagsList);
+		}
+
+		return tagsList;
 	}
 }

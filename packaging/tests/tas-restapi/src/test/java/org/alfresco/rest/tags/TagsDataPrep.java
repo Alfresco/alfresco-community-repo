@@ -14,8 +14,6 @@ import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.BeforeClass;
 
-import java.util.List;
-
 public class TagsDataPrep extends RestTest
 {
 
@@ -25,7 +23,7 @@ public class TagsDataPrep extends RestTest
     protected static SiteModel siteModel;
     protected static FileModel document;
     protected static FolderModel folder, folder2;
-    protected static RestTagModelsCollection restTagModelsCollection;
+    protected static RestTagModelsCollection folder2tags;
     protected static String documentTagValue, documentTagValue2, folderTagValue;
     protected static RestTagModel documentTag, documentTag2, folderTag, orphanTag, returnedModel;
     protected static RestTagModelsCollection returnedCollection;
@@ -52,7 +50,7 @@ public class TagsDataPrep extends RestTest
         documentTag2 = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue2);
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
         orphanTag = restClient.withCoreAPI().createSingleTag(RestTagModel.builder().tag(RandomData.getRandomName("orphan-tag").toLowerCase()).create());
-        restTagModelsCollection = restClient.withCoreAPI().usingResource(folder2).addTags(folderTagValue, documentTagValue);
+        folder2tags = restClient.withCoreAPI().usingResource(folder2).addTags(folderTagValue, documentTagValue);
 
         // Allow indexing to complete.
         Utility.sleep(500, 60000, () ->

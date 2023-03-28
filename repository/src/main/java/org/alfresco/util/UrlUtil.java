@@ -41,6 +41,12 @@ public class UrlUtil
     public static final Pattern PATTERN = Pattern.compile("\\$\\{shareUrl\\}");
     // ${alfrescoUrl} placeholder
     public static final Pattern REPO_PATTERN = Pattern.compile("\\$\\{alfrescoUrl\\}");
+
+    public static final Pattern REPOBASE_PATTERN = Pattern.compile("\\$\\{repoBaseUrl\\}");
+
+    public static final Pattern WORKSPACE_PATTERN = Pattern.compile("\\$\\{workspaceUrl\\}");
+
+
     /**
      * Builds up the Url to Alfresco based on the settings in the 
      *  {@link SysAdminParams}. 
@@ -146,4 +152,68 @@ public class UrlUtil
         url.append(context);
         return url.toString();
     }
+
+    /**
+     * Builds up the Url to Adw based on the settings in the
+     *  {@link SysAdminParams}.
+     * @return Adw Url such as https://col.ab.or.ate/#/
+     *  or http://localhost:8081/#/
+     */
+    public static String getWorkspaceUrl(SysAdminParams sysAdminParams)
+    {
+        return buildWorkspaceUrl(
+                sysAdminParams.getAlfrescoProtocol(),
+                sysAdminParams.getAlfrescoHost(),
+                sysAdminParams.getAlfrescoPort());
+    }
+
+    protected static String buildWorkspaceUrl(String workSpaceProtocol, String workspaceHost, int workspacePort) {
+        StringBuilder workspaceUrl = new StringBuilder();
+        workspaceUrl.append(workSpaceProtocol);
+        workspaceUrl.append("://");
+        workspaceUrl.append(workspaceHost);
+        if ("http".equals(workSpaceProtocol) && workspacePort == 80)
+        {
+            // Not needed
+        }
+        else if ("https".equals(workSpaceProtocol) && workspacePort == 443)
+        {
+            // Not needed
+        }
+        else
+        {
+            workspaceUrl.append(':');
+            workspaceUrl.append(workspacePort);
+        }
+
+        return workspaceUrl.toString();
+    }
+
+    /**
+     * Replaces the repo base url placeholder, namely {@literal ${repoBaseUrl}}, with <b>workspace</b> url.
+     *
+     * @param value          the string value which contains the repoBase url placeholder
+     * @param sysAdminParams the {@code SysAdminParams} object
+     * @return if the given {@code value} contains share url placeholder,
+     * the placeholder is replaced with share url; otherwise, the given {@code value} is simply returned
+     */
+
+    public static String replaceRepoBaseUrlPlaceholder(String value, SysAdminParams sysAdminParams)
+    {
+        if (value != null)
+        {
+            return REPOBASE_PATTERN.matcher(value).replaceAll(getWorkspaceUrl(sysAdminParams));
+        }
+        return value;
+    }
+
+    public static String replaceWorkSpaceUrlPlaceholder(String pageUrl,String workspaceUrl)
+    {
+        if (pageUrl != null)
+        {
+            return WORKSPACE_PATTERN.matcher(pageUrl).replaceAll(workspaceUrl);
+        }
+        return pageUrl;
+    }
+
 }

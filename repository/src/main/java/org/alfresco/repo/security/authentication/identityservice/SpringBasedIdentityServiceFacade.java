@@ -114,7 +114,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         }
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Bearer token outcome: " + validToken);
+            LOGGER.debug("Bearer token outcome: " + validToken.getClaims());
         }
         return new SpringDecodedAccessToken(validToken);
     }

@@ -371,10 +371,9 @@ public interface TaggingService
     /**
      *
      * @param storeRef
-     * @param tagsByCountMap
      * @return a map with each tag name and its count
      */
-    Map<String, Long> calculateCount(StoreRef storeRef, Map<String, Long> tagsByCountMap);
+    Map<String, Long> calculateCount(StoreRef storeRef);
 }
 
 

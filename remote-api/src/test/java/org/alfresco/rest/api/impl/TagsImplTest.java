@@ -41,7 +41,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,7 +68,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TypeConstraint;
-import org.apache.poi.ss.formula.functions.T;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -129,7 +127,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(List.of(new Pair<>(TAG_NODE_REF, TAG_NAME)));
-        given(taggingServiceMock.calculateCount(any(StoreRef.class), eq(new HashMap<>()))).willReturn(Map.of(TAG_NAME,0L));
+        given(taggingServiceMock.calculateCount(any(StoreRef.class))).willReturn(Map.of(TAG_NAME,0L));
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
@@ -145,12 +143,12 @@ public class TagsImplTest
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getInclude()).willReturn(List.of(PARAM_INCLUDE_COUNT));
         given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(List.of(new Pair<>(TAG_NODE_REF, TAG_NAME)));
-        given(taggingServiceMock.calculateCount(any(StoreRef.class), eq(new HashMap<>()))).willReturn(Map.of(TAG_NAME,0L));
+        given(taggingServiceMock.calculateCount(any(StoreRef.class))).willReturn(Map.of(TAG_NAME,0L));
         given(parametersMock.getInclude()).willReturn(List.of("count"));
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().calculateCount(STORE_REF_WORKSPACE_SPACESSTORE, new HashMap<>());
+        then(taggingServiceMock).should().calculateCount(STORE_REF_WORKSPACE_SPACESSTORE);
         final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream()
             .peek(tag -> tag.setCount(0L))
             .collect(toList());
@@ -168,7 +166,7 @@ public class TagsImplTest
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(tagPairs);
         given(parametersMock.getInclude()).willReturn(List.of("count"));
-        given(taggingServiceMock.calculateCount(eq(STORE_REF_WORKSPACE_SPACESSTORE), any())).willReturn(Map.of("tagA", 5L, "tagB", 0L));
+        given(taggingServiceMock.calculateCount(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(Map.of("taga", 5L, "tagb", 0L));
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
@@ -183,13 +181,13 @@ public class TagsImplTest
         NodeRef tagNodeA = new NodeRef("tag://A/");
         NodeRef tagNodeB = new NodeRef("tag://B/");
         NodeRef tagNodeC = new NodeRef("tag://C/");
-        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "tagA"), new Pair<>(tagNodeB, "tagB"), new Pair<>(tagNodeC, "tagC"));
+        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "taga"), new Pair<>(tagNodeB, "tagb"), new Pair<>(tagNodeC, "tagc"));
 
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getInclude()).willReturn(List.of("count"));
         given(parametersMock.getSorting()).willReturn(List.of(new SortColumn("count", true)));
         given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(tagPairs);
-        given(taggingServiceMock.calculateCount(eq(STORE_REF_WORKSPACE_SPACESSTORE), any())).willReturn(Map.of("tagA", 5L, "tagB", 0L, "tagC", 2L));
+        given(taggingServiceMock.calculateCount(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(Map.of("taga", 5L, "tagb", 0L, "tagc", 2L));
 
         //when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
@@ -206,13 +204,13 @@ public class TagsImplTest
         NodeRef tagNodeA = new NodeRef("tag://A/");
         NodeRef tagNodeB = new NodeRef("tag://B/");
         NodeRef tagNodeC = new NodeRef("tag://C/");
-        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "tagA"), new Pair<>(tagNodeB, "tagb"), new Pair<>(tagNodeC, "tagC"));
+        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "tagb"), new Pair<>(tagNodeB, "tagb"), new Pair<>(tagNodeC, "tagC"));
 
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getInclude()).willReturn(List.of("count"));
         given(parametersMock.getSorting()).willReturn(List.of(new SortColumn("count", false)));
         given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(tagPairs);
-        given(taggingServiceMock.calculateCount(eq(STORE_REF_WORKSPACE_SPACESSTORE), any())).willReturn(Map.of("taga", 5L, "tagb", 0L, "tagc", 2L));
+        given(taggingServiceMock.calculateCount(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(Map.of("taga", 5L, "tagb", 0L, "tagc", 2L));
 
         //when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);

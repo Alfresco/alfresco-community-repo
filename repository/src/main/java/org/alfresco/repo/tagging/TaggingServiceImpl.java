@@ -683,9 +683,10 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
 
-    public Map<String, Long> calculateCount(StoreRef storeRef, Map<String, Long> tagsByCountMap)
+    public Map<String, Long> calculateCount(StoreRef storeRef)
     {
         List<Pair<String, Integer>> tagsByCount = findTaggedNodesAndCountByTagName(storeRef);
+        Map<String, Long> tagsByCountMap = new HashMap<>();
         if (tagsByCount != null)
         {
             for (Pair<String, Integer> tagByCountElem : tagsByCount)

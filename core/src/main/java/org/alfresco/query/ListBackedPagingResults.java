@@ -64,7 +64,7 @@ public class ListBackedPagingResults<R> implements PagingResults<R>
         
         this.results = Collections.unmodifiableList(
                 list.subList(Math.min(start, end), end));
-        this.size = list.size();
+        this.size = this.results.size();
         this.hasMore = ! (list.size() == end);
     }
     

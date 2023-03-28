@@ -25,15 +25,16 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
@@ -132,8 +133,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     public void testAuthenticationPass()
     {
         final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
 
-        doNothing().when(mockIdentityServiceFacade).authorize(grant);
+        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 

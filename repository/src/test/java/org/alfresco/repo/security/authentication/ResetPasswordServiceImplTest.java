@@ -91,6 +91,7 @@ public class ResetPasswordServiceImplTest
 
     private static TestPerson testPerson;
     private static EmailUtil emailUtil;
+    private static TestPerson testPersonForWorkspace;
 
     @BeforeClass
     public static void initStaticData() throws Exception
@@ -114,9 +115,18 @@ public class ResetPasswordServiceImplTest
                     .setPassword("password")
                     .setEmail(userName + "@example.com");
 
+        String userNameForWorkspace = "shane.doe" + System.currentTimeMillis();
+        testPersonForWorkspace = new TestPerson()
+                .setUserName(userNameForWorkspace)
+                .setFirstName("Shane")
+                .setLastName("doe")
+                .setPassword("password")
+                .setEmail(userNameForWorkspace + "@example.com");
+
         transactionHelper.doInTransaction((RetryingTransactionCallback<Void>) () ->
         {
             createUser(testPerson);
+            createUser(testPersonForWorkspace);
             return null;
         });
 
@@ -492,6 +502,86 @@ public class ResetPasswordServiceImplTest
             this.email = email;
             return this;
         }
+    }
+
+    @Test
+    public void testResetPasswordForClientWorkspace() throws Exception
+    {
+        // Try the credential before change of password
+        authenticateUser(testPersonForWorkspace.userName, testPersonForWorkspace.password);
+
+        // Make sure to run as system
+        AuthenticationUtil.clearCurrentSecurityContext();
+        AuthenticationUtil.setRunAsUserSystem();
+
+        // Request password reset
+        resetPasswordService.requestReset(testPersonForWorkspace.userName, "workspace");
+        assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
+        // Check the email
+        MimeMessage msg = emailUtil.getLastEmail();
+        assertNotNull("There should be an email.", msg);
+        assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
+        // Check the recipient is the person who requested the reset password
+        assertEquals(testPersonForWorkspace.email, msg.getAllRecipients()[0].toString());
+        //Check the sender is what we set as default
+        assertEquals(DEFAULT_SENDER, msg.getFrom()[0].toString());
+        // There should be a subject
+        assertNotNull("There should be a subject.", msg.getSubject());
+        // Check the default email subject - (check that we are sending the right email)
+        String emailSubjectKey = getDeclaredField(SendResetPasswordEmailDelegate.class, "EMAIL_SUBJECT_KEY");
+        assertNotNull(emailSubjectKey);
+        assertEquals(msg.getSubject(), I18NUtil.getMessage(emailSubjectKey));
+
+        // Check the reset password url.
+        String resetPasswordUrl = (String) emailUtil.getLastEmailTemplateModelValue("reset_password_url");
+        assertNotNull("Wrong email is sent.", resetPasswordUrl);
+        // Get the workflow id and key
+        Pair<String, String> pair = getWorkflowIdAndKeyFromUrl(resetPasswordUrl);
+        assertNotNull("Workflow Id can't be null.", pair.getFirst());
+        assertNotNull("Workflow Key can't be null.", pair.getSecond());
+
+        emailUtil.reset();
+        // Now that we have got the email, try to reset the password
+        ResetPasswordDetails passwordDetails = new ResetPasswordDetails()
+                .setUserId(testPersonForWorkspace.userName)
+                .setPassword("newPassword")
+                .setWorkflowId(pair.getFirst())
+                .setWorkflowKey(pair.getSecond());
+
+        resetPasswordService.initiateResetPassword(passwordDetails);
+        assertEquals("A reset password confirmation email should have been sent.", 1, emailUtil.getSentCount());
+        // Check the email
+        msg = emailUtil.getLastEmail();
+        assertNotNull("There should be an email.", msg);
+        assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
+        // Check the recipient is the person who requested the reset password
+        assertEquals(testPersonForWorkspace.email, msg.getAllRecipients()[0].toString());
+        // Check the sender is what we set as default
+        assertEquals(DEFAULT_SENDER, msg.getFrom()[0].toString());
+        // There should be a subject
+        assertNotNull("There should be a subject.", msg.getSubject());
+        // Check the default email subject - (check that we are sending the right email)
+        emailSubjectKey = getDeclaredField(SendResetPasswordConfirmationEmailDelegate.class, "EMAIL_SUBJECT_KEY");
+        assertNotNull(emailSubjectKey);
+        assertEquals(msg.getSubject(), I18NUtil.getMessage(emailSubjectKey));
+
+        // Try the old credential
+        TestHelper.assertThrows(() -> authenticateUser(testPersonForWorkspace.userName, testPersonForWorkspace.password),
+                AuthenticationException.class,
+                "As the user changed her password, the authentication should have failed.");
+
+        // Try the new credential
+        authenticateUser(testPersonForWorkspace.userName, "newPassword");
+
+        // Make sure to run as system
+        AuthenticationUtil.clearCurrentSecurityContext();
+        AuthenticationUtil.setRunAsUserSystem();
+        emailUtil.reset();
+        // Try reset again with the used workflow
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                InvalidResetPasswordWorkflowException.class,
+                "The workflow instance is not active (it has already been used).");
+        assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
     }
 
 }

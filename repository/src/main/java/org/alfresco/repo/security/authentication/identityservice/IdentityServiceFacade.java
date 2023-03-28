@@ -145,7 +145,7 @@ public interface IdentityServiceFacade
             return new AuthorizationGrant(null, null, requireNonNull(refreshToken), null, null);
         }
 
-        static AuthorizationGrant authorizationCode(String authorizationCode, String redirectUri)
+        public static AuthorizationGrant authorizationCode(String authorizationCode, String redirectUri)
         {
             return new AuthorizationGrant(null, null, null, requireNonNull(authorizationCode), requireNonNull(redirectUri));
         }

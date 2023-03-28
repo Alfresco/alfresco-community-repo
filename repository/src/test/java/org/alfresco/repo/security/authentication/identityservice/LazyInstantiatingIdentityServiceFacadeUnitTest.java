@@ -56,7 +56,7 @@ public class LazyInstantiatingIdentityServiceFacadeUnitTest
         verifyNoInteractions(targetFacade);
 
         assertThatExceptionOfType(IdentityServiceFacadeException.class)
-                .isThrownBy(() -> facade.decodeToken(TOKEN))
+                .isThrownBy(() -> facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD)))
                 .havingCause().withNoCause().withMessage("Expected failure #2");
         verifyNoInteractions(targetFacade);
 

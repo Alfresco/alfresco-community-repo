@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.tagging;
 
+import static org.alfresco.model.ContentModel.ASSOC_SUBCATEGORIES;
+import static org.alfresco.model.ContentModel.PROP_NAME;
+import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -109,7 +113,7 @@ public class TaggingServiceImpl implements TaggingService,
     protected static final String TAGGING_AUDIT_ROOT_PATH = "/tagging";
     protected static final String TAGGING_AUDIT_KEY_NODEREF = "node";
     protected static final String TAGGING_AUDIT_KEY_TAGS = "tags";
-    
+
     private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
     
 	private static Collator collator = Collator.getInstance();
@@ -456,7 +460,7 @@ public class TaggingServiceImpl implements TaggingService,
     
     public String getTagName(NodeRef nodeRef)
     {
-        return (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        return (String)nodeService.getProperty(nodeRef, PROP_NAME);
     }
     
     /**
@@ -515,6 +519,9 @@ public class TaggingServiceImpl implements TaggingService,
     		throw new TaggingException("New tag cannot be null");
     	}
 
+    	existingTag = existingTag.toLowerCase();
+    	newTag = newTag.toLowerCase();
+
     	if (existingTag.equals(newTag))
     	{
     		throw new TaggingException("New and existing tags are the same");
@@ -530,16 +537,11 @@ public class TaggingServiceImpl implements TaggingService,
     		throw new TagExistsException("Tag " + newTag + " already exists");
     	}
 
-    	List<NodeRef> taggedNodes = findTaggedNodes(storeRef, existingTag);
-        for (NodeRef nodeRef : taggedNodes)
-        {
-            removeTag(nodeRef, existingTag);
-            addTag(nodeRef, newTag);
-        }
+        NodeRef tagNodeRef = getTagNodeRef(storeRef, existingTag);
+        nodeService.setProperty(tagNodeRef, PROP_NAME, newTag);
+        nodeService.moveNode(tagNodeRef, TAG_ROOT_NODE_REF, ASSOC_SUBCATEGORIES, QName.createQName(CONTENT_MODEL_1_0_URI, newTag));
 
-    	deleteTag(storeRef, existingTag);
-
-        return getTagNodeRef(storeRef, newTag, true);
+        return tagNodeRef;
     }
 
     /**
@@ -553,7 +555,7 @@ public class TaggingServiceImpl implements TaggingService,
         List<String> result = new ArrayList<String>(rootCategories.size());
         for (ChildAssociationRef rootCategory : rootCategories)
         {
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
             result.add(name);
         }
         return result;
@@ -579,7 +581,7 @@ public class TaggingServiceImpl implements TaggingService,
             {
                 continue;
             }
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
             result.add(name);
             if (index == endIndex)
             {
@@ -607,7 +609,7 @@ public class TaggingServiceImpl implements TaggingService,
             result = new ArrayList<String>(rootCategories.size());
             for (ChildAssociationRef rootCategory : rootCategories)
             {
-                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
                 if (name.contains(filter.toLowerCase()) == true)
                 {
                     result.add(name);
@@ -644,7 +646,7 @@ public class TaggingServiceImpl implements TaggingService,
                 {
                     continue;
                 }
-                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
+                String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), PROP_NAME);
                     result.add(name);
                 if (index == endIndex)
                 {
@@ -852,7 +854,7 @@ public class TaggingServiceImpl implements TaggingService,
             	// grab all tags and sort (assume fairly low number of tags)
             	for(NodeRef tagNode : currentTagNodes)
             	{
-                    String tag = (String)this.nodeService.getProperty(tagNode, ContentModel.PROP_NAME);
+                    String tag = (String)this.nodeService.getProperty(tagNode, PROP_NAME);
                     sortedTags.add(new Pair<NodeRef, String>(tagNode, tag));            		
             	}
                 Collections.sort(sortedTags, new Comparator<Pair<NodeRef, String>>()
@@ -951,7 +953,7 @@ public class TaggingServiceImpl implements TaggingService,
             {
                 for (NodeRef currentTagNode : currentTagNodes)
                 {
-                    String tag = (String)this.nodeService.getProperty(currentTagNode, ContentModel.PROP_NAME);
+                    String tag = (String)this.nodeService.getProperty(currentTagNode, PROP_NAME);
                     result.add(tag);
                 }
             }

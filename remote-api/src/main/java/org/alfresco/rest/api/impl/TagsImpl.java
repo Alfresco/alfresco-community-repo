@@ -30,6 +30,7 @@ import static java.util.stream.Collectors.toList;
 import static org.alfresco.rest.antlr.WhereClauseParser.EQUALS;
 import static org.alfresco.rest.antlr.WhereClauseParser.IN;
 import static org.alfresco.rest.antlr.WhereClauseParser.MATCHES;
+import static org.alfresco.service.cmr.tagging.TaggingService.TAG_ROOT_NODE_REF;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,7 +84,6 @@ public class TagsImpl implements Tags
 	private static final String PARAM_WHERE_TAG = "tag";
 	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
-	private final NodeRef tagParentNodeRef = new NodeRef("workspace://SpacesStore/tag:tag-root");
 
     private Nodes nodes;
 	private NodeService nodeService;
@@ -214,7 +214,7 @@ public class TagsImpl implements Tags
     	{
 	    	NodeRef existingTagNodeRef = validateTag(storeRef, tagId);
 	    	String existingTagName = taggingService.getTagName(existingTagNodeRef);
-	    	String newTagName = tag.getTag();
+	    	String newTagName = tag.getTag().toLowerCase();
 	    	NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
 	    	return new Tag(newTagNodeRef, newTagName);
     	}
@@ -329,7 +329,7 @@ public class TagsImpl implements Tags
 
 	private NodeRef checkTagRootAsNodePrimaryParent(String tagId, NodeRef tagNodeRef)
 	{
-		if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(tagParentNodeRef))
+		if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(TAG_ROOT_NODE_REF))
 		{
 			throw new EntityNotFoundException(tagId);
 		}

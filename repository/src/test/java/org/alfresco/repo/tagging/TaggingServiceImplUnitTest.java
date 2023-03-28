@@ -26,9 +26,12 @@
 package org.alfresco.repo.tagging;
 
 import static org.alfresco.model.ContentModel.ASPECT_TAGGABLE;
-import static org.alfresco.model.ContentModel.PROP_TAGS;
+import static org.alfresco.model.ContentModel.ASSOC_SUBCATEGORIES;
+import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.repo.tagging.TaggingServiceImpl.TAG_UPDATES;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+import static org.alfresco.service.cmr.tagging.TaggingService.TAG_ROOT_NODE_REF;
+import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,12 +39,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,45 +129,17 @@ public class TaggingServiceImplUnitTest
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testChangeTag()
     {
         final String newTagName = "new-tag-name";
-        final NodeRef newTagNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, newTagName);
-        given(searchServiceMock.query(any(), any(String.class), any(String.class))).willReturn(resultSetMock);
-        given(resultSetMock.getNodeRefs()).willReturn(List.of(CONTENT_NODE_REF), Collections.emptyList());
-        given(nodeServiceMock.hasAspect(CONTENT_NODE_REF, ASPECT_TAGGABLE)).willReturn(true);
-        given(categoryServiceMock.getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, TAG_NAME, false)).willReturn(childAssociationsOf(TAG_NODE_REF));
-        given(nodeServiceMock.getProperty(CONTENT_NODE_REF, PROP_TAGS)).willReturn(currentTagsMock);
-        given(((List<NodeRef>) currentTagsMock).size()).willReturn(1);
-        given(((List<NodeRef>) currentTagsMock).contains(TAG_NODE_REF)).willReturn(true);
-        given(categoryServiceMock.getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, newTagName, true)).willReturn(childAssociationsOf(newTagNodeRef));
-        given(((List<NodeRef>) currentTagsMock).contains(newTagNodeRef)).willReturn(false);
-
-        //when
-        taggingService.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME, newTagName);
-
-        then((List<NodeRef>) currentTagsMock).should().remove(TAG_NODE_REF);
-        then((List<NodeRef>) currentTagsMock).should().add(newTagNodeRef);
-        then(nodeServiceMock).should(times(2)).setProperty(CONTENT_NODE_REF, PROP_TAGS, currentTagsMock);
-        then(categoryServiceMock).should().deleteCategory(TAG_NODE_REF);
-        then(categoryServiceMock).should(times(2)).getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, newTagName, true);
-    }
-
-    @Test
-    public void testChangeOrphanTag()
-    {
-        final String newTagName = "new-tag-name";
-        given(searchServiceMock.query(any(), any(String.class), any(String.class))).willReturn(resultSetMock);
-        given(resultSetMock.getNodeRefs()).willReturn(Collections.emptyList());
         given(categoryServiceMock.getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, TAG_NAME, false)).willReturn(childAssociationsOf(TAG_NODE_REF));
 
         //when
         taggingService.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME, newTagName);
 
-        then(nodeServiceMock).should(never()).setProperty(any(), any(), any());
-        then(categoryServiceMock).should().deleteCategory(TAG_NODE_REF);
-        then(categoryServiceMock).should().getRootCategories(STORE_REF_WORKSPACE_SPACESSTORE, ASPECT_TAGGABLE, newTagName, true);
+        then(nodeServiceMock).should().setProperty(TAG_NODE_REF, PROP_NAME, newTagName);
+        then(nodeServiceMock).should().moveNode(TAG_NODE_REF, TAG_ROOT_NODE_REF, ASSOC_SUBCATEGORIES, QName.createQName(CONTENT_MODEL_1_0_URI, newTagName));
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
     }
 
     private static List<ChildAssociationRef> childAssociationsOf(final NodeRef... childNodeRefs)

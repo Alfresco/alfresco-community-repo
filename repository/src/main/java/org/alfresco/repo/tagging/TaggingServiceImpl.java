@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -54,11 +55,10 @@ import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.audit.AuditComponent;
-import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
-import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
-import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
@@ -104,10 +104,10 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TaggingServiceImpl implements TaggingService, 
                                            TransactionListener,
-                                           NodeServicePolicies.BeforeDeleteNodePolicy,
-                                           NodeServicePolicies.OnMoveNodePolicy,
-                                           CopyServicePolicies.OnCopyCompletePolicy,
-                                           CopyServicePolicies.BeforeCopyPolicy
+                                           BeforeDeleteNodePolicy,
+                                           OnMoveNodePolicy,
+                                           OnCopyCompletePolicy,
+                                           BeforeCopyPolicy
 {
     protected static final String TAGGING_AUDIT_APPLICATION_NAME = "Alfresco Tagging Service";
     protected static final String TAGGING_AUDIT_ROOT_PATH = "/tagging";
@@ -257,7 +257,7 @@ public class TaggingServiceImpl implements TaggingService,
               new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.EVERY_EVENT));
         
         this.policyComponent.bindClassBehaviour(
-              CheckOutCheckInServicePolicies.OnCheckOut.QNAME,
+              OnCheckOut.QNAME,
               ContentModel.ASPECT_TAGGABLE, 
               new JavaBehaviour(this, "afterCheckOut", NotificationFrequency.EVERY_EVENT));
     }
@@ -315,7 +315,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     * @see BeforeDeleteNodePolicy#beforeDeleteNode(NodeRef)
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
@@ -464,7 +464,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#isTag(StoreRef, java.lang.String)
+     * @see TaggingService#isTag(StoreRef, String)
      */
     public boolean isTag(StoreRef storeRef, String tag)
     {
@@ -473,7 +473,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#createTag(StoreRef, java.lang.String)
+     * @see TaggingService#createTag(StoreRef, String)
      */
     public NodeRef createTag(StoreRef storeRef, String tag)
     {
@@ -484,7 +484,7 @@ public class TaggingServiceImpl implements TaggingService,
     }  
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#deleteTag(org.alfresco.service.cmr.repository.StoreRef, java.lang.String)
+     * @see TaggingService#deleteTag(StoreRef, String)
      */
     public void deleteTag(StoreRef storeRef, String tag)
     {
@@ -541,11 +541,21 @@ public class TaggingServiceImpl implements TaggingService,
         nodeService.setProperty(tagNodeRef, PROP_NAME, newTag);
         nodeService.moveNode(tagNodeRef, TAG_ROOT_NODE_REF, ASSOC_SUBCATEGORIES, QName.createQName(CONTENT_MODEL_1_0_URI, newTag));
 
+        // Use a fake tag to raise events on all tagged nodes and also fix the tag scopes.
+        List<NodeRef> taggedNodes = findTaggedNodes(storeRef, existingTag);
+        String dummyTag = UUID.randomUUID().toString().toLowerCase();
+        for (NodeRef nodeRef : taggedNodes)
+        {
+            addTag(nodeRef, dummyTag);
+            updateTagScope(nodeRef, Map.of(existingTag, false, newTag, true, dummyTag, false));
+        }
+        deleteTag(storeRef, dummyTag);
+
         return tagNodeRef;
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(StoreRef)
+     * @see TaggingService#getTags(StoreRef)
      */
     public List<String> getTags(StoreRef storeRef)
     {
@@ -592,7 +602,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.StoreRef, java.lang.String)
+     * @see TaggingService#getTags(StoreRef, String)
      */
     public List<String> getTags(StoreRef storeRef, String filter)
     {
@@ -658,7 +668,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#hasTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see TaggingService#hasTag(NodeRef, String)
      */
     public boolean hasTag(NodeRef nodeRef, String tag)
     {
@@ -667,7 +677,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#addTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see TaggingService#addTag(NodeRef, String)
      */
     @SuppressWarnings("unchecked")
     public NodeRef addTag(final NodeRef nodeRef, final String tagName)
@@ -723,7 +733,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#addTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
+     * @see TaggingService#addTags(NodeRef, List)
      */
     public List<Pair<String, NodeRef>> addTags(NodeRef nodeRef, List<String> tags)
     {
@@ -780,7 +790,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#removeTag(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see TaggingService#removeTag(NodeRef, String)
      */
     @SuppressWarnings("unchecked")
     public void removeTag(NodeRef nodeRef, String tag)
@@ -820,7 +830,7 @@ public class TaggingServiceImpl implements TaggingService,
     }  
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#removeTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
+     * @see TaggingService#removeTags(NodeRef, List)
      */
     public void removeTags(NodeRef nodeRef, List<String> tags)
     {
@@ -831,7 +841,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.query.PagingRequest)
+     * @see TaggingService#getTags(NodeRef, PagingRequest)
      */
     @SuppressWarnings("unchecked")
     // TODO canned query
@@ -923,7 +933,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.StoreRef, org.alfresco.query.PagingRequest)
+     * @see TaggingService#getTags(StoreRef, PagingRequest)
      */
     public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
@@ -937,7 +947,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#getTags(NodeRef)
      */
     @SuppressWarnings("unchecked")
     public List<String> getTags(NodeRef nodeRef)
@@ -963,7 +973,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#setTags(org.alfresco.service.cmr.repository.NodeRef, java.util.List)
+     * @see TaggingService#setTags(NodeRef, List)
      */
     public void setTags(NodeRef nodeRef, List<String> tags)
     {  
@@ -1024,7 +1034,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#clearTags(org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#clearTags(NodeRef)
      */
     public void clearTags(NodeRef nodeRef)
     {
@@ -1032,7 +1042,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#isTagScope(org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#isTagScope(NodeRef)
      */
     public boolean isTagScope(NodeRef nodeRef)
     {
@@ -1041,7 +1051,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
      
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#addTagScope(org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#addTagScope(NodeRef)
      */
     public void addTagScope(NodeRef nodeRef)
     {
@@ -1056,7 +1066,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#refreshTagScope(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see TaggingService#refreshTagScope(NodeRef, boolean)
      */
     public void refreshTagScope(NodeRef nodeRef, boolean async)
     {
@@ -1069,7 +1079,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#removeTagScope(org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#removeTagScope(NodeRef)
      */
     public void removeTagScope(NodeRef nodeRef)
     {
@@ -1080,7 +1090,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findTagScope(org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#findTagScope(NodeRef)
      */
     public TagScope findTagScope(NodeRef nodeRef)
     {
@@ -1117,7 +1127,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findAllTagScopes(org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#findAllTagScopes(NodeRef)
      */
     public List<TagScope> findAllTagScopes(NodeRef nodeRef)
     {
@@ -1207,7 +1217,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(StoreRef, java.lang.String)
+     * @see TaggingService#findTaggedNodes(StoreRef, String)
      */
     public List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag)
     {
@@ -1232,7 +1242,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(StoreRef, java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
+     * @see TaggingService#findTaggedNodes(StoreRef, String, NodeRef)
      */
     public List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag, NodeRef nodeRef)
     {
@@ -1461,7 +1471,7 @@ public class TaggingServiceImpl implements TaggingService,
     // ===== Transaction Listener Callback Methods ===== //
     
     /**
-     * @see org.alfresco.repo.transaction.TransactionListener#afterCommit()
+     * @see TransactionListener#afterCommit()
      */
     public void afterCommit()
     {
@@ -1469,14 +1479,14 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.repo.transaction.TransactionListener#afterRollback()
+     * @see TransactionListener#afterRollback()
      */
     public void afterRollback()
     {
     }
 
     /**
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCommit(boolean)
+     * @see TransactionListener#beforeCommit(boolean)
      */
     @SuppressWarnings("unchecked")
     public void beforeCommit(boolean readOnly)
@@ -1501,14 +1511,14 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.repo.transaction.TransactionListener#beforeCompletion()
+     * @see TransactionListener#beforeCompletion()
      */
     public void beforeCompletion()
     {
     }
 
     /**
-     * @see org.alfresco.repo.transaction.TransactionListener#flush()
+     * @see TransactionListener#flush()
      */
     public void flush()
     {
@@ -1524,7 +1534,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodesAndCountByTagName(StoreRef)
+     * @see TaggingService#findTaggedNodesAndCountByTagName(StoreRef)
      */
     @Override
     public List<Pair<String, Integer>> findTaggedNodesAndCountByTagName(StoreRef storeRef)

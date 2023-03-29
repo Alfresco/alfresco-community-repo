@@ -85,7 +85,7 @@
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.keycloak.version>18.0.0</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.20.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.camel.version>3.20.3</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.87.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
         <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->

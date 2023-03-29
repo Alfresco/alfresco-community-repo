@@ -195,7 +195,7 @@ public class TagsImpl implements Tags
 
 		ListBackedPagingResults listBackedPagingResults = new ListBackedPagingResults(tagsList, Util.getPagingRequest(params.getPaging()));
 
-		return CollectionWithPagingInfo.asPaged(paging, listBackedPagingResults.getPage(), listBackedPagingResults.hasMoreItems(), (Integer) listBackedPagingResults.getTotalResultCount().getFirst());
+		return CollectionWithPagingInfo.asPaged(paging, tagsList, listBackedPagingResults.hasMoreItems(), (Integer) listBackedPagingResults.getTotalResultCount().getFirst());
     }
 
     public NodeRef validateTag(String tagId)

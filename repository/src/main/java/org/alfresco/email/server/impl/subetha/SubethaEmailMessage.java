@@ -417,28 +417,11 @@ public class SubethaEmailMessage implements EmailMessage
         }
         return fileName;
     }
-
-    public void setRmiRegistry(String rmiRegistryHost, int rmiRegistryPort)
-    {
-        if (body instanceof SubethaEmailMessagePart) 
-        {
-            ((SubethaEmailMessagePart) body).setRmiRegistry(rmiRegistryHost, rmiRegistryPort);
-        }
-        
-        for (EmailMessagePart attachment : attachments)
-        {
-            if (attachment instanceof SubethaEmailMessagePart)
-            {
-                ((SubethaEmailMessagePart) attachment).setRmiRegistry(rmiRegistryHost, rmiRegistryPort);
-            }
-        }
-    }
     
     public List<String> getCC()
     {
         return cc;
     }
-    
     
     public String getFrom()
     {

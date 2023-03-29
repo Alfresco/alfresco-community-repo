@@ -116,72 +116,72 @@ public class HttpClientConfig
     private void checkUnsupportedProperties(Map<String, String> config)
     {
         config.keySet().stream()
-              .filter(propertyName -> !HttpClientProperties.isPropertyNameSupported(propertyName))
+              .filter(propertyName -> !HttpClientPropertiesEnum.isPropertyNameSupported(propertyName))
               .forEach(propertyName -> LOGGER.warn(String.format("For service [%s], an unsupported property [%s] is set", serviceName, propertyName)));
     }
 
-    private Integer getIntegerProperty(HttpClientProperties property)
+    private Integer getIntegerProperty(HttpClientPropertiesEnum property)
     {
         return Integer.parseInt(extractValueFromConfig(property));
     }
 
-    private Boolean getBooleanProperty(HttpClientProperties property)
+    private Boolean getBooleanProperty(HttpClientPropertiesEnum property)
     {
         return Boolean.parseBoolean(extractValueFromConfig(property));
     }
 
-    private String extractValueFromConfig(HttpClientProperties property)
+    private String extractValueFromConfig(HttpClientPropertiesEnum property)
     {
-        String keyValue;
+        String value;
         if(property.isRequired)
         {
-            keyValue = Optional.ofNullable(config.get(property.name)).orElseThrow(() -> {
+            value = Optional.ofNullable(config.get(property.name)).orElseThrow(() -> {
                 String msg = String.format("Required property: '%s' is empty.", property.name);
                 LOGGER.error(msg);
                 throw new HttpClientException(msg);
             });
         } else {
-            keyValue = config.getOrDefault(property.name, "0");
+            value = config.getOrDefault(property.name, "0");
         }
-        return keyValue;
+        return value;
     }
 
     public Integer getConnectionTimeout()
     {
-        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT);
+        return getIntegerProperty(HttpClientPropertiesEnum.CONNECTION_REQUEST_TIMEOUT);
     }
 
     public Integer getSocketTimeout()
     {
-        return getIntegerProperty(HttpClientProperties.SOCKET_TIMEOUT);
+        return getIntegerProperty(HttpClientPropertiesEnum.SOCKET_TIMEOUT);
     }
 
     public Integer getConnectionRequestTimeout()
     {
-        return getIntegerProperty(HttpClientProperties.CONNECTION_REQUEST_TIMEOUT);
+        return getIntegerProperty(HttpClientPropertiesEnum.CONNECTION_REQUEST_TIMEOUT);
     }
 
     public Integer getMaxTotalConnections()
     {
-        return getIntegerProperty(HttpClientProperties.MAX_TOTAL_CONNECTIONS);
+        return getIntegerProperty(HttpClientPropertiesEnum.MAX_TOTAL_CONNECTIONS);
     }
 
     public Integer getMaxHostConnections()
     {
-        return getIntegerProperty(HttpClientProperties.MAX_HOST_CONNECTIONS);
+        return getIntegerProperty(HttpClientPropertiesEnum.MAX_HOST_CONNECTIONS);
     }
 
     public Boolean isMTLSEnabled()
     {
-        return getBooleanProperty(HttpClientProperties.MTLS_ENABLED);
+        return getBooleanProperty(HttpClientPropertiesEnum.MTLS_ENABLED);
     }
 
     public boolean isHostnameVerificationDisabled()
     {
-        return getBooleanProperty(HttpClientProperties.HOSTNAME_VERIFICATION_DISABLED);
+        return getBooleanProperty(HttpClientPropertiesEnum.HOSTNAME_VERIFICATION_DISABLED);
     }
 
-    private enum HttpClientProperties
+    private enum HttpClientPropertiesEnum
     {
         CONNECTION_TIMEOUT("connectionTimeout", true),
         SOCKET_TIMEOUT("socketTimeout", true),
@@ -194,7 +194,7 @@ public class HttpClientConfig
         private final String name;
         private final Boolean isRequired;
 
-        HttpClientProperties(String propertyName, Boolean isRequired)
+        HttpClientPropertiesEnum(String propertyName, Boolean isRequired)
         {
             this.name = propertyName;
             this.isRequired = isRequired;
@@ -203,7 +203,7 @@ public class HttpClientConfig
         private static final List<String> supportedProperties = new ArrayList<>();
 
         static {
-            for (HttpClientProperties property : HttpClientProperties.values()) {
+            for (HttpClientPropertiesEnum property : HttpClientPropertiesEnum.values()) {
                 supportedProperties.add(property.name);
             }
         }

@@ -92,16 +92,8 @@ public class HttpClient4Factory
                     createSSLContext(config),
                     new String[] { TLS_V_1_2, TLS_V_1_3 },
                     null,
-                    SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+                    config.isHostnameVerificationDisabled() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier());
             clientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
-        }
-
-        /**
-         * Allows all hostname if property is set to true.
-         */
-        if(config.isHostnameVerificationDisabled())
-        {
-            clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
         }
 
         if(connectionManager != null)

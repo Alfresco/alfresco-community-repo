@@ -69,6 +69,7 @@ import org.apache.commons.lang3.StringUtils;
 public class CategoriesImpl implements Categories
 {
     static final String INCLUDE_COUNT_PARAM = "count";
+    static final String INCLUDE_PATH_PARAM = "path";
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
@@ -111,6 +112,11 @@ public class CategoriesImpl implements Categories
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }
 
+        if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+        {
+            category.setPath(nodeService.getPath(nodeRef).toDisplayPath(nodeService, permissionService));
+        }
+
         return category;
     }
 
@@ -136,11 +142,18 @@ public class CategoriesImpl implements Categories
     public List<Category> getCategoryChildren(final StoreRef storeRef, final String parentCategoryId, final Parameters parameters)
     {
         final NodeRef parentNodeRef = getCategoryNodeRef(storeRef, parentCategoryId);
-        final List<Category> categories = nodeService.getChildAssocs(parentNodeRef).stream()
-            .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
-            .map(ChildAssociationRef::getChildRef)
-            .map(this::mapToCategory)
-            .collect(Collectors.toList());
+        final List<Category> categories = nodeService.getChildAssocs(parentNodeRef)
+                .stream()
+                .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
+                .map(ChildAssociationRef::getChildRef)
+                .map(this::mapToCategory)
+                .peek(category -> {
+                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    {
+                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                    }
+                })
+                .collect(Collectors.toList());
 
         if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
         {
@@ -200,7 +213,16 @@ public class CategoriesImpl implements Categories
         }
         final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
 
-        return actualCategories.stream().map(this::mapToCategory).collect(Collectors.toList());
+        return actualCategories
+                .stream()
+                .map(this::mapToCategory)
+                .peek(category -> {
+                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    {
+                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

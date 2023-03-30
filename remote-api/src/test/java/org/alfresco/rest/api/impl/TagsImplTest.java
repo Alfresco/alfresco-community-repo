@@ -129,7 +129,7 @@ public class TagsImplTest
 
         then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull(), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
-        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream().peek(tag -> tag.setCount(0)).collect(toList());
+        final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME));
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -148,6 +148,30 @@ public class TagsImplTest
         final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream()
             .peek(tag -> tag.setCount(0))
             .collect(toList());
+        assertEquals(expectedTags, actualTags.getCollection());
+    }
+
+    /** Check that we can get counts for two tags - one in use and one not applied to any nodes. */
+    @Test
+    public void testGetTags_verifyCountPopulatedCorrectly()
+    {
+        NodeRef tagNodeA = new NodeRef("tag://A/");
+        NodeRef tagNodeB = new NodeRef("tag://B/");
+        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "tagA"), new Pair<>(tagNodeB, "tagB"));
+
+        given(parametersMock.getPaging()).willReturn(pagingMock);
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
+        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
+        given(pagingResultsMock.getPage()).willReturn(tagPairs);
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
+        // Only tagA is included in the returned list since tagB is not in use.
+        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("tagA", 5)));
+
+        final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
+
+        then(taggingServiceMock).should().findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE);
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("tagA").nodeRef(tagNodeA).count(5).create(),
+                                               Tag.builder().tag("tagB").nodeRef(tagNodeB).count(0).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -422,16 +446,21 @@ public class TagsImplTest
     @Test
     public void testAddTags()
     {
+        NodeRef tagNodeA = new NodeRef("tag://A/");
+        NodeRef tagNodeB = new NodeRef("tag://B/");
         given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(typeConstraintMock.matches(CONTENT_NODE_REF)).willReturn(true);
         List<Pair<String, NodeRef>> pairs = List.of(new Pair<>("tagA", new NodeRef("tag://A/")), new Pair<>("tagB", new NodeRef("tag://B/")));
         List<String> tagNames = pairs.stream().map(Pair::getFirst).collect(toList());
         List<Tag> tags = tagNames.stream().map(name -> Tag.builder().tag(name).create()).collect(toList());
         given(taggingServiceMock.addTags(CONTENT_NODE_REF, tagNames)).willReturn(pairs);
+        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("tagA", 4)));
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
 
-        List<Tag> actual = objectUnderTest.addTags(CONTENT_NODE_ID, tags);
+        List<Tag> actual = objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
 
-        List<Tag> expected = pairs.stream().map(pair -> new Tag(pair.getSecond(), pair.getFirst())).collect(toList());
+        final List<Tag> expected = List.of(Tag.builder().tag("tagA").nodeRef(tagNodeA).count(5).create(),
+                Tag.builder().tag("tagB").nodeRef(tagNodeB).count(1).create());
         assertEquals("Unexpected tags returned.", expected, actual);
     }
 
@@ -441,7 +470,7 @@ public class TagsImplTest
         given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willThrow(new InvalidArgumentException());
         List<Tag> tags = List.of(Tag.builder().tag("tag1").create());
 
-        objectUnderTest.addTags(CONTENT_NODE_ID, tags);
+        objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
     }
 
     @Test(expected = UnsupportedResourceOperationException.class)
@@ -452,7 +481,7 @@ public class TagsImplTest
 
         List<Tag> tags = List.of(Tag.builder().tag("tag1").create());
 
-        objectUnderTest.addTags(CONTENT_NODE_ID, tags);
+        objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
     }
 
     @Test

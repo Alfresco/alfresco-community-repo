@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>20.119-SNAPSHOT</version>
+    <version>20.125-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -52,8 +52,8 @@
         <dependency.alfresco-messaging-repo.version>1.2.20</dependency.alfresco-messaging-repo.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>2.0.0</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>3.0.0</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>2.1.0-A2</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>3.1.0-A2</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.5</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.18</dependency.acs-event-model.version>
 
@@ -62,7 +62,7 @@
         <dependency.jackson.version>2.15.0-rc1</dependency.jackson.version>
         <dependency.cxf.version>3.5.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.38</dependency.webscripts.version>
+        <dependency.webscripts.version>8.40</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.9.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>

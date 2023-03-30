@@ -25,16 +25,18 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.sync.UserRegistrySynchronizer;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -88,9 +90,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test (expected=AuthenticationException.class)
     public void testAuthenticationFail()
     {
-        doThrow(new CredentialsVerificationException("Failed"))
-                .when(mockIdentityServiceFacade)
-                .verifyCredentials("username", "password");
+        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+
+        doThrow(new AuthorizationException("Failed")).when(mockIdentityServiceFacade).authorize(grant);
 
         authComponent.authenticateImpl("username", "password".toCharArray());
     }
@@ -98,9 +100,10 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test(expected = AuthenticationException.class)
     public void testAuthenticationFail_connectionException()
     {
-        doThrow(new CredentialsVerificationException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
-                .when(mockIdentityServiceFacade)
-                .verifyCredentials("username", "password");
+        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+
+        doThrow(new AuthorizationException("Couldn't connect to server", new ConnectException("ConnectionRefused")))
+                .when(mockIdentityServiceFacade).authorize(grant);
 
         try
         {
@@ -117,9 +120,11 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test (expected=AuthenticationException.class)
     public void testAuthenticationFail_otherException()
     {
+        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+
         doThrow(new RuntimeException("Some other errors!"))
                 .when(mockIdentityServiceFacade)
-                .verifyCredentials("username", "password");
+                .authorize(grant);
 
         authComponent.authenticateImpl("username", "password".toCharArray());
     }
@@ -127,7 +132,10 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Test
     public void testAuthenticationPass()
     {
-        doNothing().when(mockIdentityServiceFacade).verifyCredentials("username", "password");
+        final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
+        AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
+
+        when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 

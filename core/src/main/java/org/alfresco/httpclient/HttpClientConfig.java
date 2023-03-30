@@ -136,7 +136,6 @@ public class HttpClientConfig
         if(property.isRequired && optionalProperty.isEmpty())
         {
             String msg = String.format("Required property: '%s' is empty.", property.name);
-            LOGGER.error(msg);
             throw new HttpClientException(msg);
         }
         return optionalProperty;

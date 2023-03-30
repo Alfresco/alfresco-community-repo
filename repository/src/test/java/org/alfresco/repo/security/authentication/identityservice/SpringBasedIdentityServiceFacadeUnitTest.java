@@ -30,12 +30,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.CredentialsVerificationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.SpringBasedIdentityServiceFacade;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
 import org.junit.Test;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.web.client.RestOperations;
 
 public class SpringBasedIdentityServiceFacadeUnitTest
 {
@@ -46,28 +48,37 @@ public class SpringBasedIdentityServiceFacadeUnitTest
     @Test
     public void shouldThrowVerificationExceptionOnFailure()
     {
-        final OAuth2AuthorizedClientManager authClientManager = mock(OAuth2AuthorizedClientManager.class);
+        final RestOperations restOperations = mock(RestOperations.class);
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
-        when(authClientManager.authorize(any())).thenThrow(new RuntimeException("Expected"));
+        when(restOperations.exchange(any(), any(Class.class))).thenThrow(new RuntimeException("Expected"));
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(authClientManager, jwtDecoder);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
 
-        assertThatExceptionOfType(CredentialsVerificationException.class)
-                .isThrownBy(() -> facade.verifyCredentials(USER_NAME, PASSWORD))
+        assertThatExceptionOfType(AuthorizationException.class)
+                .isThrownBy(() -> facade.authorize(AuthorizationGrant.password(USER_NAME, PASSWORD)))
                 .havingCause().withNoCause().withMessage("Expected");
     }
 
     @Test
     public void shouldThrowTokenExceptionOnFailure()
     {
-        final OAuth2AuthorizedClientManager authClientManager = mock(OAuth2AuthorizedClientManager.class);
+        final RestOperations restOperations = mock(RestOperations.class);
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
         when(jwtDecoder.decode(TOKEN)).thenThrow(new RuntimeException("Expected"));
 
-        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(authClientManager, jwtDecoder);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
 
-        assertThatExceptionOfType(TokenException.class)
-                .isThrownBy(() -> facade.extractUsernameFromToken(TOKEN))
+        assertThatExceptionOfType(TokenDecodingException.class)
+                .isThrownBy(() -> facade.decodeToken(TOKEN))
                 .havingCause().withNoCause().withMessage("Expected");
+    }
+
+    private ClientRegistration testRegistration()
+    {
+        return ClientRegistration.withRegistrationId("test")
+                                 .tokenUri("http://localhost")
+                                 .clientId("test")
+                                 .authorizationGrantType(AuthorizationGrantType.PASSWORD)
+                                 .build();
     }
 }

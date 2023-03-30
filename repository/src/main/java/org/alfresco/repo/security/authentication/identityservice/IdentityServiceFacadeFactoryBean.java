@@ -32,9 +32,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
@@ -43,28 +41,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizationContext;
-import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder.PasswordGrantBuilder;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.endpoint.DefaultPasswordTokenResponseClient;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -137,15 +121,15 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
 
         @Override
-        public void verifyCredentials(String username, String password)
+        public AccessTokenAuthorization authorize(AuthorizationGrant grant) throws AuthorizationException
         {
-            getTargetFacade().verifyCredentials(username, password);
+            return getTargetFacade().authorize(grant);
         }
 
         @Override
-        public Optional<String> extractUsernameFromToken(String token)
+        public DecodedAccessToken decodeToken(String token) throws TokenDecodingException
         {
-            return getTargetFacade().extractUsernameFromToken(token);
+            return getTargetFacade().decodeToken(token);
         }
 
         private IdentityServiceFacade getTargetFacade()
@@ -188,15 +172,12 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             //Here we preserve the behaviour of previously used Keycloak Adapter
             // * Client is authenticating itself using basic auth
             // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
-            // * There is no caching of authenticated clients (NoStoredAuthorizedClient)
-            // * There is only one Authorization Server/Client pair (SingleClientRegistration)
 
             final RestTemplate restTemplate = createRestTemplate();
-            final ClientRegistration clientRegistration = createClientRegistration(restTemplate);
-            final OAuth2AuthorizedClientManager clientManager = createAuthorizedClientManager(restTemplate, clientRegistration);
+            final ClientRegistration clientRegistration = createClientRegistration();
             final JwtDecoder jwtDecoder = createJwtDecoder(clientRegistration);
 
-            return new SpringBasedIdentityServiceFacade(clientManager, jwtDecoder);
+            return new SpringBasedIdentityServiceFacade(restTemplate, clientRegistration, jwtDecoder);
         }
 
         private RestTemplate createRestTemplate()
@@ -212,7 +193,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             return restTemplate;
         }
 
-        private ClientRegistration createClientRegistration(RestTemplate restTemplate)
+        private ClientRegistration createClientRegistration()
         {
             try
             {
@@ -222,7 +203,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                         .clientSecret(config.getClientSecret())
                         .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                         .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                        .registrationId(SpringBasedIdentityServiceFacade.CLIENT_REGISTRATION_ID)
+                        .registrationId("ids")
                         .build();
             }
             catch (RuntimeException e)
@@ -230,28 +211,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 LOGGER.warn("Failed to create ClientRegistration.", e);
                 throw authorizationServerCantBeUsedException(e);
             }
-        }
-
-        private OAuth2AuthorizedClientManager createAuthorizedClientManager(RestTemplate restTemplate, ClientRegistration clientRegistration)
-        {
-            final AuthorizedClientServiceOAuth2AuthorizedClientManager manager =
-                    new AuthorizedClientServiceOAuth2AuthorizedClientManager(
-                            new SingleClientRegistration(clientRegistration),
-                            new NoStoredAuthorizedClient());
-
-            final Consumer<PasswordGrantBuilder> passwordGrantConfigurer = b -> {
-                final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
-                client.setRestOperations(restTemplate);
-                b.accessTokenResponseClient(client);
-
-                b.clockSkew(Duration.of(CLOCK_SKEW_MS, ChronoUnit.MILLIS));
-            };
-            manager.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder()
-                                                                                     .password(passwordGrantConfigurer)
-                                                                                     .build());
-            manager.setContextAttributesMapper(OAuth2AuthorizeRequest::getAttributes);
-
-            return manager;
         }
 
         private JwtDecoder createJwtDecoder(ClientRegistration clientRegistration)
@@ -273,116 +232,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 LOGGER.warn("Failed to create JwtDecoder.", e);
                 throw authorizationServerCantBeUsedException(e);
             }
-        }
-
-        private static class NoStoredAuthorizedClient implements OAuth2AuthorizedClientService
-        {
-
-            @Override
-            public <T extends OAuth2AuthorizedClient> T loadAuthorizedClient(String clientRegistrationId, String principalName)
-            {
-                return null;
-            }
-
-            @Override
-            public void saveAuthorizedClient(OAuth2AuthorizedClient authorizedClient, Authentication principal)
-            {
-                //do nothing
-            }
-
-            @Override
-            public void removeAuthorizedClient(String clientRegistrationId, String principalName)
-            {
-                //do nothing
-            }
-        }
-
-        private static class SingleClientRegistration implements ClientRegistrationRepository
-        {
-            private final ClientRegistration clientRegistration;
-
-            private SingleClientRegistration(ClientRegistration clientRegistration)
-            {
-                this.clientRegistration = requireNonNull(clientRegistration);
-            }
-
-            @Override
-            public ClientRegistration findByRegistrationId(String registrationId)
-            {
-                return Objects.equals(registrationId, clientRegistration.getRegistrationId()) ? clientRegistration : null;
-            }
-        }
-    }
-
-    static class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
-    {
-        static final String CLIENT_REGISTRATION_ID = "ids";
-        private final OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager;
-        private JwtDecoder jwtDecoder;
-
-        SpringBasedIdentityServiceFacade(OAuth2AuthorizedClientManager oAuth2AuthorizedClientManager, JwtDecoder jwtDecoder)
-        {
-            this.oAuth2AuthorizedClientManager = requireNonNull(oAuth2AuthorizedClientManager);
-            this.jwtDecoder = requireNonNull(jwtDecoder);
-        }
-
-        @Override
-        public void verifyCredentials(String username, String password)
-        {
-            final OAuth2AuthorizedClient authorizedClient;
-            try
-            {
-                final OAuth2AuthorizeRequest authRequest = createPasswordCredentialsRequest(username, password);
-                authorizedClient = oAuth2AuthorizedClientManager.authorize(authRequest);
-            }
-            catch (OAuth2AuthorizationException e)
-            {
-                LOGGER.debug("Failed to authorize against Authorization Server. Reason: " + e.getError() + ".");
-                throw new CredentialsVerificationException("Authorization against the Authorization Server failed with " + e.getError() + ".", e);
-            }
-            catch (RuntimeException e)
-            {
-                LOGGER.warn("Failed to authorize against Authorization Server. Reason: " + e.getMessage());
-                throw new CredentialsVerificationException("Failed to authorize against Authorization Server.", e);
-            }
-
-            if (authorizedClient == null || authorizedClient.getAccessToken() == null)
-            {
-                throw new CredentialsVerificationException("Resource Owner Password Credentials is not supported by the Authorization Server.");
-            }
-        }
-
-        @Override
-        public Optional<String> extractUsernameFromToken(String token)
-        {
-            final Jwt validToken;
-            try
-            {
-                 validToken = jwtDecoder.decode(requireNonNull(token));
-            }
-            catch (RuntimeException e)
-            {
-                throw new TokenException("Failed to decode token. " + e.getMessage(), e);
-            }
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Bearer token outcome: " + validToken);
-            }
-            return Optional.ofNullable(validToken)
-                           .map(Jwt::getClaims)
-                           .map(c -> c.get("preferred_username"))
-                           .filter(String.class::isInstance)
-                           .map(String.class::cast);
-        }
-
-        private OAuth2AuthorizeRequest createPasswordCredentialsRequest(String userName, String password)
-        {
-            return OAuth2AuthorizeRequest
-                    .withClientRegistrationId(CLIENT_REGISTRATION_ID)
-                    .principal(userName)
-                    .attribute(OAuth2AuthorizationContext.USERNAME_ATTRIBUTE_NAME, userName)
-                    .attribute(OAuth2AuthorizationContext.PASSWORD_ATTRIBUTE_NAME, password)
-                    .build();
         }
     }
 }

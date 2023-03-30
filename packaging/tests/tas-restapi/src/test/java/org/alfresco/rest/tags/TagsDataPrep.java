@@ -1,5 +1,7 @@
 package org.alfresco.rest.tags;
 
+import java.util.List;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestTagModel;
@@ -52,8 +54,9 @@ public class TagsDataPrep extends RestTest
         // Allow indexing to complete.
         Utility.sleep(500, 60000, () ->
         {
-            returnedCollection = restClient.withParams("maxItems=10000", "where=(tag MATCHES ('*tag*'))")
-                .withCoreAPI().getTags();
+            List<String> tags = List.of(documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase());
+            returnedCollection = restClient.withParams("maxItems=10000", "where=(tag in ('" + String.join("', '", tags) + "'))")
+                                           .withCoreAPI().getTags();
             returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
                               .and().entriesListContains("tag", documentTagValue2.toLowerCase())
                               .and().entriesListContains("tag", folderTagValue.toLowerCase());

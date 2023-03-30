@@ -96,6 +96,7 @@ import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -526,9 +527,9 @@ public class TaggingServiceImpl implements TaggingService,
     		throw new TaggingException("Existing tag cannot be null");
     	}
     	
-    	if (newTag == null)
+    	if (newTag == null || StringUtils.isBlank(newTag))
     	{
-    		throw new TaggingException("New tag cannot be null");
+    		throw new TaggingException("New tag cannot be blank");
     	}
 
     	existingTag = existingTag.toLowerCase();

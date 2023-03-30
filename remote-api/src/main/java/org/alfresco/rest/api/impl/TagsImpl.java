@@ -214,7 +214,7 @@ public class TagsImpl implements Tags
     	{
 	    	NodeRef existingTagNodeRef = validateTag(storeRef, tagId);
 	    	String existingTagName = taggingService.getTagName(existingTagNodeRef);
-	    	String newTagName = tag.getTag().toLowerCase();
+	    	String newTagName = tag.getTag();
 	    	NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
 	    	return new Tag(newTagNodeRef, newTagName);
     	}

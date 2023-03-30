@@ -157,21 +157,21 @@ public class TagsImplTest
     {
         NodeRef tagNodeA = new NodeRef("tag://A/");
         NodeRef tagNodeB = new NodeRef("tag://B/");
-        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "tagA"), new Pair<>(tagNodeB, "tagB"));
+        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "taga"), new Pair<>(tagNodeB, "tagb"));
 
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
         given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
         given(pagingResultsMock.getPage()).willReturn(tagPairs);
         given(parametersMock.getInclude()).willReturn(List.of("count"));
-        // Only tagA is included in the returned list since tagB is not in use.
-        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("tagA", 5)));
+        // Only taga is included in the returned list since tagb is not in use.
+        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("taga", 5)));
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         then(taggingServiceMock).should().findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE);
-        final List<Tag> expectedTags = List.of(Tag.builder().tag("tagA").nodeRef(tagNodeA).count(5).create(),
-                                               Tag.builder().tag("tagB").nodeRef(tagNodeB).count(0).create());
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5).create(),
+                                               Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -450,17 +450,17 @@ public class TagsImplTest
         NodeRef tagNodeB = new NodeRef("tag://B/");
         given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(typeConstraintMock.matches(CONTENT_NODE_REF)).willReturn(true);
-        List<Pair<String, NodeRef>> pairs = List.of(new Pair<>("tagA", new NodeRef("tag://A/")), new Pair<>("tagB", new NodeRef("tag://B/")));
+        List<Pair<String, NodeRef>> pairs = List.of(new Pair<>("taga", new NodeRef("tag://A/")), new Pair<>("tagb", new NodeRef("tag://B/")));
         List<String> tagNames = pairs.stream().map(Pair::getFirst).collect(toList());
         List<Tag> tags = tagNames.stream().map(name -> Tag.builder().tag(name).create()).collect(toList());
         given(taggingServiceMock.addTags(CONTENT_NODE_REF, tagNames)).willReturn(pairs);
-        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("tagA", 4)));
+        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("taga", 4)));
         given(parametersMock.getInclude()).willReturn(List.of("count"));
 
         List<Tag> actual = objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
 
-        final List<Tag> expected = List.of(Tag.builder().tag("tagA").nodeRef(tagNodeA).count(5).create(),
-                Tag.builder().tag("tagB").nodeRef(tagNodeB).count(1).create());
+        final List<Tag> expected = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5).create(),
+                Tag.builder().tag("tagb").nodeRef(tagNodeB).count(1).create());
         assertEquals("Unexpected tags returned.", expected, actual);
     }
 
@@ -489,7 +489,7 @@ public class TagsImplTest
     {
         given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willReturn(CONTENT_NODE_REF);
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        List<Pair<NodeRef, String>> pairs = List.of(new Pair<>(new NodeRef("tag://A/"), "tagA"), new Pair<>(new NodeRef("tag://B/"), "tagB"));
+        List<Pair<NodeRef, String>> pairs = List.of(new Pair<>(new NodeRef("tag://A/"), "taga"), new Pair<>(new NodeRef("tag://B/"), "tagb"));
         given(taggingServiceMock.getTags(eq(CONTENT_NODE_REF), any(PagingRequest.class))).willReturn(pagingResultsMock);
         given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(null, null));
         given(pagingResultsMock.getPage()).willReturn(pairs);

@@ -122,28 +122,24 @@ public class HttpClientConfig
 
     private Integer getIntegerProperty(HttpClientPropertiesEnum property)
     {
-        return Integer.parseInt(extractValueFromConfig(property));
+        return Integer.parseInt(extractValueFromConfig(property).orElse("0"));
     }
 
     private Boolean getBooleanProperty(HttpClientPropertiesEnum property)
     {
-        return Boolean.parseBoolean(extractValueFromConfig(property));
+        return Boolean.parseBoolean(extractValueFromConfig(property).orElse("false"));
     }
 
-    private String extractValueFromConfig(HttpClientPropertiesEnum property)
+    private Optional<String> extractValueFromConfig(HttpClientPropertiesEnum property)
     {
-        String value;
-        if(property.isRequired)
+        Optional<String> optionalProperty = Optional.ofNullable(config.get(property.name));
+        if(property.isRequired && optionalProperty.isEmpty())
         {
-            value = Optional.ofNullable(config.get(property.name)).orElseThrow(() -> {
-                String msg = String.format("Required property: '%s' is empty.", property.name);
-                LOGGER.error(msg);
-                throw new HttpClientException(msg);
-            });
-        } else {
-            value = config.getOrDefault(property.name, "0");
+            String msg = String.format("Required property: '%s' is empty.", property.name);
+            LOGGER.error(msg);
+            throw new HttpClientException(msg);
         }
-        return value;
+        return optionalProperty;
     }
 
     public Integer getConnectionTimeout()

@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.tagging;
 
+import static java.util.Collections.emptyMap;
+
 import static org.alfresco.model.ContentModel.ASSOC_SUBCATEGORIES;
 import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
@@ -46,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,7 @@ import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
+import org.alfresco.repo.event2.EventGenerator;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
@@ -127,18 +129,19 @@ public class TaggingServiceImpl implements TaggingService,
     private NamespaceService namespaceService;
     private PolicyComponent policyComponent;
     private AuditComponent auditComponent;
-    
+    private EventGenerator eventGenerator;
+
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
     /** Next tag delimiter */
     private static final String NEXT_TAG_DELIMITER = "\n";
-    
+
     private static Set<String> FORBIDDEN_TAGS_SEQUENCES = new HashSet<String>(Arrays.asList(new String[] {NEXT_TAG_DELIMITER, TAG_DETAILS_DELIMITER}));
-    
+
     /** Policy behaviour */
     private JavaBehaviour updateTagBehaviour;
     private JavaBehaviour createTagBehaviour;
-    
+
     /**
      * Set the cateogry service
      */
@@ -210,7 +213,16 @@ public class TaggingServiceImpl implements TaggingService,
     {
         this.auditComponent = auditComponent;
     }
-    
+
+    /**
+     * Set the event generator.
+     * @param eventGenerator
+     */
+    public void setEventGenerator(EventGenerator eventGenerator)
+    {
+        this.eventGenerator = eventGenerator;
+    }
+
     /**
      * Init method
      */
@@ -541,15 +553,13 @@ public class TaggingServiceImpl implements TaggingService,
         nodeService.setProperty(tagNodeRef, PROP_NAME, newTag);
         nodeService.moveNode(tagNodeRef, TAG_ROOT_NODE_REF, ASSOC_SUBCATEGORIES, QName.createQName(CONTENT_MODEL_1_0_URI, newTag));
 
-        // Use a fake tag to raise events on all tagged nodes and also fix the tag scopes.
+        // Raise events on all tagged nodes and also fix the tag scopes.
         List<NodeRef> taggedNodes = findTaggedNodes(storeRef, existingTag);
-        String dummyTag = UUID.randomUUID().toString().toLowerCase();
         for (NodeRef nodeRef : taggedNodes)
         {
-            addTag(nodeRef, dummyTag);
-            updateTagScope(nodeRef, Map.of(existingTag, false, newTag, true, dummyTag, false));
+            eventGenerator.onUpdateProperties(nodeRef, emptyMap(), nodeService.getProperties(nodeRef));
+            updateTagScope(nodeRef, Map.of(existingTag, false, newTag, true));
         }
-        deleteTag(storeRef, dummyTag);
 
         return tagNodeRef;
     }

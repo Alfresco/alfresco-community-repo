@@ -44,6 +44,7 @@
         <property name="namespaceService" ref="NamespaceService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="auditComponent" ref="auditComponent"/>
+        <property name="eventGenerator" ref="eventGeneratorV2"/>
     </bean>
     
     <bean id="update-tagscope" class="org.alfresco.repo.tagging.UpdateTagScopesActionExecuter" parent="action-executer">

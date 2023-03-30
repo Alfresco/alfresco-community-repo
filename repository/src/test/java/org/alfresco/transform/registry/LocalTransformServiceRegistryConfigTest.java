@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,6 +26,12 @@
 package org.alfresco.transform.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.alfresco.encryption.KeyResourceLoader;
+import org.alfresco.encryption.ssl.SSLEncryptionParameters;
+import org.alfresco.httpclient.GetRequest;
+import org.alfresco.httpclient.HttpClient4Factory;
+import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractLocalTransform;
 import org.alfresco.repo.content.transform.LocalPipelineTransform;
@@ -38,15 +44,23 @@ import org.alfresco.transform.config.TransformOption;
 import org.alfresco.transform.config.TransformOptionGroup;
 import org.alfresco.transform.config.TransformOptionValue;
 import org.alfresco.transform.config.Transformer;
+import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.quartz.CronExpression;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -265,7 +279,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
      */
     private void retrieveLocalTransformList(String path)
     {
-        CombinedConfig combinedConfig = new CombinedConfig(log, registry);
+        CombinedConfig combinedConfig = new CombinedConfig(log, registry, registry.getHttpClientConfig());
         combinedConfig.addLocalConfig(path);
         combinedConfig.register(registry);
 
@@ -388,7 +402,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
 
     private void register(String path) throws IOException
     {
-        CombinedConfig combinedConfig = new CombinedConfig(log, registry);
+        CombinedConfig combinedConfig = new CombinedConfig(log, registry, registry.getHttpClientConfig());
         combinedConfig.addLocalConfig(path);
         combinedConfig.register((TransformServiceRegistryImpl)registry);
     }
@@ -928,4 +942,5 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
                 -1,"image/png", Collections.emptyMap(), null);
         assertNotNull("Should supported csv to png", pipelineTransform);
     }
+
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 - 2022 Alfresco Software Limited
+ * Copyright (C) 2019 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,6 +35,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.alfresco.httpclient.HttpClient4Factory;
+import org.alfresco.httpclient.HttpClientConfig;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.transform.config.TransformOptionGroup;
@@ -77,6 +79,17 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     private boolean strictMimeTypeCheck;
     private Map<String, Set<String>> strictMimetypeExceptions;
     private boolean retryTransformOnDifferentMimeType;
+    private HttpClientConfig httpClientConfig;
+
+    public HttpClientConfig getHttpClientConfig()
+    {
+        return httpClientConfig;
+    }
+
+    public void setHttpClientConfig(HttpClientConfig httpClientConfig)
+    {
+        this.httpClientConfig = httpClientConfig;
+    }
 
     public void setPipelineConfigDir(String pipelineConfigDir)
     {
@@ -134,7 +147,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     @Override
     public boolean readConfig() throws IOException
     {
-        CombinedConfig combinedConfig = new CombinedConfig(getLog(), this);
+        CombinedConfig combinedConfig = new CombinedConfig(getLog(), this, httpClientConfig);
         List<String> urls = getTEngineUrlsSortedByName();
         boolean successReadingConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
         successReadingConfig &= combinedConfig.addLocalConfig("alfresco/transforms");
@@ -188,7 +201,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
                 int startupRetryPeriodSeconds = getStartupRetryPeriodSeconds(name);
                 localTransform = new LocalTransformImpl(name, transformerDebug, mimetypeService,
                          strictMimeTypeCheck, strictMimetypeExceptions, retryTransformOnDifferentMimeType,
-                        transformsTransformOptions, this, baseUrl, startupRetryPeriodSeconds);
+                        transformsTransformOptions, this, baseUrl, httpClientConfig,
+                        startupRetryPeriodSeconds);
             }
             else if (isPipeline)
             {

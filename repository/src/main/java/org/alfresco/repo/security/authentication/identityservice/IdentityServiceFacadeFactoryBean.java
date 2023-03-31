@@ -82,7 +82,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     public IdentityServiceFacade getObject() throws Exception
     {
         // The creation of the client can be disabled for testing or when the username/password authentication is not required,
-        // for instance when Keycloak is configured for 'bearer only' authentication or Direct Access Grants are disabled.
+        // for instance when Identity Service is configured for 'bearer only' authentication or Direct Access Grants are disabled.
         if (!enabled)
         {
             return null;

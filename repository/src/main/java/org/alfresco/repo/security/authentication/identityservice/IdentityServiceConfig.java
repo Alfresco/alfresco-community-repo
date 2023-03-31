@@ -25,14 +25,9 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.keycloak.representations.adapters.config.AdapterConfig;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -41,19 +36,21 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Gavin Cornwell
  */
-public class IdentityServiceConfig extends AdapterConfig implements InitializingBean
+public class IdentityServiceConfig implements InitializingBean
 {
-    private static final Log LOGGER = LogFactory.getLog(IdentityServiceConfig.class);
     private static final String REALMS = "realms";
-    private static final String SECRET = "secret";
     private static final String CREDENTIALS_SECRET = "identity-service.credentials.secret";
-    private static final String CREDENTIALS_PROVIDER = "identity-service.credentials.provider";
     
     private Properties globalProperties;
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
-    
+    // client id
+    private String resource;
+    private String clientSecret;
+    private String authServerUrl;
+    private String realm;
+
     public void setGlobalProperties(Properties globalProperties)
     {
         this.globalProperties = globalProperties;
@@ -98,48 +95,50 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        // programmatically build the more complex objects i.e. credentials
-        Map<String, Object> credentials = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        
-        String secret = this.globalProperties.getProperty(CREDENTIALS_SECRET);
-        if (secret != null && !secret.isEmpty())
-        {
-            credentials.put(SECRET, secret);
-        }
-        
-        String provider = this.globalProperties.getProperty(CREDENTIALS_PROVIDER);
-        if (provider != null && !provider.isEmpty())
-        {
-            credentials.put("provider", provider);
-        }
-        
-        // TODO: add support for redirect-rewrite-rules and policy-enforcer if and when we need to support it
-        
-        if (!credentials.isEmpty())
-        {
-            this.setCredentials(credentials);
-            
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Created credentials map from config: " + credentials);
-            }
-        }
+        clientSecret = this.globalProperties.getProperty(CREDENTIALS_SECRET);
     }
 
-    String getIssuerUrl()
+    public String getAuthServerUrl()
     {
-        return UriComponentsBuilder.fromUriString(getAuthServerUrl())
-                            .pathSegment(REALMS, getRealm())
-                            .build()
-                            .toString();
+        return authServerUrl;
+    }
+
+    public void setAuthServerUrl(String authServerUrl)
+    {
+        this.authServerUrl = authServerUrl;
+    }
+
+    public String getRealm()
+    {
+        return realm;
+    }
+
+    public void setRealm(String realm)
+    {
+        this.realm = realm;
+    }
+
+    public String getResource()
+    {
+        return resource;
+    }
+
+    public void setResource(String resource)
+    {
+        this.resource = resource;
     }
 
     public String getClientSecret()
     {
-        return Optional.ofNullable(getCredentials())
-                .map(c -> c.get(SECRET))
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .orElse("");
+        return Optional.ofNullable(clientSecret)
+                       .orElse("");
+    }
+
+    public String getIssuerUrl()
+    {
+        return UriComponentsBuilder.fromUriString(getAuthServerUrl())
+                                   .pathSegment(REALMS, getRealm())
+                                   .build()
+                                   .toString();
     }
 }

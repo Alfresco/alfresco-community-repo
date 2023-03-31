@@ -483,6 +483,24 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 transformDefinition, transformContentHashCode);
     }
 
+    private boolean isSameRendition(NodeRef sourceNodeRef, String renditionName, int transformContentHashCode)
+    {
+        int currentRenditionNodeHashCode;
+
+        try
+        {
+            NodeRef renditionNode = getRenditionNode(sourceNodeRef, renditionName);
+            currentRenditionNodeHashCode = Integer
+                    .valueOf(nodeService.getProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE).toString());
+        }
+        catch (Exception e)
+        {
+            currentRenditionNodeHashCode = -3;
+        }
+
+        return currentRenditionNodeHashCode == transformContentHashCode;
+    }
+
     /**
      *  Takes a transformation (InputStream) and attaches it as a rendition to the source node.
      *  Does nothing if there is already a newer rendition.
@@ -492,12 +510,18 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                   RenditionDefinition2 renditionDefinition, int transformContentHashCode)
     {
         String renditionName = renditionDefinition.getRenditionName();
+
         if (transformContentHashCode != sourceContentHashCode)
         {
             if (logger.isDebugEnabled())
             {
                 logger.debug("Ignore transform for rendition " + renditionName + " on " + sourceNodeRef + " as it is no longer needed");
             }
+        }
+        else if (isSameRendition(sourceNodeRef, renditionName, transformContentHashCode))
+        {
+            logger.debug("Ignore transform for rendition " + renditionName + " on " + sourceNodeRef
+                    + " as it is the same as the existing one");
         }
         else
         {
@@ -515,6 +539,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                         boolean createRenditionNode = renditionNode == null;
                         boolean sourceHasAspectRenditioned = nodeService.hasAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED);
                         boolean sourceChanges = !sourceHasAspectRenditioned || createRenditionNode || transformInputStream == null;
+
                         try
                         {
                             if (sourceChanges)

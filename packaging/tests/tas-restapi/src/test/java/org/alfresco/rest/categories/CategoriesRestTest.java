@@ -46,6 +46,7 @@ import org.testng.annotations.BeforeClass;
 abstract class CategoriesRestTest extends RestTest
 {
     protected static final String INCLUDE_COUNT_PARAM = "count";
+    protected static final String INCLUDE_PATH_PARAM = "path";
     protected static final String ROOT_CATEGORY_ID = "-root-";
     protected static final String CATEGORY_NAME_PREFIX = "CategoryName";
     protected static final String FIELD_NAME = "name";
@@ -53,6 +54,7 @@ abstract class CategoriesRestTest extends RestTest
     protected static final String FIELD_PARENT_ID = "parentId";
     protected static final String FIELD_HAS_CHILDREN = "hasChildren";
     protected static final String FIELD_COUNT = "count";
+    protected static final String FIELD_PATH = "path";
 
     protected UserModel user;
 

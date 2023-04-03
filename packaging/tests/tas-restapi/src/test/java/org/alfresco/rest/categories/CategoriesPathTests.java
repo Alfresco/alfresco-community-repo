@@ -48,6 +48,7 @@ public class CategoriesPathTests extends CategoriesRestTest
 {
     private FileModel file;
     private RestCategoryModel category;
+    private RestCategoryModel anotherCategory;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
@@ -60,6 +61,7 @@ public class CategoriesPathTests extends CategoriesRestTest
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         file = dataContent.usingUser(user).usingResource(folder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         category = prepareCategoryUnderRoot();
+        anotherCategory = prepareCategoryUnderRoot();
 
         STEP("Wait for indexing to complete");
         Utility.sleep(1000, 60000, () -> restClient.authenticateUser(user)
@@ -98,7 +100,6 @@ public class CategoriesPathTests extends CategoriesRestTest
     {
         STEP("Get few categories and verify its paths");
         final RestCategoryModel parentCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
-        final anotherCategory = prepareCategoryUnderRoot();
         final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)
                 .withCoreAPI()
                 .usingCategory(parentCategory)

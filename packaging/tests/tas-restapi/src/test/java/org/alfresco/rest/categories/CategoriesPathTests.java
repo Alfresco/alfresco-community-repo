@@ -109,7 +109,7 @@ public class CategoriesPathTests extends CategoriesRestTest
         restClient.assertStatusCodeIs(OK);
         assertTrue(actualCategories.getEntries().stream()
                 .map(RestCategoryModel::onModel)
-                .anyMatch(category -> category.getId().equals(category.getId()) && category.getPath().equals("")));
+                .allMatch(cat -> cat.getPath().equals("/categories/General")));
     }
 
     /**

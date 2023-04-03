@@ -28,6 +28,7 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PATH_ROOT;
 import static org.alfresco.rest.api.impl.CategoriesImpl.INCLUDE_COUNT_PARAM;
+import static org.alfresco.rest.api.impl.CategoriesImpl.INCLUDE_PATH_PARAM;
 import static org.alfresco.rest.api.impl.CategoriesImpl.INVALID_NODE_TYPE;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_A_VALID_CATEGORY;
 import static org.alfresco.rest.api.impl.CategoriesImpl.NOT_NULL_OR_EMPTY;
@@ -71,6 +72,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -250,6 +252,28 @@ public class CategoriesImplTest
             .extracting(Category::getCount)
             .isNotNull()
             .isEqualTo(1);
+    }
+
+    @Test
+    public void testGetCategoryById_includePath()
+    {
+        final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
+        Path mockPath = new Path();
+        given(nodesMock.getNode(any())).willReturn(createNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_PATH_PARAM));
+        given(nodeServiceMock.getPath(CATEGORY_NODE_REF)).willReturn(mockPath);
+
+        // when
+        final Category actualCategory = objectUnderTest.getCategoryById(CATEGORY_ID, parametersMock);
+
+        assertThat(actualCategory)
+                .isNotNull()
+                .extracting(Category::getPath)
+                .isNotNull()
+                .isEqualTo("");
     }
 
     @Test
@@ -480,6 +504,37 @@ public class CategoriesImplTest
     }
 
     @Test
+    public void testCreateCategory_includePath()
+    {
+        final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
+        final NodeRef categoryNodeRef = createNodeRefWithId(CATEGORY_ID);
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
+        final Path mockPath = new Path();
+        given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
+        given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
+        given(nodesMock.getNode(any())).willReturn(createNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_PATH_PARAM));
+        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+        final List<Category> categoryModels = new ArrayList<>(prepareCategories());
+
+        // when
+        final List<Category> actualCreatedCategories = objectUnderTest.createSubcategories(PARENT_ID, categoryModels, parametersMock);
+
+        then(categoryServiceMock).should().createCategory(any(), any());
+        then(categoryServiceMock).shouldHaveNoMoreInteractions();
+
+        assertThat(actualCreatedCategories)
+                .isNotNull()
+                .hasSize(1)
+                .element(0)
+                .extracting(Category::getPath)
+                .isNotNull()
+                .isEqualTo("");
+    }
+
+    @Test
     public void testCreateCategories_noPermissions()
     {
         given(authorityServiceMock.hasAdminAuthority()).willReturn(false);
@@ -629,6 +684,31 @@ public class CategoriesImplTest
     }
 
     @Test
+    public void testGetCategoryChildren_includePath()
+    {
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
+        given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
+        given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
+        final int childrenCount = 3;
+        final List<ChildAssociationRef> childAssociationRefMocks = prepareChildAssocMocks(childrenCount, parentCategoryNodeRef);
+        final Path mockPath = new Path();
+        given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(childAssociationRefMocks);
+        childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_PATH_PARAM));
+        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+
+        // when
+        final List<Category> actualCategoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock);
+
+        assertThat(actualCategoryChildren)
+                .isNotNull()
+                .hasSize(3)
+                .extracting(Category::getPath)
+                .isNotNull()
+                .isEqualTo(List.of("", "", ""));
+    }
+
+    @Test
     public void testGetCategoryChildren_noChildren()
     {
         final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
@@ -749,6 +829,32 @@ public class CategoriesImplTest
             .extracting(Category::getCount)
             .isNotNull()
             .isEqualTo(1);
+    }
+
+    @Test
+    public void testUpdateCategoryById_includePath()
+    {
+        final String categoryNewName = "categoryNewName";
+        final Category fixedCategory = createCategoryOnlyWithName(categoryNewName);
+        fixedCategory.setPath("/test/TestCat");
+        final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
+        final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
+        final Path mockPath = new Path();
+        given(nodesMock.getNode(any())).willReturn(createNode(categoryNewName));
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_PATH_PARAM));
+        given(nodeServiceMock.getPath(CATEGORY_NODE_REF)).willReturn(mockPath);
+
+        // when
+        final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, fixedCategory, parametersMock);
+
+        assertThat(actualCategory)
+                .isNotNull()
+                .extracting(Category::getPath)
+                .isNotNull()
+                .isEqualTo("");
     }
 
     @Test
@@ -918,6 +1024,7 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         final List<Category> expectedLinkedCategories = List.of(CATEGORY);
+        expectedLinkedCategories.get(0).setPath(null);
         assertThat(actualLinkedCategories)
             .isNotNull().usingRecursiveComparison()
             .isEqualTo(expectedLinkedCategories);
@@ -982,6 +1089,37 @@ public class CategoriesImplTest
         assertThat(actualLinkedCategories)
             .isNotNull().usingRecursiveComparison()
             .isEqualTo(expectedLinkedCategories);
+    }
+
+    @Test
+    public void testLinkNodeToCategories_includePath()
+    {
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        final Path mockPath = new Path();
+        given(nodesMock.getNode(any())).willReturn(createNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(nodeServiceMock.hasAspect(any(), any())).willReturn(true);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_PATH_PARAM));
+        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+
+        // when
+        final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock);
+
+        then(nodesMock).should(times(2)).getNode(CATEGORY_ID);
+        then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+        then(nodeServiceMock).should().getPrimaryParent(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().getParentAssocs(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().hasAspect(CONTENT_NODE_REF, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        then(nodeServiceMock).should().getProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES);
+        final Serializable expectedCategories = (Serializable) List.of(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().setProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES, expectedCategories);
+        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
+        final List<Category> expectedLinkedCategories = List.of(CATEGORY);
+        expectedLinkedCategories.get(0).setPath("");
+        assertThat(actualLinkedCategories)
+                .isNotNull().usingRecursiveComparison()
+                .isEqualTo(expectedLinkedCategories);
     }
 
     @Test
@@ -1168,9 +1306,45 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         final List<Category> expectedCategories = List.of(CATEGORY);
+        expectedCategories.get(0).setPath(null);
         assertThat(actualCategories)
             .isNotNull().usingRecursiveComparison()
             .isEqualTo(expectedCategories);
+    }
+
+    @Test
+    public void testListCategoriesForNode_includePath()
+    {
+        final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
+        final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
+        final Path mockPath = new Path();
+        given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn((Serializable) List.of(CATEGORY_NODE_REF));
+        given(nodesMock.getNode(any())).willReturn(createNode());
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
+        given(parametersMock.getInclude()).willReturn(List.of(INCLUDE_PATH_PARAM));
+        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+
+        // when
+        final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock);
+
+        then(nodesMock).should().validateOrLookupNode(CONTENT_NODE_ID);
+        then(permissionServiceMock).should().hasReadPermission(CONTENT_NODE_REF);
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(typeConstraint).should().matches(CONTENT_NODE_REF);
+        then(typeConstraint).shouldHaveNoMoreInteractions();
+        then(nodesMock).should(times(2)).getNode(CATEGORY_ID);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().getProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES);
+        then(nodeServiceMock).should().getChildAssocs(CATEGORY_NODE_REF, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, false);
+        then(nodeServiceMock).should().getPrimaryParent(CATEGORY_NODE_REF);
+        then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
+        then(nodeServiceMock).should().getPath(any());
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        final List<Category> expectedCategories = List.of(CATEGORY);
+        expectedCategories.get(0).setPath("");
+        assertThat(actualCategories)
+                .isNotNull().usingRecursiveComparison()
+                .isEqualTo(expectedCategories);
     }
 
     @Test

@@ -134,6 +134,10 @@ public class CategoriesImpl implements Categories
                     {
                         category.setCount(0);
                     }
+                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    {
+                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                    }
                 })
                 .collect(Collectors.toList());
     }
@@ -181,6 +185,11 @@ public class CategoriesImpl implements Categories
         {
             final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
+        }
+
+        if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+        {
+            category.setPath(nodeService.getPath(categoryNodeRef).toDisplayPath(nodeService, permissionService));
         }
 
         return category;
@@ -252,7 +261,16 @@ public class CategoriesImpl implements Categories
 
         linkNodeToCategories(contentNodeRef, categoryNodeRefs);
 
-        return categoryNodeRefs.stream().map(this::mapToCategory).collect(Collectors.toList());
+        return categoryNodeRefs
+                .stream()
+                .map(this::mapToCategory)
+                .peek(category -> {
+                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    {
+                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @Override

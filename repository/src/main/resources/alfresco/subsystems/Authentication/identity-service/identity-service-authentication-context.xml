@@ -128,6 +128,9 @@
       <property name="clientSocketTimeout">
          <value>${identity-service.client-socket-timeout:2000}</value>
       </property>
+      <property name="realmKey">
+         <value>${identity-service.realm-public-key:#{null}}</value>
+      </property>
    </bean>
    
    <!-- Enable control over mapping between request and user ID -->

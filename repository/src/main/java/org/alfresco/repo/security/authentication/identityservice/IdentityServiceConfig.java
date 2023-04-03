@@ -58,6 +58,7 @@ public class IdentityServiceConfig implements InitializingBean
     private String clientKeystore;
     private String clientKeystorePassword;
     private String clientKeyPassword;
+    private String realmKey;
 
     public void setGlobalProperties(Properties globalProperties)
     {
@@ -228,5 +229,15 @@ public class IdentityServiceConfig implements InitializingBean
     public String getClientKeyPassword()
     {
         return clientKeyPassword;
+    }
+
+    public void setRealmKey(String realmKey)
+    {
+        this.realmKey = realmKey;
+    }
+
+    public String getRealmKey()
+    {
+        return realmKey;
     }
 }

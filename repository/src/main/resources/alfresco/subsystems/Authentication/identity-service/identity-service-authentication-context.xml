@@ -98,6 +98,30 @@
       <property name="resource">
          <value>${identity-service.resource}</value>
       </property>
+      <property name="allowAnyHostname">
+         <value>${identity-service.allow-any-hostname:false}</value>
+      </property>
+      <property name="disableTrustManager">
+         <value>${identity-service.disable-trust-manager:false}</value>
+      </property>
+      <property name="truststore">
+         <value>${identity-service.truststore:#{null}}</value>
+      </property>
+      <property name="truststorePassword">
+         <value>${identity-service.truststore-password:#{null}}</value>
+      </property>
+      <property name="clientKeystore">
+         <value>${identity-service.client-keystore:#{null}}</value>
+      </property>
+      <property name="clientKeystorePassword">
+         <value>${identity-service.client-keystore-password:#{null}}</value>
+      </property>
+      <property name="clientKeyPassword">
+         <value>${identity-service.client-key-password:#{null}}</value>
+      </property>
+      <property name="connectionPoolSize">
+         <value>${identity-service.connection-pool-size:20}</value>
+      </property>
       <property name="clientConnectionTimeout">
          <value>${identity-service.client-connection-timeout:2000}</value>
       </property>

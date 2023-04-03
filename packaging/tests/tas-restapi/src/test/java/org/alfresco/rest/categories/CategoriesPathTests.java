@@ -33,6 +33,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertTrue;
 
 import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.rest.model.RestCategoryLinkBodyModel;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.rest.model.RestCategoryModelsCollection;
 import org.alfresco.utility.Utility;
@@ -45,6 +46,7 @@ import org.testng.annotations.Test;
 
 public class CategoriesPathTests extends CategoriesRestTest
 {
+    private FileModel file;
     private RestCategoryModel category;
 
     @BeforeClass(alwaysRun = true)
@@ -56,7 +58,7 @@ public class CategoriesPathTests extends CategoriesRestTest
 
         STEP("Create a folder, file in it and few categories");
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-        FileModel file = dataContent.usingUser(user).usingResource(folder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        file = dataContent.usingUser(user).usingResource(folder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         category = prepareCategoryUnderRoot();
 
         STEP("Wait for indexing to complete");
@@ -71,7 +73,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     }
 
     /**
-     * Verify path for a category linked with file and folder.
+     * Verify path for a category got by ID.
      */
     @Test(groups = { TestGroup.REST_API })
     public void testGetCategoryById_includePath()
@@ -89,7 +91,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     }
 
     /**
-     * Verify path for three categories: linked with file, linked with folder and third not linked to any content.
+     * Verify path for category.
      */
     @Test(groups = { TestGroup.REST_API })
     public void testGetCategories_includePath()
@@ -131,7 +133,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     }
 
     /**
-     * Update category linked to file and folder and verify that it has a path.
+     * Update category and verify that it has a path.
      */
     @Test(groups = { TestGroup.REST_API })
     public void testUpdateCategory_includePath()

@@ -52,6 +52,11 @@ This must be unique within the parent category.
     */
     private long count;
 
+    /**
+     The path to this category.
+     */
+    private String path;
+
     public String getId()
     {
         return this.id;
@@ -102,6 +107,14 @@ This must be unique within the parent category.
         this.count = count;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -126,6 +139,7 @@ This must be unique within the parent category.
                 ", parentId='" + parentId + '\'' +
                 ", hasChildren=" + hasChildren +
                 ", count=" + count +
+                ", path=" + path +
                 '}';
     }
 

@@ -56,7 +56,7 @@ public class CategoriesPathTests extends CategoriesRestTest
         user = dataUser.createRandomTestUser();
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
 
-        STEP("Create a folder, file in it and few categories");
+        STEP("Create a folder, file in it and a category");
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         file = dataContent.usingUser(user).usingResource(folder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         category = prepareCategoryUnderRoot();
@@ -78,7 +78,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     @Test(groups = { TestGroup.REST_API })
     public void testGetCategoryById_includePath()
     {
-        STEP("Get linked category and verify if path is not null");
+        STEP("Get category and verify if path is a general path for categories");
         final RestCategoryModel actualCategory = restClient.authenticateUser(user)
                 .withCoreAPI()
                 .usingCategory(category)
@@ -87,7 +87,7 @@ public class CategoriesPathTests extends CategoriesRestTest
 
         restClient.assertStatusCodeIs(OK);
         actualCategory.assertThat().field(FIELD_ID).is(category.getId());
-        actualCategory.assertThat().field(FIELD_PATH).is("");
+        actualCategory.assertThat().field(FIELD_PATH).is("/categories/General");
     }
 
     /**
@@ -98,6 +98,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     {
         STEP("Get few categories and verify its paths");
         final RestCategoryModel parentCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
+        final anotherCategory = prepareCategoryUnderRoot();
         final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)
                 .withCoreAPI()
                 .usingCategory(parentCategory)
@@ -116,7 +117,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     @Test(groups = { TestGroup.REST_API })
     public void testCreateCategory_includingPath()
     {
-        STEP("Create a category under root and verify if path is not null");
+        STEP("Create a category under root and verify if path is a general path for categories");
         final String categoryName = getRandomName("Category");
         final RestCategoryModel rootCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
         final RestCategoryModel aCategory = createCategoryModelWithName(categoryName);
@@ -126,10 +127,9 @@ public class CategoriesPathTests extends CategoriesRestTest
                 .usingCategory(rootCategory)
                 .createSingleCategory(aCategory);
 
-        STEP("Create a category under root category (as admin)");
         restClient.assertStatusCodeIs(CREATED);
         createdCategory.assertThat().field(FIELD_NAME).is(categoryName);
-        createdCategory.assertThat().field(FIELD_PATH).is("");
+        createdCategory.assertThat().field(FIELD_PATH).is("/categories/General");
     }
 
     /**
@@ -138,7 +138,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     @Test(groups = { TestGroup.REST_API })
     public void testUpdateCategory_includePath()
     {
-        STEP("Update linked category and verify if path is not null");
+        STEP("Update linked category and verify if path is a general path for categories");
         final String categoryNewName = getRandomName("NewCategoryName");
         final RestCategoryModel fixedCategoryModel = createCategoryModelWithName(categoryNewName);
         final RestCategoryModel updatedCategory = restClient.authenticateUser(dataUser.getAdminUser())
@@ -149,7 +149,7 @@ public class CategoriesPathTests extends CategoriesRestTest
 
         restClient.assertStatusCodeIs(OK);
         updatedCategory.assertThat().field(FIELD_ID).is(category.getId());
-        updatedCategory.assertThat().field(FIELD_PATH).is("");
+        updatedCategory.assertThat().field(FIELD_PATH).is("/categories/General");
     }
 
     /**
@@ -158,16 +158,17 @@ public class CategoriesPathTests extends CategoriesRestTest
     @Test(groups = { TestGroup.REST_API })
     public void testLinkNodeToCategories_includePath()
     {
-        STEP("Link node to categories and verify if path is not null");
+        STEP("Link node to categories and verify if path is a general path");
         final RestCategoryLinkBodyModel categoryLinkModel = createCategoryLinkModelWithId(category.getId());
         final RestCategoryModel linkedCategory = restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingNode(file)
+                .include(INCLUDE_PATH_PARAM)
                 .linkToCategory(categoryLinkModel);
 
         restClient.assertStatusCodeIs(CREATED);
         linkedCategory.assertThat().field(FIELD_ID).is(category.getId());
-        linkedCategory.assertThat().field(FIELD_PATH).is("");
+        linkedCategory.assertThat().field(FIELD_PATH).is("/categories/General");
     }
 
     /**
@@ -181,16 +182,19 @@ public class CategoriesPathTests extends CategoriesRestTest
         final RestCategoryModel linkedCategory = restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingNode(file)
+                .include(INCLUDE_PATH_PARAM)
                 .linkToCategory(categoryLink);
 
-        STEP("Get linked category and verify if path is not null");
+        STEP("Get linked category and verify if path is a general path");
         final RestCategoryModelsCollection linkedCategories = restClient.authenticateUser(dataUser.getAdminUser())
                 .withCoreAPI()
                 .usingNode(file)
+                .include(INCLUDE_PATH_PARAM)
                 .getLinkedCategories();
 
         restClient.assertStatusCodeIs(OK);
         linkedCategories.assertThat().entriesListCountIs(1);
-        linkedCategories.getEntries().get(0).onModel().assertThat().isEqualTo(linkedCategory);
+        linkedCategories.getEntries().get(0).onModel().assertThat().field(FIELD_ID).is(category.getId());
+        linkedCategories.getEntries().get(0).onModel().assertThat().field(FIELD_PATH).is("/categories/General");
     }
 }

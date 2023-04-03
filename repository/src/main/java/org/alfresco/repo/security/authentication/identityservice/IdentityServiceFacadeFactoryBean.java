@@ -29,8 +29,12 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -63,10 +67,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.security.converter.RsaKeyConverters;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
+import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -109,7 +115,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         factory = new SpringBasedIdentityServiceFacadeFactory(
                 new HttpClientProvider(identityServiceConfig)::createHttpClient,
                 new ClientRegistrationProvider(identityServiceConfig)::createClientRegistration,
-                new JwtDecoderProvider()::createJwtDecoder
+                new JwtDecoderProvider(identityServiceConfig)::createJwtDecoder
         );
     }
 
@@ -196,12 +202,12 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         private final Supplier<HttpClient> httpClientProvider;
         private final Function<RestOperations, ClientRegistration> clientRegistrationProvider;
-        private final BiFunction<RestOperations, ClientRegistration, JwtDecoder> jwtDecoderProvider;
+        private final BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider;
 
         SpringBasedIdentityServiceFacadeFactory(
                 Supplier<HttpClient> httpClientProvider,
                 Function<RestOperations, ClientRegistration> clientRegistrationProvider,
-                BiFunction<RestOperations, ClientRegistration, JwtDecoder> jwtDecoderProvider)
+                BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider)
         {
             this.httpClientProvider = Objects.requireNonNull(httpClientProvider);
             this.clientRegistrationProvider = Objects.requireNonNull(clientRegistrationProvider);
@@ -217,7 +223,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             final ClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClientProvider.get());
             final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
             final ClientRegistration clientRegistration = clientRegistrationProvider.apply(restTemplate);
-            final JwtDecoder jwtDecoder = jwtDecoderProvider.apply(restTemplate, clientRegistration);
+            final JwtDecoder jwtDecoder = jwtDecoderProvider.apply(restTemplate, clientRegistration.getProviderDetails());
 
             return new SpringBasedIdentityServiceFacade(createOAuth2RestTemplate(httpRequestFactory), clientRegistration, jwtDecoder);
         }
@@ -246,6 +252,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             try
             {
                 HttpClientBuilder clientBuilder = HttpClients.custom();
+
                 clientBuilder = applyConnectionConfiguration(clientBuilder);
                 clientBuilder = applySSLConfiguration(clientBuilder);
 
@@ -389,53 +396,99 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
     }
 
-    private static class JwtDecoderProvider
+    static class JwtDecoderProvider
     {
         private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.RS256;
+        private final IdentityServiceConfig config;
 
-        public JwtDecoder createJwtDecoder(RestOperations rest, ClientRegistration clientRegistration)
+        JwtDecoderProvider(IdentityServiceConfig config)
+        {
+            this.config = Objects.requireNonNull(config);
+        }
+
+        public JwtDecoder createJwtDecoder(RestOperations rest, ProviderDetails providerDetails)
         {
             try
             {
-                final String jwkSetUri = requireValidJwkSetUri(clientRegistration);
-                final NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
-                                                                 .jwsAlgorithm(SIGNATURE_ALGORITHM)
-                                                                 .restOperations(rest)
-                                                                 .build();
+                final NimbusJwtDecoder decoder = buildJwtDecoder(rest, providerDetails);
 
-                decoder.setJwtValidator(createJwtTokenValidator(clientRegistration));
+                decoder.setJwtValidator(createJwtTokenValidator(providerDetails));
                 decoder.setClaimSetConverter(new ClaimTypeConverter(OidcIdTokenDecoderFactory.createDefaultClaimTypeConverters()));
 
                 return decoder;
-            }
-            catch (RuntimeException e)
+            } catch (RuntimeException e)
             {
                 LOGGER.warn("Failed to create JwtDecoder.", e);
                 throw authorizationServerCantBeUsedException(e);
             }
         }
 
-        private String requireValidJwkSetUri(ClientRegistration clientRegistration)
+        private NimbusJwtDecoder buildJwtDecoder(RestOperations rest, ProviderDetails providerDetails)
         {
-            final String uri = clientRegistration.getProviderDetails().getJwkSetUri();
+            if (isDefined(config.getRealmKey()))
+            {
+                final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
+                return NimbusJwtDecoder.withPublicKey(publicKey)
+                                       .signatureAlgorithm(SIGNATURE_ALGORITHM)
+                                       .build();
+            }
+
+            final String jwkSetUri = requireValidJwkSetUri(providerDetails);
+            return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
+                                   .jwsAlgorithm(SIGNATURE_ALGORITHM)
+                                   .restOperations(rest)
+                                   .build();
+        }
+
+        private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)
+        {
+            return new DelegatingOAuth2TokenValidator<>(
+                    new JwtTimestampValidator(Duration.of(0, ChronoUnit.MILLIS)),
+                    new JwtIssuerValidator(providerDetails.getIssuerUri()),
+                    new JwtClaimValidator<String>("typ", "Bearer"::equals),
+                    new JwtClaimValidator<String>(JwtClaimNames.SUB, Objects::nonNull));
+        }
+
+        private RSAPublicKey parsePublicKey(String pem)
+        {
+            try
+            {
+                return tryToParsePublicKey(pem);
+            }
+            catch (Exception e)
+            {
+                if (isPemFormatException(e))
+                {
+                    //For backward compatibility with Keycloak adapter
+                    return tryToParsePublicKey("-----BEGIN PUBLIC KEY-----\n" + pem + "\n-----END PUBLIC KEY-----");
+                }
+                throw e;
+            }
+        }
+
+        private RSAPublicKey tryToParsePublicKey(String pem)
+        {
+            final InputStream pemStream = new ByteArrayInputStream(pem.getBytes(StandardCharsets.UTF_8));
+            return RsaKeyConverters.x509().convert(pemStream);
+        }
+
+        private boolean isPemFormatException(Exception e)
+        {
+            return e.getMessage() != null && e.getMessage().contains("-----BEGIN PUBLIC KEY-----");
+        }
+
+        private String requireValidJwkSetUri(ProviderDetails providerDetails)
+        {
+            final String uri = providerDetails.getJwkSetUri();
             if (!isDefined(uri)) {
                 OAuth2Error oauth2Error = new OAuth2Error("missing_signature_verifier",
-                        "Failed to find a Signature Verifier for Client Registration: '"
-                                + clientRegistration.getRegistrationId()
+                        "Failed to find a Signature Verifier for: '"
+                                + providerDetails.getIssuerUri()
                                 + "'. Check to ensure you have configured the JwkSet URI.",
                         null);
                 throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
             }
             return uri;
-        }
-
-        private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ClientRegistration clientRegistration)
-        {
-            return new DelegatingOAuth2TokenValidator<>(
-                    new JwtTimestampValidator(Duration.of(0, ChronoUnit.MILLIS)),
-                    new JwtIssuerValidator(clientRegistration.getProviderDetails().getIssuerUri()),
-                    new JwtClaimValidator<String>("typ", "Bearer"::equals),
-                    new JwtClaimValidator<String>(JwtClaimNames.SUB, Objects::nonNull));
         }
     }
 

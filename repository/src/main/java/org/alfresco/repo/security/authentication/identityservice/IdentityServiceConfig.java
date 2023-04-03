@@ -50,6 +50,14 @@ public class IdentityServiceConfig implements InitializingBean
     private String clientSecret;
     private String authServerUrl;
     private String realm;
+    private int connectionPoolSize;
+    private boolean allowAnyHostname;
+    private boolean disableTrustManager;
+    private String truststore;
+    private String truststorePassword;
+    private String clientKeystore;
+    private String clientKeystorePassword;
+    private String clientKeyPassword;
 
     public void setGlobalProperties(Properties globalProperties)
     {
@@ -91,7 +99,17 @@ public class IdentityServiceConfig implements InitializingBean
     {
         this.clientSocketTimeout = clientSocketTimeout;
     }
-    
+
+    public void setConnectionPoolSize(int connectionPoolSize)
+    {
+        this.connectionPoolSize = connectionPoolSize;
+    }
+
+    public int getConnectionPoolSize()
+    {
+        return connectionPoolSize;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -140,5 +158,75 @@ public class IdentityServiceConfig implements InitializingBean
                                    .pathSegment(REALMS, getRealm())
                                    .build()
                                    .toString();
+    }
+
+    public void setAllowAnyHostname(boolean allowAnyHostname)
+    {
+        this.allowAnyHostname = allowAnyHostname;
+    }
+
+    public boolean isAllowAnyHostname()
+    {
+        return allowAnyHostname;
+    }
+
+    public void setDisableTrustManager(boolean disableTrustManager)
+    {
+        this.disableTrustManager = disableTrustManager;
+    }
+
+    public boolean isDisableTrustManager()
+    {
+        return disableTrustManager;
+    }
+
+    public void setTruststore(String truststore)
+    {
+        this.truststore = truststore;
+    }
+
+    public String getTruststore()
+    {
+        return truststore;
+    }
+
+    public void setTruststorePassword(String truststorePassword)
+    {
+        this.truststorePassword = truststorePassword;
+    }
+
+    public String getTruststorePassword()
+    {
+        return truststorePassword;
+    }
+
+    public void setClientKeystore(String clientKeystore)
+    {
+        this.clientKeystore = clientKeystore;
+    }
+
+    public String getClientKeystore()
+    {
+        return clientKeystore;
+    }
+
+    public void setClientKeystorePassword(String clientKeystorePassword)
+    {
+        this.clientKeystorePassword = clientKeystorePassword;
+    }
+
+    public String getClientKeystorePassword()
+    {
+        return clientKeystorePassword;
+    }
+
+    public void setClientKeyPassword(String clientKeyPassword)
+    {
+        this.clientKeyPassword = clientKeyPassword;
+    }
+
+    public String getClientKeyPassword()
+    {
+        return clientKeyPassword;
     }
 }

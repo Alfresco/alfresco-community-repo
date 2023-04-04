@@ -33,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -42,11 +43,20 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.proc.JWSVerificationKeySelector;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jose.util.ResourceRetriever;
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
@@ -253,8 +263,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 HttpClientBuilder clientBuilder = HttpClients.custom();
 
-                clientBuilder = applyConnectionConfiguration(clientBuilder);
-                clientBuilder = applySSLConfiguration(clientBuilder);
+                applyConnectionConfiguration(clientBuilder);
+                applySSLConfiguration(clientBuilder);
 
                 return clientBuilder.build();
             }
@@ -264,18 +274,18 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             }
         }
 
-        private HttpClientBuilder applyConnectionConfiguration(HttpClientBuilder builder)
+        private void applyConnectionConfiguration(HttpClientBuilder builder)
         {
             final RequestConfig requestConfig = RequestConfig.custom()
                                                              .setConnectTimeout(config.getClientConnectionTimeout())
                                                              .setSocketTimeout(config.getClientSocketTimeout())
                                                              .build();
 
-            return builder.setDefaultRequestConfig(requestConfig)
-                          .setMaxConnTotal(config.getConnectionPoolSize());
+            builder.setDefaultRequestConfig(requestConfig)
+                   .setMaxConnTotal(config.getConnectionPoolSize());
         }
 
-        private HttpClientBuilder applySSLConfiguration(HttpClientBuilder builder) throws Exception
+        private void applySSLConfiguration(HttpClientBuilder builder) throws Exception
         {
             SSLContextBuilder sslContextBuilder = null;
             if (config.isDisableTrustManager())
@@ -311,8 +321,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
             }
-
-            return builder;
         }
 
         private char[] asCharArray(String value, char[] nullValue)
@@ -437,7 +445,43 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
                                    .jwsAlgorithm(SIGNATURE_ALGORITHM)
                                    .restOperations(rest)
+                                   .jwtProcessorCustomizer(this::reconfigureJWKSCache)
                                    .build();
+        }
+
+        private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
+        {
+            final Optional<RemoteJWKSet<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
+                    .map(ConfigurableJWTProcessor::getJWSKeySelector)
+                    .filter(JWSVerificationKeySelector.class::isInstance).map(o -> (JWSVerificationKeySelector<SecurityContext>)o)
+                    .map(JWSVerificationKeySelector::getJWKSource)
+                    .filter(RemoteJWKSet.class::isInstance).map(o -> (RemoteJWKSet<SecurityContext>)o);
+            if (jwkSource.isEmpty())
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
+                return;
+            }
+
+            final Optional<URL> jwkSetUrl = jwkSource.map(RemoteJWKSet::getJWKSetURL);
+            if (jwkSetUrl.isEmpty())
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown JWKSetURL.");
+                return;
+            }
+
+            final Optional<ResourceRetriever> resourceRetriever = jwkSource.map(RemoteJWKSet::getResourceRetriever);
+            if (resourceRetriever.isEmpty())
+            {
+                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown ResourceRetriever.");
+                return;
+            }
+
+            final DefaultJWKSetCache cache = new DefaultJWKSetCache(config.getPublicKeyCacheTtl(), -1, TimeUnit.SECONDS);
+            final JWKSource<SecurityContext> cacheingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(), resourceRetriever.get(), cache);
+
+            jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
+                    JWSAlgorithm.parse(SIGNATURE_ALGORITHM.getName()),
+                    cacheingJWKSource));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)

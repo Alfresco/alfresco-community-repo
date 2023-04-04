@@ -59,6 +59,7 @@ public class IdentityServiceConfig implements InitializingBean
     private String clientKeystorePassword;
     private String clientKeyPassword;
     private String realmKey;
+    private int publicKeyCacheTtl;
 
     public void setGlobalProperties(Properties globalProperties)
     {
@@ -239,5 +240,15 @@ public class IdentityServiceConfig implements InitializingBean
     public String getRealmKey()
     {
         return realmKey;
+    }
+
+    public void setPublicKeyCacheTtl(int publicKeyCacheTtl)
+    {
+        this.publicKeyCacheTtl = publicKeyCacheTtl;
+    }
+
+    public int getPublicKeyCacheTtl()
+    {
+        return publicKeyCacheTtl;
     }
 }

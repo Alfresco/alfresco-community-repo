@@ -26,9 +26,7 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Optional;
-import java.util.Properties;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -36,12 +34,9 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Gavin Cornwell
  */
-public class IdentityServiceConfig implements InitializingBean
+public class IdentityServiceConfig
 {
     private static final String REALMS = "realms";
-    private static final String CREDENTIALS_SECRET = "identity-service.credentials.secret";
-    
-    private Properties globalProperties;
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
@@ -61,11 +56,6 @@ public class IdentityServiceConfig implements InitializingBean
     private String realmKey;
     private int publicKeyCacheTtl;
     private boolean publicClient;
-
-    public void setGlobalProperties(Properties globalProperties)
-    {
-        this.globalProperties = globalProperties;
-    }
 
     /**
      *
@@ -113,12 +103,6 @@ public class IdentityServiceConfig implements InitializingBean
         return connectionPoolSize;
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        clientSecret = this.globalProperties.getProperty(CREDENTIALS_SECRET);
-    }
-
     public String getAuthServerUrl()
     {
         return authServerUrl;
@@ -147,6 +131,11 @@ public class IdentityServiceConfig implements InitializingBean
     public void setResource(String resource)
     {
         this.resource = resource;
+    }
+
+    public void setClientSecret(String clientSecret)
+    {
+        this.clientSecret = clientSecret;
     }
 
     public String getClientSecret()

@@ -477,11 +477,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             }
 
             final DefaultJWKSetCache cache = new DefaultJWKSetCache(config.getPublicKeyCacheTtl(), -1, TimeUnit.SECONDS);
-            final JWKSource<SecurityContext> cacheingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(), resourceRetriever.get(), cache);
+            final JWKSource<SecurityContext> cachingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(), resourceRetriever.get(), cache);
 
             jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
                     JWSAlgorithm.parse(SIGNATURE_ALGORITHM.getName()),
-                    cacheingJWKSource));
+                    cachingJWKSource));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)

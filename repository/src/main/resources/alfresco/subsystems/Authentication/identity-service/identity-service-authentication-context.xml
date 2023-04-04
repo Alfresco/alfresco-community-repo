@@ -131,6 +131,9 @@
       <property name="realmKey">
          <value>${identity-service.realm-public-key:#{null}}</value>
       </property>
+      <property name="publicKeyCacheTtl">
+         <value>${identity-service.public-key-cache-ttl:86400}</value>
+      </property>
    </bean>
    
    <!-- Enable control over mapping between request and user ID -->

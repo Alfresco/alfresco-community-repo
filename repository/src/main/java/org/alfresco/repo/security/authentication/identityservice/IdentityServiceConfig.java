@@ -60,6 +60,7 @@ public class IdentityServiceConfig implements InitializingBean
     private String clientKeyPassword;
     private String realmKey;
     private int publicKeyCacheTtl;
+    private boolean publicClient;
 
     public void setGlobalProperties(Properties globalProperties)
     {
@@ -250,5 +251,15 @@ public class IdentityServiceConfig implements InitializingBean
     public int getPublicKeyCacheTtl()
     {
         return publicKeyCacheTtl;
+    }
+
+    public void setPublicClient(boolean publicClient)
+    {
+        this.publicClient = publicClient;
+    }
+
+    public boolean isPublicClient()
+    {
+        return publicClient;
     }
 }

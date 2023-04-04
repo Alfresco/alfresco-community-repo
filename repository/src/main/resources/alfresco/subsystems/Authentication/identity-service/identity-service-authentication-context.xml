@@ -134,6 +134,9 @@
       <property name="publicKeyCacheTtl">
          <value>${identity-service.public-key-cache-ttl:86400}</value>
       </property>
+      <property name="publicClient">
+         <value>${identity-service.public-client:false}</value>
+      </property>
    </bean>
    
    <!-- Enable control over mapping between request and user ID -->

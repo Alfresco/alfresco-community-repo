@@ -685,20 +685,23 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
                 LOG.info("On {} {}, received the response with an image and headers: \n{}", restRequest.getHttpMethod(), restRequest.getPath(),
                     returnedResponse.getHeaders().toString());
             }
-            else if (returnedResponse.getContentType().contains("application/json") && !returnedResponse.asString().isEmpty())
+            else if (returnedResponse.asString().isEmpty())
             {
                 LOG.info("On {} {}, received the following response \n{}", restRequest.getHttpMethod(), restRequest.getPath(),
-                    Utility.prettyPrintJsonString(returnedResponse.asString()));
-            }
-            else if (returnedResponse.getContentType().contains("application/xml") && !returnedResponse.asString().isEmpty())
-            {
-                String response = parseXML(returnedResponse);
-                LOG.info("On {} {}, received the following response \n{}", restRequest.getHttpMethod(), restRequest.getPath(), response);
+                        returnedResponse.getStatusCode());
             }
             else
             {
-                LOG.info("On {} {}, received the following response \n{}", restRequest.getHttpMethod(), restRequest.getPath(),
-                    ToStringBuilder.reflectionToString(returnedResponse.asString(), ToStringStyle.MULTI_LINE_STYLE));
+                if (returnedResponse.getContentType().contains("application/json"))
+                {
+                    LOG.info("On {} {}, received the following response \n{}", restRequest.getHttpMethod(), restRequest.getPath(),
+                            Utility.prettyPrintJsonString(returnedResponse.asString()));
+                }
+                if (returnedResponse.getContentType().contains("application/xml") && !returnedResponse.asString().isEmpty())
+                {
+                    String response = parseXML(returnedResponse);
+                    LOG.info("On {} {}, received the following response \n{}", restRequest.getHttpMethod(), restRequest.getPath(), response);
+                }
             }
         }
     }

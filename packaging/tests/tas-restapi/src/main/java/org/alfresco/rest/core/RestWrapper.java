@@ -683,12 +683,12 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
             if (returnedResponse.asString().isEmpty())
             {
                 LOG.info("On {} {}, received the following response \n{}", restRequest.getHttpMethod(), restRequest.getPath(),
-                returnedResponse.getStatusCode());
+                        returnedResponse.getStatusCode());
             }
             else if (returnedResponse.getContentType().contains("image/png"))
             {
                 LOG.info("On {} {}, received the response with an image and headers: \n{}", restRequest.getHttpMethod(), restRequest.getPath(),
-                    returnedResponse.getHeaders().toString());
+                        returnedResponse.getHeaders().toString());
             }
             else if (returnedResponse.getContentType().contains("application/json"))
             {

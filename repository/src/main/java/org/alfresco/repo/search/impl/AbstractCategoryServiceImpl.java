@@ -392,25 +392,73 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         throw new UnsupportedOperationException();
     }
 
-    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
+    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
     {
         return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null, null);
     }
 
-    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter)
+    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter)
     {
         final Collection<String> alikeNamesFilter = Optional.ofNullable(filter).map(f -> "*".concat(f).concat("*")).map(Set::of).orElse(null);
         return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null, alikeNamesFilter);
     }
 
-    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
+    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
         Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         final Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
         final List<ChildAssociationRef> associations = new LinkedList<>();
         final int skipCount = pagingRequest.getSkipCount();
         final int maxItems = pagingRequest.getMaxItems();
+        final int size = (maxItems == CannedQueryPageDetails.DEFAULT_PAGE_SIZE ? CannedQueryPageDetails.DEFAULT_PAGE_SIZE : skipCount + maxItems);
+        int count = 0;
+        boolean moreItems = false;
 
+        final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = getNodeRefCollectionFunction(sortByName, exactNamesFilter, alikeNamesFilter, skipCount, maxItems);
+
+        OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
+        {
+            Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
+            for(ChildAssociationRef child : children)
+            {
+                count++;
+
+                if(count <= skipCount)
+                {
+                    continue;
+                }
+
+                if(count > size)
+                {
+                    moreItems = true;
+                    break OUTER_LOOP;
+                }
+
+                associations.add(child);
+            }
+            //associations.addAll(children);
+        }
+
+        return new ListBackedPagingResults<>(associations, moreItems);
+    }
+
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        final Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
+        final List<ChildAssociationRef> associations = new LinkedList<>();
+
+        final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = getNodeRefCollectionFunction(false, exactNamesFilter, alikeNamesFilter, 0, 10000);
+
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
+            associations.addAll(children);
+        }
+
+        return associations;
+    }
+
+    private Function<NodeRef, Collection<ChildAssociationRef>> getNodeRefCollectionFunction(boolean sortByName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter, int skipCount, int maxItems) {
         final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = (nodeRef) -> {
             final Set<ChildAssociationRef> childNodes = new HashSet<>();
             if (CollectionUtils.isEmpty(exactNamesFilter) && CollectionUtils.isEmpty(alikeNamesFilter))
@@ -439,14 +487,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
             }
             return childNodesStream.collect(Collectors.toList());
         };
-
-        OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
-        {
-            Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
-            associations.addAll(children);
-        }
-
-        return associations;
+        return childNodesSupplier;
     }
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)

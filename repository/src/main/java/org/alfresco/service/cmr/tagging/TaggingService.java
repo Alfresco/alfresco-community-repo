@@ -79,7 +79,7 @@ public interface TaggingService
      * @return PagingResults
      */
     @NotAuditable
-    List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
+    PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
 
     /**
      * Get a paged list of tags filtered by name
@@ -91,7 +91,12 @@ public interface TaggingService
      * @return PagingResults
      */
     @NotAuditable
-    List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter);
+    default PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        return new EmptyPagingResults<>();
+    }
+
+    List<Pair<NodeRef, Integer>> getTags(StoreRef storeRef, List<String>parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter);
     
     /** 
      * Get all the tags currently available that match the provided filter.

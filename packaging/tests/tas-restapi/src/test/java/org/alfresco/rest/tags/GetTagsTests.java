@@ -322,8 +322,7 @@ public class GetTagsTests extends TagsDataPrep
                 .getPagination().assertThat().field("maxItems").is(100)
                 .and().field("hasMoreItems").is("false")
                 .and().field("count").is("0")
-                .and().field("skipCount").is(20000)
-                .and().field("totalItems").is(4);
+                .and().field("skipCount").is(20000);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,

@@ -2250,7 +2250,7 @@ public class TaggingServiceImplTest extends BaseSpringTest
         authenticationComponent.setSystemUserAsCurrentUser();
         Pair<List<String>, Integer> tags = taggingService.getPagedTags(storeRef, 1, 10);
         assertNotNull(tags);
-        List<Pair<NodeRef, String>> res = taggingService.getTags(storeRef, new PagingRequest(10));
+        PagingResults<Pair<NodeRef, String>> res = taggingService.getTags(storeRef, new PagingRequest(10));
         assertNotNull(res);
 
 
@@ -2267,9 +2267,9 @@ public class TaggingServiceImplTest extends BaseSpringTest
                 docProps).getChildRef();
         taggingService.addTag(myDoc,"dog");
 
-        PagingResults<Pair<NodeRef, String>> res1 = taggingService.getTags(myDoc, new PagingRequest(10));
-        assertNotNull(res1);
-        assertEquals(1, (int) res1.getTotalResultCount().getFirst());
+        res = taggingService.getTags(myDoc, new PagingRequest(10));
+        assertNotNull(res);
+        assertTrue(res.getTotalResultCount().getFirst() == 1);
     }
 
     @Test

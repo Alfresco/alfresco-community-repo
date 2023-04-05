@@ -158,7 +158,7 @@ public final class Classification extends BaseScopableProcessorExtension
     public Scriptable getRootCategories(String aspect, String filter, int maxItems, int skipCount)
     {
         PagingRequest pagingRequest = new PagingRequest(skipCount, maxItems);
-        Collection<ChildAssociationRef> rootCategories = services.getCategoryService().getRootCategories(storeRef, createQName(aspect), pagingRequest, true, filter);
+        List<ChildAssociationRef> rootCategories = services.getCategoryService().getRootCategories(storeRef, createQName(aspect), pagingRequest, true, filter).getPage();
         Object[] cats = buildCategoryNodes(rootCategories);
         return Context.getCurrentContext().newArray(getScope(), cats);
     }

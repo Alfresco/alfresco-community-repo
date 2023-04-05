@@ -46,21 +46,25 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.EmptyPagingResults;
+import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
+import org.alfresco.repo.domain.query.QueryException;
 import org.alfresco.repo.event2.EventGenerator;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
@@ -973,7 +977,7 @@ public class TaggingServiceImpl implements TaggingService,
         return result;
     }
 
-    public List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
+    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
     {
         return getTags(storeRef, pagingRequest, null, null);
     }
@@ -981,20 +985,73 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * @see TaggingService#getTags(StoreRef, PagingRequest)
      */
-    public List<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         ParameterCheck.mandatory("storeRef", storeRef);
-        Collection<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true,
-            exactNamesFilter, alikeNamesFilter);
-        List<Pair<NodeRef, String>> result = new ArrayList<>(rootCategories.size());
 
-        for (ChildAssociationRef rootCategory : rootCategories)
+        PagingResults<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, pagingRequest, true,
+            exactNamesFilter, alikeNamesFilter);
+
+        return mapPagingResult(rootCategories,
+                (childAssociation) -> new Pair<>(childAssociation.getChildRef(), childAssociation.getQName().getLocalName()));
+    }
+
+    public List<Pair<NodeRef, Integer>> getTags(StoreRef storeRef, List<String> parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        ParameterCheck.mandatory("storeRef", storeRef);
+        Collection<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, exactNamesFilter, alikeNamesFilter);
+
+
+        List<Pair<String, Integer>> tagsByCountList = rootCategories.stream()
+                .map(childAssociationRef -> new Pair<>(childAssociationRef.getQName().getLocalName(), 0))
+                .collect(Collectors.toList());
+
+        Map<String, Integer> tagsByCountMap = new HashMap<>();
+
+        if(parameterIncludes.contains(PARAM_INCLUDE_COUNT))
         {
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
-            result.add(new Pair<>(rootCategory.getChildRef(), name));
+            tagsByCountMap = calculateCount(storeRef);
+
+            for (Pair pair : tagsByCountList)
+            {
+                pair.setSecond(Optional.ofNullable(tagsByCountMap.get(pair.getFirst())).orElse(0));
+            }
         }
 
-        return result;
+        //check if we should sort results. Can only sort by one parameter, default order is ascending
+        if (sorting != null)
+        {
+            if (sorting.getFirst().equals("tag"))
+            {
+                tagsByCountList.sort(Comparator.comparing(Pair::getFirst));
+
+                if (!sorting.getSecond())
+                {
+                    Collections.reverse(tagsByCountList);
+                }
+            }
+            else if (sorting.getFirst().equals(PARAM_INCLUDE_COUNT))
+            {
+                if (tagsByCountMap.isEmpty())
+                {
+                    throw new QueryException("Tag count should be included when ordering by count");
+                }
+
+                tagsByCountList.sort(Comparator.comparing(Pair::getSecond));
+                if (!sorting.getSecond())
+                {
+                    Collections.reverse(tagsByCountList);
+                }
+            }
+        }
+
+        List<Pair<NodeRef, Integer>> tagNodeRefsList = new ArrayList<>();
+        for (Pair<String, Integer> pair : tagsByCountList)
+        {
+            tagNodeRefsList.add(new Pair<>(getTagNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, pair.getFirst()), pair.getSecond()));
+        }
+
+        return tagNodeRefsList;
     }
     
     /**

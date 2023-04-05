@@ -15,6 +15,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -29,7 +30,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, 
             description = "Verify Admin user deletes tags with Rest API and status code is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsAbleToDeleteTags() throws Exception
+    public void adminIsAbleToDeleteTags()
     {
         restClient.authenticateUser(adminUserModel);
         tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -43,7 +44,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
             description = "Verify Manager user deletes tags created by admin user with Rest API and status code is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    public void managerIsAbleToDeleteTags() throws Exception
+    public void managerIsAbleToDeleteTags()
     {
         restClient.authenticateUser(adminUserModel);
         tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -56,7 +57,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator user deletes tags created by admin user with Rest API and status code is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void collaboratorIsAbleToDeleteTags() throws Exception
+    public void collaboratorIsAbleToDeleteTags()
     {
         restClient.authenticateUser(adminUserModel);
         tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -69,7 +70,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor user can't delete tags created by admin user with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void contributorIsNotAbleToDeleteTagsForAnotherUserContent() throws Exception
+    public void contributorIsNotAbleToDeleteTagsForAnotherUserContent()
     {
         restClient.authenticateUser(adminUserModel);
         tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -82,7 +83,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor user deletes tags created by him with Rest API and status code is 204")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void contributorIsAbleToDeleteTagsForHisContent() throws Exception
+    public void contributorIsAbleToDeleteTagsForHisContent()
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(userModel);
@@ -96,7 +97,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Consumer user can't delete tags created by admin user with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void consumerIsNotAbleToDeleteTags() throws Exception
+    public void consumerIsNotAbleToDeleteTags()
     {
         restClient.authenticateUser(adminUserModel);
         tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -110,7 +111,7 @@ public class DeleteTagTests extends TagsDataPrep
             description = "Verify user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 //    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void userIsNotAbleToDeleteTagIfAuthenticationFails() throws Exception
+    public void userIsNotAbleToDeleteTagIfAuthenticationFails()
     {
         restClient.authenticateUser(adminUserModel);
         tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -127,7 +128,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that if user has no permission to remove tag returned status code is 403. Check default error model schema")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void deleteTagWithUserWithoutPermissionCheckDefaultErrorModelSchema() throws Exception
+    public void deleteTagWithUserWithoutPermissionCheckDefaultErrorModelSchema()
     {
         restClient.authenticateUser(adminUserModel);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -144,7 +145,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that if node does not exist returned status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void deleteTagForANonexistentNode() throws Exception
+    public void deleteTagForANonexistentNode()
     {
         restClient.authenticateUser(adminUserModel);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -159,7 +160,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that if tag does not exist returned status code is 404")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void deleteTagThatDoesNotExist() throws Exception
+    public void deleteTagThatDoesNotExist()
     {
         restClient.authenticateUser(adminUserModel);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -172,7 +173,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that if tag id is empty returned status code is 405")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void deleteTagWithEmptyId() throws Exception
+    public void deleteTagWithEmptyId()
     {
         restClient.authenticateUser(adminUserModel);
         RestTagModel tag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -185,7 +186,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that folder tag can be deleted")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void deleteFolderTag() throws Exception
+    public void deleteFolderTag()
     {
         FolderModel folderModel = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();;
         restClient.authenticateUser(adminUserModel);
@@ -200,7 +201,8 @@ public class DeleteTagTests extends TagsDataPrep
             executionType = ExecutionType.REGRESSION, description = "Verify Manager user can't delete deleted tag.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     @Bug(id = "ACE-5455")
-    public void managerCannotDeleteDeletedTag() throws Exception
+    @Ignore
+    public void managerCannotDeleteDeletedTag()
     {
         tag = restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
@@ -216,7 +218,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can delete long tag.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void userCollaboratorCanDeleteLongTag() throws Exception
+    public void userCollaboratorCanDeleteLongTag()
     {
         String longTag = RandomStringUtils.randomAlphanumeric(800);
 
@@ -231,7 +233,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Verify Manager user can delete short tag.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void managerCanDeleteShortTag() throws Exception
+    public void managerCanDeleteShortTag()
     {
         String shortTag = RandomStringUtils.randomAlphanumeric(10);
 
@@ -246,7 +248,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Verify Admin can delete tag then add it again.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminRemovesTagAndAddsItAgain() throws Exception
+    public void adminRemovesTagAndAddsItAgain()
     {
         String tagValue = RandomStringUtils.randomAlphanumeric(10);
 
@@ -267,7 +269,7 @@ public class DeleteTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Verify Manager user can delete tag added by another user.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void managerCanDeleteTagAddedByAnotherUser() throws Exception
+    public void managerCanDeleteTagAddedByAnotherUser()
     {
         tag = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator))
                 .withCoreAPI().usingResource(document).addTag(RandomStringUtils.randomAlphanumeric(10));

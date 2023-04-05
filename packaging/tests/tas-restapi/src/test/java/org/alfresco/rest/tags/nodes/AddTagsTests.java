@@ -30,14 +30,14 @@ public class AddTagsTests extends TagsDataPrep
     @BeforeMethod(alwaysRun = true)
     public void generateRandomTagsList()
     {
-        tag1 = RandomData.getRandomName("tag");
-        tag2 = RandomData.getRandomName("tag");
+        tag1 = RandomData.getRandomName("tag").toLowerCase();
+        tag2 = RandomData.getRandomName("tag").toLowerCase();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user adds multiple tags with Rest API and status code is 201")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsAbleToAddTags() throws Exception
+    public void adminIsAbleToAddTags()
     {
         restClient.authenticateUser(adminUserModel);
         returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
@@ -49,7 +49,7 @@ public class AddTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY,
             description = "Verify Manager user adds multiple tags with Rest API and status code is 201")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    public void managerIsAbleToAddTags() throws Exception
+    public void managerIsAbleToAddTags()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
@@ -61,7 +61,7 @@ public class AddTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.SANITY, description = "Verify Collaborator user adds multiple tags with Rest API and status code is 201")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void collaboratorIsAbleToAddTags() throws Exception
+    public void collaboratorIsAbleToAddTags()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         returnedCollection = restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
@@ -73,7 +73,7 @@ public class AddTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor user doesn't have permission to add multiple tags with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void contributorIsNotAbleToAddTagsToAnotherContent() throws Exception
+    public void contributorIsNotAbleToAddTagsToAnotherContent()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         restClient.withCoreAPI().usingResource(document).addTags(tag1, tag2);
@@ -83,7 +83,7 @@ public class AddTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor user adds multiple tags to his content with Rest API and status code is 201")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void contributorIsAbleToAddTagsToHisContent() throws Exception
+    public void contributorIsAbleToAddTagsToHisContent()
     {
         userModel = usersWithRoles.getOneUserWithRole(UserRole.SiteContributor);
         restClient.authenticateUser(userModel);
@@ -97,7 +97,7 @@ public class AddTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify Consumer user doesn't have permission to add multiple tags with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void consumerIsNotAbleToAddTags() throws Exception
+    public void consumerIsNotAbleToAddTags()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI().usingResource(document).addTags(tag1, tag2);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN).assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED);
@@ -107,7 +107,7 @@ public class AddTagsTests extends TagsDataPrep
             description = "Verify user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 //    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void userIsNotAbleToAddTagsIfAuthenticationFails() throws Exception
+    public void userIsNotAbleToAddTagsIfAuthenticationFails()
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         String managerPassword = siteManager.getPassword();
@@ -120,7 +120,7 @@ public class AddTagsTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify include count parameter")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void getTagsUsingCountParam() throws Exception
+    public void getTagsUsingCountParam()
     {
         FileModel file = dataContent.usingSite(siteModel).usingUser(adminUserModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         String tagName = RandomData.getRandomName("tag");

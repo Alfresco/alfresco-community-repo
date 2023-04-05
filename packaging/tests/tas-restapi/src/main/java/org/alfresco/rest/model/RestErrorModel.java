@@ -60,7 +60,7 @@ public class RestErrorModel
     public static String INVALID_MAXITEMS = "Invalid paging parameter maxItems:%s";
     public static String INVALID_SKIPCOUNT = "Invalid paging parameter skipCount:%s";
     public static String INVALID_TAG = "Tag name must not contain %s char sequence";
-    public static String EMPTY_TAG = "New tag cannot be null";
+    public static String BLANK_TAG = "New tag cannot be blank";
     public static String UNKNOWN_ROLE = "Unknown role '%s'";
     public static String ALREADY_Site_MEMBER = "%s is already a member of site %s";
     public static String ALREADY_INVITED = "%s is already invited to site %s";

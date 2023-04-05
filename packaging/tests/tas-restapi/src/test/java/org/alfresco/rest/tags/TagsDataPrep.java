@@ -39,24 +39,25 @@ public class TagsDataPrep extends RestTest
         document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
-        documentTagValue = RandomData.getRandomName("tag");
-        documentTagValue2 = RandomData.getRandomName("tag");
-        folderTagValue = RandomData.getRandomName("tag");
+        documentTagValue = RandomData.getRandomName("tag").toLowerCase();
+        documentTagValue2 = RandomData.getRandomName("tag").toLowerCase();
+        folderTagValue = RandomData.getRandomName("tag").toLowerCase();
 
         restClient.authenticateUser(adminUserModel);
         documentTag = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue);
         documentTag2 = restClient.withCoreAPI().usingResource(document).addTag(documentTagValue2);
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
-        orphanTag = restClient.withCoreAPI().createSingleTag(RestTagModel.builder().tag(RandomData.getRandomName("orphan-tag")).create());
+        orphanTag = restClient.withCoreAPI().createSingleTag(RestTagModel.builder().tag(RandomData.getRandomName("orphan-tag").toLowerCase()).create());
 
         // Allow indexing to complete.
         Utility.sleep(500, 60000, () ->
         {
             returnedCollection = restClient.withParams("maxItems=10000", "where=(tag MATCHES ('*tag*'))")
-                .withCoreAPI().getTags();
-            returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
-                              .and().entriesListContains("tag", documentTagValue2.toLowerCase())
-                              .and().entriesListContains("tag", folderTagValue.toLowerCase());
+                                           .withCoreAPI().getTags();
+            returnedCollection.assertThat().entriesListContains("tag", documentTagValue)
+                              .and().entriesListContains("tag", documentTagValue2)
+                              .and().entriesListContains("tag", folderTagValue)
+                              .and().entriesListContains("tag", orphanTag.getTag());
         });
     }
 

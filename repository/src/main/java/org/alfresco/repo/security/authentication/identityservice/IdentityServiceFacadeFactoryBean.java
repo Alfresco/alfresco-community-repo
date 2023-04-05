@@ -350,6 +350,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .map(Optional::get)
                     .findFirst()
                     .map(this::createBuilder)
+                    .map(this::configureClientAuthentication)
                     .map(Builder::build)
                     .orElseThrow(() -> new IllegalStateException("Failed to create ClientRegistration."));
         }
@@ -361,10 +362,19 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .tokenUri(metadata.getTokenEndpointURI().toASCIIString())
                     .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
                     .issuerUri(config.getIssuerUrl())
-                    .clientId(config.getResource())
-                    .clientSecret(config.getClientSecret())
-                    .authorizationGrantType(AuthorizationGrantType.PASSWORD)
-                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
+                    .authorizationGrantType(AuthorizationGrantType.PASSWORD);
+        }
+
+        private Builder configureClientAuthentication(Builder builder)
+        {
+            builder.clientId(config.getResource());
+            if (config.isPublicClient())
+            {
+                return builder.clientSecret(null)
+                              .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+            }
+            return builder.clientSecret(config.getClientSecret())
+                          .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
         }
 
         private Optional<OIDCProviderMetadata> extractMetadata(RestOperations rest, URI metadataUri)

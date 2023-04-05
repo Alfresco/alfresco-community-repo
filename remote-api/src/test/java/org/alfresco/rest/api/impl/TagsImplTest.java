@@ -29,6 +29,7 @@ import static java.util.stream.Collectors.toList;
 
 import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
 import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
+import static org.alfresco.rest.api.impl.TagsImpl.PARAM_INCLUDE_COUNT;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -115,6 +116,7 @@ public class TagsImplTest
         given(nodesMock.validateNode(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willReturn(TAG_NODE_REF);
         given(taggingServiceMock.getTagName(TAG_NODE_REF)).willReturn(TAG_NAME);
         given(nodeServiceMock.getPrimaryParent(TAG_NODE_REF)).willReturn(primaryParentMock);
+        given(primaryParentMock.getParentRef()).willReturn(TAG_PARENT_NODE_REF);
     }
 
     @Test
@@ -146,7 +148,7 @@ public class TagsImplTest
 
         then(taggingServiceMock).should().findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE);
         final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream()
-            .peek(tag -> tag.setCount(0))
+            .peek(tag -> tag.setCount(0L))
             .collect(toList());
         assertEquals(expectedTags, actualTags.getCollection());
     }
@@ -170,8 +172,8 @@ public class TagsImplTest
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
         then(taggingServiceMock).should().findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE);
-        final List<Tag> expectedTags = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5).create(),
-                                               Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0).create());
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5L).create(),
+                                               Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0L).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -266,7 +268,6 @@ public class TagsImplTest
     public void testDeleteTagById()
     {
         //when
-        given(primaryParentMock.getParentRef()).willReturn(TAG_PARENT_NODE_REF);
         objectUnderTest.deleteTagById(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
 
         then(authorityServiceMock).should().hasAdminAuthority();
@@ -425,7 +426,7 @@ public class TagsImplTest
         final List<Tag> actualCreatedTags = objectUnderTest.createTags(tagsToCreate, parametersMock);
 
         final List<Tag> expectedTags = createTagsWithNodeRefs(tagNames).stream()
-            .peek(tag -> tag.setCount(0))
+            .peek(tag -> tag.setCount(0L))
             .collect(toList());
         assertThat(actualCreatedTags)
             .isNotNull()
@@ -435,8 +436,8 @@ public class TagsImplTest
     @Test(expected = EntityNotFoundException.class)
     public void testGetTagByIdNotFoundValidation()
     {
-        given(primaryParentMock.getParentRef()).willReturn(TAG_NODE_REF);
-        objectUnderTest.getTag(STORE_REF_WORKSPACE_SPACESSTORE,TAG_ID);
+        given(nodesMock.validateNode(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID)).willThrow(EntityNotFoundException.class);
+        objectUnderTest.getTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID, null);
         then(nodeServiceMock).shouldHaveNoInteractions();
         then(nodesMock).should().validateNode(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -459,8 +460,8 @@ public class TagsImplTest
 
         List<Tag> actual = objectUnderTest.addTags(CONTENT_NODE_ID, tags, parametersMock);
 
-        final List<Tag> expected = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5).create(),
-                Tag.builder().tag("tagb").nodeRef(tagNodeB).count(1).create());
+        final List<Tag> expected = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5L).create(),
+                Tag.builder().tag("tagb").nodeRef(tagNodeB).count(1L).create());
         assertEquals("Unexpected tags returned.", expected, actual);
     }
 
@@ -506,6 +507,53 @@ public class TagsImplTest
         given(nodesMock.validateOrLookupNode(CONTENT_NODE_ID)).willThrow(new InvalidArgumentException());
 
         objectUnderTest.getTags(CONTENT_NODE_ID, parametersMock);
+    }
+
+    @Test
+    public void testChangeTag()
+    {
+        Tag suppliedTag = Tag.builder().tag("new-name").create();
+        given(taggingServiceMock.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME, "new-name")).willReturn(TAG_NODE_REF);
+
+        Tag tag = objectUnderTest.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID, suppliedTag, parametersMock);
+
+        Tag expected = Tag.builder().nodeRef(TAG_NODE_REF).tag("new-name").create();
+        assertEquals("Unexpected return value", expected, tag);
+    }
+
+    @Test
+    public void testChangeTagAndGetCount()
+    {
+        Tag suppliedTag = Tag.builder().tag("new-name").create();
+        given(taggingServiceMock.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME, "new-name")).willReturn(TAG_NODE_REF);
+        given(parametersMock.getInclude()).willReturn(List.of(PARAM_INCLUDE_COUNT));
+        given(taggingServiceMock.findCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME)).willReturn(3L);
+
+        Tag tag = objectUnderTest.changeTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID, suppliedTag, parametersMock);
+
+        Tag expected = Tag.builder().nodeRef(TAG_NODE_REF).tag("new-name").count(3L).create();
+        assertEquals("Unexpected return value", expected, tag);
+    }
+
+    @Test
+    public void testGetTag()
+    {
+        Tag tag = objectUnderTest.getTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID, parametersMock);
+
+        Tag expected = Tag.builder().nodeRef(TAG_NODE_REF).tag(TAG_NAME).create();
+        assertEquals("Unexpected tag returned", expected, tag);
+    }
+
+    @Test
+    public void testGetTagWithCount()
+    {
+        given(parametersMock.getInclude()).willReturn(List.of(PARAM_INCLUDE_COUNT));
+        given(taggingServiceMock.findCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE, TAG_NAME)).willReturn(0L);
+
+        Tag tag = objectUnderTest.getTag(STORE_REF_WORKSPACE_SPACESSTORE, TAG_ID, parametersMock);
+
+        Tag expected = Tag.builder().nodeRef(TAG_NODE_REF).tag(TAG_NAME).count(0L).create();
+        assertEquals("Unexpected tag returned", expected, tag);
     }
 
     private static List<Pair<String, NodeRef>> createTagAndNodeRefPairs(final List<String> tagNames)

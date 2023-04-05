@@ -339,6 +339,16 @@ public interface TaggingService
     List<Pair<String, Integer>> findTaggedNodesAndCountByTagName(StoreRef storeRef);
 
     /**
+     * Get the number of tagged nodes for a given tag.
+     *
+     * @param storeRef The store containing the nodes.
+     * @param name The name of the tag.
+     * @return The number of nodes tagged with the specified tag.
+     */
+    @NotAuditable
+    long findCountByTagName(StoreRef storeRef, String name);
+
+    /**
      * Creates orphan tags. Tag names case will be lowered.
      *
      * @param storeRef Reference to node store.

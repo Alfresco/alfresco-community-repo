@@ -42,7 +42,7 @@ public class Tag implements Comparable<Tag>
 {
 	private NodeRef nodeRef;
 	private String tag;
-	private Integer count;
+	private Long count;
 
     public Tag()
 	{
@@ -76,13 +76,13 @@ public class Tag implements Comparable<Tag>
 		this.tag = Optional.ofNullable(tag).map(String::toLowerCase).orElse(null);
 	}
 	
-	public Integer getCount()
+	public Long getCount()
 	{
 	
 	    return count;
 	}
 
-	public void setCount(Integer count)
+	public void setCount(Long count)
 	{
 	    this.count = count;
 	}
@@ -133,7 +133,7 @@ public class Tag implements Comparable<Tag>
 	{
 		private NodeRef nodeRef;
 		private String tag;
-		private Integer count;
+		private Long count;
 
 		public Builder nodeRef(NodeRef nodeRef)
 		{
@@ -147,7 +147,7 @@ public class Tag implements Comparable<Tag>
 			return this;
 		}
 
-		public Builder count(Integer count)
+		public Builder count(Long count)
 		{
 			this.count = count;
 			return this;

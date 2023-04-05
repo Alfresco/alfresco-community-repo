@@ -26,7 +26,7 @@ public class GetTagTests extends TagsDataPrep
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify admin user gets tag using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsAbleToGetTag() throws Exception
+    public void adminIsAbleToGetTag()
     {
         RestTagModel returnedTag = restClient.authenticateUser(adminUserModel).withCoreAPI().getTag(documentTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -35,7 +35,7 @@ public class GetTagTests extends TagsDataPrep
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify user with Manager role gets tag using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    public void userWithManagerRoleIsAbleToGetTag() throws Exception
+    public void userWithManagerRoleIsAbleToGetTag()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
 
@@ -47,7 +47,7 @@ public class GetTagTests extends TagsDataPrep
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Collaborator role gets tag using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void userWithCollaboratorRoleIsAbleToGetTag() throws Exception
+    public void userWithCollaboratorRoleIsAbleToGetTag()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         RestTagModel returnedTag = restClient.withCoreAPI().getTag(documentTag);
@@ -57,7 +57,7 @@ public class GetTagTests extends TagsDataPrep
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Contributor role gets tag using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void userWithContributorRoleIsAbleToGetTag() throws Exception
+    public void userWithContributorRoleIsAbleToGetTag()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         RestTagModel returnedTag = restClient.withCoreAPI().getTag(documentTag);
@@ -67,7 +67,7 @@ public class GetTagTests extends TagsDataPrep
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Consumer role gets tag using REST API and status code is OK (200)")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void userWithConsumerRoleIsAbleToGetTag() throws Exception
+    public void userWithConsumerRoleIsAbleToGetTag()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         RestTagModel returnedTag = restClient.withCoreAPI().getTag(documentTag);
@@ -78,7 +78,7 @@ public class GetTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Manager user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 //    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void managerIsNotAbleToGetTagIfAuthenticationFails() throws Exception
+    public void managerIsNotAbleToGetTagIfAuthenticationFails()
     {
         UserModel managerUser = dataUser.usingAdmin().createRandomTestUser();
         String managerPassword = managerUser.getPassword();
@@ -92,7 +92,7 @@ public class GetTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify that if tag id is invalid status code returned is 400")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void invalidTagIdTest() throws Exception
+    public void invalidTagIdTest()
     {
         String tagId = documentTag.getId();
         documentTag.setId("random_tag_value");
@@ -104,7 +104,7 @@ public class GetTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Check that properties filter is applied when getting tag using Manager user.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void checkPropertiesFilterIsApplied() throws Exception
+    public void checkPropertiesFilterIsApplied()
     {
         RestTagModel returnedTag = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("properties=id,tag").withCoreAPI().getTag(documentTag);
@@ -117,7 +117,7 @@ public class GetTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Check that Manager user can get tag of a folder.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void getTagOfAFolder() throws Exception
+    public void getTagOfAFolder()
     {
         RestTagModel returnedTag = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().getTag(folderTag);
@@ -128,7 +128,7 @@ public class GetTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Check default error model schema. Use invalid skipCount parameter.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void checkDefaultErrorModelSchema() throws Exception
+    public void checkDefaultErrorModelSchema()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withParams("skipCount=abc").withCoreAPI().getTag(documentTag);
@@ -140,13 +140,14 @@ public class GetTagTests extends TagsDataPrep
     }
 
     /**
-     * Verify that count field is not present for searched tag.
+     * Verify that count field is not present for searched tag when not requested.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION})
     public void testGetTag_notIncludingCount()
     {
         STEP("Create single tag as admin");
-        final RestTagModel tagModel = createTagModelWithName(getRandomName(TAG_NAME_PREFIX).toLowerCase());
+        String tagName = getRandomName(TAG_NAME_PREFIX).toLowerCase();
+        final RestTagModel tagModel = createTagModelWithName(tagName);
         final RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().createSingleTag(tagModel);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -155,8 +156,26 @@ public class GetTagTests extends TagsDataPrep
         final RestTagModel searchedTag = restClient.withCoreAPI().getTag(createdTag);
 
         restClient.assertStatusCodeIs(OK);
-        searchedTag.assertThat().field(FIELD_TAG).is(tagModel.getTag())
-                .assertThat().field(FIELD_ID).isNotEmpty()
-                .assertThat().field(FIELD_COUNT).isNull();
+        RestTagModel expected = RestTagModel.builder().id(createdTag.getId()).tag(tagName).create();
+        searchedTag.assertThat().isEqualTo(expected);
+    }
+
+    /**
+     * Check that the count field can be included.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTag_includeCount()
+    {
+        STEP("Create unused tag as admin");
+        String tagName = getRandomName(TAG_NAME_PREFIX).toLowerCase();
+        RestTagModel tagModel = createTagModelWithName(tagName);
+        RestTagModel createdTag = restClient.authenticateUser(adminUserModel).withCoreAPI().createSingleTag(tagModel);
+
+        STEP("Get a single tag with the count field");
+        RestTagModel searchedTag = restClient.withCoreAPI().include("count").getTag(createdTag);
+
+        restClient.assertStatusCodeIs(OK);
+        RestTagModel expected = RestTagModel.builder().id(createdTag.getId()).tag(tagName).count(0).create();
+        searchedTag.assertThat().isEqualTo(expected);
     }
 }

@@ -25,8 +25,8 @@
  */
 package org.alfresco.rest.api.tags;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Tags;
 import org.alfresco.rest.api.model.Tag;
@@ -73,13 +73,13 @@ public class TagsEntityResource implements EntityResourceAction.Read<Tag>,
     @WebApiDescription(title="Updates a tag by unique Id")
 	public Tag update(String id, Tag entity, Parameters parameters)
 	{
-		return tags.changeTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id, entity);
+		return tags.changeTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id, entity, parameters);
 	}
 
 	@Override
 	public Tag readById(String id, Parameters parameters) throws EntityNotFoundException
 	{
-		return tags.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
+		return tags.getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id, parameters);
 	}
 
 	/**

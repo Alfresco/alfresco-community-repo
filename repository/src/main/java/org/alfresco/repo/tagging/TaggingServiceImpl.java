@@ -27,8 +27,10 @@ package org.alfresco.repo.tagging;
 
 import static java.util.Collections.emptyMap;
 
+import static org.alfresco.model.ContentModel.ASPECT_WORKING_COPY;
 import static org.alfresco.model.ContentModel.ASSOC_SUBCATEGORIES;
 import static org.alfresco.model.ContentModel.PROP_NAME;
+import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_1_0_URI;
 
 import java.io.BufferedReader;
@@ -333,7 +335,7 @@ public class TaggingServiceImpl implements TaggingService,
     public void beforeDeleteNode(NodeRef nodeRef)
     {
        if (this.nodeService.exists(nodeRef) == true &&          
-           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true && !this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true && !this.nodeService.hasAspect(nodeRef, ASPECT_WORKING_COPY))
        {
            updateAllScopeTags(nodeRef, Boolean.FALSE);
        }
@@ -1241,7 +1243,7 @@ public class TaggingServiceImpl implements TaggingService,
             // Do the search for nodes
             resultSet = this.searchService.query(
                 storeRef, 
-                SearchService.LANGUAGE_LUCENE, 
+                LANGUAGE_LUCENE,
                 "+PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
             List<NodeRef> nodeRefs = resultSet.getNodeRefs();
             return nodeRefs;
@@ -1270,7 +1272,7 @@ public class TaggingServiceImpl implements TaggingService,
             // Do query
             resultSet = this.searchService.query(
                 storeRef, 
-                SearchService.LANGUAGE_LUCENE, 
+                LANGUAGE_LUCENE,
                 "+PATH:\"" + pathString + "//*\" +PATH:\"/cm:taggable/cm:" + ISO9075.encode(tag) + "/member\"");
             List<NodeRef> nodeRefs = resultSet.getNodeRefs();
             return nodeRefs;
@@ -1538,7 +1540,7 @@ public class TaggingServiceImpl implements TaggingService,
     public void afterCheckOut(NodeRef workingCopy)
     {
         if (this.nodeService.exists(workingCopy) == true && this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_TAGGABLE) == true
-                && this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY))
+                && this.nodeService.hasAspect(workingCopy, ASPECT_WORKING_COPY))
         {
             updateAllScopeTags(workingCopy, Boolean.FALSE);
         }
@@ -1550,10 +1552,10 @@ public class TaggingServiceImpl implements TaggingService,
     @Override
     public List<Pair<String, Integer>> findTaggedNodesAndCountByTagName(StoreRef storeRef)
     {
-        String queryTaggeble = "ASPECT:\"" + ContentModel.ASPECT_TAGGABLE + "\"" + "-ASPECT:\"" + ContentModel.ASPECT_WORKING_COPY + "\"";
+        String queryTaggeble = "ASPECT:\"" + ContentModel.ASPECT_TAGGABLE + "\"" + "-ASPECT:\"" + ASPECT_WORKING_COPY + "\"";
         SearchParameters sp = new SearchParameters();
         sp.setQuery(queryTaggeble);
-        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setLanguage(LANGUAGE_LUCENE);
         sp.addStore(storeRef);
         sp.addFieldFacet(new FieldFacet("TAG"));
 
@@ -1563,6 +1565,32 @@ public class TaggingServiceImpl implements TaggingService,
             // Do the search for nodes
             resultSet = this.searchService.query(sp);
             return resultSet.getFieldFacet("TAG");
+        }
+        finally
+        {
+            if (resultSet != null)
+            {
+                resultSet.close();
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public long findCountByTagName(StoreRef storeRef, String name)
+    {
+        String query = "TAG:\"" + name + "\"" + "-ASPECT:\"" + ASPECT_WORKING_COPY + "\"";
+        SearchParameters sp = new SearchParameters();
+        sp.setQuery(query);
+        sp.setLanguage(LANGUAGE_LUCENE);
+        sp.addStore(storeRef);
+
+        ResultSet resultSet = null;
+        try
+        {
+            // Do the search for nodes
+            resultSet = this.searchService.query(sp);
+            return resultSet.getNumberFound();
         }
         finally
         {

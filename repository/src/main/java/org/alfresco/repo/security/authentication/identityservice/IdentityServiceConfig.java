@@ -25,15 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
-import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.keycloak.representations.adapters.config.AdapterConfig;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -41,23 +34,28 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Gavin Cornwell
  */
-public class IdentityServiceConfig extends AdapterConfig implements InitializingBean
+public class IdentityServiceConfig
 {
-    private static final Log LOGGER = LogFactory.getLog(IdentityServiceConfig.class);
     private static final String REALMS = "realms";
-    private static final String SECRET = "secret";
-    private static final String CREDENTIALS_SECRET = "identity-service.credentials.secret";
-    private static final String CREDENTIALS_PROVIDER = "identity-service.credentials.provider";
-    
-    private Properties globalProperties;
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
-    
-    public void setGlobalProperties(Properties globalProperties)
-    {
-        this.globalProperties = globalProperties;
-    }
+    // client id
+    private String resource;
+    private String clientSecret;
+    private String authServerUrl;
+    private String realm;
+    private int connectionPoolSize;
+    private boolean allowAnyHostname;
+    private boolean disableTrustManager;
+    private String truststore;
+    private String truststorePassword;
+    private String clientKeystore;
+    private String clientKeystorePassword;
+    private String clientKeyPassword;
+    private String realmKey;
+    private int publicKeyCacheTtl;
+    private boolean publicClient;
 
     /**
      *
@@ -94,52 +92,163 @@ public class IdentityServiceConfig extends AdapterConfig implements Initializing
     {
         this.clientSocketTimeout = clientSocketTimeout;
     }
-    
-    @Override
-    public void afterPropertiesSet() throws Exception
+
+    public void setConnectionPoolSize(int connectionPoolSize)
     {
-        // programmatically build the more complex objects i.e. credentials
-        Map<String, Object> credentials = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-        
-        String secret = this.globalProperties.getProperty(CREDENTIALS_SECRET);
-        if (secret != null && !secret.isEmpty())
-        {
-            credentials.put(SECRET, secret);
-        }
-        
-        String provider = this.globalProperties.getProperty(CREDENTIALS_PROVIDER);
-        if (provider != null && !provider.isEmpty())
-        {
-            credentials.put("provider", provider);
-        }
-        
-        // TODO: add support for redirect-rewrite-rules and policy-enforcer if and when we need to support it
-        
-        if (!credentials.isEmpty())
-        {
-            this.setCredentials(credentials);
-            
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Created credentials map from config: " + credentials);
-            }
-        }
+        this.connectionPoolSize = connectionPoolSize;
     }
 
-    String getIssuerUrl()
+    public int getConnectionPoolSize()
     {
-        return UriComponentsBuilder.fromUriString(getAuthServerUrl())
-                            .pathSegment(REALMS, getRealm())
-                            .build()
-                            .toString();
+        return connectionPoolSize;
+    }
+
+    public String getAuthServerUrl()
+    {
+        return authServerUrl;
+    }
+
+    public void setAuthServerUrl(String authServerUrl)
+    {
+        this.authServerUrl = authServerUrl;
+    }
+
+    public String getRealm()
+    {
+        return realm;
+    }
+
+    public void setRealm(String realm)
+    {
+        this.realm = realm;
+    }
+
+    public String getResource()
+    {
+        return resource;
+    }
+
+    public void setResource(String resource)
+    {
+        this.resource = resource;
+    }
+
+    public void setClientSecret(String clientSecret)
+    {
+        this.clientSecret = clientSecret;
     }
 
     public String getClientSecret()
     {
-        return Optional.ofNullable(getCredentials())
-                .map(c -> c.get(SECRET))
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .orElse("");
+        return Optional.ofNullable(clientSecret)
+                       .orElse("");
+    }
+
+    public String getIssuerUrl()
+    {
+        return UriComponentsBuilder.fromUriString(getAuthServerUrl())
+                                   .pathSegment(REALMS, getRealm())
+                                   .build()
+                                   .toString();
+    }
+
+    public void setAllowAnyHostname(boolean allowAnyHostname)
+    {
+        this.allowAnyHostname = allowAnyHostname;
+    }
+
+    public boolean isAllowAnyHostname()
+    {
+        return allowAnyHostname;
+    }
+
+    public void setDisableTrustManager(boolean disableTrustManager)
+    {
+        this.disableTrustManager = disableTrustManager;
+    }
+
+    public boolean isDisableTrustManager()
+    {
+        return disableTrustManager;
+    }
+
+    public void setTruststore(String truststore)
+    {
+        this.truststore = truststore;
+    }
+
+    public String getTruststore()
+    {
+        return truststore;
+    }
+
+    public void setTruststorePassword(String truststorePassword)
+    {
+        this.truststorePassword = truststorePassword;
+    }
+
+    public String getTruststorePassword()
+    {
+        return truststorePassword;
+    }
+
+    public void setClientKeystore(String clientKeystore)
+    {
+        this.clientKeystore = clientKeystore;
+    }
+
+    public String getClientKeystore()
+    {
+        return clientKeystore;
+    }
+
+    public void setClientKeystorePassword(String clientKeystorePassword)
+    {
+        this.clientKeystorePassword = clientKeystorePassword;
+    }
+
+    public String getClientKeystorePassword()
+    {
+        return clientKeystorePassword;
+    }
+
+    public void setClientKeyPassword(String clientKeyPassword)
+    {
+        this.clientKeyPassword = clientKeyPassword;
+    }
+
+    public String getClientKeyPassword()
+    {
+        return clientKeyPassword;
+    }
+
+    public void setRealmKey(String realmKey)
+    {
+        this.realmKey = realmKey;
+    }
+
+    public String getRealmKey()
+    {
+        return realmKey;
+    }
+
+    public void setPublicKeyCacheTtl(int publicKeyCacheTtl)
+    {
+        this.publicKeyCacheTtl = publicKeyCacheTtl;
+    }
+
+    public int getPublicKeyCacheTtl()
+    {
+        return publicKeyCacheTtl;
+    }
+
+    public void setPublicClient(boolean publicClient)
+    {
+        this.publicClient = publicClient;
+    }
+
+    public boolean isPublicClient()
+    {
+        return publicClient;
     }
 }

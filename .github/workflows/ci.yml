@@ -313,6 +313,10 @@ jobs:
           - testSuite: SearchTestSuite
             compose-profile: default
             mvn-options: '-Dindex.subsystem.name=solr6'
+          - testSuite: MTLSTestSuite
+            compose-profile: with-mtls-transform-core-aio
+            mtls: true
+            mvn-options: '-Dencryption.ssl.keystore.location=${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${GITHUB_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
@@ -321,6 +325,11 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: "Generate Keystores and Truststores for Mutual TLS configuration"
+        if: ${{ matrix.mtls }}
+        run: |
+         git clone -b "master" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
+         bash ./scripts/ci/generate_keystores.sh
       - name: "Set up the environment"
         run: |
           if [ -e ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh ]; then

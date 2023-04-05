@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,7 @@
  */
 package org.alfresco;
 
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
 import org.alfresco.util.testing.category.DBTests;
@@ -138,6 +139,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.impl.solr.facet.FacetQNameUtilsTest.class,
     org.alfresco.util.BeanExtenderUnitTest.class,
     org.alfresco.repo.solr.SOLRTrackingComponentUnitTest.class,
+    IdentityServiceFacadeFactoryBeanTest.class,
     LazyInstantiatingIdentityServiceFacadeUnitTest.class,
     SpringBasedIdentityServiceFacadeUnitTest.class,
     org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,

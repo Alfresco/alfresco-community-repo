@@ -107,6 +107,13 @@
     <!-- Replaced in the enterprise edition -->
     <bean id="remoteTransformServiceRegistry" class="org.alfresco.repo.content.transform.DummyTransformServiceRegistry" />
 
+    <bean id="httpClientConfigTransform" class="org.alfresco.httpclient.HttpClientConfig" init-method="init" >
+        <property name="sslEncryptionParameters" ref="sslEncryptionParameters" />
+        <property name="keyResourceLoader" ref="springKeyResourceLoader" />
+        <property name="properties" ref="global-properties" />
+        <property name="serviceName" value="transform" />
+    </bean>
+
     <bean id="localTransformServiceRegistry" class="org.alfresco.repo.content.transform.LocalTransformServiceRegistry" >
         <property name="jsonObjectMapper" ref="localTransformServiceRegistryJsonObjectMapper" />
         <property name="pipelineConfigDir" value="${local.transform.pipeline.config.dir}" />
@@ -118,7 +125,8 @@
         <property name="mimetypeService" ref="MimetypeService" />
         <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
         <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
-        <property name="shutdownIndicator" ref="shutdownIndicator"></property>
+        <property name="shutdownIndicator" ref="shutdownIndicator" />
+        <property name="httpClientConfig" ref="httpClientConfigTransform" />
     </bean>
 
     <bean id="localTransformServiceRegistryJsonObjectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />

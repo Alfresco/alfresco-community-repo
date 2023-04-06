@@ -85,9 +85,19 @@ public class HttpClient4Factory
                     throw new HttpClientException(msg);
                 }
             });
+            clientBuilder.setSSLSocketFactory(getSslConnectionSocketFactory(config));
         }
 
-        clientBuilder.setConnectionManager(Objects.requireNonNullElseGet(connectionManager, () -> createPoolingConnectionManager(config)));
+        if (connectionManager != null)
+        {
+            clientBuilder.setConnectionManager(connectionManager);
+        }
+        else
+        {
+            //Setting a connectionManager overrides these properties
+            clientBuilder.setMaxConnTotal(config.getMaxTotalConnections());
+            clientBuilder.setMaxConnPerRoute(config.getMaxHostConnections());
+        }
 
         RequestConfig requestConfig = RequestConfig.custom()
                .setConnectTimeout(config.getConnectionTimeout())

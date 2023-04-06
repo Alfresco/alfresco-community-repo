@@ -22,18 +22,21 @@ package org.alfresco.httpclient;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 
 public class HttpClient4Factory
@@ -79,18 +82,18 @@ public class HttpClient4Factory
                     throw new HttpClientException(msg);
                 }
             });
-
-            SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(
-                    createSSLContext(config),
-                    new String[] { TLS_V_1_2, TLS_V_1_3 },
-                    null,
-                    config.isHostnameVerificationDisabled() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier());
-            clientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
+            clientBuilder.setSSLSocketFactory(getSslConnectionSocketFactory(config));
         }
 
-        if(connectionManager != null)
+        if (connectionManager != null)
         {
             clientBuilder.setConnectionManager(connectionManager);
+        }
+        else
+        {
+            //Setting a connectionManager overrides these properties
+            clientBuilder.setMaxConnTotal(config.getMaxTotalConnections());
+            clientBuilder.setMaxConnPerRoute(config.getMaxHostConnections());
         }
 
         RequestConfig requestConfig = RequestConfig.custom()
@@ -100,11 +103,41 @@ public class HttpClient4Factory
                .build();
 
         clientBuilder.setDefaultRequestConfig(requestConfig);
-        clientBuilder.setMaxConnTotal(config.getMaxTotalConnections());
-        clientBuilder.setMaxConnPerRoute(config.getMaxHostConnections());
+
         clientBuilder.setRetryHandler(new StandardHttpRequestRetryHandler(5, false));
 
         return clientBuilder.build();
     }
 
+    private static SSLConnectionSocketFactory getSslConnectionSocketFactory(HttpClientConfig config)
+    {
+        return new SSLConnectionSocketFactory(
+                createSSLContext(config),
+                new String[] { TLS_V_1_2, TLS_V_1_3 },
+                null,
+                config.isHostnameVerificationDisabled() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+    }
+
+    public static PoolingHttpClientConnectionManager createPoolingConnectionManager(HttpClientConfig config)
+    {
+        PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
+        if(config.isMTLSEnabled())
+        {
+            poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(
+                    RegistryBuilder.<ConnectionSocketFactory>create()
+                   .register("https", getSslConnectionSocketFactory(config))
+                   .build());
+        }
+        else
+        {
+            poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(
+                    RegistryBuilder.<ConnectionSocketFactory>create()
+                   .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                   .build());
+        }
+        poolingHttpClientConnectionManager.setMaxTotal(config.getMaxTotalConnections());
+        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(config.getMaxHostConnections());
+
+        return poolingHttpClientConnectionManager;
+    }
 }

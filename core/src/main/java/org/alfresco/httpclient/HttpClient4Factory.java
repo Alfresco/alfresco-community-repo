@@ -22,9 +22,6 @@ package org.alfresco.httpclient;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-
-import java.util.Objects;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequestInterceptor;

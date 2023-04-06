@@ -32,8 +32,8 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+            .and().entriesListContains("tag", documentTagValue)
+            .and().entriesListContains("tag", documentTagValue2);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Collaborator role gets tags using REST API and status code is OK (200)")
@@ -44,8 +44,8 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+            .and().entriesListContains("tag", documentTagValue)
+            .and().entriesListContains("tag", documentTagValue2);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Contributor role gets tags using REST API and status code is OK (200)")
@@ -56,8 +56,8 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+            .and().entriesListContains("tag", documentTagValue)
+            .and().entriesListContains("tag", documentTagValue2);
     }
     
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify user with Consumer role gets tags using REST API and status code is OK (200)")
@@ -68,8 +68,8 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-            .and().entriesListContains("tag", documentTagValue.toLowerCase())
-            .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+            .and().entriesListContains("tag", documentTagValue)
+            .and().entriesListContains("tag", documentTagValue2);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
@@ -113,8 +113,8 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListContains("tag", documentTagValue.toLowerCase())
-                .and().entriesListContains("tag", documentTagValue2.toLowerCase());
+                .and().entriesListContains("tag", documentTagValue)
+                .and().entriesListContains("tag", documentTagValue2);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -126,7 +126,7 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListContains("tag", folderTagValue.toLowerCase());
+                .and().entriesListContains("tag", folderTagValue);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
@@ -139,8 +139,8 @@ public class GetTagsTests extends TagsDataPrep
                 .withParams("maxItems=5000&properties=tag").withCoreAPI().getTags();
         restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListContains("tag", documentTagValue.toLowerCase())
-                .and().entriesListContains("tag", documentTagValue2.toLowerCase())
+                .and().entriesListContains("tag", documentTagValue)
+                .and().entriesListContains("tag", documentTagValue2)
                 .and().entriesListDoesNotContain("id");
     }
 
@@ -226,7 +226,7 @@ public class GetTagsTests extends TagsDataPrep
 
         returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
         returnedCollection.assertThat().entriesListIsNotEmpty()
-                .and().entriesListDoesNotContain("tag", removedTag.toLowerCase());
+                .and().entriesListDoesNotContain("tag", removedTag);
     }
 
     /**
@@ -243,7 +243,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetMatches("tag", Set.of(documentTagValue.toLowerCase()));
+            .entrySetMatches("tag", Set.of(documentTagValue));
     }
 
     /**
@@ -260,7 +260,7 @@ public class GetTagsTests extends TagsDataPrep
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetMatches("tag", Set.of(documentTagValue.toLowerCase(), folderTagValue.toLowerCase()));
+            .entrySetMatches("tag", Set.of(documentTagValue, folderTagValue));
     }
 
     /**
@@ -271,13 +271,13 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Get tags with names filter using MATCHES and expect one item in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag MATCHES ('orphan*'))")
-            .withCoreAPI()
-            .getTags();
+                                       .withParams("where=(tag MATCHES ('orphan*'))", "maxItems=10000")
+                                       .withCoreAPI()
+                                       .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetContains("tag", orphanTag.getTag().toLowerCase());
+                          .entrySetContains("tag", orphanTag.getTag());
     }
 
     /**
@@ -288,13 +288,13 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Get tags with names filter using EQUALS and MATCHES and expect four items in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag='" + orphanTag.getTag() + "' OR tag MATCHES ('*tag*'))")
+            .withParams("where=(tag MATCHES ('*tag*'))", "maxItems=10000")
             .withCoreAPI()
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetContains("tag", documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase());
+            .entrySetContains("tag", documentTagValue, documentTagValue2, folderTagValue, orphanTag.getTag());
     }
 
     /**
@@ -305,17 +305,17 @@ public class GetTagsTests extends TagsDataPrep
     {
         STEP("Get tags applying names filter using MATCHES twice and expect four items in result");
         returnedCollection = restClient.authenticateUser(adminUserModel)
-            .withParams("where=(tag MATCHES ('orphan*') OR tag MATCHES ('tag*'))")
+            .withParams("where=(tag MATCHES ('orphan*') OR tag MATCHES ('tag*'))", "maxItems=10000")
             .withCoreAPI()
             .getTags();
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         returnedCollection.assertThat()
-            .entrySetContains("tag", documentTagValue.toLowerCase(), documentTagValue2.toLowerCase(), folderTagValue.toLowerCase(), orphanTag.getTag().toLowerCase());
+            .entrySetContains("tag", documentTagValue, documentTagValue2, folderTagValue, orphanTag.getTag());
     }
 
     /**
-  * Verify that providing incorrect field name in where query will result with 400 (Bad Request).
+     * Verify that providing incorrect field name in where query will result with 400 (Bad Request).
      */
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withWrongWherePropertyNameAndExpect400()

@@ -48,6 +48,8 @@ import org.alfresco.util.Pair;
 @AlfrescoPublicApi
 public interface TaggingService
 {
+    NodeRef TAG_ROOT_NODE_REF = new NodeRef("workspace://SpacesStore/tag:tag-root");
+
     /**
      * Indicates whether the tag already exists
      * 

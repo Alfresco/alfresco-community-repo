@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -50,7 +51,7 @@ public class Tag implements Comparable<Tag>
 	public Tag(NodeRef nodeRef, String tag)
 	{
 		this.nodeRef = nodeRef;
-		this.tag = tag;
+		setTag(tag);
 	}
 
 	@JsonProperty("id")
@@ -72,7 +73,7 @@ public class Tag implements Comparable<Tag>
 
 	public void setTag(String tag)
 	{
-		this.tag = tag;
+		this.tag = Optional.ofNullable(tag).map(String::toLowerCase).orElse(null);
 	}
 	
 	public Integer getCount()

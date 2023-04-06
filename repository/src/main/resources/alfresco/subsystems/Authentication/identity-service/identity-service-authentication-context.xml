@@ -86,9 +86,6 @@
    </bean>
 
    <bean name="identityServiceConfig" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig">
-      <property name="globalProperties">
-         <ref bean="global-properties" />
-      </property>
       <property name="realm">
          <value>${identity-service.realm}</value>
       </property>
@@ -97,6 +94,9 @@
       </property>
       <property name="resource">
          <value>${identity-service.resource}</value>
+      </property>
+      <property name="clientSecret">
+         <value>${identity-service.credentials.secret:#{null}}</value>
       </property>
       <property name="allowAnyHostname">
          <value>${identity-service.allow-any-hostname:false}</value>
@@ -133,6 +133,9 @@
       </property>
       <property name="publicKeyCacheTtl">
          <value>${identity-service.public-key-cache-ttl:86400}</value>
+      </property>
+      <property name="publicClient">
+         <value>${identity-service.public-client:false}</value>
       </property>
    </bean>
    

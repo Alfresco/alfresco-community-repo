@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,10 +25,7 @@
  */
 package org.alfresco.email.server.impl.subetha;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,7 +36,6 @@ import javax.mail.Part;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailMessagePart;
 import org.springframework.extensions.surf.util.ParameterCheck;
-import org.alfresco.util.remote.RemotableInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -63,9 +59,6 @@ public class SubethaEmailMessagePart implements EmailMessagePart
     private int fileSize = -1;
     private String contentType;
     private InputStream contentInputStream;
-    
-    private String rmiRegistryHost;
-    private int rmiRegistryPort;
     
     protected SubethaEmailMessagePart()
     {
@@ -145,20 +138,4 @@ public class SubethaEmailMessagePart implements EmailMessagePart
     }
 
 
-    public void setRmiRegistry(String rmiRegistryHost, int rmiRegistryPort)
-    {
-        this.rmiRegistryHost = rmiRegistryHost;
-        this.rmiRegistryPort = rmiRegistryPort;
-    }
-    
-    private void writeObject(ObjectOutputStream out) throws IOException
-    {
-        contentInputStream = new RemotableInputStream(rmiRegistryHost, rmiRegistryPort, contentInputStream);
-        out.defaultWriteObject();
-    }
-    
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
-    {
-        in.defaultReadObject();
-    }
 }

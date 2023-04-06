@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,10 +37,7 @@ import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationEvent;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Base implementation of an email server.
@@ -299,60 +296,6 @@ public abstract class EmailServer extends AbstractLifecycleBean
         {
             shutdown();
         }
-    }
-    
-    private static volatile Boolean stop = false;
-    
-    public static void main(String[] args)
-    {
-        if (args.length == 0)
-        {
-            usage();
-            return;
-        }
-        
-        try (AbstractApplicationContext context = new ClassPathXmlApplicationContext(args))
-        {
-            if (!context.containsBean("emailServer")) 
-            {
-                usage();
-                return;
-            }
-            
-            Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() 
-                { 
-                    stop = true;
-                    synchronized (stop)
-                    {
-                        stop.notifyAll();
-                    }
-                }
-            });
-            System.out.println("Use Ctrl-C to shutdown EmailServer");
-
-            while (!stop) 
-            {
-                synchronized (stop)
-                {
-                    stop.wait();
-                }
-            }
-        }
-        catch (BeansException e) 
-        {
-            System.err.println("Error creating context: " + e);
-            usage();
-        }
-        catch (InterruptedException e)
-        {
-        }
-    }
-
-    private static void usage()
-    {
-        System.err.println("Use: EmailServer configLocation1, configLocation2, ...");
-        System.err.println("\t configLocation - spring xml configs with EmailServer related beans (emailServer, emailServerConfiguration, emailService)");
     }
     
     /**

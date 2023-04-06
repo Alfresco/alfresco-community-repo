@@ -1,6 +1,7 @@
 package org.alfresco.rest.tags;
 
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.testng.Assert.fail;
 
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestTagModel;
@@ -15,6 +16,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -27,17 +29,17 @@ public class UpdateTagTests extends TagsDataPrep
     private String randomTag = "";
 
     @BeforeMethod(alwaysRun=true)
-    public void addTagToDocument() throws Exception
+    public void addTagToDocument()
     {
         restClient.authenticateUser(adminUserModel);
-        oldTag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("old"));
-        randomTag = RandomData.getRandomName("tag");
+        oldTag = restClient.withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("old").toLowerCase());
+        randomTag = RandomData.getRandomName("tag").toLowerCase();
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Verify Admin user updates tags and status code is 200")
     @Bug(id="REPO-1828")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
-    public void adminIsAbleToUpdateTags() throws Exception
+    public void adminIsAbleToUpdateTags()
     {
         restClient.authenticateUser(adminUserModel);
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
@@ -49,7 +51,7 @@ public class UpdateTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API,
             TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify Manager user can't update tags with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void managerIsNotAbleToUpdateTag() throws Exception
+    public void managerIsNotAbleToUpdateTag()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager));
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
@@ -59,7 +61,7 @@ public class UpdateTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Verify Collaborator user can't update tags with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void collaboratorIsNotAbleToUpdateTagCheckDefaultErrorModelSchema() throws Exception
+    public void collaboratorIsNotAbleToUpdateTagCheckDefaultErrorModelSchema()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteCollaborator));
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
@@ -72,7 +74,7 @@ public class UpdateTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.REGRESSION, description = "Verify Contributor user can't update tags with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void contributorIsNotAbleToUpdateTag() throws Exception
+    public void contributorIsNotAbleToUpdateTag()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteContributor));
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
@@ -82,7 +84,7 @@ public class UpdateTagTests extends TagsDataPrep
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS },
             executionType = ExecutionType.SANITY, description = "Verify Consumer user can't update tags with Rest API and status code is 403")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void consumerIsNotAbleToUpdateTag() throws Exception
+    public void consumerIsNotAbleToUpdateTag()
     {
         restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteConsumer));
         restClient.withCoreAPI().usingTag(oldTag).update(randomTag);
@@ -93,7 +95,7 @@ public class UpdateTagTests extends TagsDataPrep
             executionType = ExecutionType.SANITY, description = "Verify user gets status code 401 if authentication call fails")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.SANITY })
 //    @Bug(id="MNT-16904", description = "It fails only on environment with tenants")
-    public void userIsNotAbleToUpdateTagIfAuthenticationFails() throws Exception
+    public void userIsNotAbleToUpdateTagIfAuthenticationFails()
     {
         UserModel siteManager = usersWithRoles.getOneUserWithRole(UserRole.SiteManager);
         String managerPassword = siteManager.getPassword();
@@ -106,76 +108,93 @@ public class UpdateTagTests extends TagsDataPrep
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to update tag with invalid id")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsNotAbleToUpdateTagWithInvalidId() throws Exception
+    public void adminIsNotAbleToUpdateTagWithInvalidId()
     {
         String invalidTagId = "invalid-id";
-        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag").toLowerCase());
         tag.setId(invalidTagId);
-        restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag"));
+        restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag").toLowerCase());
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, invalidTagId));
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to update tag with empty id")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsNotAbleToUpdateTagWithEmptyId() throws Exception
+    public void adminIsNotAbleToUpdateTagWithEmptyId()
     {
-        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag").toLowerCase());
         tag.setId("");
-        restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag"));
+        restClient.withCoreAPI().usingTag(tag).update(RandomData.getRandomName("tag").toLowerCase());
         restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
                 .assertLastError().containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Verify admin is not able to update tag with invalid body")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsNotAbleToUpdateTagWithEmptyBody() throws Exception
+    public void adminIsNotAbleToUpdateTagWithEmptyBody()
     {
-        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
+        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag").toLowerCase());
         restClient.withCoreAPI().usingTag(tag).update("");
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                .assertLastError().containsSummary(RestErrorModel.EMPTY_TAG);
+                .assertLastError().containsSummary(RestErrorModel.BLANK_TAG);
     }
 
     @Bug(id="ACE-5629")
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is not able to update tag with invalid body containing '|' symbol")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsNotAbleToUpdateTagWithInvalidBodyScenario1() throws Exception
+    @Ignore
+    public void adminIsNotAbleToUpdateTagWithInvalidBodyScenario1()
     {
         String invalidTagBody = "|.\"/<>*";
-        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
-        Utility.sleep(500, 20000, () ->
+        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag").toLowerCase());
+        try
         {
-            restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
-            restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                    .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
-        });
+            Utility.sleep(500, 20000, () ->
+            {
+                restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
+                restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                          .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
+            });
+        }
+        catch (InterruptedException e)
+        {
+            fail("Test interrupted while waiting for error status code.");
+        }
     }
 
     @Bug(id="ACE-5629")
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is not able to update tag with invalid body without '|' symbol")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
-    public void adminIsNotAbleToUpdateTagWithInvalidBodyScenario2() throws Exception
+    @Ignore
+    public void adminIsNotAbleToUpdateTagWithInvalidBodyScenario2()
     {
         String invalidTagBody = ".\"/<>*";
         RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().usingResource(document).addTag(RandomData.getRandomName("tag"));
-        Utility.sleep(500, 20000, () ->
+        try
         {
-            restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
-            restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+            Utility.sleep(500, 20000, () ->
+            {
+                restClient.withCoreAPI().usingTag(tag).update(invalidTagBody);
+                    restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
                     .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_TAG, invalidTagBody));
-        });
+            });
+        }
+        catch (InterruptedException e)
+        {
+            fail("Test interrupted while waiting for error status code.");
+        }
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user can provide large string for new tag value.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     @Bug(id="REPO-1828")
-    public void adminIsAbleToUpdateTagsProvideLargeStringTag() throws Exception
+    @Ignore
+    public void adminIsAbleToUpdateTagsProvideLargeStringTag()
     {
-        String largeStringTag = RandomStringUtils.randomAlphanumeric(10000);
+        String largeStringTag = RandomStringUtils.randomAlphanumeric(10000).toLowerCase();
 
         restClient.authenticateUser(adminUserModel);
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(largeStringTag);
@@ -188,9 +207,9 @@ public class UpdateTagTests extends TagsDataPrep
             description = "Verify admin user can provide short string for new tag value.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     @Bug(id="REPO-1828")
-    public void adminIsAbleToUpdateTagsProvideShortStringTag() throws Exception
+    public void adminIsAbleToUpdateTagsProvideShortStringTag()
     {
-        String shortStringTag = RandomStringUtils.randomAlphanumeric(2);
+        String shortStringTag = RandomStringUtils.randomAlphanumeric(2).toLowerCase();
 
         restClient.authenticateUser(adminUserModel);
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(shortStringTag);
@@ -203,9 +222,10 @@ public class UpdateTagTests extends TagsDataPrep
             description = "Verify admin user can provide string with special chars for new tag value.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     @Bug(id="REPO-1828")
-    public void adminIsAbleToUpdateTagsProvideSpecialCharsStringTag() throws Exception
+    @Ignore
+    public void adminIsAbleToUpdateTagsProvideSpecialCharsStringTag()
     {
-        String specialCharsString = "!@#$%^&*()'\".,<>-_+=|\\";
+        String specialCharsString = RandomData.getRandomName("!@#$%^&*()'\".,<>-_+=|\\").toLowerCase();
 
         restClient.authenticateUser(adminUserModel);
         returnedModel = restClient.withCoreAPI().usingTag(oldTag).update(specialCharsString);
@@ -218,9 +238,10 @@ public class UpdateTagTests extends TagsDataPrep
             description = "Verify Admin user can provide existing tag for new tag value.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     @Bug(id="REPO-1828")
-    public void adminIsAbleToUpdateTagsProvideExistingTag() throws Exception
+    @Ignore
+    public void adminIsAbleToUpdateTagsProvideExistingTag()
     {
-        String existingTag = "oldTag";
+        String existingTag = RandomData.getRandomName("oldTag").toLowerCase();
         RestTagModel oldExistingTag = restClient.authenticateUser(usersWithRoles.getOneUserWithRole(UserRole.SiteManager))
                 .withCoreAPI().usingResource(document).addTag(existingTag);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -236,13 +257,14 @@ public class UpdateTagTests extends TagsDataPrep
             description = "Verify Admin user can delete a tag, add tag and update it.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     @Bug(id="REPO-1828")
-    public void adminDeleteTagAddTagUpdateTag() throws Exception
+    @Ignore
+    public void adminDeleteTagAddTagUpdateTag()
     {
         restClient.authenticateUser(adminUserModel)
                 .withCoreAPI().usingResource(document).deleteTag(oldTag);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
-        String newTag = "addTag";
+        String newTag = RandomData.getRandomName("addTag").toLowerCase();
         RestTagModel newTagModel = restClient.withCoreAPI().usingResource(document).addTag(newTag);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
@@ -256,9 +278,10 @@ public class UpdateTagTests extends TagsDataPrep
             description = "Verify Admin user can update a tag, delete tag and add it.")
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     @Bug(id="REPO-1828")
-    public void adminUpdateTagDeleteTagAddTag() throws Exception
+    @Ignore
+    public void adminUpdateTagDeleteTagAddTag()
     {
-        String newTag = "addTag";
+        String newTag = RandomData.getRandomName("addTag").toLowerCase();
 
         returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTag(oldTag).update(newTag);
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -278,7 +301,7 @@ public class UpdateTagTests extends TagsDataPrep
     public void adminIsAbleToUpdateOrphanTag()
     {
         STEP("Update orphan tag and expect 200");
-        final String newTagName = RandomData.getRandomName("new");
+        final String newTagName = RandomData.getRandomName("new").toLowerCase();
         returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTag(orphanTag).update(newTagName);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);

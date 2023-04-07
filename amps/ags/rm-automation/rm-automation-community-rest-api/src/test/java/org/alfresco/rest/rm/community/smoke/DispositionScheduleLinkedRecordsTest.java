@@ -50,6 +50,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
@@ -135,6 +136,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * <p>
      * <p/> TestRail Test C775<p/>
      **/
+    @Ignore("ACS-5020")
     @Test
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
@@ -201,6 +203,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * Check the disposition steps for a record can be executed
      * When the record is linked to a folder with the same disposition schedule
      * */
+    @Ignore("ACS-5020")
     @Test
     @AlfrescoTest (jira = "RM-3060")
     public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {

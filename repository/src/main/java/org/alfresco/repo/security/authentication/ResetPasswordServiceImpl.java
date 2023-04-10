@@ -504,21 +504,6 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         return UrlUtil.replaceShareUrlPlaceholder(url, sysAdminParams);
     }
 
-    private String getRepoBaseUrl(String url, String propName)
-    {
-        if (url == null)
-        {
-            LOGGER.warn("The url for the property [" + propName + "] is not configured.");
-            return "";
-        }
-
-        if (url.endsWith("/"))
-        {
-            url = url.substring(0, url.length() - 1);
-        }
-        return UrlUtil.replaceRepoBaseUrlPlaceholder(url, sysAdminParams);
-    }
-
     protected String getResetPasswordEmailTemplate(ClientApp clientApp)
     {
         return clientApp.getProperty("requestResetPasswordTemplatePath");
@@ -537,16 +522,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         StringBuilder sb = new StringBuilder(100);
 
         String pageUrl = clientApp.getProperty("resetPasswordPageUrl");
-
-        if(!StringUtils.isEmpty(clientApp.getProperty("workspaceUrl")))
-        {
-            String workspaceUrlPlaceholder = clientApp.getProperty("workspaceUrl");
-            String workSpaceUrl = getRepoBaseUrl(workspaceUrlPlaceholder,"");
-            sb.append(UrlUtil.replaceWorkSpaceUrlPlaceholder(pageUrl,workSpaceUrl));
-            LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
-
-        }
-        else if(StringUtils.isEmpty(pageUrl))
+        if (StringUtils.isEmpty(pageUrl))
         {
             sb.append(UrlUtil.getShareUrl(sysAdminParams));
 
@@ -559,7 +535,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
             sb.append(getUrl(pageUrl, ""));
         }
 
-            sb.append("?key=").append(key)
+        sb.append("?key=").append(key)
                     .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
 
         return sb.toString();

@@ -436,7 +436,6 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
 
                 associations.add(child);
             }
-            //associations.addAll(children);
         }
 
         return new ListBackedPagingResults<>(associations, moreItems);

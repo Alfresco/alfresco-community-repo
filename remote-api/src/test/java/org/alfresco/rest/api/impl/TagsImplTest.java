@@ -128,7 +128,7 @@ public class TagsImplTest
     public void testGetTags()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
         given(taggingServiceMock.getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), isNull())).willReturn(List.of(new Pair<>(TAG_NODE_REF, null)));
         given(nodeServiceMock.getProperty(any(NodeRef.class), eq(ContentModel.PROP_NAME))).willReturn("tag-dummy-name");
@@ -145,7 +145,7 @@ public class TagsImplTest
     public void testGetTags_verifyIfCountIsZero()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(List.of(PARAM_INCLUDE_COUNT));
         given(taggingServiceMock.getTags(any(StoreRef.class), any(), any(), any(), any())).willReturn(List.of(new Pair<>(TAG_NODE_REF, 0)));
         given(nodeServiceMock.getProperty(any(NodeRef.class), eq(ContentModel.PROP_NAME))).willReturn("tag-dummy-name");
@@ -166,7 +166,7 @@ public class TagsImplTest
         NodeRef tagNodeA = new NodeRef("tag://A/");
         NodeRef tagNodeB = new NodeRef("tag://B/");
 
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getInclude()).willReturn(List.of("count"));
 
@@ -277,7 +277,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag=expectedName)"));
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
         //when
@@ -293,7 +293,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag IN (expectedName1, expectedName2))"));
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
         //when
@@ -309,7 +309,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag MATCHES ('expectedName*'))"));
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
         given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
         //when
@@ -325,7 +325,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag=expectedName AND tag IN (expectedName1, expectedName2))"));
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
@@ -339,7 +339,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag BETWEEN ('expectedName', 'expectedName2'))"));
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
@@ -353,7 +353,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(NOT tag=expectedName)"));
-        given(parametersMock.getSorting()).willReturn(null);
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));

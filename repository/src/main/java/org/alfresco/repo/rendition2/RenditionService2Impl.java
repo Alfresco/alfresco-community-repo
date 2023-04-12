@@ -483,22 +483,28 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 transformDefinition, transformContentHashCode);
     }
 
-    private boolean isSameRendition(NodeRef sourceNodeRef, String renditionName, int transformContentHashCode)
+    private boolean isSameRendition(NodeRef sourceNodeRef, String renditionName, int transformContentHashCode, InputStream transformInputStream)
     {
-        int currentRenditionNodeHashCode;
+        boolean sameRendition = false;
 
         try
         {
-            NodeRef renditionNode = getRenditionNode(sourceNodeRef, renditionName);
-            currentRenditionNodeHashCode = Integer
+            int currentRenditionNodeHashCode;
+
+            if (transformInputStream != null && transformInputStream.available() > 0)
+            {
+                NodeRef renditionNode = getRenditionNode(sourceNodeRef, renditionName);
+                currentRenditionNodeHashCode = Integer
                     .valueOf(nodeService.getProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE).toString());
+                sameRendition = currentRenditionNodeHashCode == transformContentHashCode;
+            }
         }
         catch (Exception e)
         {
-            currentRenditionNodeHashCode = -3;
+            sameRendition = false;
         }
 
-        return currentRenditionNodeHashCode == transformContentHashCode;
+        return sameRendition;
     }
 
     /**
@@ -518,7 +524,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                 logger.debug("Ignore transform for rendition " + renditionName + " on " + sourceNodeRef + " as it is no longer needed");
             }
         }
-        else if (isSameRendition(sourceNodeRef, renditionName, transformContentHashCode))
+        else if (isSameRendition(sourceNodeRef, renditionName, transformContentHashCode, transformInputStream))
         {
             logger.debug("Ignore transform for rendition " + renditionName + " on " + sourceNodeRef
                     + " as it is the same as the existing one");

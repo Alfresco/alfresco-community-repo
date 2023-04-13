@@ -55,7 +55,8 @@ public class CategoriesPathTests extends CategoriesRestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        STEP("Create site");
+        STEP("Create user and site");
+        user = dataUser.createRandomTestUser();
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
 
         STEP("Create a folder, file in it and a category");

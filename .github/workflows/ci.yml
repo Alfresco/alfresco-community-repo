@@ -317,6 +317,7 @@ jobs:
           - testSuite: MTLSTestSuite
             compose-profile: with-mtls-transform-core-aio
             mtls: true
+            disabledHostnameVerification: false
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
       - uses: actions/checkout@v3

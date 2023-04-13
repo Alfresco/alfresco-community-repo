@@ -53,8 +53,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
-        STEP("Create user and site");
-        user = dataUser.createRandomTestUser();
+        STEP("Create site");
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
 
         STEP("Create a folder, file in it and a category");
@@ -110,6 +109,27 @@ public class CategoriesPathTests extends CategoriesRestTest
         assertTrue(actualCategories.getEntries().stream()
                 .map(RestCategoryModel::onModel)
                 .allMatch(cat -> cat.getPath().equals("/categories/General")));
+    }
+
+    /**
+     * Verify path for child category.
+     */
+    @Test(groups = { TestGroup.REST_API })
+    public void testGetChildCategory_includePath()
+    {
+        STEP("Create parent and child categories and verify if child path contains parent name");
+        final RestCategoryModel parentCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
+        final RestCategoryModel childCategory = prepareCategoriesUnder(parentCategory, 2);
+        final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)
+                .withCoreAPI()
+                .usingCategory(parentCategory)
+                .include(INCLUDE_PATH_PARAM)
+                .getCategoryChildren();
+
+        restClient.assertStatusCodeIs(OK);
+        assertTrue(actualCategories.getEntries().stream()
+                .map(RestCategoryModel::onModel)
+                .allMatch(cat -> cat.getPath().equals("/categories/General/" + parentCategory.getName())));
     }
 
     /**

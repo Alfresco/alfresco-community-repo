@@ -69,7 +69,6 @@ import org.apache.commons.lang3.StringUtils;
 public class CategoriesImpl implements Categories
 {
     static final String INCLUDE_COUNT_PARAM = "count";
-    static final String INCLUDE_PATH_PARAM = "path";
     static final String NOT_A_VALID_CATEGORY = "Node id does not refer to a valid category";
     static final String NO_PERMISSION_TO_MANAGE_A_CATEGORY = "Current user does not have permission to manage a category";
     static final String NO_PERMISSION_TO_READ_CONTENT = "Current user does not have read permission to content";
@@ -112,9 +111,9 @@ public class CategoriesImpl implements Categories
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }
 
-        if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+        if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
         {
-            category.setPath(nodeService.getPath(nodeRef).toDisplayPath(nodeService, permissionService));
+            category.setPath(getCategoryPath(category));
         }
 
         return category;
@@ -134,9 +133,9 @@ public class CategoriesImpl implements Categories
                     {
                         category.setCount(0);
                     }
-                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
                     {
-                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                        category.setPath(getCategoryPath(category));
                     }
                 })
                 .collect(Collectors.toList());
@@ -152,9 +151,9 @@ public class CategoriesImpl implements Categories
                 .map(ChildAssociationRef::getChildRef)
                 .map(this::mapToCategory)
                 .peek(category -> {
-                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
                     {
-                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                        category.setPath(getCategoryPath(category));
                     }
                 })
                 .collect(Collectors.toList());
@@ -187,9 +186,9 @@ public class CategoriesImpl implements Categories
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }
 
-        if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+        if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
         {
-            category.setPath(nodeService.getPath(categoryNodeRef).toDisplayPath(nodeService, permissionService));
+            category.setPath(getCategoryPath(category));
         }
 
         return category;
@@ -226,9 +225,9 @@ public class CategoriesImpl implements Categories
                 .stream()
                 .map(this::mapToCategory)
                 .peek(category -> {
-                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
                     {
-                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                        category.setPath(getCategoryPath(category));
                     }
                 })
                 .collect(Collectors.toList());
@@ -265,9 +264,9 @@ public class CategoriesImpl implements Categories
                 .stream()
                 .map(this::mapToCategory)
                 .peek(category -> {
-                    if (parameters.getInclude().contains(INCLUDE_PATH_PARAM))
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
                     {
-                        category.setPath(nodeService.getPath(nodes.getNode(category.getId()).getNodeRef()).toDisplayPath(nodeService, permissionService));
+                        category.setPath(getCategoryPath(category));
                     }
                 })
                 .collect(Collectors.toList());
@@ -514,5 +513,17 @@ public class CategoriesImpl implements Categories
         return categoryService.getTopCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE)
             .stream()
             .collect(Collectors.toMap(pair -> pair.getFirst().toString().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
+    }
+
+    /**
+     * Get path for a given category in human-readable form.
+     *
+     * @param category Category to provide path for.
+     * @return Path for a category in human-readable form.
+     */
+    private String getCategoryPath(final Category category)
+    {
+        final NodeRef categoryNodeRef = nodes.getNode(category.getId()).getNodeRef();
+        return nodeService.getPath(categoryNodeRef).toDisplayPath(nodeService, permissionService);
     }
 }

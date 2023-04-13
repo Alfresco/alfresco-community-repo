@@ -53,6 +53,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     private RestCategoryModel anotherCategory;
 
     @BeforeClass(alwaysRun = true)
+    @Override
     public void dataPreparation() throws Exception
     {
         STEP("Create user and site");

@@ -102,6 +102,9 @@ public class CategoriesImplTest
     private static final Category CATEGORY = createDefaultCategory();
     private static final String CONTENT_NODE_ID = "content-node-id";
     private static final NodeRef CONTENT_NODE_REF = createNodeRefWithId(CONTENT_NODE_ID);
+    private static final String MOCK_ROOT_LEVEL = "/{mockRootLevel}";
+    private static final String MOCK_CHILD_LEVEL = "/{mockChild}";
+    private static final String MOCK_CATEGORY_PATH = "//" + MOCK_ROOT_LEVEL + "//" + MOCK_CHILD_LEVEL;
 
     @Mock
     private Nodes nodesMock;
@@ -260,16 +263,10 @@ public class CategoriesImplTest
         final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
         final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
-        final Path mockPath = new Path();
-        final String mockRootLevel = "/{mockRootLevel}";
-        final String mockChildLevel = "/{mockChild}";
-        mockPath.append(PathHelper.stringToPath(mockRootLevel));
-        mockPath.append(PathHelper.stringToPath(mockChildLevel));
-        mockPath.append(PathHelper.stringToPath("/"));
         given(nodesMock.getNode(any())).willReturn(createNode());
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
         given(parametersMock.getInclude()).willReturn(List.of(Nodes.PARAM_INCLUDE_PATH));
-        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+        given(nodeServiceMock.getPath(any())).willReturn(mockCategoryPath());
 
         // when
         final Category actualCategory = objectUnderTest.getCategoryById(CATEGORY_ID, parametersMock);
@@ -278,7 +275,7 @@ public class CategoriesImplTest
                 .isNotNull()
                 .extracting(Category::getPath)
                 .isNotNull()
-                .isEqualTo("//" + mockRootLevel + "//" + mockChildLevel);
+                .isEqualTo(MOCK_CATEGORY_PATH);
     }
 
     @Test
@@ -515,18 +512,12 @@ public class CategoriesImplTest
         final NodeRef categoryNodeRef = createNodeRefWithId(CATEGORY_ID);
         final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
-        final Path mockPath = new Path();
-        final String mockRootLevel = "/{mockRootLevel}";
-        final String mockChildLevel = "/{mockChild}";
-        mockPath.append(PathHelper.stringToPath(mockRootLevel));
-        mockPath.append(PathHelper.stringToPath(mockChildLevel));
-        mockPath.append(PathHelper.stringToPath("/"));
         given(nodesMock.validateNode(PARENT_ID)).willReturn(parentCategoryNodeRef);
         given(categoryServiceMock.createCategory(parentCategoryNodeRef, CATEGORY_NAME)).willReturn(categoryNodeRef);
         given(nodesMock.getNode(any())).willReturn(createNode());
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
         given(parametersMock.getInclude()).willReturn(List.of(Nodes.PARAM_INCLUDE_PATH));
-        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+        given(nodeServiceMock.getPath(any())).willReturn(mockCategoryPath());
         final List<Category> categoryModels = new ArrayList<>(prepareCategories());
 
         // when
@@ -541,7 +532,7 @@ public class CategoriesImplTest
                 .element(0)
                 .extracting(Category::getPath)
                 .isNotNull()
-                .isEqualTo("//" + mockRootLevel + "//" + mockChildLevel);
+                .isEqualTo(MOCK_CATEGORY_PATH);
     }
 
     @Test
@@ -701,17 +692,10 @@ public class CategoriesImplTest
         given(nodesMock.isSubClass(parentCategoryNodeRef, ContentModel.TYPE_CATEGORY, false)).willReturn(true);
         final int childrenCount = 3;
         final List<ChildAssociationRef> childAssociationRefMocks = prepareChildAssocMocks(childrenCount, parentCategoryNodeRef);
-        final Path mockPath = new Path();
-        final String mockRootLevel = "/{mockRootLevel}";
-        final String mockChildLevel = "/{mockChild}";
-        mockPath.append(PathHelper.stringToPath(mockRootLevel));
-        mockPath.append(PathHelper.stringToPath(mockChildLevel));
-        mockPath.append(PathHelper.stringToPath("/"));
-        final String resultPath = "//" + mockRootLevel + "//" + mockChildLevel;
         given(nodeServiceMock.getChildAssocs(parentCategoryNodeRef)).willReturn(childAssociationRefMocks);
         childAssociationRefMocks.forEach(this::prepareCategoryNodeMocks);
         given(parametersMock.getInclude()).willReturn(List.of(Nodes.PARAM_INCLUDE_PATH));
-        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+        given(nodeServiceMock.getPath(any())).willReturn(mockCategoryPath());
 
         // when
         final List<Category> actualCategoryChildren = objectUnderTest.getCategoryChildren(PARENT_ID, parametersMock);
@@ -721,7 +705,7 @@ public class CategoriesImplTest
                 .hasSize(3)
                 .extracting(Category::getPath)
                 .isNotNull()
-                .isEqualTo(List.of(resultPath, resultPath, resultPath));
+                .isEqualTo(List.of(MOCK_CATEGORY_PATH, MOCK_CATEGORY_PATH, MOCK_CATEGORY_PATH));
     }
 
     @Test
@@ -856,17 +840,11 @@ public class CategoriesImplTest
         final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
         final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, categoryQName);
-        final Path mockPath = new Path();
-        final String mockRootLevel = "/{mockRootLevel}";
-        final String mockChildLevel = "/{mockChild}";
-        mockPath.append(PathHelper.stringToPath(mockRootLevel));
-        mockPath.append(PathHelper.stringToPath(mockChildLevel));
-        mockPath.append(PathHelper.stringToPath("/"));
         given(nodesMock.getNode(any())).willReturn(createNode(categoryNewName));
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
         given(nodeServiceMock.moveNode(any(), any(), any(), any())).willReturn(createAssociationOf(parentCategoryNodeRef, CATEGORY_NODE_REF, createCmQNameOf(categoryNewName)));
         given(parametersMock.getInclude()).willReturn(List.of(Nodes.PARAM_INCLUDE_PATH));
-        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+        given(nodeServiceMock.getPath(any())).willReturn(mockCategoryPath());
 
         // when
         final Category actualCategory = objectUnderTest.updateCategoryById(CATEGORY_ID, fixedCategory, parametersMock);
@@ -875,7 +853,7 @@ public class CategoriesImplTest
                 .isNotNull()
                 .extracting(Category::getPath)
                 .isNotNull()
-                .isEqualTo("//" + mockRootLevel + "//" + mockChildLevel);
+                .isEqualTo(MOCK_CATEGORY_PATH);
     }
 
     @Test
@@ -1117,17 +1095,11 @@ public class CategoriesImplTest
     {
         final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
-        final Path mockPath = new Path();
-        final String mockRootLevel = "/{mockRootLevel}";
-        final String mockChildLevel = "/{mockChild}";
-        mockPath.append(PathHelper.stringToPath(mockRootLevel));
-        mockPath.append(PathHelper.stringToPath(mockChildLevel));
-        mockPath.append(PathHelper.stringToPath("/"));
         given(nodesMock.getNode(any())).willReturn(createNode());
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
         given(nodeServiceMock.hasAspect(any(), any())).willReturn(true);
         given(parametersMock.getInclude()).willReturn(List.of(Nodes.PARAM_INCLUDE_PATH));
-        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+        given(nodeServiceMock.getPath(any())).willReturn(mockCategoryPath());
 
         // when
         final List<Category> actualLinkedCategories = objectUnderTest.linkNodeToCategories(CONTENT_NODE_ID, List.of(CATEGORY), parametersMock);
@@ -1142,7 +1114,7 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().setProperty(CONTENT_NODE_REF, ContentModel.PROP_CATEGORIES, expectedCategories);
         then(nodeServiceMock).should().getParentAssocs(categoryParentNodeRef);
         final List<Category> expectedLinkedCategories = List.of(CATEGORY);
-        expectedLinkedCategories.get(0).setPath("//" + mockRootLevel + "//" + mockChildLevel);
+        expectedLinkedCategories.get(0).setPath(MOCK_CATEGORY_PATH);
         assertThat(actualLinkedCategories)
                 .isNotNull().usingRecursiveComparison()
                 .isEqualTo(expectedLinkedCategories);
@@ -1343,17 +1315,11 @@ public class CategoriesImplTest
     {
         final NodeRef categoryParentNodeRef = createNodeRefWithId(PARENT_ID);
         final ChildAssociationRef parentAssociation = createAssociationOf(categoryParentNodeRef, CATEGORY_NODE_REF);
-        final Path mockPath = new Path();
-        final String mockRootLevel = "/{mockRootLevel}";
-        final String mockChildLevel = "/{mockChild}";
-        mockPath.append(PathHelper.stringToPath(mockRootLevel));
-        mockPath.append(PathHelper.stringToPath(mockChildLevel));
-        mockPath.append(PathHelper.stringToPath("/"));
         given(nodeServiceMock.getProperty(any(), eq(ContentModel.PROP_CATEGORIES))).willReturn((Serializable) List.of(CATEGORY_NODE_REF));
         given(nodesMock.getNode(any())).willReturn(createNode());
         given(nodeServiceMock.getPrimaryParent(any())).willReturn(parentAssociation);
         given(parametersMock.getInclude()).willReturn(List.of(Nodes.PARAM_INCLUDE_PATH));
-        given(nodeServiceMock.getPath(any())).willReturn(mockPath);
+        given(nodeServiceMock.getPath(any())).willReturn(mockCategoryPath());
 
         // when
         final List<Category> actualCategories = objectUnderTest.listCategoriesForNode(CONTENT_NODE_ID, parametersMock);
@@ -1372,7 +1338,7 @@ public class CategoriesImplTest
         then(nodeServiceMock).should().getPath(any());
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         final List<Category> expectedCategories = List.of(CATEGORY);
-        expectedCategories.get(0).setPath("//" + mockRootLevel + "//" + mockChildLevel);
+        expectedCategories.get(0).setPath(MOCK_CATEGORY_PATH);
         assertThat(actualCategories)
                 .isNotNull().usingRecursiveComparison()
                 .isEqualTo(expectedCategories);
@@ -1533,5 +1499,14 @@ public class CategoriesImplTest
     private static ChildAssociationRef createAssociationOf(final NodeRef parentNode, final NodeRef childNode, final QName childNodeName)
     {
         return new ChildAssociationRef(ContentModel.ASSOC_SUBCATEGORIES, parentNode, childNodeName, childNode);
+    }
+
+    private Path mockCategoryPath()
+    {
+        final Path mockPath = new Path();
+        mockPath.append(PathHelper.stringToPath(MOCK_ROOT_LEVEL));
+        mockPath.append(PathHelper.stringToPath(MOCK_CHILD_LEVEL));
+        mockPath.append(PathHelper.stringToPath("/"));
+        return mockPath;
     }
 }

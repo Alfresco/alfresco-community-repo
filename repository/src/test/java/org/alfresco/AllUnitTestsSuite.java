@@ -250,7 +250,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
 
     org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class,
-    org.alfresco.repo.tagging.TaggingServiceImplUnitTest.class
+    org.alfresco.repo.tagging.TaggingServiceImplUnitTest.class,
+    org.alfresco.repo.client.config.ClientAppConfigUnitTest.class
 })
 public class AllUnitTestsSuite
 {

@@ -31,16 +31,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
-import org.alfresco.service.cmr.repository.TemporalSourceOptions;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collections;
 import java.util.Map;
@@ -53,15 +49,15 @@ import java.util.Map;
 @Category(LuceneTests.class)
 public class ClientAppConfigTest
 {
-    private ApplicationContext context;
     private ClientAppConfig clientAppConfig;
 
     @Before
     public void setUp() throws Exception
     {
         ApplicationContextHelper.closeApplicationContext();
-        context = ApplicationContextHelper.getApplicationContext(new String[] { ApplicationContextHelper.CONFIG_LOCATIONS[0],
-                "classpath:org/alfresco/repo/client/config/test-repo-clients-apps-context.xml" });
+        ApplicationContext context = ApplicationContextHelper.getApplicationContext(
+                    new String[] { ApplicationContextHelper.CONFIG_LOCATIONS[0],
+                                "classpath:org/alfresco/repo/client/config/test-repo-clients-apps-context.xml" });
 
         clientAppConfig = context.getBean("clientAppConfigTest", ClientAppConfig.class);
     }

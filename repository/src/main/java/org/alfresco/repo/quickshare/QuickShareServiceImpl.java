@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -934,13 +934,13 @@ public class QuickShareServiceImpl implements QuickShareService,
         Map<String, Serializable> templateModel = new HashMap<>(6);
         templateModel.put(FTL_SENDER_FIRST_NAME, senderFirstName);
         templateModel.put(FTL_SENDER_LAST_NAME, senderLastName);
-        final String sharedNodeUrl = getUrl(clientApp.getProperty(CONFIG_SHARED_LINK_BASE_URL), CONFIG_SHARED_LINK_BASE_URL)
-                    + '/' + emailRequest.getSharedId();
+        String resolvedUrl = getUrl(clientApp.getResolvedProperty(CONFIG_SHARED_LINK_BASE_URL, sysAdminParams), CONFIG_SHARED_LINK_BASE_URL);
+        final String sharedNodeUrl = resolvedUrl + '/' + emailRequest.getSharedId();
 
         templateModel.put(FTL_SHARED_NODE_URL, sharedNodeUrl);
         templateModel.put(FTL_SHARED_NODE_NAME, emailRequest.getSharedNodeName());
         templateModel.put(FTL_SENDER_MESSAGE, emailRequest.getSenderMessage());
-        final String templateAssetsUrl = getUrl(clientApp.getTemplateAssetsUrl(), ClientAppConfig.PROP_TEMPLATE_ASSETS_URL);
+        final String templateAssetsUrl = getUrl(clientApp.getResolvedTemplateAssetsUrl(sysAdminParams), ClientAppConfig.PROP_TEMPLATE_ASSETS_URL);
         templateModel.put(FTL_TEMPLATE_ASSETS_URL, templateAssetsUrl);
 
         // Set the email details
@@ -1048,8 +1048,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         {
             url = url.substring(0, url.length() - 1);
         }
-        // Replace '${shareUrl} placeholder if it does exist.
-        return UrlUtil.replaceShareUrlPlaceholder(url, sysAdminParams);
+        return url;
     }
 
     private <T> T getDefaultIfNull(T defaultValue, T newValue)

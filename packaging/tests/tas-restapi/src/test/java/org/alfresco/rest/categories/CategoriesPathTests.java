@@ -133,7 +133,7 @@ public class CategoriesPathTests extends CategoriesRestTest
         restClient.assertStatusCodeIs(OK);
         actualCategories.getEntries().stream()
                 .map(RestCategoryModel::onModel)
-                .forEach(cat -> assertTrue(cat.getPath().equals("/categories/General/" + parentCategory.getName())));
+                .forEach(cat -> cat.assertThat().field(FIELD_PATH).is("/categories/General/" + parentCategory.getName()));
     }
 
     /**

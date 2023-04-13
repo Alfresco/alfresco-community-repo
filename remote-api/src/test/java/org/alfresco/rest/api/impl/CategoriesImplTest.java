@@ -836,6 +836,7 @@ public class CategoriesImplTest
     {
         final String categoryNewName = "categoryNewName";
         final Category fixedCategory = createCategoryOnlyWithName(categoryNewName);
+        // simulate path provided by client to check if it will be ignored
         fixedCategory.setPath("/test/TestCat");
         final QName categoryQName = createCmQNameOf(CATEGORY_NAME);
         final NodeRef parentCategoryNodeRef = createNodeRefWithId(PARENT_ID);

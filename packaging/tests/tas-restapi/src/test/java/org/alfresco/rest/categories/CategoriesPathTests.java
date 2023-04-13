@@ -119,7 +119,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     {
         STEP("Create parent and child categories and verify if child path contains parent name");
         final RestCategoryModel parentCategory = createCategoryModelWithId(ROOT_CATEGORY_ID);
-        final RestCategoryModel childCategory = prepareCategoriesUnder(parentCategory, 2);
+        final List<RestCategoryModel> childCategories = prepareCategoriesUnder(parentCategory.getId(), 2);
         final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)
                 .withCoreAPI()
                 .usingCategory(parentCategory)

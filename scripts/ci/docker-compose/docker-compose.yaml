@@ -31,8 +31,8 @@ services:
     ports:
       - 8090:8090
     volumes:
-      - ${GITHUB_WORKSPACE}/keystores/tengineAIO/tengineAIO.truststore:/tengineAIO.truststore
-      - ${GITHUB_WORKSPACE}/keystores/tengineAIO/tengineAIO.keystore:/tengineAIO.keystore
+      - ${CI_WORKSPACE}/keystores/tengineAIO/tengineAIO.truststore:/tengineAIO.truststore
+      - ${CI_WORKSPACE}/keystores/tengineAIO/tengineAIO.keystore:/tengineAIO.keystore
     environment:
       ACTIVEMQ_URL: "nio://activemq:61616"
       ACTIVEMQ_USER: "admin"

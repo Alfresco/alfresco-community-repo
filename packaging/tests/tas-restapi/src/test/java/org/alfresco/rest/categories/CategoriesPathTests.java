@@ -33,6 +33,8 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Collectors;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;

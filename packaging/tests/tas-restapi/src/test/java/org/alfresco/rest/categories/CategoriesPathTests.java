@@ -32,10 +32,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertTrue;
 
-import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.Collectors;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestCategoryLinkBodyModel;
 import org.alfresco.rest.model.RestCategoryModel;
@@ -52,7 +48,6 @@ public class CategoriesPathTests extends CategoriesRestTest
 {
     private FileModel file;
     private RestCategoryModel category;
-    private RestCategoryModel anotherCategory;
 
     @BeforeClass(alwaysRun = true)
     @Override
@@ -66,7 +61,6 @@ public class CategoriesPathTests extends CategoriesRestTest
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         file = dataContent.usingUser(user).usingResource(folder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         category = prepareCategoryUnderRoot();
-        anotherCategory = prepareCategoryUnderRoot();
 
         STEP("Wait for indexing to complete");
         Utility.sleep(1000, 60000, () -> restClient.authenticateUser(user)

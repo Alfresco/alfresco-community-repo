@@ -35,6 +35,7 @@ public class Category
     private String parentId;
     private boolean hasChildren;
     private Integer count;
+    private String path;
 
     public String getId()
     {
@@ -91,6 +92,14 @@ public class Category
         this.count = count;
     }
 
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -100,19 +109,20 @@ public class Category
             return false;
         Category category = (Category) o;
         return hasChildren == category.hasChildren && Objects.equals(id, category.id) && Objects.equals(name, category.name) && Objects.equals(parentId, category.parentId)
-            && Objects.equals(count, category.count);
+            && Objects.equals(count, category.count) && Objects.equals(path, category.path);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, parentId, hasChildren, count);
+        return Objects.hash(id, name, parentId, hasChildren, count, path);
     }
 
     @Override
     public String toString()
     {
-        return "Category{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", parentId='" + parentId + '\'' + ", hasChildren=" + hasChildren + ", count=" + count + '}';
+        return "Category{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", parentId='" + parentId + '\'' + ", hasChildren=" + hasChildren
+                + ", count=" + count + ", path=" + path + '}';
     }
 
     public static Builder builder()
@@ -127,6 +137,7 @@ public class Category
         private String parentId;
         private boolean hasChildren;
         private Integer count;
+        private String path;
 
         public Builder id(String id)
         {
@@ -158,6 +169,12 @@ public class Category
             return this;
         }
 
+        public Builder path(String path)
+        {
+            this.path = path;
+            return this;
+        }
+
         public Category create()
         {
             final Category category = new Category();
@@ -166,6 +183,7 @@ public class Category
             category.setParentId(parentId);
             category.setHasChildren(hasChildren);
             category.setCount(count);
+            category.setPath(path);
             return category;
         }
     }

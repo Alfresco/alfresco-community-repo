@@ -111,6 +111,11 @@ public class CategoriesImpl implements Categories
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
         }
 
+        if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
+        {
+            category.setPath(getCategoryPath(category));
+        }
+
         return category;
     }
 
@@ -128,6 +133,10 @@ public class CategoriesImpl implements Categories
                     {
                         category.setCount(0);
                     }
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
+                    {
+                        category.setPath(getCategoryPath(category));
+                    }
                 })
                 .collect(Collectors.toList());
     }
@@ -136,11 +145,18 @@ public class CategoriesImpl implements Categories
     public List<Category> getCategoryChildren(final StoreRef storeRef, final String parentCategoryId, final Parameters parameters)
     {
         final NodeRef parentNodeRef = getCategoryNodeRef(storeRef, parentCategoryId);
-        final List<Category> categories = nodeService.getChildAssocs(parentNodeRef).stream()
-            .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
-            .map(ChildAssociationRef::getChildRef)
-            .map(this::mapToCategory)
-            .collect(Collectors.toList());
+        final List<Category> categories = nodeService.getChildAssocs(parentNodeRef)
+                .stream()
+                .filter(ca -> ContentModel.ASSOC_SUBCATEGORIES.equals(ca.getTypeQName()))
+                .map(ChildAssociationRef::getChildRef)
+                .map(this::mapToCategory)
+                .peek(category -> {
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
+                    {
+                        category.setPath(getCategoryPath(category));
+                    }
+                })
+                .collect(Collectors.toList());
 
         if (parameters.getInclude().contains(INCLUDE_COUNT_PARAM))
         {
@@ -168,6 +184,11 @@ public class CategoriesImpl implements Categories
         {
             final Map<String, Integer> categoriesCount = getCategoriesCount(storeRef);
             category.setCount(categoriesCount.getOrDefault(category.getId(), 0));
+        }
+
+        if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
+        {
+            category.setPath(getCategoryPath(category));
         }
 
         return category;
@@ -200,7 +221,16 @@ public class CategoriesImpl implements Categories
         }
         final Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, currentCategories);
 
-        return actualCategories.stream().map(this::mapToCategory).collect(Collectors.toList());
+        return actualCategories
+                .stream()
+                .map(this::mapToCategory)
+                .peek(category -> {
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
+                    {
+                        category.setPath(getCategoryPath(category));
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -230,7 +260,16 @@ public class CategoriesImpl implements Categories
 
         linkNodeToCategories(contentNodeRef, categoryNodeRefs);
 
-        return categoryNodeRefs.stream().map(this::mapToCategory).collect(Collectors.toList());
+        return categoryNodeRefs
+                .stream()
+                .map(this::mapToCategory)
+                .peek(category -> {
+                    if (parameters.getInclude().contains(Nodes.PARAM_INCLUDE_PATH))
+                    {
+                        category.setPath(getCategoryPath(category));
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -474,5 +513,17 @@ public class CategoriesImpl implements Categories
         return categoryService.getTopCategories(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE, Integer.MAX_VALUE)
             .stream()
             .collect(Collectors.toMap(pair -> pair.getFirst().toString().replace(idPrefix, StringUtils.EMPTY), Pair::getSecond));
+    }
+
+    /**
+     * Get path for a given category in human-readable form.
+     *
+     * @param category Category to provide path for.
+     * @return Path for a category in human-readable form.
+     */
+    private String getCategoryPath(final Category category)
+    {
+        final NodeRef categoryNodeRef = nodes.getNode(category.getId()).getNodeRef();
+        return nodeService.getPath(categoryNodeRef).toDisplayPath(nodeService, permissionService);
     }
 }

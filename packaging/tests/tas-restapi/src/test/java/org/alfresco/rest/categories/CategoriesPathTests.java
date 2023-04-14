@@ -124,20 +124,20 @@ public class CategoriesPathTests extends CategoriesRestTest
     public void testGetChildCategory_includePath()
     {
         STEP("Create parent and child categories");
-        final List<RestCategoryModel> parentCategories = prepareCategoriesUnderRoot(1);
-        final RestCategoryModel childCategory = prepareCategoryUnder(parentCategories.get(0));
+        final RestCategoryModel parentCategory = prepareCategoryUnderRoot();
+        final RestCategoryModel childCategory = prepareCategoryUnder(parentCategory);
 
         STEP("Verify path for created child categories");
         final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)
                 .withCoreAPI()
-                .usingCategory(parentCategories.get(0))
+                .usingCategory(parentCategory)
                 .include(INCLUDE_PATH_PARAM)
                 .getCategoryChildren();
 
         restClient.assertStatusCodeIs(OK);
         actualCategories.getEntries().stream()
                 .map(RestCategoryModel::onModel)
-                .forEach(cat -> cat.assertThat().field(FIELD_PATH).is("/categories/General/" + parentCategories.get(0).getName()));
+                .forEach(cat -> cat.assertThat().field(FIELD_PATH).is("/categories/General/" + parentCategory.getName()));
     }
 
     /**

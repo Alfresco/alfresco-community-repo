@@ -178,20 +178,13 @@ public class TagsImpl implements Tags
 		Pair<String, Boolean> sorting = !params.getSorting().isEmpty() ? new Pair<>(params.getSorting().get(0).column, params.getSorting().get(0).asc) : null;
 		Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
 
-		List<Pair<NodeRef, Integer>> results = taggingService.getTags(storeRef, params.getInclude(), sorting, namesFilters.get(EQUALS), namesFilters.get(MATCHES));
-		final Map<NodeRef, Long> tagsByCountMap = new HashMap<>();
+		Map<NodeRef, Long> results = taggingService.getTags(storeRef, params.getInclude(), sorting, namesFilters.get(EQUALS), namesFilters.get(MATCHES));
 
-		List<Tag> tagsList = results.stream().map(pair -> new Tag(pair.getFirst(), (String)nodeService.getProperty(pair.getFirst(), ContentModel.PROP_NAME))).collect(Collectors.toList());
-
+		List<Tag> tagsList = results.entrySet().stream().map(entry -> new Tag(entry.getKey(), (String)nodeService.getProperty(entry.getKey(), ContentModel.PROP_NAME))).collect(Collectors.toList());
 
 		if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
 		{
-			for (Pair<NodeRef, Integer> pair : results)
-			{
-				tagsByCountMap.put(pair.getFirst(), Long.valueOf(pair.getSecond()));
-			}
-
-			tagsList.forEach(tag -> tag.setCount(Optional.ofNullable(tagsByCountMap.get(tag.getTag())).orElse(0L) +1));
+			tagsList.forEach(tag -> tag.setCount(results.get(tag.getNodeRef())));
 		}
 
 		ListBackedPagingResults listBackedPagingResults = new ListBackedPagingResults(tagsList, Util.getPagingRequest(params.getPaging()));
@@ -355,26 +348,5 @@ public class TagsImpl implements Tags
 			throw new EntityNotFoundException(tagId);
 		}
 		return tagNodeRef;
-	}
-
-	private List<Tag> sortTags(List<Tag> tagsList, String sortBy, boolean sortAsc)
-	{
-		if(sortBy.equals(PARAM_WHERE_TAG))
-		{
-			tagsList.sort(Comparator.comparing(Tag::getTag));
-		}
-
-		//first check that count exists and then check if we should sort by count
-		else if(tagsList.get(0).getCount()!=null && sortBy.equals(PARAM_INCLUDE_COUNT))
-		{
-			tagsList.sort(Comparator.comparingLong(Tag::getCount));
-		}
-
-		if(!sortAsc)
-		{
-			Collections.reverse(tagsList);
-		}
-
-		return tagsList;
 	}
 }

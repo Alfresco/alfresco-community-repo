@@ -96,7 +96,7 @@ public interface TaggingService
         return new EmptyPagingResults<>();
     }
 
-    List<Pair<NodeRef, Integer>> getTags(StoreRef storeRef, List<String>parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter);
+    Map<NodeRef, Long> getTags(StoreRef storeRef, List<String>parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter);
     
     /** 
      * Get all the tags currently available that match the provided filter.

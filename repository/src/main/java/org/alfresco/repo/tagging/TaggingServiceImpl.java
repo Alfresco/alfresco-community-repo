@@ -52,12 +52,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.EmptyPagingResults;
-import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.audit.AuditComponent;
@@ -122,7 +123,7 @@ public class TaggingServiceImpl implements TaggingService,
     protected static final String TAGGING_AUDIT_ROOT_PATH = "/tagging";
     protected static final String TAGGING_AUDIT_KEY_NODEREF = "node";
     protected static final String TAGGING_AUDIT_KEY_TAGS = "tags";
-    
+
     private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
     
 	private static Collator collator = Collator.getInstance();
@@ -996,25 +997,25 @@ public class TaggingServiceImpl implements TaggingService,
                 (childAssociation) -> new Pair<>(childAssociation.getChildRef(), childAssociation.getQName().getLocalName()));
     }
 
-    public List<Pair<NodeRef, Integer>> getTags(StoreRef storeRef, List<String> parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    public Map<NodeRef, Long> getTags(StoreRef storeRef, List<String> parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
     {
         ParameterCheck.mandatory("storeRef", storeRef);
         Collection<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, exactNamesFilter, alikeNamesFilter);
 
+        Map<String, Long> tagsMap = new TreeMap<>();
+        for (ChildAssociationRef childAssociation : rootCategories)
+        {
+            tagsMap.put(childAssociation.getQName().getLocalName(), 0L);
+        }
 
-        List<Pair<String, Integer>> tagsByCountList = rootCategories.stream()
-                .map(childAssociationRef -> new Pair<>(childAssociationRef.getQName().getLocalName(), 0))
-                .collect(Collectors.toList());
-
-        Map<String, Integer> tagsByCountMap = new HashMap<>();
+        Map<String, Long> tagsByCountMap = new HashMap<>();
 
         if(parameterIncludes.contains(PARAM_INCLUDE_COUNT))
         {
             tagsByCountMap = calculateCount(storeRef);
 
-            for (Pair pair : tagsByCountList)
-            {
-                pair.setSecond(Optional.ofNullable(tagsByCountMap.get(pair.getFirst())).orElse(0));
+            for (Map.Entry<String, Long> entry : tagsMap.entrySet()) {
+                entry.setValue(Optional.ofNullable(tagsByCountMap.get(entry.getKey())).orElse(0L));
             }
         }
 
@@ -1023,11 +1024,19 @@ public class TaggingServiceImpl implements TaggingService,
         {
             if (sorting.getFirst().equals("tag"))
             {
-                tagsByCountList.sort(Comparator.comparing(Pair::getFirst));
-
                 if (!sorting.getSecond())
                 {
-                    Collections.reverse(tagsByCountList);
+                    Stream<Map.Entry<String,Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Collections.reverseOrder(Map.Entry.comparingByKey()));
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                }
+                else
+                {
+                    Stream<Map.Entry<String,Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByKey());
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
                 }
             }
             else if (sorting.getFirst().equals(PARAM_INCLUDE_COUNT))
@@ -1037,21 +1046,31 @@ public class TaggingServiceImpl implements TaggingService,
                     throw new QueryException("Tag count should be included when ordering by count");
                 }
 
-                tagsByCountList.sort(Comparator.comparing(Pair::getSecond));
                 if (!sorting.getSecond())
                 {
-                    Collections.reverse(tagsByCountList);
+                    Stream<Map.Entry<String, Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                }
+                else
+                {
+                    Stream<Map.Entry<String,Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByValue());
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
                 }
             }
         }
 
-        List<Pair<NodeRef, Integer>> tagNodeRefsList = new ArrayList<>();
-        for (Pair<String, Integer> pair : tagsByCountList)
+        Map<NodeRef, Long> tagNodeRefMap = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Long> entry : tagsMap.entrySet())
         {
-            tagNodeRefsList.add(new Pair<>(getTagNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, pair.getFirst()), pair.getSecond()));
+            tagNodeRefMap.put(getTagNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, entry.getKey()), entry.getValue());
         }
 
-        return tagNodeRefsList;
+        return tagNodeRefMap;
     }
     
     /**

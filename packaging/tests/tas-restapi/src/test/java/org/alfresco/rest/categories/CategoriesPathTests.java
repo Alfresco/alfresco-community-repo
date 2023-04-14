@@ -125,18 +125,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     {
         STEP("Create parent and child categories");
         final RestCategoryModel parentCategory = createCategoryModelWithIdAndName("testId", "TestCat");
-        final List<RestCategoryModel> categoryModels = IntStream
-                .range(0, 2)
-                .mapToObj(i -> createCategoryModelWithName(getRandomName("TestName")))
-                .collect(Collectors.toList());
-        final List<RestCategoryModel> createdCategories = restClient.authenticateUser(dataUser.getAdminUser())
-                .withCoreAPI()
-                .usingCategory(parentCategory)
-                .createCategoriesList(categoryModels)
-                .getEntries().stream()
-                .map(RestCategoryModel::onModel)
-                .collect(Collectors.toList());
-        restClient.assertStatusCodeIs(CREATED);
+        final RestCategoryModel childCategory = prepareCategoryUnder(parentCategory);
 
         STEP("Verify path for created child categories");
         final RestCategoryModelsCollection actualCategories = restClient.authenticateUser(user)

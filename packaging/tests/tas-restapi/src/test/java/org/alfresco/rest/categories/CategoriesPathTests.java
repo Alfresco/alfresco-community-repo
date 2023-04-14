@@ -124,7 +124,7 @@ public class CategoriesPathTests extends CategoriesRestTest
     public void testGetChildCategory_includePath()
     {
         STEP("Create parent and child categories");
-        final RestCategoryModel parentCategory = createCategoryModelWithIdAndName(ROOT_CATEGORY_ID, "TestCat");
+        final RestCategoryModel parentCategory = createCategoryModelWithIdAndName("testId", "TestCat");
         final List<RestCategoryModel> categoryModels = IntStream
                 .range(0, 2)
                 .mapToObj(i -> createCategoryModelWithName(getRandomName("TestName")))

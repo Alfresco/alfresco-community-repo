@@ -305,7 +305,24 @@ public class UpdateTagTests extends TagsDataPrep
         returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().usingTag(orphanTag).update(newTagName);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        returnedModel.assertThat().field("tag").is(newTagName);
-        returnedModel.assertThat().field("id").isNotNull();
+        RestTagModel expected = RestTagModel.builder().id(orphanTag.getId()).tag(newTagName).create();
+        returnedModel.assertThat().isEqualTo(expected);
+    }
+
+    @Test (groups = { TestGroup.REST_API, TestGroup.TAGS })
+    public void canUpdateTagAndGetCount()
+    {
+        STEP("Create an orphaned tag");
+        String tagName = RandomData.getRandomName("tag").toLowerCase();
+        RestTagModel createdTag = RestTagModel.builder().tag(tagName).create();
+        RestTagModel tag = restClient.authenticateUser(adminUserModel).withCoreAPI().createSingleTag(createdTag);
+
+        STEP("Update tag and request the count field");
+        String newTagName = RandomData.getRandomName("new").toLowerCase();
+        returnedModel = restClient.authenticateUser(adminUserModel).withCoreAPI().include("count").usingTag(tag).update(newTagName);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        RestTagModel expected = RestTagModel.builder().id(tag.getId()).tag(newTagName).count(0).create();
+        returnedModel.assertThat().isEqualTo(expected);
     }
 }

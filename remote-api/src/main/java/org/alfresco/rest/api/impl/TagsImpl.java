@@ -30,6 +30,7 @@ import static java.util.stream.Collectors.toList;
 import static org.alfresco.rest.antlr.WhereClauseParser.EQUALS;
 import static org.alfresco.rest.antlr.WhereClauseParser.IN;
 import static org.alfresco.rest.antlr.WhereClauseParser.MATCHES;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.alfresco.service.cmr.tagging.TaggingService.TAG_ROOT_NODE_REF;
 
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ import org.apache.commons.collections.CollectionUtils;
  */
 public class TagsImpl implements Tags
 {
-	private static final String PARAM_INCLUDE_COUNT = "count";
+	public static final String PARAM_INCLUDE_COUNT = "count";
 	private static final String PARAM_WHERE_TAG = "tag";
 	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
 	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
@@ -129,12 +130,13 @@ public class TagsImpl implements Tags
             List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
             List<Tag> ret = new ArrayList<>(tags.size());
 			List<Pair<String, Integer>> tagsCountPairList = taggingService.findTaggedNodesAndCountByTagName(nodeRef.getStoreRef());
-			Map<String, Integer> tagsCountMap = tagsCountPairList.stream().collect(Collectors.toMap(Pair::getFirst,Pair::getSecond));
+			Map<String, Long> tagsCountMap = tagsCountPairList.stream().collect(Collectors.toMap(Pair::getFirst, pair -> Long.valueOf(pair.getSecond())));
             for (Pair<String, NodeRef> pair : tagNodeRefs)
             {
 				Tag createdTag = new Tag(pair.getSecond(), pair.getFirst());
-				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT)) {
-					createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).orElse(0) + 1);
+				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
+				{
+					createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).orElse(0L) + 1);
 				}
                 ret.add(createdTag);
             }
@@ -149,7 +151,7 @@ public class TagsImpl implements Tags
     public void deleteTag(String nodeId, String tagId)
     {
 		NodeRef nodeRef = nodes.validateNode(nodeId);
-		getTag(tagId);
+		getTag(STORE_REF_WORKSPACE_SPACESSTORE, tagId, null);
     	NodeRef existingTagNodeRef = validateTag(tagId);
     	String tagValue = taggingService.getTagName(existingTagNodeRef);
     	taggingService.removeTag(nodeRef, tagValue);
@@ -182,15 +184,15 @@ public class TagsImpl implements Tags
         if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
         {
             List<Pair<String, Integer>> tagsByCount = taggingService.findTaggedNodesAndCountByTagName(storeRef);
-            Map<String, Integer> tagsByCountMap = new HashMap<>();
+            Map<String, Long> tagsByCountMap = new HashMap<>();
             if (tagsByCount != null)
             {
                 for (Pair<String, Integer> tagByCountElem : tagsByCount)
                 {
-                    tagsByCountMap.put(tagByCountElem.getFirst(), tagByCountElem.getSecond());
+                    tagsByCountMap.put(tagByCountElem.getFirst(), Long.valueOf(tagByCountElem.getSecond()));
                 }
             }
-            tags.forEach(tag -> tag.setCount(Optional.ofNullable(tagsByCountMap.get(tag.getTag())).orElse(0)));
+            tags.forEach(tag -> tag.setCount(Optional.ofNullable(tagsByCountMap.get(tag.getTag())).orElse(0L)));
         }
 
         return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), totalItems);
@@ -208,15 +210,35 @@ public class TagsImpl implements Tags
 		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
 
-    public Tag changeTag(StoreRef storeRef, String tagId, Tag tag)
+	/**
+	 * Find the number of times the given tag is used (if requested).
+	 *
+	 * @param storeRef The store the tag is in.
+	 * @param tagName The name of the tag.
+	 * @param parameters The request parameters object containing the includes parameter.
+	 * @return The number of times the tag is applied, or null if "count" wasn't in the include parameter.
+	 */
+	private Long findCountIfRequested(StoreRef storeRef, String tagName, Parameters parameters)
+	{
+		Long count = null;
+		if (parameters != null && parameters.getInclude() != null && parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
+		{
+			count = taggingService.findCountByTagName(storeRef, tagName);
+		}
+		return count;
+	}
+
+    @Override
+    public Tag changeTag(StoreRef storeRef, String tagId, Tag tag, Parameters parameters)
     {
     	try
     	{
 	    	NodeRef existingTagNodeRef = validateTag(storeRef, tagId);
 	    	String existingTagName = taggingService.getTagName(existingTagNodeRef);
-	    	String newTagName = tag.getTag();
-	    	NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
-	    	return new Tag(newTagNodeRef, newTagName);
+			Long count = findCountIfRequested(storeRef, existingTagName, parameters);
+			String newTagName = tag.getTag();
+			NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
+			return Tag.builder().nodeRef(newTagNodeRef).tag(newTagName).count(count).create();
     	}
     	catch(NonExistentTagException e)
     	{
@@ -232,18 +254,16 @@ public class TagsImpl implements Tags
     	}
     }
 
-    public Tag getTag(String tagId)
-    {
-    	return getTag(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, tagId);
-    }
-
-    public Tag getTag(StoreRef storeRef, String tagId)
+	@Override
+    public Tag getTag(StoreRef storeRef, String tagId, Parameters parameters)
     {
     	NodeRef tagNodeRef = validateTag(storeRef, tagId);
-    	String tagValue = taggingService.getTagName(tagNodeRef);
-    	return new Tag(tagNodeRef, tagValue);
+    	String tagName = taggingService.getTagName(tagNodeRef);
+    	Long count = findCountIfRequested(storeRef, tagName, parameters);
+    	return Tag.builder().nodeRef(tagNodeRef).tag(tagName).count(count).create();
     }
 
+    @Override
     public CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params)
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
@@ -280,7 +300,7 @@ public class TagsImpl implements Tags
 			.peek(tag -> {
 				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
 				{
-					tag.setCount(0);
+					tag.setCount(0L);
 				}
 			}).collect(toList());
 	}

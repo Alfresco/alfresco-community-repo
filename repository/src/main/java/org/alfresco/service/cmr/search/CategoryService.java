@@ -26,6 +26,7 @@
 package org.alfresco.service.cmr.search;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -150,7 +151,8 @@ public interface CategoryService
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "exactNamesFilter", "alikeNamesFilter"})
     default PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName,
-                                                              Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter) {
+                                                              Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
         return new EmptyPagingResults<>();
     }
 
@@ -158,8 +160,9 @@ public interface CategoryService
      * Get a collection of the root categories for an aspect/classification supporting multiple name filters.
      */
     @Auditable(parameters = {"storeRef", "aspectName", "exactNamesFilter", "alikeNamesFilter"})
-    default Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter) {
-        return null;
+    default Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        return Collections.emptyList();
     }
 
 

@@ -457,7 +457,8 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         return associations;
     }
 
-    private Function<NodeRef, Collection<ChildAssociationRef>> getNodeRefCollectionFunction(boolean sortByName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter, int skipCount, int maxItems) {
+    private Function<NodeRef, Collection<ChildAssociationRef>> getNodeRefCollectionFunction(boolean sortByName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter, int skipCount, int maxItems)
+    {
         final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = (nodeRef) -> {
             final Set<ChildAssociationRef> childNodes = new HashSet<>();
             if (CollectionUtils.isEmpty(exactNamesFilter) && CollectionUtils.isEmpty(alikeNamesFilter))

@@ -963,21 +963,6 @@ public class TaggingServiceImpl implements TaggingService,
         return new EmptyPagingResults<Pair<NodeRef, String>>();
     }
 
-    public List<Pair<NodeRef, String>> getTags(StoreRef storeRef, List<String> parametersInclude)
-    {
-        ParameterCheck.mandatory("storeRef", storeRef);
-        Collection<ChildAssociationRef> rootCategories = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE);
-        List<Pair<NodeRef, String>> result = new ArrayList<>(rootCategories.size());
-
-        for (ChildAssociationRef rootCategory : rootCategories)
-        {
-            String name = (String)this.nodeService.getProperty(rootCategory.getChildRef(), ContentModel.PROP_NAME);
-            result.add(new Pair<>(rootCategory.getChildRef(), name));
-        }
-
-        return result;
-    }
-
     public PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest)
     {
         return getTags(storeRef, pagingRequest, null, null);

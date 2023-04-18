@@ -332,14 +332,6 @@ public interface TaggingService
     Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, String filter, int fromTag, int pageSize);
 
     /**
-     *
-     * @param storeRef              node reference
-     * @param parametersInclude     the 'include' part of the parameters
-     * @return List of pairs of tag nodeRefs and tag names
-     */
-    List<Pair<NodeRef, String>> getTags(StoreRef storeRef, List<String> parametersInclude);
-
-    /**
      * Get tagged nodes and count of nodes group by tag name
      * 
      * @param storeRef

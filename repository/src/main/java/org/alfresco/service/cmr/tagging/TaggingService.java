@@ -96,6 +96,16 @@ public interface TaggingService
         return new EmptyPagingResults<>();
     }
 
+    /**
+     * Get a map of tags filtered by name and sorted by tag name or count
+     *
+     * @param storeRef
+     * @param parameterIncludes
+     * @param sorting
+     * @param exactNamesFilter
+     * @param alikeNamesFilter
+     * @return
+     */
     Map<NodeRef, Long> getTags(StoreRef storeRef, List<String>parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter);
     
     /** 

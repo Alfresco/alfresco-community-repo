@@ -97,7 +97,7 @@ public interface TaggingService
     }
 
     /**
-     * Get a map of tags filtered by name and sorted by tag name or count
+     * Get a map of tag NodeRefs and their respective usage count filtered by name and sorted by tag name or count
      *
      * @param storeRef
      * @param parameterIncludes
@@ -378,7 +378,7 @@ public interface TaggingService
     /**
      *
      * @param storeRef
-     * @return a map with each tag name and its count
+     * @return a map with each tag name and its usage count
      */
     Map<String, Long> calculateCount(StoreRef storeRef);
 }

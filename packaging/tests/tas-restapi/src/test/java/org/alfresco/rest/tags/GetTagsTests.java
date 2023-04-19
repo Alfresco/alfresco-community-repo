@@ -16,6 +16,11 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
+import java.util.Set;
+import java.util.stream.IntStream;
+
+import static org.alfresco.utility.report.log.Step.STEP;
+
 @Test(groups = {TestGroup.REQUIRE_SOLR})
 public class GetTagsTests extends TagsDataPrep
 {
@@ -70,6 +75,130 @@ public class GetTagsTests extends TagsDataPrep
         returnedCollection.assertThat().entriesListIsNotEmpty()
             .and().entriesListContains("tag", documentTagValue)
             .and().entriesListContains("tag", documentTagValue2);
+    }
+
+    /**
+     * Include count in the query parameters and ensure count is as expected for returned tags.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withIncludeCount()
+    {
+        STEP("Get tags including count filter and ensure count is as expected for returned tags");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+                .withParams("include=count")
+                .withCoreAPI()
+                .getTags();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        returnedCollection.getEntries().stream()
+                .filter(e -> e.onModel().getTag().equals(folderTagValue) || e.onModel().getTag().equals(documentTagValue))
+                .forEach(e -> e.onModel().assertThat().field("count").is(2));
+
+        returnedCollection.getEntries().stream()
+                .filter(e -> e.onModel().getTag().equals(documentTagValue2))
+                .forEach(e -> e.onModel().assertThat().field("count").is(1));
+    }
+
+    /**
+     * Get tags and order results by count. Default sort order should be ascending
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withOrderByCountDefaultOrderShouldBeAsc()
+    {
+
+        STEP("Get tags and order results by count. Default sort order should be ascending");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+                .withParams("include=count&orderBy=count")
+                .withCoreAPI()
+                .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat().entriesListIsSortedAscBy("count");
+    }
+
+    /**
+     * Get tags and order results by count in ascending order
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withOrderByCountAsc()
+    {
+
+        STEP("Get tags and order results by count in ascending order");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+                .withParams("include=count&orderBy=count ASC")
+                .withCoreAPI()
+                .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat().entriesListIsSortedAscBy("count");
+    }
+
+    /**
+     * Get tags and order results by count in descending order
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withOrderByCountDesc()
+    {
+
+        STEP("Get tags and order results by count in descending order");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+                .withParams("include=count&orderBy=count DESC")
+                .withCoreAPI()
+                .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat().entriesListIsSortedDescBy("count");
+    }
+
+    /**
+     * Get tags and order results by tag name. Default sort order should be ascending
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withOrderByTagDefaultOrderShouldBeAsc()
+    {
+
+        STEP("Get tags and order results by tag name. Default sort order should be ascending");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+                .withParams("orderBy=tag")
+                .withCoreAPI()
+                .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat().entriesListIsSortedAscBy("tag");
+    }
+
+    /**
+     * Get tags and order results by tag name in ascending order
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withOrderByTagAsc()
+    {
+
+        STEP("Get tags and order results by tag name in ascending order");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+                .withParams("orderBy=tag ASC")
+                .withCoreAPI()
+                .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat().entriesListIsSortedAscBy("tag");
+    }
+
+    /**
+     * Get tags and order results by tag name in descending order
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_withOrderByTagDesc()
+    {
+
+        STEP("Get tags and order results by tag name in descending order");
+        returnedCollection = restClient.authenticateUser(adminUserModel)
+                .withParams("orderBy=tag DESC")
+                .withCoreAPI()
+                .getTags();
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        returnedCollection.assertThat().entriesListIsSortedDescBy("tag");
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")
@@ -193,8 +322,7 @@ public class GetTagsTests extends TagsDataPrep
                 .getPagination().assertThat().field("maxItems").is(100)
                 .and().field("hasMoreItems").is("false")
                 .and().field("count").is("0")
-                .and().field("skipCount").is(20000)
-                .and().field("totalItems").is(0);
+                .and().field("skipCount").is(20000);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION,

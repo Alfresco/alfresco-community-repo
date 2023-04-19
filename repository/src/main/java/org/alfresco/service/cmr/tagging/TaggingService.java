@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.tagging;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.EmptyPagingResults;
@@ -94,6 +95,18 @@ public interface TaggingService
     {
         return new EmptyPagingResults<>();
     }
+
+    /**
+     * Get a map of tag NodeRefs and their respective usage count filtered by name and sorted by tag name or count
+     *
+     * @param storeRef
+     * @param parameterIncludes
+     * @param sorting
+     * @param exactNamesFilter
+     * @param alikeNamesFilter
+     * @return
+     */
+    Map<NodeRef, Long> getTags(StoreRef storeRef, List<String>parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter);
     
     /** 
      * Get all the tags currently available that match the provided filter.
@@ -327,8 +340,7 @@ public interface TaggingService
      */
     @NotAuditable
     Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, String filter, int fromTag, int pageSize);
-    
-    
+
     /**
      * Get tagged nodes and count of nodes group by tag name
      * 
@@ -362,6 +374,13 @@ public interface TaggingService
     {
         return Collections.emptyList();
     }
+
+    /**
+     *
+     * @param storeRef
+     * @return a map with each tag name and its usage count
+     */
+    Map<String, Long> calculateCount(StoreRef storeRef);
 }
 
 

@@ -29,7 +29,6 @@ import static java.util.stream.Collectors.toList;
 
 import static org.alfresco.rest.api.impl.TagsImpl.NOT_A_VALID_TAG;
 import static org.alfresco.rest.api.impl.TagsImpl.NO_PERMISSION_TO_MANAGE_A_TAG;
-import static org.alfresco.rest.api.impl.TagsImpl.PARAM_INCLUDE_COUNT;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -41,10 +40,14 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.rest.api.Nodes;
@@ -56,6 +59,7 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.InvalidQueryException;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -84,6 +88,8 @@ public class TagsImplTest
     private static final NodeRef TAG_PARENT_NODE_REF = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, PARENT_NODE_ID);
     private static final String CONTENT_NODE_ID = "content-node-id";
     private static final NodeRef CONTENT_NODE_REF = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, CONTENT_NODE_ID);
+    private static final String PARAM_INCLUDE_COUNT = "count";
+
 
     private final RecognizedParamsExtractor queryExtractor = new RecognizedParamsExtractor() {};
 
@@ -123,13 +129,16 @@ public class TagsImplTest
     public void testGetTags()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
-        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
-        given(pagingResultsMock.getPage()).willReturn(List.of(new Pair<>(TAG_NODE_REF, TAG_NAME)));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
+        given(parametersMock.getInclude()).willReturn(new ArrayList<>());
+
+        //given(taggingServiceMock.getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), isNull())).willReturn(List.of(new Pair<>(TAG_NODE_REF, null)));
+        given(taggingServiceMock.getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), isNull())).willReturn(Map.of(TAG_NODE_REF, 0L));
+        given(nodeServiceMock.getProperty(any(NodeRef.class), eq(ContentModel.PROP_NAME))).willReturn("tag-dummy-name");
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull(), isNull());
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME));
         assertEquals(expectedTags, actualTags.getCollection());
@@ -139,14 +148,15 @@ public class TagsImplTest
     public void testGetTags_verifyIfCountIsZero()
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
-        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
-        given(pagingResultsMock.getPage()).willReturn(List.of(new Pair<>(TAG_NODE_REF, TAG_NAME)));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
+        given(parametersMock.getInclude()).willReturn(List.of(PARAM_INCLUDE_COUNT));
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(), any(), any(), any())).willReturn(Map.of(TAG_NODE_REF, 0L));
+
+        given(nodeServiceMock.getProperty(any(NodeRef.class), eq(ContentModel.PROP_NAME))).willReturn("tag-dummy-name");
         given(parametersMock.getInclude()).willReturn(List.of("count"));
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE);
         final List<Tag> expectedTags = createTagsWithNodeRefs(List.of(TAG_NAME)).stream()
             .peek(tag -> tag.setCount(0L))
             .collect(toList());
@@ -159,21 +169,142 @@ public class TagsImplTest
     {
         NodeRef tagNodeA = new NodeRef("tag://A/");
         NodeRef tagNodeB = new NodeRef("tag://B/");
-        List<Pair<NodeRef, String>> tagPairs = List.of(new Pair<>(tagNodeA, "taga"), new Pair<>(tagNodeB, "tagb"));
 
+        given(parametersMock.getSorting()).willReturn(Collections.emptyList());
         given(parametersMock.getPaging()).willReturn(pagingMock);
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
-        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
-        given(pagingResultsMock.getPage()).willReturn(tagPairs);
         given(parametersMock.getInclude()).willReturn(List.of("count"));
-        // Only taga is included in the returned list since tagb is not in use.
-        given(taggingServiceMock.findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE)).willReturn(List.of(new Pair<>("taga", 5)));
+
+        final LinkedHashMap<NodeRef, Long> results = new LinkedHashMap<>();
+        results.put(tagNodeA, 5L);
+        results.put(tagNodeB, 0L);
+
+        given(taggingServiceMock.getTags(any(StoreRef.class), eq(List.of(PARAM_INCLUDE_COUNT)), isNull(), any(), any())).willReturn(results);
+        given(nodeServiceMock.getProperty(any(NodeRef.class), eq(ContentModel.PROP_NAME))).willReturn("taga", "tagb");
 
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().findTaggedNodesAndCountByTagName(STORE_REF_WORKSPACE_SPACESSTORE);
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("tagA").nodeRef(tagNodeA).count(5L).create(),
+                                               Tag.builder().tag("tagB").nodeRef(tagNodeB).count(0L).create());
+        assertEquals(expectedTags, actualTags.getCollection());
+    }
+
+    @Test
+    public void testGetTags_orderByCountAscendingOrder()
+    {
+        NodeRef tagNodeA = new NodeRef("tag://A/");
+        NodeRef tagNodeB = new NodeRef("tag://B/");
+        NodeRef tagNodeC = new NodeRef("tag://C/");
+
+        given(parametersMock.getPaging()).willReturn(pagingMock);
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
+        given(parametersMock.getSorting()).willReturn(List.of(new SortColumn("count", true)));
+
+        final LinkedHashMap<NodeRef, Long> results = new LinkedHashMap<>();
+        results.put(tagNodeB, 0L);
+        results.put(tagNodeC, 2L);
+        results.put(tagNodeA, 5L);
+
+        given(taggingServiceMock.getTags(any(StoreRef.class), eq(List.of(PARAM_INCLUDE_COUNT)), eq(new Pair<>("count", true)), any(), any())).willReturn(results);
+        given(nodeServiceMock.getProperty(tagNodeA, ContentModel.PROP_NAME)).willReturn("taga");
+        given(nodeServiceMock.getProperty(tagNodeB, ContentModel.PROP_NAME)).willReturn("tagb");
+        given(nodeServiceMock.getProperty(tagNodeC, ContentModel.PROP_NAME)).willReturn("tagc");
+
+        //when
+        final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
+
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0L).create(),
+                                               Tag.builder().tag("tagc").nodeRef(tagNodeC).count(2L).create(),
+                                               Tag.builder().tag("taga").nodeRef(tagNodeA).count(5L).create());
+        assertEquals(expectedTags, actualTags.getCollection());
+    }
+
+    @Test
+    public void testGetTags_orderByCountDescendingOrder()
+    {
+        NodeRef tagNodeA = new NodeRef("tag://A/");
+        NodeRef tagNodeB = new NodeRef("tag://B/");
+        NodeRef tagNodeC = new NodeRef("tag://C/");
+
+        given(parametersMock.getPaging()).willReturn(pagingMock);
+        given(parametersMock.getInclude()).willReturn(List.of("count"));
+        given(parametersMock.getSorting()).willReturn(List.of(new SortColumn("count", false)));
+
+        final LinkedHashMap<NodeRef, Long> results = new LinkedHashMap<>();
+        results.put(tagNodeA, 5L);
+        results.put(tagNodeC, 2L);
+        results.put(tagNodeB, 0L);
+
+        given(taggingServiceMock.getTags(any(StoreRef.class), eq(List.of(PARAM_INCLUDE_COUNT)), eq(new Pair<>("count", false)), any(), any())).willReturn(results);
+        given(nodeServiceMock.getProperty(tagNodeA, ContentModel.PROP_NAME)).willReturn("taga");
+        given(nodeServiceMock.getProperty(tagNodeB, ContentModel.PROP_NAME)).willReturn("tagb");
+        given(nodeServiceMock.getProperty(tagNodeC, ContentModel.PROP_NAME)).willReturn("tagc");
+
+        //when
+        final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
+
         final List<Tag> expectedTags = List.of(Tag.builder().tag("taga").nodeRef(tagNodeA).count(5L).create(),
+                                               Tag.builder().tag("tagc").nodeRef(tagNodeC).count(2L).create(),
                                                Tag.builder().tag("tagb").nodeRef(tagNodeB).count(0L).create());
+        assertEquals(expectedTags, actualTags.getCollection());
+    }
+
+    @Test
+    public void testGetTags_orderByTagAscendingOrder()
+    {
+        NodeRef tagApple = new NodeRef("tag://apple/");
+        NodeRef tagBanana = new NodeRef("tag://banana/");
+        NodeRef tagCoconut = new NodeRef("tag://coconut/");
+
+        given(parametersMock.getPaging()).willReturn(pagingMock);
+        given(parametersMock.getInclude()).willReturn(Collections.emptyList());
+        given(parametersMock.getSorting()).willReturn(List.of(new SortColumn("tag", true)));
+
+        final LinkedHashMap<NodeRef, Long> results = new LinkedHashMap<>();
+        results.put(tagApple, 0L);
+        results.put(tagBanana, 0L);
+        results.put(tagCoconut, 0L);
+
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(), eq(new Pair<>("tag", true)), any(), any())).willReturn(results);
+        given(nodeServiceMock.getProperty(tagApple, ContentModel.PROP_NAME)).willReturn("apple");
+        given(nodeServiceMock.getProperty(tagBanana, ContentModel.PROP_NAME)).willReturn("banana");
+        given(nodeServiceMock.getProperty(tagCoconut, ContentModel.PROP_NAME)).willReturn("coconut");
+
+        //when
+        final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
+
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("apple").nodeRef(tagApple).create(),
+                                               Tag.builder().tag("banana").nodeRef(tagBanana).create(),
+                                               Tag.builder().tag("coconut").nodeRef(tagCoconut).create());
+        assertEquals(expectedTags, actualTags.getCollection());
+    }
+
+    @Test
+    public void testGetTags_orderByTagDescendingOrder()
+    {
+        NodeRef tagApple = new NodeRef("tag://apple/");
+        NodeRef tagBanana = new NodeRef("tag://banana/");
+        NodeRef tagCoconut = new NodeRef("tag://coconut/");
+
+        given(parametersMock.getPaging()).willReturn(pagingMock);
+        given(parametersMock.getInclude()).willReturn(Collections.emptyList());
+        given(parametersMock.getSorting()).willReturn(List.of(new SortColumn("tag", false)));
+
+        final LinkedHashMap<NodeRef, Long> results = new LinkedHashMap<>();
+        results.put(tagCoconut, 0L);
+        results.put(tagBanana, 0L);
+        results.put(tagApple, 0L);
+
+        given(taggingServiceMock.getTags(any(StoreRef.class), any(), eq(new Pair<>("tag", false)), any(), any())).willReturn(results);
+        given(nodeServiceMock.getProperty(tagApple, ContentModel.PROP_NAME)).willReturn("apple");
+        given(nodeServiceMock.getProperty(tagBanana, ContentModel.PROP_NAME)).willReturn("banana");
+        given(nodeServiceMock.getProperty(tagCoconut, ContentModel.PROP_NAME)).willReturn("coconut");
+
+        //when
+        final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
+
+        final List<Tag> expectedTags = List.of(Tag.builder().tag("coconut").nodeRef(tagCoconut).create(),
+                                               Tag.builder().tag("banana").nodeRef(tagBanana).create(),
+                                               Tag.builder().tag("apple").nodeRef(tagApple).create());
         assertEquals(expectedTags, actualTags.getCollection());
     }
 
@@ -182,13 +313,13 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag=expectedName)"));
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
-        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
+        given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
         //when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), eq(Set.of("expectedname")), isNull());
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), eq(new ArrayList<>()), any(), eq(Set.of("expectedname")), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actualTags).isNotNull();
     }
@@ -198,13 +329,13 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag IN (expectedName1, expectedName2))"));
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
-        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
+        given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
         //when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), eq(Set.of("expectedname1", "expectedname2")), isNull());
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE),any(), any(), eq(Set.of("expectedname1", "expectedname2")), isNull());
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actualTags).isNotNull();
     }
@@ -214,13 +345,13 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag MATCHES ('expectedName*'))"));
-        given(taggingServiceMock.getTags(any(StoreRef.class), any(PagingRequest.class), any(), any())).willReturn(pagingResultsMock);
-        given(pagingResultsMock.getTotalResultCount()).willReturn(new Pair<>(Integer.MAX_VALUE, 0));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
+        given(parametersMock.getInclude()).willReturn(new ArrayList<>());
 
         //when
         final CollectionWithPagingInfo<Tag> actualTags = objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock);
 
-        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(PagingRequest.class), isNull(), eq(Set.of("expectedname*")));
+        then(taggingServiceMock).should().getTags(eq(STORE_REF_WORKSPACE_SPACESSTORE), any(), any(), isNull(), eq(Set.of("expectedname*")));
         then(taggingServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actualTags).isNotNull();
     }
@@ -230,6 +361,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag=expectedName AND tag IN (expectedName1, expectedName2))"));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
@@ -243,6 +375,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(tag BETWEEN ('expectedName', 'expectedName2'))"));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));
@@ -256,6 +389,7 @@ public class TagsImplTest
     {
         given(parametersMock.getPaging()).willReturn(pagingMock);
         given(parametersMock.getQuery()).willReturn(queryExtractor.getWhereClause("(NOT tag=expectedName)"));
+        given(parametersMock.getSorting()).willReturn(new ArrayList<>());
 
         //when
         final Throwable actualException = catchThrowable(() -> objectUnderTest.getTags(STORE_REF_WORKSPACE_SPACESSTORE, parametersMock));

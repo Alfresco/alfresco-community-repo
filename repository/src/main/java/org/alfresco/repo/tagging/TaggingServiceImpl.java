@@ -46,12 +46,16 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.EmptyPagingResults;
@@ -61,6 +65,7 @@ import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
+import org.alfresco.repo.domain.query.QueryException;
 import org.alfresco.repo.event2.EventGenerator;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
@@ -138,6 +143,9 @@ public class TaggingServiceImpl implements TaggingService,
     private static final String TAG_DETAILS_DELIMITER = "|";
     /** Next tag delimiter */
     private static final String NEXT_TAG_DELIMITER = "\n";
+    /** Parameters Include count */
+    private static final String PARAM_INCLUDE_COUNT = "count";
+
 
     private static Set<String> FORBIDDEN_TAGS_SEQUENCES = new HashSet<String>(Arrays.asList(new String[] {NEXT_TAG_DELIMITER, TAG_DETAILS_DELIMITER}));
 
@@ -680,6 +688,21 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
 
+    public Map<String, Long> calculateCount(StoreRef storeRef)
+    {
+        List<Pair<String, Integer>> tagsByCount = findTaggedNodesAndCountByTagName(storeRef);
+        Map<String, Long> tagsByCountMap = new HashMap<>();
+        if (tagsByCount != null)
+        {
+            for (Pair<String, Integer> tagByCountElem : tagsByCount)
+            {
+                tagsByCountMap.put(tagByCountElem.getFirst(), Long.valueOf(tagByCountElem.getSecond()));
+            }
+        }
+        return tagsByCountMap;
+    }
+
+
     /**
      * @see TaggingService#hasTag(NodeRef, String)
      */
@@ -956,7 +979,83 @@ public class TaggingServiceImpl implements TaggingService,
             exactNamesFilter, alikeNamesFilter);
 
         return mapPagingResult(rootCategories,
-            (childAssociation) -> new Pair<>(childAssociation.getChildRef(), childAssociation.getQName().getLocalName()));
+                (childAssociation) -> new Pair<>(childAssociation.getChildRef(), childAssociation.getQName().getLocalName()));
+    }
+
+    public Map<NodeRef, Long> getTags(StoreRef storeRef, List<String> parameterIncludes, Pair<String, Boolean> sorting, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        ParameterCheck.mandatory("storeRef", storeRef);
+        Collection<ChildAssociationRef> rootCategories = categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, exactNamesFilter, alikeNamesFilter);
+
+        Map<String, Long> tagsMap = new TreeMap<>();
+        for (ChildAssociationRef childAssociation : rootCategories)
+        {
+            tagsMap.put(childAssociation.getQName().getLocalName(), 0L);
+        }
+
+        Map<String, Long> tagsByCountMap = new HashMap<>();
+
+        if(parameterIncludes.contains(PARAM_INCLUDE_COUNT))
+        {
+            tagsByCountMap = calculateCount(storeRef);
+
+            for (Map.Entry<String, Long> entry : tagsMap.entrySet()) {
+                entry.setValue(Optional.ofNullable(tagsByCountMap.get(entry.getKey())).orElse(0L));
+            }
+        }
+
+        //check if we should sort results. Can only sort by one parameter, default order is ascending
+        if (sorting != null)
+        {
+            if (sorting.getFirst().equals("tag"))
+            {
+                if (!sorting.getSecond())
+                {
+                    Stream<Map.Entry<String,Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Collections.reverseOrder(Map.Entry.comparingByKey()));
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                }
+                else
+                {
+                    Stream<Map.Entry<String,Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByKey());
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                }
+            }
+            else if (sorting.getFirst().equals(PARAM_INCLUDE_COUNT))
+            {
+                if (tagsByCountMap.isEmpty())
+                {
+                    throw new QueryException("Tag count should be included when ordering by count");
+                }
+
+                if (!sorting.getSecond())
+                {
+                    Stream<Map.Entry<String, Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                }
+                else
+                {
+                    Stream<Map.Entry<String,Long>> sortedTags =
+                            tagsMap.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByValue());
+                    tagsMap = sortedTags.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+                }
+            }
+        }
+
+        Map<NodeRef, Long> tagNodeRefMap = new LinkedHashMap<>();
+
+        for (Map.Entry<String, Long> entry : tagsMap.entrySet())
+        {
+            tagNodeRefMap.put(getTagNodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, entry.getKey()), entry.getValue());
+        }
+
+        return tagNodeRefMap;
     }
     
     /**

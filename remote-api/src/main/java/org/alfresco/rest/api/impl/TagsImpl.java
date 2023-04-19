@@ -36,6 +36,7 @@ import static org.alfresco.service.cmr.tagging.TaggingService.TAG_ROOT_NODE_REF;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.query.ListBackedPagingResults;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.tagging.NonExistentTagException;
 import org.alfresco.repo.tagging.TagExistsException;
@@ -60,10 +63,12 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -166,36 +171,25 @@ public class TagsImpl implements Tags
 		taggingService.deleteTag(storeRef, tagValue);
 	}
 
-    @Override
+	@Override
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
-        Paging paging = params.getPaging();
-        Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
-        PagingResults<Pair<NodeRef, String>> results = taggingService.getTags(storeRef, Util.getPagingRequest(paging), namesFilters.get(EQUALS), namesFilters.get(MATCHES));
+	    Paging paging = params.getPaging();
+		Pair<String, Boolean> sorting = !params.getSorting().isEmpty() ? new Pair<>(params.getSorting().get(0).column, params.getSorting().get(0).asc) : null;
+		Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
 
-        Integer totalItems = results.getTotalResultCount().getFirst();
-        List<Pair<NodeRef, String>> page = results.getPage();
-        List<Tag> tags = new ArrayList<>(page.size());
-        for (Pair<NodeRef, String> pair : page)
-        {
-            Tag selectedTag = new Tag(pair.getFirst(), pair.getSecond());
-            tags.add(selectedTag);
-        }
-        if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
-        {
-            List<Pair<String, Integer>> tagsByCount = taggingService.findTaggedNodesAndCountByTagName(storeRef);
-            Map<String, Long> tagsByCountMap = new HashMap<>();
-            if (tagsByCount != null)
-            {
-                for (Pair<String, Integer> tagByCountElem : tagsByCount)
-                {
-                    tagsByCountMap.put(tagByCountElem.getFirst(), Long.valueOf(tagByCountElem.getSecond()));
-                }
-            }
-            tags.forEach(tag -> tag.setCount(Optional.ofNullable(tagsByCountMap.get(tag.getTag())).orElse(0L)));
-        }
+		Map<NodeRef, Long> results = taggingService.getTags(storeRef, params.getInclude(), sorting, namesFilters.get(EQUALS), namesFilters.get(MATCHES));
 
-        return CollectionWithPagingInfo.asPaged(paging, tags, results.hasMoreItems(), totalItems);
+		List<Tag> tagsList = results.entrySet().stream().map(entry -> new Tag(entry.getKey(), (String)nodeService.getProperty(entry.getKey(), ContentModel.PROP_NAME))).collect(Collectors.toList());
+
+		if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
+		{
+			tagsList.forEach(tag -> tag.setCount(results.get(tag.getNodeRef())));
+		}
+
+		ListBackedPagingResults listBackedPagingResults = new ListBackedPagingResults(tagsList, Util.getPagingRequest(params.getPaging()));
+
+		return CollectionWithPagingInfo.asPaged(paging, listBackedPagingResults.getPage(), listBackedPagingResults.hasMoreItems(), (Integer) listBackedPagingResults.getTotalResultCount().getFirst());
     }
 
     public NodeRef validateTag(String tagId)

@@ -414,34 +414,7 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         int count = 0;
         boolean moreItems = false;
 
-        final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = (nodeRef) -> {
-            final Set<ChildAssociationRef> childNodes = new HashSet<>();
-            if (CollectionUtils.isEmpty(exactNamesFilter) && CollectionUtils.isEmpty(alikeNamesFilter))
-            {
-                // lookup in DB without filtering
-                childNodes.addAll(nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_SUBCATEGORIES, RegexQNamePattern.MATCH_ALL));
-            }
-            else
-            {
-                if (CollectionUtils.isNotEmpty(exactNamesFilter))
-                {
-                    // lookup in DB filtering by name
-                    childNodes.addAll(nodeService.getChildrenByName(nodeRef, ContentModel.ASSOC_SUBCATEGORIES, exactNamesFilter));
-                }
-                if (CollectionUtils.isNotEmpty(alikeNamesFilter))
-                {
-                    // lookup using search engin filtering by name
-                    childNodes.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, alikeNamesFilter, skipCount + maxItems + 1));
-                }
-            }
-
-            Stream<ChildAssociationRef> childNodesStream = childNodes.stream();
-            if (sortByName)
-            {
-                childNodesStream = childNodesStream.sorted(Comparator.comparing(tag -> tag.getQName().getLocalName()));
-            }
-            return childNodesStream.collect(Collectors.toList());
-        };
+        final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = getNodeRefCollectionFunction(sortByName, exactNamesFilter, alikeNamesFilter, skipCount, maxItems);
 
         OUTER_LOOP: for(NodeRef nodeRef : nodeRefs)
         {
@@ -466,6 +439,55 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
         }
 
         return new ListBackedPagingResults<>(associations, moreItems);
+    }
+
+    public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter)
+    {
+        final Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
+        final List<ChildAssociationRef> associations = new LinkedList<>();
+
+        final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = getNodeRefCollectionFunction(false, exactNamesFilter, alikeNamesFilter, 0, 10000);
+
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            Collection<ChildAssociationRef> children = childNodesSupplier.apply(nodeRef);
+            associations.addAll(children);
+        }
+
+        return associations;
+    }
+
+    private Function<NodeRef, Collection<ChildAssociationRef>> getNodeRefCollectionFunction(boolean sortByName, Collection<String> exactNamesFilter, Collection<String> alikeNamesFilter, int skipCount, int maxItems)
+    {
+        final Function<NodeRef, Collection<ChildAssociationRef>> childNodesSupplier = (nodeRef) -> {
+            final Set<ChildAssociationRef> childNodes = new HashSet<>();
+            if (CollectionUtils.isEmpty(exactNamesFilter) && CollectionUtils.isEmpty(alikeNamesFilter))
+            {
+                // lookup in DB without filtering
+                childNodes.addAll(nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_SUBCATEGORIES, RegexQNamePattern.MATCH_ALL));
+            }
+            else
+            {
+                if (CollectionUtils.isNotEmpty(exactNamesFilter))
+                {
+                    // lookup in DB filtering by name
+                    childNodes.addAll(nodeService.getChildrenByName(nodeRef, ContentModel.ASSOC_SUBCATEGORIES, exactNamesFilter));
+                }
+                if (CollectionUtils.isNotEmpty(alikeNamesFilter))
+                {
+                    // lookup using search engine filtering by name
+                    childNodes.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, alikeNamesFilter, skipCount + maxItems + 1));
+                }
+            }
+
+            Stream<ChildAssociationRef> childNodesStream = childNodes.stream();
+            if (sortByName)
+            {
+                childNodesStream = childNodesStream.sorted(Comparator.comparing(tag -> tag.getQName().getLocalName()));
+            }
+            return childNodesStream.collect(Collectors.toList());
+        };
+        return childNodesSupplier;
     }
 
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName)

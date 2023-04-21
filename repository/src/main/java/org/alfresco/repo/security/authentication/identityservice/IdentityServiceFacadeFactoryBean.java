@@ -357,8 +357,13 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private ClientRegistration.Builder createBuilder(OIDCProviderMetadata metadata)
         {
+            final String authUri = Optional.of(metadata)
+                                           .map(OIDCProviderMetadata::getAuthorizationEndpointURI)
+                                           .map(URI::toASCIIString)
+                                           .orElse(null);
             return ClientRegistration
                     .withRegistrationId("ids")
+                    .authorizationUri(authUri)
                     .tokenUri(metadata.getTokenEndpointURI().toASCIIString())
                     .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
                     .issuerUri(config.getIssuerUrl())

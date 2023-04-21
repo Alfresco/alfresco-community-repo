@@ -1028,7 +1028,7 @@ public class TaggingServiceImpl implements TaggingService,
             {
                 if (tagsByCountMap.isEmpty())
                 {
-                    throw new QueryException("Tag count should be included when ordering by count");
+                    throw new IllegalArgumentException("Tag count should be included when ordering by count");
                 }
 
                 if (!sorting.getSecond())

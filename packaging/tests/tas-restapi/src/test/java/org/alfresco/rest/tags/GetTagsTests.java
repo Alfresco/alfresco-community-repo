@@ -2,6 +2,7 @@ package org.alfresco.rest.tags;
 
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.util.Set;
@@ -88,7 +89,7 @@ public class GetTagsTests extends TagsDataPrep
                 .withParams("include=count")
                 .withCoreAPI()
                 .getTags();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
 
         returnedCollection.getEntries().stream()
                 .filter(e -> e.onModel().getTag().equals(folderTagValue) || e.onModel().getTag().equals(documentTagValue))
@@ -105,14 +106,13 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withOrderByCountDefaultOrderShouldBeAsc()
     {
-
         STEP("Get tags and order results by count. Default sort order should be ascending");
         returnedCollection = restClient.authenticateUser(adminUserModel)
                 .withParams("include=count&orderBy=count")
                 .withCoreAPI()
                 .getTags();
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsSortedAscBy("count");
     }
 
@@ -122,14 +122,13 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withOrderByCountAsc()
     {
-
         STEP("Get tags and order results by count in ascending order");
         returnedCollection = restClient.authenticateUser(adminUserModel)
                 .withParams("include=count&orderBy=count ASC")
                 .withCoreAPI()
                 .getTags();
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsSortedAscBy("count");
     }
 
@@ -139,14 +138,13 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withOrderByCountDesc()
     {
-
         STEP("Get tags and order results by count in descending order");
         returnedCollection = restClient.authenticateUser(adminUserModel)
                 .withParams("include=count&orderBy=count DESC")
                 .withCoreAPI()
                 .getTags();
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsSortedDescBy("count");
     }
 
@@ -156,14 +154,13 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withOrderByTagDefaultOrderShouldBeAsc()
     {
-
         STEP("Get tags and order results by tag name. Default sort order should be ascending");
         returnedCollection = restClient.authenticateUser(adminUserModel)
                 .withParams("orderBy=tag")
                 .withCoreAPI()
                 .getTags();
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsSortedAscBy("tag");
     }
 
@@ -173,14 +170,13 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withOrderByTagAsc()
     {
-
         STEP("Get tags and order results by tag name in ascending order");
         returnedCollection = restClient.authenticateUser(adminUserModel)
                 .withParams("orderBy=tag ASC")
                 .withCoreAPI()
                 .getTags();
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsSortedAscBy("tag");
     }
 
@@ -190,15 +186,28 @@ public class GetTagsTests extends TagsDataPrep
     @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
     public void testGetTags_withOrderByTagDesc()
     {
-
         STEP("Get tags and order results by tag name in descending order");
         returnedCollection = restClient.authenticateUser(adminUserModel)
                 .withParams("orderBy=tag DESC")
                 .withCoreAPI()
                 .getTags();
 
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restClient.assertStatusCodeIs(OK);
         returnedCollection.assertThat().entriesListIsSortedDescBy("tag");
+    }
+
+    /**
+     * Ensure that we get a 400 error when we request to order by count without also including the tag count.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.TAGS, TestGroup.REGRESSION })
+    public void testGetTags_orderByCountWithoutIncludeCount()
+    {
+        restClient.authenticateUser(adminUserModel)
+                .withParams("orderBy=count")
+                .withCoreAPI()
+                .getTags();
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.TAGS }, executionType = ExecutionType.SANITY, description = "Failed authentication get tags call returns status code 401 with Manager role")

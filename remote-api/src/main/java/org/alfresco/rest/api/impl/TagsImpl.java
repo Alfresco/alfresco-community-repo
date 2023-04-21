@@ -86,40 +86,40 @@ import org.apache.commons.collections.CollectionUtils;
  */
 public class TagsImpl implements Tags
 {
-	public static final String PARAM_INCLUDE_COUNT = "count";
-	private static final String PARAM_WHERE_TAG = "tag";
-	static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
-	static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
+    public static final String PARAM_INCLUDE_COUNT = "count";
+    private static final String PARAM_WHERE_TAG = "tag";
+    static final String NOT_A_VALID_TAG = "An invalid parameter has been supplied";
+    static final String NO_PERMISSION_TO_MANAGE_A_TAG = "Current user does not have permission to manage a tag";
 
     private Nodes nodes;
-	private NodeService nodeService;
-	private TaggingService taggingService;
-	private TypeConstraint typeConstraint;
-	private AuthorityService authorityService;
+    private NodeService nodeService;
+    private TaggingService taggingService;
+    private TypeConstraint typeConstraint;
+    private AuthorityService authorityService;
 
-	public void setTypeConstraint(TypeConstraint typeConstraint)
-	{
-		this.typeConstraint = typeConstraint;
-	}
-
-	public void setNodes(Nodes nodes)
+    public void setTypeConstraint(TypeConstraint typeConstraint)
     {
-		this.nodes = nodes;
-	}
-	public void setNodeService(NodeService nodeService)
-	{
-		this.nodeService = nodeService;
-	}
-	
+        this.typeConstraint = typeConstraint;
+    }
+
+    public void setNodes(Nodes nodes)
+    {
+        this.nodes = nodes;
+    }
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     public void setTaggingService(TaggingService taggingService)
     {
-		this.taggingService = taggingService;
-	}
+        this.taggingService = taggingService;
+    }
 
-	public void setAuthorityService(AuthorityService authorityService)
-	{
-		this.authorityService = authorityService;
-	}
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
 
     public List<Tag> addTags(String nodeId, final List<Tag> tags, final Parameters parameters)
     {
@@ -134,15 +134,15 @@ public class TagsImpl implements Tags
         {
             List<Pair<String, NodeRef>> tagNodeRefs = taggingService.addTags(nodeRef, tagValues);
             List<Tag> ret = new ArrayList<>(tags.size());
-			List<Pair<String, Integer>> tagsCountPairList = taggingService.findTaggedNodesAndCountByTagName(nodeRef.getStoreRef());
-			Map<String, Long> tagsCountMap = tagsCountPairList.stream().collect(Collectors.toMap(Pair::getFirst, pair -> Long.valueOf(pair.getSecond())));
+            List<Pair<String, Integer>> tagsCountPairList = taggingService.findTaggedNodesAndCountByTagName(nodeRef.getStoreRef());
+            Map<String, Long> tagsCountMap = tagsCountPairList.stream().collect(Collectors.toMap(Pair::getFirst, pair -> Long.valueOf(pair.getSecond())));
             for (Pair<String, NodeRef> pair : tagNodeRefs)
             {
-				Tag createdTag = new Tag(pair.getSecond(), pair.getFirst());
-				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
-				{
-					createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).orElse(0L) + 1);
-				}
+                Tag createdTag = new Tag(pair.getSecond(), pair.getFirst());
+                if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
+                {
+                    createdTag.setCount(Optional.ofNullable(tagsCountMap.get(createdTag.getTag())).orElse(0L) + 1);
+                }
                 ret.add(createdTag);
             }
             return ret;
@@ -152,109 +152,109 @@ public class TagsImpl implements Tags
             throw new InvalidArgumentException(e.getMessage());
         }
     }
-	
+
     public void deleteTag(String nodeId, String tagId)
     {
-		NodeRef nodeRef = nodes.validateNode(nodeId);
-		getTag(STORE_REF_WORKSPACE_SPACESSTORE, tagId, null);
-    	NodeRef existingTagNodeRef = validateTag(tagId);
-    	String tagValue = taggingService.getTagName(existingTagNodeRef);
-    	taggingService.removeTag(nodeRef, tagValue);
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        getTag(STORE_REF_WORKSPACE_SPACESSTORE, tagId, null);
+        NodeRef existingTagNodeRef = validateTag(tagId);
+        String tagValue = taggingService.getTagName(existingTagNodeRef);
+        taggingService.removeTag(nodeRef, tagValue);
     }
 
     @Override
-	public void deleteTagById(StoreRef storeRef, String tagId) {
-		verifyAdminAuthority();
+    public void deleteTagById(StoreRef storeRef, String tagId) {
+        verifyAdminAuthority();
 
-		NodeRef tagNodeRef = validateTag(storeRef, tagId);
-		String tagValue = taggingService.getTagName(tagNodeRef);
-		taggingService.deleteTag(storeRef, tagValue);
-	}
+        NodeRef tagNodeRef = validateTag(storeRef, tagId);
+        String tagValue = taggingService.getTagName(tagNodeRef);
+        taggingService.deleteTag(storeRef, tagValue);
+    }
 
-	@Override
+    @Override
     public CollectionWithPagingInfo<Tag> getTags(StoreRef storeRef, Parameters params)
     {
-	    Paging paging = params.getPaging();
-		Pair<String, Boolean> sorting = !params.getSorting().isEmpty() ? new Pair<>(params.getSorting().get(0).column, params.getSorting().get(0).asc) : null;
-		Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
+        Paging paging = params.getPaging();
+        Pair<String, Boolean> sorting = !params.getSorting().isEmpty() ? new Pair<>(params.getSorting().get(0).column, params.getSorting().get(0).asc) : null;
+        Map<Integer, Collection<String>> namesFilters = resolveTagNamesQuery(params.getQuery());
 
-		Map<NodeRef, Long> results = taggingService.getTags(storeRef, params.getInclude(), sorting, namesFilters.get(EQUALS), namesFilters.get(MATCHES));
+        Map<NodeRef, Long> results = taggingService.getTags(storeRef, params.getInclude(), sorting, namesFilters.get(EQUALS), namesFilters.get(MATCHES));
 
-		List<Tag> tagsList = results.entrySet().stream().map(entry -> new Tag(entry.getKey(), (String)nodeService.getProperty(entry.getKey(), ContentModel.PROP_NAME))).collect(Collectors.toList());
+        List<Tag> tagsList = results.entrySet().stream().map(entry -> new Tag(entry.getKey(), (String)nodeService.getProperty(entry.getKey(), ContentModel.PROP_NAME))).collect(Collectors.toList());
 
-		if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
-		{
-			tagsList.forEach(tag -> tag.setCount(results.get(tag.getNodeRef())));
-		}
+        if (params.getInclude().contains(PARAM_INCLUDE_COUNT))
+        {
+            tagsList.forEach(tag -> tag.setCount(results.get(tag.getNodeRef())));
+        }
 
-		ListBackedPagingResults listBackedPagingResults = new ListBackedPagingResults(tagsList, Util.getPagingRequest(params.getPaging()));
+        ListBackedPagingResults listBackedPagingResults = new ListBackedPagingResults(tagsList, Util.getPagingRequest(params.getPaging()));
 
-		return CollectionWithPagingInfo.asPaged(paging, listBackedPagingResults.getPage(), listBackedPagingResults.hasMoreItems(), (Integer) listBackedPagingResults.getTotalResultCount().getFirst());
+        return CollectionWithPagingInfo.asPaged(paging, listBackedPagingResults.getPage(), listBackedPagingResults.hasMoreItems(), (Integer) listBackedPagingResults.getTotalResultCount().getFirst());
     }
 
     public NodeRef validateTag(String tagId)
     {
-    	NodeRef tagNodeRef = nodes.validateNode(tagId);
-		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
+        NodeRef tagNodeRef = nodes.validateNode(tagId);
+        return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
     
     public NodeRef validateTag(StoreRef storeRef, String tagId)
     {
-    	NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
-		return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
+        NodeRef tagNodeRef = nodes.validateNode(storeRef, tagId);
+        return checkTagRootAsNodePrimaryParent(tagId, tagNodeRef);
     }
 
-	/**
-	 * Find the number of times the given tag is used (if requested).
-	 *
-	 * @param storeRef The store the tag is in.
-	 * @param tagName The name of the tag.
-	 * @param parameters The request parameters object containing the includes parameter.
-	 * @return The number of times the tag is applied, or null if "count" wasn't in the include parameter.
-	 */
-	private Long findCountIfRequested(StoreRef storeRef, String tagName, Parameters parameters)
-	{
-		Long count = null;
-		if (parameters != null && parameters.getInclude() != null && parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
-		{
-			count = taggingService.findCountByTagName(storeRef, tagName);
-		}
-		return count;
-	}
+    /**
+     * Find the number of times the given tag is used (if requested).
+     *
+     * @param storeRef The store the tag is in.
+     * @param tagName The name of the tag.
+     * @param parameters The request parameters object containing the includes parameter.
+     * @return The number of times the tag is applied, or null if "count" wasn't in the include parameter.
+     */
+    private Long findCountIfRequested(StoreRef storeRef, String tagName, Parameters parameters)
+    {
+        Long count = null;
+        if (parameters != null && parameters.getInclude() != null && parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
+        {
+            count = taggingService.findCountByTagName(storeRef, tagName);
+        }
+        return count;
+    }
 
     @Override
     public Tag changeTag(StoreRef storeRef, String tagId, Tag tag, Parameters parameters)
     {
-    	try
-    	{
-	    	NodeRef existingTagNodeRef = validateTag(storeRef, tagId);
-	    	String existingTagName = taggingService.getTagName(existingTagNodeRef);
-			Long count = findCountIfRequested(storeRef, existingTagName, parameters);
-			String newTagName = tag.getTag();
-			NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
-			return Tag.builder().nodeRef(newTagNodeRef).tag(newTagName).count(count).create();
-    	}
-    	catch(NonExistentTagException e)
-    	{
-    		throw new NotFoundException(e.getMessage());
-    	}
-    	catch(TagExistsException e)
-    	{
-    		throw new ConstraintViolatedException(e.getMessage());
-    	}
-    	catch(TaggingException e)
-    	{
-    		throw new InvalidArgumentException(e.getMessage());
-    	}
+        try
+        {
+            NodeRef existingTagNodeRef = validateTag(storeRef, tagId);
+            String existingTagName = taggingService.getTagName(existingTagNodeRef);
+            Long count = findCountIfRequested(storeRef, existingTagName, parameters);
+            String newTagName = tag.getTag();
+            NodeRef newTagNodeRef = taggingService.changeTag(storeRef, existingTagName, newTagName);
+            return Tag.builder().nodeRef(newTagNodeRef).tag(newTagName).count(count).create();
+        }
+        catch(NonExistentTagException e)
+        {
+            throw new NotFoundException(e.getMessage());
+        }
+        catch(TagExistsException e)
+        {
+            throw new ConstraintViolatedException(e.getMessage());
+        }
+        catch(TaggingException e)
+        {
+            throw new InvalidArgumentException(e.getMessage());
+        }
     }
 
-	@Override
+    @Override
     public Tag getTag(StoreRef storeRef, String tagId, Parameters parameters)
     {
-    	NodeRef tagNodeRef = validateTag(storeRef, tagId);
-    	String tagName = taggingService.getTagName(tagNodeRef);
-    	Long count = findCountIfRequested(storeRef, tagName, parameters);
-    	return Tag.builder().nodeRef(tagNodeRef).tag(tagName).count(count).create();
+        NodeRef tagNodeRef = validateTag(storeRef, tagId);
+        String tagName = taggingService.getTagName(tagNodeRef);
+        Long count = findCountIfRequested(storeRef, tagName, parameters);
+        return Tag.builder().nodeRef(tagNodeRef).tag(tagName).count(count).create();
     }
 
     @Override
@@ -273,80 +273,80 @@ public class TagsImpl implements Tags
         return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
 
-	@Experimental
-	@Override
-	public List<Tag> createTags(final StoreRef storeRef, final List<Tag> tags, final Parameters parameters)
-	{
-		verifyAdminAuthority();
-		final List<String> tagNames = Optional.ofNullable(tags).orElse(Collections.emptyList()).stream()
-			.filter(Objects::nonNull)
-			.map(Tag::getTag)
-			.distinct()
-			.collect(toList());
+    @Experimental
+    @Override
+    public List<Tag> createTags(final StoreRef storeRef, final List<Tag> tags, final Parameters parameters)
+    {
+        verifyAdminAuthority();
+        final List<String> tagNames = Optional.ofNullable(tags).orElse(Collections.emptyList()).stream()
+            .filter(Objects::nonNull)
+            .map(Tag::getTag)
+            .distinct()
+            .collect(toList());
 
-		if (CollectionUtils.isEmpty(tagNames))
-		{
-			throw new InvalidArgumentException(NOT_A_VALID_TAG);
-		}
+        if (CollectionUtils.isEmpty(tagNames))
+        {
+            throw new InvalidArgumentException(NOT_A_VALID_TAG);
+        }
 
-		return taggingService.createTags(storeRef, tagNames).stream()
-			.map(pair -> Tag.builder().tag(pair.getFirst()).nodeRef(pair.getSecond()).create())
-			.peek(tag -> {
-				if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
-				{
-					tag.setCount(0L);
-				}
-			}).collect(toList());
-	}
+        return taggingService.createTags(storeRef, tagNames).stream()
+            .map(pair -> Tag.builder().tag(pair.getFirst()).nodeRef(pair.getSecond()).create())
+            .peek(tag -> {
+                if (parameters.getInclude().contains(PARAM_INCLUDE_COUNT))
+                {
+                    tag.setCount(0L);
+                }
+            }).collect(toList());
+    }
 
-	private void verifyAdminAuthority()
-	{
-		if (!authorityService.hasAdminAuthority())
-		{
-			throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_TAG);
-		}
-	}
+    private void verifyAdminAuthority()
+    {
+        if (!authorityService.hasAdminAuthority())
+        {
+            throw new PermissionDeniedException(NO_PERMISSION_TO_MANAGE_A_TAG);
+        }
+    }
 
-	/**
-	 * Method resolves where query looking for clauses: EQUALS, IN or MATCHES.
-	 * Expected values for EQUALS and IN will be merged under EQUALS clause.
-	 * @param namesQuery Where query with expected tag name(s).
-	 * @return Map of expected exact and alike tag names.
-	 */
-	private Map<Integer, Collection<String>> resolveTagNamesQuery(final Query namesQuery)
-	{
-		if (namesQuery == null || namesQuery == QueryImpl.EMPTY)
-		{
-			return Collections.emptyMap();
-		}
+    /**
+     * Method resolves where query looking for clauses: EQUALS, IN or MATCHES.
+     * Expected values for EQUALS and IN will be merged under EQUALS clause.
+     * @param namesQuery Where query with expected tag name(s).
+     * @return Map of expected exact and alike tag names.
+     */
+    private Map<Integer, Collection<String>> resolveTagNamesQuery(final Query namesQuery)
+    {
+        if (namesQuery == null || namesQuery == QueryImpl.EMPTY)
+        {
+            return Collections.emptyMap();
+        }
 
-		final Map<Integer, Collection<String>> properties = QueryHelper
-			.resolve(namesQuery)
-			.usingOrOperator()
-			.withoutNegations()
-			.getProperty(PARAM_WHERE_TAG)
-			.getExpectedValuesForAnyOf(EQUALS, IN, MATCHES)
-			.skipNegated();
+        final Map<Integer, Collection<String>> properties = QueryHelper
+            .resolve(namesQuery)
+            .usingOrOperator()
+            .withoutNegations()
+            .getProperty(PARAM_WHERE_TAG)
+            .getExpectedValuesForAnyOf(EQUALS, IN, MATCHES)
+            .skipNegated();
 
-		return properties.entrySet().stream()
-			.collect(Collectors.groupingBy((entry) -> {
-				if (entry.getKey() == EQUALS || entry.getKey() == IN)
-				{
-					return EQUALS;
-				}
-				else
-				{
-					return MATCHES;
-				}
-			}, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
-	}
+        return properties.entrySet().stream()
+            .collect(Collectors.groupingBy((entry) -> {
+                if (entry.getKey() == EQUALS || entry.getKey() == IN)
+                {
+                    return EQUALS;
+                }
+                else
+                {
+                    return MATCHES;
+                }
+            }, Collectors.flatMapping((entry) -> entry.getValue().stream().map(String::toLowerCase), Collectors.toCollection(HashSet::new))));
+    }
 
-	private NodeRef checkTagRootAsNodePrimaryParent(String tagId, NodeRef tagNodeRef)
-	{
-		if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(TAG_ROOT_NODE_REF))
-		{
-			throw new EntityNotFoundException(tagId);
-		}
-		return tagNodeRef;
-	}
+    private NodeRef checkTagRootAsNodePrimaryParent(String tagId, NodeRef tagNodeRef)
+    {
+        if ( tagNodeRef == null || !nodeService.getPrimaryParent(tagNodeRef).getParentRef().equals(TAG_ROOT_NODE_REF))
+        {
+            throw new EntityNotFoundException(tagId);
+        }
+        return tagNodeRef;
+    }
 }

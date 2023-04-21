@@ -126,7 +126,7 @@ public class TaggingServiceImpl implements TaggingService,
 
     private static Log logger = LogFactory.getLog(TaggingServiceImpl.class);
     
-	private static Collator collator = Collator.getInstance();
+    private static Collator collator = Collator.getInstance();
 
     private NodeService nodeService;
     private NodeService nodeServiceInternal;
@@ -502,8 +502,8 @@ public class TaggingServiceImpl implements TaggingService,
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
-		
-		return getTagNodeRef(storeRef, tag, true);
+
+        return getTagNodeRef(storeRef, tag, true);
     }  
 
     /**
@@ -532,33 +532,33 @@ public class TaggingServiceImpl implements TaggingService,
     
     public NodeRef changeTag(StoreRef storeRef, String existingTag, String newTag)
     {
-    	if (existingTag == null)
-    	{
-    		throw new TaggingException("Existing tag cannot be null");
-    	}
-    	
-    	if (newTag == null || StringUtils.isBlank(newTag))
-    	{
-    		throw new TaggingException("New tag cannot be blank");
-    	}
+        if (existingTag == null)
+        {
+            throw new TaggingException("Existing tag cannot be null");
+        }
 
-    	existingTag = existingTag.toLowerCase();
-    	newTag = newTag.toLowerCase();
+        if (newTag == null || StringUtils.isBlank(newTag))
+        {
+            throw new TaggingException("New tag cannot be blank");
+        }
 
-    	if (existingTag.equals(newTag))
-    	{
-    		throw new TaggingException("New and existing tags are the same");
-    	}
-    	
-    	if (getTagNodeRef(storeRef, existingTag) == null)
-    	{
-    		throw new NonExistentTagException("Tag " + existingTag + " not found");
-    	}
-    	
-    	if (getTagNodeRef(storeRef, newTag) != null)
-    	{
-    		throw new TagExistsException("Tag " + newTag + " already exists");
-    	}
+        existingTag = existingTag.toLowerCase();
+        newTag = newTag.toLowerCase();
+
+        if (existingTag.equals(newTag))
+        {
+            throw new TaggingException("New and existing tags are the same");
+        }
+
+        if (getTagNodeRef(storeRef, existingTag) == null)
+        {
+            throw new NonExistentTagException("Tag " + existingTag + " not found");
+        }
+
+        if (getTagNodeRef(storeRef, newTag) != null)
+        {
+            throw new TagExistsException("Tag " + newTag + " already exists");
+        }
 
         NodeRef tagNodeRef = getTagNodeRef(storeRef, existingTag);
         nodeService.setProperty(tagNodeRef, PROP_NAME, newTag);
@@ -718,12 +718,12 @@ public class TaggingServiceImpl implements TaggingService,
     @SuppressWarnings("unchecked")
     public NodeRef addTag(final NodeRef nodeRef, final String tagName)
     {
-    	NodeRef newTagNodeRef = null;
-    	
-    	if(tagName == null)
-    	{
-    		throw new IllegalArgumentException("Must provide a non-null tag");
-    	}
+        NodeRef newTagNodeRef = null;
+
+        if(tagName == null)
+        {
+            throw new IllegalArgumentException("Must provide a non-null tag");
+        }
 
         updateTagBehaviour.disable();
         createTagBehaviour.disable();
@@ -773,7 +773,7 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public List<Pair<String, NodeRef>> addTags(NodeRef nodeRef, List<String> tags)
     {
-    	List<Pair<String, NodeRef>> ret = new ArrayList<Pair<String, NodeRef>>();
+        List<Pair<String, NodeRef>> ret = new ArrayList<Pair<String, NodeRef>>();
         for (String tag : tags)
         {
             NodeRef tagNodeRef = addTag(nodeRef, tag);
@@ -894,36 +894,36 @@ public class TaggingServiceImpl implements TaggingService,
                 int skipCount = pagingRequest.getSkipCount();
                 int maxItems = pagingRequest.getMaxItems();
                 int end = maxItems == Integer.MAX_VALUE ? totalItems : skipCount + maxItems;
-            	int size = (maxItems == Integer.MAX_VALUE ? totalItems : maxItems);
+                int size = (maxItems == Integer.MAX_VALUE ? totalItems : maxItems);
 
                 final List<Pair<NodeRef, String>> sortedTags = new ArrayList<Pair<NodeRef, String>>(size);
-            	// grab all tags and sort (assume fairly low number of tags)
-            	for(NodeRef tagNode : currentTagNodes)
-            	{
+                // grab all tags and sort (assume fairly low number of tags)
+                for(NodeRef tagNode : currentTagNodes)
+                {
                     String tag = (String)this.nodeService.getProperty(tagNode, PROP_NAME);
                     sortedTags.add(new Pair<NodeRef, String>(tagNode, tag));            		
-            	}
+                }
                 Collections.sort(sortedTags, new Comparator<Pair<NodeRef, String>>()
                 {
-					@Override
-					public int compare(Pair<NodeRef, String> o1, Pair<NodeRef, String> o2)
-					{
-						String tag1 = o1.getSecond();
-						String tag2 = o2.getSecond();
-						return collator.compare(tag1, tag2);
-					}
-				});
+                    @Override
+                    public int compare(Pair<NodeRef, String> o1, Pair<NodeRef, String> o2)
+                    {
+                        String tag1 = o1.getSecond();
+                        String tag2 = o2.getSecond();
+                        return collator.compare(tag1, tag2);
+                    }
+                });
 
                 final List<Pair<NodeRef, String>> result = new ArrayList<Pair<NodeRef, String>>(size);
-            	Iterator<Pair<NodeRef, String>> it = sortedTags.iterator();
+                Iterator<Pair<NodeRef, String>> it = sortedTags.iterator();
                 for(int count = 0; count < end && it.hasNext(); count++)
                 {
-                	Pair<NodeRef, String> tagPair = it.next();
+                    Pair<NodeRef, String> tagPair = it.next();
 
-                	if(count < skipCount)
-                	{
-                		continue;
-                	}
+                    if(count < skipCount)
+                    {
+                        continue;
+                    }
 
                     result.add(tagPair);
                 }
@@ -932,30 +932,30 @@ public class TaggingServiceImpl implements TaggingService,
 
                 return new PagingResults<Pair<NodeRef, String>>()
                 {
-        			@Override
-        			public List<Pair<NodeRef, String>> getPage()
-        			{
-        				return result;
-        			}
+                    @Override
+                    public List<Pair<NodeRef, String>> getPage()
+                    {
+                        return result;
+                    }
 
-        			@Override
-        			public boolean hasMoreItems()
-        			{
-        				return hasMoreItems;
-        			}
+                    @Override
+                    public boolean hasMoreItems()
+                    {
+                        return hasMoreItems;
+                    }
 
-        			@Override
-        			public Pair<Integer, Integer> getTotalResultCount()
-        			{
-        				Integer total = Integer.valueOf(totalItems);
-        				return new Pair<Integer, Integer>(total, total);
-        			}
+                    @Override
+                    public Pair<Integer, Integer> getTotalResultCount()
+                    {
+                        Integer total = Integer.valueOf(totalItems);
+                        return new Pair<Integer, Integer>(total, total);
+                    }
 
-        			@Override
-        			public String getQueryExecutionId()
-        			{
-        				return null;
-        			}
+                    @Override
+                    public String getQueryExecutionId()
+                    {
+                        return null;
+                    }
                 };
             }
         }
@@ -1289,15 +1289,15 @@ public class TaggingServiceImpl implements TaggingService,
      */
     private void getTagScopes(final NodeRef nodeRef, List<NodeRef> tagScopes, boolean firstOnly)
     {
-    	Boolean hasAspect = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
-    	{
-			@Override
-			public Boolean doWork() throws Exception 
-			{
-				return new Boolean(nodeService.hasAspect(nodeRef,  ContentModel.ASPECT_TAGSCOPE));
-			}
-		}, AuthenticationUtil.getSystemUserName());
-    	
+        Boolean hasAspect = AuthenticationUtil.runAs(new RunAsWork<Boolean>()
+        {
+            @Override
+            public Boolean doWork() throws Exception
+            {
+                return new Boolean(nodeService.hasAspect(nodeRef,  ContentModel.ASPECT_TAGSCOPE));
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
         if (Boolean.TRUE.equals(hasAspect) == true)
         {
             tagScopes.add(nodeRef);
@@ -1308,23 +1308,23 @@ public class TaggingServiceImpl implements TaggingService,
         }
         
         NodeRef parent = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-    	{
-			@Override
-			public NodeRef doWork() throws Exception 
-			{
-				NodeRef result = null;
-				ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
-		        if (assoc != null)
-		        {
-		            result = assoc.getParentRef();                          
-		        }
-		        return result;
-			}
-		}, AuthenticationUtil.getSystemUserName());
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                NodeRef result = null;
+                ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+                if (assoc != null)
+                {
+                    result = assoc.getParentRef();
+                }
+                return result;
+            }
+        }, AuthenticationUtil.getSystemUserName());
         
         if (parent != null)
         {
-        	getTagScopes(parent, tagScopes, firstOnly);            
+            getTagScopes(parent, tagScopes, firstOnly);
         }
     }
 

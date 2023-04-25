@@ -13,7 +13,7 @@
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
-        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+        <maven.build.sourceVersion>17</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <rest.api.explorer.branch>master</rest.api.explorer.branch>
         <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
@@ -21,7 +21,7 @@
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <scribejava-apis.version>8.3.1</scribejava-apis.version>
         <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
     </properties>
 
     <profiles>

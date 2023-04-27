@@ -75,6 +75,7 @@ public abstract class RenditionIntegrationTests extends RestTest
             .await()
             .atMost(Duration.ofSeconds(30))
             .pollInterval(Duration.ofSeconds(6))
+            .ignoreExceptions()
             .until(() -> {
                 FolderModel randomFolderModel = FolderModel.getRandomFolderModel();
                 return dataContent.usingUser(user).usingSite(site).createFolder(randomFolderModel);

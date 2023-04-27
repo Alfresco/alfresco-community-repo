@@ -11,6 +11,7 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.awaitility.Awaitility;
+import org.awaitility.Durations;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -74,7 +75,7 @@ public abstract class RenditionIntegrationTests extends RestTest
         FolderModel folder = Awaitility
             .await()
             .atMost(Duration.ofSeconds(30))
-            .pollInterval(Duration.ofSeconds(6))
+            .pollInterval(Durations.ONE_SECOND)
             .ignoreExceptions()
             .until(() -> {
                 FolderModel randomFolderModel = FolderModel.getRandomFolderModel();

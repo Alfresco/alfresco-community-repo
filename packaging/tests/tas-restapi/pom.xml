@@ -85,6 +85,13 @@
             <version>${commons-lang3.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${dependency.awaitility.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- REST ASSURED -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

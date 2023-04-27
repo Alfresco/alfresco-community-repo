@@ -1,5 +1,7 @@
 package org.alfresco.rest.renditions;
 
+import java.time.Duration;
+import com.google.common.base.Predicates;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.model.RestNodeModel;
@@ -8,6 +10,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.awaitility.Awaitility;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -68,38 +71,22 @@ public abstract class RenditionIntegrationTests extends RestTest
      */
     protected RestNodeModel uploadFile(String sourceFile) throws Exception
     {
-        FolderModel folder = createFolder();
+        FolderModel folder = Awaitility
+            .await()
+            .atMost(Duration.ofSeconds(30))
+            .pollInterval(Duration.ofSeconds(6))
+            .until(() -> {
+                FolderModel randomFolderModel = FolderModel.getRandomFolderModel();
+                return dataContent.usingUser(user).usingSite(site).createFolder(randomFolderModel);
+            }, Predicates.notNull());
         restClient.authenticateUser(user).configureRequestSpec()
-                .addMultiPart("filedata", Utility.getResourceTestDataFile(sourceFile));
+            .addMultiPart("filedata", Utility.getResourceTestDataFile(sourceFile));
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createNode();
 
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.CREATED.value(),
-                "Failed to created a node for rendition tests using file " + sourceFile);
+            "Failed to created a node for rendition tests using file " + sourceFile);
 
         return fileNode;
-    }
-
-    private FolderModel createFolder() throws InterruptedException
-    {
-        int attempts = 5;
-        FolderModel folder = null;
-        for(int i = 0; i < attempts; i++)
-        {
-            try
-            {
-                folder = FolderModel.getRandomFolderModel();
-                folder = dataContent.usingUser(user).usingSite(site).createFolder(folder);
-                break;
-            }
-            catch (Exception exception)
-            {
-                if (i == attempts - 1) {
-                    throw exception;
-                }
-                Thread.sleep(5000L);
-            }
-        }
-        return folder;
     }
 
 }

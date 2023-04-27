@@ -68,8 +68,7 @@ public abstract class RenditionIntegrationTests extends RestTest
      */
     protected RestNodeModel uploadFile(String sourceFile) throws Exception
     {
-        FolderModel folder = FolderModel.getRandomFolderModel();
-        folder = dataContent.usingUser(user).usingSite(site).createFolder(folder);
+        FolderModel folder = createFolder();
         restClient.authenticateUser(user).configureRequestSpec()
                 .addMultiPart("filedata", Utility.getResourceTestDataFile(sourceFile));
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createNode();
@@ -79,4 +78,28 @@ public abstract class RenditionIntegrationTests extends RestTest
 
         return fileNode;
     }
+
+    private FolderModel createFolder() throws InterruptedException
+    {
+        int attempts = 5;
+        FolderModel folder = null;
+        for(int i = 0; i < attempts; i++)
+        {
+            try
+            {
+                folder = FolderModel.getRandomFolderModel();
+                folder = dataContent.usingUser(user).usingSite(site).createFolder(folder);
+                break;
+            }
+            catch (Exception exception)
+            {
+                if (i == attempts - 1) {
+                    throw exception;
+                }
+                Thread.sleep(5000L);
+            }
+        }
+        return folder;
+    }
+
 }

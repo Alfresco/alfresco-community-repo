@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>20.156-SNAPSHOT</version>
+    <version>20.161-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -52,8 +52,8 @@
         <dependency.alfresco-messaging-repo.version>1.2.20</dependency.alfresco-messaging-repo.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>2.1.0-A9</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>3.1.0-A12</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>2.1.0</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>3.1.0</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.5</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.18</dependency.acs-event-model.version>
 
@@ -79,7 +79,7 @@
         <dependency.gytheio.version>0.18</dependency.gytheio.version>
         <dependency.groovy.version>3.0.16</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>5.8.2</dependency.spring-security.version>
+        <dependency.spring-security.version>5.8.3</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
@@ -111,8 +111,8 @@
         <dependency.json-smart.version>2.4.10</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.4.0-A4</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.6.0-A5</alfresco.aos-module.version>
+        <alfresco.googledrive.version>3.4.0</alfresco.googledrive.version>
+        <alfresco.aos-module.version>1.6.0</alfresco.aos-module.version>
         <alfresco.api-explorer.version>7.3.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>

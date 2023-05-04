@@ -514,11 +514,15 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                         NodeRef renditionNode = getRenditionNode(sourceNodeRef, renditionName);
                         boolean createRenditionNode = renditionNode == null;
                         boolean sourceHasAspectRenditioned = nodeService.hasAspect(sourceNodeRef, RenditionModel.ASPECT_RENDITIONED);
+                        boolean sourceChanges = !sourceHasAspectRenditioned || createRenditionNode || transformInputStream == null;
                         try
                         {
-                            ruleService.disableRuleType(RuleType.UPDATE);
-                            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
-                            behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                            if (sourceChanges)
+                            {
+                                ruleService.disableRuleType(RuleType.UPDATE);
+                                behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+                                behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                            }
 
                             // If they do not exist create the rendition association and the rendition node.
                             if (createRenditionNode)
@@ -588,9 +592,12 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                         }
                         finally
                         {
-                            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
-                            behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
-                            ruleService.enableRuleType(RuleType.UPDATE);
+                            if (sourceChanges)
+                            {
+                                behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_AUDITABLE);
+                                behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                                ruleService.enableRuleType(RuleType.UPDATE);
+                            }
                         }
                         return null;
                     }, false, true));

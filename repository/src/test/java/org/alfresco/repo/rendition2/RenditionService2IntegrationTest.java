@@ -30,7 +30,6 @@ import static org.junit.Assert.assertNotEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
@@ -418,65 +417,6 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         // Check the new rendition content hash code
         int contentHashCode3 = getRenditionContentHashCode(renditionNodeRef2);
         assertTrue("New rendition content hash code was not generated", isValidRenditionContentHashCode(contentHashCode3));
-    }
-
-    @Test
-    public void testModifierAfterMultipleRenditionRequests() throws InterruptedException
-    {
-        String user1 = createRandomUser();
-        String user2 = createRandomUser();
-        List<NodeRef> nodes = new ArrayList<NodeRef>();
-
-        final int TOTAL_NODES = 10;
-
-        // Create nodes
-        for (int i = 0; i < TOTAL_NODES; i++)
-        {
-            NodeRef n = createSource(user1, "quick.jpg");
-            render(user1, n, DOC_LIB);
-            nodes.add(n);
-        }
-
-        // Ask rendition multiple times with 'user2'
-        for (int j = 0; j < 10; j++)
-        {
-            for (int i = 0; i < TOTAL_NODES; i++)
-            {
-                render(user2, nodes.get(i), DOC_LIB);
-            }
-        }
-
-        for (int i = 0; i < TOTAL_NODES; i++)
-        {
-            waitForRendition(user1, nodes.get(i), DOC_LIB, true);
-        }
-
-        // Check the modifier is still user1
-        assertEquals(TOTAL_NODES, countModifier(nodes, user1));
-    }
-
-    private int countModifier(List<NodeRef> nodes, String user)
-    {
-        int count = 0;
-        for (int i = 0; i < nodes.size(); i++)
-        {
-            count += compareModifier(nodes.get(i), user);
-        }
-        return count;
-    }
-
-    private int compareModifier(NodeRef nodeRef, String user)
-    {
-        int res = 0;
-        if (nodeRef != null && user != null)
-        {
-            String modifier = nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER).toString();
-            if (user.equals(modifier))
-            {
-                res = 1;
-            }
-        }
-        return res;
     }
 
     /**

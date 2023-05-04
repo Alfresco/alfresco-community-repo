@@ -355,6 +355,7 @@ public class ClientAppConfig extends AbstractLifecycleBean
             {
                 return SHARE_PLACEHOLDER;
             }
+            LOGGER.info("INSIDE getClientUrl ****--------------------->"+url);
             return url;
         }
 
@@ -370,8 +371,10 @@ public class ClientAppConfig extends AbstractLifecycleBean
          */
         public String getResolvedClientUrl(SysAdminParams sysAdminParams)
         {
+            System.out.println("Inside getResolvedClientUrl--------------------->");
             String resolvedUrl;
             String clientUrl = getClientUrl();
+            System.out.println("clientUrl is ****--------------------->"+clientUrl);
             if (!StringUtils.isEmpty(clientUrl) && clientUrl.contains(SHARE_PLACEHOLDER))
             {
                 resolvedUrl = UrlUtil.replaceShareUrlPlaceholder(clientUrl, sysAdminParams);
@@ -381,7 +384,7 @@ public class ClientAppConfig extends AbstractLifecycleBean
                 resolvedUrl = UrlUtil.replaceRepoBaseUrlPlaceholder(clientUrl, sysAdminParams);
             }
 
-            LOGGER.debug("Resolved clientUrl [" + clientUrl + "] to [" + resolvedUrl + "] for the client: " + name);
+            System.out.println("))))Resolved clientUrl [" + clientUrl + "] to [" + resolvedUrl + "] for the client: " + name);
             return resolvedUrl;
         }
 
@@ -411,7 +414,8 @@ public class ClientAppConfig extends AbstractLifecycleBean
 
             LOGGER.debug("Resolved template assets [" + getTemplateAssetsUrl() + "] URL to [" + resolvedUrl
                                      + "] for the client: " + name);
-            return resolvedUrl;
+
+            return UrlUtil.replaceRepoBaseUrlPlaceholder(resolvedUrl, sysAdminParams);
         }
 
         public Map<String, String> getProperties()

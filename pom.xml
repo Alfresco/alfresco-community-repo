@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>20.164-SNAPSHOT</version>
+    <version>23.1.0.100-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -23,8 +23,8 @@
     </modules>
 
     <properties>
-        <acs.version.major>7</acs.version.major>
-        <acs.version.minor>4</acs.version.minor>
+        <acs.version.major>23</acs.version.major>
+        <acs.version.minor>1</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
         <acs.version.label />
         <amp.min.version>${acs.version.major}.0.0</amp.min.version>

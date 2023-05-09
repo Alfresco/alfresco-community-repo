@@ -44,6 +44,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -145,8 +146,7 @@ public class FilePlanTests extends BaseRMRestTest
     @Test
     public void getFilePlanWhenRMIsCreated()
     {
-        // Create RM Site if doesn't exist
-        createRMSiteIfNotExists();
+        createRMSite(createStandardRMSiteModel());
 
         FilePlan filePlan = getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS);
 

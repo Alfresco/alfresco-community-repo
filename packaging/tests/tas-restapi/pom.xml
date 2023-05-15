@@ -20,7 +20,6 @@
         <org.glassfish.version>1.1.4</org.glassfish.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <scribejava-apis.version>8.3.1</scribejava-apis.version>
-        <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
         <java.version>11</java.version>
     </properties>
 

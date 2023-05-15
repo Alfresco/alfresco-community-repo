@@ -21,7 +21,7 @@
         <chemistry-opencmis-commons-api>1.1.0</chemistry-opencmis-commons-api>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-release.version>2.5.3</maven-release.version>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <suiteXmlFile>${project.basedir}/src/test/resources/cmis-suite.xml</suiteXmlFile>
         <cmis.binding />
         <cmis.basePath />

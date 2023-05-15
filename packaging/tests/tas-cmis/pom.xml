@@ -16,7 +16,7 @@
     </organization>
 
     <properties>
-        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+        <maven.build.sourceVersion>17</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <chemistry-opencmis-commons-api>1.1.0</chemistry-opencmis-commons-api>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>

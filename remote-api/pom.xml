@@ -154,7 +154,7 @@
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>2.1</version>
+            <version>2.2</version>
             <scope>test</scope>
             <exclusions>
               <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->

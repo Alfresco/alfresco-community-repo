@@ -35,7 +35,6 @@ import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -283,7 +282,6 @@ public interface CategoryService
      *
      * @return NodeRef for category root node
      */
-    @Experimental
     @Auditable(parameters = {"storeRef"})
     default Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
     {

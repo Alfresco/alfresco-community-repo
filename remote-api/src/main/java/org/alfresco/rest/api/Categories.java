@@ -32,10 +32,8 @@ import java.util.List;
 
 import org.alfresco.rest.api.model.Category;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.StoreRef;
 
-@Experimental
 public interface Categories
 {
     Category getCategoryById(StoreRef storeRef, String id, Parameters parameters);

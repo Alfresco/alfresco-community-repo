@@ -30,11 +30,9 @@ import org.alfresco.rest.api.categories.CategoriesEntityResourceTest;
 import org.alfresco.rest.api.categories.NodesCategoryLinksRelationTest;
 import org.alfresco.rest.api.categories.SubcategoriesRelationTest;
 import org.alfresco.rest.api.impl.CategoriesImplTest;
-import org.alfresco.service.Experimental;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-@Experimental
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     CategoriesImplTest.class,

@@ -89,7 +89,7 @@
         <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
         <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
         <dependency.activemq.version>5.17.4</dependency.activemq.version>
-        <dependency.apache-compress.version>1.22</dependency.apache-compress.version>
+        <dependency.apache-compress.version>1.23.0</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>

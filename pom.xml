@@ -71,7 +71,7 @@
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.9</dependency.gson.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
-        <dependency.httpcore.version>4.4.15</dependency.httpcore.version>
+        <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.7</dependency.slf4j.version>

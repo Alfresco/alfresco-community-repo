@@ -35,7 +35,6 @@ import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -368,7 +367,6 @@ public interface TaggingService
      * @return {@link List} of {@link Pair}s of tag names and node references.
      * @throws org.alfresco.service.cmr.repository.DuplicateChildNodeNameException if tag already exists.
      */
-    @Experimental
     @Auditable(parameters = {"tagNames"})
     default List<Pair<String, NodeRef>> createTags(StoreRef storeRef, List<String> tagNames)
     {

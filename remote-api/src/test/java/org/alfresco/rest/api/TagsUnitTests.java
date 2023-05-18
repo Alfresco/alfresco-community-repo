@@ -27,11 +27,9 @@ package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.impl.TagsImplTest;
 import org.alfresco.rest.api.tags.TagsEntityResourceTest;
-import org.alfresco.service.Experimental;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-@Experimental
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     TagsImplTest.class,

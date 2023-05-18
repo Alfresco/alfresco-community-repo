@@ -36,8 +36,6 @@ import static org.alfresco.service.cmr.tagging.TaggingService.TAG_ROOT_NODE_REF;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,12 +61,9 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
-import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -273,7 +268,6 @@ public class TagsImpl implements Tags
         return CollectionWithPagingInfo.asPaged(params.getPaging(), tags, results.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
 
-    @Experimental
     @Override
     public List<Tag> createTags(final StoreRef storeRef, final List<Tag> tags, final Parameters parameters)
     {

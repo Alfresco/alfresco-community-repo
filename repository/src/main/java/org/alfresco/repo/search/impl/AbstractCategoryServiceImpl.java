@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.search.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,7 +49,6 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -637,7 +635,6 @@ public abstract class AbstractCategoryServiceImpl implements CategoryService
     }
 
     @Override
-    @Experimental
     public Optional<NodeRef> getRootCategoryNodeRef(final StoreRef storeRef)
     {
         return getRootCategoryNodeRef(storeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE);

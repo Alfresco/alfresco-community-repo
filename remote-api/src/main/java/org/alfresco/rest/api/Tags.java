@@ -32,7 +32,6 @@ import java.util.List;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.StoreRef;
 
 public interface Tags
@@ -44,10 +43,8 @@ public interface Tags
     Tag changeTag(StoreRef storeRef, String tagId, Tag tag, Parameters parameters);
     CollectionWithPagingInfo<Tag> getTags(String nodeId, Parameters params);
 
-    @Experimental
     List<Tag> createTags(StoreRef storeRef, List<Tag> tags, Parameters parameters);
 
-    @Experimental
     default List<Tag> createTags(List<Tag> tags, Parameters parameters)
     {
         return createTags(STORE_REF_WORKSPACE_SPACESSTORE, tags, parameters);

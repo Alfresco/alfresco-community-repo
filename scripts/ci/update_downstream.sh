@@ -38,7 +38,7 @@ if [[ "${COMMIT_MESSAGE}" =~ \[force[^\]]*\] ]]; then
   git commit --allow-empty -m "${FORCE_TOKEN} Update upstream community-repo version to ${VERSION}"
   git push
 elif git status --untracked-files=no --porcelain | grep -q '^' ; then
-  git commit -m "Update upstream community-repo version to ${VERSION}"
+  git commit -m "Update community-repo version to ${VERSION}"
   git push
 else
   echo "Dependencies are already up to date."

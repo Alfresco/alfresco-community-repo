@@ -76,7 +76,7 @@
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.7</dependency.slf4j.version>
         <dependency.log4j.version>2.20.0</dependency.log4j.version>
-        <dependency.gytheio.version>0.18</dependency.gytheio.version>
+        <dependency.gytheio.version>0.19</dependency.gytheio.version>
         <dependency.groovy.version>3.0.17</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
         <dependency.spring-security.version>5.8.3</dependency.spring-security.version>
@@ -84,10 +84,10 @@
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.20.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.87.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.camel.version>3.20.4</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.netty.version>4.1.91.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
-        <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
+        <dependency.netty-tcnative.version>2.0.59.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
         <dependency.activemq.version>5.17.4</dependency.activemq.version>
         <dependency.apache-compress.version>1.23.0</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>

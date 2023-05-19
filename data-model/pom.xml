@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>20.158-SNAPSHOT</version>
+        <version>23.1.0.116-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -134,7 +134,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.4.0</version>
+            <version>6.5.1</version>
         </dependency>
 
         <!-- the cxf libs were updated, see dependencyManagement section -->

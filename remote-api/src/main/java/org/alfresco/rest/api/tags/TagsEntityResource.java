@@ -36,7 +36,6 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
@@ -85,7 +84,6 @@ public class TagsEntityResource implements EntityResourceAction.Read<Tag>,
 	/**
 	 * POST /tags
 	 */
-	@Experimental
 	@WebApiDescription(
 		title = "Create an orphan tag",
 		description = "Creates a tag, which is not associated with any node",

@@ -8,20 +8,19 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>20.158-SNAPSHOT</version>
+        <version>23.1.0.116-SNAPSHOT</version>
     </parent>
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
-        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+        <maven.build.sourceVersion>17</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <rest.api.explorer.branch>master</rest.api.explorer.branch>
-        <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
+        <httpclient-osgi-version>4.5.14</httpclient-osgi-version>
         <org.glassfish.version>1.1.4</org.glassfish.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
-        <scribejava-apis.version>8.3.1</scribejava-apis.version>
-        <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
-        <java.version>11</java.version>
+        <scribejava-apis.version>8.3.3</scribejava-apis.version>
+        <java.version>17</java.version>
     </properties>
 
     <profiles>
@@ -83,6 +82,13 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${dependency.awaitility.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- REST ASSURED -->
@@ -165,14 +171,14 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>3.0.16</version>
+            <version>3.0.17</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-json-->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-json</artifactId>
-            <version>3.0.16</version>
+            <version>3.0.17</version>
         </dependency>
 
        <dependency>

@@ -65,7 +65,6 @@ import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
-import org.alfresco.repo.domain.query.QueryException;
 import org.alfresco.repo.event2.EventGenerator;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
@@ -78,7 +77,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -1700,7 +1698,6 @@ public class TaggingServiceImpl implements TaggingService,
         }
     }
 
-    @Experimental
     @Override
     public List<Pair<String, NodeRef>> createTags(final StoreRef storeRef, final List<String> tagNames)
     {

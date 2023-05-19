@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>20.158-SNAPSHOT</version>
+        <version>23.1.0.116-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>72.1</version>
+            <version>73.1</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -375,7 +375,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.4.0</version>
+            <version>6.5.1</version>
         </dependency>
 
         <!-- GData -->
@@ -747,7 +747,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.9.1</version>
+            <version>1.9.19</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>

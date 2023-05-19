@@ -35,7 +35,7 @@ git add pom.xml
 
 if [[ "${COMMIT_MESSAGE}" =~ \[force[^\]]*\] ]]; then
   FORCE_TOKEN=$(echo "${COMMIT_MESSAGE}" | sed "s|^.*\(\[force[^]]*\]\).*$|\1|g")
-  git commit --allow-empty -m "${FORCE_TOKEN} Update upstream community-repo version to ${VERSION}"
+  git commit --allow-empty -m "${FORCE_TOKEN} Update community-repo version to ${VERSION}"
   git push
 elif git status --untracked-files=no --porcelain | grep -q '^' ; then
   git commit -m "Update community-repo version to ${VERSION}"

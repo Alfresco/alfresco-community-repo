@@ -997,6 +997,18 @@ public class WorkflowServiceImpl implements WorkflowService
     public WorkflowTask updateTask(String taskId, Map<QName, Serializable> properties, Map<QName, List<NodeRef>> add,
                 Map<QName, List<NodeRef>> remove)
     {
+    	LinkedList<String> validTaskStatus = new LinkedList<>();
+        validTaskStatus.add("Not Yet Started");
+        validTaskStatus.add("In Progress");
+        validTaskStatus.add("On Hold");
+        validTaskStatus.add("Cancelled");
+        validTaskStatus.add("Completed");
+
+        if (!validTaskStatus.contains(properties.get(WorkflowModel.PROP_STATUS)))
+        {
+            throw new WorkflowException("Invalid Value is Passed for Task Status.");
+        }
+	
         String engineId = BPMEngineRegistry.getEngineId(taskId);
         TaskComponent component = getTaskComponent(engineId);
         // get the current assignee before updating the task

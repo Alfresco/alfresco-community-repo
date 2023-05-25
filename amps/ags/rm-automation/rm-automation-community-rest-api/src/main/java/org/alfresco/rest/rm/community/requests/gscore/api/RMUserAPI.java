@@ -110,7 +110,6 @@ public class RMUserAPI extends RMModelRequest
                         adminUser.getPassword()))
                 .when()
                 .post("/rm/roles/{role}/authorities/{authority}")
-                .prettyPeek()
                 .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
@@ -151,7 +150,6 @@ public class RMUserAPI extends RMModelRequest
                 .pathParam("nodeId", filePlanComponentId)
                 .when()
                 .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-                .prettyPeek()
                 .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
@@ -191,7 +189,6 @@ public class RMUserAPI extends RMModelRequest
                 .pathParam("nodeId", filePlanComponentId)
                 .when()
                 .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-                .prettyPeek()
                 .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
@@ -231,7 +228,6 @@ public class RMUserAPI extends RMModelRequest
             .spec(spec)
         .when()
             .post("people")
-            .prettyPeek()
             .andReturn();
 
         return (response.getStatusCode() == OK.value());

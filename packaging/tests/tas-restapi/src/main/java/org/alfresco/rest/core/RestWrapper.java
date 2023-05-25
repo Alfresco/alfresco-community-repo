@@ -316,6 +316,26 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         return model;
     }
 
+    public <T> T processModelWithLogging(Class<T> classz, RestRequest restRequest)
+            throws EmptyJsonResponseException, JsonToModelConversionException
+    {
+        T model = callAPIAndCreateModelWithLogging(classz, restRequest, "entry");
+
+        if (model == null)
+        {
+            try
+            {
+                return classz.newInstance();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+
+        return model;
+    }
+
     /**
      * Send the request and convert the response to the appropriate model.
      *
@@ -327,6 +347,33 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     private <T> T callAPIAndCreateModel(Class<T> classz, RestRequest restRequest, String path)
     {
         Response returnedResponse = sendRequest(restRequest);
+
+        setStatusCode(String.valueOf(returnedResponse.getStatusCode()));
+
+        boolean responseHasErrors = checkForJsonError(returnedResponse);
+        boolean responseHasExceptions = checkForJsonStatusException(returnedResponse);
+
+        T models = null;
+
+        if (!responseHasExceptions && !responseHasErrors)
+        {
+            try
+            {
+                models = returnedResponse.jsonPath().getObject(path, classz);
+                validateJsonModelSchema(classz, models);
+            }
+            catch (Exception processError)
+            {
+                processError.printStackTrace();
+                throw new JsonToModelConversionException(classz, processError);
+            }
+        }
+        return models;
+    }
+
+    private <T> T callAPIAndCreateModelWithLogging(Class<T> classz, RestRequest restRequest, String path)
+    {
+        Response returnedResponse = sendRequestWithLogging(restRequest);
 
         setStatusCode(String.valueOf(returnedResponse.getStatusCode()));
 
@@ -613,13 +660,63 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         this.statusCode = statusCode;
     }
 
+    protected Response sendRequest(RestRequest restRequest)
+    {
+        // If there are unused parameters then include them in the request.
+        String parameters = getParameters();
+        if (parameters != null && !parameters.isEmpty())
+        {
+            restRequest.setPathParams(ArrayUtils.addAll(restRequest.getPathParams(), parameters));
+        }
+
+        STEP(restRequest.toString());
+
+        Response returnedResponse;
+        switch (restRequest.getHttpMethod())
+        {
+            case GET:
+                returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+            case DELETE:
+                returnedResponse = onRequest().delete(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+            case HEAD:
+                returnedResponse = onRequest().head(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+            case OPTIONS:
+                returnedResponse = onRequest().options(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+            case POST:
+                returnedResponse = onRequest().body(restRequest.getBody())
+                        .post(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+            case PUT:
+                returnedResponse = onRequest().body(restRequest.getBody())
+                        .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
+                        .put(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+            case TRACE:
+                returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+            default:
+                returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                break;
+        }
+
+        logResponseInformation(restRequest, returnedResponse);
+
+        configureServerEndpoint();
+        response = new RestResponse(returnedResponse);
+        return returnedResponse;
+    }
+
     /**
      * Send REST request based on HTTP method
      * 
      * @param restRequest
      * @return
      */
-    protected Response sendRequest(RestRequest restRequest)
+    protected Response sendRequestWithLogging(RestRequest restRequest)
     {
         // If there are unused parameters then include them in the request.
         String parameters = getParameters();

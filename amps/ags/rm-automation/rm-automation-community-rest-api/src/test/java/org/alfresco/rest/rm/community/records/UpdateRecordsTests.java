@@ -311,7 +311,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
             Record recordModel = createRecordModel(newName, newDescription, newTitle);
 
             // Update record
-            recordsAPI.updateRecord(recordModel, record.getId());
+            recordsAPI.updateRecordWithLogging(recordModel, record.getId());
             assertStatusCode(FORBIDDEN);
 
             // Verify the original record meta data has been retained

@@ -104,7 +104,6 @@ public class RMUserAPI extends RMModelRequest
 
         Response response = given()
                 .spec(spec)
-                .log().all()
                 .pathParam("role", userRole)
                 .pathParam("authority", userName)
                 .param("alf_ticket", client.getAlfTicket(adminUser.getUsername(),
@@ -150,7 +149,6 @@ public class RMUserAPI extends RMModelRequest
                 .contentType(ContentType.JSON)
                 .body(bodyJson.toString())
                 .pathParam("nodeId", filePlanComponentId)
-                .log().all()
                 .when()
                 .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
                 .prettyPeek()
@@ -191,7 +189,6 @@ public class RMUserAPI extends RMModelRequest
                 .contentType(ContentType.JSON)
                 .body(bodyJson.toString())
                 .pathParam("nodeId", filePlanComponentId)
-                .log().all()
                 .when()
                 .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
                 .prettyPeek()
@@ -232,7 +229,6 @@ public class RMUserAPI extends RMModelRequest
         // create POST request to "people" endpoint
         Response response = given()
             .spec(spec)
-            .log().all()
         .when()
             .post("people")
             .prettyPeek()

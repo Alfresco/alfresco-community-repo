@@ -731,31 +731,31 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         switch (restRequest.getHttpMethod())
         {
             case GET:
-                returnedResponse = onRequest().log().all().get(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
+                returnedResponse = onRequest().log().all().when().get(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
             case DELETE:
-                returnedResponse = onRequest().log().all().delete(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
+                returnedResponse = onRequest().log().all().when().delete(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
             case HEAD:
-                returnedResponse = onRequest().log().all().head(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
+                returnedResponse = onRequest().log().all().when().head(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
             case OPTIONS:
-                returnedResponse = onRequest().log().all().options(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
+                returnedResponse = onRequest().log().all().when().options(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
             case POST:
-                returnedResponse = onRequest().log().all().body(restRequest.getBody())
+                returnedResponse = onRequest().log().all().when().body(restRequest.getBody())
                         .post(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
             case PUT:
-                returnedResponse = onRequest().log().all().body(restRequest.getBody())
+                returnedResponse = onRequest().log().all().when().body(restRequest.getBody())
                         .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
                         .put(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
             case TRACE:
-                returnedResponse = onRequest().log().all().get(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
+                returnedResponse = onRequest().log().all().when().get(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
             default:
-                returnedResponse = onRequest().log().all().get(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
+                returnedResponse = onRequest().log().all().when().get(restRequest.getPath(), restRequest.getPathParams()).prettyPeek().andReturn();
                 break;
         }
 

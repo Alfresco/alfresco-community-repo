@@ -31,6 +31,17 @@
             <artifactId>alfresco-trashcan-cleaner</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.alfresco.services</groupId>
+            <artifactId>alfresco-messaging-repo</artifactId>
+            <version>1.2.22</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
         </dependency>

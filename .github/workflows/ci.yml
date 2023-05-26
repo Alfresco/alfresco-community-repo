@@ -77,6 +77,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+      - uses: pmd/pmd-github-action@v1
+        id: pmd
+        with:
+          version: '6.55.0'
+          rulesets: 'pmd-ruleset.xml'
+      - name: Fail build if there are PMD violations
+        if: steps.pmd.outputs.violations != 0
+        run: exit 1
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"

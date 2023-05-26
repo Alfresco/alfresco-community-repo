@@ -458,6 +458,9 @@ public class BaseRMRestTest extends RestTest
         Record updateRecord = recordsAPI.updateRecord(Record.builder().aspectNames(aspects).build(), recordId);
         assertStatusCode(OK);
 
+        List<String> aspectsAfterUpdate = recordsAPI.getRecord(recordId).getAspectNames();
+        assertTrue(aspectsAfterUpdate.contains(ASPECTS_COMPLETED_RECORD));
+
         return updateRecord;
     }
 

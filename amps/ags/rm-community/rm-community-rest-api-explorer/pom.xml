@@ -36,24 +36,45 @@
          <id>start-api-explorer</id>
          <build>
             <plugins>
-               <plugin>
-                  <groupId>org.apache.tomcat.maven</groupId>
-                  <artifactId>tomcat7-maven-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>run-war</id>
-                        <goals>
-                           <goal>run-war</goal>
-                        </goals>
-                        <phase>verify</phase>
-                     </execution>
-                  </executions>
-                  <configuration>
-                     <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
-                     <path>/api-explorer</path>
-                     <port>8085</port>
-                  </configuration>
-               </plugin>
+                <plugin>
+                    <groupId>org.codehaus.cargo</groupId>
+                    <artifactId>cargo-maven3-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>start-container</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>start</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>stop-container</id>
+                            <phase>post-integration-test</phase>
+                            <goals>
+                                <goal>stop</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <container>
+                            <containerId>tomcat7x</containerId>
+                            <type>embedded</type>
+                        </container>
+                        <configuration>
+                            <properties>
+                                <cargo.servlet.port>8085</cargo.servlet.port>
+                            </properties>
+                        </configuration>
+                        <deployables>
+                            <deployable>
+                                <groupId>${project.groupId}</groupId>
+                                <artifactId>${project.artifactId}</artifactId>
+                                <type>war</type>
+                                <pingURL>http://localhost:8085/api-explorer</pingURL>
+                            </deployable>
+                        </deployables>
+                    </configuration>
+                </plugin>
             </plugins>
          </build>
       </profile>

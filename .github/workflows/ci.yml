@@ -530,7 +530,7 @@ jobs:
           mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests -Dtest="UpdateRecordsTests,FileVersionAsRecordTests,RecordFolderAuditLogTest,RemoveFromHoldsTests,CreateNonElectronicRecordsTests,DeleteRecordTests,ExportRecordsTests,ShareRecordsTest"
+        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@v1

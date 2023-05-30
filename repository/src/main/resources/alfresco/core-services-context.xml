@@ -75,6 +75,9 @@
         <property name="propertiesPersister">
         	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
         </property>
+        <property name="order">
+            <value>9999999</value>
+        </property>
     </bean>
 
     <!-- Expand global properties and version information in bean definitions -->
@@ -98,6 +101,18 @@
         <!-- Order before shared-properties to give you a chance to override its parameters here -->
         <property name="order">
             <value>6</value>
+        </property>
+    </bean>
+
+    <bean id="default-properties-resolver" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
+        <property name="order">
+            <value>2147483647</value>
         </property>
     </bean>
 

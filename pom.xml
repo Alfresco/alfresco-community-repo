@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.127-SNAPSHOT</version>
+    <version>23.1.0.129-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -45,8 +45,9 @@
 
         <dir.root>${project.build.directory}/alf_data</dir.root>
 
-        <dependency.alfresco-hb-data-sender.version>1.1.0</dependency.alfresco-hb-data-sender.version>
-        <dependency.alfresco-trashcan-cleaner.version>2.4.1</dependency.alfresco-trashcan-cleaner.version>
+
+        <dependency.alfresco-hb-data-sender.version>1.1.1</dependency.alfresco-hb-data-sender.version>
+        <dependency.alfresco-trashcan-cleaner.version>2.4.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.5</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>

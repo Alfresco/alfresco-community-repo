@@ -1605,8 +1605,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     this.userSearchCtls = new SearchControls();
                     this.userSearchCtls.setSearchScope(SearchControls.SUBTREE_SCOPE);
                     this.userSearchCtls.setReturningAttributes(LDAPUserRegistry.this.userKeys.getFirst());
-                    // MNT-14001 fix, set search limit to ensure that server will not return more search results then provided by paged result control
-                    this.userSearchCtls.setCountLimit(LDAPUserRegistry.this.queryBatchSize > 0 ? LDAPUserRegistry.this.queryBatchSize : 0);
 
                     this.next = fetchNext();
                 }

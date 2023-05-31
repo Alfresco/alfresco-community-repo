@@ -41,24 +41,18 @@
                     <artifactId>cargo-maven3-plugin</artifactId>
                     <executions>
                         <execution>
-                            <id>start-container</id>
+                            <id>run-war</id>
                             <phase>verify</phase>
                             <goals>
-                                <goal>start</goal>
-                            </goals>
-                        </execution>
-                        <execution>
-                            <id>stop-container</id>
-                            <phase>post-integration-test</phase>
-                            <goals>
-                                <goal>stop</goal>
+                                <goal>run</goal>
                             </goals>
                         </execution>
                     </executions>
                     <configuration>
                         <container>
-                            <containerId>tomcat7x</containerId>
+                            <containerId>tomcat9x</containerId>
                             <type>embedded</type>
+                            <log>target/cargo.log</log>
                         </container>
                         <configuration>
                             <properties>
@@ -67,9 +61,10 @@
                         </configuration>
                         <deployables>
                             <deployable>
-                                <groupId>${project.groupId}</groupId>
-                                <artifactId>${project.artifactId}</artifactId>
                                 <type>war</type>
+                                <properties>
+                                    <context>/api-explorer</context>
+                                </properties>
                                 <pingURL>http://localhost:8085/api-explorer</pingURL>
                             </deployable>
                         </deployables>

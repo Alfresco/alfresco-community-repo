@@ -34,15 +34,15 @@ set -vx
 pushd "$(dirname "${BASH_SOURCE[0]}")/../../../"
 
 # Execute Maven command in the background
-mvn clean install -Pags,start-api-explorer -DskipTests &
+mvn verify -Pags,start-api-explorer -DskipTests &
 # Get the PID of the Maven command
 maven_pid=$!
 
 # Wait for the Maven command to start the Tomcat server
-sleep 120
+sleep 60
 
 # Call the function with desired parameters
-perform_curl "http://localhost:8085/api-explorer" 5 10 5
+perform_curl "http://localhost:8085/api-explorer" 10 10 5
 exit_code=$?
 
 # Stop the Tomcat server by sending termination signal to the Maven process

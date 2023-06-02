@@ -929,8 +929,8 @@
                     <Xlint>ignore</Xlint>
                     <javaModules>
                         <javaModule>
-                            <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-community-repo</artifactId>
+                            <groupId>javax.servlet</groupId>
+                            <artifactId>javax.servlet-api</artifactId>
                         </javaModule>
                     </javaModules>
                 </configuration>

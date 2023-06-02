@@ -932,6 +932,9 @@
                             <groupId>javax.servlet</groupId>
                             <artifactId>javax.servlet-api</artifactId>
                         </javaModule>
+                        <javaModule>
+                            <groupId>javax.xml</groupId>
+                        </javaModule>
                     </javaModules>
                 </configuration>
            </plugin>

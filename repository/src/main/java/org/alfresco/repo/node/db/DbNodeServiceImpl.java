@@ -1524,6 +1524,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
+        Java17Test.getInstance().justDoIt();
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         return getPropertiesImpl(nodePair);
     }

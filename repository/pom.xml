@@ -934,6 +934,7 @@
                         </javaModule>
                         <javaModule>
                             <groupId>javax.xml</groupId>
+                            <artifactId>jaxp-api</artifactId>
                         </javaModule>
                     </javaModules>
                 </configuration>

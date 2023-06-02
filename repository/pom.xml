@@ -930,7 +930,7 @@
                     <javaModules>
                         <javaModule>
                             <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-repository</artifactId>
+                            <artifactId>alfresco-community-repo</artifactId>
                         </javaModule>
                     </javaModules>
                 </configuration>

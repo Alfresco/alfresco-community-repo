@@ -917,12 +917,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <complianceLevel>1.8</complianceLevel>
+                    <complianceLevel>17</complianceLevel>
                     <outxml>false</outxml>
                     <verbose>true</verbose>
                     <showWeaveInfo>true</showWeaveInfo>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
            </plugin>
 

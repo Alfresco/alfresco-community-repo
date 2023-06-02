@@ -933,8 +933,8 @@
                             <artifactId>javax.servlet-api</artifactId>
                         </javaModule>
                         <javaModule>
-                            <groupId>javax.xml</groupId>
-                            <artifactId>jaxp-api</artifactId>
+                            <groupId>javax</groupId>
+                            <artifactId>xml</artifactId>
                         </javaModule>
                     </javaModules>
                 </configuration>

@@ -903,28 +903,28 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>dev.aspectj</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.13.1</version>
-                <executions>
-                    <execution>
-                        <!-- phase>process-sources</phase -->
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>test-compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <complianceLevel>17</complianceLevel>
-                    <outxml>false</outxml>
-                    <verbose>true</verbose>
-                    <showWeaveInfo>true</showWeaveInfo>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
-           </plugin>
+<!--            <plugin>-->
+<!--                <groupId>dev.aspectj</groupId>-->
+<!--                <artifactId>aspectj-maven-plugin</artifactId>-->
+<!--                <version>1.13.1</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        &lt;!&ndash; phase>process-sources</phase &ndash;&gt;-->
+<!--                        <goals>-->
+<!--                            <goal>compile</goal>-->
+<!--                            <goal>test-compile</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <complianceLevel>17</complianceLevel>-->
+<!--                    <outxml>false</outxml>-->
+<!--                    <verbose>true</verbose>-->
+<!--                    <showWeaveInfo>true</showWeaveInfo>-->
+<!--                    <source>17</source>-->
+<!--                    <target>17</target>-->
+<!--                </configuration>-->
+<!--           </plugin>-->
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

@@ -904,7 +904,7 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.github.m50d</groupId>
+                <groupId>dev.aspectj</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.13.1</version>
                 <executions>

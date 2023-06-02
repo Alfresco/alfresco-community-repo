@@ -927,15 +927,13 @@
                     <!--<weaveMainSourceFolder>true</weaveMainSourceFolder>-->
                     <showWeaveInfo>true</showWeaveInfo>
                     <Xlint>ignore</Xlint>
+                    <proceedOnError>true</proceedOnError>
                     <javaModules>
                         <javaModule>
                             <groupId>javax.servlet</groupId>
                             <artifactId>javax.servlet-api</artifactId>
                         </javaModule>
-                        <javaModule>
-                            <groupId>javax</groupId>
-                            <artifactId>xml</artifactId>
-                        </javaModule>
+
                     </javaModules>
                 </configuration>
            </plugin>

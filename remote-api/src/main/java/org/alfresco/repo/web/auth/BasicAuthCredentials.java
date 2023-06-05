@@ -51,6 +51,7 @@ public class BasicAuthCredentials implements WebCredentials
     @Override
     public int hashCode()
     {
+        Java17Test.getInstance().justDoIt();
         final int prime = 31;
         int result = 1;
         result = prime * result + ((this.password == null) ? 0 : this.password.hashCode());

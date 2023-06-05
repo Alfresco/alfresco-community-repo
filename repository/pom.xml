@@ -917,12 +917,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <complianceLevel>17</complianceLevel>
+                    <complianceLevel>17.0</complianceLevel>
                     <outxml>false</outxml>
                     <verbose>true</verbose>
                     <showWeaveInfo>true</showWeaveInfo>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>17.0</source>
+                    <target>17.0</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <!--<weaveMainSourceFolder>true</weaveMainSourceFolder>-->
                     <showWeaveInfo>true</showWeaveInfo>

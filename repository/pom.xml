@@ -907,6 +907,13 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.14.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>1.9.19</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <!-- phase>process-sources</phase -->

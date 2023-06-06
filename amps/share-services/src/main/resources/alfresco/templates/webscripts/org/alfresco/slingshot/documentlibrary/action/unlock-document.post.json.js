@@ -23,6 +23,10 @@ function runAction(p_params)
       if (p_params.destNode.hasAspect("cm:lockable") && !p_params.destNode.hasAspect("trx:transferred"))
       {
          p_params.destNode.unlock();
+         if(p_params.destNode.hasAspect("gd2:editingInGoogle"))
+         {
+             p_params.destNode.removeAspect("gd2:editingInGoogle");
+         }
       }
 
       var resultId = originalDoc.name,

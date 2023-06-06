@@ -964,6 +964,7 @@
                     <!-- phase>process-sources</phase -->
                     <goals>
                         <goal>compile</goal>
+                        <goal>test-compile</goal>
                     </goals>
                 </execution>
             </executions>

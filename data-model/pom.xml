@@ -27,7 +27,7 @@
             </plugin>
             <plugin>
                 <groupId>org.jibx</groupId>
-                <artifactId>maven-jibx-plugin</artifactId>
+                <artifactId>jibx-maven-plugin</artifactId>
                 <configuration>
                     <load>true</load>
                     <schemaBindingDirectory>${project.build.sourceDirectory}/org/alfresco/repo/dictionary</schemaBindingDirectory>
@@ -119,7 +119,6 @@
         <dependency>
             <groupId>org.jibx</groupId>
             <artifactId>jibx-run</artifactId>
-            <version>1.4.2</version>
         </dependency>
         <dependency> 
             <groupId>com.fasterxml.jackson.core</groupId> 

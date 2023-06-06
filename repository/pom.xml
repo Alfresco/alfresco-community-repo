@@ -864,7 +864,7 @@
 
          <plugin>
              <groupId>org.jibx</groupId>
-             <artifactId>jibx-maven-plugin</artifactId>
+             <artifactId>maven-jibx-plugin</artifactId>
              <configuration>
                  <load>true</load>
                  <schemaBindingDirectory>${project.build.outputDirectory}/org/alfresco/repo/importer/system</schemaBindingDirectory>

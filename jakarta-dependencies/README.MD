@@ -15,7 +15,7 @@ cd surf-webscripts
 mvn clean install
 ```
 
-#### surf-webscripts
+#### alfresco-greenmail
 ```shell
 git clone --single-branch --branch jakarta-migration git@github.com:Alfresco/alfresco-greenmail.git
 cd alfresco-greenmail

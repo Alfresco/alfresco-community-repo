@@ -2,7 +2,7 @@ package org.alfresco.tas.integration;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import javax.mail.FolderNotFoundException;
+import jakarta.mail.FolderNotFoundException;
 
 import org.alfresco.rest.model.RestCommentModel;
 import org.alfresco.rest.model.RestDeploymentModel;

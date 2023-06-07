@@ -25,7 +25,7 @@
  */
 package org.alfresco.opencmis;
 
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServlet;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.apache.chemistry.opencmis.server.impl.atompub.CmisAtomPubServlet;

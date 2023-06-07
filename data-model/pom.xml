@@ -90,9 +90,8 @@
             | see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope
             -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
 
         <!-- Jakarta... -->
@@ -100,7 +99,6 @@
             <groupId>jakarta.activation</groupId>
             <artifactId>jakarta.activation-api</artifactId>
         </dependency>
-        <!-- REPO-5047 - Replaces com.sun.activation:javax.activation -->
         <dependency>
             <groupId>com.sun.activation</groupId>
             <artifactId>jakarta.activation</artifactId>
@@ -140,55 +138,13 @@
         <!-- the cxf libs were updated, see dependencyManagement section -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-commons-impl</artifactId>
+            <artifactId>chemistry-opencmis-commons-impl-jakarta</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.xml.messaging.saaj</groupId>
-                    <artifactId>saaj-impl</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from com.fasterxml.woodstox:woodstox-core -->
-                <exclusion>
-                    <groupId>org.codehaus.woodstox</groupId>
-                    <artifactId>woodstox-core-asl</artifactId>
-                </exclusion>
-                <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
-                <exclusion>
-                  <groupId>org.apache.geronimo.specs</groupId>
-                  <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-server-bindings</artifactId>
+            <artifactId>chemistry-opencmis-server-bindings-jakarta</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang3</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.jws:jakarta.jws-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.annotation:jakarta.annotation-api -->
-                <exclusion>
-                    <groupId>javax.annotation</groupId>
-                    <artifactId>javax.annotation-api</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from com.sun.activation:jakarta.activation -->
-                <exclusion>
-                    <groupId>com.sun.activation</groupId>
-                    <artifactId>javax.activation</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- This is now deployed at:
             | http://artifacts.alfresco.com/nexus/content/repositories/thirdparty/org/acegisecurity/acegi-security/0.8.2_patched/

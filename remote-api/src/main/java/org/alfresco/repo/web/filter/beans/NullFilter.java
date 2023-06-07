@@ -27,11 +27,11 @@ package org.alfresco.repo.web.filter.beans;
 
 import java.io.IOException;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 
@@ -66,8 +66,8 @@ public class NullFilter implements DependencyInjectedFilter, ActivateableBean
 
     /*
      * (non-Javadoc)
-     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(javax.servlet.ServletContext,
-     * javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     * @see org.alfresco.repo.web.filter.beans.DependencyInjectedFilter#doFilter(jakarta.servlet.ServletContext,
+     * jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
      */
     public void doFilter(ServletContext context, ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException

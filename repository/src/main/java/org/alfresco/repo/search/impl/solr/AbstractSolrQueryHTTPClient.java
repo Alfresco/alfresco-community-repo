@@ -31,7 +31,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;

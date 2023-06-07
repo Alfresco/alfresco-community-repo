@@ -25,31 +25,14 @@
  */
 package org.alfresco.opencmis;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -70,10 +53,9 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime
  * Wraps an OpenCMIS HttpServletRequest, mapping urls and adding servlet attributes specific to the Alfresco implementation of OpenCMIS.
  */
 @SuppressWarnings("rawtypes")
-public class CMISHttpServletRequest implements HttpServletRequest
+public class CMISHttpServletRequest extends HttpServletRequestWrapper
 {
 	protected WebScriptRequest req;
-	protected HttpServletRequest httpReq;
 	protected String networkId;
 	protected String operation;
 	protected String id; // object id (or path for browser binding)
@@ -85,6 +67,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	public CMISHttpServletRequest(WebScriptRequest req, String serviceName, BaseUrlGenerator baseUrlGenerator, Binding binding, Descriptor currentDescriptor,
 	        TenantAdminService tenantAdminService)
 	{
+		super(WebScriptServletRuntime.getHttpServletRequest(req));
 		this.req = req;
 		this.serviceName = serviceName;
 		this.baseUrlGenerator = baseUrlGenerator;
@@ -119,12 +102,16 @@ public class CMISHttpServletRequest implements HttpServletRequest
 		Match match = req.getServiceMatch();
 		Map<String, String> templateVars = match.getTemplateVars();
 
-        HttpServletRequest httpReq = WebScriptServletRuntime.getHttpServletRequest(req);
-		this.httpReq = httpReq;
 		this.operation = templateVars.get("operation");
 		this.id = templateVars.get("id");
 
     	addAttributes();
+	}
+
+	@Override
+	public HttpServletRequest getRequest()
+	{
+		return (HttpServletRequest) super.getRequest();
 	}
 	
 	/*
@@ -145,9 +132,9 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		if(networkId != null)
 		{
-			httpReq.setAttribute(Constants.PARAM_REPOSITORY_ID, networkId);
+			super.setAttribute(Constants.PARAM_REPOSITORY_ID, networkId);
 		}
-		httpReq.setAttribute("serviceName", serviceName);
+		super.setAttribute("serviceName", serviceName);
 	}
 
 	@Override
@@ -155,11 +142,11 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		if(arg0.equals(Dispatcher.BASE_URL_ATTRIBUTE))
 		{
-			return baseUrlGenerator.getBaseUrl(this, networkId, binding);
+			return baseUrlGenerator.getBaseUrl(getRequest(), networkId, binding);
 		}
 		else
 		{
-			return httpReq.getAttribute(arg0);
+			return super.getAttribute(arg0);
 		}
 	}
 
@@ -167,7 +154,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public Enumeration getAttributeNames()
 	{
-		Enumeration e = httpReq.getAttributeNames();
+		Enumeration e = super.getAttributeNames();
 		List attrNames = new ArrayList();
 		while(e.hasMoreElements())
 		{
@@ -191,74 +178,20 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	}
 
 	@Override
-	public String getCharacterEncoding()
-	{
-		return httpReq.getCharacterEncoding();
-	}
-
-	@Override
-	public int getContentLength()
-	{
-		return httpReq.getContentLength();
-	}
-
-	@Override
-	public String getContentType()
-	{
-		return httpReq.getContentType();
-	}
-
-	@Override
-	public ServletInputStream getInputStream() throws IOException
-	{
-		return httpReq.getInputStream();
-	}
-
-	@Override
-	public String getLocalAddr()
-	{
-		return httpReq.getLocalAddr();
-	}
-
-	@Override
-	public String getLocalName()
-	{
-		return httpReq.getLocalName();
-	}
-
-	@Override
-	public int getLocalPort()
-	{
-		return httpReq.getLocalPort();
-	}
-	
-	@Override
-	public Locale getLocale()
-	{
-		return httpReq.getLocale();
-	}
-
-	@Override
-	public Enumeration getLocales()
-	{
-		return httpReq.getLocales();
-	}
-
-	@Override
 	public String getParameter(String arg0)
 	{
 		if(arg0.equals(Constants.PARAM_REPOSITORY_ID))
 		{
 			return networkId;
 		}
-		return httpReq.getParameter(arg0);
+		return super.getParameter(arg0);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map getParameterMap()
 	{
-		Map map = httpReq.getParameterMap();
+		Map map = super.getParameterMap();
 		Map ret = new HashedMap(map);
 		if(networkId != null)
 		{
@@ -271,7 +204,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public Enumeration getParameterNames()
 	{
-		final Enumeration e = httpReq.getParameterNames();
+		final Enumeration e = super.getParameterNames();
 		List l = new ArrayList();
 		while(e.hasMoreElements())
 		{
@@ -301,149 +234,10 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	}
 
 	@Override
-	public String[] getParameterValues(String arg0)
-	{
-		return httpReq.getParameterValues(arg0);
-	}
-
-	@Override
-	public String getProtocol()
-	{
-		return httpReq.getProtocol();
-	}
-
-	@Override
-	public BufferedReader getReader() throws IOException
-	{
-		return httpReq.getReader();
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public String getRealPath(String arg0)
-	{
-		return httpReq.getRealPath(arg0);
-	}
-
-	@Override
-	public String getRemoteAddr()
-	{
-		return httpReq.getRemoteAddr();
-	}
-
-	@Override
-	public String getRemoteHost()
-	{
-		return httpReq.getRemoteHost();
-	}
-
-	@Override
-	public int getRemotePort()
-	{
-		return httpReq.getRemotePort();
-	}
-
-	@Override
-	public RequestDispatcher getRequestDispatcher(String arg0)
-	{
-		return httpReq.getRequestDispatcher(arg0);
-	}
-
-	@Override
-	public String getScheme()
-	{
-		return httpReq.getScheme();
-	}
-
-	@Override
-	public String getServerName() 
-	{
-		return httpReq.getServerName();
-	}
-
-	@Override
-	public int getServerPort()
-	{
-		return httpReq.getServerPort();
-	}
-
-	@Override
-	public boolean isSecure()
-	{
-		return httpReq.isSecure();
-	}
-
-	@Override
-	public void removeAttribute(String arg0)
-	{
-		httpReq.removeAttribute(arg0);
-	}
-
-	@Override
-	public void setAttribute(String arg0, Object arg1)
-	{
-		httpReq.setAttribute(arg0, arg1);
-	}
-
-	@Override
-	public void setCharacterEncoding(String arg0) throws UnsupportedEncodingException
-	{
-		httpReq.setCharacterEncoding(arg0);
-	}
-
-	@Override
-	public String getAuthType()
-	{
-		return httpReq.getAuthType();
-	}
-
-	@Override
 	public String getContextPath()
 	{
-		String contextPath = baseUrlGenerator.getContextPath(httpReq);
+		String contextPath = baseUrlGenerator.getContextPath(getRequest());
 		return contextPath;
-	}
-
-	@Override
-	public Cookie[] getCookies()
-	{
-		return httpReq.getCookies();
-	}
-
-	@Override
-	public long getDateHeader(String arg0)
-	{
-		return httpReq.getDateHeader(arg0);
-	}
-
-	@Override
-	public String getHeader(String arg0)
-	{
-		return httpReq.getHeader(arg0);
-	}
-
-	@Override
-	public Enumeration getHeaderNames()
-	{
-		return httpReq.getHeaderNames();
-	}
-
-	@Override
-	public Enumeration getHeaders(String arg0)
-	{
-		return httpReq.getHeaders(arg0);
-	}
-
-	@Override
-	public int getIntHeader(String arg0)
-	{
-		return httpReq.getIntHeader(arg0);
-	}
-
-	@Override
-	public String getMethod()
-	{
-		return httpReq.getMethod();
 	}
 
 	@Override
@@ -460,16 +254,10 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	}
 
 	@Override
-	public String getPathTranslated()
-	{
-		return httpReq.getPathTranslated();
-	}
-
-	@Override
 	public String getQueryString()
 	{
         StringBuilder queryString = new StringBuilder();
-        String reqQueryString = httpReq.getQueryString();
+        String reqQueryString = super.getQueryString();
 
         if(networkId != null && networkId.length() > 0)
         {
@@ -489,155 +277,16 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	}
 
 	@Override
-	public String getRemoteUser()
-	{
-		return httpReq.getRemoteUser();
-	}
-
-	@Override
 	public String getRequestURI()
 	{
-		String requestURI = baseUrlGenerator.getRequestURI(httpReq, networkId, operation, id);
+		String requestURI = baseUrlGenerator.getRequestURI(getRequest(), networkId, operation, id);
 		return requestURI;
-	}
-
-	@Override
-	public StringBuffer getRequestURL()
-	{
-		return httpReq.getRequestURL();
-	}
-
-	@Override
-	public String getRequestedSessionId()
-	{
-		return httpReq.getRequestedSessionId();
 	}
 
 	@Override
 	public String getServletPath()
 	{
-		String servletPath = baseUrlGenerator.getServletPath(httpReq);
+		String servletPath = baseUrlGenerator.getServletPath(getRequest());
 		return servletPath;
 	}
-
-	@Override
-	public HttpSession getSession()
-	{
-		return httpReq.getSession();
-	}
-
-	@Override
-	public HttpSession getSession(boolean arg0)
-	{
-		return httpReq.getSession(arg0);
-	}
-
-	@Override
-	public Principal getUserPrincipal()
-	{
-		return httpReq.getUserPrincipal();
-	}
-
-	@Override
-	public boolean isRequestedSessionIdFromCookie()
-	{
-		return httpReq.isRequestedSessionIdFromCookie();
-	}
-
-	@Override
-	public boolean isRequestedSessionIdFromURL()
-	{
-		return httpReq.isRequestedSessionIdFromURL();
-	}
-
-	@Override
-	public boolean isRequestedSessionIdFromUrl()
-	{
-		return httpReq.isRequestedSessionIdFromURL();
-	}
-	
-	@Override
-	public boolean isRequestedSessionIdValid()
-	{
-		return httpReq.isRequestedSessionIdValid();
-	}
-
-	@Override
-	public boolean isUserInRole(String arg0)
-	{
-		return httpReq.isUserInRole(arg0);
-	}
-
-	@Override
-	public boolean authenticate(HttpServletResponse response) throws IOException, ServletException
-	{
-		return httpReq.authenticate(response);
-	}
-
-	@Override
-	public void login(String username, String password) throws ServletException
-	{
-		httpReq.login(username, password);
-	}
-
-	@Override
-	public void logout() throws ServletException
-	{
-		httpReq.logout();
-	}
-
-	@Override
-	public Collection<Part> getParts() throws IOException, ServletException
-	{
-		return httpReq.getParts();
-	}
-
-	@Override
-	public Part getPart(String name) throws IOException, ServletException
-	{
-		return httpReq.getPart(name);
-	}
-
-	@Override
-	public ServletContext getServletContext()
-	{
-		return httpReq.getServletContext();
-	}
-
-	@Override
-	public AsyncContext startAsync() throws IllegalStateException
-	{
-		return httpReq.startAsync();
-	}
-
-	@Override
-	public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException
-	{
-		return httpReq.startAsync(servletRequest, servletResponse);
-	}
-
-	@Override
-	public boolean isAsyncStarted()
-	{
-		return httpReq.isAsyncStarted();
-	}
-
-	@Override
-	public boolean isAsyncSupported()
-	{
-		return httpReq.isAsyncSupported();
-	}
-
-	@Override
-	public AsyncContext getAsyncContext()
-	{
-		return httpReq.getAsyncContext();
-	}
-
-	@Override
-	public DispatcherType getDispatcherType()
-	{
-		return httpReq.getDispatcherType();
-	}
-
 }

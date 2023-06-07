@@ -45,7 +45,7 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Node Versions storage information.

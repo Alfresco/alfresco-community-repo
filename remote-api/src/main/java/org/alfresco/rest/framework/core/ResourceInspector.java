@@ -26,6 +26,11 @@
 
 package org.alfresco.rest.framework.core;
 
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -145,21 +150,21 @@ public class ResourceInspector
         Api api = inspectApi(resource);
         
         MetaHelper helper = new MetaHelper(resource);
-        findOperation(EntityResourceAction.Create.class,   HttpMethod.POST, helper);
-        findOperation(EntityResourceAction.Read.class,     HttpMethod.GET, helper);
-        findOperation(EntityResourceAction.ReadById.class, HttpMethod.GET, helper);
-        findOperation(EntityResourceAction.Update.class,   HttpMethod.PUT, helper);  
-        findOperation(EntityResourceAction.Delete.class,   HttpMethod.DELETE, helper);
-        findOperation(EntityResourceAction.DeleteSet.class,   HttpMethod.DELETE, helper);
+        findOperation(EntityResourceAction.Create.class,   POST, helper);
+        findOperation(EntityResourceAction.Read.class,     GET, helper);
+        findOperation(EntityResourceAction.ReadById.class, GET, helper);
+        findOperation(EntityResourceAction.Update.class,   PUT, helper);
+        findOperation(EntityResourceAction.Delete.class,   DELETE, helper);
+        findOperation(EntityResourceAction.DeleteSet.class,   DELETE, helper);
 
-        findOperation(EntityResourceAction.CreateWithResponse.class,   HttpMethod.POST, helper);
-        findOperation(EntityResourceAction.ReadWithResponse.class,     HttpMethod.GET, helper);
-        findOperation(EntityResourceAction.ReadByIdWithResponse.class, HttpMethod.GET, helper);
-        findOperation(EntityResourceAction.UpdateWithResponse.class,   HttpMethod.PUT, helper);
-        findOperation(EntityResourceAction.DeleteWithResponse.class,   HttpMethod.DELETE, helper);
-        findOperation(EntityResourceAction.DeleteSetWithResponse.class,   HttpMethod.DELETE, helper);
+        findOperation(EntityResourceAction.CreateWithResponse.class,   POST, helper);
+        findOperation(EntityResourceAction.ReadWithResponse.class,     GET, helper);
+        findOperation(EntityResourceAction.ReadByIdWithResponse.class, GET, helper);
+        findOperation(EntityResourceAction.UpdateWithResponse.class,   PUT, helper);
+        findOperation(EntityResourceAction.DeleteWithResponse.class,   DELETE, helper);
+        findOperation(EntityResourceAction.DeleteSetWithResponse.class,   DELETE, helper);
 
-        findOperation(MultiPartResourceAction.Create.class,   HttpMethod.POST, helper);
+        findOperation(MultiPartResourceAction.Create.class,   POST, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)
@@ -199,21 +204,21 @@ public class ResourceInspector
 
         MetaHelperAddressable helperForAddressProps = new MetaHelperAddressable(resource, entityPath, operationGroupedByProperty);
 
-        findOperation(BinaryResourceAction.Read.class,   HttpMethod.GET, helperForAddressProps);
-        findOperation(BinaryResourceAction.Delete.class, HttpMethod.DELETE, helperForAddressProps);
-        findOperation(BinaryResourceAction.Update.class, HttpMethod.PUT, helperForAddressProps);
+        findOperation(BinaryResourceAction.Read.class,   GET, helperForAddressProps);
+        findOperation(BinaryResourceAction.Delete.class, DELETE, helperForAddressProps);
+        findOperation(BinaryResourceAction.Update.class, PUT, helperForAddressProps);
 
-        findOperation(BinaryResourceAction.ReadWithResponse.class,   HttpMethod.GET, helperForAddressProps);
-        findOperation(BinaryResourceAction.DeleteWithResponse.class, HttpMethod.DELETE, helperForAddressProps);
-        findOperation(BinaryResourceAction.UpdateWithResponse.class, HttpMethod.PUT, helperForAddressProps);
+        findOperation(BinaryResourceAction.ReadWithResponse.class,   GET, helperForAddressProps);
+        findOperation(BinaryResourceAction.DeleteWithResponse.class, DELETE, helperForAddressProps);
+        findOperation(BinaryResourceAction.UpdateWithResponse.class, PUT, helperForAddressProps);
 
-        findOperation(RelationshipResourceBinaryAction.Read.class,   HttpMethod.GET, helperForAddressProps);
-        findOperation(RelationshipResourceBinaryAction.Delete.class, HttpMethod.DELETE, helperForAddressProps);
-        findOperation(RelationshipResourceBinaryAction.Update.class, HttpMethod.PUT, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.Read.class,   GET, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.Delete.class, DELETE, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.Update.class, PUT, helperForAddressProps);
 
-        findOperation(RelationshipResourceBinaryAction.ReadWithResponse.class,   HttpMethod.GET, helperForAddressProps);
-        findOperation(RelationshipResourceBinaryAction.DeleteWithResponse.class, HttpMethod.DELETE, helperForAddressProps);
-        findOperation(RelationshipResourceBinaryAction.UpdateWithResponse.class, HttpMethod.PUT, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.ReadWithResponse.class,   GET, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.DeleteWithResponse.class, DELETE, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.UpdateWithResponse.class, PUT, helperForAddressProps);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)
@@ -271,21 +276,21 @@ public class ResourceInspector
         List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
 
         MetaHelper helper = new MetaHelper(resource);
-        findOperation(RelationshipResourceAction.Create.class,   HttpMethod.POST, helper);
-        findOperation(RelationshipResourceAction.Read.class,     HttpMethod.GET, helper);
-        findOperation(RelationshipResourceAction.ReadById.class, HttpMethod.GET, helper);
-        findOperation(RelationshipResourceAction.Update.class,   HttpMethod.PUT, helper);  
-        findOperation(RelationshipResourceAction.Delete.class,   HttpMethod.DELETE, helper);
-        findOperation(RelationshipResourceAction.DeleteSet.class,   HttpMethod.DELETE, helper);
+        findOperation(RelationshipResourceAction.Create.class,   POST, helper);
+        findOperation(RelationshipResourceAction.Read.class,     GET, helper);
+        findOperation(RelationshipResourceAction.ReadById.class, GET, helper);
+        findOperation(RelationshipResourceAction.Update.class,   PUT, helper);
+        findOperation(RelationshipResourceAction.Delete.class,   DELETE, helper);
+        findOperation(RelationshipResourceAction.DeleteSet.class,   DELETE, helper);
 
-        findOperation(RelationshipResourceAction.CreateWithResponse.class,   HttpMethod.POST, helper);
-        findOperation(RelationshipResourceAction.ReadWithResponse.class,     HttpMethod.GET, helper);
-        findOperation(RelationshipResourceAction.ReadByIdWithResponse.class, HttpMethod.GET, helper);
-        findOperation(RelationshipResourceAction.UpdateWithResponse.class,   HttpMethod.PUT, helper);
-        findOperation(RelationshipResourceAction.DeleteWithResponse.class,   HttpMethod.DELETE, helper);
-        findOperation(RelationshipResourceAction.DeleteSetWithResponse.class,   HttpMethod.DELETE, helper);
+        findOperation(RelationshipResourceAction.CreateWithResponse.class,   POST, helper);
+        findOperation(RelationshipResourceAction.ReadWithResponse.class,     GET, helper);
+        findOperation(RelationshipResourceAction.ReadByIdWithResponse.class, GET, helper);
+        findOperation(RelationshipResourceAction.UpdateWithResponse.class,   PUT, helper);
+        findOperation(RelationshipResourceAction.DeleteWithResponse.class,   DELETE, helper);
+        findOperation(RelationshipResourceAction.DeleteSetWithResponse.class,   DELETE, helper);
 
-        findOperation(MultiPartRelationshipResourceAction.Create.class, HttpMethod.POST, helper);
+        findOperation(MultiPartRelationshipResourceAction.Create.class, POST, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)
@@ -333,7 +338,7 @@ public class ResourceInspector
 
             if (isNoAuth(aMethod))
             {
-                if (! (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.POST)))
+                if (! (httpMethod.equals(GET) || httpMethod.equals(POST)))
                 {
                     throw new IllegalArgumentException("@WebApiNoAuth should only be on GET or POST methods: " + operation.getTitle());
                 }
@@ -378,20 +383,16 @@ public class ResourceInspector
             return success;
         }
 
-        switch (httpMethod)
-        {
-            case GET:
-                return Status.STATUS_OK;
-            case POST:
-                return Status.STATUS_CREATED;
-            case PUT:
-                return Status.STATUS_OK;
-            case DELETE:
-                return Status.STATUS_NO_CONTENT;
-            default:
-                return Status.STATUS_OK;
-        }
+        if (GET.equals(httpMethod))
+            return Status.STATUS_OK;
+        if (POST.equals(httpMethod))
+            return Status.STATUS_CREATED;
+        if (PUT.equals(httpMethod))
+            return Status.STATUS_OK;
+        if (DELETE.equals(httpMethod))
+            return Status.STATUS_NO_CONTENT;
 
+        return Status.STATUS_OK;
     }
 
     /**
@@ -422,73 +423,77 @@ public class ResourceInspector
                 params.add(findResourceParameter(paramAnot, resource, aMethod));
             }
         }
-        
-        
+
         //Setup default parameters
-        switch(httpMethod)
+        if (POST.equals(httpMethod))
         {
-            case POST:
-                if (paramsCount(params,ResourceParameter.KIND.URL_PATH) == 0)
-                {
-                    params.add(ResourceParameter.ENTITY_PARAM);  
-                }
-                if (paramsCount(params,ResourceParameter.KIND.HTTP_BODY_OBJECT) == 0)
-                {
-                    inspectBodyParamAndReturnType(resource, aMethod, params);
-                }
-                break;
-            case PUT:
-                int urlPathForPut = paramsCount(params,ResourceParameter.KIND.URL_PATH);
-                if (urlPathForPut == 0)
-                {
-                    params.add(ResourceParameter.ENTITY_PARAM);  
-                }
-                if (RelationshipResourceAction.Update.class.isAssignableFrom(resource) && urlPathForPut <2)
-                {
-                    params.add(ResourceParameter.RELATIONSHIP_PARAM);
-                }
-                if (paramsCount(params,ResourceParameter.KIND.HTTP_BODY_OBJECT)== 0)
-                {
-                    inspectBodyParamAndReturnType(resource, aMethod, params);
-                }
-                break;
-            case GET:
-                int urlPathForGet = paramsCount(params,ResourceParameter.KIND.URL_PATH);
-                if (urlPathForGet == 0 && (EntityResourceAction.ReadById.class.isAssignableFrom(resource) && READ_BY_ID_METHODNAME.equals(aMethod.getName())))
+            if (paramsCount(params, ResourceParameter.KIND.URL_PATH) == 0)
+            {
+                params.add(ResourceParameter.ENTITY_PARAM);
+            }
+            if (paramsCount(params, ResourceParameter.KIND.HTTP_BODY_OBJECT) == 0)
+            {
+                inspectBodyParamAndReturnType(resource, aMethod, params);
+            }
+            return params;
+        }
+        if (PUT.equals(httpMethod))
+        {
+            int urlPathForPut = paramsCount(params, ResourceParameter.KIND.URL_PATH);
+            if (urlPathForPut == 0)
+            {
+                params.add(ResourceParameter.ENTITY_PARAM);
+            }
+            if (RelationshipResourceAction.Update.class.isAssignableFrom(resource) && urlPathForPut < 2)
+            {
+                params.add(ResourceParameter.RELATIONSHIP_PARAM);
+            }
+            if (paramsCount(params, ResourceParameter.KIND.HTTP_BODY_OBJECT) == 0)
+            {
+                inspectBodyParamAndReturnType(resource, aMethod, params);
+            }
+            return params;
+        }
+        if (GET.equals(httpMethod))
+        {
+            int urlPathForGet = paramsCount(params, ResourceParameter.KIND.URL_PATH);
+            if (urlPathForGet == 0 && (EntityResourceAction.ReadById.class.isAssignableFrom(resource) && READ_BY_ID_METHODNAME.equals(aMethod.getName())))
+            {
+                params.add(ResourceParameter.ENTITY_PARAM);
+            } else if (RelationshipResourceAction.ReadById.class.isAssignableFrom(resource) || RelationshipResourceAction.Read.class.isAssignableFrom(resource))
+            {
+                //Its a RelationshipResourceAction
+                if (urlPathForGet == 0)
                 {
                     params.add(ResourceParameter.ENTITY_PARAM);
                 }
-                else if (RelationshipResourceAction.ReadById.class.isAssignableFrom(resource)||RelationshipResourceAction.Read.class.isAssignableFrom(resource))
-                {
-                    //Its a RelationshipResourceAction
-                    if (urlPathForGet == 0)
-                    {
-                        params.add(ResourceParameter.ENTITY_PARAM);
-                    }
-                    //This method is what we are inspecting not what the class implements.
-                    if (READ_BY_ID_METHODNAME.equals(aMethod.getName()) && urlPathForGet< 2)
-                    {
-                        params.add(ResourceParameter.RELATIONSHIP_PARAM);
-                    }
-                }
-                if (!READ_BY_ID_METHODNAME.equals(aMethod.getName()))
-                {
-                    params.add(ResourceParameter.SKIP_PARAM);
-                    params.add(ResourceParameter.MAX_ITEMS_PARAM);
-                    params.add(ResourceParameter.PROPS_PARAM);
-                }
-                break;
-            case DELETE:
-                int urlPathForDelete = paramsCount(params,ResourceParameter.KIND.URL_PATH);
-                if (urlPathForDelete == 0)
-                {
-                    params.add(ResourceParameter.ENTITY_PARAM);  
-                }
-                //Add relationship param ?
-                if (RelationshipResourceAction.Delete.class.isAssignableFrom(resource) && urlPathForDelete <2)
+                //This method is what we are inspecting not what the class implements.
+                if (READ_BY_ID_METHODNAME.equals(aMethod.getName()) && urlPathForGet < 2)
                 {
                     params.add(ResourceParameter.RELATIONSHIP_PARAM);
                 }
+            }
+            if (!READ_BY_ID_METHODNAME.equals(aMethod.getName()))
+            {
+                params.add(ResourceParameter.SKIP_PARAM);
+                params.add(ResourceParameter.MAX_ITEMS_PARAM);
+                params.add(ResourceParameter.PROPS_PARAM);
+            }
+            return params;
+        }
+        if (DELETE.equals(httpMethod))
+        {
+            int urlPathForDelete = paramsCount(params,ResourceParameter.KIND.URL_PATH);
+            if (urlPathForDelete == 0)
+            {
+                params.add(ResourceParameter.ENTITY_PARAM);
+            }
+            //Add relationship param ?
+            if (RelationshipResourceAction.Delete.class.isAssignableFrom(resource) && urlPathForDelete <2)
+            {
+                params.add(ResourceParameter.RELATIONSHIP_PARAM);
+            }
+            return params;
         }
         
         return params;
@@ -709,7 +714,7 @@ public class ResourceInspector
                     Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
                     String actionName = String.valueOf(annotAttribs.get("value"));
                     String actionPath = ResourceDictionary.propertyResourceKey(entityPath, actionName);
-                    ResourceOperation ro = inspectOperation(anyClass, annotatedMethod, HttpMethod.POST);
+                    ResourceOperation ro = inspectOperation(anyClass, annotatedMethod, POST);
                     embeds.put(actionPath, new Pair<ResourceOperation, Method>(ro, annotatedMethod));
                 }
             }

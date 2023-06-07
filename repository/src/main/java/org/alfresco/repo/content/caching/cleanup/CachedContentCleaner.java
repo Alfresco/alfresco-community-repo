@@ -36,7 +36,6 @@ import org.alfresco.util.Deleter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -344,9 +343,6 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
         return deleted;
     }
 
-    
-
-    @Required
     public void setCache(ContentCacheImpl cache)
     {
         this.cache = cache;

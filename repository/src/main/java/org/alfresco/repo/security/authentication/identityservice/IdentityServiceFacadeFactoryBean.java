@@ -230,7 +230,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             // * Client is authenticating itself using basic auth
             // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
 
-            final ClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClientProvider.get());
+            //JAKARTA_TO_DO|SpringSecurity6|Apache Http Client 4.X removed//final ClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClientProvider.get());
+            final ClientHttpRequestFactory httpRequestFactory = null;
             final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
             final ClientRegistration clientRegistration = clientRegistrationProvider.apply(restTemplate);
             final JwtDecoder jwtDecoder = jwtDecoderProvider.apply(restTemplate, clientRegistration.getProviderDetails());

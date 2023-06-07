@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Default exception resolver for cases when no other exception resolver will do.

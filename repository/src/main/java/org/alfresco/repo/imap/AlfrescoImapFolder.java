@@ -37,11 +37,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 
-import javax.mail.Flags;
-import javax.mail.Flags.Flag;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.search.SearchTerm;
+import jakarta.mail.Flags;
+import jakarta.mail.Flags.Flag;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.search.SearchTerm;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;

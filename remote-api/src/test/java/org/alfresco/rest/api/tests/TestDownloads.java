@@ -27,8 +27,8 @@ package org.alfresco.rest.api.tests;
 
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static javax.servlet.http.HttpServletResponse.SC_ACCEPTED;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_ACCEPTED;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
 import static org.alfresco.rest.api.impl.DownloadsImpl.DEFAULT_ARCHIVE_EXTENSION;
 import static org.alfresco.rest.api.impl.DownloadsImpl.DEFAULT_ARCHIVE_NAME;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
@@ -45,7 +45,7 @@ import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;

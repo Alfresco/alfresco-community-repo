@@ -55,12 +55,12 @@ public class PublicApiCMISHttpServletRequest extends CMISHttpServletRequest
 
 		if(apiScope != null)
 		{
-			httpReq.setAttribute("apiScope", apiScope);
+			setAttribute("apiScope", apiScope);
 		}
 
 		if(apiVersion != null)
 		{
-			httpReq.setAttribute("apiVersion", apiVersion);
+			setAttribute("apiVersion", apiVersion);
 		}
 	}
 

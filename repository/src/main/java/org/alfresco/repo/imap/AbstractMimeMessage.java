@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.mail.Flags;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Flags;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 
 import org.alfresco.model.ImapModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;

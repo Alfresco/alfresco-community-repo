@@ -25,9 +25,9 @@ package org.alfresco.web.app.servlet;
 
 import static junit.framework.TestCase.assertEquals;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import java.util.Properties;
 

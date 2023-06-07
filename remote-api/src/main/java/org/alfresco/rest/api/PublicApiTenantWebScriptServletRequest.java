@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;

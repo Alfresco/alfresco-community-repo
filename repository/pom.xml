@@ -40,13 +40,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-greenmail</artifactId>
             <version>${dependency.alfresco-greenmail.version}</version>
-            <exclusions>
-                <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
-                <exclusion>
-                    <groupId>com.sun.mail</groupId>
-                    <artifactId>javax.mail</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Jakarta... -->
@@ -65,6 +58,7 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -78,7 +72,7 @@
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
+            <artifactId>commons-fileupload-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -310,9 +304,8 @@
             <version>${dependency.poi.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
 
         <dependency>
@@ -355,20 +348,8 @@
         <!-- Chemistry -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-commons-impl</artifactId>
+            <artifactId>chemistry-opencmis-commons-impl-jakarta</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <exclusions>
-              <!-- REPO-4998 - Exclusion due to classpath conflicts between org.codehaus.woodstox:woodstox-core-asl and com.fasterxml.woodstox:woodstox-core -->
-              <exclusion>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-asl</artifactId>
-              </exclusion>
-              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-jta_1.1_spec</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- REPO-4998 - Added to replace transitive dependency org.codehaus.woodstox:woodstox-core-asl -->

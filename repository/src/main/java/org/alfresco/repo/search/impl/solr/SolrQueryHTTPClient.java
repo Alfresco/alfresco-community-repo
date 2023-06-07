@@ -43,7 +43,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;

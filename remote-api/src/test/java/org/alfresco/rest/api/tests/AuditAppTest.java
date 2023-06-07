@@ -43,7 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;

@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.web.scripts;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -46,7 +46,7 @@ public class RepositoryImageResolver
     
     
     /* (non-Javadoc)
-     * @see org.springframework.web.context.ServletContextAware#setServletContext(javax.servlet.ServletContext)
+     * @see org.springframework.web.context.ServletContextAware#setServletContext(jakarta.servlet.ServletContext)
      */
     public void setServletContext(ServletContext context)
     {

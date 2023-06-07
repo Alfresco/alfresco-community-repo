@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.web.scripts.servlet;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.extensions.webscripts.Authenticator;

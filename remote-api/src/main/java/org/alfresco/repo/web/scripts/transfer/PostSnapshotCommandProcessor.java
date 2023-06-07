@@ -28,7 +28,7 @@ package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.OutputStream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.transfer.TransferCommons;
 import org.alfresco.service.cmr.transfer.TransferException;

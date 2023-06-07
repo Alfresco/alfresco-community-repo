@@ -26,7 +26,7 @@
 
 package org.alfresco.rest.api.rules;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSet;

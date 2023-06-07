@@ -43,10 +43,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -201,6 +202,24 @@ public abstract class WebDAVMethod
                     final FileInputStream in = new FileInputStream(getRequestBodyAsFile(req));
                     WebDAVMethod.this.m_inputStream = new ServletInputStream()
                     {
+
+                        @Override
+                        public boolean isFinished()
+                        {
+                            throw new UnsupportedOperationException("ServletInputStream.isFinished is not supported");
+                        }
+
+                        @Override
+                        public boolean isReady()
+                        {
+                            throw new UnsupportedOperationException("ServletInputStream.isReady is not supported");
+                        }
+
+                        @Override
+                        public void setReadListener(ReadListener readListener)
+                        {
+                            throw new UnsupportedOperationException("ServletInputStream.setReadListener is not supported");
+                        }
 
                         @Override
                         public int read() throws IOException

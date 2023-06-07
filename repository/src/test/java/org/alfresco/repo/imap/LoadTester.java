@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.imap;
 
-import javax.mail.Flags;
+import jakarta.mail.Flags;
 import javax.transaction.UserTransaction;
 import java.io.IOException;
 import java.util.Date;

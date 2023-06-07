@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.webdav;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Abstract base class for the hierarchical methods COPY and MOVE

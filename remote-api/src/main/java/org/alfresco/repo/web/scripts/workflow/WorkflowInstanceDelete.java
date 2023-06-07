@@ -28,7 +28,7 @@ package org.alfresco.repo.web.scripts.workflow;
 import java.io.Serializable;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.workflow.WorkflowConstants;

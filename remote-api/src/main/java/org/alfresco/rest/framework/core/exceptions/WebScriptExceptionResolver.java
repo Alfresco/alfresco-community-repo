@@ -27,7 +27,7 @@ package org.alfresco.rest.framework.core.exceptions;
 
 import org.springframework.extensions.webscripts.WebScriptException;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Resolves WebScriptExceptions

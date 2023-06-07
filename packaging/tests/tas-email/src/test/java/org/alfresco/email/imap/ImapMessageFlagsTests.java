@@ -8,7 +8,7 @@ import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.annotations.Test;
 
-import javax.mail.Flags;
+import jakarta.mail.Flags;
 
 public class ImapMessageFlagsTests extends EmailTest
 {

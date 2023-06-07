@@ -44,7 +44,7 @@
  */
 package org.alfresco.repo.web.scripts.roles;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;

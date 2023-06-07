@@ -25,7 +25,7 @@
  */
 package org.alfresco.opencmis;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.admin.SysAdminParams;
 

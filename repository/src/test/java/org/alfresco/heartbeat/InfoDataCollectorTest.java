@@ -48,7 +48,7 @@ import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import javax.sql.DataSource;
 
 /**

@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.webdav;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Exception class that represents an error in the WebDAV protocol layer

@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api.trashcan;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DeletedNodes;

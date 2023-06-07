@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api.actions;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionParameterConstraint;

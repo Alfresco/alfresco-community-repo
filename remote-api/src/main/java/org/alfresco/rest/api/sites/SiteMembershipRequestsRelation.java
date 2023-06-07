@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api.sites;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.SiteMembershipRequests;
 import org.alfresco.rest.api.model.SiteMembershipApproval;

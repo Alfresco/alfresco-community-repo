@@ -22,14 +22,20 @@ cd alfresco-greenmail
 mvn clean install
 ```
 
+#### alfresco-tas-email
+```shell
+git clone --single-branch --branch jakarta-migration git@github.com:Alfresco/alfresco-tas-email.git
+cd alfresco-tas-email
+mvn clean install
+```
+
 ## How to build the repo
 ```shell
 #Use jakarta-migration branch
 mvn clean package -DskipTests -Dmaven.javadoc.skip=true -Pags
 ```
 
-## What is missing
-* TAS tests don't compile
+## With TAS tests compilation
 ```shell
  mvn clean package -DskipTests -Dmaven.javadoc.skip=true -Pags -Pall-tas-tests
 ```

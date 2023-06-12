@@ -11,6 +11,8 @@ find "${HOME}/.m2/repository/" -type d -name "*-SNAPSHOT*" | xargs -r -l rm -rf
 echo "${DOCKERHUB_PASSWORD}" | docker login -u="${DOCKERHUB_USERNAME}" --password-stdin
 echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin quay.io
 
+$(dirname "${BASH_SOURCE[0]}")/../../jakarta-dependencies/build-dependencies.sh
+
 popd
 set +vex
 echo "=========================== Finishing Init Script =========================="

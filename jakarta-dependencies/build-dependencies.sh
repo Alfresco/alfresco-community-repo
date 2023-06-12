@@ -9,7 +9,7 @@ mvn -f $DEPENDENCIES_DIR -B clean install
 function clone_and_install {
   local project_path=$DEPENDENCIES_DIR/projects/$1
   if [ ! -d "$project_path" ]; then
-    git clone --single-branch --branch jakarta-migration git@github.com:Alfresco/$1.git $project_path
+    git clone --single-branch --branch jakarta-migration https://github.com/Alfresco/$1.git $project_path
   fi
   mvn -f $project_path -B clean install
 }

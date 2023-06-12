@@ -6,6 +6,8 @@ pushd "$(dirname "${BASH_SOURCE[0]}")/../../"
 
 source "$(dirname "${BASH_SOURCE[0]}")/build_functions.sh"
 
+$(dirname "${BASH_SOURCE[0]}")/../../jakarta-dependencies/build-dependencies.sh
+
 if [[ -n ${BUILD_PROFILES} ]]; then
   PROFILES="${BUILD_PROFILES}"
 elif [[ "${REQUIRES_LOCAL_IMAGES}" == "true" ]]; then

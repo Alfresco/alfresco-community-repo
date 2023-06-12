@@ -583,19 +583,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-activemq</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
             <artifactId>camel-amqp</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-directvm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -622,21 +614,21 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-client</artifactId>
+            <artifactId>activemq-client-jakarta</artifactId>
             <version>${dependency.activemq.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-pool</artifactId>
-            <version>${dependency.activemq.version}</version>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.activemq</groupId>-->
+<!--            <artifactId>activemq-pool</artifactId>-->
+<!--            <version>${dependency.activemq.version}</version>-->
+<!--            <exclusions>-->
+<!--                &lt;!&ndash; Duplicates classes from jakarta.transaction:jakarta.transaction-api &ndash;&gt;-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.apache.geronimo.specs</groupId>-->
+<!--                    <artifactId>geronimo-jta_1.1_spec</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
         <!-- Transform dependencies -->
         <dependency>

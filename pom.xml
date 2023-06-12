@@ -83,11 +83,11 @@
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.20.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.camel.version>4.0.0-M3</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.87.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
         <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
-        <dependency.activemq.version>5.17.4</dependency.activemq.version>
+        <dependency.activemq.version>5.18.1</dependency.activemq.version>
         <dependency.apache-compress.version>1.23.0</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
@@ -97,7 +97,8 @@
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
 
-        <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>
+        <dependency.jakarta-ee-jaxb-api.version>3.0.1</dependency.jakarta-ee-jaxb-api.version>
+        <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
         <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
         <dependency.jakarta-soap-api.version>1.4.2</dependency.jakarta-soap-api.version>
         <dependency.jakarta-annotation-api.version>2.1.1</dependency.jakarta-annotation-api.version>
@@ -105,6 +106,7 @@
         <dependency.jakarta-jws-api.version>2.1.0</dependency.jakarta-jws-api.version>
         <dependency.jakarta-ee-mail.version>2.0.1</dependency.jakarta-ee-mail.version>
         <dependency.jakarta-ee-activation.version>2.0.1</dependency.jakarta-ee-activation.version>
+        <dependency.jakarta-ee-jms.version>3.0.0</dependency.jakarta-ee-jms.version>
         <dependency.java-ee-activation.version>1.2.0</dependency.java-ee-activation.version>
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
         <dependency.jakarta-json-path.version>2.8.0</dependency.jakarta-json-path.version>
@@ -170,12 +172,12 @@
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${dependency.jakarta-jaxb-api.version}</version>
+                <version>${dependency.jakarta-ee-jaxb-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
-                <version>${dependency.jakarta-jaxb-api.version}</version>
+                <version>${dependency.jakarta-ee-jaxb-api.version}</version>
             </dependency>
 
             <dependency>
@@ -243,6 +245,12 @@
                 <artifactId>javax.activation-api</artifactId>
                 <version>${dependency.java-ee-activation.version}</version>
             </dependency>
+            <dependency>
+                <groupId>jakarta.jms</groupId>
+                <artifactId>jakarta.jms-api</artifactId>
+                <version>${dependency.jakarta-ee-jms.version}</version>
+            </dependency>
+
 
 
             <dependency>
@@ -815,22 +823,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-activemq</artifactId>
-                <version>${dependency.camel.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.activemq</groupId>
-                        <artifactId>activemq-broker</artifactId>
-                    </exclusion>
-                    <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <!--  If you are going to bump dependency.camel.version, please check if the netty-codec-http has higher version that the one above.-->
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-amqp</artifactId>
@@ -846,11 +838,6 @@
             <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-jackson</artifactId>
-                <version>${dependency.camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-directvm</artifactId>
                 <version>${dependency.camel.version}</version>
             </dependency>
             <dependency>

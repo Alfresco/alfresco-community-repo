@@ -11,7 +11,7 @@
 
     <bean id="eventsDispatcher" class="org.gytheio.messaging.camel.CamelMessageProducer">
         <property name="producer" ref="camelProducerTemplate" />
-        <property name="endpoint" value="direct-vm:alfresco.events" />
+        <property name="endpoint" value="direct:alfresco.events" />
     </bean>
 
     <bean id="eventsRegistry" class="org.alfresco.sync.events.EventRegistryImpl">

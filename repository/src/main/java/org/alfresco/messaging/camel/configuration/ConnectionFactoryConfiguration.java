@@ -28,7 +28,7 @@ package org.alfresco.messaging.camel.configuration;
 
 import java.security.SecureRandom;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 import org.alfresco.encryption.AlfrescoKeyStore;
 import org.apache.activemq.ActiveMQConnectionFactory;

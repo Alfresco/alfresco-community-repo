@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.alfresco.org/repo/audit/model/3.2", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://www.alfresco.org/repo/audit/model/3.2", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 @PackageMarker
 package org.alfresco.repo.audit.model._3;
 import org.alfresco.util.PackageMarker;

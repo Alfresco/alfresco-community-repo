@@ -62,16 +62,16 @@ public class CamelRoutesTest
     @Autowired
     protected CamelContext camelContext;
     
-    @Produce("direct-vm:alfresco.test.1")
+    @Produce("direct:alfresco.test.1")
     protected ProducerTemplate template1;
 
-    @Produce("direct-vm:alfresco.test.2")
+    @Produce("direct:alfresco.test.2")
     protected ProducerTemplate template2;
 
-    @Produce("direct-vm:alfresco.default")
+    @Produce("direct:alfresco.default")
     protected ProducerTemplate template3;
 
-    @Produce("direct-vm:alfresco.test.transacted")
+    @Produce("direct:alfresco.test.transacted")
     protected ProducerTemplate template4;
 
     @Autowired

@@ -58,7 +58,6 @@
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>jakarta.mail</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <dependency>

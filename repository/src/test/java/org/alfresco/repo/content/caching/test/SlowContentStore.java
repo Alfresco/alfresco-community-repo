@@ -240,7 +240,7 @@ class SlowContentStore extends AbstractContentStore
                     }
                     else
                     {
-                        return 0;
+                        return -1;
                     }
                 }
             };

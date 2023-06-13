@@ -46,12 +46,12 @@ import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.RejectException;
-import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.LoginFailedException;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
-import org.subethamail.smtp.io.DeferredFileOutputStream;
+import org.subethamail.smtp.internal.io.DeferredFileOutputStream;
 import org.subethamail.smtp.server.SMTPServer;
+import org.subethamail.smtp.server.SMTPServer.Builder;
 
 /**
  * @since 2.2
@@ -70,23 +70,22 @@ public class SubethaEmailServer extends EmailServer
     @Override
     public void startup()
     {
-        serverImpl = new SMTPServer(new HandlerFactory());
-        
-        // MER - May need to override SMTPServer.createSSLSocket to specify non default keystore.
-        serverImpl.setPort(getPort());
-        serverImpl.setHostName(getDomain());
-        serverImpl.setMaxConnections(getMaxConnections());
-        
-        serverImpl.setHideTLS(isHideTLS());
-        serverImpl.setEnableTLS(isEnableTLS());
-        serverImpl.setRequireTLS(isRequireTLS());
-        
+        Builder serverBuilder = SMTPServer.port(getPort())
+                                          .hostName(getDomain())
+                                          .maxConnections(getMaxConnections())
+                                          .hideTLS(isHideTLS())
+                                          .enableTLS(isEnableTLS())
+                                          .requireTLS(isRequireTLS())
+                                          .messageHandlerFactory(new HandlerFactory());
+
         if(isAuthenticate())
         {
             AuthenticationHandlerFactory authenticationHandler = new EasyAuthenticationHandlerFactory(new AlfrescoLoginUsernamePasswordValidator());
-            serverImpl.setAuthenticationHandlerFactory(authenticationHandler);
+            serverBuilder.authenticationHandlerFactory(authenticationHandler);
         }
-        
+
+        serverImpl = serverBuilder.build();
+
         serverImpl.start();
         log.info("Inbound SMTP Email Server has started successfully, on hostName:" + getDomain() + "port:" + getPort());
     }
@@ -101,7 +100,7 @@ public class SubethaEmailServer extends EmailServer
     class AlfrescoLoginUsernamePasswordValidator implements UsernamePasswordValidator
     {
         @Override
-        public void login(String username, String password)
+        public void login(String username, String password, MessageContext context)
                 throws LoginFailedException
         { 
             if(!authenticateUserNamePassword(username, password.toCharArray()))
@@ -122,7 +121,7 @@ public class SubethaEmailServer extends EmailServer
         {
             return new Handler(messageContext);
         }
-    };
+    }
 
     class Handler implements MessageHandler
     {
@@ -178,12 +177,15 @@ public class SubethaEmailServer extends EmailServer
 
         public void recipient(String recipient) throws RejectException
         {
-            AuthenticationHandler auth = messageContext.getAuthenticationHandler();
+            String identity = messageContext.getAuthenticationHandler()
+                                            .map(AuthenticationHandler::getIdentity)
+                                            .map(String.class::cast)
+                                            .orElse(null);
             
-            deliveries.add(new EmailDelivery(recipient, from, auth != null ? (String)auth.getIdentity(): null));
+            deliveries.add(new EmailDelivery(recipient, from, identity));
         }
 
-        public void data(InputStream data) throws TooMuchDataException, IOException, RejectException
+        public String data(InputStream data) throws IOException, RejectException
         {
             if (deliveries.size() == 1)
             {
@@ -219,6 +221,7 @@ public class SubethaEmailServer extends EmailServer
                     }
                 }
             }
+            return null;
         }
 
         private void processDelivery(EmailDelivery delivery, InputStream data) throws RejectException
@@ -249,7 +252,5 @@ public class SubethaEmailServer extends EmailServer
         {
             deliveries.clear();
         }
-    };
-
-
+    }
 }

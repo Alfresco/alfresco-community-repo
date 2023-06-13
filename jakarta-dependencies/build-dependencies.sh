@@ -17,3 +17,9 @@ function clone_and_install {
 clone_and_install surf-webscripts
 clone_and_install alfresco-greenmail
 clone_and_install alfresco-tas-email
+
+tomcat_image_path=$DEPENDENCIES_DIR/projects/alfresco-docker-base-tomcat
+if [ ! -d "$tomcat_image_path" ]; then
+  git clone --single-branch --branch jakarta-migration https://github.com/Alfresco/alfresco-docker-base-tomcat.git $tomcat_image_path
+fi
+docker build --build-arg JDIST=jre --build-arg DISTRIB_NAME=rockylinux --build-arg DISTRIB_MAJOR=8 --build-arg JAVA_MAJOR=17 --build-arg TOMCAT_MAJOR=10 -t tomcat10-jakarta $tomcat_image_path

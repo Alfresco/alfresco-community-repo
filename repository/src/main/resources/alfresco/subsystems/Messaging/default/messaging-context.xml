@@ -19,14 +19,12 @@
         <constructor-arg value="java.lang.Object" />
     </bean>
 
-<!--    //JAKARTA_TO_DO|ACS-5420|activemq-pool|Pool is not compatible with jakarta API-->
-    <alias name="activeMqConnectionFactory" alias="pooledConnectionFactory" />
-<!--    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"-->
-<!--        init-method="start" destroy-method="stop">-->
-<!--        <property name="maxConnections" value="${messaging.broker.connections.max}" />-->
-<!--        <property name="createConnectionOnStartup" value="false"/>-->
-<!--        <property name="connectionFactory" ref="activeMqConnectionFactory" />-->
-<!--    </bean>-->
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.jms.pool.PooledConnectionFactory"
+          init-method="start" destroy-method="stop">
+        <property name="maxConnections" value="${messaging.broker.connections.max}" />
+        <property name="createConnectionOnStartup" value="false"/>
+        <property name="connectionFactory" ref="activeMqConnectionFactory" />
+    </bean>
     
     <bean id="messagingTransactionManager" class="org.springframework.jms.connection.JmsTransactionManager">
         <property name="connectionFactory" ref="pooledConnectionFactory"/>

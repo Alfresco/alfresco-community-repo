@@ -253,7 +253,11 @@
                 <version>${dependency.jakarta-ee-jms.version}</version>
             </dependency>
 
-
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-jms-pool</artifactId>
+                <version>${dependency.activemq.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>jakarta.json</groupId>

@@ -98,6 +98,7 @@
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
+        <dependency.pooled-jms.version>3.1.0</dependency.pooled-jms.version>
 
         <dependency.jakarta-ee-jaxb-api.version>3.0.1</dependency.jakarta-ee-jaxb-api.version>
         <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
@@ -254,9 +255,9 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-jms-pool</artifactId>
-                <version>${dependency.activemq.version}</version>
+                <groupId>org.messaginghub</groupId>
+                <artifactId>pooled-jms</artifactId>
+                <version>${dependency.pooled-jms.version}</version>
             </dependency>
 
             <dependency>

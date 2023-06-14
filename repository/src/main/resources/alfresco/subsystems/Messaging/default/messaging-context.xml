@@ -19,10 +19,9 @@
         <constructor-arg value="java.lang.Object" />
     </bean>
 
-    <bean id="pooledConnectionFactory" class="org.apache.activemq.jms.pool.PooledConnectionFactory"
+    <bean id="pooledConnectionFactory" class="org.messaginghub.pooled.jms.JmsPoolConnectionFactory"
           init-method="start" destroy-method="stop">
         <property name="maxConnections" value="${messaging.broker.connections.max}" />
-        <property name="createConnectionOnStartup" value="false"/>
         <property name="connectionFactory" ref="activeMqConnectionFactory" />
     </bean>
     

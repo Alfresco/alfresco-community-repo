@@ -2,6 +2,7 @@
 
 set -e
 
+HTTP_CREDENTIALS=$1
 DEPENDENCIES_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 mvn -f $DEPENDENCIES_DIR -B clean install
@@ -9,14 +10,20 @@ mvn -f $DEPENDENCIES_DIR -B clean install
 function clone_and_install {
   local project_path=$DEPENDENCIES_DIR/projects/$1
   if [ ! -d "$project_path" ]; then
-    git clone --single-branch --branch jakarta-migration https://github.com/Alfresco/$1.git $project_path
+    if [ -z "$HTTP_CREDENTIALS" ]; then
+      git clone --single-branch --branch jakarta-migration git@github.com:Alfresco/$1.git $project_path
+    else
+      git clone --single-branch --branch jakarta-migration https://${HTTP_CREDENTIALS}@github.com/Alfresco/$1.git $project_path
+    fi
   fi
-  mvn -f $project_path -B clean install
+  mvn -f $project_path -B clean install -DskipTests -Dmaven.javadoc.skip=true
 }
 
 clone_and_install surf-webscripts
 clone_and_install alfresco-greenmail
 clone_and_install alfresco-tas-email
+clone_and_install alfresco-office-services
+clone_and_install alfresco-aos-module
 
 tomcat_image_path=$DEPENDENCIES_DIR/projects/alfresco-docker-base-tomcat
 if [ ! -d "$tomcat_image_path" ]; then

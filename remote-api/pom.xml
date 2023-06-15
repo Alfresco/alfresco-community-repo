@@ -54,7 +54,6 @@
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
         </dependency>
-        <!-- This is needed at runtime by Web Client, so not really a test dependency -->
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-test-tck</artifactId>
@@ -71,7 +70,7 @@
                     <artifactId>geronimo-jta_1.1_spec</artifactId>
                 </exclusion>
             </exclusions>
-            <!-- <scope>test</scope> -->
+            <scope>test</scope>
         </dependency>
         <!-- the cxf libs were updated, see dependencyManagement section -->
 

@@ -25,7 +25,7 @@
  */
 package org.alfresco.util.remote.server;
 
-//JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal// import org.springframework.remoting.rmi.RmiRegistryFactoryBean;
+import org.springframework.remoting.rmi.RmiRegistryFactoryBean;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.Registry;
@@ -37,7 +37,7 @@ import java.rmi.server.RMIServerSocketFactory;
  *
  * @author alex.mukha
  */
-public class AlfrescoRmiRegistryFactoryBean //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//extends RmiRegistryFactoryBean
+public class AlfrescoRmiRegistryFactoryBean extends RmiRegistryFactoryBean
 {
     private static final String ERR_MSG_NOT_ENABLED = "The RMI registry factory is disabled.";
 
@@ -53,16 +53,16 @@ public class AlfrescoRmiRegistryFactoryBean //JAKARTA_TO_DO|Spring6|ACS-5423|RMI
         return enabled;
     }
 
-    //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//@Override
+    @Override
     public void afterPropertiesSet() throws Exception
     {
         if (enabled)
         {
-            //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//super.afterPropertiesSet();
+            super.afterPropertiesSet();
         }
     }
 
-    //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//@Override
+    @Override
     protected Registry getRegistry(
             String registryHost,
             int registryPort,
@@ -71,8 +71,8 @@ public class AlfrescoRmiRegistryFactoryBean //JAKARTA_TO_DO|Spring6|ACS-5423|RMI
     {
         if(enabled)
         {
-            //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//return super.getRegistry(registryHost, registryPort, clientSocketFactory, serverSocketFactory);
-            return null;
+            return super.getRegistry(registryHost, registryPort, clientSocketFactory, serverSocketFactory);
+
         }
         else
         {
@@ -80,7 +80,7 @@ public class AlfrescoRmiRegistryFactoryBean //JAKARTA_TO_DO|Spring6|ACS-5423|RMI
         }
     }
 
-    //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//@Override
+    @Override
     protected Registry getRegistry(
             int registryPort,
             RMIClientSocketFactory clientSocketFactory,
@@ -88,8 +88,8 @@ public class AlfrescoRmiRegistryFactoryBean //JAKARTA_TO_DO|Spring6|ACS-5423|RMI
     {
         if(enabled)
         {
-            //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//return super.getRegistry(registryPort, clientSocketFactory, serverSocketFactory);
-            return null;
+            return super.getRegistry(registryPort, clientSocketFactory, serverSocketFactory);
+
         }
         else
         {
@@ -97,13 +97,13 @@ public class AlfrescoRmiRegistryFactoryBean //JAKARTA_TO_DO|Spring6|ACS-5423|RMI
         }
     }
 
-    //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//@Override
+    @Override
     protected Registry getRegistry(int registryPort) throws RemoteException
     {
         if(enabled)
         {
-            //JAKARTA_TO_DO|Spring6|ACS-5423|RMI Removal//return super.getRegistry(registryPort);
-            return null;
+            return super.getRegistry(registryPort);
+
         }
         else
         {

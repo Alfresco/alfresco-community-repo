@@ -23,6 +23,9 @@ clone_and_install surf-webscripts
 clone_and_install alfresco-greenmail
 clone_and_install alfresco-tas-email
 clone_and_install alfresco-office-services
+
+#Ugly hack to deal with AOS<->REPO circular dependencies
+mvn -f $DEPENDENCIES_DIR/.. install -pl :alfresco-remote-api -am -DskipTests -Dmaven.javadoc.skip=true
 clone_and_install alfresco-aos-module
 
 tomcat_image_path=$DEPENDENCIES_DIR/projects/alfresco-docker-base-tomcat

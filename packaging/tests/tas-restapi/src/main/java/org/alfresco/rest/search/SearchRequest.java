@@ -43,13 +43,14 @@
  */
 package org.alfresco.rest.search;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.model.RestRequestRangesModel;
 import org.alfresco.rest.model.RestRequestSpellcheckModel;
 import org.alfresco.utility.model.TestModel;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Search Query object.
@@ -76,6 +77,8 @@ public class SearchRequest extends TestModel
     String facetFormat;
     List<String> include;
     List<SortClause> sort;
+    RestRequestDefaultsModel defaults;
+    List<RestRequestTemplatesModel> templates;
 
     public SearchRequest()
     {
@@ -253,6 +256,26 @@ public class SearchRequest extends TestModel
     public void setFields(List<String> fields)
     {
         this.fields = fields;
+    }
+
+    public RestRequestDefaultsModel getDefaults()
+    {
+        return defaults;
+    }
+
+    public void setDefaults(RestRequestDefaultsModel defaults)
+    {
+        this.defaults = defaults;
+    }
+
+    public List<RestRequestTemplatesModel> getTemplates()
+    {
+        return templates;
+    }
+
+    public void setTemplates(List<RestRequestTemplatesModel> templates)
+    {
+        this.templates = templates;
     }
 
     public List<SortClause> getSort()

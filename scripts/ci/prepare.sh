@@ -23,6 +23,8 @@ if [ $M2_REPO_EXPIRED -eq 1 ];then
   rm -rf "$M2_REPO_DIR"
 fi
 
+rm -rf "$ORG_ALFRESCO_M2_REPO_DIR"
+
 echo "Verifying compilation and ensuring maven cache populated."
 export BUILD_PROFILES="-Pall-tas-tests,ags"
 export BUILD_OPTIONS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dmaven.artifact.threads=8"

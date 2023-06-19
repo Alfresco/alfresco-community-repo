@@ -78,7 +78,7 @@
         <dependency.gytheio.version>0.20.0-A1</dependency.gytheio.version>
         <dependency.groovy.version>3.0.17</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>5.8.3</dependency.spring-security.version>
+        <dependency.spring-security.version>6.1.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>

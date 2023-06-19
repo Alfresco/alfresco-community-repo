@@ -21,7 +21,6 @@ else
 fi
 
 mvn -B -V clean $PHASE -DskipTests -Dmaven.javadoc.skip=true $PROFILES $BUILD_OPTIONS
-ls packaging/war/target/alfresco/WEB-INF/lib/ | grep activation
 
 popd
 set +vex

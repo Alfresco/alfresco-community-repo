@@ -11,6 +11,7 @@ on:
     branches:
       - feature/**
       - fix/**
+      - jakarta-migration
   workflow_call:
   workflow_dispatch:
 

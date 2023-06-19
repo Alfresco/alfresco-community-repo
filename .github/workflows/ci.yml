@@ -58,8 +58,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -81,8 +79,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -120,8 +116,6 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
@@ -155,8 +149,6 @@ jobs:
         version: ['10.2.18', '10.4', '10.5']
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -183,8 +175,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -211,8 +201,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -238,8 +226,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -265,8 +251,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -290,8 +274,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -342,8 +324,6 @@ jobs:
             mvn-options: '-Dencryption.ssl.keystore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.keystore -Dencryption.ssl.truststore.location=${CI_WORKSPACE}/keystores/alfresco/alfresco.truststore'
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -414,8 +394,6 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
@@ -453,8 +431,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
@@ -484,8 +460,6 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
@@ -517,8 +491,6 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"
@@ -546,8 +518,6 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Build"

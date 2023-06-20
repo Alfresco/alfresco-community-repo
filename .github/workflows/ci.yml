@@ -25,6 +25,7 @@ env:
   QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
+  PMD_VERSION: 6.55.0
 
 jobs:
   prepare:
@@ -61,8 +62,9 @@ jobs:
       - uses: pmd/pmd-github-action@v1
         id: pmd
         with:
-          version: '6.55.0'
+          version: ${{ env.PMD_VERSION }}
           rulesets: 'pmd-ruleset.xml'
+      - run: bash ./scripts/ci/pmd_scan.sh "${{ github.base_ref }}" "${{ github.sha }}"
       - name: Fail build if there are PMD violations
         if: steps.pmd.outputs.violations != 0
         run: exit 1

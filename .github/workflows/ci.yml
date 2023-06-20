@@ -49,7 +49,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
+      (github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
+      github.event_name == 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip pmd]')
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:

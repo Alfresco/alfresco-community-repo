@@ -27,23 +27,25 @@
 package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.transfer.TransferCommons;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
+import org.springframework.extensions.webscripts.servlet.FormData;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.extensions.webscripts.servlet.FormData.FormField;
+
+import static org.alfresco.repo.web.scripts.transfer.CommandProcessorUtils.isMultipartContent;
 
 /**
  * This command processor is used to receive the snapshot for a given transfer.
@@ -100,7 +102,7 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
         //Read the transfer id from the request
         String transferId = servletRequest.getParameter("transferId");
         
-        if ((transferId == null) || !ServletFileUpload.isMultipartContent(servletRequest)) 
+        if ((transferId == null) || !isMultipartContent(servletRequest))
         {
             logger.debug("bad request, not multipart");
             resp.setStatus(Status.STATUS_BAD_REQUEST);
@@ -111,15 +113,15 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
         {
             logger.debug("about to upload manifest file");
 
-            ServletFileUpload upload = new ServletFileUpload();
-            FileItemIterator iter = upload.getItemIterator(servletRequest);
-            while (iter.hasNext()) 
+            FormData formData = new FormData(servletRequest);
+            Iterator<FormField> iter = Arrays.stream(formData.getFields()).iterator();
+            while (iter.hasNext())
             {
-                FileItemStream item = iter.next();
-                if (!item.isFormField() && TransferCommons.PART_NAME_MANIFEST.equals(item.getFieldName())) 
+                FormField formField = iter.next();
+                if (formField.getIsFile() && TransferCommons.PART_NAME_MANIFEST.equals(formField.getName()))
                 {
                     logger.debug("got manifest file");
-                    receiver.saveSnapshot(transferId, item.openStream());
+                    receiver.saveSnapshot(transferId, formField.getInputStream());
                 }
             }
           

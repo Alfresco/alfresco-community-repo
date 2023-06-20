@@ -30,10 +30,8 @@ import java.io.StringWriter;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.alfresco.repo.transfer.TransferServiceImpl;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;

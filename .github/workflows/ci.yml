@@ -56,6 +56,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - uses: pmd/pmd-github-action@v1

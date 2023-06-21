@@ -12,19 +12,36 @@ runPMD="/opt/hostedtoolcache/pmd/${PMD_VERSION}/x64/pmd-bin-${PMD_VERSION}/bin/r
 # Make a copy of the ruleset so that we ignore any changes between commits.
 cp pmd-ruleset.xml /tmp/pmd-ruleset.xml
 
-# Run PMD against the baseline commit.
+# Create a list of the files changed by this PR.
 baseline_ref=$(git merge-base "${target_ref}" "${head_ref}")
+git diff --name-only ${baseline_ref} ${head_ref} > /tmp/file-list.txt
+
+# Run PMD against the baseline commit.
 git checkout ${baseline_ref}
-${runPMD} pmd --cache pmd.cache -d . -R /tmp/pmd-ruleset.xml -r old_report.txt --fail-on-violation false
+for file in $(cat /tmp/file-list.txt)
+do
+    if [[ -f ${file} ]]
+    then
+        echo ${file} > /tmp/old-files.txt
+    fi
+done
+${runPMD} pmd --cache pmd.cache --file-list /tmp/old-files.txt -R /tmp/pmd-ruleset.xml -r old_report.txt --fail-on-violation false
 old_issue_count=$(cat old_report.txt | wc -l)
 
 # Rerun PMD against the PR head commit.
 git checkout ${head_ref}
-${runPMD} pmd --cache pmd.cache -d . -R /tmp/pmd-ruleset.xml -r new_report.txt --fail-on-violation false
+for file in $(cat /tmp/file-list.txt)
+do
+    if [[ -f ${file} ]]
+    then
+        echo ${file} > /tmp/new-files.txt
+    fi
+done
+${runPMD} pmd --cache pmd.cache --file-list /tmp/new-files.txt -R /tmp/pmd-ruleset.xml -r new_report.txt --fail-on-violation false
 new_issue_count=$(cat new_report.txt | wc -l)
 
 # Display the differences between the two files.
-diff old_report.txt new_report.txt
+diff old_report.txt new_report.txt | true
 
 # Fail the build if there are more issues now than before.
 if [[ ${new_issue_count} > ${old_issue_count} ]];

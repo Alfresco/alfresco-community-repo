@@ -63,6 +63,6 @@ jobs:
         with:
           version: ${{ env.PMD_VERSION }}
           rulesets: 'pmd-ruleset.xml'
-      - run: bash ./scripts/ci/pmd_scan.sh "${{ github.base_ref }}" "${{ github.sha }}"
+      - run: bash ./scripts/ci/pmd_scan.sh "origin/${{ github.base_ref }}" "${{ github.sha }}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

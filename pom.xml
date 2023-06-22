@@ -1003,6 +1003,11 @@
                         <skipDeploy>true</skipDeploy>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.codehaus.cargo</groupId>
+                    <artifactId>cargo-maven3-plugin</artifactId>
+                    <version>1.10.7</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>

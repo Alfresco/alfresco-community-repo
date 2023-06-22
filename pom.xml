@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.142-SNAPSHOT</version>
+    <version>23.1.0.143-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -51,8 +51,8 @@
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>2.2.0-A1</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>3.2.0-A1</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>3.0.0-A1</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>4.0.0-A1</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.10-SNAPSHOT</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.22</dependency.acs-event-model.version>
 
@@ -116,7 +116,7 @@
         <dependency.json-smart.version>2.4.11</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.5.0-A2</alfresco.googledrive.version>
+        <alfresco.googledrive.version>3.4.1-A1</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.6.1-A2-SNAPSHOT</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 

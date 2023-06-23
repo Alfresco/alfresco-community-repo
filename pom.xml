@@ -102,11 +102,11 @@
 
         <dependency.jakarta-ee-jaxb-api.version>3.0.1</dependency.jakarta-ee-jaxb-api.version>
         <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
-        <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
-        <dependency.jakarta-soap-api.version>1.4.2</dependency.jakarta-soap-api.version>
+        <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
+        <dependency.jakarta-soap-api.version>2.0.1</dependency.jakarta-soap-api.version>
         <dependency.jakarta-annotation-api.version>2.1.1</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
-        <dependency.jakarta-jws-api.version>2.1.0</dependency.jakarta-jws-api.version>
+        <dependency.jakarta-jws-api.version>3.0.0</dependency.jakarta-jws-api.version>
         <dependency.jakarta-ee-mail.version>2.0.1</dependency.jakarta-ee-mail.version>
         <dependency.jakarta-ee-activation.version>2.0.1</dependency.jakarta-ee-activation.version>
         <dependency.jakarta-ee-jms.version>3.0.0</dependency.jakarta-ee-jms.version>

@@ -751,20 +751,26 @@
         </dependency>
         <dependency>
             <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-client-api</artifactId>
+            <version>${dependency.opencmis.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-client-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
             <scope>test</scope>
             <exclusions>
-              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031) -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-              </exclusion>
-              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-jta_1.1_spec</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

@@ -39,7 +39,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.transaction.UserTransaction;
-import javax.xml.ws.Holder;
 
 import junit.framework.TestCase;
 
@@ -2789,8 +2788,8 @@ public class ContentDiskDriverTest extends TestCase
 
     public void testFileInformationUpdatingByEditorUserForAlf8808() throws Exception
     {
-        final Holder<org.alfresco.service.cmr.model.FileInfo> editorFolder = new Holder<org.alfresco.service.cmr.model.FileInfo>();
-        final Holder<org.alfresco.service.cmr.model.FileInfo> testFile = new Holder<org.alfresco.service.cmr.model.FileInfo>();
+        final org.alfresco.service.cmr.model.FileInfo[] editorFolder = new org.alfresco.service.cmr.model.FileInfo[] {null};
+        final org.alfresco.service.cmr.model.FileInfo[] testFile = new org.alfresco.service.cmr.model.FileInfo[] {null};
 
         // Configuring test server with test server configuration and getting test tree connection for test shared device
         ServerConfiguration config = new ServerConfiguration(ContentDiskDriverTest.TEST_SERVER_NAME);
@@ -2814,19 +2813,19 @@ public class ContentDiskDriverTest extends TestCase
                     // Creating test user to invite him as Editor for test content. This user will be created correctly (with person and authentication options)
                     createUser(ContentDiskDriverTest.TEST_USER_AUTHORITY, ContentDiskDriverTest.TEST_USER_AUTHORITY, rootNode);
                     // Safely creating folder for test content
-                    editorFolder.value = getOrCreateNode(rootNode, PermissionService.EDITOR, ContentModel.TYPE_FOLDER).getFirst();
+                    editorFolder[0] = getOrCreateNode(rootNode, PermissionService.EDITOR, ContentModel.TYPE_FOLDER).getFirst();
                     // Creating test content which will be editable by user created above
-                    testFile.value = getOrCreateNode(rootNode, "Test.txt", ContentModel.TYPE_CONTENT).getFirst();
+                    testFile[0] = getOrCreateNode(rootNode, "Test.txt", ContentModel.TYPE_CONTENT).getFirst();
 
                     // Applying 'Editor' role for test user to test file
-                    permissionService.setPermission(testFile.value.getNodeRef(), ContentDiskDriverTest.TEST_USER_AUTHORITY, PermissionService.EDITOR, true);
+                    permissionService.setPermission(testFile[0].getNodeRef(), ContentDiskDriverTest.TEST_USER_AUTHORITY, PermissionService.EDITOR, true);
 
                     try
                     {
                         // Creating data for target method invocation
                         final FileInfo updatedInfo = new FileInfo();
-                        updatedInfo.setFileName(testFile.value.getName());
-                        updatedInfo.setFileId(DefaultTypeConverter.INSTANCE.intValue(testFile.value.getProperties().get(ContentModel.PROP_NODE_DBID)));
+                        updatedInfo.setFileName(testFile[0].getName());
+                        updatedInfo.setFileId(DefaultTypeConverter.INSTANCE.intValue(testFile[0].getProperties().get(ContentModel.PROP_NODE_DBID)));
 
                         // Testing ContentDiskDriver.setFileInformation() with test user authenticated who has 'Editor' role for test content.
                         // This method should fail if check on 'DELETE' permission was not moved to 'DeleteOnClose' context
@@ -2835,7 +2834,7 @@ public class ContentDiskDriverTest extends TestCase
                             @Override
                             public Void doWork() throws Exception
                             {
-                                deviceInterface.setFileInformation(session, treeConnection, testFile.value.getName(), updatedInfo);
+                                deviceInterface.setFileInformation(session, treeConnection, testFile[0].getName(), updatedInfo);
                                 return null;
                             }
                         }, ContentDiskDriverTest.TEST_USER_AUTHORITY);
@@ -2869,9 +2868,9 @@ public class ContentDiskDriverTest extends TestCase
 
                     try
                     {
-                        if (null != testFile.value)
+                        if (null != testFile[0])
                         {
-                            nodeService.deleteNode(testFile.value.getNodeRef());
+                            nodeService.deleteNode(testFile[0].getNodeRef());
                         }
                     }
                     catch (Exception e)
@@ -2881,9 +2880,9 @@ public class ContentDiskDriverTest extends TestCase
 
                     try
                     {
-                        if (null != editorFolder.value)
+                        if (null != editorFolder[0])
                         {
-                            nodeService.deleteNode(editorFolder.value.getNodeRef());
+                            nodeService.deleteNode(editorFolder[0].getNodeRef());
                         }
                     }
                     catch (Exception e)

@@ -37,4 +37,4 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pmd@e7eb3de7a82c46766da2df47fda8ef21e8e4232f
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pmd@0b138d50567306e53ce6cd153de4ecb16e70d1f5

@@ -55,16 +55,4 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-      - uses: pmd/pmd-github-action@v1
-        id: pmd
-        with:
-          version: ${{ env.PMD_VERSION }}
-          rulesets: 'pmd-ruleset.xml'
-      - run: bash ./scripts/ci/pmd_scan.sh "origin/${{ github.base_ref }}" "${{ github.sha }}"
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pmd@e7eb3de7a82c46766da2df47fda8ef21e8e4232f

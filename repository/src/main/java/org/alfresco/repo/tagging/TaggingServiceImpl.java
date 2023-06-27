@@ -231,6 +231,21 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public void init()
     {
+        if (true && false) {
+            System.out.println("Issue");
+        }
+        if (true && false) {
+            System.out.println("Issue");
+        }
+        if (true && false) {
+            System.out.println("Issue");
+        }
+        if (true && false) {
+            System.out.println("Issue");
+        }
+        if (true && false) {
+            System.out.println("Issue");
+        }
         // Register policy behaviours
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),

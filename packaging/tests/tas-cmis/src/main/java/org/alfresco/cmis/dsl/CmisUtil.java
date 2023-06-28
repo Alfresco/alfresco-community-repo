@@ -280,16 +280,26 @@ public class CmisUtil
 
     protected boolean isPrivateWorkingCopy()
     {
-        boolean result;
+        final Document document;
         try
         {
-            result = getPWCDocument().isPrivateWorkingCopy();
+            document = getPWCDocument();
         }
         catch (CmisVersioningException cmisVersioningException)
         {
-            result = false;
+            return false;
         }
-        return result;
+
+        if (Boolean.FALSE.equals(document.isVersionable())) return false;
+        if (Boolean.FALSE.equals(document.isVersionSeriesCheckedOut())) return false;
+
+        final Boolean isPWC = document.isPrivateWorkingCopy();
+        if (isPWC != null) return isPWC;
+
+        final String vsCoId = document.getVersionSeriesCheckedOutId();
+        if (vsCoId == null) return false;
+
+        return vsCoId.equals(document.getId());
     }
 
     /**

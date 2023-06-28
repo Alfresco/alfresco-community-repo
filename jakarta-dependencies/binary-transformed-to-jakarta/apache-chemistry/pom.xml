@@ -80,18 +80,6 @@
                   <groupId>org.eclipse.angus</groupId>
                   <artifactId>*</artifactId>
                </exclusion>
-               <exclusion>
-                  <groupId>jakarta.jws</groupId>
-                  <artifactId>*</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>jakarta.xml.soap</groupId>
-                  <artifactId>*</artifactId>
-               </exclusion>
-               <exclusion>
-                  <groupId>org.glassfish.jaxb</groupId>
-                  <artifactId>*</artifactId>
-               </exclusion>
             </exclusions>
          </dependency>
          <dependency>

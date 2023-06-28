@@ -283,7 +283,7 @@ public class CmisUtil
         boolean result;
         try
         {
-            result = getPWCDocument().isVersionSeriesPrivateWorkingCopy();
+            result = getPWCDocument().isPrivateWorkingCopy();
         }
         catch (CmisVersioningException cmisVersioningException)
         {

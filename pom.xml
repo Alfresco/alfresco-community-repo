@@ -296,6 +296,11 @@
             <!--CMIS-->
             <dependency>
                 <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-client-api</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
                 <artifactId>chemistry-opencmis-client-bindings</artifactId>
                 <version>${dependency.opencmis.version}</version>
             </dependency>

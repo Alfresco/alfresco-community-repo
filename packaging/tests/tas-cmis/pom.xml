@@ -71,11 +71,11 @@
         </dependency>
 
         <!-- open cmis settings -->
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-commons-api</artifactId>
-            <version>${chemistry-opencmis-commons-api}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.apache.chemistry.opencmis</groupId>-->
+<!--            <artifactId>chemistry-opencmis-commons-api</artifactId>-->
+<!--            <version>${chemistry-opencmis-commons-api}</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>

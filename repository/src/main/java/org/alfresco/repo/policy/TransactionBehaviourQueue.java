@@ -251,15 +251,16 @@ public class TransactionBehaviourQueue implements TransactionListener
         }
         catch (IllegalArgumentException e)
         {
-            throw new AlfrescoRuntimeException("Failed to execute transaction-level behaviour " + context.method + " in transaction " + AlfrescoTransactionSupport.getTransactionId(), e);
+            throw new AlfrescoRuntimeException("Failed to execute transaction-level behaviour " + context.method + " in transaction " + AlfrescoTransactionSupport.getTransactionId() + " : " + e.getMessage(), e);
         }
         catch (IllegalAccessException e)
         {
-            throw new AlfrescoRuntimeException("Failed to execute transaction-level behaviour " + context.method + " in transaction " + AlfrescoTransactionSupport.getTransactionId(), e);
+            throw new AlfrescoRuntimeException("Failed to execute transaction-level behaviour " + context.method + " in transaction " + AlfrescoTransactionSupport.getTransactionId() + " : " + e.getMessage(), e);
         }
         catch (InvocationTargetException e)
         {
-            throw new AlfrescoRuntimeException("Failed to execute transaction-level behaviour " + context.method + " in transaction " + AlfrescoTransactionSupport.getTransactionId(), e.getTargetException());
+            String msg = e.getMessage() + (e.getTargetException() != null ? "(" + e.getTargetException().getMessage() + ")" : "");
+            throw new AlfrescoRuntimeException("Failed to execute transaction-level behaviour " + context.method + " in transaction " + AlfrescoTransactionSupport.getTransactionId() + " : " + msg, e.getTargetException());
         }
     }
     

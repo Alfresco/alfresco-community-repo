@@ -45,7 +45,7 @@ public class AlfrescoRmiRegistryFactoryBean implements FactoryBean<Registry>, Di
 {
     private static final Logger LOG = LoggerFactory.getLogger(AlfrescoRmiRegistryFactoryBean.class);
 
-    private boolean registryCreated = false;
+    private boolean created = false;
 
     private final boolean enabled;
 
@@ -80,7 +80,7 @@ public class AlfrescoRmiRegistryFactoryBean implements FactoryBean<Registry>, Di
                 LOG.trace("RMI registry access threw exception", ex);
                 LOG.debug("Could not detect RMI registry - creating new one");
                 // Assume no registry found -> create new one.
-                this.registryCreated = true;
+                this.created = true;
                 registry = LocateRegistry.createRegistry(this.port, socketFactory, socketFactory);
             }
         }
@@ -94,7 +94,7 @@ public class AlfrescoRmiRegistryFactoryBean implements FactoryBean<Registry>, Di
 
     @Override
     public void destroy() throws Exception {
-        if (this.registryCreated) {
+        if (this.created) {
             LOG.debug("Unexporting RMI registry");
             UnicastRemoteObject.unexportObject(this.registry, true);
         }
@@ -110,9 +110,9 @@ public class AlfrescoRmiRegistryFactoryBean implements FactoryBean<Registry>, Di
         return (this.registry != null ? this.registry.getClass() : Registry.class);
     }
 
-    public boolean isRegistryCreated()
+    public boolean isCreated()
     {
-        return registryCreated;
+        return created;
     }
 
     public int getPort() {

@@ -24,6 +24,7 @@
                <rules>
                   <renames>${rules.path}/rename-rules.properties</renames>
                   <versions>${rules.path}/version-rules.properties</versions>
+                  <directs>${rules.path}/direct-rules.properties</directs>
                </rules>
             </configuration>
          </plugin>

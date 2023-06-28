@@ -65,7 +65,21 @@ jobs:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
-        
+
+  pmd_scan:
+    name: "PMD Scan"
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      github.event_name == 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip pmd]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pmd@v2.5.0
+        with:
+          fail-on-new-issues: "false"
+
   all_unit_tests_suite:
     name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
     runs-on: ubuntu-latest

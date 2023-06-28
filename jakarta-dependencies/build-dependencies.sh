@@ -20,7 +20,7 @@ function clone_and_install {
   mvn -f $project_path -B clean install -DskipTests -Dmaven.javadoc.skip=true
 }
 
-clone_and_install surf-webscripts
+clone_and_install surf-webscripts feature/ACS-5432-jakarta-compatible-cmis-webservices
 clone_and_install alfresco-greenmail
 clone_and_install alfresco-tas-utility
 clone_and_install alfresco-tas-email

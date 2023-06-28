@@ -43,7 +43,7 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class AlfrescoRmiRegistryFactoryBean implements FactoryBean<Registry>, DisposableBean
 {
-    private final Logger LOG = LoggerFactory.getLogger(AlfrescoRmiRegistryFactoryBean.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AlfrescoRmiRegistryFactoryBean.class);
 
     private boolean created = false;
 

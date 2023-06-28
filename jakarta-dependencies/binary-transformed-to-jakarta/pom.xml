@@ -32,6 +32,6 @@
 
    <modules>
       <module>apache-chemistry</module>
-      <module>commons-fileupload-jakarta</module>
+      <module>commons-fileupload</module>
    </modules>
 </project>

@@ -25,23 +25,69 @@
  */
 package org.alfresco.util.remote.server;
 
-import org.springframework.remoting.rmi.RmiRegistryFactoryBean;
+import org.alfresco.util.remote.server.socket.HostConfigurableSocketFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.FactoryBean;
 
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.RMIClientSocketFactory;
-import java.rmi.server.RMIServerSocketFactory;
+import java.rmi.server.UnicastRemoteObject;
 
 /**
  * This class controls the RMI connectivity via <code>alfresco.jmx.connector.enabled</code> property
  *
  * @author alex.mukha
  */
-public class AlfrescoRmiRegistryFactoryBean extends RmiRegistryFactoryBean
+public class AlfrescoRmiRegistryFactoryBean implements FactoryBean<Registry>, DisposableBean
 {
-    private static final String ERR_MSG_NOT_ENABLED = "The RMI registry factory is disabled.";
+    protected final Log logger = LogFactory.getLog(getClass());
 
-    private boolean enabled = true;
+    private boolean created = false;
+
+    private boolean enabled;
+
+    private int port;
+
+    private Registry registry;
+
+    public AlfrescoRmiRegistryFactoryBean(boolean enabled, int port, HostConfigurableSocketFactory socketFactory) {
+        this.enabled = enabled;
+        this.port = port;
+        if(this.enabled)
+        {
+            initRegistry(socketFactory);
+        }
+    }
+
+    private void initRegistry(HostConfigurableSocketFactory socketFactory) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Looking for RMI registry at port '" + this.port + "', using custom socket factory");
+        }
+        synchronized (LocateRegistry.class) {
+            try {
+                // Retrieve existing registry.
+                this.created = true;
+                this.registry = LocateRegistry.getRegistry(null, this.port, socketFactory);
+                testRegistry(this.registry);
+            }
+            catch (RemoteException ex) {
+                logger.trace("RMI registry access threw exception", ex);
+                logger.debug("Could not detect RMI registry - creating new one");
+                // Assume no registry found -> create new one.
+                this.created = true;
+                try {
+                    this.registry = LocateRegistry.createRegistry(this.port, socketFactory, socketFactory);
+                }
+                catch (RemoteException e)
+                {
+                    logger.error("Unable to create RMI Registry");
+                }
+            }
+        }
+    }
 
     public void setEnabled(boolean enabled)
     {
@@ -54,57 +100,33 @@ public class AlfrescoRmiRegistryFactoryBean extends RmiRegistryFactoryBean
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        if (enabled)
-        {
-            super.afterPropertiesSet();
+    public void destroy() throws Exception {
+        if (this.created) {
+            logger.debug("Unexporting RMI registry");
+            UnicastRemoteObject.unexportObject(this.registry, true);
         }
     }
 
     @Override
-    protected Registry getRegistry(
-            String registryHost,
-            int registryPort,
-            RMIClientSocketFactory clientSocketFactory,
-            RMIServerSocketFactory serverSocketFactory) throws RemoteException
-    {
-        if(enabled)
-        {
-            return super.getRegistry(registryHost, registryPort, clientSocketFactory, serverSocketFactory);
-        }
-        else
-        {
-            throw new RemoteException(ERR_MSG_NOT_ENABLED);
-        }
+    public Registry getObject() throws Exception {
+        return this.registry;
     }
 
     @Override
-    protected Registry getRegistry(
-            int registryPort,
-            RMIClientSocketFactory clientSocketFactory,
-            RMIServerSocketFactory serverSocketFactory) throws RemoteException
-    {
-        if(enabled)
-        {
-            return super.getRegistry(registryPort, clientSocketFactory, serverSocketFactory);
-        }
-        else
-        {
-            throw new RemoteException(ERR_MSG_NOT_ENABLED);
-        }
+    public Class<?> getObjectType() {
+        return (this.registry != null ? this.registry.getClass() : Registry.class);
     }
 
-    @Override
-    protected Registry getRegistry(int registryPort) throws RemoteException
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    protected void testRegistry(Registry registry) throws RemoteException
     {
-        if(enabled)
-        {
-            return super.getRegistry(registryPort);
-        }
-        else
-        {
-            throw new RemoteException(ERR_MSG_NOT_ENABLED);
-        }
+        registry.list();
     }
 }

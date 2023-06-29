@@ -8,9 +8,17 @@
       <version>1.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>chemistry-opencmis-server-support-jakarta</artifactId>
+   <artifactId>chemistry-opencmis-client-api</artifactId>
    <packaging>jar</packaging>
-   <version>1.0.0</version>
+   <version>1.0.0-jakarta</version>
+
+   <dependencies>
+      <dependency>
+         <groupId>${groupId}</groupId>
+         <artifactId>chemistry-opencmis-commons-api</artifactId>
+         <version>${version}</version>
+      </dependency>
+   </dependencies>
 
    <build>
       <plugins>
@@ -26,7 +34,8 @@
                   <configuration>
                      <artifact>
                         <groupId>org.apache.chemistry.opencmis</groupId>
-                        <artifactId>chemistry-opencmis-server-support</artifactId>
+                        <artifactId>chemistry-opencmis-client-api</artifactId>
+                        <version>${dependency.opencmis.version}</version>
                      </artifact>
                   </configuration>
                </execution>

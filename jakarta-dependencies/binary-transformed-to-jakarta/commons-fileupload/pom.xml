@@ -3,14 +3,33 @@
    <modelVersion>4.0.0</modelVersion>
 
    <parent>
-      <groupId>org.apache.chemistry.opencmis</groupId>
-      <artifactId>apache-chemistry</artifactId>
+      <groupId>org.alfresco</groupId>
+      <artifactId>binary-transformed-to-jakarta</artifactId>
       <version>1.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>chemistry-opencmis-test-tck-jakarta</artifactId>
+   <groupId>commons-fileupload</groupId>
+   <artifactId>commons-fileupload</artifactId>
    <packaging>jar</packaging>
-   <version>1.0.0</version>
+   <version>1.5-jakarta</version>
+
+   <licenses>
+      <license>
+         <name>Apache 2</name>
+         <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.5</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
 
    <build>
       <plugins>
@@ -25,8 +44,9 @@
                   </goals>
                   <configuration>
                      <artifact>
-                        <groupId>org.apache.chemistry.opencmis</groupId>
-                        <artifactId>chemistry-opencmis-test-tck</artifactId>
+                        <groupId>commons-fileupload</groupId>
+                        <artifactId>commons-fileupload</artifactId>
+                        <version>1.5</version>
                      </artifact>
                   </configuration>
                </execution>

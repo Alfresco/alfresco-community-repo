@@ -24,6 +24,7 @@
                <rules>
                   <renames>${rules.path}/rename-rules.properties</renames>
                   <versions>${rules.path}/version-rules.properties</versions>
+                  <directs>${rules.path}/direct-rules.properties</directs>
                </rules>
             </configuration>
          </plugin>
@@ -32,6 +33,6 @@
 
    <modules>
       <module>apache-chemistry</module>
-      <module>commons-fileupload-jakarta</module>
+      <module>commons-fileupload</module>
    </modules>
 </project>

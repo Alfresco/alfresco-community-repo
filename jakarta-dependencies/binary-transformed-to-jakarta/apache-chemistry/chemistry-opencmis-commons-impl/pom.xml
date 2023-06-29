@@ -8,15 +8,19 @@
       <version>1.0-SNAPSHOT</version>
    </parent>
 
-   <artifactId>chemistry-opencmis-commons-impl-jakarta</artifactId>
+   <artifactId>chemistry-opencmis-commons-impl</artifactId>
    <packaging>jar</packaging>
-   <version>1.0.0</version>
+   <version>1.0.0-jakarta</version>
 
    <dependencies>
       <dependency>
-         <groupId>org.apache.chemistry.opencmis</groupId>
+         <groupId>${groupId}</groupId>
          <artifactId>chemistry-opencmis-commons-api</artifactId>
-         <version>${dependency.opencmis.version}</version>
+         <version>${version}</version>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.woodstox</groupId>
+         <artifactId>woodstox-core</artifactId>
       </dependency>
    </dependencies>
 
@@ -35,6 +39,7 @@
                      <artifact>
                         <groupId>org.apache.chemistry.opencmis</groupId>
                         <artifactId>chemistry-opencmis-commons-impl</artifactId>
+                        <version>${dependency.opencmis.version}</version>
                      </artifact>
                   </configuration>
                </execution>

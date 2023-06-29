@@ -1,6 +1,6 @@
 # Fetch image based on Tomcat 9.0, Java 17 and Rocky Linux 8
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM quay.io/alfresco/alfresco-base-tomcat:tomcat10-jre17-rockylinux8-release-candidate
+FROM tomcat10-jakarta:latest
 
 # Set default docker_context.
 ARG resource_path=target

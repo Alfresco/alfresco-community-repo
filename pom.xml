@@ -59,8 +59,8 @@
         <dependency.spring.version>6.0.9</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.15.1</dependency.jackson.version>
-        <dependency.cxf.version>3.5.5</dependency.cxf.version>
-        <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
+        <dependency.cxf.version>4.0.2</dependency.cxf.version>
+        <dependency.opencmis.version>1.0.0-jakarta</dependency.opencmis.version>
         <dependency.webscripts.version>8.43-SNAPSHOT</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.9.0</dependency.mockito-core.version>
@@ -102,11 +102,11 @@
 
         <dependency.jakarta-ee-jaxb-api.version>3.0.1</dependency.jakarta-ee-jaxb-api.version>
         <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
-        <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
-        <dependency.jakarta-soap-api.version>1.4.2</dependency.jakarta-soap-api.version>
+        <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
+        <dependency.jakarta-soap-api.version>2.0.1</dependency.jakarta-soap-api.version>
         <dependency.jakarta-annotation-api.version>2.1.1</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
-        <dependency.jakarta-jws-api.version>2.1.0</dependency.jakarta-jws-api.version>
+        <dependency.jakarta-jws-api.version>3.0.0</dependency.jakarta-jws-api.version>
         <dependency.jakarta-ee-mail.version>2.0.1</dependency.jakarta-ee-mail.version>
         <dependency.jakarta-ee-activation.version>2.0.1</dependency.jakarta-ee-activation.version>
         <dependency.jakarta-ee-jms.version>3.0.0</dependency.jakarta-ee-jms.version>
@@ -293,6 +293,33 @@
                 <version>${dependency.jakarta-rpc-api.version}</version>
             </dependency>
 
+            <!--CMIS-->
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-client-api</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-client-bindings</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-client-impl</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-commons-api</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-commons-impl</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-jlan-embed</artifactId>
@@ -425,8 +452,8 @@
             </dependency>
             <dependency>
                 <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload-jakarta</artifactId>
-                <version>1.5</version>
+                <artifactId>commons-fileupload</artifactId>
+                <version>1.5-jakarta</version>
             </dependency>
 
             <dependency>

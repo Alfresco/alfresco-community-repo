@@ -18,7 +18,6 @@
     <properties>
         <maven.build.sourceVersion>17</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <chemistry-opencmis-commons-api>1.1.0</chemistry-opencmis-commons-api>
         <maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
         <maven-release.version>2.5.3</maven-release.version>
         <java.version>17</java.version>
@@ -69,13 +68,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!-- open cmis settings -->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.chemistry.opencmis</groupId>-->
-<!--            <artifactId>chemistry-opencmis-commons-api</artifactId>-->
-<!--            <version>${chemistry-opencmis-commons-api}</version>-->
-<!--        </dependency>-->
     </dependencies>
 
     <build>

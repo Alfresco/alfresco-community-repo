@@ -123,7 +123,7 @@
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
         <dependency.tas-utility.version>4.0.3</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.3.1</dependency.rest-assured.version>
-        <dependency.tas-email.version>1.21</dependency.tas-email.version>
+        <dependency.tas-email.version>1.22</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.16</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.17</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>

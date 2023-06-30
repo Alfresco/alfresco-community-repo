@@ -558,8 +558,6 @@ jobs:
       contains(github.event.head_commit.message, '[ags]')) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
-    env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
@@ -570,4 +568,6 @@ jobs:
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
       - name: "Test Tomcat deployment"
-        run: bash ./scripts/ci/tests/test-start-api-explorer.sh
+        run: |
+          mvn verify -Pags,start-api-explorer -DskipTests &
+          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8085/api-explorer"

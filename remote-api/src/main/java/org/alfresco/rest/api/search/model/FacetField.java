@@ -93,7 +93,7 @@ public class FacetField
 
     public String toFilterQuery(String value)
     {
-        return field+":\""+value+"\"";
+        return ("Null".equals(value)) ? "ISNULL:\"" + field + "\"" : field + ":\"" + value + "\"";
     }
 
     public String getPrefix()

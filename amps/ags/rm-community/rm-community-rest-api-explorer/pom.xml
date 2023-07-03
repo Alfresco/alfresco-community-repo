@@ -36,24 +36,40 @@
          <id>start-api-explorer</id>
          <build>
             <plugins>
-               <plugin>
-                  <groupId>org.apache.tomcat.maven</groupId>
-                  <artifactId>tomcat7-maven-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <id>run-war</id>
-                        <goals>
-                           <goal>run-war</goal>
-                        </goals>
-                        <phase>verify</phase>
-                     </execution>
-                  </executions>
-                  <configuration>
-                     <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
-                     <path>/api-explorer</path>
-                     <port>8085</port>
-                  </configuration>
-               </plugin>
+                <plugin>
+                    <groupId>org.codehaus.cargo</groupId>
+                    <artifactId>cargo-maven3-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>run-war</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <container>
+                            <containerId>tomcat9x</containerId>
+                            <type>embedded</type>
+                            <log>target/cargo.log</log>
+                        </container>
+                        <configuration>
+                            <properties>
+                                <cargo.servlet.port>8085</cargo.servlet.port>
+                            </properties>
+                        </configuration>
+                        <deployables>
+                            <deployable>
+                                <type>war</type>
+                                <properties>
+                                    <context>/api-explorer</context>
+                                </properties>
+                                <pingURL>http://localhost:8085/api-explorer</pingURL>
+                            </deployable>
+                        </deployables>
+                    </configuration>
+                </plugin>
             </plugins>
          </build>
       </profile>

@@ -201,6 +201,8 @@ public class SearchParameters implements BasicSearchParameters
 
     private String timezone;
     
+    private int trackTotalHits = 0;
+
     /**
      * Default constructor
      */
@@ -251,6 +253,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.stats = this.stats;
         sp.ranges = this.ranges;
         sp.timezone = this.timezone;
+        sp.trackTotalHits = this.trackTotalHits;
         return sp;
     }
     
@@ -1641,6 +1644,15 @@ public class SearchParameters implements BasicSearchParameters
     {
         this.includeMetadata = includeMetadata;
     }
-    
+
+    public int getTrackTotalHits()
+    {
+        return trackTotalHits;
+    }
+
+    public void setTrackTotalHits(int trackTotalHits)
+    {
+        this.trackTotalHits = trackTotalHits;
+    }
 
 }

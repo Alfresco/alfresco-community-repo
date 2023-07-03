@@ -38,8 +38,12 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
     private String id;
     @JsonProperty(required = true)
     private String displayName;
+    @JsonProperty()
+    private String description;
     @JsonProperty(required = true)
     private Boolean isRoot;
+    @JsonProperty(required = true)
+    private Boolean hasSubgroups;
 
     @JsonProperty("parentIds")
     private ArrayList<String> parentIds;
@@ -73,6 +77,22 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
     public void setDisplayName(String displayName)
     {
         this.displayName = displayName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getHasSubgroups() {
+        return hasSubgroups;
+    }
+
+    public void setHasSubgroups(Boolean hasSubgroups) {
+        this.hasSubgroups = hasSubgroups;
     }
 
     public Boolean getIsRoot()

@@ -43,11 +43,9 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.GUID;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
 import javax.servlet.http.HttpServletResponse;
@@ -663,7 +661,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertNotNull(group);
         assertNotNull(group.getId());
         assertNotNull(group.getDisplayName());
+        assertNotNull(group.getDescription());
         assertNotNull(group.getIsRoot());
+        assertNotNull(group.getHasSubgroups());
 
         if (!ignoreOptionallyIncluded)
         {
@@ -1421,13 +1421,16 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
 
             Group group = generateGroup();
+            group.setDescription("testDesc");
 
             Group createdGroup01 = groupsProxy.createGroup(group, null, HttpServletResponse.SC_CREATED);
 
             assertNotNull(createdGroup01);
             assertNotNull(createdGroup01.getId());
+            assertEquals(createdGroup01.getDescription(), "testDesc");
             assertTrue(createdGroup01.getIsRoot());
             assertNull(createdGroup01.getParentIds());
+            assertFalse(createdGroup01.getHasSubgroups());
 
             Set<String> subGroup01Parents = new HashSet<>();
             subGroup01Parents.add(createdGroup01.getId());
@@ -1441,6 +1444,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertFalse(createdSubGroup01.getIsRoot());
             assertNotNull(createdSubGroup01.getParentIds());
             assertEquals(subGroup01Parents, createdSubGroup01.getParentIds());
+            assertTrue(createdGroup01.getHasSubgroups());
+            assertFalse(createdSubGroup01.getHasSubgroups());
         }
 
         // Group id is missing.
@@ -1623,6 +1628,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         subGroupParents.add(group.getId());
 
         Group generatedSubGroup = generateGroup();
+        generatedSubGroup.setDescription("initialDesc");
         generatedSubGroup.setParentIds(subGroupParents);
 
         Group subGroup = groupsProxy.createGroup(generatedSubGroup, otherParams, HttpServletResponse.SC_CREATED);
@@ -1645,9 +1651,11 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
 
             String displayName = "newDisplayName";
+            String description = "newDesc";
 
             Group mySubGroup = new Group();
             mySubGroup.setDisplayName(displayName);
+            mySubGroup.setDescription(description);
 
             Group updateGroup = groupsProxy.updateGroup(subGroup.getId(), mySubGroup, otherParams, HttpServletResponse.SC_OK);
 
@@ -1657,8 +1665,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertFalse(updateGroup.getIsRoot());
             assertNotNull(updateGroup.getParentIds());
 
-            // Check that only display name changed.
+            // Check that only display name and description changed.
             assertEquals(displayName, updateGroup.getDisplayName());
+            assertEquals(description, updateGroup.getDescription());
 
             // Check that nothing else changed.
             assertEquals(subGroup.getId(), updateGroup.getId());

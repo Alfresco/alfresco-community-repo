@@ -37,13 +37,16 @@ public class Limits
 
     private final Integer permissionEvaluationTime;
     private final Integer permissionEvaluationCount;
+    private final Integer trackTotalHitsLimit;
 
     @JsonCreator
     public Limits(@JsonProperty("permissionEvaluationTime") Integer permissionEvaluationTime,
-                  @JsonProperty("permissionEvaluationCount") Integer permissionEvaluationCount)
+                  @JsonProperty("permissionEvaluationCount") Integer permissionEvaluationCount,
+                  @JsonProperty("trackTotalHitsLimit") Integer trackTotalHitsLimit)
     {
         this.permissionEvaluationTime = permissionEvaluationTime;
         this.permissionEvaluationCount = permissionEvaluationCount;
+        this.trackTotalHitsLimit = trackTotalHitsLimit;
     }
 
     public Integer getPermissionEvaluationTime()
@@ -54,5 +57,10 @@ public class Limits
     public Integer getPermissionEvaluationCount()
     {
         return permissionEvaluationCount;
+    }
+
+    public Integer getTrackTotalHitsLimit()
+    {
+        return trackTotalHitsLimit;
     }
 }

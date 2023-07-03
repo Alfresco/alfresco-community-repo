@@ -755,11 +755,11 @@ public class SearchMapperTests
         assertEquals(500, searchParameters.getLimit());
         assertEquals(LimitBy.UNLIMITED, searchParameters.getLimitBy());
 
-        searchMapper.fromLimits(searchParameters, new Limits(null, null));
+        searchMapper.fromLimits(searchParameters, new Limits(null, null, null));
         assertEquals(LimitBy.UNLIMITED, searchParameters.getLimitBy());
         assertEquals(500, searchParameters.getLimit());
 
-        searchMapper.fromLimits(searchParameters, new Limits(null, 34));
+        searchMapper.fromLimits(searchParameters, new Limits(null, 34, null));
         assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
         assertEquals(34, searchParameters.getMaxPermissionChecks());
         assertEquals(-1, searchParameters.getLimit());
@@ -767,11 +767,16 @@ public class SearchMapperTests
 
         searchParameters = new SearchParameters();
         searchMapper.setDefaults(searchParameters);
-        searchMapper.fromLimits(searchParameters, new Limits(1000, null));
+        searchMapper.fromLimits(searchParameters, new Limits(1000, null, null));
         assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
         assertEquals(1000, searchParameters.getMaxPermissionCheckTimeMillis());
         assertEquals(-1, searchParameters.getLimit());
         assertEquals(-1, searchParameters.getMaxPermissionChecks());
+
+        searchParameters = new SearchParameters();
+        searchMapper.setDefaults(searchParameters);
+        searchMapper.fromLimits(searchParameters, new Limits(null, null, 10));
+        assertEquals(10, searchParameters.getTrackTotalHits());
     }
 
     @Test

@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <rest.api.explorer.branch>master</rest.api.explorer.branch>
         <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
-        <org.glassfish.version>1.1.4</org.glassfish.version>
+        <org.glassfish.version>2.0.1</org.glassfish.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <scribejava-apis.version>8.3.3</scribejava-apis.version>
         <java.version>17</java.version>
@@ -138,10 +138,10 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.glassfish/javax.json -->
+        <!-- https://mvnrepository.com/artifact/org.glassfish/jakarta.json -->
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
+            <artifactId>jakarta.json</artifactId>
             <version>${org.glassfish.version}</version>
         </dependency>
 

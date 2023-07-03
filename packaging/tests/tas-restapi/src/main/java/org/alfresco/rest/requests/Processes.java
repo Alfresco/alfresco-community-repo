@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.requests;
 
-import javax.json.JsonArrayBuilder;
+import jakarta.json.JsonArrayBuilder;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.core.JsonBodyGenerator;

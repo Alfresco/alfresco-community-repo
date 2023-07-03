@@ -37,9 +37,9 @@ import org.alfresco.utility.model.CustomAspectPropertiesModel;
 import org.alfresco.utility.model.CustomContentModel;
 import org.springframework.http.HttpMethod;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
 
 /**
  * @author Bogdan Bocancea

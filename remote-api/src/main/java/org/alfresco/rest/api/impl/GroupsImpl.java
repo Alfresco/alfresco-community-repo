@@ -51,9 +51,11 @@ import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Groups;
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.api.model.GroupMember;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -68,6 +70,7 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -109,6 +112,7 @@ public class GroupsImpl implements Groups
     private AuthorityDAO authorityDAO;
 
     protected People people;
+    protected Nodes nodes;
 
     public AuthorityService getAuthorityService()
     {
@@ -128,6 +132,10 @@ public class GroupsImpl implements Groups
     public void setPeople(People people)
     {
         this.people = people;
+    }
+
+    public void setNodes(Nodes nodes) {
+        this.nodes = nodes;
     }
 
     public Group create(Group group, Parameters parameters)
@@ -151,6 +159,17 @@ public class GroupsImpl implements Groups
             authorityService.addAuthority(group.getParentIds(), authority);
         }
 
+        if (group.getDescription() != null && !group.getDescription().isEmpty())
+        {
+            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityDisplayName);
+            Node groupNode = nodes.getNode(groupNodeRef.getId());
+            Map<String, Object> props = groupNode.getProperties();
+            if (props != null)
+            {
+                props.put("cm:description", group.getDescription());
+            }
+        }
+
         return getGroup(authority, parameters);
     }
 
@@ -166,6 +185,17 @@ public class GroupsImpl implements Groups
         catch (AuthorityException ae)
         {
             handleAuthorityException(ae);
+        }
+
+        if (group.getDescription() != null && !group.getDescription().isEmpty())
+        {
+            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(group.getDisplayName());
+            Node groupNode = nodes.getNode(groupNodeRef.getId());
+            Map<String, Object> props = groupNode.getProperties();
+            if (props != null)
+            {
+                props.put("cm:description", group.getDescription());
+            }
         }
 
         return getGroup(groupId, parameters);
@@ -584,6 +614,17 @@ public class GroupsImpl implements Groups
         group.setDisplayName(authorityDisplayName);
 
         group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
+        group.setHasSubgroups(!authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true).isEmpty());
+
+        NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityDisplayName);
+        Node groupNode = nodes.getNode(groupNodeRef.getId());
+        Map<String, Object> props = groupNode.getProperties();
+        String description = "";
+        if (props != null)
+        {
+            description = props.get("cm:description") != null ? (String) props.get("cm:description") : "";
+        }
+        group.setDescription(description);
 
         // Optionally include
         if (includeParam != null)
@@ -1013,6 +1054,10 @@ public class GroupsImpl implements Groups
             if (group.wasSet(Group.ZONES))
             {
                 throw new InvalidArgumentException("Group update does not support field: zones");
+            }
+            if (group.wasSet(Group.HAS_SUBGROUPS))
+            {
+                throw new InvalidArgumentException("Group update does not support field: hasSubgroups");
             }
         }
     }

@@ -62,7 +62,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;

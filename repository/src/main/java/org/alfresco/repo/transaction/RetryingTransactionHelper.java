@@ -37,9 +37,9 @@ import java.util.Random;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.RollbackException;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;

@@ -34,8 +34,8 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import jakarta.servlet.http.HttpServletResponse;
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;

@@ -33,7 +33,7 @@ import jakarta.transaction.NotSupportedException;
 import jakarta.transaction.RollbackException;
 import jakarta.transaction.Synchronization;
 import jakarta.transaction.SystemException;
-import jakarta.transaction.xa.XAResource;
+import javax.transaction.xa.XAResource;
 
 import org.alfresco.util.GUID;
 

@@ -26,7 +26,7 @@
 package org.alfresco.repo.search.transaction;
 
 import jakarta.transaction.Transaction;
-import jakarta.transaction.xa.Xid;
+import javax.transaction.xa.Xid;
 
 public interface XidTransaction extends Xid, Transaction
 {

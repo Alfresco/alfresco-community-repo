@@ -161,13 +161,12 @@ public class GroupsImpl implements Groups
 
         if (group.getDescription() != null && !group.getDescription().isEmpty())
         {
-            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityDisplayName);
+            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authority);
             Node groupNode = nodes.getNode(groupNodeRef.getId());
             Map<String, Object> props = groupNode.getProperties();
-            if (props != null)
-            {
-                props.put("cm:description", group.getDescription());
-            }
+            props = props == null ? new HashMap<>() : props;
+            props.put("cm:description", group.getDescription());
+            groupNode.setProperties(props);
         }
 
         return getGroup(authority, parameters);
@@ -189,13 +188,12 @@ public class GroupsImpl implements Groups
 
         if (group.getDescription() != null && !group.getDescription().isEmpty())
         {
-            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(group.getDisplayName());
+            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityService.getName(AuthorityType.GROUP, groupId));
             Node groupNode = nodes.getNode(groupNodeRef.getId());
             Map<String, Object> props = groupNode.getProperties();
-            if (props != null)
-            {
-                props.put("cm:description", group.getDescription());
-            }
+            props = props == null ? new HashMap<>() : props;
+            props.put("cm:description", group.getDescription());
+            groupNode.setProperties(props);
         }
 
         return getGroup(groupId, parameters);
@@ -616,7 +614,7 @@ public class GroupsImpl implements Groups
         group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
         group.setHasSubgroups(!authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true).isEmpty());
 
-        NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityDisplayName);
+        NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityInfo.getAuthorityName());
         Node groupNode = nodes.getNode(groupNodeRef.getId());
         Map<String, Object> props = groupNode.getProperties();
         String description = "";

@@ -55,7 +55,6 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.api.model.GroupMember;
-import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -71,9 +70,12 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang3.StringUtils;
@@ -92,6 +94,7 @@ public class GroupsImpl implements Groups
     private static final String ZONE = "zone";
     private static final String AUTHORITY_NAME = "authorityName";
     private static final String ERR_MSG_MODIFY_FIXED_AUTHORITY = "Trying to modify a fixed authority";
+    private static final QName PROP_DESCRIPTION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "description");
 
     private final static Map<String, String> SORT_PARAMS_TO_NAMES;
     static
@@ -109,6 +112,7 @@ public class GroupsImpl implements Groups
     private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_MEMBER_TYPE }));
 
     protected AuthorityService authorityService;
+    protected NodeService nodeService;
     private AuthorityDAO authorityDAO;
 
     protected People people;
@@ -122,6 +126,10 @@ public class GroupsImpl implements Groups
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    public void setNodeService(NodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
@@ -162,11 +170,7 @@ public class GroupsImpl implements Groups
         if (group.getDescription() != null && !group.getDescription().isEmpty())
         {
             NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authority);
-            Node groupNode = nodes.getNode(groupNodeRef.getId());
-            Map<String, Object> props = groupNode.getProperties();
-            props = props == null ? new HashMap<>() : props;
-            props.put("cm:description", group.getDescription());
-            groupNode.setProperties(props);
+            nodeService.setProperty(groupNodeRef, PROP_DESCRIPTION, group.getDescription());
         }
 
         return getGroup(authority, parameters);
@@ -189,11 +193,7 @@ public class GroupsImpl implements Groups
         if (group.getDescription() != null && !group.getDescription().isEmpty())
         {
             NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityService.getName(AuthorityType.GROUP, groupId));
-            Node groupNode = nodes.getNode(groupNodeRef.getId());
-            Map<String, Object> props = groupNode.getProperties();
-            props = props == null ? new HashMap<>() : props;
-            props.put("cm:description", group.getDescription());
-            groupNode.setProperties(props);
+            nodeService.setProperty(groupNodeRef, PROP_DESCRIPTION, group.getDescription());
         }
 
         return getGroup(groupId, parameters);
@@ -615,13 +615,9 @@ public class GroupsImpl implements Groups
         group.setHasSubgroups(!authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true).isEmpty());
 
         NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityInfo.getAuthorityName());
-        Node groupNode = nodes.getNode(groupNodeRef.getId());
-        Map<String, Object> props = groupNode.getProperties();
-        String description = "";
-        if (props != null)
-        {
-            description = props.get("cm:description") != null ? (String) props.get("cm:description") : "";
-        }
+        String description = nodeService.getProperty(groupNodeRef, PROP_DESCRIPTION) != null ?
+                nodeService.getProperty(groupNodeRef, PROP_DESCRIPTION).toString() :
+                "";
         group.setDescription(description);
 
         // Optionally include

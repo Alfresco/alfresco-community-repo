@@ -229,7 +229,6 @@ public class GroupsTest extends BaseWebScriptTest
     				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
     				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
     				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
-					assertEquals("hasSubgroups wrong", true, rootGroup.getString("hasSubgroups"));
 					gotRootGroup = true;
     			}
     			if(rootGroup.getString("shortName").equals(EMAIL_GROUP))
@@ -271,7 +270,6 @@ public class GroupsTest extends BaseWebScriptTest
     				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
     				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
     				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
-					assertEquals("hasSubgroups wrong", true, rootGroup.getString("hasSubgroups"));
 				}
     		}	
     	}
@@ -295,7 +293,6 @@ public class GroupsTest extends BaseWebScriptTest
     				assertEquals("shortName wrong", TEST_ROOTGROUP, rootGroup.getString("shortName"));
     				assertEquals("displayName wrong", TEST_ROOTGROUP_DISPLAY_NAME, rootGroup.getString("displayName"));
     				assertEquals("authorityType wrong", "GROUP", rootGroup.getString("authorityType"));
-					assertEquals("hasSubgroups wrong", true, rootGroup.getString("hasSubgroups"));
 				}
     		}	
     	}
@@ -386,13 +383,11 @@ public class GroupsTest extends BaseWebScriptTest
     		{
     			JSONObject newGroupJSON = new JSONObject();
     			newGroupJSON.put("displayName", myDisplayName);
-				newGroupJSON.put("description", "testDesc");
     			Response response = sendRequest(new PostRequest(URL_ROOTGROUPS + "/" + myGroupName,  newGroupJSON.toString(), "application/json"), Status.STATUS_CREATED);
     			JSONObject top = new JSONObject(response.getContentAsString());
     			JSONObject rootGroup = top.getJSONObject("data");
     			assertEquals("shortName wrong", myGroupName, rootGroup.getString("shortName"));
     			assertEquals("displayName wrong", myDisplayName, rootGroup.getString("displayName"));
-				assertEquals("description wrong", "testDesc", rootGroup.getString("description"));
     		}
     	
     		/**
@@ -508,17 +503,6 @@ public class GroupsTest extends BaseWebScriptTest
         		assertEquals("authorityType wrong", "GROUP", subGroup.getString("authorityType"));
         	}
 
-			/**
-			 * Check if myGroup has subgroups
-			 */
-			{
-				Response response = sendRequest(new GetRequest(URL_GROUPS + "/" + myRootGroup), Status.STATUS_OK);
-				JSONObject top = new JSONObject(response.getContentAsString());
-				logger.debug(response.getContentAsString());
-				JSONObject myGroup = top.getJSONObject("data");
-				assertTrue(myGroup.getBoolean("hasSubgroups"));
-			}
-
         	/**
         	 * Now link in an existing user
         	 */		 
@@ -571,17 +555,6 @@ public class GroupsTest extends BaseWebScriptTest
         		
         		//assertTrue("group B not removed", data.length() == 0);
         	}
-
-			/**
-			 * Check if myGroup has no subgroups
-			 */
-			{
-				Response response = sendRequest(new GetRequest(URL_GROUPS + "/" + myRootGroup), Status.STATUS_OK);
-				JSONObject top = new JSONObject(response.getContentAsString());
-				logger.debug(response.getContentAsString());
-				JSONObject myGroup = top.getJSONObject("data");
-				assertFalse(myGroup.getBoolean("hasSubgroups"));
-			}
         	
     		/**
     		 * Create a new group (BUFFY)
@@ -640,9 +613,7 @@ public class GroupsTest extends BaseWebScriptTest
     {
     	String myGroupName = "GT_UG";
     	String myDisplayName = "GT_UGDisplay";
-		String description = "GT_UGDesc";
     	String myNewDisplayName = "GT_UGDisplayNew";
-		String newDescription = "GT_UGDescNew";
 
 		this.authenticationComponent.setSystemUserAsCurrentUser();
     	
@@ -654,7 +625,6 @@ public class GroupsTest extends BaseWebScriptTest
     		{
     			JSONObject newGroupJSON = new JSONObject();
     			newGroupJSON.put("displayName", myDisplayName);
-				newGroupJSON.put("description", description);
 				sendRequest(new PostRequest(URL_ROOTGROUPS + "/" + myGroupName,  newGroupJSON.toString(), "application/json"), Status.STATUS_CREATED);
     		}
     		
@@ -664,14 +634,12 @@ public class GroupsTest extends BaseWebScriptTest
     		{
     			JSONObject newGroupJSON = new JSONObject();
     			newGroupJSON.put("displayName", myNewDisplayName);
-				newGroupJSON.put("description", newDescription);
 				Response response = sendRequest(new PutRequest(URL_GROUPS + "/" + myGroupName,  newGroupJSON.toString(), "application/json"), Status.STATUS_OK);
     			JSONObject top = new JSONObject(response.getContentAsString());
         		logger.debug(response.getContentAsString());
         		JSONObject data = top.getJSONObject("data");
         		assertTrue(data.length() > 0);
         		assertEquals("displayName wrong", myNewDisplayName, data.getString("displayName"));
-				assertEquals("description wrong", newDescription, data.getString("description"));
     		}
     		
         	/**
@@ -684,8 +652,7 @@ public class GroupsTest extends BaseWebScriptTest
         		JSONObject data = top.getJSONObject("data");
         		assertTrue(data.length() > 0);
         		assertEquals("displayName wrong", myNewDisplayName, data.getString("displayName"));
-				assertEquals("description wrong", newDescription, data.getString("description"));
-        	}   
+        	}
         	
     		/**
     		 * Negative test

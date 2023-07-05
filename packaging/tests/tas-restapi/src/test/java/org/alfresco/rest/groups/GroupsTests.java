@@ -115,13 +115,15 @@ public class GroupsTests extends RestTest
         //+ve
         restClient.authenticateUser(adminUser).withCoreAPI().usingGroups().createGroupMembership("GROUP_"+groupName, groupMembershipBodyCreate);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        restClient.authenticateUser(adminUser).withCoreAPI().usingGroups().createGroupMembership("GROUP_"+groupName, groupMembershipGroupBodyCreate);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         //ListPersonMembership
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).listGroupMemberships()
                                               .assertThat().entriesListContains("id", "GROUP_"+groupName);
         restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        //AddChildGroup
+        restClient.authenticateUser(adminUser).withCoreAPI().usingGroups().createGroupMembership("GROUP_"+groupName, groupMembershipGroupBodyCreate);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         //CheckListDetails
         restClient.withCoreAPI().usingParams("include=zones").usingGroups().getGroupDetail("GROUP_"+groupName)

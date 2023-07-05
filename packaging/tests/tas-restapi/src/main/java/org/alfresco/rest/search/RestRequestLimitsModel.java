@@ -32,8 +32,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RestRequestLimitsModel extends TestModel implements IRestModel<RestRequestLimitsModel>
 {
-    @JsonProperty(value = "entry")
+    @JsonProperty
     RestRequestLimitsModel model;
+
+    private Integer permissionEvaluationTime;
+    private Integer permissionEvaluationCount;
+    private Integer trackTotalHitsLimit;
 
     @Override
     public RestRequestLimitsModel onModel()
@@ -49,10 +53,6 @@ public class RestRequestLimitsModel extends TestModel implements IRestModel<Rest
         this.permissionEvaluationCount = permissionEvaluationCount;
         this.trackTotalHitsLimit = trackTotalHitsLimit;
     }
-
-    private Integer permissionEvaluationTime;
-    private Integer permissionEvaluationCount;
-    private Integer trackTotalHitsLimit;
 
     public Integer getPermissionEvaluationTime()
     {

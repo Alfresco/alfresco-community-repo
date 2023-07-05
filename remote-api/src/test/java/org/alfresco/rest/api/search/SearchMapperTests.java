@@ -745,38 +745,56 @@ public class SearchMapperTests
     }
 
     @Test
-    public void fromLimits() throws Exception
+    public void fromLimits_setNull() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
         searchMapper.setDefaults(searchParameters);
-
-        //Doesn't error
         searchMapper.fromLimits(searchParameters, null);
-        assertEquals(500, searchParameters.getLimit());
-        assertEquals(LimitBy.UNLIMITED, searchParameters.getLimitBy());
+        assertEquals("LimitBy default value should be unlimited", LimitBy.UNLIMITED, searchParameters.getLimitBy());
+        assertEquals("Limit default value should be 500", 500, searchParameters.getLimit());
+    }
 
+    @Test
+    public void fromLimits_setAllLimitsAsNull() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.setDefaults(searchParameters);
         searchMapper.fromLimits(searchParameters, new Limits(null, null, null));
-        assertEquals(LimitBy.UNLIMITED, searchParameters.getLimitBy());
-        assertEquals(500, searchParameters.getLimit());
+        assertEquals("LimitBy default value should be unlimited", LimitBy.UNLIMITED, searchParameters.getLimitBy());
+        assertEquals("Limit default value should be 500", 500, searchParameters.getLimit());
+    }
 
+    @Test
+    public void fromLimits_setPermissionEvaluationCount() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.setDefaults(searchParameters);
         searchMapper.fromLimits(searchParameters, new Limits(null, 34, null));
         assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
-        assertEquals(34, searchParameters.getMaxPermissionChecks());
-        assertEquals(-1, searchParameters.getLimit());
-        assertEquals(-1, searchParameters.getMaxPermissionCheckTimeMillis());
+        assertEquals("MaxPermissionChecks should be set", 34, searchParameters.getMaxPermissionChecks());
+        assertEquals("Limit should be -1", -1, searchParameters.getLimit());
+        assertEquals("MaxPermissionCheckTimeMillis should be -1", -1, searchParameters.getMaxPermissionCheckTimeMillis());
+    }
 
-        searchParameters = new SearchParameters();
+    @Test
+    public void fromLimits_setPermissionEvaluationTime() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
         searchMapper.setDefaults(searchParameters);
         searchMapper.fromLimits(searchParameters, new Limits(1000, null, null));
         assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
-        assertEquals(1000, searchParameters.getMaxPermissionCheckTimeMillis());
-        assertEquals(-1, searchParameters.getLimit());
-        assertEquals(-1, searchParameters.getMaxPermissionChecks());
+        assertEquals("MaxPermissionCheckTimeMillis should be set", 1000, searchParameters.getMaxPermissionCheckTimeMillis());
+        assertEquals("Limit should be -1", -1, searchParameters.getLimit());
+        assertEquals("MaxPermissionChecks should be -1", -1, searchParameters.getMaxPermissionChecks());
+    }
 
-        searchParameters = new SearchParameters();
+    @Test
+    public void fromLimits_setTrackTotalHitsLimit() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
         searchMapper.setDefaults(searchParameters);
         searchMapper.fromLimits(searchParameters, new Limits(null, null, 10));
-        assertEquals(10, searchParameters.getTrackTotalHits());
+        assertEquals("TrackTotalHits should be set", 10, searchParameters.getTrackTotalHits());
     }
 
     @Test

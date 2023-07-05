@@ -201,7 +201,10 @@ public class SearchParameters implements BasicSearchParameters
 
     private String timezone;
     
-    private int trackTotalHits = 0;
+    /**
+     * Configure the limit to track the total hits on search results
+     */
+    private int trackTotalHits;
 
     /**
      * Default constructor
@@ -1650,6 +1653,10 @@ public class SearchParameters implements BasicSearchParameters
         return trackTotalHits;
     }
 
+    /**
+     * Configure the limit to track the total hits on search results
+     * @param trackTotalHits int
+     */
     public void setTrackTotalHits(int trackTotalHits)
     {
         this.trackTotalHits = trackTotalHits;

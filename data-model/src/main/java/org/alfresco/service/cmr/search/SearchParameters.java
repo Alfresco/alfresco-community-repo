@@ -202,6 +202,11 @@ public class SearchParameters implements BasicSearchParameters
     private String timezone;
     
     /**
+     * Configure the limit to track the total hits on search results
+     */
+    private int trackTotalHits;
+
+    /**
      * Default constructor
      */
     public SearchParameters()
@@ -251,6 +256,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.stats = this.stats;
         sp.ranges = this.ranges;
         sp.timezone = this.timezone;
+        sp.trackTotalHits = this.trackTotalHits;
         return sp;
     }
     
@@ -1641,6 +1647,21 @@ public class SearchParameters implements BasicSearchParameters
     {
         this.includeMetadata = includeMetadata;
     }
-    
+
+    public int getTrackTotalHits()
+    {
+        return trackTotalHits;
+    }
+
+    /**
+     * Set a maximum value for the report of total hits. The reported number of hits will never exceed this limit even
+     * if more are found. If unset, the engine’s default tracking limit is applied. To remove any limit, set to -1.
+     *
+     * @param trackTotalHits int
+     */
+    public void setTrackTotalHits(int trackTotalHits)
+    {
+        this.trackTotalHits = trackTotalHits;
+    }
 
 }

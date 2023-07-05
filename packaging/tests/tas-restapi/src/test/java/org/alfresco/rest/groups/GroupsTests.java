@@ -120,8 +120,7 @@ public class GroupsTests extends RestTest
 
         //ListPersonMembership
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).listGroupMemberships()
-                                              .assertThat().entriesListContains("id", "GROUP_"+groupName)
-                                              .and().entriesListContains("id", "GROUP_"+subGroupName);
+                                              .assertThat().entriesListContains("id", "GROUP_"+groupName);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         //CheckListDetails

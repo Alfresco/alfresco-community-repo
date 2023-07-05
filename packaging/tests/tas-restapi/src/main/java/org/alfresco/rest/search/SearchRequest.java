@@ -76,6 +76,7 @@ public class SearchRequest extends TestModel
     String facetFormat;
     List<String> include;
     List<SortClause> sort;
+    RestRequestLimitsModel limits;
 
     public SearchRequest()
     {
@@ -279,4 +280,15 @@ public class SearchRequest extends TestModel
 
         return this;
     }
+
+    public RestRequestLimitsModel getLimits()
+    {
+        return limits;
+    }
+
+    public void setLimits(RestRequestLimitsModel limits)
+    {
+        this.limits = limits;
+    }
+
 }

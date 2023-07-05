@@ -95,6 +95,7 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
     {
         String id = (String) jsonObject.get("id");
         String displayName = (String) jsonObject.get("displayName");
+        String description = (String) jsonObject.get("description");
         Boolean isRoot = (Boolean) jsonObject.get("isRoot");
         List<String> parentIds = (List<String>) jsonObject.get("parentIds");
         List<String> zones = (List<String>) jsonObject.get("zones");
@@ -102,9 +103,10 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
         Group group = new Group();
         group.setId(id);
         group.setDisplayName(displayName);
+        group.setDescription(description);
         group.setIsRoot(isRoot);
-        group.setParentIds(parentIds != null ? new HashSet<String>(parentIds) : null);
-        group.setZones(zones != null ? new HashSet<String>(zones) : null);
+        group.setParentIds(parentIds != null ? new HashSet<>(parentIds) : null);
+        group.setZones(zones != null ? new HashSet<>(zones) : null);
 
         return group;
     }

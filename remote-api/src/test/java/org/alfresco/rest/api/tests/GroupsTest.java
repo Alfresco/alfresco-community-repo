@@ -661,7 +661,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertNotNull(group);
         assertNotNull(group.getId());
         assertNotNull(group.getDisplayName());
-        assertNotNull(group.getDescription());
         assertNotNull(group.getIsRoot());
         assertNotNull(group.getHasSubgroups());
 

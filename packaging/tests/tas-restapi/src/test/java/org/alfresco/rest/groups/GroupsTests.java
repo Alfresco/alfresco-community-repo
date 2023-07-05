@@ -105,7 +105,7 @@ public class GroupsTests extends RestTest
 
         JsonObject groupMembershipBody = Json.createObjectBuilder().add("id", userModel.getUsername()).add("memberType", "PERSON").build();
         String groupMembershipBodyCreate = groupMembershipBody.toString();
-        JsonObject groupMembershipGroupBody = Json.createObjectBuilder().add("id", subGroupName).add("memberType", "GROUP").build();
+        JsonObject groupMembershipGroupBody = Json.createObjectBuilder().add("id", "GROUP_"+subGroupName).add("memberType", "GROUP").build();
         String groupMembershipGroupBodyCreate = groupMembershipGroupBody.toString();
 
         //MembershipCreation:

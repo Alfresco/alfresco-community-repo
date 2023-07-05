@@ -1654,7 +1654,9 @@ public class SearchParameters implements BasicSearchParameters
     }
 
     /**
-     * Configure the limit to track the total hits on search results
+     * Set a maximum value for the report of total hits. The reported number of hits will never exceed this limit even
+     * if more are found. If unset, the engine’s default tracking limit is applied. To remove any limit, set to -1.
+     *
      * @param trackTotalHits int
      */
     public void setTrackTotalHits(int trackTotalHits)

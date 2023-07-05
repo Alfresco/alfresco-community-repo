@@ -244,7 +244,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        String encoding = (String) ruleAction.getParameterValue(PARAM_ENCODING);
                        if (encoding == null)
                        {
-                           encoding = "UTF-8";
+                           encoding = "Cp437";
                        }
                        else
                        {

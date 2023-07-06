@@ -100,13 +100,9 @@ public class GroupsTests extends RestTest
         //GroupCreation:
         restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones").usingGroups().createGroup(groupBodyCreate);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones").usingGroups().createGroup(subgroupBodyCreate);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         JsonObject groupMembershipBody = Json.createObjectBuilder().add("id", userModel.getUsername()).add("memberType", "PERSON").build();
         String groupMembershipBodyCreate = groupMembershipBody.toString();
-        JsonObject groupMembershipGroupBody = Json.createObjectBuilder().add("id", "GROUP_"+subGroupName).add("memberType", "GROUP").build();
-        String groupMembershipGroupBodyCreate = groupMembershipGroupBody.toString();
 
         //MembershipCreation:
         //-ve
@@ -122,6 +118,10 @@ public class GroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         //AddChildGroup
+        restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones").usingGroups().createGroup(subgroupBodyCreate);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        JsonObject groupMembershipGroupBody = Json.createObjectBuilder().add("id", "GROUP_"+subGroupName).add("memberType", "GROUP").build();
+        String groupMembershipGroupBodyCreate = groupMembershipGroupBody.toString();
         restClient.authenticateUser(adminUser).withCoreAPI().usingGroups().createGroupMembership("GROUP_"+groupName, groupMembershipGroupBodyCreate);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 

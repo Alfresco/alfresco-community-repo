@@ -51,7 +51,11 @@ import org.mockito.Mock;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
@@ -67,13 +71,13 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
     protected AuthorityService authorityService;
 
-    private String rootGroupName = null;
-    private Group rootGroup = null;
-    private Group groupA = null;
-    private Group groupB = null;
-    private GroupMember groupMemberA = null;
-    private GroupMember groupMemberB = null;
-    private GroupMember personMember = null;
+    private String rootGroupName;
+    private Group rootGroup;
+    private Group groupA;
+    private Group groupB;
+    private GroupMember groupMemberA;
+    private GroupMember groupMemberB;
+    private GroupMember personMember;
     @Mock
     private ResultSetRow groupAResultSetRow;
     @Mock
@@ -955,7 +959,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             expected.retainAll(respPostProcess.getList());
 
             // If this assertion fails, then the tests aren't providing any value - change them!
-            assertTrue("List doesn't contain enough items for test to be conclusive.", expected.size() > 0);
+            assertTrue("List doesn't contain enough items for test to be conclusive.", !expected.isEmpty());
             checkList(expected, respPostProcess.getPaging(), respPostProcess);
         }
 
@@ -976,7 +980,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             expected.retainAll(respPostProcess.getList());
 
             // If this assertion fails, then the tests aren't providing any value - change them!
-            assertTrue("List doesn't contain enough items for test to be conclusive.", expected.size() > 0);
+            assertTrue("List doesn't contain enough items for test to be conclusive.", !expected.isEmpty());
             checkList(expected, respPostProcess.getPaging(), respPostProcess);
         }
 
@@ -1153,7 +1157,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
         // -ve test: invalid zones clause
         {
-            Paging paging = getPaging(0, Integer.MAX_VALUE);
             Map<String, String> otherParams = new HashMap<>();
             otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
 

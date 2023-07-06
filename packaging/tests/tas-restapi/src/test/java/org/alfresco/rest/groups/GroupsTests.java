@@ -31,10 +31,9 @@ public class GroupsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.GROUPS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify creation, listing, updating and deletion of groups.")
-    public void createListUpdateAndDeleteGroup() throws Exception
-    {
-        String groupName = "ZtestGroup" + UUID.randomUUID().toString();
-        String groupDescription = "ZtestGroup description" + UUID.randomUUID().toString();
+    public void createListUpdateAndDeleteGroup() {
+        String groupName = "ZtestGroup" + UUID.randomUUID();
+        String groupDescription = "ZtestGroup description" + UUID.randomUUID();
         JsonObject groupBody = Json.createObjectBuilder().add("id", groupName).add("displayName", groupName).add("description", groupDescription).build();
         String groupBodyCreate = groupBody.toString();
 
@@ -88,10 +87,9 @@ public class GroupsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.GROUPS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify creation, listing(only for person) and deletion of group memberships. ")
-    public void createListDeleteGroupMembership() throws Exception
-    {
-        String groupName = "ZtestGroup" + UUID.randomUUID().toString();
-        String subGroupName = "ZtestSubgroup" + UUID.randomUUID().toString();
+    public void createListDeleteGroupMembership() {
+        String groupName = "ZtestGroup" + UUID.randomUUID();
+        String subGroupName = "ZtestSubgroup" + UUID.randomUUID();
         JsonObject groupBody = Json.createObjectBuilder().add("id", groupName).add("displayName", groupName).build();
         JsonObject subgroupBody = Json.createObjectBuilder().add("id", subGroupName).add("displayName", subGroupName).build();
         String groupBodyCreate = groupBody.toString();
@@ -150,7 +148,7 @@ public class GroupsTests extends RestTest
             description = "Verify listing of group memberships.")
     public void listGroupMembership() throws Exception
     {
-        String groupName = "testGroup" + UUID.randomUUID().toString();
+        String groupName = "testGroup" + UUID.randomUUID();
         JsonObject groupBody = Json.createObjectBuilder().add("id", groupName).add("displayName", groupName).build();
         String groupBodyCreate = groupBody.toString();
 
@@ -169,12 +167,10 @@ public class GroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         //ListGroupMembership
-        RetryOperation op = new RetryOperation(){
-            public void execute() throws Exception{
-                restClient.withCoreAPI().usingGroups().listGroupMemberships("GROUP_"+groupName)
-                          .assertThat().entriesListContains("id", userModel.getUsername());
-                restClient.assertStatusCodeIs(HttpStatus.OK);
-            }
+        RetryOperation op = () -> {
+            restClient.withCoreAPI().usingGroups().listGroupMemberships("GROUP_"+groupName)
+                      .assertThat().entriesListContains("id", userModel.getUsername());
+            restClient.assertStatusCodeIs(HttpStatus.OK);
         };
         Utility.sleep(500, 35000, op);// Allow indexing to complete.
     }

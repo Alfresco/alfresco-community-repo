@@ -107,9 +107,9 @@ public class GroupsImpl implements Groups
     }
 
     // List groups filtering (via where clause)
-    private final static Set<String> LIST_GROUPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_IS_ROOT }));
+    private final static Set<String> LIST_GROUPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_IS_ROOT));
 
-    private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_MEMBER_TYPE }));
+    private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_MEMBER_TYPE));
 
     protected AuthorityService authorityService;
     protected NodeService nodeService;
@@ -241,7 +241,7 @@ public class GroupsImpl implements Groups
     
     private List<Group> createGroupsResponse(final List<AuthorityInfo> page, final List<String> includeParam, final Set<String> rootAuthorities)
     {
-        List<Group> groups = new AbstractList<Group>()
+        List<Group> groups = new AbstractList<>()
         {
             @Override
             public Group get(int index)
@@ -656,7 +656,7 @@ public class GroupsImpl implements Groups
         Pair<String, Boolean> sortProp;
         List<SortColumn> sortCols = parameters.getSorting();
 
-        if ((sortCols != null) && (sortCols.size() > 0))
+        if (sortCols != null && !sortCols.isEmpty())
         {
             if (sortCols.size() > 1)
             {
@@ -671,7 +671,7 @@ public class GroupsImpl implements Groups
                 throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
             }
 
-            sortProp = new Pair<>(sortPropName, (sortCol.asc ? Boolean.TRUE : Boolean.FALSE));
+            sortProp = new Pair<>(sortPropName, sortCol.asc ? Boolean.TRUE : Boolean.FALSE);
         }
         else
         {
@@ -887,7 +887,7 @@ public class GroupsImpl implements Groups
 
         // Verify if groupMemberId is member of groupId
         AuthorityType authorityType = AuthorityType.getAuthorityType(groupMemberId);
-        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, groupMemberId, true);
+        Set<String> parents = authorityService.getContainingAuthorities(authorityType, groupMemberId, true);
         if (!parents.contains(groupId))
         {
             throw new NotFoundException(groupMemberId + " is not member of " + groupId);
@@ -1093,7 +1093,7 @@ public class GroupsImpl implements Groups
     {
         String name = inferPrefix ? authorityService.getName(authorityType, authorityName) : authorityName;
 
-        return (name != null && authorityService.authorityExists(name));
+        return name != null && authorityService.authorityExists(name);
     }
 
     private boolean isGroupAuthority(String authorityName)

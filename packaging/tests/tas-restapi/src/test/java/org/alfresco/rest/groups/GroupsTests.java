@@ -33,9 +33,12 @@ public class GroupsTests extends RestTest
             description = "Verify creation, listing, updating and deletion of groups.")
     public void createListUpdateAndDeleteGroup() {
         String groupName = "ZtestGroup" + UUID.randomUUID();
+        String subGroupName = "ZtestSubgroup" + UUID.randomUUID();
         String groupDescription = "ZtestGroup description" + UUID.randomUUID();
         JsonObject groupBody = Json.createObjectBuilder().add("id", groupName).add("displayName", groupName).add("description", groupDescription).build();
+        JsonObject subgroupBody = Json.createObjectBuilder().add("id", subGroupName).add("displayName", subGroupName).build();
         String groupBodyCreate = groupBody.toString();
+        String subgroupBodyCreate = subgroupBody.toString();
 
         //GroupCreation:
         //-ve
@@ -50,9 +53,20 @@ public class GroupsTests extends RestTest
                                               .and().field("hasSubgroups").is(false);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
+        //AddChildGroup
+        restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones").usingGroups().createGroup(subgroupBodyCreate);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        //LinkChildGroupToParent
+        JsonObject groupMembershipGroupBody = Json.createObjectBuilder().add("id", "GROUP_"+subGroupName).add("memberType", "GROUP").build();
+        String groupMembershipGroupBodyCreate = groupMembershipGroupBody.toString();
+        restClient.authenticateUser(adminUser).withCoreAPI().usingGroups().createGroupMembership("GROUP_"+groupName, groupMembershipGroupBodyCreate);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
         //ListGroups:
         restClient.withCoreAPI().usingParams("orderBy=displayName DESC&maxItems=10").usingGroups().listGroups()
                   .assertThat().entriesListContains("id", "GROUP_"+groupName)
+                  .and().entriesListContains("id", "GROUP_"+subGroupName)
                   .and().entriesListDoesNotContain("zones")
                   .and().paginationField("maxItems").is("10");
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -72,7 +86,17 @@ public class GroupsTests extends RestTest
                   .assertThat().field("id").is("GROUP_"+groupName)
                   .and().field("zones").contains("APP.DEFAULT")
                   .and().field("isRoot").is(true)
-                  .and().field("hasSubgroups").is(false);
+                  .and().field("hasSubgroups").is(true);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        //DeleteChildGroup:
+        restClient.authenticateUser(adminUser).withCoreAPI().usingGroups().deleteGroup("GROUP_"+subGroupName);
+        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+
+        //VerifyIfParentHasNoSubgroups:
+        restClient.withCoreAPI().usingParams("include=zones").usingGroups().getGroupDetail("GROUP_"+groupName)
+                .assertThat().field("id").is("GROUP_"+groupName)
+                .and().field("hasSubgroups").is(false);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         //DeleteGroup:
@@ -89,11 +113,8 @@ public class GroupsTests extends RestTest
             description = "Verify creation, listing(only for person) and deletion of group memberships. ")
     public void createListDeleteGroupMembership() {
         String groupName = "ZtestGroup" + UUID.randomUUID();
-        String subGroupName = "ZtestSubgroup" + UUID.randomUUID();
         JsonObject groupBody = Json.createObjectBuilder().add("id", groupName).add("displayName", groupName).build();
-        JsonObject subgroupBody = Json.createObjectBuilder().add("id", subGroupName).add("displayName", subGroupName).build();
         String groupBodyCreate = groupBody.toString();
-        String subgroupBodyCreate = subgroupBody.toString();
 
         //GroupCreation:
         restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones").usingGroups().createGroup(groupBodyCreate);
@@ -113,20 +134,6 @@ public class GroupsTests extends RestTest
         //ListPersonMembership
         restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).listGroupMemberships()
                                               .assertThat().entriesListContains("id", "GROUP_"+groupName);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-
-        //AddChildGroup
-        restClient.authenticateUser(adminUser).withCoreAPI().usingParams().usingGroups().createGroup(subgroupBodyCreate);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        JsonObject groupMembershipGroupBody = Json.createObjectBuilder().add("id", "GROUP_"+subGroupName).add("memberType", "GROUP").build();
-        String groupMembershipGroupBodyCreate = groupMembershipGroupBody.toString();
-        restClient.authenticateUser(adminUser).withCoreAPI().usingGroups().createGroupMembership("GROUP_"+groupName, groupMembershipGroupBodyCreate);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        //CheckListDetails
-        restClient.withCoreAPI().usingParams("include=zones").usingGroups().getGroupDetail("GROUP_"+groupName)
-                .assertThat().field("id").is("GROUP_"+groupName)
-                .and().field("hasSubgroups").is(true);
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         //DeleteGroupMembership

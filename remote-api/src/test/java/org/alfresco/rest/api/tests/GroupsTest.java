@@ -1443,8 +1443,11 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertFalse(createdSubGroup01.getIsRoot());
             assertNotNull(createdSubGroup01.getParentIds());
             assertEquals(subGroup01Parents, createdSubGroup01.getParentIds());
-            assertTrue(createdGroup01.getHasSubgroups());
             assertFalse(createdSubGroup01.getHasSubgroups());
+
+            //validate if parent group now has any subgroup
+            Group group01 = groupsProxy.getGroup(createdGroup01.getId(), null, HttpServletResponse.SC_OK);
+            assertTrue(group01.getHasSubgroups());
         }
 
         // Group id is missing.

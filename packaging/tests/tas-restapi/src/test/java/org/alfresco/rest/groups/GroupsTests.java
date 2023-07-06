@@ -118,7 +118,7 @@ public class GroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         //AddChildGroup
-        restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones").usingGroups().createGroup(subgroupBodyCreate);
+        restClient.authenticateUser(adminUser).withCoreAPI().usingParams().usingGroups().createGroup(subgroupBodyCreate);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         JsonObject groupMembershipGroupBody = Json.createObjectBuilder().add("id", "GROUP_"+subGroupName).add("memberType", "GROUP").build();
         String groupMembershipGroupBodyCreate = groupMembershipGroupBody.toString();

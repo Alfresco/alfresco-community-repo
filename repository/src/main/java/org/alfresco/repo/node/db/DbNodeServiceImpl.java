@@ -1200,7 +1200,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 invokeBeforeDeleteChildAssociation(secondaryParentAssocPair.getSecond());
             }
             
-            // Primary child associations
+            // Primary child associations.
             if (archive)
             {
                 invokeBeforeArchiveNode(nodeToDelete.nodeRef);

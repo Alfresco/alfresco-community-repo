@@ -581,6 +581,65 @@ public class AuthorityServiceTest extends TestCase
             // Ignore since we where expecting this
         }
     }
+
+    public void testCreateGroupAuthWithProperties()
+    {
+        String auth;
+        String groupName = "TESTGROUP";
+        String prefixedGroupName = "GROUP_TESTGROUP";
+        String description = "testDesc";
+        String title = "testTitle";
+        HashMap<QName, Serializable> props = new HashMap<>();
+        props.put(ContentModel.PROP_DESCRIPTION, description);
+        props.put(ContentModel.PROP_TITLE, title);
+
+        // create authority with properties and default zones
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, groupName, props);
+        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));
+        NodeRef nodeRef = pubAuthorityService.getAuthorityNodeRef(auth);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION), description);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE), title);
+        pubAuthorityService.deleteAuthority(auth);
+
+        // create authority with zones and properties
+        Set<String> zones = new HashSet<>();
+        zones.add("Test1");
+        zones.add("Test2");
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, groupName, prefixedGroupName, zones, props);
+        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));
+        nodeRef = pubAuthorityService.getAuthorityNodeRef(auth);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION), description);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE), title);
+        assertEquals(2, pubAuthorityService.getAuthorityZones(auth).size());
+        pubAuthorityService.deleteAuthority(auth);
+    }
+
+    public void testUpdateAuthorityProperties()
+    {
+        String auth;
+        String groupName = "TESTGROUP";
+        String prefixedGroupName = "GROUP_TESTGROUP";
+        String description = "testDesc";
+        String title = "testTitle";
+        HashMap<QName, Serializable> props = new HashMap<>();
+        props.put(ContentModel.PROP_DESCRIPTION, description);
+        props.put(ContentModel.PROP_TITLE, title);
+
+        // create authority with properties
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, groupName, props);
+        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));
+
+        // update authority properties
+        String newDescription = "newTestDesc";
+        String newTitle = "newTestTitle";
+        props.put(ContentModel.PROP_DESCRIPTION, newDescription);
+        props.put(ContentModel.PROP_TITLE, newTitle);
+        authorityDAO.setAuthorityProperties(auth, props);
+        NodeRef nodeRef = pubAuthorityService.getAuthorityNodeRef(auth);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION), newDescription);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE), newTitle);
+        pubAuthorityService.deleteAuthority(auth);
+    }
         
     public void testCreateOwnerAuth()
     {
@@ -1373,7 +1432,6 @@ public class AuthorityServiceTest extends TestCase
         properties.put(ContentModel.PROP_ORGID, orgId);
         return properties;
     }
-
     public void testAuthorityDisplayNames()
     {
         String authOne = pubAuthorityService.createAuthority(AuthorityType.GROUP, "One");

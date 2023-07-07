@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +33,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -53,6 +55,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -543,6 +546,14 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return createAuthority(type, shortName, shortName, getDefaultZones());
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String createAuthority(AuthorityType type, String shortName, Map<QName, Serializable> properties)
+    {
+        return createAuthority(type, shortName, shortName, getDefaultZones(), properties);
+    }
     
     /**
      * {@inheritDoc}
@@ -644,11 +655,20 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
             Set<String> authorityZones)
     {
+        return createAuthority(type, shortName, authorityDisplayName, authorityZones, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
+                                  Set<String> authorityZones, Map<QName, Serializable> properties)
+    {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
 
-        authorityDAO.createAuthority(name, authorityDisplayName, authorityZones);
-       
+        authorityDAO.createAuthority(name, authorityDisplayName, authorityZones, properties);
+
         return name;
     }
     

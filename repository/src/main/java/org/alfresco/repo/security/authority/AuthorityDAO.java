@@ -25,7 +25,9 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -34,6 +36,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
+import org.alfresco.service.namespace.QName;
 
 public interface AuthorityDAO
 {
@@ -60,6 +63,11 @@ public interface AuthorityDAO
      * Create an authority.
      */
     void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones);
+
+    /**
+     * Create an authority with properties.
+     */
+    void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones, Map<QName, Serializable> properties);
 
     /**
      * Delete an authority.
@@ -142,6 +150,11 @@ public interface AuthorityDAO
      * Set the display name for an authority
      */
     void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
+
+    /**
+     * Set the properties for an authority
+     */
+    void setAuthorityProperties(String authorityName, Map<QName, Serializable> properties);
     
     /**
      * Get root authorities

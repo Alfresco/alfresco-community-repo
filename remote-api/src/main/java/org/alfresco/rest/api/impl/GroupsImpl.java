@@ -27,6 +27,7 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
 
+import java.io.Serializable;
 import java.text.Collator;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
@@ -74,7 +76,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
@@ -94,7 +95,6 @@ public class GroupsImpl implements Groups
     private static final String ZONE = "zone";
     private static final String AUTHORITY_NAME = "authorityName";
     private static final String ERR_MSG_MODIFY_FIXED_AUTHORITY = "Trying to modify a fixed authority";
-    private static final QName PROP_DESCRIPTION = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "description");
 
     private final static Map<String, String> SORT_PARAMS_TO_NAMES;
     static
@@ -158,19 +158,19 @@ public class GroupsImpl implements Groups
             authorityDisplayName = group.getDisplayName();
         }
 
-        String authority = authorityService.createAuthority(AuthorityType.GROUP, group.getId(), authorityDisplayName, authorityZones);
+        HashMap<QName, Serializable> props = new HashMap<>();
+        if (StringUtils.isNotEmpty(group.getDescription()))
+        {
+            props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
+        }
+
+        String authority = authorityService.createAuthority(AuthorityType.GROUP, group.getId(), authorityDisplayName, authorityZones, props);
 
         // Set a given child authority to be included by the given parent
         // authorities.
         if (group.getParentIds() != null && !group.getParentIds().isEmpty())
         {
             authorityService.addAuthority(group.getParentIds(), authority);
-        }
-
-        if (group.getDescription() != null && !group.getDescription().isEmpty())
-        {
-            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authority);
-            nodeService.setProperty(groupNodeRef, PROP_DESCRIPTION, group.getDescription());
         }
 
         return getGroup(authority, parameters);
@@ -190,10 +190,11 @@ public class GroupsImpl implements Groups
             handleAuthorityException(ae);
         }
 
-        if (group.getDescription() != null && !group.getDescription().isEmpty())
+        if (StringUtils.isNotEmpty(group.getDescription()))
         {
-            NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityService.getName(AuthorityType.GROUP, groupId));
-            nodeService.setProperty(groupNodeRef, PROP_DESCRIPTION, group.getDescription());
+            HashMap<QName, Serializable> props = new HashMap<>();
+            props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
+            authorityDAO.setAuthorityProperties(authorityService.getName(AuthorityType.GROUP, groupId), props);
         }
 
         return getGroup(groupId, parameters);
@@ -615,9 +616,9 @@ public class GroupsImpl implements Groups
         group.setHasSubgroups(!authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true).isEmpty());
 
         NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityInfo.getAuthorityName());
-        String description = nodeService.getProperty(groupNodeRef, PROP_DESCRIPTION) != null ?
-                nodeService.getProperty(groupNodeRef, PROP_DESCRIPTION).toString() :
-                "";
+        String description = nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION) != null ?
+                nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION).toString() :
+                null;
         group.setDescription(description);
 
         // Optionally include
@@ -886,8 +887,7 @@ public class GroupsImpl implements Groups
         validateGroupMemberId(groupMemberId);
 
         // Verify if groupMemberId is member of groupId
-        AuthorityType authorityType = AuthorityType.getAuthorityType(groupMemberId);
-        Set<String> parents = authorityService.getContainingAuthorities(authorityType, groupMemberId, true);
+        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, groupMemberId, true);
         if (!parents.contains(groupId))
         {
             throw new NotFoundException(groupMemberId + " is not member of " + groupId);

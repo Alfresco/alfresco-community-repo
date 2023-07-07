@@ -25,7 +25,9 @@
  */
 package org.alfresco.service.cmr.security;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -35,6 +37,7 @@ import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * The service that encapsulates authorities granted to users.
@@ -226,6 +229,24 @@ public interface AuthorityService
     public String createAuthority(AuthorityType type, String shortName);
 
     /**
+     * Create an authority with properties.
+     *
+     * @param type -
+     *            the type of the authority
+     * @param shortName -
+     *            the short name of the authority to create
+     *            this will also be set as the default display name for the authority
+     *
+     * @param properties -
+     *            properties that will be added to authority
+     *
+     * @return the name of the authority (this will be the prefix, if any
+     *         associated with the type appended with the short name)
+     */
+    @Auditable(parameters = {"type", "shortName"})
+    public String createAuthority(AuthorityType type, String shortName, Map<QName, Serializable> properties);
+
+    /**
      * Create an authority with a display name and zone.
      * 
      * @param type
@@ -241,6 +262,27 @@ public interface AuthorityService
      */
     @Auditable(parameters = {"type", "shortName", "authorityDisplayName", "authorityZones"})
     public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName, Set<String> authorityZones);
+
+    /**
+     * Create an authority with a display name and zone.
+     *
+     * @param type
+     *            the type of the authority
+     * @param shortName
+     *            the short name of the authority to create
+     * @param authorityDisplayName
+     *            the display name for the authority
+     * @param authorityZones
+     *            identifier for external user registry owning the authority or <code>null</code> if not applicable
+     *
+     * @param properties -
+     *            properties that will be added to authority
+     *
+     * @return the full name of the authority (this will be the prefix, if any associated with the type appended with
+     *         the short name)
+     */
+    @Auditable(parameters = {"type", "shortName", "authorityDisplayName", "authorityZones"})
+    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName, Set<String> authorityZones, Map<QName, Serializable> properties);
 
     /**
      * Set an authority to include another authority. For example, adding a

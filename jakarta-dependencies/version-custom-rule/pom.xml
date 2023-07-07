@@ -18,7 +18,6 @@
   * under the License. 
   *
 -->
-<!-- START SNIPPET: project-pom -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -60,23 +59,22 @@
     </dependency>
   </dependencies>
 
-<!--  <build>-->
-<!--    <plugins>-->
-<!--      <plugin>-->
-<!--        &lt;!&ndash; generate index of project components &ndash;&gt;-->
-<!--        <groupId>org.eclipse.sisu</groupId>-->
-<!--        <artifactId>sisu-maven-plugin</artifactId>-->
-<!--        <version>0.9.0.M1</version>-->
-<!--        <executions>-->
-<!--          <execution>-->
-<!--            <goals>-->
-<!--              <goal>main-index</goal>-->
-<!--            </goals>-->
-<!--          </execution>-->
-<!--        </executions>-->
-<!--      </plugin>-->
-<!--    </plugins>-->
-<!--  </build>-->
+  <build>
+    <plugins>
+      <plugin>
+        <!-- generate index of project components -->
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>sisu-maven-plugin</artifactId>
+        <version>0.9.0.M1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>main-index</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
-    <!-- END SNIPPET: project-pom -->

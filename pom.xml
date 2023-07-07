@@ -1089,10 +1089,13 @@
                                 <failOnWrongDependencyVersionRule>
                                     <!-- rule parameters -->
                                     <shouldFail>true</shouldFail>
-                                    <listParameters>
-                                        <item>item 1</item>
-                                        <item>item 2</item>
-                                    </listParameters>
+                                    <dependenciesAndVersions>
+                                        <name>dependencyName</name>
+                                        <versions>
+                                            <minVersion>1.1.1</minVersion>
+                                            <MaxVersion>1.1.2</MaxVersion>
+                                        </versions>
+                                    </dependenciesAndVersions>
                                 </failOnWrongDependencyVersionRule>
                             </rules>
                         </configuration>

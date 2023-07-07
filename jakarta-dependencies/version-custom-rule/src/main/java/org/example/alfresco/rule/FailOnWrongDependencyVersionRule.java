@@ -20,8 +20,8 @@
 package org.example.alfresco.rule;
 
 
-import java.util.List;
-
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
 import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
@@ -46,7 +46,7 @@ public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
     /**
      * Rule parameter as list of items.
      */
-    private List<String> listParameters;
+    private Map<String, TreeMap> dependenciesAndVersions;
 
     // Inject needed Maven components
 
@@ -67,9 +67,6 @@ public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
         getLog().info("Retrieved Maven version: " + runtimeInformation.getMavenVersion());
         getLog().info("Retrieved Session: " + session);
         getLog().warnOrError("Parameter shouldIfail: " + shouldFail);
-        getLog().info(() -> "Parameter listParameters: " + listParameters);
-
-
 
         if (this.shouldFail) {
             throw new EnforcerRuleException("Failing because my param said so.");

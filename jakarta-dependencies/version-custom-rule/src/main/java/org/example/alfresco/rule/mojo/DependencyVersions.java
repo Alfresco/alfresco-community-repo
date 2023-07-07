@@ -5,7 +5,10 @@ import org.apache.maven.plugins.annotations.Parameter;
 public class DependencyVersions {
 
     @Parameter
-    private String name;
+    private String groupId;
+
+    @Parameter
+    private String artifactId;
 
     @Parameter
     private String minVersion;
@@ -13,12 +16,20 @@ public class DependencyVersions {
     @Parameter
     private String maxVersion;
 
-    public String getName() {
-        return name;
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
     public String getMinVersion() {

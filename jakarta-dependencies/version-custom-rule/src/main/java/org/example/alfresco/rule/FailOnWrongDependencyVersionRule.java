@@ -39,19 +39,8 @@ import javax.inject.Named;
 public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
 
     @Parameter
-    private List<DependencyVersions> dependencyVersionsList;
-
-    /**
-     * Simple param. This rule fails if the value is true.
-     */
+    private List<DependencyVersions> bannedDependenciesList;
     private boolean shouldFail = false;
-
-    /**
-     * Rule parameter as list of items.
-     */
-//    private Map<String, Map<String, String>> dependenciesAndVersions;
-
-    // Inject needed Maven components
 
     @Inject
     private MavenProject project;

@@ -1072,7 +1072,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     {
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
-        
+
         // Pair contains NodeId, NodeRef
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
@@ -1264,7 +1264,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             Set<QName> childAspectQnames = nodeDAO.getNodeAspects(nodeToDelete.id);
             // Delete the node
             nodeDAO.deleteChildAssoc(nodeToDelete.primaryParentAssocPair.getFirst());
-            nodeDAO.deleteNode(nodeId);
+            if(nodeDAO!=null){
+                nodeDAO.deleteNode(nodeId);
+            }
             invokeOnDeleteNode(
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);

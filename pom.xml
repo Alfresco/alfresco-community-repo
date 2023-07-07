@@ -1069,6 +1069,39 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.3.0</version>
+                <dependencies>
+                    <!-- dependencies to your artifact contains rule implementation -->
+                    <dependency>
+                        <groupId>org.alfresco</groupId>
+                        <artifactId>version-custom-rule</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>enforce</id>
+                        <configuration>
+                            <rules>
+                                <failOnWrongDependencyVersionRule>
+                                    <!-- rule parameters -->
+                                    <shouldFail>true</shouldFail>
+                                    <listParameters>
+                                        <item>item 1</item>
+                                        <item>item 2</item>
+                                    </listParameters>
+                                </failOnWrongDependencyVersionRule>
+                            </rules>
+                        </configuration>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -20,14 +20,14 @@
 package org.example.alfresco.rule;
 
 
-import java.util.Map;
-import java.util.TreeMap;
-
+import java.util.List;
 import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
 import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.example.alfresco.rule.mojo.DependencyVersions;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,6 +38,9 @@ import javax.inject.Named;
 @Named("failOnWrongDependencyVersionRule")
 public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
 
+    @Parameter
+    private List<DependencyVersions> dependencyVersionsList;
+
     /**
      * Simple param. This rule fails if the value is true.
      */
@@ -46,7 +49,7 @@ public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
     /**
      * Rule parameter as list of items.
      */
-    private Map<String, TreeMap> dependenciesAndVersions;
+//    private Map<String, Map<String, String>> dependenciesAndVersions;
 
     // Inject needed Maven components
 

@@ -53,12 +53,13 @@ public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
 
     public void execute() throws EnforcerRuleException {
 
-        getLog().info("Retrieved Target Folder: " + project.getBuild().getDirectory());
-        getLog().info("Retrieved ArtifactId: " + project.getArtifactId());
-        getLog().info("Retrieved Project: " + project);
-        getLog().info("Retrieved Maven version: " + runtimeInformation.getMavenVersion());
-        getLog().info("Retrieved Session: " + session);
-        getLog().warnOrError("Parameter shouldIfail: " + shouldFail);
+        if(bannedDependenciesList != null && bannedDependenciesList.size() > 0)
+        {
+            getLog().info("Checking banned dependencies with specific versions. Banned dependencies to check number: "
+                    + bannedDependenciesList.size());
+        } else {
+            getLog().info("No banned dependencies specified - skipping check.");
+        }
 
         if (this.shouldFail) {
             throw new EnforcerRuleException("Failing because my param said so.");
@@ -77,9 +78,6 @@ public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
     @Override
     public String getCacheId() {
         //no hash on boolean...only parameter so no hash is needed.
-        return Boolean.toString(shouldFail);
+        return Integer.toString(bannedDependenciesList.hashCode());
     }
-
-    //TODO: IMPLEMENT TOSTRING METHOD!
-
 }

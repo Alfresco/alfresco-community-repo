@@ -2,7 +2,7 @@ package org.example.alfresco.rule.mojo;
 
 import org.apache.maven.plugins.annotations.Parameter;
 
-public class DependencyVersions {
+public class BannedArtifact {
 
     @Parameter
     private String groupId;

@@ -24,14 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
 import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
-import org.example.alfresco.rule.mojo.DependencyVersions;
+import org.example.alfresco.rule.mojo.BannedArtifact;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -39,36 +39,30 @@ import javax.inject.Named;
 /**
  * Fail On Wrong Dependency Version Enforcer Rule
  */
-@Named("failOnWrongDependencyVersionRule")
-public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
+@Named("failOnBannedArtifactRule")
+public class FailOnBannedArtifactRule extends AbstractEnforcerRule {
 
     @Parameter
-    private List<DependencyVersions> bannedDependenciesList;
+    private List<BannedArtifact> bannedArtifacts;
     private boolean shouldFail = false;
 
     @Inject
     private MavenProject project;
 
-    @Inject
-    private MavenSession session;
-
-    @Inject
-    private RuntimeInformation runtimeInformation;
-
     public void execute() throws EnforcerRuleException {
 
-        if(bannedDependenciesList != null && bannedDependenciesList.size() > 0)
+        if(bannedArtifacts != null && bannedArtifacts.size() > 0)
         {
-            getLog().info("Checking banned dependencies with specific versions. Banned dependencies to check number: "
-                    + bannedDependenciesList.size());
-            Map<String, Set<Dependency>> result = DependencyUtils.detectBannedDependenciesInProjects(project, bannedDependenciesList);
-            DependencyUtils.printLogs(getLog(), result);
-        } else {
-            getLog().info("No banned dependencies specified - skipping check.");
-        }
+            getLog().info("Checking banned artifacts with specific versions. Banned artifacts to check number: "
+                    + bannedArtifacts.size());
+            Map<String, Set<Artifact>> result = DependencyUtils.detectBannedArtifactsInProjects(project, bannedArtifacts);
 
-        if (this.shouldFail) {
-            throw new EnforcerRuleException("Failing because my param said so.");
+            DependencyUtils.printLogs(getLog(), result);
+            if (this.shouldFail && !result.isEmpty()) {
+                throw new EnforcerRuleException("Banned artifacts detected.");
+            }
+        } else {
+            getLog().info("No banned artifacts specified - skipping check.");
         }
     }
 
@@ -84,6 +78,6 @@ public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
     @Override
     public String getCacheId() {
         //no hash on boolean...only parameter so no hash is needed.
-        return Integer.toString(bannedDependenciesList.hashCode());
+        return Integer.toString(bannedArtifacts.hashCode());
     }
 }

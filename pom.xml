@@ -1085,18 +1085,18 @@
                             <id>enforce</id>
                             <configuration>
                                 <rules>
-                                    <failOnWrongDependencyVersionRule>
+                                    <failOnBannedArtifactRule>
                                         <!-- rule parameters -->
                                         <shouldFail>true</shouldFail>
-                                        <bannedDependenciesList>
-                                            <dependencyVersions>
+                                        <bannedArtifacts>
+                                            <bannedArtifact>
                                                 <groupId>javax.xml.bind</groupId>
                                                 <artifactId>jaxb-api</artifactId>
                                                 <minVersion>2.3.0</minVersion>
                                                 <MaxVersion>2.3.3</MaxVersion>
-                                            </dependencyVersions>
-                                        </bannedDependenciesList>
-                                    </failOnWrongDependencyVersionRule>
+                                            </bannedArtifact>
+                                        </bannedArtifacts>
+                                    </failOnBannedArtifactRule>
                                 </rules>
                             </configuration>
                             <phase>install</phase>

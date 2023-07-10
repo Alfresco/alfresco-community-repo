@@ -1062,50 +1062,50 @@
                     <artifactId>cargo-maven3-plugin</artifactId>
                     <version>1.10.7</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <dependencies>
+                        <!-- dependencies to your artifact contains rule implementation -->
+                        <dependency>
+                            <groupId>org.alfresco</groupId>
+                            <artifactId>version-custom-rule</artifactId>
+                            <version>1.0</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>enforce</id>
+                            <configuration>
+                                <rules>
+                                    <failOnWrongDependencyVersionRule>
+                                        <!-- rule parameters -->
+                                        <shouldFail>true</shouldFail>
+                                        <bannedDependenciesList>
+                                            <dependencyVersions>
+                                                <groupId>javax.xml.bind</groupId>
+                                                <artifactId>jaxb-api</artifactId>
+                                                <minVersion>2.3.0</minVersion>
+                                                <MaxVersion>2.3.3</MaxVersion>
+                                            </dependencyVersions>
+                                        </bannedDependenciesList>
+                                    </failOnWrongDependencyVersionRule>
+                                </rules>
+                            </configuration>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.3.0</version>
-                <dependencies>
-                    <!-- dependencies to your artifact contains rule implementation -->
-                    <dependency>
-                        <groupId>org.alfresco</groupId>
-                        <artifactId>version-custom-rule</artifactId>
-                        <version>1.0</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <id>enforce</id>
-                        <configuration>
-                            <rules>
-                                <failOnWrongDependencyVersionRule>
-                                    <!-- rule parameters -->
-                                    <shouldFail>true</shouldFail>
-                                    <bannedDependenciesList>
-                                        <dependencyVersions>
-                                            <groupId>javax.xml.bind</groupId>
-                                            <artifactId>jaxb-api</artifactId>
-                                            <minVersion>2.3.0</minVersion>
-                                            <MaxVersion>2.3.3</MaxVersion>
-                                        </dependencyVersions>
-                                    </bannedDependenciesList>
-                                </failOnWrongDependencyVersionRule>
-                            </rules>
-                        </configuration>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

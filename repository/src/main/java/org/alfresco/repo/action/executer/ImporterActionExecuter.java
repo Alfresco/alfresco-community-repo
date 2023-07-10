@@ -44,6 +44,7 @@ import java.util.zip.ZipException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
@@ -65,6 +66,8 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.InputStreamStatistics;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Importer action executor
@@ -73,6 +76,7 @@ import org.apache.commons.compress.utils.InputStreamStatistics;
  */
 public class ImporterActionExecuter extends ActionExecuterAbstractBase
 {
+    private static Log logger = LogFactory.getLog(ImporterActionExecuter.class);
     public static final String NAME = "import";
     public static final String PARAM_ENCODING = "encoding";
     public static final String PARAM_DESTINATION_FOLDER = "destination";
@@ -242,17 +246,21 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
                        // We also try to use the extra encoding information if present
                        String encoding = (String) ruleAction.getParameterValue(PARAM_ENCODING);
+                       logger.info("Encoding before: "+encoding);
                        if (encoding == null)
                        {
+                           logger.info("Encoding is null ");
                            encoding = "Cp437";
                        }
                        else
                        {
                            if (encoding.equalsIgnoreCase("default"))
                            {
-                               encoding = null;
+                               logger.info("Encoding is default ");
+                               encoding = "Cp437";
                            }
                        }
+                       logger.info("Encoding after: "+encoding);
                        zipFile = new ZipFile(tempFile, encoding, true);
                        // build a temp dir name based on the ID of the noderef we are importing
                        // also use the long life temp folder as large ZIP files can take a while

@@ -1091,21 +1091,16 @@
                                     <shouldFail>true</shouldFail>
                                     <bannedDependenciesList>
                                         <dependencyVersions>
-                                            <groupId>enforcePOC-groupId1</groupId>
-                                            <artifactId>enforcePOC-artifactId1</artifactId>
-                                            <minVersion>1.1.1</minVersion>
-                                            <MaxVersion>1.1.2</MaxVersion>
-                                        </dependencyVersions>
-                                        <dependencyVersions>
-                                            <groupId>enforcePOC-groupId2</groupId>
-                                            <artifactId>enforcePOC-artifactId2</artifactId>
-                                            <minVersion>1.1.3</minVersion>
-                                            <MaxVersion>1.1.4</MaxVersion>
+                                            <groupId>javax.xml.bind</groupId>
+                                            <artifactId>jaxb-api</artifactId>
+                                            <minVersion>2.3.0</minVersion>
+                                            <MaxVersion>2.3.3</MaxVersion>
                                         </dependencyVersions>
                                     </bannedDependenciesList>
                                 </failOnWrongDependencyVersionRule>
                             </rules>
                         </configuration>
+                        <phase>install</phase>
                         <goals>
                             <goal>enforce</goal>
                         </goals>

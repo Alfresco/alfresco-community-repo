@@ -21,9 +21,13 @@ package org.example.alfresco.rule;
 
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
 import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
@@ -57,6 +61,8 @@ public class FailOnWrongDependencyVersionRule extends AbstractEnforcerRule {
         {
             getLog().info("Checking banned dependencies with specific versions. Banned dependencies to check number: "
                     + bannedDependenciesList.size());
+            Map<String, Set<Dependency>> result = DependencyUtils.detectBannedDependenciesInProjects(project, bannedDependenciesList);
+            DependencyUtils.printLogs(getLog(), result);
         } else {
             getLog().info("No banned dependencies specified - skipping check.");
         }

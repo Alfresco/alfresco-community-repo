@@ -1099,7 +1099,7 @@
                                     </failOnBannedArtifactRule>
                                 </rules>
                             </configuration>
-                            <phase>install</phase>
+                            <phase>verify</phase>
                             <goals>
                                 <goal>enforce</goal>
                             </goals>
@@ -1112,6 +1112,10 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

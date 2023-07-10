@@ -27,10 +27,8 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.enforcer.rule.api.AbstractEnforcerRule;
 import org.apache.maven.enforcer.rule.api.EnforcerRuleException;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.rtinfo.RuntimeInformation;
 import org.example.alfresco.rule.mojo.BannedArtifact;
 
 import javax.inject.Inject;
@@ -42,8 +40,8 @@ import javax.inject.Named;
 @Named("failOnBannedArtifactRule")
 public class FailOnBannedArtifactRule extends AbstractEnforcerRule {
 
-    @Parameter
     private List<BannedArtifact> bannedArtifacts;
+
     private boolean shouldFail = false;
 
     @Inject

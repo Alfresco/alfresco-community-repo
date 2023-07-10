@@ -22,12 +22,6 @@ public class DependencyUtils
             result.put(project.getName() + " - " +project.getId(), detectedArtifacts);
         }
 
-        if(!project.getCollectedProjects().isEmpty()) {
-            for(MavenProject mavenProject : project.getCollectedProjects()){
-                result.putAll(detectBannedArtifactsInProjects(mavenProject, bannedDependencies));
-            }
-        }
-
         return result;
     }
 

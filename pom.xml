@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.160-SNAPSHOT</version>
+    <version>23.1.0.161-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -69,7 +69,7 @@
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.9</dependency.gson.version>
-        <dependency.guava.version>32.0.1-jre</dependency.guava.version>
+        <dependency.guava.version>32.1.1-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
         <dependency.httpcomponents-httpclient5.version>5.2.1</dependency.httpcomponents-httpclient5.version>
@@ -79,7 +79,7 @@
         <dependency.slf4j.version>2.0.7</dependency.slf4j.version>
         <dependency.log4j.version>2.20.0</dependency.log4j.version>
         <dependency.gytheio.version>0.20.0-A1</dependency.gytheio.version>
-        <dependency.groovy.version>3.0.17</dependency.groovy.version>
+        <dependency.groovy.version>3.0.18</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
         <dependency.spring-security.version>6.1.0</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
@@ -1066,7 +1066,7 @@
                 <plugin>
                     <groupId>org.codehaus.cargo</groupId>
                     <artifactId>cargo-maven3-plugin</artifactId>
-                    <version>1.10.7</version>
+                    <version>1.10.8</version>
                 </plugin>
             </plugins>
         </pluginManagement>

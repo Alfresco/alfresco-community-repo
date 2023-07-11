@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.161-SNAPSHOT</version>
+    <version>23.1.0.162-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -95,7 +95,7 @@
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
-        <dependency.swagger-parser.version>1.0.66</dependency.swagger-parser.version>
+        <dependency.swagger-parser.version>1.0.67</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
@@ -114,10 +114,10 @@
         <dependency.java-ee-activation.version>1.2.0</dependency.java-ee-activation.version>
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
         <dependency.jakarta-json-path.version>2.8.0</dependency.jakarta-json-path.version>
-        <dependency.json-smart.version>2.4.11</dependency.json-smart.version>
+        <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.4.1</alfresco.googledrive.version>
+        <alfresco.googledrive.version>3.4.2-A2</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.6.1-A2-SNAPSHOT</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
@@ -131,8 +131,8 @@
         <dependency.tas-utility.version>4.0.4-SNAPSHOT</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.3.1</dependency.rest-assured.version>
         <dependency.tas-email.version>1.23-SNAPSHOT</dependency.tas-email.version>
-        <dependency.tas-webdav.version>1.16</dependency.tas-webdav.version>
-        <dependency.tas-ftp.version>1.17</dependency.tas-ftp.version>
+        <dependency.tas-webdav.version>1.18</dependency.tas-webdav.version>
+        <dependency.tas-ftp.version>1.18</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
 
         <!-- AGS properties shared between community and enterprise -->
@@ -428,7 +428,7 @@
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.15</version>
+                <version>1.16.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>

@@ -149,13 +149,14 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
     {
         boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
         Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
+        String fileName = directAccessUrlHelper.getFileName(directAccessUrlRequest);
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         String renditionId = parameters.getRelationship2Id();
 
         DirectAccessUrl directAccessUrl;
         try
         {
-            directAccessUrl = renditions.requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor);
+            directAccessUrl = renditions.requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor, fileName);
         }
         catch (DirectAccessUrlDisabledException ex)
         {

@@ -627,7 +627,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * {@inheritDoc}
      */
     @Override
-    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor)
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor, String fileNameOverride)
     {
         if (!systemWideDirectUrlConfig.isEnabled())
         {
@@ -643,7 +643,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
         String contentUrl = contentData.getContentUrl();
         String contentMimetype = contentData.getMimetype();
-        String fileName = getFileName(nodeRef);
+        String fileName = fileNameOverride == null ? getFileName(nodeRef) : fileNameOverride;
 
         validFor = adjustValidFor(validFor);
         attachment = adjustAttachment(nodeRef, contentMimetype, attachment);

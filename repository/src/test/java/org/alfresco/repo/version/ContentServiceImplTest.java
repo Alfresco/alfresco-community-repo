@@ -164,11 +164,11 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
-            assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
+            assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor, null));
         });
 
         assertThrows("nodeRef is null", IllegalArgumentException.class, () -> {
-            assertNull(contentService.requestContentDirectUrl(null, null, true, null));
+            assertNull(contentService.requestContentDirectUrl(null, null, true, null, null));
         });
 
         assertThrows("propertyQName has no content", NullPointerException.class, () -> {
@@ -176,13 +176,13 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
-            contentService.requestContentDirectUrl(nodeRef, null, true, validFor);
+            contentService.requestContentDirectUrl(nodeRef, null, true, validFor, null);
         });
 
         // Create a node with content
         NodeRef nodeRef = createNewVersionableNode();
 
-        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, null));
-        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, null, null));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor, null));
     }
 }

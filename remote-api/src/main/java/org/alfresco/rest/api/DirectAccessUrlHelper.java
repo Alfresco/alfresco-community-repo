@@ -63,4 +63,15 @@ public class DirectAccessUrlHelper
         }
         return attachment;
     }
+
+    
+    public String getFileName(DirectAccessUrlRequest directAccessUrlRequest)
+    {
+        String fileName = null;
+        if (directAccessUrlRequest != null )
+        {
+            fileName = directAccessUrlRequest.getFileName();
+        }
+        return fileName;
+    }
 }

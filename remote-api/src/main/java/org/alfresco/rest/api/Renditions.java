@@ -234,7 +234,7 @@ public interface Renditions
     default DirectAccessUrl requestContentDirectUrl(String nodeId, String versionId, String renditionId, boolean attachment, Long validFor)
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
-        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor);
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor, null);
     }
 
     /**
@@ -247,7 +247,7 @@ public interface Renditions
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment)
     {
-        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, null);
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, null, null);
     }
 
     /**
@@ -257,8 +257,9 @@ public interface Renditions
      * @param renditionId the rendition id
      * @param attachment  {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}
      * @param validFor    the time at which the direct access {@code URL} will expire
+     * @param fileName    optional name for the file when downloaded
      * @return            a direct access {@code URL} object for the content.
      */
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor);
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor, String fileName);
 }
 

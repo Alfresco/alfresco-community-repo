@@ -135,7 +135,7 @@ public class ContentServiceImplUnitTest
     {
         setupSystemWideDirectAccessConfig(DISABLED);
         assertThrows(DirectAccessUrlDisabledException.class, () -> {
-            contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
+            contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L, null);
         });
         verify(mockContentStore, never()).isContentDirectUrlEnabled();
     }
@@ -146,7 +146,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME,true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME,true, 20L, null);
         assertNull(directAccessUrl);
         verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }
@@ -157,7 +157,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L, null);
         assertNull(directAccessUrl);
         verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }

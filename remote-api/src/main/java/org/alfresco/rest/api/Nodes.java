@@ -301,7 +301,7 @@ public interface Nodes
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment)
     {
-        return requestContentDirectUrl(nodeRef, attachment, null);
+        return requestContentDirectUrl(nodeRef, attachment, null, null);
     }
 
     /**
@@ -313,7 +313,7 @@ public interface Nodes
      */
     default DirectAccessUrl requestContentDirectUrl(String nodeId, boolean attachment, Long validFor)
     {
-        return requestContentDirectUrl(validateNode(nodeId), attachment, validFor);
+        return requestContentDirectUrl(validateNode(nodeId), attachment, validFor, null);
     }
 
     /**
@@ -321,9 +321,10 @@ public interface Nodes
      * @param nodeRef The node reference for which to obtain the direct access {@code URL}
      * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
      * @param validFor The time at which the direct access {@code URL} will expire.
+     * @param fileName Optional name for the file when downloaded
      * @return A direct access {@code URL} object for the content.
      */
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor, String fileName);
 
     /**
      * Convert from node properties (map of QName to Serializable) retrieved from

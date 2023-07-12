@@ -213,7 +213,7 @@ public interface ContentService
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment)
     {
-        return requestContentDirectUrl(nodeRef, propertyQName, attachment, null);
+        return requestContentDirectUrl(nodeRef, propertyQName, attachment, null, null);
     }
 
     /**
@@ -230,7 +230,7 @@ public interface ContentService
     @Deprecated
     default public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
     {
-        return requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
+        return requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor, null);
     }
 
     /**
@@ -241,11 +241,12 @@ public interface ContentService
      * @param propertyQName the name of the property, which must be of type <b>content</b>
      * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
      * @param validFor The time at which the direct access {@code URL} will expire.
+     * @param fileName Optional name for the file when downloaded
      * @return A direct access {@code URL} object for the content.
      * @throws UnsupportedOperationException if the store is unable to provide the information.
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "validFor"})
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor);
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor, String fileName);
 
     /**
      * Gets a key-value (String-String) collection of storage headers/properties with their respective values for a specific node reference.

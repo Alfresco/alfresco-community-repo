@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.162-SNAPSHOT</version>
+    <version>23.1.0.163-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -54,7 +54,7 @@
         <dependency.alfresco-transform-service.version>3.0.0</dependency.alfresco-transform-service.version>
         <dependency.alfresco-transform-core.version>4.0.0</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.10-SNAPSHOT</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.22</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.23</dependency.acs-event-model.version>
 
         <dependency.spring.version>6.0.9</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
@@ -952,7 +952,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.26</version>
+                <version>1.18.28</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

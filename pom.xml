@@ -709,6 +709,12 @@
                 <groupId>com.github.fge</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>2.2.6</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mailapi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -1074,12 +1080,61 @@
                     <artifactId>cargo-maven3-plugin</artifactId>
                     <version>1.10.8</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-banned-dependencies</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <bannedDependencies>
+                                        <excludes>
+                                            <exclude>javax.servlet:servlet-api</exclude>
+                                            <exclude>com.sun.mail:javax.mail</exclude>
+                                            <exclude>javax.jms:javax.jms-api</exclude>
+                                            <exclude>javax.activation:activation</exclude>
+                                            <exclude>javax.activation:javax.activation-api</exclude>
+                                            <exclude>javax.xml.bind:jaxb-api</exclude>
+                                            <exclude>javax.xml.soap:saaj-api</exclude>
+                                            <exclude>javax.xml.ws:jaxws-api</exclude>
+                                            <exclude>javax.mail</exclude>
+
+<!--                                            Enforce minimal versions of jakarta dependencies-->
+                                            <exclude>jakarta.servlet:jakarta.servlet-api:(, 5.0.0)</exclude>
+                                            <exclude>jakarta.xml.bind:jakarta.xml.bind-api:(, 3.0.1)</exclude>
+                                            <exclude>jakarta.json:jakarta.json-api:(, 2.0.1)</exclude>
+                                            <exclude>jakarta.servlet.jsp:jakarta.servlet.jsp-api:(, 3.0.0)</exclude>
+                                            <exclude>jakarta.annotation:jakarta.annotation-api:(, 2.0.0)</exclude>
+<!--                                            <exclude>jakarta.transaction:jakarta.transaction-api:(, 2.0.0)</exclude>-->
+                                            <exclude>jakarta.jms:jakarta.jms-api:(, 3.0.0)</exclude>
+                                            <exclude>jakarta.activation:jakarta.activation-api:(, 2.0.1)</exclude>
+                                            <exclude>jakarta.xml.ws:jakarta.xml.ws-api:(, 3.0.1)</exclude>
+                                            <exclude>jakarta.xml.soap:jakarta.xml.soap-api:(, 2.0.1)</exclude>
+                                            <exclude>jakarta.jws:jakarta.jws-api:(, 3.0.0)</exclude>
+
+                                        </excludes>
+                                    </bannedDependencies>
+                                </rules>
+                                <fail>true</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -709,6 +709,12 @@
                 <groupId>com.github.fge</groupId>
                 <artifactId>json-schema-validator</artifactId>
                 <version>2.2.6</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mailapi</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -1096,6 +1102,7 @@
                                             <exclude>javax.xml.bind:jaxb-api</exclude>
                                             <exclude>javax.xml.soap:saaj-api</exclude>
                                             <exclude>javax.xml.ws:jaxws-api</exclude>
+                                            <exclude>javax.mail</exclude>
 
 <!--                                            Enforce minimal versions of jakarta dependencies-->
                                             <exclude>jakarta.servlet:jakarta.servlet-api:(, 5.0.0)</exclude>

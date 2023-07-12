@@ -48,7 +48,7 @@ COPY ${resource_path}/amps ${TOMCAT_DIR}/amps
 # Install amps on alfresco.war
 RUN java -jar ${TOMCAT_DIR}/alfresco-mmt/alfresco-mmt*.jar install \
               ${TOMCAT_DIR}/amps \
-              ${TOMCAT_DIR}/webapps/alfresco -directory -nobackup -force
+              ${TOMCAT_DIR}/webapps/alfresco -directory -nobackup
 
 # Move the log file
 RUN sed -i -e "s_appender.rolling.fileName\=alfresco.log_appender.rolling.fileName\=${TOMCAT_DIR}/logs\/alfresco.log_" \

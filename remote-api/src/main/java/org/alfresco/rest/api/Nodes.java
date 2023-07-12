@@ -301,7 +301,7 @@ public interface Nodes
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment)
     {
-        return requestContentDirectUrl(nodeRef, attachment, null, null);
+        return requestContentDirectUrl(nodeRef, attachment, null);
     }
 
     /**
@@ -313,7 +313,19 @@ public interface Nodes
      */
     default DirectAccessUrl requestContentDirectUrl(String nodeId, boolean attachment, Long validFor)
     {
-        return requestContentDirectUrl(validateNode(nodeId), attachment, validFor, null);
+        return requestContentDirectUrl(validateNode(nodeId), attachment, validFor);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeRef The node reference for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     */
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, attachment, validFor, null);
     }
 
     /**

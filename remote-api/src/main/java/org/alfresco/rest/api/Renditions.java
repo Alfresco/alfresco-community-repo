@@ -234,7 +234,7 @@ public interface Renditions
     default DirectAccessUrl requestContentDirectUrl(String nodeId, String versionId, String renditionId, boolean attachment, Long validFor)
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
-        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor, null);
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor);
     }
 
     /**
@@ -247,7 +247,20 @@ public interface Renditions
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment)
     {
-        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, null, null);
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, null);
+    }
+
+    /**
+     * @param nodeRef     the node reference for which to obtain the direct access {@code URL}
+     * @param versionId   the version id (aka version label)
+     * @param renditionId the rendition id
+     * @param attachment  {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}
+     * @param validFor    the time at which the direct access {@code URL} will expire
+     * @return            a direct access {@code URL} object for the content.
+     */
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor);
     }
 
     /**

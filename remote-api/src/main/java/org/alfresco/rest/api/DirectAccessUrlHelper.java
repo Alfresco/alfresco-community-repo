@@ -67,11 +67,6 @@ public class DirectAccessUrlHelper
     
     public String getFileName(DirectAccessUrlRequest directAccessUrlRequest)
     {
-        String fileName = null;
-        if (directAccessUrlRequest != null )
-        {
-            fileName = directAccessUrlRequest.getFileName();
-        }
-        return fileName;
+        return directAccessUrlRequest != null ? directAccessUrlRequest.getFileName() : null;
     }
 }

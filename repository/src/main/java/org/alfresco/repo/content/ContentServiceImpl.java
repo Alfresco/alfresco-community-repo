@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -643,7 +644,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
         String contentUrl = contentData.getContentUrl();
         String contentMimetype = contentData.getMimetype();
-        String fileName = fileNameOverride == null ? getFileName(nodeRef) : fileNameOverride;
+        String fileName = StringUtils.isEmpty(fileNameOverride) ? getFileName(nodeRef) : fileNameOverride;
 
         validFor = adjustValidFor(validFor);
         attachment = adjustAttachment(nodeRef, contentMimetype, attachment);

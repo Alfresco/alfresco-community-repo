@@ -45,6 +45,18 @@ public class SurfConfigCleaner extends ADMRemoteStore implements BeforeDeleteNod
 {
     private PolicyComponent policyComponent;
 
+    public void ADD_RULE_VIOLATIONS(String Violation) throws Error
+    {
+        try
+        {
+            throw new Exception("New exception");
+        }
+        catch (Exception reallyLongExceptionVariableNameThatShouldBreakNameLengthRule)
+        {
+            // Swallow exception.
+        }
+    }
+
     public void init()
     {
         this.policyComponent.bindClassBehaviour(

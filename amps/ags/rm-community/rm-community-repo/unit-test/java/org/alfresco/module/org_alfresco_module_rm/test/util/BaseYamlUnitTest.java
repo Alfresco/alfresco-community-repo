@@ -45,12 +45,10 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.github.fge.jackson.JsonLoader;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.core.report.ProcessingMessage;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.github.fge.jsonschema.main.JsonSchema;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
@@ -66,8 +64,8 @@ import org.apache.commons.io.filefilter.WildcardFileFilter;
  */
 public class BaseYamlUnitTest
 {
-    private static String SWAGGER_2_SCHEMA_LOCATION = "/rest/schema.json";
-    private static String OPEN_API_SPECIFICATION = "2.0";
+    private static final String SWAGGER_2_SCHEMA_LOCATION = "/rest/schema.json";
+    private static final String OPEN_API_SPECIFICATION = "2.0";
 
     /**
      * Helper method to obtain path names for all yaml files found on the given path
@@ -86,11 +84,11 @@ public class BaseYamlUnitTest
     /**
      * Helper method to validate that all given yaml files are valid readable Swagger format
      */
-    protected void validateYamlFiles(final Set<String> yamlFileNames) throws ProcessingException, IOException
+    protected void validateYamlFiles(final Set<String> yamlFileNames) throws ValidationException, IOException
     {
         assertFalse("Expected at least 1 yaml file to validate", yamlFileNames.isEmpty());
 
-        final JsonSchema swaggerSchema = getSwaggerSchema(SWAGGER_2_SCHEMA_LOCATION);
+        final JsonSchema swaggerSchema = getSwaggerSchema();
         assertNotNull("Failed to obtain the Swagger schema", swaggerSchema);
         
         for (String yamlFilePath : yamlFileNames)
@@ -106,11 +104,11 @@ public class BaseYamlUnitTest
                 assertEquals("Failed to obtain Swagger version from yaml file " + yamlFilePath, 
                         swagger.getSwagger(), OPEN_API_SPECIFICATION);
             }
-            catch (ProcessingException ex)
+            catch (ValidationException ex)
             {
                 // ensure the yaml filename is included in the message
                 String context = String.format(yamlFilePath + ": %n" + ex.getMessage());
-                throw new ProcessingException(context) ;
+                throw new ValidationException(context) ;
             }
         }
     }
@@ -118,16 +116,15 @@ public class BaseYamlUnitTest
     /**
      * Helper method to read in the Swagger JSON schema file
      */
-    private JsonSchema getSwaggerSchema(final String schemaLocation) throws IOException, ProcessingException
+    private JsonSchema getSwaggerSchema() throws IOException
     {
         JsonSchema swaggerSchema = null;
-        final InputStream in = this.getClass().getResourceAsStream(schemaLocation);
+        final InputStream in = this.getClass().getResourceAsStream(SWAGGER_2_SCHEMA_LOCATION);
         if (in != null)
         {
             final String swaggerSchemaAsString = IOUtils.toString(in);
-            final JsonNode schemaNode = JsonLoader.fromString(swaggerSchemaAsString);
-            final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-            swaggerSchema = factory.getJsonSchema(schemaNode);
+            final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+            swaggerSchema = factory.getSchema(swaggerSchemaAsString);
         }
         return swaggerSchema;
     }
@@ -135,7 +132,7 @@ public class BaseYamlUnitTest
     /**
      * Helper method to validate Yaml file against JSON schema
      */
-    private boolean validateYamlFile(final String yamlFilePath, final JsonSchema jsonSchema) throws IOException, ProcessingException
+    private boolean validateYamlFile(final String yamlFilePath, final JsonSchema jsonSchema) throws IOException, ValidationException
     {
         // Get yaml file as a string
         final String yaml = new String(Files.readAllBytes(Paths.get(yamlFilePath)));
@@ -152,19 +149,22 @@ public class BaseYamlUnitTest
     /**
      * Helper method to validate JSON string against JSON schema
      */
-    private boolean validateJSON(final String jsonData, final JsonSchema schema) throws IOException, ProcessingException
+    private boolean validateJSON(final String jsonData, final JsonSchema schema) throws IOException, ValidationException
     {
-        final JsonNode dataNode = JsonLoader.fromString(jsonData);
-        final ProcessingReport report = schema.validate(dataNode);
-        boolean isOk = report.isSuccess();
-        if (!isOk)
+        final JsonNode dataNode = new ObjectMapper().readTree(jsonData);
+
+        final Iterator<ValidationMessage> errors = schema.validate(dataNode).iterator();
+        if (!errors.hasNext()) return true;
+
+        final ValidationMessage errorMessage = errors.next();
+        throw new ValidationException(errorMessage.toString());
+    }
+
+    private static class ValidationException extends Exception
+    {
+        public ValidationException(String message)
         {
-            Iterator<ProcessingMessage> messages = report.iterator();
-            if (messages.hasNext())
-            {
-                throw new ProcessingException(messages.next().toString());
-            }
+            super(message);
         }
-        return isOk;
     }
 }

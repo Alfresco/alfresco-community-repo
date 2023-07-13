@@ -105,10 +105,10 @@
          <artifactId>swagger-parser</artifactId>
          <scope>test</scope>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
       <dependency>
-         <groupId>com.github.fge</groupId>
+         <groupId>com.networknt</groupId>
          <artifactId>json-schema-validator</artifactId>
+         <version>1.0.86</version>
          <scope>test</scope>
       </dependency>
       <dependency>

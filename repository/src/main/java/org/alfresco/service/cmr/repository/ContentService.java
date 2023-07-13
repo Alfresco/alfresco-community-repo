@@ -247,7 +247,7 @@ public interface ContentService
     @Auditable(parameters = {"nodeRef", "propertyQName", "validFor"})
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor)
     {
-        return requestContentDirectUrl(nodeRef, propertyQName, attachment, validFor);
+        return requestContentDirectUrl(nodeRef, propertyQName, attachment, validFor, null);
     }
 
     /**

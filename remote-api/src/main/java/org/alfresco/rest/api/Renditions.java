@@ -260,7 +260,7 @@ public interface Renditions
      */
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor)
     {
-        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor);
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor, null);
     }
 
     /**

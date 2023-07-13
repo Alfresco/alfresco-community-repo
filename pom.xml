@@ -58,7 +58,7 @@
 
         <dependency.spring.version>6.0.9</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.15.1</dependency.jackson.version>
+        <dependency.jackson.version>2.15.2</dependency.jackson.version>
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta</dependency.opencmis.version>
         <dependency.webscripts.version>8.43-SNAPSHOT</dependency.webscripts.version>
@@ -131,7 +131,7 @@
         <dependency.tas-utility.version>4.0.4-SNAPSHOT</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.3.1</dependency.rest-assured.version>
         <dependency.tas-email.version>1.23-SNAPSHOT</dependency.tas-email.version>
-        <dependency.tas-webdav.version>1.18</dependency.tas-webdav.version>
+        <dependency.tas-webdav.version>1.20</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.18</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
 
@@ -1025,7 +1025,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.6.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>

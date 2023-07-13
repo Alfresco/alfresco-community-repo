@@ -47,7 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
+import com.networknt.schema.SpecVersion.VersionFlag;
 import com.networknt.schema.ValidationMessage;
 
 import io.swagger.models.Swagger;
@@ -123,7 +123,7 @@ public class BaseYamlUnitTest
         if (in != null)
         {
             final String swaggerSchemaAsString = IOUtils.toString(in);
-            final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V4);
+            final JsonSchemaFactory factory = JsonSchemaFactory.getInstance(VersionFlag.V4);
             swaggerSchema = factory.getSchema(swaggerSchemaAsString);
         }
         return swaggerSchema;

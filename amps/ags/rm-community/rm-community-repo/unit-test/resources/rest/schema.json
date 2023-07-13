@@ -1,7 +1,7 @@
 {
   "title": "A JSON Schema for Swagger 2.0 API.",
-  "id": "#",
-  "$schema": "#",
+  "id": "http://swagger.io/v2/schema.json#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "required": [
     "swagger",
@@ -203,7 +203,7 @@
       "additionalProperties": {
         "$ref": "#/definitions/response"
       },
-      "description": "One or more JSON representations for parameters"
+      "description": "One or more JSON representations for responses"
     },
     "externalDocs": {
       "type": "object",

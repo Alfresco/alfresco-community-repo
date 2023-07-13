@@ -34,5 +34,6 @@
    <modules>
       <module>apache-chemistry</module>
       <module>commons-fileupload</module>
+      <module>freemarker</module>
    </modules>
 </project>

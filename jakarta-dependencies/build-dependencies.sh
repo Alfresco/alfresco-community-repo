@@ -17,10 +17,14 @@ function clone_and_install {
       git clone --single-branch --branch $branch_name https://${HTTP_CREDENTIALS}@github.com/Alfresco/$1.git $project_path
     fi
   fi
+  if [ ! -z "$3" ]; then
+    project_path=$project_path/$3
+  fi
   mvn -f $project_path -B clean install -DskipTests -Dmaven.javadoc.skip=true
 }
 
 clone_and_install surf-webscripts
+clone_and_install surf jakarta-migration surf
 clone_and_install alfresco-greenmail
 clone_and_install alfresco-tas-utility
 clone_and_install alfresco-tas-email

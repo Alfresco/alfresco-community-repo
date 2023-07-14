@@ -62,6 +62,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
@@ -94,7 +95,7 @@ public class RuleServiceImplUnitTest
     @Mock
     private PermissionService permissionService;
     @Mock
-    private SimpleCache nodeRulesCache;
+    private SimpleCache<NodeRef, List<Rule>> nodeRulesCache;
     @Mock
     private NodeService runtimeNodeService;
     @Mock
@@ -127,7 +128,7 @@ public class RuleServiceImplUnitTest
         ChildAssociationRef ruleAssociation = mock(ChildAssociationRef.class);
         when(ruleAssociation.getChildRef()).thenReturn(RULE_NODE);
         when(nodeService.createNode(eq(RULE_SET_NODE), eq(ASSOC_CONTAINS), any(QName.class), eq(TYPE_RULE))).thenReturn(ruleAssociation);
-        doNothing().when(nodeRulesCache).remove(FOLDER_NODE);
+        doNothing().when(nodeRulesCache).remove(any());
         // Set the rule title and action.
         when(mockRule.getTitle()).thenReturn("Rule title");
         when(mockRule.getAction()).thenReturn(mockAction);

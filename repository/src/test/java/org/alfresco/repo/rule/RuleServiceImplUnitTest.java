@@ -43,16 +43,13 @@ import static org.alfresco.service.namespace.RegexQNamePattern.MATCH_ALL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.Serializable;
@@ -130,6 +127,7 @@ public class RuleServiceImplUnitTest
         ChildAssociationRef ruleAssociation = mock(ChildAssociationRef.class);
         when(ruleAssociation.getChildRef()).thenReturn(RULE_NODE);
         when(nodeService.createNode(eq(RULE_SET_NODE), eq(ASSOC_CONTAINS), any(QName.class), eq(TYPE_RULE))).thenReturn(ruleAssociation);
+        doNothing().when(nodeRulesCache).remove(FOLDER_NODE);
         // Set the rule title and action.
         when(mockRule.getTitle()).thenReturn("Rule title");
         when(mockRule.getAction()).thenReturn(mockAction);

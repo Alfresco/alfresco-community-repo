@@ -25,6 +25,7 @@
  */
 package org.alfresco.messaging.camel;
 
+import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;

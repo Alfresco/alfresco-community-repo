@@ -128,7 +128,6 @@ public class RuleServiceImplUnitTest
         ChildAssociationRef ruleAssociation = mock(ChildAssociationRef.class);
         when(ruleAssociation.getChildRef()).thenReturn(RULE_NODE);
         when(nodeService.createNode(eq(RULE_SET_NODE), eq(ASSOC_CONTAINS), any(QName.class), eq(TYPE_RULE))).thenReturn(ruleAssociation);
-        doNothing().when(nodeRulesCache).remove(any());
         // Set the rule title and action.
         when(mockRule.getTitle()).thenReturn("Rule title");
         when(mockRule.getAction()).thenReturn(mockAction);

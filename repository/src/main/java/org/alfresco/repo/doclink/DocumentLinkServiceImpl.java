@@ -75,7 +75,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class DocumentLinkServiceImpl implements DocumentLinkService, NodeServicePolicies.BeforeDeleteNodePolicy
 {
-    private static Log logger = LogFactory.getLog(DocumentLinkServiceImpl.class);
+    private static final Log logger = LogFactory.getLog(DocumentLinkServiceImpl.class);
 
     protected static final String CANNED_QUERY_GET_DOC_LINKS = "getDoclinkNodesCannedQueryFactory";
 
@@ -95,7 +95,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
     /* I18N labels */
     private static final String LINK_TO_LABEL = "doclink_service.link_to_label";
 
-    private boolean isNodePendingDelete = false;
+    private boolean isNodePendingDelete;
 
     /**
      * The initialise method. Register our policies.
@@ -168,22 +168,21 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         String newName = sourceName + LINK_NODE_EXTENSION;
         newName = I18NUtil.getMessage(LINK_TO_LABEL, newName);
 
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> props = new HashMap<>();
         props.put(ContentModel.PROP_NAME, newName);
         props.put(ContentModel.PROP_LINK_DESTINATION, source);
         props.put(ContentModel.PROP_TITLE, newName);
         props.put(ContentModel.PROP_DESCRIPTION, newName);
 
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(newName));
 
-        ChildAssociationRef childRef = null;
-        QName sourceType = nodeService.getType(source);
 
         if (checkOutCheckInService.isWorkingCopy(source) || nodeService.hasAspect(source, ContentModel.ASPECT_LOCKABLE))
         {
             throw new IllegalArgumentException("Cannot perform operation since the node (id:" + source.getId() + ") is locked.");
         }
-
+        ChildAssociationRef childRef;
+        QName sourceType = nodeService.getType(source);
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(newName));
         try
         {
             if (dictionaryService.isSubClass(sourceType, ContentModel.TYPE_CONTENT))

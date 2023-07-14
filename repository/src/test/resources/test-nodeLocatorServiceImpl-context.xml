@@ -3,7 +3,7 @@
 <beans>
 
     <bean id="repositoryHelper" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.model.Repository" />
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.model.Repository" />
     </bean>
 
     <bean id="SiteService" class="org.mockito.Mockito" factory-method="mock">

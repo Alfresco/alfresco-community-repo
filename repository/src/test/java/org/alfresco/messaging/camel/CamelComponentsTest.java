@@ -49,6 +49,9 @@ public class CamelComponentsTest {
     @Autowired
     protected CamelContext camelContext;
 
+    @Autowired
+    protected TransactionAwareEventProducer transactionAwareEventProducer;
+
     @Produce("activemq:queue:alfresco.test")
     protected ProducerTemplate activemqTemplate;
 

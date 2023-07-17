@@ -26,18 +26,18 @@
     </bean>
 
     <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
+        <constructor-arg value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
     </bean>
 
     <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.policy.PolicyComponentImpl"/>
+        <constructor-arg value="org.alfresco.repo.policy.PolicyComponentImpl"/>
     </bean>
 
     <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
+        <constructor-arg value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
     </bean>
 
     <bean id="transformRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
+        <constructor-arg value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
     </bean>
 </beans>

@@ -46,6 +46,10 @@
 <!--        <constructor-arg value="org.alfresco.repo.policy.PolicyComponentImpl"/>-->
 <!--    </bean>-->
 
+    <bean id="transformRequestConsumer" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.messaging.camel.routes.TransformRequestConsumer"/>
+    </bean>
+
     <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
     </bean>

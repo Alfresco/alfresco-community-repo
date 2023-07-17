@@ -27,9 +27,7 @@
 
     <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
 
-    <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.policy.PolicyComponentImpl"/>
-    </bean>
+    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" />
 
     <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>

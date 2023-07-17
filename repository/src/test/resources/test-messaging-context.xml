@@ -25,7 +25,15 @@
         <property name="routeContextId" value="customRoutes" />
     </bean>
 
-    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
+<!--    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />-->
+
+    <bean id="onContentUpdateRenditionRoute" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.messaging.camel.routes.OnContentUpdateRenditionRoute"/>
+    </bean>
+
+    <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rawevents.TransactionAwareEventProducer"/>
+    </bean>
 
     <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg type="java.lang.Class" value="org.alfresco.repo.policy.PolicyComponentImpl"/>

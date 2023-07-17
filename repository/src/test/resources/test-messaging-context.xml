@@ -47,10 +47,10 @@
 <!--    </bean>-->
 
     <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
     </bean>
 
     <bean id="transformRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
     </bean>
 </beans>

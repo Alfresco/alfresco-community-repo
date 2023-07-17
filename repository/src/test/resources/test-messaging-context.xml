@@ -8,7 +8,7 @@
         <property name="location" value="test-messaging.properties" />
     </bean>
 
-    <import resource="classpath:/alfresco/subsystems/Messaging/default/messaging-context.xml" />
+    <import resource="classpath:repository/src/main/resources/alfresco/messaging-context.xml" />
 
     <bean id="messagingExceptionProcessor" 
         class="org.alfresco.messaging.camel.MockExceptionProcessor" />

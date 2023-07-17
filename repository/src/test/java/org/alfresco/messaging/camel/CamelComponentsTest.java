@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -44,8 +43,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @Category(NeverRunsTests.class)
-@ImportResource("classpath:test-messaging-context.xml")
-//@ContextConfiguration(locations = "/test-messaging-context.xml")
+@ContextConfiguration(locations = "/test-messaging-context.xml")
 public class CamelComponentsTest {
     @Autowired
     protected CamelContext camelContext;

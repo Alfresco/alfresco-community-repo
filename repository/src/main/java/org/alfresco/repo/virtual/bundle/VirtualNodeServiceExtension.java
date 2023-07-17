@@ -910,7 +910,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
             return result;
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             throw new VirtualizationException(e);
         }
@@ -968,7 +968,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 }
                 writer.putContent(text);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 throw new ActualEnvironmentException(e);
             }

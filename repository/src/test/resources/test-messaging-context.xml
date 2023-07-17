@@ -54,7 +54,5 @@
         <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
     </bean>
 
-    <bean id="transformRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
-    </bean>
+    <bean id="transformRequestProcessor" class="org.alfresco.repo.rendition2.TransformRequestProcessor" />
 </beans>

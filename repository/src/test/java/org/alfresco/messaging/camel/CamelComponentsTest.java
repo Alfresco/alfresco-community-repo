@@ -25,20 +25,13 @@
  */
 package org.alfresco.messaging.camel;
 
-import org.alfresco.messaging.camel.routes.OnContentUpdateRenditionRoute;
-import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -64,19 +57,6 @@ public class CamelComponentsTest {
     @Produce("jms:queue:alfresco.test")
     protected ProducerTemplate jmsTemplate;
 
-    @InjectMocks
-    private OnContentUpdateRenditionRoute onContentUpdateRenditionRoute;
-
-    @Mock
-    private TransactionAwareEventProducer transactionAwareEventProducer;
-
-    @Mock
-    private PolicyComponent policyComponent;
-
-    @Before
-    public void setup() {
-        MockitoAnnotations.initMocks(this);
-    }
     @Test
     public void testActivemqComponent()
     {

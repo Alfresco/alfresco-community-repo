@@ -27,11 +27,14 @@
 
     <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
 
-    <bean id="dictionary" class="org.alfresco.service.cmr.dictionary.DictionaryService" />
+    <bean id="dictionary" class="org.alfresco.repo.dictionary.DictionaryComponent" />
 
-    <bean id="behaviourFilter" class="org.alfresco.repo.policy.BehaviourFilter" />
+<!--    <bean id="behaviourFilter" class="org.alfresco.repo.policy.BehaviourFilter" />-->
 
-    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" />
+    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" >
+        <property name="dictionary" ref="dictionary"/>
+<!--        <property name="behaviourFilter" ref="behaviourFilter"/>-->
+    </bean>
 
     <!--    <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">-->
 <!--        <constructor-arg value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />-->

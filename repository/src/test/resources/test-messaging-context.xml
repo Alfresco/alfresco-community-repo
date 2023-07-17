@@ -34,7 +34,7 @@
 <!--    <bean id="behaviourFilter" class="org.alfresco.repo.policy.BehaviourFilter" />-->
 
     <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" >
-        <property name="dictionary" ref="dictionary"/>
+        <constructor-arg  ref="dictionary"/>
 <!--        <property name="behaviourFilter" ref="behaviourFilter"/>-->
     </bean>
 

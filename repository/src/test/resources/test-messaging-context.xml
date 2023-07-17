@@ -47,7 +47,7 @@
 <!--    </bean>-->
 
     <bean id="transformRequestConsumer" class="org.alfresco.messaging.camel.routes.TransformRequestConsumer" >
-        <constructor-arg ref="transformRequestProcessor"/>
+        <property name="processor" ref="transformRequestProcessor"/>
     </bean>
 
     <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">

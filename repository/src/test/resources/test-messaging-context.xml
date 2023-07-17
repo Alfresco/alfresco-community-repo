@@ -27,7 +27,9 @@
 
     <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
 
-    <bean id="dictionary" class="org.alfresco.repo.dictionary.DictionaryComponent" />
+    <bean id="dictionary" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.dictionary.DictionaryComponent" />
+    </bean>
 
 <!--    <bean id="behaviourFilter" class="org.alfresco.repo.policy.BehaviourFilter" />-->
 

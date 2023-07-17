@@ -25,7 +25,6 @@
  */
 package org.alfresco.messaging.camel;
 
-import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
@@ -48,9 +47,6 @@ import static org.junit.Assert.assertEquals;
 public class CamelComponentsTest {
     @Autowired
     protected CamelContext camelContext;
-
-    @Autowired
-    protected TransactionAwareEventProducer transactionAwareEventProducer;
 
     @Produce("activemq:queue:alfresco.test")
     protected ProducerTemplate activemqTemplate;

@@ -25,13 +25,28 @@
         <property name="routeContextId" value="customRoutes" />
     </bean>
 
-    <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
+    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
+
+    <bean id="dictionary123" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.CLass" value="org.alfresco.service.cmr.dictionary.DictionaryService"/>
     </bean>
 
-    <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.policy.PolicyComponentImpl"/>
+    <bean id="behFilter123" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.CLass" value="org.alfresco.repo.policy.BehaviourFilter"/>
     </bean>
+
+    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" >
+        <property name="dictionary" ref="dictionary123"/>
+        <property name="behaviourFiter" ref="behFilter123"/>
+    </bean>
+
+    <!--    <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">-->
+<!--        <constructor-arg value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />-->
+<!--    </bean>-->
+
+<!--    <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">-->
+<!--        <constructor-arg value="org.alfresco.repo.policy.PolicyComponentImpl"/>-->
+<!--    </bean>-->
 
     <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>

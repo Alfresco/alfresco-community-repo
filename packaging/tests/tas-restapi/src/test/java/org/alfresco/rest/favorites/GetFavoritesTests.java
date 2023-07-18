@@ -539,7 +539,7 @@ public class GetFavoritesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify entry details for get favorites response with Rest API")
     public void checkResponseSchemaForGetFavorites() throws Exception
     {
-        userFavorites = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().include("allowableOperations").getFavorites();
+        userFavorites = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         RestPersonFavoritesModel restPersonFavoritesModel = userFavorites.getEntries().get(0).onModel();

@@ -32,6 +32,7 @@ import static junit.framework.TestCase.fail;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISFAVORITE;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLOCKED;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
@@ -300,7 +301,7 @@ public class SearchMapperTests
     {
         searchMapper.validateInclude(Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS,PARAM_INCLUDE_ASPECTNAMES,
                 PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, PARAM_INCLUDE_PROPERTIES,
-                PARAM_INCLUDE_ASSOCIATION, PARAM_INCLUDE_ISLOCKED, PARAM_INCLUDE_PERMISSIONS));
+                PARAM_INCLUDE_ASSOCIATION, PARAM_INCLUDE_ISLOCKED, PARAM_INCLUDE_PERMISSIONS, PARAM_INCLUDE_ISFAVORITE));
     }
 
     

@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.core.IRestModel;
@@ -43,6 +45,7 @@ public class RestPersonFavoritesModel extends TestModel implements IRestModel<Re
 
     private String targetGuid;
     private String createdAt;
+    private List<String> allowableOperations;
     
     private RestTargetModel target;
 
@@ -85,5 +88,13 @@ public class RestPersonFavoritesModel extends TestModel implements IRestModel<Re
     public void setCreatedAt(String createdAt)
     {
         this.createdAt = createdAt;
+    }
+
+    public List<String> getAllowableOperations() {
+        return allowableOperations;
+    }
+
+    public void setAllowableOperations(List<String> allowableOperations) {
+        this.allowableOperations = allowableOperations;
     }
 }

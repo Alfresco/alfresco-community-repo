@@ -21,6 +21,7 @@ import org.testng.annotations.Test;
 
 public class GetFavoritesTests extends RestTest
 {
+    private static final String ALLOWABLE_OPERATIONS = "allowableOperations";
     private UserModel adminUserModel, userModel;
     private SiteModel firstSiteModel;
     private SiteModel secondSiteModel;
@@ -538,7 +539,7 @@ public class GetFavoritesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify entry details for get favorites response with Rest API")
     public void checkResponseSchemaForGetFavorites() throws Exception
     {
-        userFavorites = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getFavorites();
+        userFavorites = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().include("allowableOperations").getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         RestPersonFavoritesModel restPersonFavoritesModel = userFavorites.getEntries().get(0).onModel();
@@ -550,5 +551,18 @@ public class GetFavoritesTests extends RestTest
                 .field("description").is(thirdSiteModel.getDescription()).and()
                 .field("id").is(thirdSiteModel.getId()).and()
                 .field("title").is(thirdSiteModel.getTitle());
+    }
+
+    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify if get favorites response returns allowableOperations object when requested")
+    public void checkResponseForGetFavoritesWithAllowableOperations()
+    {
+        RestPersonFavoritesModelsCollection adminFavorites =
+                restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ALLOWABLE_OPERATIONS).getFavorites();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        adminFavorites.getEntries().stream()
+                .map(RestPersonFavoritesModel::onModel)
+                .forEach(m -> m.assertThat().field(ALLOWABLE_OPERATIONS).isNotEmpty());
     }
 }

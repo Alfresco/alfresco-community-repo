@@ -368,7 +368,10 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
     public void beforeDeleteLinkNode(NodeRef linkNodeRef)
     {
         final NodeRef nodeRef = getLinkDestination(linkNodeRef);
-
+        if (nodeRef == null)
+        {
+            return;
+        }
         List<Long> nodeRefLinks = getNodeLinksIds(nodeRef);
 
         long linkNodeId = (Long) nodeService.getProperty(linkNodeRef, ContentModel.PROP_NODE_DBID);

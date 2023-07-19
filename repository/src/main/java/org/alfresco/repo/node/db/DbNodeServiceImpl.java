@@ -1264,7 +1264,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             Set<QName> childAspectQnames = nodeDAO.getNodeAspects(nodeToDelete.id);
             // Delete the node
             nodeDAO.deleteChildAssoc(nodeToDelete.primaryParentAssocPair.getFirst());
-            nodeDAO.deleteNode(nodeToDelete.id);
+            if(nodeRef!=getNodeRef(nodeId)) {
+                Pair<Long, NodeRef> nodePairs = getNodePairNotNull(nodeRef);
+                Long nodeIds = nodePairs.getFirst();
+                nodeDAO.deleteChildAssoc(nodeIds);
+            }
             invokeOnDeleteNode(
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);

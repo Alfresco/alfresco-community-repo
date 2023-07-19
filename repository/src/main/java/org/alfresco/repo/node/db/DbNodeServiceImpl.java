@@ -1263,8 +1263,15 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             QName childNodeTypeQName = nodeDAO.getNodeType(nodeToDelete.id);
             Set<QName> childAspectQnames = nodeDAO.getNodeAspects(nodeToDelete.id);
             // Delete the node
+            //nodeDAO.deleteNode(nodeToDelete.id);
+
+            QName childNodeTypeQName1 = nodeDAO.getNodeType(nodeId);
+            Set<QName> childAspectQnames1 = nodeDAO.getNodeAspects(nodeId);
             nodeDAO.deleteChildAssoc(nodeToDelete.primaryParentAssocPair.getFirst());
-            nodeDAO.deleteNode(nodeToDelete.id);
+            nodeDAO.deleteChildAssoc(nodeId);
+                  invokeOnDeleteNode(
+                          nodeToDelete.primaryParentAssocPair.getSecond(),
+                          childNodeTypeQName1, childAspectQnames1, archive);
             invokeOnDeleteNode(
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);
@@ -1273,11 +1280,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Clear out the list of nodes pending delete
         nodesPendingDeleteTxn = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
         nodesPendingDeleteTxn.removeAll(nodesPendingDelete);
-        if(nodeRef!=getNodeRef(nodeId)) {
-            Pair<Long, NodeRef> nodePairs = getNodePairNotNull(nodeRef);
-            Long nodeIds = nodePairs.getFirst();
-            nodeDAO.deleteChildAssoc(nodeIds);
-        }
     }
     
     @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)

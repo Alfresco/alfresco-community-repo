@@ -30,9 +30,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -40,7 +40,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.springframework.extensions.webscripts.servlet.FormData.FormField;
 
 /**
  * This command processor is used to receive one or more content files for a given transfer.
@@ -105,7 +104,7 @@ public class PostContentCommandProcessor implements CommandProcessor
         //Read the transfer id from the request
         String transferId = servletRequest.getParameter("transferId");
 
-        if ((transferId == null) || !ServletFileUpload.isMultipartContent(servletRequest))
+        if ((transferId == null) || !JakartaServletFileUpload.isMultipartContent(servletRequest))
         {
             resp.setStatus(Status.STATUS_BAD_REQUEST);
             return Status.STATUS_BAD_REQUEST;
@@ -113,17 +112,17 @@ public class PostContentCommandProcessor implements CommandProcessor
 
         try
         {
-           
-            ServletFileUpload upload = new ServletFileUpload();
-            FileItemIterator iter = upload.getItemIterator(servletRequest);
+
+            JakartaServletFileUpload upload = new JakartaServletFileUpload();
+            FileItemInputIterator iter = upload.getItemIterator(servletRequest);
             while (iter.hasNext())
             {
-                FileItemStream item = iter.next();
+                FileItemInput item = iter.next();
                 String name = item.getFieldName();
                 if (!item.isFormField())
                 {
                     logger.debug("got content Mime Part : " + name);
-                    receiver.saveContent(transferId, item.getName(), item.openStream());
+                    receiver.saveContent(transferId, item.getName(), item.getInputStream());
                 }
             }            
             

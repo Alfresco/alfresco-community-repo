@@ -101,6 +101,8 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     
     private String location;
 
+    private Boolean isFavorite;
+
     public Map<String, Object> getAssociation()
     {
         return association;
@@ -326,5 +328,12 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     {
         this.location = location;
     }
-    
+
+    public Boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(Boolean favorite) {
+        isFavorite = favorite;
+    }
 }

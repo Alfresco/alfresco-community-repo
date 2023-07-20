@@ -23,20 +23,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.repo.event2;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Optional;
+import java.util.concurrent.Callable;
 
-@RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-                EventConsolidatorUnitTest.class,
-                EventJSONSchemaUnitTest.class,
-                EnqueuingEventSenderUnitTest.class,
-                NodeResourceHelperUnitTest.class
-})
-public class RepoEvent2UnitSuite
+import org.alfresco.repo.event.v1.model.RepoEvent;
+
+public interface EventSender
 {
+    void accept(Callable<Optional<RepoEvent<?>>> eventProducer);
 }

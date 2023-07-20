@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.event2;
 
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -36,40 +37,33 @@ import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
-/*
- * This queue allows to create asynchronously the RepoEvent offloading the work to a ThreadPool but
- * at the same time it preserves the order of the events
+/**
+ * Enqueuing event sender allows to create asynchronously the RepoEvent offloading the work to a ThreadPool but
+ * at the same time it preserves the order of the events.
  */
-public class EventGeneratorQueue implements InitializingBean
+public class EnqueuingEventSender extends DirectEventSender
 {
-	protected static final Log LOGGER = LogFactory.getLog(EventGeneratorQueue.class);
-    
+    protected static final Log LOGGER = LogFactory.getLog(EnqueuingEventSender.class);
+
     protected Executor enqueueThreadPoolExecutor;
     protected Executor dequeueThreadPoolExecutor;
-    protected Event2MessageProducer event2MessageProducer;
     protected BlockingQueue<EventInMaking> queue = new LinkedBlockingQueue<>();
     protected Runnable listener = createListener();
 
     @Override
-    public void afterPropertiesSet() throws Exception
+    public void afterPropertiesSet()
     {
+        super.afterPropertiesSet();
         PropertyCheck.mandatory(this, "enqueueThreadPoolExecutor", enqueueThreadPoolExecutor);
         PropertyCheck.mandatory(this, "dequeueThreadPoolExecutor", dequeueThreadPoolExecutor);
-        PropertyCheck.mandatory(this, "event2MessageProducer", event2MessageProducer);
     }
 
-    public void setEvent2MessageProducer(Event2MessageProducer event2MessageProducer)
-    {
-        this.event2MessageProducer = event2MessageProducer;
-    }
-    
     public void setEnqueueThreadPoolExecutor(Executor enqueueThreadPoolExecutor)
     {
         this.enqueueThreadPoolExecutor = enqueueThreadPoolExecutor;
     }
-    
+
     public void setDequeueThreadPoolExecutor(Executor dequeueThreadPoolExecutor)
     {
         this.dequeueThreadPoolExecutor = dequeueThreadPoolExecutor;
@@ -78,11 +72,12 @@ public class EventGeneratorQueue implements InitializingBean
 
     /**
      * Procedure to enqueue the callback functions that creates an event.
-     * @param maker Callback function that creates an event.
+     * @param eventProducer Callback function that creates an event.
      */
-    public void accept(Callable<RepoEvent<?>> maker)
+    @Override
+    public void accept(Callable<Optional<RepoEvent<?>>> eventProducer)
     {
-        EventInMaking eventInMaking = new EventInMaking(maker);
+        EventInMaking eventInMaking = new EventInMaking(eventProducer);
         queue.offer(eventInMaking);
         enqueueThreadPoolExecutor.execute(() -> {
             try
@@ -102,78 +97,67 @@ public class EventGeneratorQueue implements InitializingBean
      */
     private Runnable createListener()
     {
-        return new Runnable()
-        {
-            @Override
-            public void run()
+        return () -> {
+            try
             {
-                try 
+                while (!Thread.interrupted())
                 {
-                    while (!Thread.interrupted())
+                    try
                     {
-                        try
-                        {
-                            EventInMaking eventInMaking = queue.take();
-                            RepoEvent<?> event = eventInMaking.getEventWhenReady();
-                            if (event != null)
-                            {
-                                event2MessageProducer.send(event);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            LOGGER.error("Unexpected error while dequeuing and sending repository event" + e);
-                        }
+                        queue.take().getEventWhenReady().ifPresent(event -> event2MessageProducer.send(event));
+                    }
+                    catch (Exception e)
+                    {
+                        LOGGER.error("Unexpected error while dequeuing and sending repository event " + e);
                     }
                 }
-                finally
-                {
-                    LOGGER.warn("Unexpected: rescheduling the listener thread.");
-                    dequeueThreadPoolExecutor.execute(listener);
-                }
+            }
+            finally
+            {
+                LOGGER.warn("Unexpected: rescheduling the listener thread.");
+                dequeueThreadPoolExecutor.execute(listener);
             }
         };
 
     }
 
-    /*
+    /**
      * Simple class that makes events and allows to retrieve them when ready
      */
     private static class EventInMaking
     {
-        private Callable<RepoEvent<?>> maker;
+        private final Callable<Optional<RepoEvent<?>>> maker;
         private volatile RepoEvent<?> event;
-        private CountDownLatch latch;
-        
-        public EventInMaking(Callable<RepoEvent<?>> maker)
+        private final CountDownLatch latch;
+
+        public EventInMaking(Callable<Optional<RepoEvent<?>>> maker)
         {
             this.maker = maker;
             this.latch = new CountDownLatch(1);
         }
-        
+
         public void make() throws Exception
         {
             try
             {
-                event = maker.call();
+                event = maker.call().orElse(null);
             }
-            finally 
+            finally
             {
                 latch.countDown();
             }
         }
-        
-        public RepoEvent<?> getEventWhenReady() throws InterruptedException
+
+        public Optional<RepoEvent<?>> getEventWhenReady() throws InterruptedException
         {
             latch.await(30, TimeUnit.SECONDS);
-            return event;
+            return Optional.ofNullable(event);
         }
-        
+
         @Override
         public String toString()
         {
             return maker.toString();
         }
     }
-
 }

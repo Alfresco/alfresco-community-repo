@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -767,7 +767,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         
         void addEvents(List<Event> events)
         {
-            events.addAll(events);
+            this.events.addAll(events);
         }
 
         void clear()

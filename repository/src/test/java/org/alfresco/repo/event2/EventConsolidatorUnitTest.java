@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -43,7 +43,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBeforeRemovedAndAddedEmpty()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         
         Set<String> currentAspects = new HashSet<>();
         currentAspects.add("cm:geographic");
@@ -57,7 +57,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectRemoved()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
         Set<String> currentAspects = new HashSet<>();
@@ -79,7 +79,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectAdded()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
         Set<String> currentAspects = new HashSet<>();
@@ -102,7 +102,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectAddedAndRemoved()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
         Set<String> currentAspects = new HashSet<>();
@@ -125,7 +125,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectRemovedAndAdded()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -150,7 +150,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectAddedTwiceRemovedOnce()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
 
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
@@ -178,7 +178,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectRemovedTwiceAddedOnce()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
 
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
@@ -206,7 +206,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_FilteredAspectAdded()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASPECT_COPIEDFROM);
 
         Set<String> currentAspects = new HashSet<>();
@@ -227,7 +227,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspect()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         
         assertEquals(1, eventConsolidator.getAspectsAdded().size());
@@ -238,7 +238,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testRemoveAspect()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
         assertEquals(0, eventConsolidator.getAspectsAdded().size());
@@ -249,7 +249,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspectRemoveAspect()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -260,7 +260,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testRemoveAspectAddAspect()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -271,7 +271,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspectTwiceRemoveAspectOnce()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
@@ -284,7 +284,7 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspectOnceRemoveAspectTwice()
     {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);

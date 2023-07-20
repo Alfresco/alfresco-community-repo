@@ -119,8 +119,8 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     protected EventGenerator eventGenerator;
 
     @Autowired
-    @Qualifier("eventGeneratorQueue")
-    protected EventGeneratorQueue eventQueue;
+    @Qualifier("enqueuingEventSender")
+    protected EnqueuingEventSender eventSender;
 
     @Autowired
     private NamespaceDAO namespaceDAO;

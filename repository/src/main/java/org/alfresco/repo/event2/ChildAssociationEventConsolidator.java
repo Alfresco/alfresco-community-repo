@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,13 +25,8 @@
  */
 package org.alfresco.repo.event2;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import org.alfresco.repo.event.v1.model.ChildAssociationResource;
-import org.alfresco.repo.event.v1.model.DataAttributes;
-import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
-import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
 
@@ -41,51 +36,12 @@ import org.alfresco.service.namespace.QName;
  * @author Chris Shields
  * @author Sara Aspery
  */
-public class ChildAssociationEventConsolidator implements ChildAssociationEventSupportedPolicies
+public class ChildAssociationEventConsolidator extends EventConsolidator<ChildAssociationRef, ChildAssociationResource> implements ChildAssociationEventSupportedPolicies
 {
-    private final Deque<EventType> eventTypes;
-
-    protected final ChildAssociationRef childAssociationRef;
-
-    private ChildAssociationResource resource;
-    private final NodeResourceHelper helper;
 
     public ChildAssociationEventConsolidator(ChildAssociationRef childAssociationRef, NodeResourceHelper helper)
     {
-        this.eventTypes = new ArrayDeque<>();
-        this.childAssociationRef = childAssociationRef;
-        this.helper = helper;
-        this.resource = buildChildAssociationResource(this.childAssociationRef);
-    }
-
-    /**
-     * Builds and returns the {@link RepoEvent} instance.
-     *
-     * @param eventInfo the object holding the event information
-     * @return the {@link RepoEvent} instance
-     */
-    public RepoEvent<DataAttributes<ChildAssociationResource>> getRepoEvent(EventInfo eventInfo)
-    {
-        EventType eventType = getDerivedEvent();
-
-        DataAttributes<ChildAssociationResource> eventData = buildEventData(eventInfo, resource);
-
-        return RepoEvent.<DataAttributes<ChildAssociationResource>>builder()
-                    .setId(eventInfo.getId())
-                    .setSource(eventInfo.getSource())
-                    .setTime(eventInfo.getTimestamp())
-                    .setType(eventType.getType())
-                    .setData(eventData)
-                    .setDataschema(EventJSONSchema.getSchemaV1(eventType))
-                    .build();
-    }
-
-    protected DataAttributes<ChildAssociationResource> buildEventData(EventInfo eventInfo, ChildAssociationResource resource)
-    {
-        return EventData.<ChildAssociationResource>builder()
-                    .setEventGroupId(eventInfo.getTxnId())
-                    .setResource(resource)
-                    .build();
+        super(childAssociationRef, helper);
     }
 
     /**
@@ -121,12 +77,10 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
         return new ChildAssociationResource(parentId, childId, assocType, assocQName);
     }
 
-    /**
-     * @return a derived event for a transaction.
-     */
-    private EventType getDerivedEvent()
+    @Override
+    protected EventType getDerivedEvent()
     {
-        if (isTemporaryChildAssociation())
+        if (isTemporaryEntity())
         {
             // This event will be filtered out, but we set the correct
             // event type anyway for debugging purposes
@@ -147,33 +101,15 @@ public class ChildAssociationEventConsolidator implements ChildAssociationEventS
         }
     }
 
-    /**
-     * Whether or not the child association has been created and then deleted, i.e. a temporary child association.
-     *
-     * @return {@code true} if the child association has been created and then deleted, otherwise false
-     */
-    public boolean isTemporaryChildAssociation()
+    @Override
+    public boolean isTemporaryEntity()
     {
         return eventTypes.contains(EventType.CHILD_ASSOC_CREATED) && eventTypes.getLast() == EventType.CHILD_ASSOC_DELETED;
     }
 
-    /**
-     * Get child association type.
-     *
-     * @return QName the child association type
-     */
-    public QName getChildAssocType()
+    @Override
+    public QName getEntityType()
     {
-        return childAssociationRef.getTypeQName();
-    }
-
-    /**
-     * Get event types.
-     *
-     * @return Deque<EventType> queue of event types
-     */
-    public Deque<EventType> getEventTypes()
-    {
-        return eventTypes;
+        return entityReference.getTypeQName();
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.event2;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.net.URI;
 import java.time.Instant;
@@ -34,13 +35,16 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.TransactionEntity;
+import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.RepoEvent;
+import org.alfresco.repo.event.v1.model.Resource;
 import org.alfresco.repo.event2.filter.ChildAssociationTypeFilter;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.EventUserFilter;
@@ -63,9 +67,11 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.ServiceBehaviourBinding;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.EntityRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -74,6 +80,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.TriPredicate;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -102,8 +109,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private PersonService personService;
     protected NodeResourceHelper nodeResourceHelper;
     protected NodeDAO nodeDAO;
-
-    private EventGeneratorQueue eventGeneratorQueue;
+    private EventSender eventSender;
     private NodeTypeFilter nodeTypeFilter;
     private ChildAssociationTypeFilter childAssociationTypeFilter;
     private EventUserFilter userFilter;
@@ -139,7 +145,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         PropertyCheck.mandatory(this, "personService", personService);
         PropertyCheck.mandatory(this, "nodeResourceHelper", nodeResourceHelper);
         PropertyCheck.mandatory(this, "nodeDAO", nodeDAO);
-        PropertyCheck.mandatory(this, "eventGeneratorQueue", eventGeneratorQueue);
+        PropertyCheck.mandatory(this, "eventSender", eventSender);
 
         this.nodeTypeFilter = eventFilterRegistry.getNodeTypeFilter();
         this.childAssociationTypeFilter = eventFilterRegistry.getChildAssociationTypeFilter();
@@ -188,7 +194,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
 
         if (behaviours == null)
         {
-            behaviours = new HashSet<Behaviour>();
+            behaviours = new HashSet<>();
             afterPropertiesSet();
             bindBehaviours();
 
@@ -230,8 +236,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         this.descriptorService = descriptorService;
     }
 
-    // To make IntelliJ stop complaining about unused method!
-    @SuppressWarnings("unused")
     public void setEventFilterRegistry(EventFilterRegistry eventFilterRegistry)
     {
         this.eventFilterRegistry = eventFilterRegistry;
@@ -252,9 +256,9 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         this.nodeResourceHelper = nodeResourceHelper;
     }
 
-    public void setEventGeneratorQueue(EventGeneratorQueue eventGeneratorQueue)
+    public void setEventSender(EventSender eventSender)
     {
-        this.eventGeneratorQueue = eventGeneratorQueue;
+        this.eventSender = eventSender;
     }
 
     @Override
@@ -323,9 +327,9 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         getEventConsolidator(associationRef).beforeDeleteAssociation(associationRef);
     }
 
-    protected EventConsolidator createEventConsolidator()
+    protected NodeEventConsolidator createEventConsolidator()
     {
-        return new EventConsolidator(nodeResourceHelper);
+        return new NodeEventConsolidator(nodeResourceHelper);
     }
 
     protected ChildAssociationEventConsolidator createChildAssociationEventConsolidator(
@@ -370,13 +374,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         disableBehaviours(behaviours);
     }
 
-    protected void disableBehaviours(Set<Behaviour> bindedBehaviours)
+    protected void disableBehaviours(Set<Behaviour> boundBehaviours)
     {
-        if (bindedBehaviours != null)
+        if (boundBehaviours != null)
         {
-            bindedBehaviours.forEach(behaviour -> {
-                behaviour.disable();
-            });
+            boundBehaviours.forEach(Behaviour::disable);
         }
     }
 
@@ -385,30 +387,28 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         enableBehaviours(behaviours);
     }
 
-    protected void enableBehaviours(Set<Behaviour> bindedBehaviours)
+    protected void enableBehaviours(Set<Behaviour> boundBehaviours)
     {
-        if (bindedBehaviours != null)
+        if (boundBehaviours != null)
         {
-            bindedBehaviours.forEach(behaviour -> {
-                behaviour.enable();
-            });
+            boundBehaviours.forEach(Behaviour::enable);
         }
     }
 
     /**
-     * @return the {@link EventConsolidator} for the supplied {@code nodeRef} from
+     * @return the {@link NodeEventConsolidator} for the supplied {@code nodeRef} from
      * the current transaction context.
      */
-    protected EventConsolidator getEventConsolidator(NodeRef nodeRef)
+    protected NodeEventConsolidator getEventConsolidator(NodeRef nodeRef)
     {
         Consolidators consolidators = getTxnConsolidators(transactionListener);
-        Map<NodeRef, EventConsolidator> nodeEvents = consolidators.getNodes();
+        Map<NodeRef, NodeEventConsolidator> nodeEvents = consolidators.getNodes();
         if (nodeEvents.isEmpty())
         {
             AlfrescoTransactionSupport.bindListener(transactionListener);
         }
 
-        EventConsolidator eventConsolidator = nodeEvents.get(nodeRef);
+        NodeEventConsolidator eventConsolidator = nodeEvents.get(nodeRef);
         if (eventConsolidator == null)
         {
             eventConsolidator = createEventConsolidator();
@@ -430,7 +430,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
     /**
-     * @return the {@link EventConsolidator} for the supplied {@code childAssociationRef} from
+     * @return the {@link ChildAssociationEventConsolidator} for the supplied {@code childAssociationRef} from
      * the current transaction context.
      */
     private ChildAssociationEventConsolidator getEventConsolidator(ChildAssociationRef childAssociationRef)
@@ -452,7 +452,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
     /**
-     * @return the {@link EventConsolidator} for the supplied {@code peerAssociationRef} from
+     * @return the {@link PeerAssociationEventConsolidator} for the supplied {@code peerAssociationRef} from
      * the current transaction context.
      */
     private PeerAssociationEventConsolidator getEventConsolidator(AssociationRef peerAssociationRef)
@@ -506,7 +506,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         {
             return;
         }
-        behaviours = new HashSet<Behaviour>();
+        behaviours = new HashSet<>();
         bindBehaviours();
     }
 
@@ -521,32 +521,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         @Override
         public void afterCommit()
         {
-            if(isTransactionCommitted())
+            if (isTransactionCommitted())
             {
                 try
                 {
-                    final Consolidators consolidators = getTxnConsolidators(this);
-
-                    // Node events
-                    for (Map.Entry<NodeRef, EventConsolidator> entry : consolidators.getNodes().entrySet())
-                    {
-                        EventConsolidator eventConsolidator = entry.getValue();
-                        sendEvent(entry.getKey(), eventConsolidator);
-                    }
-
-                    // Child assoc events
-                    for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs().entrySet())
-                    {
-                        ChildAssociationEventConsolidator eventConsolidator = entry.getValue();
-                        sendEvent(entry.getKey(), eventConsolidator);
-                    }
-
-                    // Peer assoc events
-                    for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs().entrySet())
-                    {
-                        PeerAssociationEventConsolidator eventConsolidator = entry.getValue();
-                        sendEvent(entry.getKey(), eventConsolidator);
-                    }
+                    sendEvents();
                 }
                 catch (Exception e)
                 {
@@ -554,12 +533,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                     LOGGER.error("Unexpected error while sending repository events", e);
                 }
             }
-        }
-
-        protected void sendEvent(NodeRef nodeRef, EventConsolidator consolidator)
-        {
-            EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
-            eventGeneratorQueue.accept(()-> createEvent(nodeRef, consolidator, eventInfo));
         }
 
         /**
@@ -571,115 +544,144 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             return nodeDAO.getCurrentTransactionCommitTime() != null;
         }
 
-        private RepoEvent<?> createEvent(NodeRef nodeRef, EventConsolidator consolidator, EventInfo eventInfo)
+        private void sendEvents()
         {
-            String user = eventInfo.getPrincipal();
+            final Consolidators consolidators = getTxnConsolidators(this);
 
-            if (consolidator.isTemporaryNode())
+            // Node events
+            for (Map.Entry<NodeRef, NodeEventConsolidator> entry : consolidators.getNodes().entrySet())
             {
-                if (LOGGER.isTraceEnabled())
-                {
-                    LOGGER.trace("Ignoring temporary node: " + nodeRef);
-                }
-                return null;
+                sendEvent(entry.getKey(), entry.getValue());
             }
 
-            // Get the repo event before the filtering,
-            // so we can take the latest node info into account
-            final RepoEvent<?> event = consolidator.getRepoEvent(eventInfo);
-
-            final QName nodeType = consolidator.getNodeType();
-            if (isFiltered(nodeType, user))
+            // Child assoc events
+            for (Map.Entry<ChildAssociationRef, ChildAssociationEventConsolidator> entry : consolidators.getChildAssocs().entrySet())
             {
-                if (LOGGER.isTraceEnabled())
-                {
-                    LOGGER.trace("EventFilter - Excluding node: '" + nodeRef + "' of type: '"
-                            + ((nodeType == null) ? "Unknown' " : nodeType.toPrefixString())
-                            + "' created by: " + user);
-                }
-                return null;
+                sendEvent(entry.getKey(), entry.getValue());
             }
 
-            if (event.getType().equals(EventType.NODE_UPDATED.getType()) && consolidator.isResourceBeforeAllFieldsNull())
+            // Peer assoc events
+            for (Map.Entry<AssociationRef, PeerAssociationEventConsolidator> entry : consolidators.getPeerAssocs().entrySet())
             {
-                if (LOGGER.isTraceEnabled())
-                {
-                    LOGGER.trace("Ignoring node updated event as no fields have been updated: " + nodeRef);
-                }
-                return null;
+                sendEvent(entry.getKey(), entry.getValue());
             }
+        }
 
-            logEvent(event, consolidator.getEventTypes());
-            return event;
+        protected void sendEvent(NodeRef nodeRef, NodeEventConsolidator consolidator)
+        {
+            sendEvent(nodeRef, consolidator, nodeToEventEligibilityVerifier());
         }
 
         protected void sendEvent(ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
         {
-            EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
-            eventGeneratorQueue.accept(()-> createEvent(eventInfo, childAssociationRef, consolidator));
-        }
-
-        private RepoEvent<?> createEvent(EventInfo eventInfo, ChildAssociationRef childAssociationRef, ChildAssociationEventConsolidator consolidator)
-        {
-            String user = eventInfo.getPrincipal();
-            if (consolidator.isTemporaryChildAssociation())
-            {
-                if (LOGGER.isTraceEnabled())
-                {
-                    LOGGER.trace("Ignoring temporary child association: " + childAssociationRef);
-                }
-                return null;
-            }
-
-            // Get the repo event before the filtering,
-            // so we can take the latest association info into account
-            final RepoEvent<?> event = consolidator.getRepoEvent(eventInfo);
-
-            final QName childAssocType = consolidator.getChildAssocType();
-            if (isFilteredChildAssociation(childAssocType, user))
-            {
-                if (LOGGER.isTraceEnabled())
-                {
-                    LOGGER.trace("EventFilter - Excluding child association: '" + childAssociationRef + "' of type: '"
-                            + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
-                            + "' created by: " + user);
-                }
-                return null;
-            } else if (childAssociationRef.isPrimary())
-            {
-                if (LOGGER.isTraceEnabled())
-                {
-                    LOGGER.trace("EventFilter - Excluding primary child association: '" + childAssociationRef + "' of type: '"
-                            + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
-                            + "' created by: " + user);
-                }
-                return null;
-            }
-
-            logEvent(event, consolidator.getEventTypes());
-            return event;
+            sendEvent(childAssociationRef, consolidator, childAssociationToEventEligibilityVerifier());
         }
 
         protected void sendEvent(AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
         {
-            EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
-            eventGeneratorQueue.accept(()-> createEvent(eventInfo, peerAssociationRef, consolidator));
+            sendEvent(peerAssociationRef, consolidator, null);
         }
 
-        private RepoEvent<?> createEvent(EventInfo eventInfo, AssociationRef peerAssociationRef, PeerAssociationEventConsolidator consolidator)
+        /**
+         * Handles all kinds of events and sends them within dedicated transaction.
+         *
+         * @param entityReference reference to an entity (e.g. node, child association, peer association)
+         * @param eventConsolidator object encapsulating events occurred in a transaction
+         * @param entityToEventEligibilityVerifier allows to verify if entity is eligible to generate an even. If null no verification is necessary
+         * @param <REF> entity reference type
+         * @param <CON> event consolidator type - extension of {@link EventConsolidator}
+         */
+        private  <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> void sendEvent(
+            final REF entityReference, final CON eventConsolidator, final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
         {
-            if (consolidator.isTemporaryPeerAssociation())
+            final EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
+            transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                eventSender.accept(() -> createEvent(entityReference, eventConsolidator, eventInfo, entityToEventEligibilityVerifier));
+                return null;
+            }, true, true);
+        }
+
+        private <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> Optional<RepoEvent<?>> createEvent(
+            final REF entityReference, final CON eventConsolidator, final EventInfo eventInfo,
+            final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
+        {
+            if (eventConsolidator.isTemporaryEntity())
             {
                 if (LOGGER.isTraceEnabled())
                 {
-                    LOGGER.trace("Ignoring temporary peer association: " + peerAssociationRef);
+                    LOGGER.trace("Ignoring temporary entity: " + entityReference);
                 }
-                return null;
+                return Optional.empty();
             }
 
-            RepoEvent<?> event = consolidator.getRepoEvent(eventInfo);
-            logEvent(event, consolidator.getEventTypes());
-            return event;
+            // get the repo event before verifying entity eligibility to generate event, so we can take the latest node info into account
+            final RepoEvent<? extends DataAttributes<? extends Resource>> event = eventConsolidator.getRepoEvent(eventInfo);
+
+            // verify if entity is eligible to generate an event
+            if (entityToEventEligibilityVerifier != null && !entityToEventEligibilityVerifier.test(entityReference, eventConsolidator, eventInfo))
+            {
+                return Optional.empty();
+            }
+
+            logEvent(event, eventConsolidator.getEventTypes());
+            return Optional.of(event);
+        }
+
+        private TriPredicate<NodeRef, NodeEventConsolidator, EventInfo> nodeToEventEligibilityVerifier()
+        {
+            return (nodeReference, eventConsolidator, eventInfo) -> {
+                final String user = eventInfo.getPrincipal();
+                final QName nodeType = eventConsolidator.getEntityType();
+                if (isFiltered(nodeType, user))
+                {
+                    if (LOGGER.isTraceEnabled())
+                    {
+                        LOGGER.trace("EventFilter - Excluding node: '" + nodeReference + "' of type: '"
+                            + ((nodeType == null) ? "Unknown' " : nodeType.toPrefixString())
+                            + "' created by: " + user);
+                    }
+                    return false;
+                }
+
+                if (eventConsolidator.isEventTypeEqualTo(EventType.NODE_UPDATED) && eventConsolidator.isResourceBeforeAllFieldsNull())
+                {
+                    if (LOGGER.isTraceEnabled())
+                    {
+                        LOGGER.trace("Ignoring node updated event as no fields have been updated: " + nodeReference);
+                    }
+                    return false;
+                }
+                return true;
+            };
+        }
+
+        private TriPredicate<ChildAssociationRef, ChildAssociationEventConsolidator, EventInfo> childAssociationToEventEligibilityVerifier()
+        {
+            return (childAssociationReference, eventConsolidator, eventInfo) -> {
+                final String user = eventInfo.getPrincipal();
+                final QName childAssocType = eventConsolidator.getEntityType();
+                if (isFilteredChildAssociation(childAssocType, user))
+                {
+                    if (LOGGER.isTraceEnabled())
+                    {
+                        LOGGER.trace("EventFilter - Excluding child association: '" + childAssociationReference + "' of type: '"
+                            + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
+                            + "' created by: " + user);
+                    }
+                    return false;
+                }
+                else if (childAssociationReference.isPrimary())
+                {
+                    if (LOGGER.isTraceEnabled())
+                    {
+                        LOGGER.trace("EventFilter - Excluding primary child association: '" + childAssociationReference + "' of type: '"
+                            + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
+                            + "' created by: " + user);
+                    }
+                    return false;
+                }
+                return true;
+            };
         }
 
         private void logEvent(RepoEvent<?> event, Deque<EventType> listOfEvents)
@@ -692,14 +694,13 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         }
     }
 
-
     protected static class Consolidators
     {
-        private Map<NodeRef, EventConsolidator> nodes;
+        private Map<NodeRef, NodeEventConsolidator> nodes;
         private Map<ChildAssociationRef, ChildAssociationEventConsolidator> childAssocs;
         private Map<AssociationRef, PeerAssociationEventConsolidator> peerAssocs;
 
-        public Map<NodeRef, EventConsolidator> getNodes()
+        public Map<NodeRef, NodeEventConsolidator> getNodes()
         {
             if (nodes == null)
             {

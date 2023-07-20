@@ -23,20 +23,29 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.util;
 
-package org.alfresco.repo.event2;
+import java.util.Objects;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-
-@RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-                EventConsolidatorUnitTest.class,
-                EventJSONSchemaUnitTest.class,
-                EnqueuingEventSenderUnitTest.class,
-                NodeResourceHelperUnitTest.class
-})
-public class RepoEvent2UnitSuite
+@FunctionalInterface
+public interface TriPredicate<T, U, V>
 {
+    boolean test(T t, U u, V v);
+
+    default TriPredicate<T, U, V> and(TriPredicate<? super T, ? super U, ? super V> other)
+    {
+        Objects.requireNonNull(other);
+        return (T t, U u, V v) -> test(t, u, v) && other.test(t, u, v);
+    }
+
+    default TriPredicate<T, U, V> negate()
+    {
+        return (T t, U u, V v) -> !test(t, u, v);
+    }
+
+    default TriPredicate<T, U, V> or(TriPredicate<? super T, ? super U, ? super V> other)
+    {
+        Objects.requireNonNull(other);
+        return (T t, U u, V v) -> test(t, u, v) || other.test(t, u, v);
+    }
 }

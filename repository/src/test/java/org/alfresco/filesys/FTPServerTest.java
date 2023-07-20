@@ -868,7 +868,8 @@ public class FTPServerTest extends TestCase
                 FTPFile[] files = ftp.listFiles();
                 assertNotNull(files);
                 assertTrue("list command should not succeed", files.length == 0);
-
+                logger.info("impropableIPAdress: " + improbableIPAddress);
+                logger.info("ftp passiveHost: " + ftp.getPassiveHost());
                 assertTrue("The passive host should be the one set earlier.", improbableIPAddress.equals(ftp.getPassiveHost()));
             }
             finally

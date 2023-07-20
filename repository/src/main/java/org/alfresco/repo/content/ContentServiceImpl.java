@@ -661,6 +661,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 // expected exception
             }
         }
+        directAccessUrl.setFileName(fileName);
         return directAccessUrl;
     }
 

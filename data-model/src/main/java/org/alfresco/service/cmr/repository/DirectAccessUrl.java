@@ -39,6 +39,7 @@ public class DirectAccessUrl implements Serializable
     private String contentUrl;
     private Date expiryTime;
     private boolean attachment;
+    private String fileName;
 
     public String getContentUrl()
     {
@@ -70,18 +71,28 @@ public class DirectAccessUrl implements Serializable
         this.attachment = attachment;
     }
 
+    public String getFileName()
+    {
+        return fileName;
+    }
+
+    public void setFileName(String fileName)
+    {
+        this.fileName = fileName;
+    }
+
     @Override public boolean equals(Object obj)
     {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
 
         DirectAccessUrl that = (DirectAccessUrl) obj;
-        return attachment == that.attachment && Objects.equals(contentUrl,
+        return fileName.equals(that.fileName) && attachment == that.attachment && Objects.equals(contentUrl,
                 that.contentUrl) && Objects.equals(expiryTime, that.expiryTime);
     }
 
     @Override public int hashCode()
     {
-        return Objects.hash(contentUrl, expiryTime, attachment);
+        return Objects.hash(contentUrl, expiryTime, attachment, fileName);
     }
 }

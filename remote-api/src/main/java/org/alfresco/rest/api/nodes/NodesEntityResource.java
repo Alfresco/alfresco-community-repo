@@ -211,12 +211,13 @@ public class NodesEntityResource implements
     {
         boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
         Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
+        String fileName = directAccessUrlHelper.getFileName(directAccessUrlRequest);
         NodeRef nodeRef = nodes.validateNode(nodeId);
 
         DirectAccessUrl directAccessUrl;
         try
         {
-            directAccessUrl = nodes.requestContentDirectUrl(nodeRef, attachment, validFor);
+            directAccessUrl = nodes.requestContentDirectUrl(nodeRef, attachment, validFor, fileName);
         }
         catch (DirectAccessUrlDisabledException ex)
         {

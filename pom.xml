@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.165-SNAPSHOT</version>
+    <version>23.1.0.167-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -117,7 +117,7 @@
         <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.4.2-A2</alfresco.googledrive.version>
+        <alfresco.googledrive.version>3.4.2-A4</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.6.1-A2-SNAPSHOT</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
@@ -701,7 +701,7 @@
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
-                <version>7.5.4</version>
+                <version>7.5.5</version>
             </dependency>
             <dependency>
                 <groupId>com.networknt</groupId>

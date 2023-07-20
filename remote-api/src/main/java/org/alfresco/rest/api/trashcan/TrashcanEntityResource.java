@@ -109,10 +109,11 @@ public class TrashcanEntityResource implements
     {
         boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
         Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
+        String fileName = directAccessUrlHelper.getFileName(directAccessUrlRequest);
         DirectAccessUrl directAccessUrl;
         try
         {
-            directAccessUrl = deletedNodes.requestContentDirectUrl(originalNodeId, null, attachment, validFor);
+            directAccessUrl = deletedNodes.requestContentDirectUrl(originalNodeId, null, attachment, validFor, fileName);
         }
         catch (DirectAccessUrlDisabledException ex)
         {

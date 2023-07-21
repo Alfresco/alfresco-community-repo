@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -57,10 +57,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class EventGeneratorTest extends AbstractContextAwareRepoEvent
+public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
-
     private static final long DUMP_BROKER_TIMEOUT = 50000000l;
 
     @Autowired @Qualifier("event2ObjectMapper")

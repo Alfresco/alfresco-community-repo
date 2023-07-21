@@ -59,12 +59,13 @@ public class DirectEventSender implements EventSender, InitializingBean
         {
             eventProducer.call().ifPresent(event -> event2MessageProducer.send(event));
         }
+        catch (MessagingException e)
+        {
+            throw e;
+        }
         catch (Exception e)
         {
-            if (!(e instanceof MessagingException))
-            {
-                throw new AlfrescoRuntimeException("Unexpected error while executing maker function for repository event", e);
-            }
+            throw new AlfrescoRuntimeException("Unexpected error while executing maker function for repository event", e);
         }
     }
 }

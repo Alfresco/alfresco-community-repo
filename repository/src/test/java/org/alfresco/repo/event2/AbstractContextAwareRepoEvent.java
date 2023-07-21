@@ -71,6 +71,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -118,11 +119,10 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     protected EventGenerator eventGenerator;
 
     @Autowired
-    @Qualifier("enqueuingEventSender")
-    protected EnqueuingEventSender eventSender;
-
-    @Autowired
     private NamespaceDAO namespaceDAO;
+
+    @Value("${repo.event2.queue.skip}")
+    protected boolean skipEventQueue;
 
     protected NodeRef rootNodeRef;
 
@@ -133,7 +133,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     }
 
     @AfterClass
-    public static void afterAll() throws Exception
+    public static void afterAll()
     {
         CAMEL_CONTEXT.stop();
     }

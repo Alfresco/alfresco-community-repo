@@ -25,20 +25,18 @@
  */
 package org.alfresco.repo.event2;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@RunWith(Suite.class)
-@SuiteClasses({ CreateRepoEventIT.class,
-                UpdateRepoEventIT.class,
-                DeleteRepoEventIT.class,
-                ChildAssociationRepoEventIT.class,
-                PeerAssociationRepoEventIT.class,
-                EnqueuingEventGeneratorTest.class,
-                DirectEventGeneratorTest.class,
-                EventGeneratorDisabledTest.class
-})
-public class RepoEvent2ITSuite
+public class EnqueuingEventGeneratorTest extends EventGeneratorTest
 {
+    @Autowired
+    private EventSender enqueuingEventSender;
+
+    @Test
+    public void testIfEnqueuingSenderIsSetInEventGenerator()
+    {
+        assertFalse(skipEventQueue);
+        assertEquals(enqueuingEventSender, eventGenerator.getEventSender());
+    }
 }

@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.event2;
 
-import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.net.URI;
 import java.time.Instant;
@@ -259,6 +258,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     public void setEventSender(EventSender eventSender)
     {
         this.eventSender = eventSender;
+    }
+
+    public EventSender getEventSender()
+    {
+        return eventSender;
     }
 
     @Override

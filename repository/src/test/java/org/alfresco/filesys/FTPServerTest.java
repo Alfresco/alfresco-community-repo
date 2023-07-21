@@ -869,7 +869,7 @@ public class FTPServerTest extends TestCase
                 assertNotNull(files);
                 assertTrue("list command should not succeed", files.length == 0);
 
-                assertTrue("The passive host should be the one set earlier." + "impropableIPAdress: " + improbableIPAddress + " ftp passiveHost: " + ftp.getPassiveHost(), improbableIPAddress.equals(ftp.getPassiveHost()));
+                assertTrue("The passive host should be the one set earlier.", improbableIPAddress.equals(ftp.getPassiveHost()));
             }
             finally
             {
@@ -915,7 +915,7 @@ public class FTPServerTest extends TestCase
     private FTPClient connectClient() throws IOException
     {
         FTPClient ftp = new FTPClient();
-    
+        ftp.setIpAddressFromPasvResponse(true);
         if(logger.isDebugEnabled())
         {
             ftp.addProtocolCommandListener(new PrintCommandListener(

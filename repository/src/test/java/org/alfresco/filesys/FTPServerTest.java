@@ -138,7 +138,7 @@ public class FTPServerTest extends TestCase
         RetryingTransactionCallback<Void> createTestDirCB = new RetryingTransactionCallback<Void>() {
 
             @Override
-            public Void execute() throws Throwable
+            public Void execute()
             {
                 {
                     NodeRef userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
@@ -883,7 +883,7 @@ public class FTPServerTest extends TestCase
         }
     }
 
-    private void safeDisconnect(FTPClient ftp) throws IOException
+    private void safeDisconnect(FTPClient ftp)
     {
         try
         {

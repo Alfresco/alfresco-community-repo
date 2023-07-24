@@ -389,12 +389,6 @@
     </servlet>
 
    <servlet>
-      <servlet-name>cmistck</servlet-name>
-      <servlet-class>org.apache.chemistry.opencmis.tck.runner.WebRunnerServlet</servlet-class>
-      <load-on-startup>8</load-on-startup>
-   </servlet>
-
-   <servlet>
       <servlet-name>publicapiServlet</servlet-name>
       <servlet-class>org.alfresco.rest.api.PublicApiWebScriptServlet</servlet-class>
       <init-param>
@@ -469,14 +463,6 @@
       <servlet-name>publicapiServlet</servlet-name>
       <url-pattern>/api/*</url-pattern>
    </servlet-mapping>
-    
-   <!-- The CMIS TCK is deactivated by default. -->
-   <!-- CMISTCK
-   <servlet-mapping>
-      <servlet-name>cmistck</servlet-name>
-      <url-pattern>/cmistck</url-pattern>
-   </servlet-mapping>
-   CMISTCK -->
 
    <!-- Enterprise servlet-mapping placeholder -->
 

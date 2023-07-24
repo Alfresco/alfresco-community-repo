@@ -34,6 +34,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 
+import groovy.util.logging.Log4j;
 import junit.framework.TestCase;
 
 import org.alfresco.jlan.ftp.FTPConfigSection;
@@ -61,6 +62,8 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.junit.experimental.categories.Category;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 
@@ -74,19 +77,19 @@ import org.springframework.context.ApplicationContext;
 public class FTPServerTest extends TestCase
 
 {
-    private static Log logger = LogFactory.getLog(FTPServerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FTPServerTest.class);
     
     private ApplicationContext applicationContext;
     
-    private final String USER_ADMIN="admin";
-    private final String PASSWORD_ADMIN="admin";
-    private final String USER_ONE = "FTPServerTestOne";
-    private final String USER_TWO = "FTPServerTestTwo";
-    private final String USER_THREE = "FTPServerTestThree";
-    private final String PASSWORD_ONE="Password01";
-    private final String PASSWORD_TWO="Password02";
-    private final String PASSWORD_THREE="Password03";
-    private final String HOSTNAME="localhost";
+    private static final String USER_ADMIN = "admin";
+    private static final String PASSWORD_ADMIN = "admin";
+    private static final String USER_ONE = "FTPServerTestOne";
+    private static final String USER_TWO = "FTPServerTestTwo";
+    private static final String USER_THREE = "FTPServerTestThree";
+    private static final String PASSWORD_ONE = "Password01";
+    private static final String PASSWORD_TWO = "Password02";
+    private static final String PASSWORD_THREE = "Password03";
+    private static final String HOSTNAME = "localhost";
     
     private NodeService nodeService;
     private PersonService personService;
@@ -127,7 +130,7 @@ public class FTPServerTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                createUser(USER_ONE, PASSWORD_ONE, -1); 
+                createUser(USER_ONE, PASSWORD_ONE, -1);
                 createUser(USER_TWO, PASSWORD_TWO, -1);
                 createUser(USER_THREE, PASSWORD_THREE, 30);
                 return null;
@@ -166,8 +169,8 @@ public class FTPServerTest extends TestCase
      */
     public void testFTPConnect() throws Exception
     {
-        logger.debug("Start testFTPConnect");
-        
+        LOGGER.debug("Start testFTPConnect");
+
         FTPClient ftp = connectClient();
         try
         {
@@ -195,7 +198,7 @@ public class FTPServerTest extends TestCase
      */
     public void testFTPConnectNegative() throws Exception
     {
-        logger.debug("Start testFTPConnectNegative");
+        LOGGER.debug("Start testFTPConnectNegative");
 
         FTPClient ftp = connectClient();
 
@@ -215,8 +218,8 @@ public class FTPServerTest extends TestCase
             // succeed
             FTPFile[] files = ftp.listFiles();
             
-            assertNotNull(files);
-            assertEquals(0, files.length);
+            assertNotNull("files should not be null", files);
+            assertEquals("files not empty",0, files.length);
             reply = ftp.getReplyCode();
             
             assertTrue(FTPReply.isNegativePermanent(reply));
@@ -235,7 +238,7 @@ public class FTPServerTest extends TestCase
      */
     public void testCWD() throws Exception
     {
-        logger.debug("Start testCWD");
+        LOGGER.debug("Start testCWD");
         
         FTPClient ftp = connectClient();
 
@@ -255,12 +258,12 @@ public class FTPServerTest extends TestCase
             reply = ftp.getReplyCode();
             assertTrue(FTPReply.isPositiveCompletion(reply));
 
-            assertEquals(1, files.length);
-            
+            assertEquals("files not one",1, files.length);
+
             boolean foundAlfresco=false;
             for(FTPFile file : files)
             {
-                logger.debug("file name=" + file.getName());
+                LOGGER.debug("File name = {}", file.getName());
                 assertTrue(file.isDirectory());
                 
                 if(file.getName().equalsIgnoreCase("Alfresco"))
@@ -272,18 +275,18 @@ public class FTPServerTest extends TestCase
             
             // Change to Alfresco Dir that we know exists
             reply = ftp.cwd("/Alfresco");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco", FTPReply.isPositiveCompletion(reply));
             
             // relative path with space char
             reply = ftp.cwd("Data Dictionary");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to Data Dictionary", FTPReply.isPositiveCompletion(reply));
             
             // non existant absolute
             reply = ftp.cwd("/Garbage");
-            assertTrue(FTPReply.isNegativePermanent(reply));
+            assertTrue("able to change to nonexistent /Garbage", FTPReply.isNegativePermanent(reply));
             
             reply = ftp.cwd("/Alfresco/User Homes");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco/User Homes",FTPReply.isPositiveCompletion(reply));
             
             // Wild card
             reply = ftp.cwd("/Alfresco/User*Homes");
@@ -308,7 +311,7 @@ public class FTPServerTest extends TestCase
             
             // check we are at the correct point in the tree
             reply = ftp.cwd("Data Dictionary");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("test should end in being in the tree of Data Dictionary", FTPReply.isPositiveCompletion(reply));
             
 
         } 
@@ -329,7 +332,7 @@ public class FTPServerTest extends TestCase
         final String PATH1 = "FTPServerTest";
         final String PATH2 = "Second part";
         
-        logger.debug("Start testFTPCRUD");
+        LOGGER.debug("Start testFTPCRUD");
         
         FTPClient ftp = connectClient();
 
@@ -346,7 +349,7 @@ public class FTPServerTest extends TestCase
             assertTrue("admin login successful", login);
                           
             reply = ftp.cwd("/Alfresco/User Homes");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco/User Homes", FTPReply.isPositiveCompletion(reply));
             
             // Delete the root directory in case it was left over from a previous test run
             try
@@ -396,10 +399,10 @@ public class FTPServerTest extends TestCase
             ftp.completePendingCommand();
             
             // now delete the file we have been using.
-            assertTrue (ftp.deleteFile(FILE1_NAME));
+            assertTrue ("unsuccessful delete", ftp.deleteFile(FILE1_NAME));
             
             // negative test - file should have gone now.
-            assertFalse (ftp.deleteFile(FILE1_NAME));
+            assertFalse ("file exists after deleting", ftp.deleteFile(FILE1_NAME));
             
         } 
         finally
@@ -423,7 +426,7 @@ public class FTPServerTest extends TestCase
     public void testPathNames() throws Exception
     {
         
-        logger.debug("Start testPathNames");
+        LOGGER.debug("Start testPathNames");
         
         FTPClient ftp = connectClient();
 
@@ -442,7 +445,7 @@ public class FTPServerTest extends TestCase
             assertTrue("admin login successful", login);
                           
             reply = ftp.cwd("/Alfresco/User*Homes");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco/User*Homes", FTPReply.isPositiveCompletion(reply));
                         
             // Delete the root directory in case it was left over from a previous test run
             try
@@ -497,7 +500,7 @@ public class FTPServerTest extends TestCase
     public void testRenameCase() throws Exception
     {
         
-        logger.debug("Start testRenameCase");
+        LOGGER.debug("Start testRenameCase");
         
         FTPClient ftp = connectClient();
 
@@ -516,7 +519,7 @@ public class FTPServerTest extends TestCase
             assertTrue("admin login successful", login);
                           
             reply = ftp.cwd("/Alfresco/User*Homes");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco/User*Homes", FTPReply.isPositiveCompletion(reply));
                         
             // Delete the root directory in case it was left over from a previous test run
             try
@@ -562,7 +565,7 @@ public class FTPServerTest extends TestCase
      */
     public void testTwoUserUpdate() throws Exception
     {
-        logger.debug("Start testFTPConnect");
+        LOGGER.debug("Start testFTPConnect");
         
         final String TEST_DIR="/Alfresco/User Homes/" + USER_ONE;
      
@@ -628,7 +631,7 @@ public class FTPServerTest extends TestCase
             String content2 = inputStreamToString(is2);
             assertEquals("Content is not as expected", FILE1_CONTENT_2, content2);
             ftpTwo.completePendingCommand();
-            logger.debug("Test finished");
+            LOGGER.debug("Test finished");
   
         } 
         finally
@@ -695,7 +698,7 @@ public class FTPServerTest extends TestCase
             boolean deleted = ftpOne.deleteFile(FILE1_NAME);
             assertFalse("quota exception expected", deleted);
             
-            logger.debug("test done");
+            LOGGER.debug("test done");
                      
         } 
         finally
@@ -726,7 +729,7 @@ public class FTPServerTest extends TestCase
         final String PATH1 = "FTPServerTest";
         final String PATH2 = "ModificationTime";
         
-        logger.debug("Start testModificationTime");
+        LOGGER.debug("Start testModificationTime");
         
         FTPClient ftp = connectClient();
 
@@ -743,7 +746,7 @@ public class FTPServerTest extends TestCase
             assertTrue("admin login successful", login);
                           
             reply = ftp.cwd("/Alfresco/User Homes");
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("unable to change to /Alfresco/User Homes", FTPReply.isPositiveCompletion(reply));
             
             // Delete the root directory in case it was left over from a previous test run
             try
@@ -775,7 +778,7 @@ public class FTPServerTest extends TestCase
             
             String pathname = "/Alfresco/User Homes" + "/" + PATH1 + "/" + PATH2 + "/" + FILE1_NAME;
             
-            logger.debug("set modification time");
+            LOGGER.debug("set modification time");
             // YYYYMMDDhhmmss Time set to 2012 August 30 12:39:05
             String olympicTime = "20120830123905";
             ftp.setModificationTime(pathname, olympicTime);
@@ -810,11 +813,11 @@ public class FTPServerTest extends TestCase
             assertFalse("time not moved on if time not explicitly set", extractedTime.contains(olympicTime));
             
             // now delete the file we have been using.
-            assertTrue (ftp.deleteFile(FILE1_NAME));
+            assertTrue ("unsuccessful delete", ftp.deleteFile(FILE1_NAME));
             
             // negative test - file should have gone now.
-            assertFalse (ftp.deleteFile(FILE1_NAME));
-            
+            assertFalse ("file exists after deleting", ftp.deleteFile(FILE1_NAME));
+
         } 
         finally
         {
@@ -830,7 +833,7 @@ public class FTPServerTest extends TestCase
      */
     public void testFTPConnectExternalAddressSet() throws Exception
     {
-        logger.debug("Start testFTPConnectExternalAddressSet");
+        LOGGER.debug("Start testFTPConnectExternalAddressSet");
         try
         {
             // use a highly improbable IP to tests Passive Mode -> FTPCommand.Pasv command
@@ -851,7 +854,7 @@ public class FTPServerTest extends TestCase
 
                 // activate passive mode
                 boolean sucess = ftp.enterRemotePassiveMode();
-                assertTrue(sucess);
+                assertTrue("failed activating passive mode", sucess);
 
                 assertEquals("Client should be in passive mode now", FTPClient.PASSIVE_REMOTE_DATA_CONNECTION_MODE, ftp.getDataConnectionMode());
 
@@ -866,7 +869,7 @@ public class FTPServerTest extends TestCase
 
                 // now attempt to list the files and check that the command does not succeed
                 FTPFile[] files = ftp.listFiles();
-                assertNotNull(files);
+                assertNotNull("files should not be null", files);
                 assertEquals("list command should not succeed", 0, files.length);
 
                 assertEquals("The passive host should be the one set earlier.", improbableIPAddress, ftp.getPassiveHost());
@@ -894,7 +897,7 @@ public class FTPServerTest extends TestCase
         }
         catch (Exception e)
         {
-            logger.error("Could not gracefully disconnect the ftp client.", e);
+            LOGGER.error("Could not gracefully disconnect the ftp client.", e);
         }
     }
 
@@ -916,7 +919,7 @@ public class FTPServerTest extends TestCase
     {
         FTPClient ftp = new FTPClient();
         ftp.setIpAddressFromPasvResponse(true);
-        if(logger.isDebugEnabled())
+        if(LOGGER.isDebugEnabled())
         {
             ftp.addProtocolCommandListener(new PrintCommandListener(
                                        new PrintWriter(System.out)));

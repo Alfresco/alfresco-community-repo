@@ -10,49 +10,34 @@
 
     <import resource="classpath:/alfresco/subsystems/Messaging/default/messaging-context.xml" />
 
-    <bean id="messagingExceptionProcessor" 
-        class="org.alfresco.messaging.camel.MockExceptionProcessor" />
-        
-    <bean id="mockConsumer" 
-        class="org.alfresco.messaging.camel.MockConsumer" />
+    <bean id="messagingExceptionProcessor"
+          class="org.alfresco.messaging.camel.MockExceptionProcessor" />
 
-    <bean id="mockExceptionThrowingConsumer" 
-        class="org.alfresco.messaging.camel.MockExceptionThrowingConsumer" />
-    
+    <bean id="mockConsumer"
+          class="org.alfresco.messaging.camel.MockConsumer" />
+
+    <bean id="mockExceptionThrowingConsumer"
+          class="org.alfresco.messaging.camel.MockExceptionThrowingConsumer" />
+
     <import resource="testRoutes.xml" />
     <bean id="testNewRouteLoader" class="org.alfresco.messaging.camel.SpringContextRouteLoader">
         <property name="camelContextId" value="alfrescoCamelContext" />
         <property name="routeContextId" value="customRoutes" />
     </bean>
 
-    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
+    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer"/>
 
-    <bean id="dictionary" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.dictionary.DictionaryComponent" />
+    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" />
+
+    <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" >
+        <property name="dictionaryDAO" ref="dictionaryDAO"/>
     </bean>
 
-<!--    <bean id="behaviourFilter" class="org.alfresco.repo.policy.BehaviourFilter" />-->
-
-    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" >
-        <constructor-arg  ref="dictionary"/>
-<!--        <property name="behaviourFilter" ref="behaviourFilter"/>-->
+    <bean id="dictionaryDAO" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.dictionary.DictionaryDAOImpl" />
     </bean>
 
-    <!--    <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">-->
-<!--        <constructor-arg value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />-->
-<!--    </bean>-->
+    <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
 
-<!--    <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">-->
-<!--        <constructor-arg value="org.alfresco.repo.policy.PolicyComponentImpl"/>-->
-<!--    </bean>-->
-
-<!--    <bean id="transformRequestConsumer" class="org.alfresco.messaging.camel.routes.TransformRequestConsumer" >-->
-<!--        <property name="processor" ref="transformRequestProcessor"/>-->
-<!--    </bean>-->
-
-<!--    <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">-->
-<!--        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>-->
-<!--    </bean>-->
-
-<!--    <bean id="transformRequestProcessor" class="org.alfresco.repo.rendition2.TransformRequestProcessor" />-->
+    <bean id="transformRequestProcessor" class="org.alfresco.repo.rendition2.TransformRequestProcessor" />
 </beans>

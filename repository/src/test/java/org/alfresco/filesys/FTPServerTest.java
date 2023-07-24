@@ -113,7 +113,7 @@ public class FTPServerTest extends TestCase
         ftpConfigSection = (FTPConfigSection) fileServerConfiguration.getConfigSection( FTPConfigSection.SectionName);
         
         assertNotNull("nodeService is null", nodeService);
-        assertNotNull("reporitoryHelper is null", repositoryHelper);
+        assertNotNull("repositoryHelper is null", repositoryHelper);
         assertNotNull("personService is null", personService);
         assertNotNull("authenticationService is null", authenticationService);
         assertNotNull("authenticationComponent is null", authenticationComponent);
@@ -681,8 +681,8 @@ public class FTPServerTest extends TestCase
             assertTrue("user one unable to cd to User*Homes", success);
             success = ftpOne.changeWorkingDirectory(USER_THREE);
             assertTrue("user one unable to cd to " + USER_THREE, success);
-            
-            /**
+
+            /*
              * Create a file as user three which is bigger than the quota
              */
             String FILE3_CONTENT_3="test file 3 content that needs to be greater than 100 bytes to result in a quota exception being thrown";

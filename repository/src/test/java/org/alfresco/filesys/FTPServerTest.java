@@ -216,7 +216,7 @@ public class FTPServerTest extends TestCase
             FTPFile[] files = ftp.listFiles();
             
             assertNotNull(files);
-            assertTrue(files.length == 0);
+            assertEquals(0, files.length);
             reply = ftp.getReplyCode();
             
             assertTrue(FTPReply.isNegativePermanent(reply));
@@ -255,7 +255,7 @@ public class FTPServerTest extends TestCase
             reply = ftp.getReplyCode();
             assertTrue(FTPReply.isPositiveCompletion(reply));
 
-            assertTrue(files.length == 1);
+            assertEquals(1, files.length);
             
             boolean foundAlfresco=false;
             for(FTPFile file : files)
@@ -368,7 +368,7 @@ public class FTPServerTest extends TestCase
             
             // List the files in the new directory
             FTPFile[] files = ftp.listFiles();
-            assertTrue("files not empty", files.length == 0);
+            assertEquals("files not empty", 0, files.length);
             
             // Create a file
             String FILE1_CONTENT_1="test file 1 content";
@@ -377,7 +377,7 @@ public class FTPServerTest extends TestCase
             
             // Get the new file
             FTPFile[] files2 = ftp.listFiles();
-            assertTrue("files not one", files2.length == 1);
+            assertEquals("files not one", 1, files2.length);
             
             InputStream is = ftp.retrieveFileStream(FILE1_NAME);
             
@@ -765,7 +765,7 @@ public class FTPServerTest extends TestCase
             
             // List the files in the new directory
             FTPFile[] files = ftp.listFiles();
-            assertTrue("files not empty", files.length == 0);
+            assertEquals("files not empty", 0, files.length);
             
             // Create a file
             String FILE1_CONTENT_1="test file 1 content";
@@ -787,7 +787,7 @@ public class FTPServerTest extends TestCase
             
             // Get the new file
             FTPFile[] files2 = ftp.listFiles();
-            assertTrue("files not one", files2.length == 1);
+            assertEquals("files not one", 1, files2.length);
             
             InputStream is = ftp.retrieveFileStream(FILE1_NAME);
             
@@ -853,23 +853,23 @@ public class FTPServerTest extends TestCase
                 boolean sucess = ftp.enterRemotePassiveMode();
                 assertTrue(sucess);
 
-                assertTrue("Client should be in passive mode now", ftp.getDataConnectionMode() == FTPClient.PASSIVE_REMOTE_DATA_CONNECTION_MODE);
+                assertEquals("Client should be in passive mode now", FTPClient.PASSIVE_REMOTE_DATA_CONNECTION_MODE, ftp.getDataConnectionMode());
 
                 reply = ftp.getReplyCode();
                 //see https://www.ietf.org/rfc/rfc959.txt
-                assertTrue("reply code should be 227", reply == 227);
+                assertEquals("reply code should be 227", 227, reply);
 
                 String replyLine = ftp.getReplyString();
-                assertTrue(replyLine != null);
+                assertNotNull(replyLine);
                 String encodedImprobableIPAddress = improbableIPAddress.replaceAll("\\.", ",");
                 assertTrue("Pasv command should contain the set external address encoded", replyLine.contains(encodedImprobableIPAddress));
 
                 // now attempt to list the files and check that the command does not succeed
                 FTPFile[] files = ftp.listFiles();
                 assertNotNull(files);
-                assertTrue("list command should not succeed", files.length == 0);
+                assertEquals("list command should not succeed", 0, files.length);
 
-                assertTrue("The passive host should be the one set earlier.", improbableIPAddress.equals(ftp.getPassiveHost()));
+                assertEquals("The passive host should be the one set earlier.", improbableIPAddress, ftp.getPassiveHost());
             }
             finally
             {
@@ -986,6 +986,5 @@ public class FTPServerTest extends TestCase
             this.personService.createPerson(ppOne);
         }        
     }
-
 
 }

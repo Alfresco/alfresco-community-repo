@@ -897,20 +897,6 @@ public class FTPServerTest extends TestCase
             LOGGER.error("Could not gracefully disconnect the ftp client.", e);
         }
     }
-
-    /**
-     * Create a user with a small quota.
-     * 
-     * Upload a file less than the quota.
-     *   
-     * Upload a file greater than the quota.
-     * 
-     * @throws Exception
-     */
-    public void DISABLED_testQuota() throws Exception
-    {
-        fail("not yet implemented");
-    }
     
     private FTPClient connectClient() throws IOException
     {

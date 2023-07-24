@@ -101,7 +101,9 @@ import org.alfresco.util.PropertyMap;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Node service using database persistence layer to fulfill functionality
@@ -1068,8 +1070,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
      * @param allowArchival     <tt>true</tt> if normal archival may occur or
      *                          <tt>false</tt> if the node must be forcibly deleted
      */
+    @Transactional
     private void deleteNode(NodeRef nodeRef, boolean allowArchival)
     {
+
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
 
@@ -1263,15 +1267,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             QName childNodeTypeQName = nodeDAO.getNodeType(nodeToDelete.id);
             Set<QName> childAspectQnames = nodeDAO.getNodeAspects(nodeToDelete.id);
             // Delete the node
-            //nodeDAO.deleteNode(nodeToDelete.id);
 
-            QName childNodeTypeQName1 = nodeDAO.getNodeType(nodeId);
-            Set<QName> childAspectQnames1 = nodeDAO.getNodeAspects(nodeId);
             nodeDAO.deleteChildAssoc(nodeToDelete.primaryParentAssocPair.getFirst());
-            nodeDAO.deleteChildAssoc(nodeId);
-                  invokeOnDeleteNode(
-                          nodeToDelete.primaryParentAssocPair.getSecond(),
-                          childNodeTypeQName1, childAspectQnames1, archive);
+            for (VisitedNode assocRefRemoved : nodesToDelete)
+            {
+                if (!nodeDAO.exists(assocRefRemoved.id))
+                {
+                    throw new ConcurrencyFailureException("Child association not found : " + assocRefRemoved.id);
+                }
+                nodeDAO.deleteChildAssoc(assocRefRemoved.id);
+                invokeOnDeleteNode(assocRefRemoved.primaryParentAssocPair.getSecond(),
+                        childNodeTypeQName, childAspectQnames, archive);
+            }
             invokeOnDeleteNode(
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);

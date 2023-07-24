@@ -245,7 +245,25 @@ public interface ContentService
      * @throws UnsupportedOperationException if the store is unable to provide the information.
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "validFor"})
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor);
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, propertyQName, attachment, validFor, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @param fileName Optional name for the file when downloaded
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "validFor"})
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor, String fileName);
 
     /**
      * Gets a key-value (String-String) collection of storage headers/properties with their respective values for a specific node reference.

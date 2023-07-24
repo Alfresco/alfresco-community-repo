@@ -311,6 +311,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         boolean attachment = directAccessUrlHelper.getAttachment(directAccessUrlRequest);
         Long validFor = directAccessUrlHelper.getDefaultExpiryTimeInSec();
+        String fileName = directAccessUrlHelper.getFileName(directAccessUrlRequest);
         Version version = findVersion(nodeId, versionId);
         if (version != null)
         {
@@ -319,7 +320,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             DirectAccessUrl directAccessUrl;
             try
             {
-                directAccessUrl = nodes.requestContentDirectUrl(versionNodeRef, attachment, validFor);
+                directAccessUrl = nodes.requestContentDirectUrl(versionNodeRef, attachment, validFor, fileName);
             }
             catch (DirectAccessUrlDisabledException ex)
             {

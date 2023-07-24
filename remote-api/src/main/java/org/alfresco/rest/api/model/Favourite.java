@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.model;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -42,6 +43,7 @@ public class Favourite
 	private Date createdAt;
 	private Target target;
 	private Map<String, Object> properties;
+	private List<String> allowableOperations;
 
 	public Date getCreatedAt()
 	{
@@ -82,6 +84,14 @@ public class Favourite
 	public void setProperties(Map<String, Object> properties)
 	{
 		this.properties = properties;
+	}
+
+	public List<String> getAllowableOperations() {
+		return allowableOperations;
+	}
+
+	public void setAllowableOperations(List<String> allowableOperations) {
+		this.allowableOperations = allowableOperations;
 	}
 
 	@Override

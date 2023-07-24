@@ -219,7 +219,7 @@ public class FTPServerTest extends TestCase
             assertEquals("files not empty",0, files.length);
             reply = ftp.getReplyCode();
             
-            assertTrue(FTPReply.isNegativePermanent(reply));
+            assertTrue("should response negative", FTPReply.isNegativePermanent(reply));
             
         } 
         finally
@@ -253,7 +253,7 @@ public class FTPServerTest extends TestCase
             
             FTPFile[] files = ftp.listFiles();
             reply = ftp.getReplyCode();
-            assertTrue(FTPReply.isPositiveCompletion(reply));
+            assertTrue("FTP server refused connection", FTPReply.isPositiveCompletion(reply));
 
             assertEquals("files not one",1, files.length);
 
@@ -261,14 +261,14 @@ public class FTPServerTest extends TestCase
             for(FTPFile file : files)
             {
                 LOGGER.debug("File name = {}", file.getName());
-                assertTrue(file.isDirectory());
+                assertTrue("file is not a directory", file.isDirectory());
                 
                 if(file.getName().equalsIgnoreCase("Alfresco"))
                 {
                     foundAlfresco=true;
                 }
             }
-            assertTrue(foundAlfresco);
+            assertTrue("file not found", foundAlfresco);
             
             // Change to Alfresco Dir that we know exists
             reply = ftp.cwd("/Alfresco");
@@ -860,7 +860,7 @@ public class FTPServerTest extends TestCase
                 assertEquals("reply code should be 227", 227, reply);
 
                 String replyLine = ftp.getReplyString();
-                assertNotNull(replyLine);
+                assertNotNull("replyLine should not be null", replyLine);
                 String encodedImprobableIPAddress = improbableIPAddress.replaceAll("\\.", ",");
                 assertTrue("Pasv command should contain the set external address encoded", replyLine.contains(encodedImprobableIPAddress));
 

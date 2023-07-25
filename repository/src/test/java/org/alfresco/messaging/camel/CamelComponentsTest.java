@@ -57,6 +57,7 @@ public class CamelComponentsTest {
     @Produce("jms:queue:alfresco.test")
     protected ProducerTemplate jmsTemplate;
 
+
     @Test
     public void testActivemqComponent()
     {

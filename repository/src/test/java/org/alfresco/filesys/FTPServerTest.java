@@ -257,7 +257,7 @@ public class FTPServerTest extends TestCase
 
             assertEquals("there should be only 1 file",1, files.length);
 
-            boolean foundAlfresco=false;
+            boolean isFileFound = false;
             for(FTPFile file : files)
             {
                 LOGGER.debug("File name = {}", file.getName());
@@ -265,10 +265,10 @@ public class FTPServerTest extends TestCase
 
                 if(file.getName().equalsIgnoreCase("Alfresco"))
                 {
-                    foundAlfresco=true;
+                    isFileFound = true;
                 }
             }
-            assertTrue("file not found", foundAlfresco);
+            assertTrue("file should be found", isFileFound);
 
             // Change to Alfresco Dir that we know exists
             reply = ftp.cwd("/Alfresco");

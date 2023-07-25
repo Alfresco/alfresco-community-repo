@@ -8,8 +8,16 @@
         <property name="location" value="test-messaging.properties" />
     </bean>
 
-    <bean id="policyComponent" name="policyComponent" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.policy.PolicyComponentImpl" />
+    <bean id="transactionAwareEventProducer" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rawevents.TransactionAwareEventProducer" />
+    </bean>
+
+    <bean id="policyComponent" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.policy.PolicyComponentImpl"/>
+    </bean>
+
+    <bean id="transformRequestProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.TransformRequestProcessor" />
     </bean>
 
     <import resource="classpath:/alfresco/subsystems/Messaging/default/messaging-context.xml" />
@@ -29,19 +37,8 @@
         <property name="routeContextId" value="customRoutes" />
     </bean>
 
-    <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer"/>
-
-<!--    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" />-->
-
-    <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" >
-        <property name="dictionaryDAO" ref="dictionaryDAO"/>
+    <bean id="renditionEventProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
     </bean>
 
-    <bean id="dictionaryDAO" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.dictionary.DictionaryDAOImpl" />
-    </bean>
-
-    <bean id="renditionEventProcessor" class="org.alfresco.repo.rendition2.RenditionEventProcessor"/>
-
-    <bean id="transformRequestProcessor" class="org.alfresco.repo.rendition2.TransformRequestProcessor" />
 </beans>

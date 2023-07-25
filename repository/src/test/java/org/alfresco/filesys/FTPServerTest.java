@@ -861,11 +861,6 @@ public class FTPServerTest
         }
     }
 
-    @Test
-    public void testCICDFail() {
-        fail("Should fail to demonstrate that this test actually was run");
-    }
-
     private void safeDisconnect(FTPClient ftp)
     {
         try

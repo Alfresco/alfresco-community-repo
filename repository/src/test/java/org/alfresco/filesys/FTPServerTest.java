@@ -907,7 +907,7 @@ public class FTPServerTest
             try (StringWriter writer = new StringWriter())
             {
                 char[] buffer = new char[1024];
-                try (is)
+                try
                 {
                     Reader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
                     int n;
@@ -915,6 +915,10 @@ public class FTPServerTest
                     {
                         writer.write(buffer, 0, n);
                     }
+                }
+                finally
+                {
+                    is.close();
                 }
 
                 return writer.getBuffer().toString();

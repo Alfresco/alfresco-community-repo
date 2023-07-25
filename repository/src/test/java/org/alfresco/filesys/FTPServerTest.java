@@ -25,6 +25,12 @@
  */
 package org.alfresco.filesys;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -33,8 +39,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
-
-import junit.framework.TestCase;
+import java.nio.charset.StandardCharsets;
 
 import org.alfresco.jlan.ftp.FTPConfigSection;
 import org.alfresco.jlan.server.config.ServerConfigurationAccessor;
@@ -58,6 +63,8 @@ import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,12 +73,11 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * End to end JUNIT test of the FTP server
- *
  * Uses the commons-net ftp client library to connect to the
  * Alfresco FTP server.
  */
 @Category(BaseSpringTestsCategory.class)
-public class FTPServerTest extends TestCase
+public class FTPServerTest
 
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(FTPServerTest.class);
@@ -88,25 +94,23 @@ public class FTPServerTest extends TestCase
     private static final String PASSWORD_THREE = "Password03";
     private static final String HOSTNAME = "localhost";
 
-    private NodeService nodeService;
     private PersonService personService;
     private MutableAuthenticationService authenticationService;
-    private AuthenticationComponent authenticationComponent;
-    private TransactionService transactionService;
     private Repository repositoryHelper;
     private PermissionService permissionService;
     private FTPConfigSection ftpConfigSection;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         applicationContext = ApplicationContextHelper.getApplicationContext();
 
-        nodeService = (NodeService)applicationContext.getBean("nodeService");
+        NodeService nodeService = (NodeService) applicationContext.getBean("nodeService");
         personService = (PersonService)applicationContext.getBean("personService");
         authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
-        authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
-        transactionService = (TransactionService)applicationContext.getBean("transactionService");
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) applicationContext.getBean(
+            "authenticationComponent");
+        TransactionService transactionService = (TransactionService) applicationContext.getBean("transactionService");
         repositoryHelper = (Repository)applicationContext.getBean("repositoryHelper");
         permissionService = (PermissionService)applicationContext.getBean("permissionService");
         ServerConfigurationAccessor fileServerConfiguration = (ServerConfigurationAccessor)applicationContext.getBean("fileServerConfiguration");
@@ -122,48 +126,31 @@ public class FTPServerTest extends TestCase
 
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
 
-        RetryingTransactionCallback<Void> createUsersCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute() throws Throwable
-            {
-                createUser(USER_ONE, PASSWORD_ONE, -1);
-                createUser(USER_TWO, PASSWORD_TWO, -1);
-                createUser(USER_THREE, PASSWORD_THREE, 30);
-                return null;
-            }
+        RetryingTransactionCallback<Void> createUsersCB = () -> {
+            createUser(USER_ONE, PASSWORD_ONE, -1);
+            createUser(USER_TWO, PASSWORD_TWO, -1);
+            createUser(USER_THREE, PASSWORD_THREE, 30);
+            return null;
         };
         tran.doInTransaction(createUsersCB);
 
-        RetryingTransactionCallback<Void> createTestDirCB = new RetryingTransactionCallback<Void>() {
-
-            @Override
-            public Void execute()
+        RetryingTransactionCallback<Void> createTestDirCB = () -> {
             {
-                {
-                    NodeRef userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
-                    permissionService.setPermission(userOneHome, USER_TWO, PermissionService.CONTRIBUTOR, true);
-                    permissionService.setPermission(userOneHome, USER_TWO, PermissionService.WRITE, true);
-                }
-                return null;
+                NodeRef userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
+                permissionService.setPermission(userOneHome, USER_TWO, PermissionService.CONTRIBUTOR, true);
+                permissionService.setPermission(userOneHome, USER_TWO, PermissionService.WRITE, true);
             }
+            return null;
         };
         tran.doInTransaction(createTestDirCB, false, true);
-    }
-
-    protected void tearDown() throws Exception
-    {
-//        UserTransaction txn = transactionService.getUserTransaction();
-//        assertNotNull("transaction leaked", txn);
-//        txn.getStatus();
-//        txn.rollback();
     }
 
     /**
      * Simple test that connects to the inbuilt ftp server and logs on
      *
-     * @throws Exception
+     * @throws Exception may throw Exception
      */
+    @Test
     public void testFTPConnect() throws Exception
     {
         LOGGER.debug("Start testFTPConnect");
@@ -191,8 +178,9 @@ public class FTPServerTest extends TestCase
      * Simple negative test that connects to the inbuilt ftp server and attempts to
      * log on with the wrong password.
      *
-     * @throws Exception
+     * @throws Exception may throw Exception
      */
+    @Test
     public void testFTPConnectNegative() throws Exception
     {
         LOGGER.debug("Start testFTPConnectNegative");
@@ -231,8 +219,9 @@ public class FTPServerTest extends TestCase
     /**
      * Test CWD for FTP server
      *
-     * @throws Exception
+     * @throws Exception may throw Exception
      */
+    @Test
     public void testCWD() throws Exception
     {
         LOGGER.debug("Start testCWD");
@@ -260,10 +249,11 @@ public class FTPServerTest extends TestCase
             boolean isFileFound = false;
             for(FTPFile file : files)
             {
-                LOGGER.debug("File name = {}", file.getName());
+                final String fileName = file.getName();
+                LOGGER.debug("File name = {}", fileName);
                 assertTrue("file is not a directory", file.isDirectory());
 
-                if(file.getName().equalsIgnoreCase("Alfresco"))
+                if(fileName.equalsIgnoreCase("Alfresco"))
                 {
                     isFileFound = true;
                 }
@@ -278,7 +268,7 @@ public class FTPServerTest extends TestCase
             reply = ftp.cwd("Data Dictionary");
             assertTrue("unable to change to Data Dictionary", FTPReply.isPositiveCompletion(reply));
 
-            // non existant absolute
+            // non existent absolute
             reply = ftp.cwd("/Garbage");
             assertTrue("able to change to nonexistent /Garbage", FTPReply.isNegativePermanent(reply));
 
@@ -321,13 +311,13 @@ public class FTPServerTest extends TestCase
 
     /**
      * Test CRUD for FTP server
-     *
-     * @throws Exception
+     * @throws Exception may throw Exception
      */
+    @Test
     public void testCRUD() throws Exception
     {
-        final String PATH1 = "FTPServerTest";
-        final String PATH2 = "Second part";
+        final String path1 = "FTPServerTest";
+        final String path2 = "Second part";
 
         LOGGER.debug("Start testFTPCRUD");
 
@@ -351,7 +341,7 @@ public class FTPServerTest extends TestCase
             // Delete the root directory in case it was left over from a previous test run
             try
             {
-                ftp.removeDirectory(PATH1);
+                ftp.removeDirectory(path1);
             }
             catch (IOException e)
             {
@@ -359,67 +349,65 @@ public class FTPServerTest extends TestCase
             }
 
             // make root directory
-            ftp.makeDirectory(PATH1);
-            ftp.cwd(PATH1);
+            ftp.makeDirectory(path1);
+            ftp.cwd(path1);
 
-            // make sub-directory in new directory
-            ftp.makeDirectory(PATH2);
-            ftp.cwd(PATH2);
+            // make subdirectory in new directory
+            ftp.makeDirectory(path2);
+            ftp.cwd(path2);
 
             // List the files in the new directory
             FTPFile[] files = ftp.listFiles();
             assertEquals("there should be no files", 0, files.length);
 
             // Create a file
-            String FILE1_CONTENT_1="test file 1 content";
-            String FILE1_NAME = "testFile1.txt";
-            ftp.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_1.getBytes("UTF-8")));
+            String file1Content1="test file 1 content";
+            String file1Name = "testFile1.txt";
+            ftp.appendFile(file1Name , new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
 
             // Get the new file
             FTPFile[] files2 = ftp.listFiles();
             assertEquals("there should be only 1 file", 1, files2.length);
 
-            InputStream is = ftp.retrieveFileStream(FILE1_NAME);
+            InputStream is = ftp.retrieveFileStream(file1Name);
 
             String content = inputStreamToString(is);
-            assertEquals("Content is not as expected", content, FILE1_CONTENT_1);
+            assertEquals("Content is not as expected", content, file1Content1);
             ftp.completePendingCommand();
 
             // Update the file contents
-            String FILE1_CONTENT_2="That's how it is says Pooh!";
-            ftp.storeFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            String file1Content2 = "That's how it is says Pooh!";
+            ftp.storeFile(file1Name , new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
 
-            InputStream is2 = ftp.retrieveFileStream(FILE1_NAME);
+            InputStream is2 = ftp.retrieveFileStream(file1Name);
 
             String content2 = inputStreamToString(is2);
-            assertEquals("Content is not as expected", FILE1_CONTENT_2, content2);
+            assertEquals("Content is not as expected", file1Content2, content2);
             ftp.completePendingCommand();
 
             // now delete the file we have been using.
-            assertTrue("unsuccessful delete", ftp.deleteFile(FILE1_NAME));
+            assertTrue("unsuccessful delete", ftp.deleteFile(file1Name));
 
             // negative test - file should have gone now.
-            assertFalse("file exists after deletion", ftp.deleteFile(FILE1_NAME));
+            assertFalse("file exists after deletion", ftp.deleteFile(file1Name));
 
         }
         finally
         {
             // clean up tree if left over from previous run
-
             ftp.disconnect();
         }
     }
 
     /**
      * Test of obscure path names in the FTP server
-     *
      * RFC959 states that paths are constructed thus...
      * <string> ::= <char> | <char><string>
      * <pathname> ::= <string>
      * <char> ::= any of the 128 ASCII characters except <CR> and <LF>
-     *
      *  So we need to check how high characters and problematic are encoded
      */
+    @Test
     public void testPathNames() throws Exception
     {
 
@@ -427,7 +415,7 @@ public class FTPServerTest extends TestCase
 
         FTPClient ftp = connectClient();
 
-        String PATH1="testPathNames";
+        String path1 = "testPathNames";
 
         try
         {
@@ -447,7 +435,7 @@ public class FTPServerTest extends TestCase
             // Delete the root directory in case it was left over from a previous test run
             try
             {
-                ftp.removeDirectory(PATH1);
+                ftp.removeDirectory(path1);
             }
             catch (IOException e)
             {
@@ -455,11 +443,11 @@ public class FTPServerTest extends TestCase
             }
 
             // make root directory for this test
-            boolean isDirectoryMade = ftp.makeDirectory(PATH1);
-            assertTrue("unable to make directory:" + PATH1, isDirectoryMade);
+            boolean isDirectoryMade = ftp.makeDirectory(path1);
+            assertTrue("unable to make directory:" + path1, isDirectoryMade);
 
-            boolean isDirectoryChanged = ftp.changeWorkingDirectory(PATH1);
-            assertTrue("unable to change to working directory:" + PATH1, isDirectoryChanged);
+            boolean isDirectoryChanged = ftp.changeWorkingDirectory(path1);
+            assertTrue("unable to change to working directory:" + path1, isDirectoryChanged);
 
             assertTrue("with a space", ftp.makeDirectory("test space"));
             assertTrue("with exclamation", ftp.makeDirectory("space!"));
@@ -482,7 +470,6 @@ public class FTPServerTest extends TestCase
         finally
         {
             // clean up tree if left over from previous run
-
             ftp.disconnect();
         }
 
@@ -491,9 +478,8 @@ public class FTPServerTest extends TestCase
 
     /**
      * Test of rename case ALF-20584
-     *
-
      */
+    @Test
     public void testRenameCase() throws Exception
     {
 
@@ -501,7 +487,7 @@ public class FTPServerTest extends TestCase
 
         FTPClient ftp = connectClient();
 
-        String PATH1="testRenameCase";
+        String path1 = "testRenameCase";
 
         try
         {
@@ -521,7 +507,7 @@ public class FTPServerTest extends TestCase
             // Delete the root directory in case it was left over from a previous test run
             try
             {
-                ftp.removeDirectory(PATH1);
+                ftp.removeDirectory(path1);
             }
             catch (IOException e)
             {
@@ -529,13 +515,13 @@ public class FTPServerTest extends TestCase
             }
 
             // make root directory for this test
-            boolean isDirectoryMade = ftp.makeDirectory(PATH1);
-            assertTrue("unable to make directory:" + PATH1, isDirectoryMade);
+            boolean isDirectoryMade = ftp.makeDirectory(path1);
+            assertTrue("unable to make directory:" + path1, isDirectoryMade);
 
-            ftp.cwd(PATH1);
+            ftp.cwd(path1);
 
-            String FILE1_CONTENT_2="That's how it is says Pooh!";
-            ftp.storeFile("FileA.txt" , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            String file1Content2="That's how it is says Pooh!";
+            ftp.storeFile("FileA.txt", new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
 
             assertTrue("unable to rename", ftp.rename("FileA.txt", "FILEA.TXT"));
 
@@ -553,18 +539,18 @@ public class FTPServerTest extends TestCase
 
     /**
      * Create a user other than "admin" who has access to a set of files.
-     *
      * Create a folder containing test.docx as user one
      * Update that file as user two.
      * Check user one can see user two's changes.
      *
-     * @throws Exception
+     * @throws Exception may throw Exception
      */
+    @Test
     public void testTwoUserUpdate() throws Exception
     {
         LOGGER.debug("Start testFTPConnect");
 
-        final String TEST_DIR="/Alfresco/User Homes/" + USER_ONE;
+        final String testDir = "/Alfresco/User Homes/" + USER_ONE;
 
         FTPClient ftpOne = connectClient();
         FTPClient ftpTwo = connectClient();
@@ -591,65 +577,59 @@ public class FTPServerTest extends TestCase
             assertTrue("user two login should be successful", isLoggedIn);
 
             boolean isDirectoryChanged = ftpOne.changeWorkingDirectory("Alfresco");
-            assertTrue("user one unable to cd to Alfreco", isDirectoryChanged);
+            assertTrue("user one unable to cd to Alfresco", isDirectoryChanged);
             isDirectoryChanged = ftpOne.changeWorkingDirectory("User*Homes");
             assertTrue("user one unable to cd to User*Homes", isDirectoryChanged);
             isDirectoryChanged = ftpOne.changeWorkingDirectory(USER_ONE);
             assertTrue("user one unable to cd to " + USER_ONE, isDirectoryChanged);
 
             isDirectoryChanged = ftpTwo.changeWorkingDirectory("Alfresco");
-            assertTrue("user two unable to cd to Alfreco", isDirectoryChanged);
+            assertTrue("user two unable to cd to Alfresco", isDirectoryChanged);
             isDirectoryChanged = ftpTwo.changeWorkingDirectory("User*Homes");
             assertTrue("user two unable to cd to User*Homes", isDirectoryChanged);
             isDirectoryChanged = ftpTwo.changeWorkingDirectory(USER_ONE);
             assertTrue("user two unable to cd " + USER_ONE, isDirectoryChanged);
 
             // Create a file as user one
-            String FILE1_CONTENT_1="test file 1 content";
-            String FILE1_NAME = "test.docx";
-            boolean isAppend = ftpOne.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_1.getBytes("UTF-8")));
+            String file1Content1 = "test file 1 content";
+            String file1Name = "test.docx";
+            boolean isAppend = ftpOne.appendFile(file1Name , new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
             assertTrue("user one should be able to append file", isAppend);
 
             // Update the file as user two
-            String FILE1_CONTENT_2="test file content updated";
-            boolean isStored = ftpTwo.storeFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            String file1Content2 = "test file content updated";
+            boolean isStored = ftpTwo.storeFile(file1Name , new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
             assertTrue("user two should be able to store file", isStored);
 
             // User one should read user2's content
-            InputStream is1 = ftpOne.retrieveFileStream(FILE1_NAME);
+            InputStream is1 = ftpOne.retrieveFileStream(file1Name);
             assertNotNull("is1 is null", is1);
             String content1 = inputStreamToString(is1);
-            assertEquals("Content is not as expected", FILE1_CONTENT_2, content1);
+            assertEquals("Content is not as expected", file1Content2, content1);
             ftpOne.completePendingCommand();
 
             // User two should read user2's content
-            InputStream is2 = ftpTwo.retrieveFileStream(FILE1_NAME);
+            InputStream is2 = ftpTwo.retrieveFileStream(file1Name);
             assertNotNull("is2 is null", is2);
             String content2 = inputStreamToString(is2);
-            assertEquals("Content is not as expected", FILE1_CONTENT_2, content2);
+            assertEquals("Content is not as expected", file1Content2, content2);
             ftpTwo.completePendingCommand();
             LOGGER.debug("Test finished");
-
         }
         finally
         {
-            ftpOne.dele(TEST_DIR);
-            if(ftpOne != null)
-            {
-                ftpOne.disconnect();
-            }
-            if(ftpTwo != null)
-            {
-                ftpTwo.disconnect();
-            }
+            ftpOne.dele(testDir);
+            ftpOne.disconnect();
+            ftpTwo.disconnect();
         }
 
     }
 
     /**
-     * Test a quota failue exception over FTP.
+     * Test a quota failure exception over FTP.
      * A file should not exist after a create and quota exception.
      */
+    @Test
     public void testFtpQuotaAndFtp() throws Exception
     {
         // Enable usages
@@ -660,7 +640,7 @@ public class FTPServerTest extends TestCase
         userUsageTrackingComponent.setEnabled(true);
         userUsageTrackingComponent.bootstrapInternal();
 
-        final String TEST_DIR="/Alfresco/User Homes/" + USER_THREE;
+        final String testDir = "/Alfresco/User Homes/" + USER_THREE;
 
         FTPClient ftpOne = connectClient();
         try
@@ -676,7 +656,7 @@ public class FTPServerTest extends TestCase
             assertTrue("user three login should be successful", isLoggedIn);
 
             boolean isDirectoryChanged = ftpOne.changeWorkingDirectory("Alfresco");
-            assertTrue("user three unable to cd to Alfreco", isDirectoryChanged);
+            assertTrue("user three unable to cd to Alfresco", isDirectoryChanged);
             isDirectoryChanged = ftpOne.changeWorkingDirectory("User*Homes");
             assertTrue("user one unable to cd to User*Homes", isDirectoryChanged);
             isDirectoryChanged = ftpOne.changeWorkingDirectory(USER_THREE);
@@ -685,14 +665,14 @@ public class FTPServerTest extends TestCase
             /*
              * Create a file as user three which is bigger than the quota
              */
-            String FILE3_CONTENT_3="test file 3 content that needs to be greater than 100 bytes to result in a quota exception being thrown";
-            String FILE1_NAME = "test.docx";
+            String file3Content3 = "test file 3 content that needs to be greater than 100 bytes to result in a quota exception being thrown";
+            String file1Name = "test.docx";
 
             // Should not be success
-            boolean isAppend = ftpOne.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE3_CONTENT_3.getBytes("UTF-8")));
+            boolean isAppend = ftpOne.appendFile(file1Name , new ByteArrayInputStream(file3Content3.getBytes(StandardCharsets.UTF_8)));
             assertFalse("user one can ignore quota", isAppend);
 
-            boolean isDeleted = ftpOne.deleteFile(FILE1_NAME);
+            boolean isDeleted = ftpOne.deleteFile(file1Name);
             assertFalse("quota exception expected", isDeleted);
 
             LOGGER.debug("test done");
@@ -706,12 +686,8 @@ public class FTPServerTest extends TestCase
             userUsageTrackingComponent.setEnabled(false);
             userUsageTrackingComponent.bootstrapInternal();
 
-
-            ftpOne.dele(TEST_DIR);
-            if(ftpOne != null)
-            {
-                ftpOne.disconnect();
-            }
+            ftpOne.dele(testDir);
+            ftpOne.disconnect();
         }
 
     }
@@ -719,12 +695,13 @@ public class FTPServerTest extends TestCase
     /**
      * Test Setting the modification time FTP server
      *
-     * @throws Exception
+     * @throws Exception may throw Exception
      */
+    @Test
     public void testModificationTime() throws Exception
     {
-        final String PATH1 = "FTPServerTest";
-        final String PATH2 = "ModificationTime";
+        final String path1 = "FTPServerTest";
+        final String path2 = "ModificationTime";
 
         LOGGER.debug("Start testModificationTime");
 
@@ -748,7 +725,7 @@ public class FTPServerTest extends TestCase
             // Delete the root directory in case it was left over from a previous test run
             try
             {
-                ftp.removeDirectory(PATH1);
+                ftp.removeDirectory(path1);
             }
             catch (IOException e)
             {
@@ -756,24 +733,24 @@ public class FTPServerTest extends TestCase
             }
 
             // make root directory
-            ftp.makeDirectory(PATH1);
-            ftp.cwd(PATH1);
+            ftp.makeDirectory(path1);
+            ftp.cwd(path1);
 
-            // make sub-directory in new directory
-            ftp.makeDirectory(PATH2);
-            ftp.cwd(PATH2);
+            // make subdirectory in new directory
+            ftp.makeDirectory(path2);
+            ftp.cwd(path2);
 
             // List the files in the new directory
             FTPFile[] files = ftp.listFiles();
             assertEquals("there should be no files", 0, files.length);
 
             // Create a file
-            String FILE1_CONTENT_1="test file 1 content";
-            String FILE1_NAME = "testFile1.txt";
-            ftp.appendFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_1.getBytes("UTF-8")));
+            String file1Content1 = "test file 1 content";
+            String file1Name = "testFile1.txt";
+            ftp.appendFile(file1Name , new ByteArrayInputStream(file1Content1.getBytes(StandardCharsets.UTF_8)));
 
 
-            String pathname = "/Alfresco/User Homes" + "/" + PATH1 + "/" + PATH2 + "/" + FILE1_NAME;
+            String pathname = "/Alfresco/User Homes" + "/" + path1 + "/" + path2 + "/" + file1Name;
 
             LOGGER.debug("set modification time");
             // YYYYMMDDhhmmss Time set to 2012 August 30 12:39:05
@@ -789,20 +766,20 @@ public class FTPServerTest extends TestCase
             FTPFile[] files2 = ftp.listFiles();
             assertEquals("there should be only 1 file", 1, files2.length);
 
-            InputStream is = ftp.retrieveFileStream(FILE1_NAME);
+            InputStream is = ftp.retrieveFileStream(file1Name);
 
             String content = inputStreamToString(is);
-            assertEquals("Content is not as expected", content, FILE1_CONTENT_1);
+            assertEquals("Content is not as expected", content, file1Content1);
             ftp.completePendingCommand();
 
             // Update the file contents without setting time directly
-            String FILE1_CONTENT_2="That's how it is says Pooh!";
-            ftp.storeFile(FILE1_NAME , new ByteArrayInputStream(FILE1_CONTENT_2.getBytes("UTF-8")));
+            String file1Content2 = "That's how it is says Pooh!";
+            ftp.storeFile(file1Name, new ByteArrayInputStream(file1Content2.getBytes(StandardCharsets.UTF_8)));
 
-            InputStream is2 = ftp.retrieveFileStream(FILE1_NAME);
+            InputStream is2 = ftp.retrieveFileStream(file1Name);
 
             String content2 = inputStreamToString(is2);
-            assertEquals("Content is not as expected", FILE1_CONTENT_2, content2);
+            assertEquals("Content is not as expected", file1Content2, content2);
             ftp.completePendingCommand();
 
             extractedTime = ftp.getModificationTime(pathname);
@@ -810,10 +787,10 @@ public class FTPServerTest extends TestCase
             assertFalse("time not moved on if time not explicitly set", extractedTime.contains(olympicTime));
 
             // now delete the file we have been using.
-            assertTrue("unsuccessful delete", ftp.deleteFile(FILE1_NAME));
+            assertTrue("unsuccessful delete", ftp.deleteFile(file1Name));
 
             // negative test - file should have gone now.
-            assertFalse("file exists after deletion", ftp.deleteFile(FILE1_NAME));
+            assertFalse("file exists after deletion", ftp.deleteFile(file1Name));
 
         }
         finally
@@ -828,13 +805,14 @@ public class FTPServerTest extends TestCase
      * Test for Passive Mode -> FTPCommand.Pasv command with external address functionality.
      * see MNT-16433
      */
+    @Test
     public void testFTPConnectExternalAddressSet() throws Exception
     {
         LOGGER.debug("Start testFTPConnectExternalAddressSet");
         try
         {
             // use a highly improbable IP to tests Passive Mode -> FTPCommand.Pasv command
-            // this is supposed to be the address of a proxy in front of Alfrsco FTP server
+            // this is supposed to be the address of a proxy in front of Alfresco FTP server
             String improbableIPAddress = "127.255.255.42";
             ftpConfigSection.setFTPExternalAddress(improbableIPAddress);
             FTPClient ftp = connectClient();
@@ -883,6 +861,11 @@ public class FTPServerTest extends TestCase
         }
     }
 
+    @Test
+    public void testCICDFail() {
+        fail("Should fail to demonstrate that this test actually was run");
+    }
+
     private void safeDisconnect(FTPClient ftp)
     {
         try
@@ -913,47 +896,42 @@ public class FTPServerTest extends TestCase
 
     /**
      * Test quality utility to read an input stream into a string.
-     * @param is
+     * @param is the inputStream to convert
      * @return the content of the stream in a string.
-     * @throws IOException
+     * @throws IOException may throw Exception
      */
     private String inputStreamToString(InputStream is) throws IOException
     {
         if (is != null)
         {
-            StringWriter writer = new StringWriter();
-
-            char[] buffer = new char[1024];
-            try
+            try (StringWriter writer = new StringWriter())
             {
-                Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-                int n;
-                while ((n = reader.read(buffer)) != -1)
+                char[] buffer = new char[1024];
+                try (is)
                 {
-                    writer.write(buffer, 0, n);
+                    Reader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                    int n;
+                    while ((n = reader.read(buffer)) != -1)
+                    {
+                        writer.write(buffer, 0, n);
+                    }
                 }
-            }
-            finally
-            {
-                is.close();
-            }
-            is.close();
 
-            return writer.getBuffer().toString();
-
+                return writer.getBuffer().toString();
+            }
         }
         return "";
     }
 
     /**
      * create a test user
-     * @param userName
-     * @param password
-     * @param quota
+     * @param userName the username
+     * @param password the password
+     * @param quota the sizeQuota
      */
     private void createUser(String userName, String password, long quota)
     {
-        if (this.authenticationService.authenticationExists(userName) == false)
+        if (!this.authenticationService.authenticationExists(userName))
         {
             this.authenticationService.createAuthentication(userName, password.toCharArray());
 

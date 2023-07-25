@@ -25,18 +25,29 @@
  */
 package org.alfresco.messaging.camel;
 
+import org.alfresco.messaging.camel.routes.OnContentUpdateRenditionRoute;
+import org.alfresco.repo.dictionary.DictionaryComponent;
+import org.alfresco.repo.policy.PolicyComponentImpl;
+import org.alfresco.repo.rawevents.TransactionAwareEventProducer;
 import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests Camel components defined in the application's Spring context
@@ -57,7 +68,23 @@ public class CamelComponentsTest {
     @Produce("jms:queue:alfresco.test")
     protected ProducerTemplate jmsTemplate;
 
+    @Mock
+    protected DictionaryComponent dictionaryComponent;
+    @Autowired
+    protected PolicyComponentImpl policyComponent;
 
+    @Autowired
+    protected TransactionAwareEventProducer transactionAwareEventProducer;
+
+    @Autowired
+    protected OnContentUpdateRenditionRoute onContentUpdateRenditionRoute;
+
+    @Before
+    public void init()
+    {
+        boolean hey = false;
+        when(policyComponent.bindClassBehaviour(any(), any(), any())).thenReturn(null);
+    }
     @Test
     public void testActivemqComponent()
     {

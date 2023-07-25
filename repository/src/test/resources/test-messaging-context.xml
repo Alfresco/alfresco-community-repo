@@ -8,6 +8,10 @@
         <property name="location" value="test-messaging.properties" />
     </bean>
 
+    <bean id="policyComponent" name="policyComponent" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.policy.PolicyComponentImpl" />
+    </bean>
+
     <import resource="classpath:/alfresco/subsystems/Messaging/default/messaging-context.xml" />
 
     <bean id="messagingExceptionProcessor"
@@ -27,7 +31,7 @@
 
     <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer"/>
 
-    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" />
+<!--    <bean id="policyComponent" class="org.alfresco.repo.policy.PolicyComponentImpl" />-->
 
     <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" >
         <property name="dictionaryDAO" ref="dictionaryDAO"/>

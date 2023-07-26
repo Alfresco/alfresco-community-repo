@@ -152,7 +152,7 @@ public class LockServiceImplTest extends BaseSpringTest
         authComponent.setSystemUserAsCurrentUser();        
         
         // Create the node properties
-        HashMap<QName, Serializable> nodeProperties = new HashMap<QName, Serializable>();
+        HashMap<QName, Serializable> nodeProperties = new HashMap<>();
         nodeProperties.put(QName.createQName("{test}property1"), "value1");
         
         // Create a workspace that contains the 'live' nodes
@@ -168,8 +168,8 @@ public class LockServiceImplTest extends BaseSpringTest
                 QName.createQName("{}ParentNode"),
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
-        this.nodeService.addAspect(this.parentNode, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
-        HashMap<QName, Serializable> audProps = new HashMap<QName, Serializable>();
+        this.nodeService.addAspect(this.parentNode, ContentModel.ASPECT_LOCKABLE, new HashMap<>());
+        HashMap<QName, Serializable> audProps = new HashMap<>();
         audProps.put(ContentModel.PROP_CREATOR, "Monkey");
         this.nodeService.addAspect(this.parentNode, ContentModel.ASPECT_AUDITABLE, audProps);
         assertNotNull("parentNode should not be null", this.parentNode);
@@ -181,7 +181,7 @@ public class LockServiceImplTest extends BaseSpringTest
                 QName.createQName("{}ChildNode1"),
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
-        this.nodeService.addAspect(this.childNode1, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
+        this.nodeService.addAspect(this.childNode1, ContentModel.ASPECT_LOCKABLE, new HashMap<>());
         assertNotNull("childNode1 should not be null", this.childNode1);
         this.childNode2 = this.nodeService.createNode(
                 this.parentNode,
@@ -189,7 +189,7 @@ public class LockServiceImplTest extends BaseSpringTest
                 QName.createQName("{}ChildNode2"),
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
-        this.nodeService.addAspect(this.childNode2, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
+        this.nodeService.addAspect(this.childNode2, ContentModel.ASPECT_LOCKABLE, new HashMap<>());
         assertNotNull("childNode2 should not be null", this.childNode2);
         
         // Create a node with no lockAspect
@@ -485,12 +485,12 @@ public class LockServiceImplTest extends BaseSpringTest
         /* addProperties test */
         try
         {
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            Map<QName, Serializable> props = new HashMap<>();
             props.put(ContentModel.PROP_DESCRIPTION, "descr" + System.currentTimeMillis());
             props.put(ContentModel.PROP_TITLE, "title" + System.currentTimeMillis());
             fullNodeService.addProperties(noAspectNode, props);
             
-            fail();
+            fail("node should be locked");
         }
         catch(NodeLockedException e)
         {
@@ -502,7 +502,7 @@ public class LockServiceImplTest extends BaseSpringTest
         {
             fullNodeService.setProperty(noAspectNode, ContentModel.PROP_DESCRIPTION, "descr" + System.currentTimeMillis());
             
-            fail();
+            fail("node should be locked");
         }
         catch(NodeLockedException e)
         {
@@ -512,12 +512,12 @@ public class LockServiceImplTest extends BaseSpringTest
         /* setProperties test */
         try
         {
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            Map<QName, Serializable> props = new HashMap<>();
             props.put(ContentModel.PROP_DESCRIPTION, "descr" + System.currentTimeMillis());
             props.put(ContentModel.PROP_TITLE, "title" + System.currentTimeMillis());
             fullNodeService.setProperties(noAspectNode, props);
             
-            fail();
+            fail("node should be locked");
         }
         catch(NodeLockedException e)
         {
@@ -529,7 +529,7 @@ public class LockServiceImplTest extends BaseSpringTest
         {
             fullNodeService.removeProperty(noAspectNode, ContentModel.PROP_DESCRIPTION);
             
-            fail();
+            fail("node should be locked");
         }
         catch(NodeLockedException e)
         {
@@ -541,7 +541,7 @@ public class LockServiceImplTest extends BaseSpringTest
         {
             fullNodeService.addAspect(noAspectNode, ContentModel.ASPECT_AUTHOR , null);
             
-            fail();
+            fail("node should be locked");
         }
         catch(NodeLockedException e)
         {
@@ -553,7 +553,7 @@ public class LockServiceImplTest extends BaseSpringTest
         {
             fullNodeService.removeAspect(noAspectNode, ContentModel.ASPECT_AUTHOR);
             
-            fail();
+            fail("node should be locked");
         }
         catch(NodeLockedException e)
         {
@@ -565,7 +565,7 @@ public class LockServiceImplTest extends BaseSpringTest
         {
             fullNodeService.setType(noAspectNode, ContentModel.TYPE_CMOBJECT);
             
-            fail();
+            fail("node should be locked");
         }
         catch(NodeLockedException e)
         {

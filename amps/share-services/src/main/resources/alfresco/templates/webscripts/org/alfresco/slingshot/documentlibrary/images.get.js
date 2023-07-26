@@ -29,7 +29,7 @@ function main()
    {
       query = "+PATH:\"" + parsedArgs.pathNode.qnamePath + "//*\" ";
    }
-   query += "+TYPE:\"cm:content\" +@cm\\:content.mimetype:image/*";
+   query += "AND +TYPE:\"cm:content\" AND +@cm\\:content.mimetype:\"image/*\"";
    
    // Sort the list before trimming to page chunks 
    assets = search.query(

@@ -3,23 +3,23 @@
 <beans>
 
     <bean id="repositoryHelper" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.model.Repository" />
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.model.Repository" />
     </bean>
 
     <bean id="SiteService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.repo.site.SiteServiceInternal" />
+        <constructor-arg type="java.lang.Class" value="org.alfresco.repo.site.SiteServiceInternal" />
     </bean>
 
     <bean id="NodeService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.service.cmr.repository.NodeService" />
+        <constructor-arg type="java.lang.Class" value="org.alfresco.service.cmr.repository.NodeService" />
     </bean>
 
     <bean id="NamespaceService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.service.namespace.NamespaceService" />
+        <constructor-arg type="java.lang.Class" value="org.alfresco.service.namespace.NamespaceService" />
     </bean>
 
     <bean id="SearchService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.alfresco.service.cmr.search.SearchService" />
+        <constructor-arg type="java.lang.Class" value="org.alfresco.service.cmr.search.SearchService" />
     </bean>
 
 </beans>

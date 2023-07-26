@@ -55,7 +55,6 @@ import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.lock.UnableToAquireLockException;
 import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -173,7 +172,7 @@ public class LockServiceImplTest extends BaseSpringTest
         HashMap<QName, Serializable> audProps = new HashMap<QName, Serializable>();
         audProps.put(ContentModel.PROP_CREATOR, "Monkey");
         this.nodeService.addAspect(this.parentNode, ContentModel.ASPECT_AUDITABLE, audProps);
-        assertNotNull(this.parentNode);
+        assertNotNull("parentNode should not be null", this.parentNode);
         
         // Add some children to the node
         this.childNode1 = this.nodeService.createNode(
@@ -183,7 +182,7 @@ public class LockServiceImplTest extends BaseSpringTest
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
         this.nodeService.addAspect(this.childNode1, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
-        assertNotNull(this.childNode1);
+        assertNotNull("childNode1 should not be null", this.childNode1);
         this.childNode2 = this.nodeService.createNode(
                 this.parentNode,
 				ContentModel.ASSOC_CHILDREN,
@@ -191,7 +190,7 @@ public class LockServiceImplTest extends BaseSpringTest
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
         this.nodeService.addAspect(this.childNode2, ContentModel.ASPECT_LOCKABLE, new HashMap<QName, Serializable>());
-        assertNotNull(this.childNode2);
+        assertNotNull("childNode2 should not be null", this.childNode2);
         
         // Create a node with no lockAspect
         this.noAspectNode = this.nodeService.createNode(
@@ -200,7 +199,7 @@ public class LockServiceImplTest extends BaseSpringTest
                 QName.createQName("{}noAspectNode"),
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
-        assertNotNull(this.noAspectNode);
+        assertNotNull("noAspectNode should not be null", this.noAspectNode);
         
         // Create node with checkedOut
         this.checkedOutNode = this.nodeService.createNode(
@@ -209,11 +208,11 @@ public class LockServiceImplTest extends BaseSpringTest
                 QName.createQName("{}checkedOutNode"),
                 ContentModel.TYPE_CONTAINER,
                 nodeProperties).getChildRef();
-        assertNotNull(this.checkedOutNode);
+        assertNotNull("checkedOutNode node should not be null", this.checkedOutNode);
         
         // Check out test file
         NodeRef fileWorkingCopyNodeRef = cociService.checkout(checkedOutNode);
-        assertNotNull(fileWorkingCopyNodeRef);
+        assertNotNull("node file working copy should not be null", fileWorkingCopyNodeRef);
         assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_CHECKED_OUT));
         assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_LOCKABLE));
         
@@ -360,7 +359,7 @@ public class LockServiceImplTest extends BaseSpringTest
         assertEquals(LockType.WRITE_LOCK, lockState.getLockType());
         assertEquals(GOOD_USER_NAME, lockState.getOwner());
         assertEquals(Lifetime.EPHEMERAL, lockState.getLifetime());
-        assertNotNull(lockState.getExpires());
+        assertNotNull("expires lock date should not be null", lockState.getExpires());
         assertEquals("some extra data", lockState.getAdditionalInfo());
         
         // The node should be locked
@@ -605,7 +604,7 @@ public class LockServiceImplTest extends BaseSpringTest
         assertEquals(LockType.WRITE_LOCK, lockState.getLockType());
         assertEquals(GOOD_USER_NAME, lockState.getOwner());
         assertEquals(Lifetime.EPHEMERAL, lockState.getLifetime());
-        assertNotNull(lockState.getExpires());
+        assertNotNull("expires lock date should not be null", lockState.getExpires());
 
         // Wait for 2 seconds to give the ephemeral lock time to expire
         try {Thread.sleep(2*1000);} catch (Exception exception){};
@@ -799,7 +798,7 @@ public class LockServiceImplTest extends BaseSpringTest
         
         LockServiceImpl lockService = (LockServiceImpl) this.lockService;
         List<NodeRef> locked1 = lockService.getLocks(this.storeRef);
-        assertNotNull(locked1);
+        assertNotNull("nodes list should not be null", locked1);
         assertEquals(0, locked1.size());
 
         assertFalse(lockService.isLocked(parentNode));
@@ -821,21 +820,21 @@ public class LockServiceImplTest extends BaseSpringTest
         assertTrue(lockService.isLockedAndReadOnly(childNode2));
         
         List<NodeRef> locked2 = lockService.getLocks(this.storeRef);
-        assertNotNull(locked2);
+        assertNotNull("nodes list should not be null", locked2);
         assertEquals(3, locked2.size());
         
         List<NodeRef> locked3 = lockService.getLocks(this.storeRef, LockType.WRITE_LOCK);
-        assertNotNull(locked3);
+        assertNotNull("nodes list should not be null", locked3);
         assertEquals(2, locked3.size());
         
         List<NodeRef> locked4 = lockService.getLocks(this.storeRef, LockType.READ_ONLY_LOCK);
-        assertNotNull(locked4);
+        assertNotNull("nodes list should not be null", locked4);
         assertEquals(1, locked4.size());
         
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         
         List<NodeRef> locked5 = lockService.getLocks(this.storeRef);
-        assertNotNull(locked5);
+        assertNotNull("nodes list should not be null", locked5);
         assertEquals(0, locked5.size());
     }
     
@@ -848,47 +847,47 @@ public class LockServiceImplTest extends BaseSpringTest
         
         // Get the lock type (should be null since the object is not locked)
         LockType lockType1 = this.lockService.getLockType(this.parentNode);
-        assertNull(lockType1);
+        assertNull("lock type should be null", lockType1);
         
         // Lock the object for writing
         this.lockService.lock(this.parentNode, LockType.WRITE_LOCK);
         LockType lockType2 = this.lockService.getLockType(this.parentNode);
-        assertNotNull(lockType2);               
+        assertNotNull("lock type should not be null", lockType2);
         assertEquals(LockType.WRITE_LOCK, lockType2);
-        assertTrue(lockService.isLocked(parentNode));
+        assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         assertFalse(lockService.isLockedAndReadOnly(parentNode));
         
         // Unlock the node
         this.lockService.unlock(this.parentNode);
         LockType lockType3 = this.lockService.getLockType(this.parentNode);
-        assertNull(lockType3);
-        assertFalse(lockService.isLocked(parentNode));
+        assertNull("lock type should be null", lockType3);
+        assertFalse("parent node should not be locked", lockService.isLocked(parentNode));
         assertFalse(lockService.isLockedAndReadOnly(parentNode));
         
         // Lock the object for read only
         this.lockService.lock(this.parentNode, LockType.READ_ONLY_LOCK);
         LockType lockType4 = this.lockService.getLockType(this.parentNode);
-        assertNotNull(lockType4);
+        assertNotNull("lock type should not be null", lockType4);
         assertEquals(LockType.READ_ONLY_LOCK, lockType4);
-        assertTrue(lockService.isLocked(parentNode));
+        assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         assertTrue(lockService.isLockedAndReadOnly(parentNode));
         
         // Lock the object for node lock
         this.lockService.lock(this.parentNode, LockType.NODE_LOCK);
         LockType lockType5 = this.lockService.getLockType(this.parentNode);
-        assertNotNull(lockType5);               
+        assertNotNull("lock type should not be null", lockType5);
         assertEquals(LockType.NODE_LOCK, lockType5);
-        assertTrue(lockService.isLocked(parentNode));
+        assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         assertTrue(lockService.isLockedAndReadOnly(parentNode));
         
         // Unlock the node
         this.lockService.unlock(this.parentNode);
         LockType lockType6 = this.lockService.getLockType(this.parentNode);
-        assertNull(lockType6);
-        assertFalse(lockService.isLocked(parentNode));
+        assertNull("lock type should be null", lockType6);
+        assertFalse("parent node should not be locked", lockService.isLocked(parentNode));
         assertFalse(lockService.isLockedAndReadOnly(parentNode));
        
-        // Test with no apect node
+        // Test with no aspect node
         LockType lockType7 = this.lockService.getLockType(this.noAspectNode);
         assertNull("lock type should be null", lockType7);
     }
@@ -899,44 +898,44 @@ public class LockServiceImplTest extends BaseSpringTest
         
         // Get the lock type (should be null since the object is not locked)
         LockType lockType1 = this.lockService.getLockType(this.parentNode);
-        assertNull(lockType1);
+        assertNull("lock type should be null", lockType1);
         
         // Lock the object for writing
         this.lockService.lock(this.parentNode, LockType.WRITE_LOCK, 0, Lifetime.EPHEMERAL);
         LockType lockType2 = this.lockService.getLockType(this.parentNode);
-        assertNotNull(lockType2);               
+        assertNotNull("lock type should not be null", lockType2);
         assertEquals(LockType.WRITE_LOCK, lockType2);
-        assertTrue(lockService.isLocked(parentNode));
+        assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         assertFalse(lockService.isLockedAndReadOnly(parentNode));
         
         // Unlock the node
         this.lockService.unlock(this.parentNode);
         LockType lockType3 = this.lockService.getLockType(this.parentNode);
-        assertNull(lockType3);
-        assertFalse(lockService.isLocked(parentNode));
+        assertNull("lock type should be null", lockType3);
+        assertFalse("parent node should not be locked", lockService.isLocked(parentNode));
         assertFalse(lockService.isLockedAndReadOnly(parentNode));
         
         // Lock the object for read only
         this.lockService.lock(this.parentNode, LockType.READ_ONLY_LOCK, 0, Lifetime.EPHEMERAL);
         LockType lockType4 = this.lockService.getLockType(this.parentNode);
-        assertNotNull(lockType4);
+        assertNotNull("lock type should not be null", lockType4);
         assertEquals(LockType.READ_ONLY_LOCK, lockType4);
-        assertTrue(lockService.isLocked(parentNode));
+        assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         assertTrue(lockService.isLockedAndReadOnly(parentNode));
         
         // Lock the object for node lock
         this.lockService.lock(this.parentNode, LockType.NODE_LOCK, 0, Lifetime.EPHEMERAL);
         LockType lockType5 = this.lockService.getLockType(this.parentNode);
-        assertNotNull(lockType5);               
+        assertNotNull("lock type should not be null", lockType5);
         assertEquals(LockType.NODE_LOCK, lockType5);
-        assertTrue(lockService.isLocked(parentNode));
+        assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         assertTrue(lockService.isLockedAndReadOnly(parentNode));
         
         // Unlock the node
         this.lockService.unlock(this.parentNode);
         LockType lockType6 = this.lockService.getLockType(this.parentNode);
-        assertNull(lockType6);
-        assertFalse(lockService.isLocked(parentNode));
+        assertNull("lock type should be null", lockType6);
+        assertFalse("parent node should not be locked", lockService.isLocked(parentNode));
         assertFalse(lockService.isLockedAndReadOnly(parentNode));
         
         // Test with no apect node
@@ -1072,25 +1071,25 @@ public class LockServiceImplTest extends BaseSpringTest
        * Check we can create a child of an unlocked node.  
        */
       assertEquals(
-        LockStatus.NO_LOCK, 
+        LockStatus.NO_LOCK,
         this.lockService.getLockStatus(this.parentNode));
       assertFalse(lockService.isLocked(parentNode));
-      
-      ChildAssociationRef child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildA"), ContentModel.TYPE_FOLDER);
+
+      nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildA"), ContentModel.TYPE_FOLDER);
         
       TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
       
       this.lockService.lock(this.parentNode, LockType.WRITE_LOCK);
       
       // Owner can create children
-      child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildB"), ContentModel.TYPE_FOLDER);
+      nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildB"), ContentModel.TYPE_FOLDER);
       
       TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
       
       try
       {
           // Non owner can't create children with a write lock in place
-          child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildB"), ContentModel.TYPE_FOLDER);
+          nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildB"), ContentModel.TYPE_FOLDER);
           fail("could create a child with a read only lock");
       } 
       catch (NodeLockedException e)
@@ -1103,13 +1102,13 @@ public class LockServiceImplTest extends BaseSpringTest
       this.lockService.lock(this.parentNode, LockType.NODE_LOCK);
       
       // owner can create children with a node lock
-      child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildD"), ContentModel.TYPE_FOLDER);
+      nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildD"), ContentModel.TYPE_FOLDER);
  
       TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
       
       // Non owner can create children with a node lock
-      child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildC"), ContentModel.TYPE_FOLDER);
-      
+      nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildC"), ContentModel.TYPE_FOLDER);
+
       TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
            
       this.lockService.lock(this.parentNode, LockType.READ_ONLY_LOCK);
@@ -1117,7 +1116,7 @@ public class LockServiceImplTest extends BaseSpringTest
       // owner should not be able to create children with a READ_ONLY_LOCK
       try
       {
-          child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildD"), ContentModel.TYPE_FOLDER);
+          nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildD"), ContentModel.TYPE_FOLDER);
           fail("could create a child with a read only lock");
       } 
       catch (NodeLockedException e)
@@ -1130,7 +1129,7 @@ public class LockServiceImplTest extends BaseSpringTest
       // Non owner should not be able to create children with READ_ONLY_LOCK
       try
       {
-          child = nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildE"), ContentModel.TYPE_FOLDER);
+           nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("ChildE"), ContentModel.TYPE_FOLDER);
           fail("could create a child with a read only lock");
       } 
       catch (NodeLockedException e)
@@ -1142,7 +1141,7 @@ public class LockServiceImplTest extends BaseSpringTest
     /**
      * Test that it is impossible to unlock a checked out node
      */
-    public void testUnlockCheckedOut() throws Exception
+    public void testUnlockCheckedOut()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
 
@@ -1175,17 +1174,17 @@ public class LockServiceImplTest extends BaseSpringTest
             this.securedLockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
             
             // check lock state and status as GOOD user
-            assertNotNull(this.securedLockService.getLockState(testNode));
-            assertNotNull(this.securedLockService.getLockStatus(testNode));
-            assertTrue(this.securedLockService.isLocked(testNode));
+            assertNotNull("lock state should not be null", this.securedLockService.getLockState(testNode));
+            assertNotNull("lock status should not be null", this.securedLockService.getLockStatus(testNode));
+            assertTrue("test node should be locked", this.securedLockService.isLocked(testNode));
             assertFalse(this.securedLockService.isLockedAndReadOnly(testNode));
         
             TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
 
             // check lock state and status as BAD user
-            assertNotNull(this.securedLockService.getLockState(testNode));
-            assertNotNull(this.securedLockService.getLockStatus(testNode));
-            assertTrue(this.securedLockService.isLocked(testNode));
+            assertNotNull("lock state should not be null", this.securedLockService.getLockState(testNode));
+            assertNotNull("lock status should not be null", this.securedLockService.getLockStatus(testNode));
+            assertTrue("test node should be locked", this.securedLockService.isLocked(testNode));
             assertTrue(this.securedLockService.isLockedAndReadOnly(testNode));
         
             try
@@ -1202,9 +1201,9 @@ public class LockServiceImplTest extends BaseSpringTest
             TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), "admin", rootNodeRef, this.authenticationService);
 
             // check lock state and status as ADMIN user
-            assertNotNull(this.securedLockService.getLockState(testNode));
-            assertNotNull(this.securedLockService.getLockStatus(testNode));
-            assertTrue(this.securedLockService.isLocked(testNode));
+            assertNotNull("lock state should not be null", this.securedLockService.getLockState(testNode));
+            assertNotNull("lock status should not be null", this.securedLockService.getLockStatus(testNode));
+            assertTrue("test node should not be locked", this.securedLockService.isLocked(testNode));
             assertTrue(this.securedLockService.isLockedAndReadOnly(testNode));
         
             // try to unlock as ADMIN user

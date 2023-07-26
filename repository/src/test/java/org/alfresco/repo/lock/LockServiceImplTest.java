@@ -664,22 +664,6 @@ public class LockServiceImplTest extends BaseSpringTest
     }
     
     /**
-     * Test lock with lockChildren == true
-     */
-    // TODO
-    public void testLockChildren()
-    {
-    }
-    
-    /**
-     * Test lock with collection
-     */
-    // TODO
-    public void testLockMany()
-    {
-    }
-    
-    /**
      * Test unlock node
      */
     @Test
@@ -738,16 +722,6 @@ public class LockServiceImplTest extends BaseSpringTest
         this.lockService.unlock(this.noAspectNode);
     }
     
-    // TODO
-    public void testUnlockChildren()
-    {
-    }
-    
-    // TODO
-    public void testUnlockMany()
-    {
-    }
-    
     /**
      * Test getLockStatus
      */
@@ -795,6 +769,7 @@ public class LockServiceImplTest extends BaseSpringTest
         assertEquals("lock status should be lock owner type", LockStatus.LOCK_OWNER, lockStatus4);
     }
 
+    @Test
     @Category(RedundantTests.class)
     public void testGetLocks()
     {

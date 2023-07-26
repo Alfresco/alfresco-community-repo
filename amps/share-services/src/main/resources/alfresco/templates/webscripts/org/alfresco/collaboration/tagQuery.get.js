@@ -48,7 +48,7 @@ function tagQuery()
    }
    query += "ASPECT:\"{http://www.alfresco.org/model/content/1.0}taggable\"";
    //MNT-2118 Share inconsistencies when displaying locked files with tags
-   query += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
+   query += " AND -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
 
    // MNT-20091 check to prevent cm:taggable with NULL
    query += " AND ISNOTNULL:\"{http://www.alfresco.org/model/content/1.0}taggable\"";
@@ -60,7 +60,7 @@ function tagQuery()
          query: query,
          language: "lucene",
          page: {
-            // query minimum rows because all usefull info will come with facets 
+            // query minimum rows because all useful info will come with facets
             maxItems: 1,
             skipCount: 0
          },

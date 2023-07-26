@@ -260,7 +260,7 @@ public class LockServiceImplTest extends BaseSpringTest
     /**
      * Test lock
      */
-    public void testLock()
+    private void testLock()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         
@@ -308,7 +308,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToAquireLockException exception)
         {
-            System.out.println(exception.getMessage());
+            logger.debug(exception.getMessage());
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -327,7 +327,8 @@ public class LockServiceImplTest extends BaseSpringTest
         this.lockService.lock(this.noAspectNode, LockType.WRITE_LOCK);
         assertTrue(lockService.isLocked(noAspectNode));
     }
-    
+
+    @Test
     public void testPersistentLockMayStoreAdditionalInfo()
     {
         lockService.lock(noAspectNode, LockType.NODE_LOCK, 0, Lifetime.PERSISTENT, "additional info");
@@ -335,7 +336,8 @@ public class LockServiceImplTest extends BaseSpringTest
         LockState lockState = lockService.getLockState(noAspectNode);
         assertEquals("additional info", lockState.getAdditionalInfo());
     }
-    
+
+    @Test
     public void testEphemeralLock()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -385,7 +387,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToAquireLockException exception)
         {
-            System.out.println(exception.getMessage());
+            logger.debug(exception.getMessage());
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -584,6 +586,7 @@ public class LockServiceImplTest extends BaseSpringTest
     /**
      * Test that covers MNT-17612 - having an expired ephemeral lock and a persistent one on the same node.
      */
+    @Test
     public void testExpiredEphemeralLockAndPersistentLock()
     {
        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -607,7 +610,7 @@ public class LockServiceImplTest extends BaseSpringTest
         assertNotNull("expires lock date should not be null", lockState.getExpires());
 
         // Wait for 2 seconds to give the ephemeral lock time to expire
-        try {Thread.sleep(2*1000);} catch (Exception exception){};
+        try {Thread.sleep(2*1000);} catch (Exception exception){}
 
         assertFalse(securedLockService.isLocked(noAspectNode));
 
@@ -634,6 +637,7 @@ public class LockServiceImplTest extends BaseSpringTest
         assertFalse(securedLockService.isLocked(noAspectNode));        
     }
 
+    @Test
     public void testLockRevertedOnRollback()
     {
         // Preconditions of test
@@ -682,6 +686,7 @@ public class LockServiceImplTest extends BaseSpringTest
     /**
      * Test unlock node
      */
+    @Test
     public void testUnlock()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -748,6 +753,7 @@ public class LockServiceImplTest extends BaseSpringTest
     /**
      * Test getLockStatus
      */
+    @Test
     public void testGetLockStatus()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -841,6 +847,7 @@ public class LockServiceImplTest extends BaseSpringTest
     /**
      * Test getLockType (and isLocked/isLockedReadOnly)
      */
+    @Test
     public void testGetLockType()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -891,7 +898,8 @@ public class LockServiceImplTest extends BaseSpringTest
         LockType lockType7 = this.lockService.getLockType(this.noAspectNode);
         assertNull("lock type should be null", lockType7);
     }
-    
+
+    @Test
     public void testGetLockTypeEphemeral()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -942,7 +950,8 @@ public class LockServiceImplTest extends BaseSpringTest
         LockType lockType7 = this.lockService.getLockType(this.noAspectNode);
         assertNull("lock type should be null", lockType7);
     }
-    
+
+    @Test
     public void testTimeToExpire()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -1001,7 +1010,8 @@ public class LockServiceImplTest extends BaseSpringTest
         assertEquals(LockStatus.LOCK_EXPIRED, this.lockService.getLockStatus(this.parentNode));
         assertFalse(lockService.isLocked(parentNode));
     }
-    
+
+    @Test
     public void testEphemeralExpiryThreshold()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -1064,6 +1074,7 @@ public class LockServiceImplTest extends BaseSpringTest
      * NODE_LOCK non owner can create children
      *     owner can create children     
      */
+    @Test
     public void testCreateChildrenOfLockedNodes() throws Exception
     {
       
@@ -1141,6 +1152,7 @@ public class LockServiceImplTest extends BaseSpringTest
     /**
      * Test that it is impossible to unlock a checked out node
      */
+    @Test
     public void testUnlockCheckedOut()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -1160,6 +1172,7 @@ public class LockServiceImplTest extends BaseSpringTest
     }
     
     @SuppressWarnings("deprecation")
+    @Test
     public void testUnlockNodeWithAdminUserAndAllPermissionsUser()
     {
         for (Lifetime lt : new Lifetime[]{Lifetime.EPHEMERAL, Lifetime.PERSISTENT})

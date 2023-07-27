@@ -172,7 +172,7 @@ public class ContentServiceImplUnitTest
         final String fileNameOverride = "fileNameOverride.txt";
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
-        when(mockContentStore.requestContentDirectUrl(anyString(), eq(true), eq(SOME_FILE_NAME), anyString(), anyLong())).thenReturn(mockDirectAccessUrl);
+        when(mockContentStore.requestContentDirectUrl(anyString(), eq(true), eq(fileNameOverride), anyString(), anyLong())).thenReturn(mockDirectAccessUrl);
 
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L, fileNameOverride);
         assertEquals("fileName was not set properly on the DirectAccessUrl response", fileNameOverride, directAccessUrl.getFileName());

@@ -879,7 +879,7 @@ public class FTPServerTest
     private FTPClient connectClient() throws IOException
     {
         FTPClient ftp = new FTPClient();
-        ftp.setIpAddressFromPasvResponse(true);
+
         if(LOGGER.isDebugEnabled())
         {
             ftp.addProtocolCommandListener(new PrintCommandListener(

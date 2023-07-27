@@ -562,7 +562,7 @@ public class GetFavoritesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify if get favorites response returns allowableOperations object when requested")
-    public void checkResponsesForGetFavoritesWithAllowableOperationsAndSearchRequestWithIsFavorite()
+    public void checkResponsesForGetFavoritesWithAllowableOperations()
     {
         final RestPersonFavoritesModelsCollection adminFavorites =
                 restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ALLOWABLE_OPERATIONS).getFavorites();

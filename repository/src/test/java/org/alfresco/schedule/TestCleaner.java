@@ -25,7 +25,6 @@
  */
 package org.alfresco.schedule;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -51,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TestCleaner
 {
-    private static final Log logger = LogFactory.getLog(TestCleaner.class);
+    private static final Log LOGGER = LogFactory.getLog(TestCleaner.class);
 
     private final NodeService nodeService;
     private final TransactionService transactionService;
@@ -61,7 +60,6 @@ public class TestCleaner
     private List<NodeRef> nodesToClean;
 
     private int numErrors = 0;
-    private List<Exception> errors = new ArrayList<Exception>();
 
     /**
      *
@@ -148,14 +146,14 @@ public class TestCleaner
      */
     public void clean()
     {
-        logger.info("Running TestCleaner");
+        LOGGER.info("Running TestCleaner");
 
         // Retrieve in a new read-only transaction the list of nodes to be deleted by the TestCleaner
         AuthenticationUtil.runAsSystem(() -> {
             RetryingTransactionCallback<Void> txnWork = () -> {
                 nodesToClean = getBatchToDelete();
 
-                logger.info(String.format("Number of nodes to delete: %s", nodesToClean.size()));
+                LOGGER.info(String.format("Number of nodes to delete: %s", nodesToClean.size()));
 
                 return null;
             };
@@ -164,8 +162,7 @@ public class TestCleaner
 
         int deletedNodes = deleteNodes(nodesToClean);
 
-        logger.info(String.format("Number of deleted nodes: %s", deletedNodes));
-        logger.info("TestCleaner finished");
+        LOGGER.info(String.format("TestCleaner finished. Number of deleted nodes: %s", deletedNodes));
     }
 
     public boolean hasErrors()
@@ -176,6 +173,5 @@ public class TestCleaner
     private void handleError(Exception e)
     {
         numErrors++;
-        errors.add(e);
     }
 }

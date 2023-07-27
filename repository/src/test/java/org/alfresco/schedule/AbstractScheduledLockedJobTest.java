@@ -58,9 +58,9 @@ import com.google.common.collect.ImmutableMap;
 @ContextConfiguration({ "classpath:alfresco/application-context.xml", "classpath:alfresco/schedule/test-schedule-context.xml" })
 public class AbstractScheduledLockedJobTest extends BaseSpringTest
 {
-    private final int TOTAL_NODES = 10;
-    private final int NUM_THREADS = 2;
-    private final String ARCHIVE_STORE_URL = "archive://SpacesStore";
+    private static final int TOTAL_NODES = 10;
+    private static final int NUM_THREADS = 2;
+    private static final String ARCHIVE_STORE_URL = "archive://SpacesStore";
 
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -69,7 +69,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     private SchedulerAccessorBean testCleanerAccessor;
     private JobDetail testCleanerJobDetail;
 
-    private static final Log logger = LogFactory.getLog(AbstractScheduledLockedJobTest.class);
+    private static final Log LOGGER = LogFactory.getLog(AbstractScheduledLockedJobTest.class);
 
     /**
      * Sets services and job beans
@@ -87,7 +87,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     {
         createAndDeleteNodes(TOTAL_NODES);
 
-        assertEquals(getNumberOfNodesInTrashcan(), TOTAL_NODES);
+        assertEquals("Expected nodes haven't been created", TOTAL_NODES, getNumberOfNodesInTrashcan());
 
         TestCleanerThread[] threads = new TestCleanerThread[NUM_THREADS];
 
@@ -193,7 +193,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
                 testCleanerJobDetail = (JobDetail) applicationContext.getBean("testCleanerJobDetail");
                 testCleaner = (TestCleaner) testCleanerJobDetail.getJobDataMap().get("testCleaner");
                 testCleanerAccessor.getScheduler().triggerJob(testCleanerJobDetail.getKey());
-                logger.info("Thread " + this.threadNum + " has started");
+                LOGGER.info("Thread " + this.threadNum + " has started");
                 this.started = true;
             }
             catch (SchedulerException e)

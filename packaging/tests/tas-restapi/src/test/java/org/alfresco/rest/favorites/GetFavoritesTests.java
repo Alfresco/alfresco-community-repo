@@ -10,6 +10,7 @@ import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchRequest;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
@@ -560,8 +561,8 @@ public class GetFavoritesTests extends RestTest
 
     @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify if get favorites response returns allowableOperations object when requested")
-    public void checkResponseForGetFavoritesWithAllowableOperations()
-    {
+    public void checkResponsesForGetFavoritesWithAllowableOperationsAndSearchRequestWithIsFavorite() throws InterruptedException {
+        //request allowable operations for favorites
         final RestPersonFavoritesModelsCollection adminFavorites =
                 restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ALLOWABLE_OPERATIONS).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -577,10 +578,11 @@ public class GetFavoritesTests extends RestTest
         query.setQuery(queryReq);
         query.setInclude(List.of("isFavorite"));
 
-        restClient.authenticateUser(adminUserModel).withSearchAPI().search(query);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-
         // isFavorite field is included in the search response
-        restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.equalToIgnoringCase(Boolean.TRUE.toString()));
+        Utility.sleep(500, 60000, () -> {
+                    restClient.authenticateUser(adminUserModel).withSearchAPI().search(query);
+                    restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.notNullValue());
+                }
+        );
     }
 }

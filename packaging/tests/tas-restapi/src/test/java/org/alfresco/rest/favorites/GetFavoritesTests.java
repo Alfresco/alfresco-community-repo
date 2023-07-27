@@ -559,10 +559,11 @@ public class GetFavoritesTests extends RestTest
                 .field("title").is(thirdSiteModel.getTitle());
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify if get favorites response returns allowableOperations object when requested")
-    public void checkResponsesForGetFavoritesWithAllowableOperationsAndSearchRequestWithIsFavorite() throws InterruptedException {
-        //request allowable operations for favorites
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get favorites response returns allowableOperations object when requested")
+    public void checkResponsesForGetFavoritesWithAllowableOperationsAndSearchRequestWithIsFavorite()
+    {
         final RestPersonFavoritesModelsCollection adminFavorites =
                 restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ALLOWABLE_OPERATIONS).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -570,16 +571,21 @@ public class GetFavoritesTests extends RestTest
         adminFavorites.getEntries().stream()
                 .map(RestPersonFavoritesModel::onModel)
                 .forEach(m -> m.assertThat().field(ALLOWABLE_OPERATIONS).isNotEmpty());
+    }
 
-        //Check if isFavorite field is returned when requested in search API.
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify the get favorites request with properties parameter applied")
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
+    public void checkSearchResponseContainsIsFavoriteWhenRequested() throws Exception
+    {
         final SearchRequest query = new SearchRequest();
         final RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery(firstFileModel.getName());
         query.setQuery(queryReq);
         query.setInclude(List.of("isFavorite"));
 
-        // isFavorite field is included in the search response
-        Utility.sleep(500, 60000, () -> {
+        Utility.sleep(500, 60000, () ->
+                {
                     restClient.authenticateUser(adminUserModel).withSearchAPI().search(query);
                     restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.notNullValue());
                 }

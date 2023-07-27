@@ -213,8 +213,8 @@ public class LockServiceImplTest extends BaseSpringTest
         // Check out test file
         NodeRef fileWorkingCopyNodeRef = cociService.checkout(checkedOutNode);
         assertNotNull("node file working copy should not be null", fileWorkingCopyNodeRef);
-        assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_CHECKED_OUT));
-        assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_LOCKABLE));
+        assertTrue("checkedOutNode should have checked out aspect", nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_CHECKED_OUT));
+        assertTrue("checkedOutNode should have lockable aspect", nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_LOCKABLE));
         
         
         // Create the  users
@@ -305,7 +305,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToAquireLockException exception)
         {
-            logger.debug(exception.getMessage());
+            if(logger.isDebugEnabled()) logger.debug(exception.getMessage());
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -383,7 +383,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToAquireLockException exception)
         {
-            logger.debug(exception.getMessage());
+            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -685,7 +685,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToReleaseLockException exception)
         {
-            System.out.println(exception.getMessage());
+            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -939,7 +939,7 @@ public class LockServiceImplTest extends BaseSpringTest
         assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         
         // Wait for 2 second before re-testing the status
-        try {Thread.sleep(2*1000);} catch (Exception exception){};
+        try {Thread.sleep(2*1000);} catch (Exception exception){}
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         assertEquals("lock status should be expired", LockStatus.LOCK_EXPIRED, this.lockService.getLockStatus(this.parentNode));
@@ -973,7 +973,7 @@ public class LockServiceImplTest extends BaseSpringTest
         assertTrue("parent node should be locked", lockService.isLocked(parentNode));
         
         // Wait for 2 second before re-testing the status
-        try {Thread.sleep(2*1000);} catch (Exception exception){};
+        try {Thread.sleep(2*1000);} catch (Exception exception){}
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         assertEquals("lock status should be expired", LockStatus.LOCK_EXPIRED, this.lockService.getLockStatus(this.parentNode));

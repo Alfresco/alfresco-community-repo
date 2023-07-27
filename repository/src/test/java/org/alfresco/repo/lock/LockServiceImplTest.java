@@ -305,7 +305,10 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToAquireLockException exception)
         {
-            if(logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if(logger.isDebugEnabled())
+            {
+                logger.debug(exception.getMessage());
+            }
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -383,7 +386,10 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToAquireLockException exception)
         {
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(exception.getMessage());
+            }
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -685,7 +691,10 @@ public class LockServiceImplTest extends BaseSpringTest
         }
         catch (UnableToReleaseLockException exception)
         {
-            if (logger.isDebugEnabled()) logger.debug(exception.getMessage());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(exception.getMessage());
+            }
         }
         
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);

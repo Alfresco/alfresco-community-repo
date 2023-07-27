@@ -252,7 +252,7 @@ import org.junit.runners.Suite;
     org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class,
     org.alfresco.repo.tagging.TaggingServiceImplUnitTest.class,
 
-    org.alfresco.schedule.AbstractScheduledLockedJobTest
+    org.alfresco.schedule.AbstractScheduledLockedJobTest.class
 })
 public class AllUnitTestsSuite
 {

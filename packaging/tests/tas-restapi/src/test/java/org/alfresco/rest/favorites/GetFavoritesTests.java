@@ -1,11 +1,15 @@
 package org.alfresco.rest.favorites;
 
+import java.util.List;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestPersonFavoritesModel;
 import org.alfresco.rest.model.RestPersonFavoritesModelsCollection;
 import org.alfresco.rest.model.RestSiteModel;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
@@ -15,6 +19,7 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.hamcrest.Matchers;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -557,12 +562,25 @@ public class GetFavoritesTests extends RestTest
     @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify if get favorites response returns allowableOperations object when requested")
     public void checkResponseForGetFavoritesWithAllowableOperations()
     {
-        RestPersonFavoritesModelsCollection adminFavorites =
+        final RestPersonFavoritesModelsCollection adminFavorites =
                 restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ALLOWABLE_OPERATIONS).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         adminFavorites.getEntries().stream()
                 .map(RestPersonFavoritesModel::onModel)
                 .forEach(m -> m.assertThat().field(ALLOWABLE_OPERATIONS).isNotEmpty());
+
+        //Check if isFavorite field is returned when requested in search API.
+        final SearchRequest query = new SearchRequest();
+        final RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery(firstFileModel.getName());
+        query.setQuery(queryReq);
+        query.setInclude(List.of("isFavorite"));
+
+        restClient.authenticateUser(adminUserModel).withSearchAPI().search(query);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        // isFavorite field is included in the search response
+        restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.equalToIgnoringCase(Boolean.TRUE.toString()));
     }
 }

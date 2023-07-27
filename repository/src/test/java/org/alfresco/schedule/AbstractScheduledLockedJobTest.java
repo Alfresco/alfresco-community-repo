@@ -89,19 +89,19 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
 
         assertEquals("Expected nodes haven't been created", TOTAL_NODES, getNumberOfNodesInTrashcan());
 
-        TestCleanerThread[] threads = new TestCleanerThread[NUM_THREADS];
+        CleanerThread[] threads = new CleanerThread[NUM_THREADS];
 
         for (int i = 0; i < NUM_THREADS; i++)
         {
-            TestCleanerThread t = new TestCleanerThread(i);
+            CleanerThread t = new CleanerThread(i);
             threads[i] = t;
             t.start();
             Thread.sleep(30000);
         }
 
-        for (int i = 0; i < threads.length; i++)
+        for (Thread t : threads)
         {
-            threads[i].join();
+            t.join();
         }
 
         while (getNumberOfNodesInTrashcan() > 0)
@@ -111,7 +111,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
 
         for (int i = 0; i < threads.length; i++)
         {
-            TestCleanerThread t = threads[i];
+            CleanerThread t = threads[i];
             if (t.hasErrors())
             {
                 fail("An error has occurred when executing multiple cleaner jobs at the same time");
@@ -140,8 +140,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     }
 
     /**
-     * Creates and deletes an hierarchy of nodes - one parent whose name is based on the current time in milliseconds
-     * and its children
+     * Creates and deletes nodes
      */
     private void addNodeToTrashcan()
     {
@@ -172,15 +171,15 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     /**
      * 
      */
-    private class TestCleanerThread extends Thread
+    private class CleanerThread extends Thread
     {
         private int threadNum;
         private boolean started;
-        private TestCleaner testCleaner;
+        private Cleaner testCleaner;
 
-        TestCleanerThread(int threadNum)
+        CleanerThread(int threadNum)
         {
-            super(TestCleanerThread.class.getSimpleName() + "-" + threadNum);
+            super(CleanerThread.class.getSimpleName() + "-" + threadNum);
             this.threadNum = threadNum;
         }
 
@@ -191,7 +190,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
             {
                 testCleanerAccessor = (SchedulerAccessorBean) applicationContext.getBean("testSchedulerAccessor");
                 testCleanerJobDetail = (JobDetail) applicationContext.getBean("testCleanerJobDetail");
-                testCleaner = (TestCleaner) testCleanerJobDetail.getJobDataMap().get("testCleaner");
+                testCleaner = (Cleaner) testCleanerJobDetail.getJobDataMap().get("testCleaner");
                 testCleanerAccessor.getScheduler().triggerJob(testCleanerJobDetail.getKey());
                 LOGGER.info("Thread " + this.threadNum + " has started");
                 this.started = true;
@@ -204,7 +203,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
 
         public boolean hasErrors()
         {
-            return !started || (testCleaner != null && testCleaner.hasErrors());
+            return !started || testCleaner != null && testCleaner.hasErrors();
         }
     }
 }

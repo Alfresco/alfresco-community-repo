@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="testCleaner" class="org.alfresco.schedule.TestCleaner">
+    <bean id="testCleaner" class="org.alfresco.schedule.Cleaner">
         <constructor-arg ref="nodeService" />
         <constructor-arg ref="transactionService" />
         <constructor-arg value="100" />
@@ -25,7 +25,7 @@
     </bean>    
 
     <bean id="testCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-        <property name="jobClass" value="org.alfresco.schedule.TestCleanerJob"/>
+        <property name="jobClass" value="org.alfresco.schedule.CleanerJob"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="testCleaner" value-ref="testCleaner" />

@@ -48,9 +48,9 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Tiago Salvado
  */
-public class TestCleaner
+public class Cleaner
 {
-    private static final Log LOGGER = LogFactory.getLog(TestCleaner.class);
+    private static final Log LOGGER = LogFactory.getLog(Cleaner.class);
 
     private final NodeService nodeService;
     private final TransactionService transactionService;
@@ -67,7 +67,7 @@ public class TestCleaner
      * @param transactionService
      * @param deleteBatchCount
      */
-    public TestCleaner(NodeService nodeService, TransactionService transactionService, int deleteBatchCount)
+    public Cleaner(NodeService nodeService, TransactionService transactionService, int deleteBatchCount)
     {
         this.nodeService = nodeService;
         this.transactionService = transactionService;

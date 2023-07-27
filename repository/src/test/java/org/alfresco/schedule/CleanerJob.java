@@ -28,18 +28,18 @@ package org.alfresco.schedule;
 import org.quartz.JobExecutionContext;
 
 /**
- * Test job that will execute {@link TestCleaner}
+ * Test job that will execute {@link Cleaner}
  * 
  * @author Tiago Salvado
  * 
  * @see AbstractScheduledLockedJob
  */
-public class TestCleanerJob extends AbstractScheduledLockedJob
+public class CleanerJob extends AbstractScheduledLockedJob
 {
     @Override
     public void executeJob(JobExecutionContext jobContext)
     {
-        TestCleaner testCleaner = (TestCleaner) jobContext.getJobDetail().getJobDataMap().get("testCleaner");
+        Cleaner testCleaner = (Cleaner) jobContext.getJobDetail().getJobDataMap().get("testCleaner");
         testCleaner.clean();
     }
 }

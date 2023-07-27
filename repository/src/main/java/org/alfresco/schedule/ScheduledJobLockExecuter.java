@@ -59,7 +59,7 @@ public class ScheduledJobLockExecuter
 {
     private static final long LOCK_TTL = 30000L;
 
-    private static Log logger = LogFactory.getLog(ScheduledJobLockExecuter.class.getName());
+    private static final Log logger = LogFactory.getLog(ScheduledJobLockExecuter.class);
     private static ThreadLocal<Pair<Long, String>> lockThreadLocal = new ThreadLocal<Pair<Long, String>>();
 
     private final JobLockService jobLockService;
@@ -133,7 +133,7 @@ public class ScheduledJobLockExecuter
         {
             String lockToken = jobLockService.getLock(lockQName, LOCK_TTL);
             jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL, lockCallback);
-            Long lastLock = new Long(System.currentTimeMillis());
+            Long lastLock = Long.valueOf(System.currentTimeMillis());
             // We have not locked before
             lockPair = new Pair<Long, String>(lastLock, lockToken);
             lockThreadLocal.set(lockPair);

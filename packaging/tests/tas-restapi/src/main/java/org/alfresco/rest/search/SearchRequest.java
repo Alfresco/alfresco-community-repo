@@ -79,6 +79,7 @@ public class SearchRequest extends TestModel
     List<SortClause> sort;
     RestRequestDefaultsModel defaults;
     List<RestRequestTemplatesModel> templates;
+    RestRequestLimitsModel limits;
 
     public SearchRequest()
     {
@@ -302,4 +303,15 @@ public class SearchRequest extends TestModel
 
         return this;
     }
+
+    public RestRequestLimitsModel getLimits()
+    {
+        return limits;
+    }
+
+    public void setLimits(RestRequestLimitsModel limits)
+    {
+        this.limits = limits;
+    }
+
 }

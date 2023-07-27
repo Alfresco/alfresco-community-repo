@@ -24,7 +24,7 @@ function getCategoryNode()
       else
       {
          var queryPath = "/" + catAspect + "/" + encodePath(path);
-         categoryResults = search.luceneSearch("+PATH:\"" + queryPath + "/*\" -PATH:\"" + queryPath + "/member\"");
+         categoryResults = search.luceneSearch("+PATH:\"" + queryPath + "/*\" AND -PATH:\"" + queryPath + "/member\"");
       }
       
       // make each result an object and indicate it is selectable in the UI

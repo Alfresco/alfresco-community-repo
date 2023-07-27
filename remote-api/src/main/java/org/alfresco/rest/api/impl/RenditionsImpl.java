@@ -512,7 +512,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     /**
      * {@inheritDoc}
      */
-    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor)
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor, String fileName)
     {
         final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionId, null);
         NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, null);
@@ -522,7 +522,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             throw new NotFoundException("The rendition with id: " + renditionId + " was not found.");
         }
 
-        return nodes.requestContentDirectUrl(renditionNodeRef, attachment, validFor);
+        return nodes.requestContentDirectUrl(renditionNodeRef, attachment, validFor, fileName);
     }
 
     private BinaryResource getContentImpl(NodeRef nodeRef, String renditionId, Parameters parameters)

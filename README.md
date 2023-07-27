@@ -26,7 +26,7 @@ Repository is a library packaged as a jar file which contains the following:
 
 Remote API is a library packaged as a jar file which contains the following:
 * REST API framework
-* WebScript implementations including [V1 REST APIs](https://community.alfresco.com/community/ecm/blog/2017/05/02/v1-rest-api-10-things-you-should-know)
+* WebScript implementations including [V1 REST APIs](https://hub.alfresco.com/t5/alfresco-content-services-blog/v1-rest-api-10-things-you-should-know/ba-p/287692)
 * [OpenCMIS](https://chemistry.apache.org/java/opencmis.html) implementations
 
 #### Artifacts

@@ -823,6 +823,11 @@ public class SearchMapper
                 sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
                 sp.setMaxPermissionCheckTimeMillis(limits.getPermissionEvaluationTime());
             }
+
+            if(limits.getTrackTotalHitsLimit() != null)
+            {
+                sp.setTrackTotalHits(limits.getTrackTotalHitsLimit());
+            }
         }
     }
 

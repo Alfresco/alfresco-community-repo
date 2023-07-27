@@ -33,6 +33,7 @@ package org.alfresco.rest.api.model;
 public class DirectAccessUrlRequest
 {
     private Boolean attachment;
+    private String fileName;
 
     public Boolean isAttachment()
     {
@@ -42,5 +43,15 @@ public class DirectAccessUrlRequest
     public void setAttachment(Boolean attachment)
     {
         this.attachment = attachment;
+    }
+
+    public String getFileName()
+    {
+        return fileName;
+    }
+
+    public void setFileName(String fileName)
+    {
+        this.fileName = fileName;
     }
 }

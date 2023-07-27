@@ -87,7 +87,7 @@ public class DirectAccessUrl implements Serializable
         if (obj == null || getClass() != obj.getClass()) return false;
 
         DirectAccessUrl that = (DirectAccessUrl) obj;
-        return fileName.equals(that.fileName) && attachment == that.attachment && Objects.equals(contentUrl,
+        return Objects.equals(fileName, that.fileName) && attachment == that.attachment && Objects.equals(contentUrl,
                 that.contentUrl) && Objects.equals(expiryTime, that.expiryTime);
     }
 

@@ -122,11 +122,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             UserRoles.ROLE_RM_MANAGER.roleId);
     }
 
-    @Test
-    public void mustFailToCheckIfIsRun() {
-        fail();
-    }
-
     /**
      * Disposition Schedule on Record Folder with linked records test
      * <p>
@@ -144,7 +139,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
         RecordCategory category1 = createRootCategory(categoryRM3077);
-        fail();
+
         //create retention schedule
         dispositionScheduleService.createCategoryRetentionSchedule(category1.getName(), false);
 

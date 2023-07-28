@@ -50,7 +50,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
@@ -68,8 +67,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
@@ -123,6 +121,12 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             getDataUser().usingAdmin().getAdminUser().getPassword(), rmManager.getUsername(),
             UserRoles.ROLE_RM_MANAGER.roleId);
     }
+
+    @Test
+    public void mustFailToCheckIfIsRun() {
+        fail();
+    }
+
     /**
      * Disposition Schedule on Record Folder with linked records test
      * <p>

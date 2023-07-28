@@ -10,7 +10,7 @@ on:
   push:
     branches:
       - feature/**
-      - fix/**
+#      - fix/**
   workflow_call:
   workflow_dispatch:
 

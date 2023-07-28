@@ -3443,9 +3443,9 @@ public class NodesImpl implements Nodes
      * {@inheritDoc}
      */
     @Override
-    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor, String fileName)
     {
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor, fileName);
         if (directAccessUrl == null)
         {
             throw new DisabledServiceException("Direct access url isn't available.");

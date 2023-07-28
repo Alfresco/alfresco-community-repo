@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.151-SNAPSHOT</version>
+    <version>23.1.0.174-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -54,21 +54,22 @@
         <dependency.alfresco-transform-service.version>3.0.0</dependency.alfresco-transform-service.version>
         <dependency.alfresco-transform-core.version>4.0.0</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.9</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.22</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.23</dependency.acs-event-model.version>
 
         <dependency.spring.version>5.3.27</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.15.1</dependency.jackson.version>
+        <dependency.jackson.version>2.15.2</dependency.jackson.version>
         <dependency.cxf.version>3.5.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.44</dependency.webscripts.version>
+        <dependency.webscripts.version>8.45</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>4.9.0</dependency.mockito-core.version>
+        <dependency.mockito-core.version>5.4.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>
         <dependency.org-json.version>20230618</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
-        <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
+        <dependency.commons-io.version>2.13.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.9</dependency.gson.version>
+        <dependency.guava.version>32.1.1-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
@@ -76,23 +77,21 @@
         <dependency.slf4j.version>2.0.7</dependency.slf4j.version>
         <dependency.log4j.version>2.20.0</dependency.log4j.version>
         <dependency.gytheio.version>0.20.0-A1</dependency.gytheio.version>
-        <dependency.groovy.version>3.0.17</dependency.groovy.version>
+        <dependency.groovy.version>3.0.18</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
         <dependency.spring-security.version>5.8.3</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.20.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.87.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
-        <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
-        <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
+        <dependency.camel.version>3.21.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.netty.version>4.1.95.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.17.4</dependency.activemq.version>
         <dependency.apache-compress.version>1.23.0</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
-        <dependency.swagger-parser.version>1.0.66</dependency.swagger-parser.version>
+        <dependency.swagger-parser.version>1.0.67</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
@@ -107,10 +106,10 @@
         <dependency.jakarta-mail-api.version>1.6.5</dependency.jakarta-mail-api.version>
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
         <dependency.jakarta-json-path.version>2.8.0</dependency.jakarta-json-path.version>
-        <dependency.json-smart.version>2.4.11</dependency.json-smart.version>
+        <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.4.1</alfresco.googledrive.version>
+        <alfresco.googledrive.version>3.4.2-A4</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.6.1</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
@@ -121,11 +120,11 @@
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
-        <dependency.tas-utility.version>4.0.3</dependency.tas-utility.version>
+        <dependency.tas-utility.version>4.0.4</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.3.1</dependency.rest-assured.version>
-        <dependency.tas-email.version>1.21</dependency.tas-email.version>
-        <dependency.tas-webdav.version>1.16</dependency.tas-webdav.version>
-        <dependency.tas-ftp.version>1.17</dependency.tas-ftp.version>
+        <dependency.tas-email.version>1.24</dependency.tas-email.version>
+        <dependency.tas-webdav.version>1.20</dependency.tas-webdav.version>
+        <dependency.tas-ftp.version>1.18</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
 
         <!-- AGS properties shared between community and enterprise -->
@@ -359,7 +358,7 @@
             <dependency>
                 <groupId>commons-codec</groupId>
                 <artifactId>commons-codec</artifactId>
-                <version>1.15</version>
+                <version>1.16.0</version>
             </dependency>
             <dependency>
                 <groupId>commons-lang</groupId>
@@ -387,7 +386,11 @@
                 <artifactId>commons-fileupload</artifactId>
                 <version>1.5</version>
             </dependency>
-
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>3.9.0</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
@@ -634,7 +637,7 @@
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
-                <version>7.5.4</version>
+                <version>7.5.5</version>
             </dependency>
             <dependency>
                 <groupId>com.github.fge</groupId>
@@ -772,6 +775,11 @@
                 <version>${dependency.gson.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${dependency.guava.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-core</artifactId>
                 <version>${dependency.camel.version}</version>
@@ -845,17 +853,6 @@
                 <artifactId>camel-mock</artifactId>
                 <version>${dependency.camel.version}</version>
             </dependency>
-            <!-- Netty non-transitive dependencies declared for depending projects usage in conjunction with Camel's other transitive netty dependencies -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-handler-proxy</artifactId>
-                <version>${dependency.netty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-tcnative-classes</artifactId>
-                <version>${dependency.netty-tcnative.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.apache.taglibs</groupId>
@@ -886,7 +883,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.26</version>
+                <version>1.18.28</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -900,6 +897,15 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${dependency.netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.security</groupId>
                 <artifactId>spring-security-bom</artifactId>
@@ -955,7 +961,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.6.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -1002,6 +1008,11 @@
                         <skip>true</skip>
                         <skipDeploy>true</skipDeploy>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.cargo</groupId>
+                    <artifactId>cargo-maven3-plugin</artifactId>
+                    <version>1.10.8</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -251,7 +251,6 @@ public interface Renditions
     }
 
     /**
-     * Gets a presigned URL to directly access content.
      * @param nodeRef     the node reference for which to obtain the direct access {@code URL}
      * @param versionId   the version id (aka version label)
      * @param renditionId the rendition id
@@ -259,6 +258,21 @@ public interface Renditions
      * @param validFor    the time at which the direct access {@code URL} will expire
      * @return            a direct access {@code URL} object for the content.
      */
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor);
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeRef     the node reference for which to obtain the direct access {@code URL}
+     * @param versionId   the version id (aka version label)
+     * @param renditionId the rendition id
+     * @param attachment  {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}
+     * @param validFor    the time at which the direct access {@code URL} will expire
+     * @param fileName    optional name for the file when downloaded
+     * @return            a direct access {@code URL} object for the content.
+     */
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor, String fileName);
 }
 

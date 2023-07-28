@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -114,7 +114,7 @@ public class LockServiceImplTest extends BaseSpringTest
     private PolicyComponent policyComponent;
 
 
-    private class LockServicePoliciesImpl implements LockServicePolicies.BeforeLock,
+    public class LockServicePoliciesImpl implements LockServicePolicies.BeforeLock,
             LockServicePolicies.BeforeUnlock
     {
         @Override

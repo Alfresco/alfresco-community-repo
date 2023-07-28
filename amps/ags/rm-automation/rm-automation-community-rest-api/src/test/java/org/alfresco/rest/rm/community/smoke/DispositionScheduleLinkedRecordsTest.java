@@ -144,7 +144,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
         RecordCategory category1 = createRootCategory(categoryRM3077);
-
+        fail();
         //create retention schedule
         dispositionScheduleService.createCategoryRetentionSchedule(category1.getName(), false);
 

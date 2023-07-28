@@ -84,13 +84,11 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Autowired
     private RecordFoldersAPI recordFoldersAPI;
     private final static  String TEST_PREFIX = generateTestPrefix(DispositionScheduleLinkedRecordsTest.class);
-    private RecordCategory Category1;
-    private RecordCategoryChild CopyCatFolder,folder1,CatFolder,folder2;
+    private RecordCategoryChild folder1, folder2;
     private static final String categoryRM3077 = TEST_PREFIX + "RM-3077_manager_sees_me";
     private static final String copyCategoryRM3077 = "Copy_of_" + categoryRM3077;
     private static final String folderRM3077 = "RM-3077_folder_"+ categoryRM3077;
     private static final String copyFolderRM3077 = "Copy_of_" + folderRM3077;
-    private final String folder = TEST_PREFIX + "RM-2937 folder ghosting";
     private static final String firstCategoryRM3060 = TEST_PREFIX + "RM-3060_category_record";
     private static final String secondCategoryRM3060 = "Copy_of_" + firstCategoryRM3060;
     private static final String firstFolderRM3060 = TEST_PREFIX + "RM-3060_folder";
@@ -105,7 +103,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     private static final String TRANSFER_LOCATION = TEST_PREFIX + "RM-3060_transferred_records";
     public static final String TRANSFER_TYPE = "rma:transferred";
     private FilePlan filePlanModel;
-    private UserModel rmAdmin, rmManager;
+    private UserModel rmAdmin;
 
     @BeforeClass(alwaysRun = true)
     public void setupDispositionScheduleLinkedRecordsTest() {
@@ -120,9 +118,9 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             UserRoles.ROLE_RM_ADMIN.roleId);
 
         // create "rm Manager" user if it does not exist and assign it to RM Administrator role
-        rmManager = getDataUser().createRandomTestUser();
+        UserModel rmManager = getDataUser().createRandomTestUser();
         rmRolesAndActionsAPI.assignRoleToUser(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(),rmManager.getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), rmManager.getUsername(),
             UserRoles.ROLE_RM_MANAGER.roleId);
     }
     /**
@@ -137,35 +135,35 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * <p/> TestRail Test C775<p/>
      **/
     @Ignore("ACS-5020")
-        @Test
+    @Test
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
-        Category1 = createRootCategory(categoryRM3077);
+        RecordCategory category1 = createRootCategory(categoryRM3077);
 
         //create retention schedule
-        dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
+        dispositionScheduleService.createCategoryRetentionSchedule(category1.getName(), false);
 
         // add cut off step
-        dispositionScheduleService.addCutOffAfterPeriodStep(Category1.getName(), "day|2", CREATED_DATE);
+        dispositionScheduleService.addCutOffAfterPeriodStep(category1.getName(), "day|2", CREATED_DATE);
 
         //create a copy of the category recordsCategory
-        String CopyCategoryId = copyCategory(getAdminUser(),Category1.getId(), copyCategoryRM3077);
+        String CopyCategoryId = copyCategory(getAdminUser(), category1.getId(), copyCategoryRM3077);
 
         // create folders in both categories
-        CatFolder = createRecordFolder(Category1.getId(), folderRM3077);
-        CopyCatFolder = createRecordFolder(CopyCategoryId, copyFolderRM3077);
+        RecordCategoryChild catFolder = createRecordFolder(category1.getId(), folderRM3077);
+        RecordCategoryChild copyCatFolder = createRecordFolder(CopyCategoryId, copyFolderRM3077);
 
         // create record  files
         String electronicRecord = "RM-2801 electronic record";
-        Record elRecord = createElectronicRecord(CatFolder.getId(), electronicRecord);
+        Record elRecord = createElectronicRecord(catFolder.getId(), electronicRecord);
         String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), CatFolder.getName(), electronicRecord);
+            getDataUser().usingAdmin().getAdminUser().getPassword(), catFolder.getName(), electronicRecord);
 
         String nonElectronicRecord = "RM-2801 non-electronic record";
-        Record nonElRecord = createNonElectronicRecord(CatFolder.getId(), nonElectronicRecord);
+        Record nonElRecord = createNonElectronicRecord(catFolder.getId(), nonElectronicRecord);
         String nonElRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), CatFolder.getName(), nonElectronicRecord);
+            getDataUser().usingAdmin().getAdminUser().getPassword(), catFolder.getName(), nonElectronicRecord);
 
         // link the records to copy folder, then complete them
         List<String> recordLists = new ArrayList<>();
@@ -180,11 +178,11 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
 
         // edit disposition date
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),CatFolder.getName());
+            getAdminUser().getPassword(),editDispositionDateJson(), catFolder.getName());
 
         // cut off the Folder
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),CatFolder.getName());
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"), catFolder.getName());
 
         // Verify the Content
         Node electronicNode = getNode(elRecord.getId());
@@ -195,7 +193,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         AssertJUnit.assertNull("The properties are present even after cutting off the record.", elRecord.getProperties().getTitle());
 
         // delete precondition
-        deleteRecordCategory(Category1.getId());
+        deleteRecordCategory(category1.getId());
         deleteRecordCategory(CopyCategoryId);
     }
     /**
@@ -204,7 +202,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * When the record is linked to a folder with the same disposition schedule
      * */
     @Ignore("ACS-5020")
-//    @Test
+    @Test
     @AlfrescoTest (jira = "RM-3060")
     public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
 

@@ -25,6 +25,9 @@
  */
 package org.alfresco.schedule;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -37,7 +40,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
@@ -45,19 +48,19 @@ import org.junit.Test;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.springframework.scheduling.quartz.SchedulerAccessorBean;
-import org.springframework.test.context.ContextConfiguration;
 
 import com.google.common.collect.ImmutableMap;
+
+import junit.framework.TestCase;
 
 /**
  * 
  * @author Tiago Salvado
- *
- * @see BaseSpringTest
  */
-@ContextConfiguration({ "classpath:alfresco/application-context.xml", "classpath:alfresco/schedule/test-schedule-context.xml" })
-public class AbstractScheduledLockedJobTest extends BaseSpringTest
+public class AbstractScheduledLockedJobTest extends TestCase
 {
+    private static ApplicationContextInit APP_CONTEXT_INIT = ApplicationContextInit.createStandardContextWithOverrides("classpath:alfresco/schedule/test-schedule-context.xml");
+
     private static final int TOTAL_NODES = 10;
     private static final int NUM_THREADS = 2;
     private static final String ARCHIVE_STORE_URL = "archive://SpacesStore";
@@ -77,9 +80,9 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     @Before
     public void setUp()
     {
-        nodeService = (NodeService) applicationContext.getBean("nodeService");
-        transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
-        repository = (Repository) applicationContext.getBean("repositoryHelper");
+        nodeService = (NodeService) APP_CONTEXT_INIT.getApplicationContext().getBean("nodeService");
+        transactionService = (TransactionService) APP_CONTEXT_INIT.getApplicationContext().getBean("transactionComponent");
+        repository = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
     }
 
     @Test

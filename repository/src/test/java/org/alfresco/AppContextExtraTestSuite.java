@@ -161,7 +161,12 @@ import org.junit.runners.Suite;
     // mtAllContext [classpath:alfresco/application-context.xml, classpath:tenant/mt-*context.xml]
     // ----------------------------------------------------------------------
     org.alfresco.repo.tenant.MultiTDemoTest.class,
-    org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest.class
+    org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest.class,
+
+    // ----------------------------------------------------------------------
+    // testScheduleContext [classpath:alfresco/application-context.xml, classpath:tenant/test-schedule-tcontext.xml]
+    // ----------------------------------------------------------------------
+    org.alfresco.schedule.AbstractScheduledLockedJobTest.class
 })
 public class AppContextExtraTestSuite
 {

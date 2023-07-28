@@ -53,7 +53,7 @@
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.alfresco-transform-service.version>3.0.0</dependency.alfresco-transform-service.version>
         <dependency.alfresco-transform-core.version>4.0.0</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-greenmail.version>6.10-SNAPSHOT</dependency.alfresco-greenmail.version>
+        <dependency.alfresco-greenmail.version>7.0</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.23</dependency.acs-event-model.version>
 
         <dependency.spring.version>6.0.9</dependency.spring.version>

@@ -25,9 +25,6 @@
  */
 package org.alfresco.schedule;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -191,8 +188,8 @@ public class AbstractScheduledLockedJobTest extends TestCase
         {
             try
             {
-                testCleanerAccessor = (SchedulerAccessorBean) applicationContext.getBean("testSchedulerAccessor");
-                testCleanerJobDetail = (JobDetail) applicationContext.getBean("testCleanerJobDetail");
+                testCleanerAccessor = (SchedulerAccessorBean) APP_CONTEXT_INIT.getApplicationContext().getBean("testSchedulerAccessor");
+                testCleanerJobDetail = (JobDetail) APP_CONTEXT_INIT.getApplicationContext().getBean("testCleanerJobDetail");
                 testCleaner = (Cleaner) testCleanerJobDetail.getJobDataMap().get("testCleaner");
                 testCleanerAccessor.getScheduler().triggerJob(testCleanerJobDetail.getKey());
                 LOGGER.info("Thread " + this.threadNum + " has started");

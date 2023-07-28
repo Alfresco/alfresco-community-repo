@@ -428,4 +428,4 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         // Verify the status code
         assertStatusCode(NO_CONTENT);
     }
-    }
+}

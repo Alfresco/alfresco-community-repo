@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.172-SNAPSHOT</version>
+    <version>23.1.0.176-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -452,7 +452,11 @@
                 <artifactId>commons-fileupload2-jakarta</artifactId>
                 <version>2.0.0-M1</version>
             </dependency>
-
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>3.9.0</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>

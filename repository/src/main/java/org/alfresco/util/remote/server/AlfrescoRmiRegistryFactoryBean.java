@@ -69,22 +69,22 @@ public class AlfrescoRmiRegistryFactoryBean implements FactoryBean<Registry>, Di
         if (LOG.isDebugEnabled()) {
             LOG.debug("Looking for RMI registry at port '" + this.port + "', using custom socket factory");
         }
-        Registry registry;
+
         synchronized (LocateRegistry.class) {
             try {
                 // Retrieve existing registry.
-                registry = LocateRegistry.getRegistry(null, this.port, socketFactory);
-                testRegistry(this.registry);
+                final Registry localRegistry = LocateRegistry.getRegistry(null, this.port, socketFactory);
+                testRegistry(localRegistry);
+                return localRegistry;
             }
             catch (RemoteException ex) {
                 LOG.trace("RMI registry access threw exception", ex);
                 LOG.debug("Could not detect RMI registry - creating new one");
                 // Assume no registry found -> create new one.
                 this.created = true;
-                registry = LocateRegistry.createRegistry(this.port, socketFactory, socketFactory);
+                return LocateRegistry.createRegistry(this.port, socketFactory, socketFactory);
             }
         }
-        return registry;
     }
 
     public boolean isEnabled()

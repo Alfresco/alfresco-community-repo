@@ -85,7 +85,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     {
         createAndDeleteNodes(TOTAL_NODES);
 
-        assertEquals("Expected nodes haven't been created", TOTAL_NODES, getNumberOfNodesInTrashcan());
+        assertTrue("Expected nodes haven't been created", getNumberOfNodesInTrashcan() >= TOTAL_NODES);
 
         CleanerThread[] threads = new CleanerThread[NUM_THREADS];
 

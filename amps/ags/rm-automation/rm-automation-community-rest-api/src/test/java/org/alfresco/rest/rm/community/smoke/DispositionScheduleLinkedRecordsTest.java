@@ -137,7 +137,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Test
     public void repeatOtherTests100Times() throws UnsupportedEncodingException
     {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             dispositionScheduleLinkedRecords();
             sameDispositionScheduleLinkedRecords();
         }

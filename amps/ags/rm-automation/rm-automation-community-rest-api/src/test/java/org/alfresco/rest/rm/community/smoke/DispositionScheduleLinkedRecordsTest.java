@@ -51,7 +51,6 @@ import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Repeat;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -134,17 +133,8 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * <p>
      * <p/> TestRail Test C775<p/>
      **/
+
     @Test
-    public void repeatOtherTests100Times() throws UnsupportedEncodingException
-    {
-        for (int i = 0; i < 10; i++) {
-            dispositionScheduleLinkedRecords();
-            sameDispositionScheduleLinkedRecords();
-        }
-    }
-//    @Ignore("ACS-5020")
-    @Test
-//    @Repeat(100)
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
@@ -205,14 +195,13 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         deleteRecordCategory(category1.getId());
         deleteRecordCategory(CopyCategoryId);
     }
+
     /**
      * Test covering RM-3060
      * Check the disposition steps for a record can be executed
      * When the record is linked to a folder with the same disposition schedule
      * */
-//    @Ignore("ACS-5020")
     @Test
-//    @Repeat(100)
     @AlfrescoTest (jira = "RM-3060")
     public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
 

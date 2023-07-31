@@ -28,8 +28,6 @@ package org.alfresco.rest.core;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import javax.annotation.Resource;
-
 import lombok.Getter;
 import lombok.Setter;
 import org.alfresco.rest.requests.Node;
@@ -69,7 +67,7 @@ public class RestAPIFactory
     @Getter (value = PROTECTED)
     private DataUserAIS dataUser;
 
-    @Resource(name = "RMRestWrapper")
+    @Autowired
     @Getter
     @Setter
     private RMRestWrapper rmRestWrapper;

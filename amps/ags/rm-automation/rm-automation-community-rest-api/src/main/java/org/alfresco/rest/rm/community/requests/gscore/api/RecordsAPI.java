@@ -247,6 +247,14 @@ public class RecordsAPI extends RMModelRequest
         return updateRecord(recordModel, recordId, EMPTY);
     }
 
+    public Record updateRecordWithLogging(Record recordModel, String recordId)
+    {
+        mandatoryObject("recordModel", recordModel);
+        mandatoryString("recordId", recordId);
+
+        return updateRecordWithLogging(recordModel, recordId, EMPTY);
+    }
+
     /**
      * Updates a record.
      *
@@ -275,6 +283,20 @@ public class RecordsAPI extends RMModelRequest
                 "records/{recordId}?{parameters}",
                 recordId,
                 parameters
+        ));
+    }
+
+    public Record updateRecordWithLogging(Record recordModel, String recordId, String parameters)
+    {
+        mandatoryObject("recordModel", recordModel);
+        mandatoryString("recordId", recordId);
+
+        return getRmRestWrapper().processModelWithLogging(Record.class, requestWithBody(
+            PUT,
+            toJson(recordModel),
+            "records/{recordId}?{parameters}",
+            recordId,
+            parameters
         ));
     }
 }

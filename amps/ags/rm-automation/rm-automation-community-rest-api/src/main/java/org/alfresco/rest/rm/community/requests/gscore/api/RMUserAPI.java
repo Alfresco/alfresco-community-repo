@@ -104,14 +104,12 @@ public class RMUserAPI extends RMModelRequest
 
         Response response = given()
                 .spec(spec)
-                .log().all()
                 .pathParam("role", userRole)
                 .pathParam("authority", userName)
                 .param("alf_ticket", client.getAlfTicket(adminUser.getUsername(),
                         adminUser.getPassword()))
                 .when()
                 .post("/rm/roles/{role}/authorities/{authority}")
-                .prettyPeek()
                 .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
@@ -150,10 +148,8 @@ public class RMUserAPI extends RMModelRequest
                 .contentType(ContentType.JSON)
                 .body(bodyJson.toString())
                 .pathParam("nodeId", filePlanComponentId)
-                .log().all()
                 .when()
                 .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-                .prettyPeek()
                 .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
@@ -191,10 +187,8 @@ public class RMUserAPI extends RMModelRequest
                 .contentType(ContentType.JSON)
                 .body(bodyJson.toString())
                 .pathParam("nodeId", filePlanComponentId)
-                .log().all()
                 .when()
                 .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-                .prettyPeek()
                 .andReturn();
         getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
@@ -232,10 +226,8 @@ public class RMUserAPI extends RMModelRequest
         // create POST request to "people" endpoint
         Response response = given()
             .spec(spec)
-            .log().all()
         .when()
             .post("people")
-            .prettyPeek()
             .andReturn();
 
         return (response.getStatusCode() == OK.value());

@@ -98,6 +98,11 @@ public class RMRestWrapper
         return restWrapper.processModel(classz, restRequest);
     }
 
+    public <T> T processModelWithLogging(Class<T> classz, RestRequest restRequest)
+    {
+        return restWrapper.processModelWithLogging(classz, restRequest);
+    }
+
     /** Process a response that has no body - basically will need only the status code from it. */
     public void processEmptyModel(RestRequest simpleRequest)
     {

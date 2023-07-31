@@ -51,6 +51,7 @@ import org.apache.http.HttpStatus;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Repeat;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -135,6 +136,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      **/
 //    @Ignore("ACS-5020")
     @Test
+    @Repeat(100)
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
@@ -202,6 +204,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * */
 //    @Ignore("ACS-5020")
     @Test
+    @Repeat(100)
     @AlfrescoTest (jira = "RM-3060")
     public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
 

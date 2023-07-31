@@ -91,7 +91,7 @@ public class EventGeneratorQueue implements InitializingBean
             }
             catch (Exception e)
             {
-                LOGGER.error("Unexpected error while enqueuing maker function for repository event" + e);
+                LOGGER.error("Unexpected error while enqueuing maker function for repository event", e);
             }
         });
     }
@@ -122,7 +122,7 @@ public class EventGeneratorQueue implements InitializingBean
                         }
                         catch (Exception e)
                         {
-                            LOGGER.error("Unexpected error while dequeuing and sending repository event" + e);
+                            LOGGER.error("Unexpected error while dequeuing and sending repository event", e);
                         }
                     }
                 }

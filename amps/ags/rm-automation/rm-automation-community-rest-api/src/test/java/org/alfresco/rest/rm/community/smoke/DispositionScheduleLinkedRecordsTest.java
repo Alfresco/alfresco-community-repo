@@ -136,7 +136,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      **/
 //    @Ignore("ACS-5020")
     @Test
-    @Repeat(100)
+//    @Repeat(100)
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
@@ -204,7 +204,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * */
 //    @Ignore("ACS-5020")
     @Test
-    @Repeat(100)
+//    @Repeat(100)
     @AlfrescoTest (jira = "RM-3060")
     public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
 

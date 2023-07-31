@@ -134,6 +134,14 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * <p>
      * <p/> TestRail Test C775<p/>
      **/
+    @Test
+    public void repeatOtherTests100Times() throws UnsupportedEncodingException
+    {
+        for (int i = 0; i < 100; i++) {
+            dispositionScheduleLinkedRecords();
+            sameDispositionScheduleLinkedRecords();
+        }
+    }
 //    @Ignore("ACS-5020")
     @Test
 //    @Repeat(100)

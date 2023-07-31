@@ -61,6 +61,8 @@ public class Cleaner
 
     private int numErrors = 0;
 
+    private final int REMOVAL_WAIT_TIME_MS = 5000;
+
     /**
      *
      * @param nodeService
@@ -101,8 +103,8 @@ public class Cleaner
                         handleError(inre);
                     }
                     deletedNodes.getAndIncrement();
-                    // Waiting 5 seconds for next deletion so we don't need to have many nodes on the trash can
-                    Thread.sleep(5000);
+                    // Waiting REMOVAL_WAIT_TIME_MS seconds for next deletion so we don't need to have many nodes on the trash can
+                    Thread.sleep(REMOVAL_WAIT_TIME_MS);
                     return null;
                 };
                 return transactionService.getRetryingTransactionHelper().doInTransaction(txnWork, false, true);

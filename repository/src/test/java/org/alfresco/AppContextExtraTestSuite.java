@@ -38,6 +38,12 @@ import org.junit.runners.Suite;
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
+
+    // ----------------------------------------------------------------------
+    // testScheduleContext [classpath:alfresco/application-context.xml, classpath:alfresco/schedule/test-schedule-tcontext.xml]
+    // ----------------------------------------------------------------------
+    org.alfresco.schedule.AbstractScheduledLockedJobTest.class,
+
     // ----------------------------------------------------------------------
     // globalIntegrationTestContext [classpath:alfresco/application-context.xml, classpath:alfresco/test/global-integration-test-context.xml]
     // ----------------------------------------------------------------------
@@ -70,11 +76,6 @@ import org.junit.runners.Suite;
     // ----------------------------------------------------------------------
     // Context_extra
     // ----------------------------------------------------------------------
-
-    // ----------------------------------------------------------------------
-    // testScheduleContext [classpath:alfresco/application-context.xml, classpath:tenant/test-schedule-tcontext.xml]
-    // ----------------------------------------------------------------------
-    org.alfresco.schedule.AbstractScheduledLockedJobTest.class,
 
     // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/site/site-custom-context.xml]
     org.alfresco.repo.site.SiteServiceImplTest.class,

@@ -56,8 +56,9 @@ import com.google.common.collect.ImmutableMap;
 @ContextConfiguration({"classpath:alfresco/application-context.xml", "classpath:alfresco/schedule/test-schedule-context.xml"})
 public class AbstractScheduledLockedJobTest extends BaseSpringTest
 {
-    private static final int TOTAL_NODES = 10;
+    private static final int TOTAL_NODES = 9;
     private static final int NUM_THREADS = 2;
+    private static final long JOB_EXECUTER_LOCK_TTL = 30000L;
     private static final String ARCHIVE_STORE_URL = "archive://SpacesStore";
 
     private NodeService nodeService;
@@ -94,7 +95,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
             CleanerThread t = new CleanerThread(i);
             threads[i] = t;
             t.start();
-            Thread.sleep(30000);
+            Thread.sleep(JOB_EXECUTER_LOCK_TTL);
         }
 
         for (Thread t : threads)

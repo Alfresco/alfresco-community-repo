@@ -87,14 +87,15 @@ public class ScheduledJobLockExecuter
      */
     public void execute(JobExecutionContext jobContext) throws JobExecutionException
     {
-        LockCallback lockCallback = new LockCallback();
+//        LockCallback lockCallback = new LockCallback();
         try
         {
             if (logger.isDebugEnabled())
             {
                 logger.debug(String.format("   Job %s started.", lockQName.getLocalName()));
             }
-            refreshLock(lockCallback);
+//            refreshLock(lockCallback);
+            refreshLock();
             job.executeJob(jobContext);
             if (logger.isDebugEnabled())
             {
@@ -119,20 +120,22 @@ public class ScheduledJobLockExecuter
         }
         finally
         {
-            releaseLock(lockCallback);
+//            releaseLock(lockCallback);
+            releaseLock();
         }
     }
 
     /**
      * Lazily update the job lock
      */
-    private void refreshLock(LockCallback lockCallback)
+//    private void refreshLock(LockCallback lockCallback)
+    private void refreshLock()
     {
         Pair<Long, String> lockPair = lockThreadLocal.get();
         if (lockPair == null)
         {
             String lockToken = jobLockService.getLock(lockQName, LOCK_TTL);
-            jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL, lockCallback);
+            //jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL, lockCallback);
             Long lastLock = Long.valueOf(System.currentTimeMillis());
             // We have not locked before
             lockPair = new Pair<Long, String>(lastLock, lockToken);
@@ -146,7 +149,8 @@ public class ScheduledJobLockExecuter
             // Only refresh the lock if we are past a threshold
             if (now - lastLock > (long) (LOCK_TTL / 2L))
             {
-                jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL, lockCallback);
+//                jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL, lockCallback);
+                jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL);
                 lastLock = System.currentTimeMillis();
                 lockPair = new Pair<Long, String>(lastLock, lockToken);
                 lockThreadLocal.set(lockPair);
@@ -157,12 +161,13 @@ public class ScheduledJobLockExecuter
     /**
      * Release the lock after the job completes
      */
-    private void releaseLock(LockCallback lockCallback)
+//    private void releaseLock(LockCallback lockCallback)
+    private void releaseLock()
     {
-        if (lockCallback != null)
-        {
-            lockCallback.running.set(false);
-        }
+//        if (lockCallback != null)
+//        {
+//            lockCallback.running.set(false);
+//        }
 
         Pair<Long, String> lockPair = lockThreadLocal.get();
         if (lockPair != null)

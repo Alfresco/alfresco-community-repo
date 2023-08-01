@@ -132,7 +132,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * <p>
      * <p/> TestRail Test C775<p/>
      **/
-
     @Test
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
@@ -370,7 +369,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             .getJSONObject("results")
             .get(nodeRef)
             .toString();
-
     }
 
     @Test
@@ -425,8 +423,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         // edit disposition date
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
-
-
     }
 
     @Test (dependsOnMethods = {"sameLevelDispositionScheduleStepsPeriodsCalculation" })

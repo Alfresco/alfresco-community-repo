@@ -39,8 +39,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A test implementation similar to the trash can cleaner job implementation that will be used in
@@ -50,7 +50,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class Cleaner
 {
-    private static final Log LOGGER = LogFactory.getLog(Cleaner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Cleaner.class);
 
     private final NodeService nodeService;
     private final TransactionService transactionService;
@@ -61,7 +61,7 @@ public class Cleaner
 
     private int numErrors = 0;
 
-    private final int REMOVAL_WAIT_TIME_MS = 5000;
+    private static final int REMOVAL_WAIT_TIME_MS = 5000;
 
     /**
      *
@@ -100,7 +100,7 @@ public class Cleaner
                     }
                     catch (InvalidNodeRefException inre)
                     {
-                        handleError(inre);
+                        numErrors++;
                     }
                     deletedNodes.getAndIncrement();
                     // Waiting REMOVAL_WAIT_TIME_MS seconds for next deletion so we don't need to have many nodes on the trash can
@@ -170,10 +170,5 @@ public class Cleaner
     public boolean hasErrors()
     {
         return numErrors > 0;
-    }
-
-    private void handleError(Exception e)
-    {
-        numErrors++;
     }
 }

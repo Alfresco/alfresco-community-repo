@@ -170,7 +170,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     }
 
     /**
-     * 
+     * Thread to start the cleaner job for the test.
      */
     private class CleanerThread extends Thread
     {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -34,6 +34,7 @@ import static org.alfresco.model.ContentModel.ASSOC_MEMBER;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.model.ContentModel.TYPE_FOLDER;
 import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
+import static org.alfresco.repo.rule.RuleModel.ASPECT_RULES;
 import static org.alfresco.repo.rule.RuleModel.ASSOC_ACTION;
 import static org.alfresco.repo.rule.RuleModel.ASSOC_RULE_FOLDER;
 import static org.alfresco.repo.rule.RuleModel.TYPE_RULE;
@@ -48,11 +49,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.Serializable;
@@ -97,7 +94,7 @@ public class RuleServiceImplUnitTest
     @Mock
     private PermissionService permissionService;
     @Mock
-    private SimpleCache nodeRulesCache;
+    private SimpleCache<NodeRef, List<Rule>> nodeRulesCache;
     @Mock
     private NodeService runtimeNodeService;
     @Mock
@@ -138,12 +135,12 @@ public class RuleServiceImplUnitTest
         // Call the method under test.
         ruleService.saveRule(FOLDER_NODE, mockRule);
 
-        then(nodeService).should(times(2)).hasAspect(FOLDER_NODE, RuleModel.ASPECT_RULES);
+        then(nodeService).should(times(2)).hasAspect(FOLDER_NODE, ASPECT_RULES);
         then(nodeService).should().exists(FOLDER_NODE);
-        then(nodeService).should().addAspect(FOLDER_NODE, RuleModel.ASPECT_RULES, null);
+        then(nodeService).should().addAspect(FOLDER_NODE, ASPECT_RULES, null);
         then(nodeService).should().createNode(eq(RULE_SET_NODE), eq(ASSOC_CONTAINS), any(QName.class), eq(TYPE_RULE));
         then(nodeService).should(atLeastOnce()).setProperty(eq(RULE_NODE), any(QName.class), nullable(Serializable.class));
-        then(nodeService).should().getChildAssocs(RULE_NODE, RuleModel.ASSOC_ACTION, RuleModel.ASSOC_ACTION);
+        then(nodeService).should().getChildAssocs(RULE_NODE, ASSOC_ACTION, ASSOC_ACTION);
         verifyNoMoreInteractions(nodeService);
     }
 
@@ -429,7 +426,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("A,B,C,D,E", nodeNames);
+        assertEquals("Node names should match expected string", "A,B,C,D,E", nodeNames);
     }
 
     /** Check that ordered parents are returned in the correct order. */
@@ -443,7 +440,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("A,B,C,D,E", nodeNames);
+        assertEquals("Node names should match expected string", "A,B,C,D,E", nodeNames);
     }
 
     /** Check that the ASPECT_IGNORE_INHERITED_RULES aspect breaks the chain. */
@@ -458,7 +455,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("C,D,E", nodeNames);
+        assertEquals("Node names should match expected string", "C,D,E", nodeNames);
     }
 
     /** Check that the user group hierarchy is not traversed. */
@@ -475,7 +472,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("C,D,E", nodeNames);
+        assertEquals("Node names should match expected string", "C,D,E", nodeNames);
     }
 
     /** Check that a cycle doesn't cause a problem. */
@@ -489,7 +486,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("A,B,C", nodeNames);
+        assertEquals("Node names should match expected string", "A,B,C", nodeNames);
     }
 
     /** Check that a diamond of nodes is traversed correctly. */
@@ -503,7 +500,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("A,B,C,D", nodeNames);
+        assertEquals("Node names should match expected string", "A,B,C,D", nodeNames);
     }
 
     /**
@@ -528,7 +525,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("A,C,B,E,D,F,G", nodeNames);
+        assertEquals("Node names should match expected string", "A,C,B,E,D,F,G", nodeNames);
     }
 
     /**
@@ -553,7 +550,7 @@ public class RuleServiceImplUnitTest
         Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
         String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
 
-        assertEquals("A,D,C,F,B,E,G", nodeNames);
+        assertEquals("Node names should match expected string", "A,D,C,F,B,E,G", nodeNames);
     }
 
     /**

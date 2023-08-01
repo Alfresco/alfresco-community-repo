@@ -592,7 +592,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
          * @param entityReference - reference to an entity (e.g. node, child association, peer association)
          * @param eventConsolidator - object encapsulating events occurred in a transaction
          * @param entityToEventEligibilityVerifier - allows to verify if entity is eligible to generate an even. If null no verification is necessary
-         * @param <REF> - entity reference type
+         * @param <REF> - entity reference type (e.g. {@link NodeRef}, {@link AssociationRef}, {@link ChildAssociationRef})
          * @param <CON> - event consolidator type - extension of {@link EventConsolidator}
          */
         private  <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> void sendEvent(
@@ -612,7 +612,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
          * @param eventConsolidator - object encapsulating events occurred in a transaction
          * @param eventInfo - object holding the event information
          * @param entityToEventEligibilityVerifier - allows to verify if entity is eligible to generate an even. If null no verification is necessary
-         * @param <REF> - entity reference type
+         * @param <REF> - entity reference type (e.g. {@link NodeRef}, {@link AssociationRef}, {@link ChildAssociationRef})
          * @param <CON> - event consolidator type - extension of {@link EventConsolidator}
          */
         private <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> Optional<RepoEvent<?>> createEvent(

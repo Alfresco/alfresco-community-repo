@@ -30,7 +30,14 @@ import java.util.concurrent.Callable;
 
 import org.alfresco.repo.event.v1.model.RepoEvent;
 
+/**
+ * Interface representing an asynchronous event sender.
+ */
 public interface EventSender
 {
+    /**
+     * Accepts a callback function creating an event and sends it to queue/topic.
+     * @param eventProducer - callback function that creates an event
+     */
     void accept(Callable<Optional<RepoEvent<?>>> eventProducer);
 }

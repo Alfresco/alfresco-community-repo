@@ -589,11 +589,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         /**
          * Handles all kinds of events and sends them within dedicated transaction.
          *
-         * @param entityReference reference to an entity (e.g. node, child association, peer association)
-         * @param eventConsolidator object encapsulating events occurred in a transaction
-         * @param entityToEventEligibilityVerifier allows to verify if entity is eligible to generate an even. If null no verification is necessary
-         * @param <REF> entity reference type
-         * @param <CON> event consolidator type - extension of {@link EventConsolidator}
+         * @param entityReference - reference to an entity (e.g. node, child association, peer association)
+         * @param eventConsolidator - object encapsulating events occurred in a transaction
+         * @param entityToEventEligibilityVerifier - allows to verify if entity is eligible to generate an even. If null no verification is necessary
+         * @param <REF> - entity reference type
+         * @param <CON> - event consolidator type - extension of {@link EventConsolidator}
          */
         private  <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> void sendEvent(
             final REF entityReference, final CON eventConsolidator, final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
@@ -605,6 +605,16 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             }, true, true);
         }
 
+        /**
+         * Creates events from various kinds of entities.
+         *
+         * @param entityReference - reference to an entity (e.g. node, child association, peer association)
+         * @param eventConsolidator - object encapsulating events occurred in a transaction
+         * @param eventInfo - object holding the event information
+         * @param entityToEventEligibilityVerifier - allows to verify if entity is eligible to generate an even. If null no verification is necessary
+         * @param <REF> - entity reference type
+         * @param <CON> - event consolidator type - extension of {@link EventConsolidator}
+         */
         private <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> Optional<RepoEvent<?>> createEvent(
             final REF entityReference, final CON eventConsolidator, final EventInfo eventInfo,
             final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)

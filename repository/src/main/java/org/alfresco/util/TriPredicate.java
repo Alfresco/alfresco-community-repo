@@ -27,22 +27,54 @@ package org.alfresco.util;
 
 import java.util.Objects;
 
+/**
+ * Represents a predicate (boolean-valued function) of three arguments. This is the three-arity specialization of Predicate.
+ * This is a functional interface whose functional method is test(Object, Object, Object).
+ *
+ * @param <T> - type of the first argument to the predicate
+ * @param <U> - type of the second argument the predicate
+ * @param <V> - type of the third argument the predicate
+ */
 @FunctionalInterface
 public interface TriPredicate<T, U, V>
 {
+
+    /**
+     * Evaluates this predicate on the given arguments.
+     *
+     * @param t - first input argument
+     * @param u - second input argument
+     * @param v - third input argument
+     * @return true if the input arguments match the predicate, otherwise false
+     */
     boolean test(T t, U u, V v);
 
+    /**
+     * Creates a composed predicate that represents a logical AND of this predicate and another.
+     *
+     * @param other - predicate that will be logically-ANDed with this predicate
+     * @return composed predicate
+     */
     default TriPredicate<T, U, V> and(TriPredicate<? super T, ? super U, ? super V> other)
     {
         Objects.requireNonNull(other);
         return (T t, U u, V v) -> test(t, u, v) && other.test(t, u, v);
     }
 
+    /**
+     * @return a predicate that represents the logical negation of this predicate
+     */
     default TriPredicate<T, U, V> negate()
     {
         return (T t, U u, V v) -> !test(t, u, v);
     }
 
+    /**
+     * Creates a composed predicate that represents a logical OR of this predicate and another.
+     *
+     * @param other - predicate that will be logically-ORed with this predicate
+     * @return composed predicate
+     */
     default TriPredicate<T, U, V> or(TriPredicate<? super T, ? super U, ? super V> other)
     {
         Objects.requireNonNull(other);

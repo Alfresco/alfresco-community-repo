@@ -60,7 +60,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
-    private static final long DUMP_BROKER_TIMEOUT = 50000000l;
+    private static final long DUMP_BROKER_TIMEOUT = 50000000L;
 
     @Autowired @Qualifier("event2ObjectMapper")
     private ObjectMapper objectMapper;

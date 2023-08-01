@@ -42,7 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 public class DirectEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired
-    private InstantiatedBeansRegister instantiatedBeansRegister;
+    private InstantiatedBeansRegistry instantiatedBeansRegistry;
 
     @Autowired
     private EventSender directEventSender;
@@ -56,7 +56,7 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
     @Test
     public void testIfEnqueuingEventSenderIsNotInstantiated()
     {
-        final Set<String> instantiatedBeans = this.instantiatedBeansRegister.getBeans();
+        final Set<String> instantiatedBeans = this.instantiatedBeansRegistry.getBeans();
 
         assertTrue(skipEventQueue);
         assertFalse(instantiatedBeans.contains("enqueuingEventSender"));
@@ -74,13 +74,13 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
     public static class TestConfig
     {
         @Bean
-        public BeanPostProcessor instantiatedBeans()
+        public BeanPostProcessor instantiatedBeansRegistry()
         {
-            return new InstantiatedBeansRegister();
+            return new InstantiatedBeansRegistry();
         }
     }
 
-    protected static class InstantiatedBeansRegister implements BeanPostProcessor
+    protected static class InstantiatedBeansRegistry implements BeanPostProcessor
     {
         private final Set<String> registeredBeans = new HashSet<>();
 

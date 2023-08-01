@@ -164,7 +164,7 @@ public class Cleaner
 
         int deletedNodes = deleteNodes(nodesToClean);
 
-        LOGGER.info(String.format("TestCleaner finished. Number of deleted nodes: %s", deletedNodes));
+        LOGGER.info("TestCleaner finished. Number of deleted nodes: {}", deletedNodes);
     }
 
     public boolean hasErrors()

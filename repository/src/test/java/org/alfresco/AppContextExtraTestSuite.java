@@ -40,7 +40,10 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
 
     // ----------------------------------------------------------------------
-    // testScheduleContext [classpath:alfresco/application-context.xml, classpath:alfresco/schedule/test-schedule-tcontext.xml]
+    // testScheduleContext [classpath:alfresco/application-context.xml, classpath:alfresco/schedule/test-schedule-context.xml]
+    //
+    // This test needs to be first as it will clean nodes from trashcan, if order is changed, then it will take lot of time
+    // to remove all the nodes from previous tests
     // ----------------------------------------------------------------------
     org.alfresco.schedule.AbstractScheduledLockedJobTest.class,
 

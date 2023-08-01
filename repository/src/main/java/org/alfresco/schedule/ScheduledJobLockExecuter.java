@@ -34,10 +34,10 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VmShutdownListener.VmShutdownException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class encapsulates the {@link org.alfresco.repo.lock.JobLockService JobLockService}
@@ -59,7 +59,7 @@ public class ScheduledJobLockExecuter
 {
     private static final long LOCK_TTL = 30000L;
 
-    private static final Log logger = LogFactory.getLog(ScheduledJobLockExecuter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledJobLockExecuter.class);
     private static ThreadLocal<Pair<Long, String>> lockThreadLocal = new ThreadLocal<Pair<Long, String>>();
 
     private final JobLockService jobLockService;
@@ -90,32 +90,20 @@ public class ScheduledJobLockExecuter
         LockCallback lockCallback = new LockCallback();
         try
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s started.", lockQName.getLocalName()));
-            }
+            LOGGER.debug(String.format("   Job %s started.", lockQName.getLocalName()));
             refreshLock(lockCallback);
             job.executeJob(jobContext);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s completed.", lockQName.getLocalName()));
-            }
+            LOGGER.debug(String.format("   Job %s completed.", lockQName.getLocalName()));
         }
         catch (LockAcquisitionException e)
         {
             // Job being done by another process
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s already underway.", lockQName.getLocalName()));
-            }
+            LOGGER.debug(String.format("   Job %s already underway.", lockQName.getLocalName()));
         }
         catch (VmShutdownException e)
         {
             // Aborted
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s aborted.", lockQName.getLocalName()));
-            }
+            LOGGER.debug(String.format("   Job %s aborted.", lockQName.getLocalName()));
         }
         finally
         {
@@ -195,10 +183,7 @@ public class ScheduledJobLockExecuter
         public void lockReleased()
         {
             running.set(false);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Lock release notification: " + lockQName);
-            }
+            LOGGER.debug("Lock release notification: " + lockQName);
         }
     }
 }

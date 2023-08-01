@@ -25,6 +25,8 @@
  */
 package org.alfresco.schedule;
 
+import java.util.UUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -144,7 +146,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     private void addNodeToTrashcan()
     {
         NodeRef companyHome = repository.getCompanyHome();
-        String name = "Sample (" + System.currentTimeMillis() + ")";
+        String name = "Sample (" + UUID.randomUUID().toString() + ")";
 
         ChildAssociationRef association = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name), ContentModel.TYPE_CONTENT,

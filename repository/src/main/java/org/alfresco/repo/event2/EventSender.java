@@ -36,7 +36,7 @@ import org.alfresco.repo.event.v1.model.RepoEvent;
 public interface EventSender
 {
     /**
-     * Accepts a callback function creating an event and sends it to queue/topic.
+     * Accepts a callback function creating an event and sends this event to specified destination.
      * @param eventProducer - callback function that creates an event
      */
     void accept(Callable<Optional<RepoEvent<?>>> eventProducer);

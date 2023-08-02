@@ -35,7 +35,7 @@ import org.gytheio.messaging.MessagingException;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Sender allows to send asynchronous events directly to topic.
+ * Sends a message to a destination in the current thread.
  */
 public class DirectEventSender implements EventSender, InitializingBean
 {

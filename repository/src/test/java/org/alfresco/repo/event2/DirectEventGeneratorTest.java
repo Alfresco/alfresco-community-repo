@@ -35,10 +35,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 
-@ContextConfiguration(inheritLocations = false, classes = DirectEventGeneratorTest.TestConfig.class)
+@ContextHierarchy({
+    // Context hierarchy inherits context config from parent classes and extends it with TestConfig from this class
+    @ContextConfiguration(classes = DirectEventGeneratorTest.TestConfig.class)
+})
 public class DirectEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired
@@ -70,7 +73,6 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
     }
 
     @Configuration
-    @ImportResource("classpath:alfresco/application-context.xml")
     public static class TestConfig
     {
         @Bean

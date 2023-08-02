@@ -59,7 +59,7 @@ public class DirectEventSender implements EventSender, InitializingBean
         {
             eventProducer.call().ifPresent(event -> event2MessageProducer.send(event));
         }
-        catch (MessagingException e)
+        catch (RuntimeException e)
         {
             throw e;
         }

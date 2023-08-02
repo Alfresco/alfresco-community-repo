@@ -108,14 +108,16 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Autowired
     protected CustomModelService customModelService;
 
-    @Qualifier("descriptorComponent")
     @Autowired
+    @Qualifier("descriptorComponent")
     protected DescriptorService descriptorService;
 
     @Autowired
-    protected ObjectMapper event2ObjectMapper;
+    @Qualifier("event2ObjectMapper")
+    protected ObjectMapper objectMapper;
 
-    @Autowired @Qualifier("eventGeneratorV2")
+    @Autowired
+    @Qualifier("eventGeneratorV2")
     protected EventGenerator eventGenerator;
 
     @Autowired
@@ -143,7 +145,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     {
         if (!isCamelConfigured)
         {
-            dataFormat = new JacksonDataFormat(event2ObjectMapper, RepoEvent.class);
+            dataFormat = new JacksonDataFormat(objectMapper, RepoEvent.class);
             configRoute();
             isCamelConfigured = true;
         }

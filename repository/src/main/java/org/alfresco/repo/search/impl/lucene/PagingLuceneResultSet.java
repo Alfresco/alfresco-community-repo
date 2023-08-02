@@ -93,7 +93,22 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
 
         if (wrapped.getResultSetMetaData().getLimitedBy() != LimitBy.UNLIMITED)
         {
-            return true;
+            try
+            {
+                throw new Exception();
+            }
+            catch (Exception e)
+            {
+                // Swallow the exception.
+            }
+            if (true)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
         else
         {

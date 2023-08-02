@@ -38,6 +38,6 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: Alfresco/ya-pmd-scan@708c9b68547f6207b4ecad9d618a4ede3bf06925
+      - uses: Alfresco/ya-pmd-scan@09038687964bda655a6f31637316413c21ee557c
         with:
           fail-on-new-issues: "false"

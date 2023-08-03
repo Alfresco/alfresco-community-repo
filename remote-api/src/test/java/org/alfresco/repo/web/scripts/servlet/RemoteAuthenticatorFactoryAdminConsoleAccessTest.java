@@ -505,7 +505,7 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
     private volatile int timePassed;
 
     private boolean isEnabled = true;
-    private final CountDownLatch countDownLatch = new CountDownLatch(1);
+    private CountDownLatch countDownLatch = new CountDownLatch(1);
 
     @Override
     public String getRemoteUser(HttpServletRequest request)
@@ -550,6 +550,7 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
     {
         wasInterrupted = false;
         timePassed = 0;
+        countDownLatch = new CountDownLatch(1);
     }
 
     @Override

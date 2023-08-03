@@ -25,7 +25,6 @@ function clone_and_install {
 
 clone_and_install surf-webscripts
 clone_and_install surf jakarta-migration surf
-clone_and_install alfresco-tas-utility
 clone_and_install alfresco-office-services
 
 #Ugly hack to deal with AOS<->REPO circular dependencies

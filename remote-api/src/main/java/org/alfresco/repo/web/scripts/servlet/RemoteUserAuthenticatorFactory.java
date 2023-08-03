@@ -356,7 +356,8 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             }
             catch (Exception e)
             {
-                // we can't really handle anything here
+                logger.warn("Cleanup Thread went wrong: " + e.getMessage());
+                logger.warn(e.getCause());
             }
         }
 

@@ -562,8 +562,8 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         } finally {
-            lock.unlock();
             finallyProcedure.perform();
+            lock.unlock();
         }
     }
 

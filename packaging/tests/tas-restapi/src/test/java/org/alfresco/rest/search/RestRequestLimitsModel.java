@@ -1,8 +1,8 @@
 /*-
  * #%L
- * Alfresco Remote API
+ * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,27 +23,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.search;
 
-package org.alfresco.rest.api.search.model;
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * POJO class representing the query Limits
- **/
-public class Limits
+public class RestRequestLimitsModel extends TestModel implements IRestModel<RestRequestLimitsModel>
 {
+    @JsonProperty
+    RestRequestLimitsModel model;
 
-    private final Integer permissionEvaluationTime;
-    private final Integer permissionEvaluationCount;
-    private final Integer trackTotalHitsLimit;
+    private Integer permissionEvaluationTime;
+    private Integer permissionEvaluationCount;
+    private Integer trackTotalHitsLimit;
 
-    @JsonCreator
-    public Limits(@JsonProperty("permissionEvaluationTime") Integer permissionEvaluationTime,
-                  @JsonProperty("permissionEvaluationCount") Integer permissionEvaluationCount,
-                  @JsonProperty("trackTotalHitsLimit") Integer trackTotalHitsLimit)
+    @Override
+    public RestRequestLimitsModel onModel()
     {
+        return model;
+    }
+    
+    public RestRequestLimitsModel(Integer permissionEvaluationTime, Integer permissionEvaluationCount,
+            Integer trackTotalHitsLimit)
+    {
+        super();
         this.permissionEvaluationTime = permissionEvaluationTime;
         this.permissionEvaluationCount = permissionEvaluationCount;
         this.trackTotalHitsLimit = trackTotalHitsLimit;
@@ -53,14 +58,25 @@ public class Limits
     {
         return permissionEvaluationTime;
     }
-
+    public void setPermissionEvaluationTime(Integer permissionEvaluationTime)
+    {
+        this.permissionEvaluationTime = permissionEvaluationTime;
+    }
     public Integer getPermissionEvaluationCount()
     {
         return permissionEvaluationCount;
     }
-
+    public void setPermissionEvaluationCount(Integer permissionEvaluationCount)
+    {
+        this.permissionEvaluationCount = permissionEvaluationCount;
+    }
     public Integer getTrackTotalHitsLimit()
     {
         return trackTotalHitsLimit;
     }
+    public void setTrackTotalHitsLimit(Integer trackTotalHitsLimit)
+    {
+        this.trackTotalHitsLimit = trackTotalHitsLimit;
+    }
 }
+ 

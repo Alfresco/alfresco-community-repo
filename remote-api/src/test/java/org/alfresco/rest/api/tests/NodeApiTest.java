@@ -49,8 +49,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -83,11 +85,16 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.Rule;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -130,7 +137,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     protected AuthorityService authorityService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
-
+    private RuleService ruleService;
+    private ActionService actionService;
 
     private String rootGroupName = null;
     private String groupA = null;
@@ -145,6 +153,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         namespaceService= (NamespaceService) applicationContext.getBean("NamespaceService");
+        ruleService = (RuleService) applicationContext.getBean("RuleService", RuleService.class);
+        actionService = (ActionService) applicationContext.getBean("ActionService", ActionService.class);
     }
     
     @After
@@ -6397,6 +6407,44 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // cleanup
         setRequestContext(user1);
         deleteSite(site1Id, true, 204);
+    }
+
+    @Test
+    public void testRuleAspectAfterUpdate() throws Exception
+    {
+        // Change to User1 context
+        setRequestContext(networkOne.getId(), user1, null);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        // Create folder
+        String folderId = createUniqueFolder(getMyNodeId());
+        NodeRef folderNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId);
+
+        assertFalse("Folder shouldn't have the rule aspect", nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES));
+
+        // Create Rule
+        Rule rule = new Rule();
+        rule.setTitle("My Rule");
+        rule.setRuleType(RuleType.INBOUND);
+        Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+        rule.setAction(action);
+        this.ruleService.saveRule(folderNodeRef, rule);
+
+        assertTrue("Folder should have the rule aspect", nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES));
+
+        // Update folder with empty aspectNames
+        Folder folderUpdate = new Folder();
+        folderUpdate.setAspectNames(Arrays.asList());
+
+        HttpResponse response = put(URL_NODES, folderId, toJsonAsStringNonNull(folderUpdate), null, 200);
+        Folder folderResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        assertTrue("Folder should have the rule aspect", nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES));
+        assertEquals("Folder should have 1 rule.", 1, ruleService.countRules(folderNodeRef));
+
+        // Cleanup
+        delete(URL_NODES, folderId, 204);
     }
 }
 

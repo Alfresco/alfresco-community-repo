@@ -360,13 +360,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         WebScriptServletResponse mockResponse = prepareMockResponse();
 
         Authenticator authenticator = remoteUserAuthenticatorFactory.create(mockRequest, mockResponse);
-        boolean authenticated = authenticator.authenticate(RequiredAuthentication.admin, false);
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return authenticated;
+        return authenticator.authenticate(RequiredAuthentication.admin, false);
     }
 
     private boolean authenticateWithGuestParameters(RequiredAuthentication required, boolean isGuest)

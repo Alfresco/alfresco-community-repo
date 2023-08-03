@@ -63,8 +63,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -283,7 +286,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
         assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
-        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted(WAIT_FOR_THREAD_INTERRUPTION));
+        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted());
         assertTrue("The interrupt should have been called.", blockingRemoteUserMapper.getTimePassed() < BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS);
     }
 
@@ -505,51 +508,78 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
     private volatile int timePassed;
 
     private boolean isEnabled = true;
-    private final CountDownLatch countDownLatch = new CountDownLatch(1);
+    private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
     public String getRemoteUser(HttpServletRequest request)
     {
-        long t1 = System.currentTimeMillis();
+        doWithLock(lock.writeLock(), () -> {
+            long t1 = System.currentTimeMillis();
+            try
+            {
+                Thread.sleep(BLOCKING_FOR_MILLIS);
+            } catch (InterruptedException ie)
+            {
+                wasInterrupted = true;
+            } finally
+            {
+                timePassed = (int) (System.currentTimeMillis() - t1);
+            }
+        });
+        return null;
+    }
+
+    private static void doWithLock(Lock lock, Runnable action)
+    {
+        getWithLock(lock, () ->
+        {
+            action.run();
+            return null;
+        });
+    }
+
+    private static <T> T getWithLock(Lock lock, Supplier<T> supplier)
+    {
+        final boolean locked;
         try
         {
-            Thread.sleep(BLOCKING_FOR_MILLIS);
+            locked = lock.tryLock(BLOCKING_FOR_MILLIS * 2, TimeUnit.MILLISECONDS);
         }
-        catch (InterruptedException ie)
+        catch (InterruptedException e)
         {
-            wasInterrupted = true;
-            countDownLatch.countDown();
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Unexpected InterruptedException while acquiring " + lock);
+        }
+
+        if (!locked) throw new IllegalStateException("Unexpected failure while acquiring " + lock);
+
+        try
+        {
+            return supplier.get();
         }
         finally
         {
-            timePassed = (int) (System.currentTimeMillis() - t1);
+            lock.unlock();
         }
-        return null;
     }
 
     public boolean isWasInterrupted()
     {
-        return wasInterrupted;
-    }
-
-    public boolean isWasInterrupted(int timeoutInSeconds) {
-        try {
-            countDownLatch.await(timeoutInSeconds, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            logger.warn("CountDownLatch interrupted.");
-        }
-        return wasInterrupted;
+        return getWithLock(lock.readLock(), () -> wasInterrupted);
     }
 
     public int getTimePassed()
     {
-        return timePassed;
+        return getWithLock(lock.readLock(), () -> timePassed);
     }
 
     public void reset()
     {
-        wasInterrupted = false;
-        timePassed = 0;
+        doWithLock(lock.writeLock(), () ->
+        {
+            wasInterrupted = false;
+            timePassed = 0;
+        });
     }
 
     @Override

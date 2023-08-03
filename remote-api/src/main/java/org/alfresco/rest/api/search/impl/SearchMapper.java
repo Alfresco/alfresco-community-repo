@@ -741,6 +741,18 @@ public class SearchMapper
      */
     public void fromLocalization(SearchParameters sp, Localization localization)
     {
+        List<String> fixedLocale = new ArrayList<String>();
+        fixedLocale.add("en_US");
+        fixedLocale.add("fr_FR");
+        fixedLocale.add("fr_CH");
+        fixedLocale.add("de_DE");
+        fixedLocale.add("es_ES");
+        fixedLocale.add("en_GB");
+        fixedLocale.add("fr");
+        for(String fixedLocaleVar : fixedLocale)
+        {
+            sp.addLocale(Locale.forLanguageTag(fixedLocaleVar.replace('_','-')));
+        }
         if (localization != null)
         {
 

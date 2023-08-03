@@ -307,14 +307,11 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             GetRemoteUserRunnable getRemoteUserRunnable = new GetRemoteUserRunnable();
             Thread workerGettingTheRemoteUser = new Thread(getRemoteUserRunnable);
             workerGettingTheRemoteUser.start();
-            logger.warn("Thread state 0: " + workerGettingTheRemoteUser.getState() + " isAlive: " + workerGettingTheRemoteUser.isAlive());
             try
             {
                 synchronized (workerGettingTheRemoteUser)
                 {
-                    logger.warn("Thread state 1: " + workerGettingTheRemoteUser.getState() + " isAlive: " + workerGettingTheRemoteUser.isAlive());
                     workerGettingTheRemoteUser.join(getRemoteUserTimeoutMilliseconds);
-                    logger.warn("Thread state 2: " + workerGettingTheRemoteUser.getState() + " isAlive: " + workerGettingTheRemoteUser.isAlive());
                 }
             }
             catch (Exception e)
@@ -324,7 +321,6 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
             returnedRemoteUser = getRemoteUserRunnable.getReturnedRemoteUser();
 
-            logger.warn("Thread state 3: " + workerGettingTheRemoteUser.getState() + " isAlive: " + workerGettingTheRemoteUser.isAlive());
             if (workerGettingTheRemoteUser.isAlive())
             {
                 // we timed out
@@ -356,8 +352,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             }
             catch (Exception e)
             {
-                logger.warn("Cleanup Thread went wrong: " + e.getMessage());
-                logger.warn(e.getCause());
+                // we can't really handle anything here
             }
         }
 

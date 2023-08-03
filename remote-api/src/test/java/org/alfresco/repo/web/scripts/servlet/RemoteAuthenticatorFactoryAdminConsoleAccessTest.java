@@ -63,8 +63,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -77,7 +79,6 @@ import static org.mockito.Mockito.when;
 public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpringTest
 {
     private String proxyHeader = "X-Alfresco-Remote-User";
-    private static final int WAIT_FOR_THREAD_INTERRUPTION = 5;
     public static int setStatusCode;
 
     protected final Log logger = LogFactory.getLog(getClass());
@@ -283,7 +284,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
         assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
-        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted(WAIT_FOR_THREAD_INTERRUPTION));
+        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted());
         assertTrue("The interrupt should have been called.", blockingRemoteUserMapper.getTimePassed() < BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS);
     }
 
@@ -501,56 +502,69 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 {
     private final Log logger = LogFactory.getLog(getClass());
     public static final int BLOCKING_FOR_MILLIS = 1000;
+    private static final int TRY_LOCK_TIMEOUT = 2 * BLOCKING_FOR_MILLIS;
     private volatile boolean wasInterrupted;
     private volatile int timePassed;
 
     private boolean isEnabled = true;
-    private CountDownLatch countDownLatch = new CountDownLatch(1);
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
     public String getRemoteUser(HttpServletRequest request)
     {
         long t1 = System.currentTimeMillis();
-        try
-        {
-            Thread.sleep(BLOCKING_FOR_MILLIS);
-        }
-        catch (InterruptedException ie)
-        {
-            wasInterrupted = true;
-            countDownLatch.countDown();
-        }
-        finally
-        {
-            timePassed = (int) (System.currentTimeMillis() - t1);
-        }
+        acquireLockAndExecute(
+                lock.writeLock(),
+                () -> {
+                    try {
+                        Thread.sleep(BLOCKING_FOR_MILLIS);
+                    } catch (InterruptedException ie) {
+                        wasInterrupted = true;
+                    }
+                },
+                () -> timePassed = (int) (System.currentTimeMillis() - t1)
+        );
         return null;
     }
 
-    public boolean isWasInterrupted()
-    {
-        return wasInterrupted;
-    }
-
-    public boolean isWasInterrupted(int timeoutInSeconds) {
-        try {
-            countDownLatch.await(timeoutInSeconds, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            logger.warn("CountDownLatch interrupted.");
-        }
-        return wasInterrupted;
+    public boolean isWasInterrupted() {
+        LambdaValueHolder<Boolean> check = new LambdaValueHolder<>(Boolean.FALSE);
+        acquireLockAndExecute(lock.readLock(), () -> check.setValue(wasInterrupted), () -> {});
+        return check.getValue();
     }
 
     public int getTimePassed()
     {
-        return timePassed;
+        LambdaValueHolder<Integer> check = new LambdaValueHolder<>(0);
+        acquireLockAndExecute(lock.readLock(), () -> check.setValue(timePassed), () -> {});
+        return check.getValue();
     }
 
     public void reset()
     {
-        wasInterrupted = false;
-        timePassed = 0;
-        countDownLatch = new CountDownLatch(1);
+        acquireLockAndExecute(
+                lock.writeLock(),
+                () -> {
+                    wasInterrupted = false;
+                    timePassed = 0;
+                },
+                () -> {}
+        );
+    }
+
+    private void acquireLockAndExecute(Lock lock, Procedure insideLockProcedure, Procedure finallyProcedure) {
+        try {
+            if(lock.tryLock(TRY_LOCK_TIMEOUT, TimeUnit.MILLISECONDS)) {
+                insideLockProcedure.perform();
+            } else {
+                throw new IllegalStateException("Failed to acquire lock.");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            lock.unlock();
+            finallyProcedure.perform();
+        }
     }
 
     @Override
@@ -562,5 +576,27 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
     public void setEnabled(boolean enabled)
     {
         this.isEnabled = enabled;
+    }
+
+    @FunctionalInterface
+    private interface Procedure {
+        void perform();
+    }
+
+    private class LambdaValueHolder<T> {
+
+        private T value;
+
+        private LambdaValueHolder(T value) {
+            this.value = value;
+        }
+
+        public T getValue() {
+            return value;
+        }
+
+        public void setValue(T value) {
+            this.value = value;
+        }
     }
 }

@@ -113,29 +113,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - testSuite: AppContextExtraTestSuite1
+          - testSuite: AppContext01TestSuite
             compose-profile: default
-          - testSuite: AppContextExtraTestSuite2
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite3
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite4
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite5
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite6
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite7
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite8
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite9
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite10
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite11
-            compose-profile: default
-          - testSuite: AppContextExtraTestSuite12
+          - testSuite: AppContext02TestSuite
+            compose-profile: with-transform-core-aio
+          - testSuite: AppContext03TestSuite
+            compose-profile: with-transform-core-aio
+          - testSuite: AppContext04TestSuite
+            compose-profile: with-transform-core-aio
+          - testSuite: AppContextExtraTestSuite
             compose-profile: default
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
@@ -143,8 +129,6 @@ jobs:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: 17 
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -155,7 +139,7 @@ jobs:
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B -V test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

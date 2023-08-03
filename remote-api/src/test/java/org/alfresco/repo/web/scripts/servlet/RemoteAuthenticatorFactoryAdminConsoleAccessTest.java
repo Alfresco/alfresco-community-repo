@@ -80,7 +80,6 @@ import static org.mockito.Mockito.when;
 public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpringTest
 {
     private String proxyHeader = "X-Alfresco-Remote-User";
-    private static final int WAIT_FOR_THREAD_INTERRUPTION = 5;
     public static int setStatusCode;
 
     protected final Log logger = LogFactory.getLog(getClass());
@@ -502,7 +501,6 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
 class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 {
-    private final Log logger = LogFactory.getLog(getClass());
     public static final int BLOCKING_FOR_MILLIS = 1000;
     private volatile boolean wasInterrupted;
     private volatile int timePassed;

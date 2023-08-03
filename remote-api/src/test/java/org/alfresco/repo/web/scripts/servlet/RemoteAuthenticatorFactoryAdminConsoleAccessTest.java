@@ -63,6 +63,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -75,6 +77,7 @@ import static org.mockito.Mockito.when;
 public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpringTest
 {
     private String proxyHeader = "X-Alfresco-Remote-User";
+    private static final int WAIT_FOR_THREAD_INTERRUPTION = 5;
     public static int setStatusCode;
 
     protected final Log logger = LogFactory.getLog(getClass());
@@ -280,7 +283,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
         assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
-        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted());
+        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted(WAIT_FOR_THREAD_INTERRUPTION));
         assertTrue("The interrupt should have been called.", blockingRemoteUserMapper.getTimePassed() < BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS);
     }
 
@@ -496,11 +499,13 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
 class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 {
+    private final Log logger = LogFactory.getLog(getClass());
     public static final int BLOCKING_FOR_MILLIS = 1000;
     private volatile boolean wasInterrupted;
     private volatile int timePassed;
 
     private boolean isEnabled = true;
+    private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     @Override
     public String getRemoteUser(HttpServletRequest request)
@@ -513,6 +518,7 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
         catch (InterruptedException ie)
         {
             wasInterrupted = true;
+            countDownLatch.countDown();
         }
         finally
         {
@@ -523,6 +529,15 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 
     public boolean isWasInterrupted()
     {
+        return wasInterrupted;
+    }
+
+    public boolean isWasInterrupted(int timeoutInSeconds) {
+        try {
+            countDownLatch.await(timeoutInSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.warn("CountDownLatch interrupted.");
+        }
         return wasInterrupted;
     }
 

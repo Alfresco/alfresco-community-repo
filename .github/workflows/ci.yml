@@ -113,15 +113,29 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - testSuite: AppContext01TestSuite
-#            compose-profile: default
-#          - testSuite: AppContext02TestSuite
-#            compose-profile: with-transform-core-aio
-#          - testSuite: AppContext03TestSuite
-#            compose-profile: with-transform-core-aio
-#          - testSuite: AppContext04TestSuite
-#            compose-profile: with-transform-core-aio
-          - testSuite: AppContextExtraTestSuite
+          - testSuite: AppContextExtraTestSuite1
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite2
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite3
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite4
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite5
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite6
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite7
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite8
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite9
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite10
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite11
+            compose-profile: default
+          - testSuite: AppContextExtraTestSuite12
             compose-profile: default
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
@@ -139,27 +153,7 @@ jobs:
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: |
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-          mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -pl remote-api -Dtest=RemoteAuthenticatorFactoryAdminConsoleAccessTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

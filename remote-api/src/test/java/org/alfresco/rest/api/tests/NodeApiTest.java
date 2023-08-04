@@ -6437,8 +6437,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Folder folderUpdate = new Folder();
         folderUpdate.setAspectNames(Arrays.asList());
 
-        HttpResponse response = put(URL_NODES, folderId, toJsonAsStringNonNull(folderUpdate), null, 200);
-        Folder folderResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        put(URL_NODES, folderId, toJsonAsStringNonNull(folderUpdate), null, 200);
 
         assertTrue("Folder should have the rule aspect", nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES));
         assertEquals("Folder should have 1 rule.", 1, ruleService.countRules(folderNodeRef));

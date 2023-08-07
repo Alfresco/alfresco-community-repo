@@ -85,17 +85,27 @@ public class HttpClientConfig
         this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
         this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
 
-        config = retrieveConfig(serviceName);
+        config = retrieveConfig();
         checkUnsupportedProperties(config);
     }
 
     /**
      * Method used for retrieving HttpClient config from Global Properties
-     * @param serviceName name of used service
+     * that can also have values provided/overridden through System Properties
+     *
      * @return map of properties
      */
-    private Map<String, String> retrieveConfig(String serviceName)
+    private Map<String, String> retrieveConfig()
     {
+        Map<String, String> resultProperties = getHttpClientPropertiesForService(properties);
+        Map<String, String> systemProperties = getHttpClientPropertiesForService(System.getProperties());
+
+        systemProperties.forEach((k, v) -> resultProperties.put(k, v)); //Override/Add to Global Properties with values from System Properties
+
+        return resultProperties;
+    }
+
+    private Map<String, String> getHttpClientPropertiesForService(Properties properties) {
         return properties.keySet().stream()
                 .filter(key -> key instanceof String)
                 .map(Object::toString)

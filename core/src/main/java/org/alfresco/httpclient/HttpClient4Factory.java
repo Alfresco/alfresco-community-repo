@@ -92,15 +92,16 @@ public class HttpClient4Factory
         else
         {
             //Setting a connectionManager overrides these properties
-            clientBuilder.setMaxConnTotal(config.getMaxTotalConnections());
-            clientBuilder.setMaxConnPerRoute(config.getMaxHostConnections());
+            config.getMaxTotalConnections().ifPresent(v -> clientBuilder.setMaxConnTotal(v));
+            config.getMaxHostConnections().ifPresent(v -> clientBuilder.setMaxConnPerRoute(v));
         }
 
-        RequestConfig requestConfig = RequestConfig.custom()
-               .setConnectTimeout(config.getConnectionTimeout())
-               .setSocketTimeout(config.getSocketTimeout())
-               .setConnectionRequestTimeout(config.getConnectionRequestTimeout())
-               .build();
+        RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+        config.getConnectionTimeout().ifPresent(v -> requestConfigBuilder.setConnectTimeout(v));
+        config.getConnectionRequestTimeout().ifPresent(v -> requestConfigBuilder.setConnectionRequestTimeout(v));
+        config.getSocketTimeout().ifPresent(v -> requestConfigBuilder.setSocketTimeout(v));
+
+        RequestConfig requestConfig = requestConfigBuilder.build();
 
         clientBuilder.setDefaultRequestConfig(requestConfig);
 
@@ -135,8 +136,8 @@ public class HttpClient4Factory
                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
                    .build());
         }
-        poolingHttpClientConnectionManager.setMaxTotal(config.getMaxTotalConnections());
-        poolingHttpClientConnectionManager.setDefaultMaxPerRoute(config.getMaxHostConnections());
+        config.getMaxTotalConnections().ifPresent(v -> poolingHttpClientConnectionManager.setMaxTotal(v));
+        config.getMaxHostConnections().ifPresent(v -> poolingHttpClientConnectionManager.setDefaultMaxPerRoute(v));
 
         return poolingHttpClientConnectionManager;
     }

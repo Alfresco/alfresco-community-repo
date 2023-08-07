@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>21.12</version>
+        <version>21.13-SNAPSHOT</version>
     </parent>
 
     <modules>

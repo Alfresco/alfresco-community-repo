@@ -250,7 +250,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        if (encoding == null)
                        {
                            logger.info("Encoding is null ");
-                           encoding = "Cp437";
+                           encoding = "UTF-8";
                        }
                        else
                        {

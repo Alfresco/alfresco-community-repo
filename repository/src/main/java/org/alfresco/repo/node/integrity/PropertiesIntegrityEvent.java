@@ -76,7 +76,6 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                 logger.debug("Event ignored - node gone: " + this);
             }
             eventResults.clear();
-            return;
         }
         else
         {
@@ -195,7 +194,7 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                 Constraint constraint = constraintDef.getConstraint();
                 try
                 {
-                    constraint.evaluate(propertyValue);
+                    //constraint.evaluate(propertyValue);
                 }
                 catch (ConstraintException e)
                 {

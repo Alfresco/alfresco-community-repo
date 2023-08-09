@@ -85,17 +85,27 @@ public class HttpClientConfig
         this.keyStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getKeyStoreParameters(),  keyResourceLoader);
         this.trustStore = new AlfrescoKeyStoreImpl(sslEncryptionParameters.getTrustStoreParameters(), keyResourceLoader);
 
-        config = retrieveConfig(serviceName);
+        config = retrieveConfig();
         checkUnsupportedProperties(config);
     }
 
     /**
      * Method used for retrieving HttpClient config from Global Properties
-     * @param serviceName name of used service
+     * that can also have values provided/overridden through System Properties
+     *
      * @return map of properties
      */
-    private Map<String, String> retrieveConfig(String serviceName)
+    private Map<String, String> retrieveConfig()
     {
+        Map<String, String> resultProperties = getHttpClientPropertiesForService(properties);
+        Map<String, String> systemProperties = getHttpClientPropertiesForService(System.getProperties());
+
+        systemProperties.forEach((k, v) -> resultProperties.put(k, v)); //Override/Add to Global Properties results with values from System Properties
+
+        return resultProperties;
+    }
+
+    private Map<String, String> getHttpClientPropertiesForService(Properties properties) {
         return properties.keySet().stream()
                 .filter(key -> key instanceof String)
                 .map(Object::toString)
@@ -112,79 +122,75 @@ public class HttpClientConfig
               .forEach(propertyName -> LOGGER.warn(String.format("For service [%s], an unsupported property [%s] is set", serviceName, propertyName)));
     }
 
-    private Integer getIntegerProperty(HttpClientPropertiesEnum property)
+    private Optional<Integer> getIntegerProperty(HttpClientPropertiesEnum property)
     {
-        return Integer.parseInt(extractValueFromConfig(property).orElse("0"));
+        Optional<String> optionalProperty = extractValueFromConfig(property);
+
+        return optionalProperty.isPresent() ? Optional.of(Integer.parseInt(optionalProperty.get())) : Optional.empty();
     }
 
-    private Boolean getBooleanProperty(HttpClientPropertiesEnum property)
+    private Optional<Boolean> getBooleanProperty(HttpClientPropertiesEnum property)
     {
-        return Boolean.parseBoolean(extractValueFromConfig(property).orElse("false"));
+        Optional<String> optionalProperty = extractValueFromConfig(property);
+
+        return optionalProperty.isPresent() ? Optional.of(Boolean.parseBoolean(optionalProperty.get())) : Optional.empty();
     }
 
     private Optional<String> extractValueFromConfig(HttpClientPropertiesEnum property)
     {
-        Optional<String> optionalProperty = Optional.ofNullable(config.get(property.name));
-        if(property.isRequired && optionalProperty.isEmpty())
-        {
-            String msg = String.format("Required property: '%s' is empty.", property.name);
-            throw new HttpClientException(msg);
-        }
-        return optionalProperty;
+        return Optional.ofNullable(config.get(property.name));
     }
 
-    public Integer getConnectionTimeout()
+    public Optional<Integer> getConnectionTimeout()
     {
         return getIntegerProperty(HttpClientPropertiesEnum.CONNECTION_REQUEST_TIMEOUT);
     }
 
-    public Integer getSocketTimeout()
+    public Optional<Integer> getSocketTimeout()
     {
         return getIntegerProperty(HttpClientPropertiesEnum.SOCKET_TIMEOUT);
     }
 
-    public Integer getConnectionRequestTimeout()
+    public Optional<Integer> getConnectionRequestTimeout()
     {
         return getIntegerProperty(HttpClientPropertiesEnum.CONNECTION_REQUEST_TIMEOUT);
     }
 
-    public Integer getMaxTotalConnections()
+    public Optional<Integer> getMaxTotalConnections()
     {
         return getIntegerProperty(HttpClientPropertiesEnum.MAX_TOTAL_CONNECTIONS);
     }
 
-    public Integer getMaxHostConnections()
+    public Optional<Integer> getMaxHostConnections()
     {
         return getIntegerProperty(HttpClientPropertiesEnum.MAX_HOST_CONNECTIONS);
     }
 
-    public Boolean isMTLSEnabled()
+    public boolean isMTLSEnabled()
     {
-        return getBooleanProperty(HttpClientPropertiesEnum.MTLS_ENABLED);
+        return getBooleanProperty(HttpClientPropertiesEnum.MTLS_ENABLED).orElse(Boolean.FALSE);
     }
 
     public boolean isHostnameVerificationDisabled()
     {
-        return getBooleanProperty(HttpClientPropertiesEnum.HOSTNAME_VERIFICATION_DISABLED);
+        return getBooleanProperty(HttpClientPropertiesEnum.HOSTNAME_VERIFICATION_DISABLED).orElse(Boolean.FALSE);
     }
 
     private enum HttpClientPropertiesEnum
     {
-        CONNECTION_TIMEOUT("connectionTimeout", true),
-        SOCKET_TIMEOUT("socketTimeout", true),
-        CONNECTION_REQUEST_TIMEOUT("connectionRequestTimeout", true),
-        MAX_TOTAL_CONNECTIONS("maxTotalConnections", true),
-        MAX_HOST_CONNECTIONS("maxHostConnections", true),
-        HOSTNAME_VERIFICATION_DISABLED("hostnameVerificationDisabled", false),
-        MTLS_ENABLED("mTLSEnabled", true);
+        CONNECTION_TIMEOUT("connectionTimeout"),
+        SOCKET_TIMEOUT("socketTimeout"),
+        CONNECTION_REQUEST_TIMEOUT("connectionRequestTimeout"),
+        MAX_TOTAL_CONNECTIONS("maxTotalConnections"),
+        MAX_HOST_CONNECTIONS("maxHostConnections"),
+        HOSTNAME_VERIFICATION_DISABLED("hostnameVerificationDisabled"),
+        MTLS_ENABLED("mTLSEnabled");
 
         private final String name;
-        private final Boolean isRequired;
 
-        HttpClientPropertiesEnum(String propertyName, Boolean isRequired)
+        HttpClientPropertiesEnum(String propertyName)
         {
             this.name = propertyName;
-            this.isRequired = isRequired;
         }
 
         private static final List<String> supportedProperties = new ArrayList<>();

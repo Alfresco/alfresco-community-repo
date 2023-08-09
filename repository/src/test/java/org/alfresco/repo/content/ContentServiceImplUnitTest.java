@@ -166,34 +166,46 @@ public class ContentServiceImplUnitTest
     @Test
     public void testRequestContentDirectUrl_StoreRequestContentDirectUrlIsCalledWithFileNameOverride()
     {
+        DirectAccessUrl mockDirectAccessUrl = new DirectAccessUrl();
+        mockDirectAccessUrl.setAttachment(true);
+        mockDirectAccessUrl.setContentUrl(SOME_CONTENT_URL);
         final String fileNameOverride = "fileNameOverride.txt";
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
+        when(mockContentStore.requestContentDirectUrl(anyString(), eq(true), eq(fileNameOverride), anyString(), anyLong())).thenReturn(mockDirectAccessUrl);
 
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L, fileNameOverride);
-        assertNull(directAccessUrl);
+        assertEquals("fileName was not set properly on the DirectAccessUrl response", fileNameOverride, directAccessUrl.getFileName());
         verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), eq(fileNameOverride), anyString(), anyLong());
     }
 
     @Test
     public void testRequestContentDirectUrl_StoreRequestContentDirectUrlIsCalledWithNodeNamePropertyWhenFileNameOverrideIsNull()
     {
+        DirectAccessUrl mockDirectAccessUrl = new DirectAccessUrl();
+        mockDirectAccessUrl.setAttachment(true);
+        mockDirectAccessUrl.setContentUrl(SOME_CONTENT_URL);
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
+        when(mockContentStore.requestContentDirectUrl(anyString(), eq(true), eq(SOME_FILE_NAME), anyString(), anyLong())).thenReturn(mockDirectAccessUrl);
 
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L, null);
-        assertNull(directAccessUrl);
+        assertEquals("fileName was not set properly on the DirectAccessUrl response", SOME_FILE_NAME, directAccessUrl.getFileName());
         verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), eq(SOME_FILE_NAME), anyString(), anyLong());
     }
 
     @Test
     public void testRequestContentDirectUrl_StoreRequestContentDirectUrlIsCalledWithNodeNamePropertyWhenFileNameOverrideIsEmpty()
     {
+        DirectAccessUrl mockDirectAccessUrl = new DirectAccessUrl();
+        mockDirectAccessUrl.setAttachment(true);
+        mockDirectAccessUrl.setContentUrl(SOME_CONTENT_URL);
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
+        when(mockContentStore.requestContentDirectUrl(anyString(), eq(true), eq(SOME_FILE_NAME), anyString(), anyLong())).thenReturn(mockDirectAccessUrl);
 
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L, "");
-        assertNull(directAccessUrl);
+        assertEquals("fileName was not set properly on the DirectAccessUrl response", SOME_FILE_NAME, directAccessUrl.getFileName());
         verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), eq(SOME_FILE_NAME), anyString(), anyLong());
     }
 

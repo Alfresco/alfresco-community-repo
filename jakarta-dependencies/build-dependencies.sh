@@ -23,10 +23,6 @@ function clone_and_install {
   mvn -f $project_path -B clean install -DskipTests -Dmaven.javadoc.skip=true
 }
 
-clone_and_install surf-webscripts
-clone_and_install surf jakarta-migration surf
-clone_and_install alfresco-office-services
-
 #Ugly hack to deal with AOS<->REPO circular dependencies
 mvn -f $DEPENDENCIES_DIR/.. install -pl :alfresco-remote-api -am -DskipTests -Dmaven.javadoc.skip=true
 clone_and_install alfresco-aos-module

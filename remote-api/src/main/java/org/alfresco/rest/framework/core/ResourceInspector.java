@@ -384,13 +384,24 @@ public class ResourceInspector
         }
 
         if (GET.equals(httpMethod))
+        {
             return Status.STATUS_OK;
+        }
+
         if (POST.equals(httpMethod))
+        {
             return Status.STATUS_CREATED;
+        }
+
         if (PUT.equals(httpMethod))
+        {
             return Status.STATUS_OK;
+        }
+
         if (DELETE.equals(httpMethod))
+        {
             return Status.STATUS_NO_CONTENT;
+        }
 
         return Status.STATUS_OK;
     }

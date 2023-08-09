@@ -629,18 +629,6 @@
             <artifactId>activemq-client-jakarta</artifactId>
             <version>${dependency.activemq.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.activemq</groupId>-->
-<!--            <artifactId>activemq-pool</artifactId>-->
-<!--            <version>${dependency.activemq.version}</version>-->
-<!--            <exclusions>-->
-<!--                &lt;!&ndash; Duplicates classes from jakarta.transaction:jakarta.transaction-api &ndash;&gt;-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.apache.geronimo.specs</groupId>-->
-<!--                    <artifactId>geronimo-jta_1.1_spec</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
 
         <!-- Transform dependencies -->
         <dependency>

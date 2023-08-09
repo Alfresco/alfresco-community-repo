@@ -634,24 +634,40 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         final Response returnedResponse;
         HttpMethod httpMethod = restRequest.getHttpMethod();
         if (HttpMethod.GET.equals(httpMethod))
+        {
             returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else if (HttpMethod.DELETE.equals(httpMethod))
+        {
             returnedResponse = onRequest().delete(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else if (HttpMethod.HEAD.equals(httpMethod))
+        {
             returnedResponse = onRequest().head(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else if (HttpMethod.OPTIONS.equals(httpMethod))
+        {
             returnedResponse = onRequest().options(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else if (HttpMethod.POST.equals(httpMethod))
+        {
             returnedResponse = onRequest().body(restRequest.getBody())
-                    .post(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                                          .post(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else if (HttpMethod.PUT.equals(httpMethod))
+        {
             returnedResponse = onRequest().body(restRequest.getBody())
-                    .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
-                    .put(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+                                          .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
+                                          .put(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else if (HttpMethod.TRACE.equals(httpMethod))
+        {
             returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
         else
+        {
             returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
 
         logResponseInformation(restRequest, returnedResponse);
 

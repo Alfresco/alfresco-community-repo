@@ -26,5 +26,4 @@ fi
 echo "Verifying compilation and ensuring maven cache populated."
 export BUILD_PROFILES="-Pall-tas-tests,ags"
 export BUILD_OPTIONS="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -Dmaven.artifact.threads=8"
-$(dirname "${BASH_SOURCE[0]}")/../../jakarta-dependencies/build-dependencies.sh $GIT_HTTP_CREDENTIALS
 source "$(dirname "${BASH_SOURCE[0]}")/build.sh"

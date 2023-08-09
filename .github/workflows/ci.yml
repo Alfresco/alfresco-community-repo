@@ -17,7 +17,6 @@ on:
 env:
   DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  GIT_HTTP_CREDENTIALS: "${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}"
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
   MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}

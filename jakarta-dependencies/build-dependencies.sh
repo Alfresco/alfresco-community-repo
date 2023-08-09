@@ -5,8 +5,6 @@ set -e
 HTTP_CREDENTIALS=$1
 DEPENDENCIES_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-mvn -f $DEPENDENCIES_DIR -B clean install
-
 function clone_and_install {
   local project_path=$DEPENDENCIES_DIR/projects/$1
   local branch_name=${2:-jakarta-migration}
@@ -22,7 +20,3 @@ function clone_and_install {
   fi
   mvn -f $project_path -B clean install -DskipTests -Dmaven.javadoc.skip=true
 }
-
-#Ugly hack to deal with AOS<->REPO circular dependencies
-mvn -f $DEPENDENCIES_DIR/.. install -pl :alfresco-remote-api -am -DskipTests -Dmaven.javadoc.skip=true
-clone_and_install alfresco-aos-module

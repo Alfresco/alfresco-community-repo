@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,10 +29,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NavigableMap;
 
-import javax.mail.Flags;
-import javax.mail.MessagingException;
-import javax.mail.Flags.Flag;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.Flags;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Flags.Flag;
+import jakarta.mail.internet.MimeMessage;
 
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.service.cmr.model.FileInfo;

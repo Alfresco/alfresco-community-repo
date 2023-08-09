@@ -1,6 +1,6 @@
 package org.alfresco.email.imap;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.email.EmailTest;

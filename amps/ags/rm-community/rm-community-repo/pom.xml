@@ -60,9 +60,12 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>javax.servlet</groupId>
-         <artifactId>javax.servlet-api</artifactId>
-         <scope>provided</scope>
+         <groupId>jakarta.servlet</groupId>
+         <artifactId>jakarta.servlet-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.mail</groupId>
+         <artifactId>jakarta.mail-api</artifactId>
       </dependency>
       <dependency>
          <groupId>org.alfresco.surf</groupId>
@@ -102,9 +105,8 @@
          <artifactId>swagger-parser</artifactId>
          <scope>test</scope>
       </dependency>
-      <!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
       <dependency>
-         <groupId>com.github.fge</groupId>
+         <groupId>com.networknt</groupId>
          <artifactId>json-schema-validator</artifactId>
          <scope>test</scope>
       </dependency>

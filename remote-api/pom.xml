@@ -36,9 +36,12 @@
             <artifactId>jackson-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -59,22 +62,8 @@
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-test-tck</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <exclusions>
-                <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
-                <exclusion>
-                  <groupId>org.apache.geronimo.specs</groupId>
-                  <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-                </exclusion>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-            </exclusions>
-            <!-- <scope>test</scope> -->
+            <scope>test</scope>
         </dependency>
-        <!-- the cxf libs were updated, see dependencyManagement section -->
-
 
         <!-- Test dependencies -->
         <dependency>
@@ -130,7 +119,7 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>10.0.14</version>
+            <version>11.0.15</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -142,13 +131,13 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-security</artifactId>
-            <version>10.0.11</version>
+            <version>11.0.15</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-webapp</artifactId>
-            <version>10.0.11</version>
+            <version>11.0.15</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -157,21 +146,10 @@
             <version>2.3</version>
             <scope>test</scope>
             <exclusions>
-              <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-jta_1.1_spec</artifactId>
-              </exclusion>
-              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-              </exclusion>
-              <!-- MNT-20557: Excluding javax.annotation:javax.annotation-api, jakarta.annotation:jakarta.annotation-api will be used instead -->
-              <exclusion>
-                  <groupId>javax.annotation</groupId>
-                  <artifactId>javax.annotation-api</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

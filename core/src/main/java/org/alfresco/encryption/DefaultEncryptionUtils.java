@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,8 +26,8 @@ import java.net.UnknownHostException;
 import java.security.AlgorithmParameters;
 import java.util.Arrays;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.encryption.MACUtils.MACInput;
 import org.alfresco.error.AlfrescoRuntimeException;

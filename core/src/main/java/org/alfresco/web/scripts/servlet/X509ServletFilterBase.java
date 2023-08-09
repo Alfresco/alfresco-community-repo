@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2005-2013 Alfresco Software Limited.
+* Copyright (C) 2005 - 2023 Alfresco Software Limited.
 *
 * This file is part of Alfresco
 *
@@ -21,9 +21,9 @@ package org.alfresco.web.scripts.servlet;
 
 import javax.management.*;
 import javax.security.auth.x500.X500Principal;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Set;
@@ -134,7 +134,7 @@ public abstract class X509ServletFilterBase implements Filter
                 logger.debug("Enforcing X509 request");
             }
 
-            X509Certificate[] certs = (X509Certificate[])httpRequest.getAttribute("javax.servlet.request.X509Certificate");
+            X509Certificate[] certs = (X509Certificate[])httpRequest.getAttribute("jakarta.servlet.request.X509Certificate");
             if(validCert(certs))
             {
 

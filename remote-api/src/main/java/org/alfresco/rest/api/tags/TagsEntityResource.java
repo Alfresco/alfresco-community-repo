@@ -26,7 +26,7 @@
 package org.alfresco.rest.api.tags;
 
 import java.util.List;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Tags;
 import org.alfresco.rest.api.model.Tag;

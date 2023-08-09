@@ -12,7 +12,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.mail.FolderNotFoundException;
+import jakarta.mail.FolderNotFoundException;
 
 /**
  * Tests for Create Folder action using IMAP client

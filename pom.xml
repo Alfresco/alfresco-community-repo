@@ -672,6 +672,11 @@
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15to18</artifactId>
+                <version>${dependency.bouncycastle.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${dependency.slf4j.version}</version>

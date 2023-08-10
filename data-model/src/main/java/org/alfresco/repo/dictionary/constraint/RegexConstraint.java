@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -137,7 +138,8 @@ public class RegexConstraint extends AbstractConstraint
     protected void evaluateSingleValue(Object value)
     {
         // convert the value to a String
-        String valueStr = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+        String valueStr = StringUtils.stripAccents(DefaultTypeConverter.INSTANCE.convert(String.class, value));
+        valueStr=valueStr.replaceAll(patternMatcher.pattern(),"_");
         Matcher matcher = patternMatcher.matcher(valueStr);
         boolean matches = matcher.matches();
         if (matches != requiresMatch)

@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -194,7 +195,7 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                 Constraint constraint = constraintDef.getConstraint();
                 try
                 {
-                    //constraint.evaluate(propertyValue);
+                    constraint.evaluate(propertyValue);
                 }
                 catch (ConstraintException e)
                 {

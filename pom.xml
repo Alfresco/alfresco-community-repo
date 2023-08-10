@@ -62,7 +62,7 @@
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>8.46</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.76</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.4.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>
         <dependency.org-json.version>20230618</dependency.org-json.version>
@@ -663,7 +663,7 @@
             <!-- Enforce newer version -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
+                <artifactId>bcprov-jdk15to18</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
@@ -1110,6 +1110,8 @@
                                             <exclude>jakarta.xml.ws:jakarta.xml.ws-api:(, 3.0.1)</exclude>
                                             <exclude>jakarta.xml.soap:jakarta.xml.soap-api:(, 2.0.1)</exclude>
                                             <exclude>jakarta.jws:jakarta.jws-api:(, 3.0.0)</exclude>
+                                            <exclude>org.bouncycastle:bcprov-jdk15on</exclude>
+                                            <exclude>org.bouncycastle:bcprov-jdk15to18:(, 1.74)</exclude>
 
                                         </excludes>
                                     </bannedDependencies>

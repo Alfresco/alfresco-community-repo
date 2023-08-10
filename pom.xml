@@ -1110,10 +1110,15 @@
                                             <exclude>jakarta.xml.ws:jakarta.xml.ws-api:(, 3.0.1)</exclude>
                                             <exclude>jakarta.xml.soap:jakarta.xml.soap-api:(, 2.0.1)</exclude>
                                             <exclude>jakarta.jws:jakarta.jws-api:(, 3.0.0)</exclude>
-                                            <exclude>org.bouncycastle:bcprov-jdk15on</exclude>
-                                            <exclude>org.bouncycastle:bcprov-jdk15to18:(, 1.74)</exclude>
-
+<!--                                            Enforce ban bouncycastle dependencies other than specified under <includes> section-->
+                                            <exclude>org.bouncycastle</exclude>
                                         </excludes>
+                                        <includes>
+                                            <include>org.bouncycastle:bcprov-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcmail-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcpkix-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcutil-jdk15to18:[1.74,)</include>
+                                        </includes>
                                     </bannedDependencies>
                                 </rules>
                                 <fail>true</fail>

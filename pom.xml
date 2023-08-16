@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.179-SNAPSHOT</version>
+    <version>23.1.0.191-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -48,20 +48,20 @@
         <dependency.alfresco-hb-data-sender.version>1.1.1</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-trashcan-cleaner.version>2.4.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.5</dependency.alfresco-jlan.version>
-        <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
+        <dependency.alfresco-server-root.version>7.0.1</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>3.0.0</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>4.0.0</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-greenmail.version>6.9</dependency.alfresco-greenmail.version>
+        <dependency.alfresco-transform-service.version>3.0.1-A2</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>4.0.1-A3</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-greenmail.version>7.0</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.23</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.3.27</dependency.spring.version>
+        <dependency.spring.version>6.0.9</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.15.2</dependency.jackson.version>
-        <dependency.cxf.version>3.5.5</dependency.cxf.version>
-        <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.45</dependency.webscripts.version>
+        <dependency.cxf.version>4.0.2</dependency.cxf.version>
+        <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
+        <dependency.webscripts.version>8.46</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.4.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>
@@ -69,9 +69,11 @@
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.13.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.9</dependency.gson.version>
-        <dependency.guava.version>32.1.1-jre</dependency.guava.version>
+        <dependency.guava.version>32.1.2-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.16</dependency.httpcore.version>
+        <dependency.httpcomponents-httpclient5.version>5.2.1</dependency.httpcomponents-httpclient5.version>
+        <dependency.httpcomponents-httpcore5.version>5.2.2</dependency.httpcomponents-httpcore5.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.7</dependency.slf4j.version>
@@ -79,14 +81,14 @@
         <dependency.gytheio.version>0.20.0-A1</dependency.gytheio.version>
         <dependency.groovy.version>3.0.18</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>5.8.3</dependency.spring-security.version>
+        <dependency.spring-security.version>6.1.0</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.21.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.95.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
-        <dependency.activemq.version>5.17.4</dependency.activemq.version>
+        <dependency.camel.version>4.0.0-RC2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.netty.version>4.1.96.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.activemq.version>5.18.2</dependency.activemq.version>
         <dependency.apache-compress.version>1.23.0</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
@@ -95,22 +97,26 @@
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
+        <dependency.pooled-jms.version>3.1.0</dependency.pooled-jms.version>
 
-        <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>
-        <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
-        <dependency.jakarta-soap-api.version>1.4.2</dependency.jakarta-soap-api.version>
-        <dependency.jakarta-activation-api.version>1.2.2</dependency.jakarta-activation-api.version>
+        <dependency.jakarta-ee-jaxb-api.version>3.0.1</dependency.jakarta-ee-jaxb-api.version>
+        <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
+        <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
+        <dependency.jakarta-soap-api.version>2.0.1</dependency.jakarta-soap-api.version>
         <dependency.jakarta-annotation-api.version>2.1.1</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
-        <dependency.jakarta-jws-api.version>2.1.0</dependency.jakarta-jws-api.version>
-        <dependency.jakarta-mail-api.version>1.6.5</dependency.jakarta-mail-api.version>
+        <dependency.jakarta-jws-api.version>3.0.0</dependency.jakarta-jws-api.version>
+        <dependency.jakarta-ee-mail.version>2.0.1</dependency.jakarta-ee-mail.version>
+        <dependency.jakarta-ee-activation.version>2.0.1</dependency.jakarta-ee-activation.version>
+        <dependency.jakarta-ee-jms.version>3.0.0</dependency.jakarta-ee-jms.version>
+        <dependency.java-ee-activation.version>1.2.0</dependency.java-ee-activation.version>
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
         <dependency.jakarta-json-path.version>2.8.0</dependency.jakarta-json-path.version>
         <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.4.2-A4</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.6.1</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.6.2-A1</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
@@ -120,9 +126,9 @@
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
-        <dependency.tas-utility.version>4.0.4</dependency.tas-utility.version>
+        <dependency.tas-utility.version>5.0.0</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.3.1</dependency.rest-assured.version>
-        <dependency.tas-email.version>1.24</dependency.tas-email.version>
+        <dependency.tas-email.version>2.0.0</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.20</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.18</dependency.tas-ftp.version>
         <dependency.tas-dataprep.version>2.6</dependency.tas-dataprep.version>
@@ -168,12 +174,12 @@
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>${dependency.jakarta-jaxb-api.version}</version>
+                <version>${dependency.jakarta-ee-jaxb-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
-                <version>${dependency.jakarta-jaxb-api.version}</version>
+                <version>${dependency.jakarta-ee-jaxb-api.version}</version>
             </dependency>
 
             <dependency>
@@ -186,17 +192,6 @@
                 <groupId>jakarta.xml.soap</groupId>
                 <artifactId>jakarta.xml.soap-api</artifactId>
                 <version>${dependency.jakarta-soap-api.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jakarta.activation</groupId>
-                <artifactId>jakarta.activation-api</artifactId>
-                <version>${dependency.jakarta-activation-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.activation</groupId>
-                <artifactId>jakarta.activation</artifactId>
-                <version>${dependency.jakarta-activation-api.version}</version>
             </dependency>
 
             <dependency>
@@ -217,15 +212,49 @@
                 <version>${dependency.jakarta-jws-api.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>jakarta.mail</groupId>
-                <artifactId>jakarta.mail-api</artifactId>
-                <version>${dependency.jakarta-mail-api.version}</version>
-            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>com.sun.mail</groupId>-->
+<!--                <artifactId>javax.mail</artifactId>-->
+<!--                <version>${dependency.java-ee-mail.version}</version>-->
+<!--            </dependency>-->
+
             <dependency>
                 <groupId>com.sun.mail</groupId>
                 <artifactId>jakarta.mail</artifactId>
-                <version>${dependency.jakarta-mail-api.version}</version>
+                <version>${dependency.jakarta-ee-mail.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.mail</groupId>
+                <artifactId>jakarta.mail-api</artifactId>
+                <version>${dependency.jakarta-ee-mail.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.activation</groupId>
+                <artifactId>jakarta.activation</artifactId>
+                <version>${dependency.jakarta-ee-activation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+                <version>${dependency.jakarta-ee-activation.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.activation</groupId>
+                <artifactId>javax.activation-api</artifactId>
+                <version>${dependency.java-ee-activation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.jms</groupId>
+                <artifactId>jakarta.jms-api</artifactId>
+                <version>${dependency.jakarta-ee-jms.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.messaginghub</groupId>
+                <artifactId>pooled-jms</artifactId>
+                <version>${dependency.pooled-jms.version}</version>
             </dependency>
 
             <dependency>
@@ -259,6 +288,33 @@
                 <groupId>com.sun.xml.rpc</groupId>
                 <artifactId>jaxrpc-impl</artifactId>
                 <version>${dependency.jakarta-rpc-api.version}</version>
+            </dependency>
+
+            <!--CMIS-->
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-client-api</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-client-bindings</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-client-impl</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-commons-api</artifactId>
+                <version>${dependency.opencmis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.chemistry.opencmis</groupId>
+                <artifactId>chemistry-opencmis-commons-impl</artifactId>
+                <version>${dependency.opencmis.version}</version>
             </dependency>
 
             <dependency>
@@ -346,6 +402,16 @@
                 <version>${dependency.commons-httpclient.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${dependency.httpcomponents-httpclient5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>${dependency.httpcomponents-httpcore5.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
                 <version>1.2</version>
@@ -382,9 +448,9 @@
                 <version>2.1</version>
             </dependency>
             <dependency>
-                <groupId>commons-fileupload</groupId>
-                <artifactId>commons-fileupload</artifactId>
-                <version>1.5</version>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-fileupload2-jakarta</artifactId>
+                <version>2.0.0-M1</version>
             </dependency>
             <dependency>
                 <groupId>commons-net</groupId>
@@ -520,7 +586,7 @@
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
-                <version>2.0</version>
+                <version>2.1</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -640,9 +706,9 @@
                 <version>7.5.5</version>
             </dependency>
             <dependency>
-                <groupId>com.github.fge</groupId>
+                <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
-                <version>2.2.6</version>
+                <version>1.0.86</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -737,9 +803,22 @@
 
             <!-- provided dependencies -->
             <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>3.0.1</version>
+                <groupId>jakarta.servlet</groupId>
+                <artifactId>jakarta.servlet-api</artifactId>
+                <version>6.0.0</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.servlet.jsp</groupId>
+                <artifactId>jakarta.servlet.jsp-api</artifactId>
+                <version>3.1.1</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-activemq</artifactId>
+                <version>${dependency.camel.version}</version>
             </dependency>
 
             <!-- Test only dependencies, as popped up while running mvn test -->
@@ -800,22 +879,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-activemq</artifactId>
-                <version>${dependency.camel.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.apache.activemq</groupId>
-                        <artifactId>activemq-broker</artifactId>
-                    </exclusion>
-                    <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                    <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
-                        <artifactId>geronimo-jta_1.1_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <!--  If you are going to bump dependency.camel.version, please check if the netty-codec-http has higher version that the one above.-->
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-amqp</artifactId>
@@ -831,11 +894,6 @@
             <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-jackson</artifactId>
-                <version>${dependency.camel.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-directvm</artifactId>
                 <version>${dependency.camel.version}</version>
             </dependency>
             <dependency>
@@ -1014,12 +1072,63 @@
                     <artifactId>cargo-maven3-plugin</artifactId>
                     <version>1.10.8</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-banned-dependencies</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <bannedDependencies>
+                                        <excludes>
+                                            <exclude>commons-fileupload:commons-fileupload</exclude>
+
+                                            <exclude>javax.servlet:servlet-api</exclude>
+                                            <exclude>com.sun.mail:javax.mail</exclude>
+                                            <exclude>javax.jms:javax.jms-api</exclude>
+                                            <exclude>javax.activation:activation</exclude>
+                                            <exclude>javax.activation:javax.activation-api</exclude>
+                                            <exclude>javax.xml.bind:jaxb-api</exclude>
+                                            <exclude>javax.xml.soap:saaj-api</exclude>
+                                            <exclude>javax.xml.ws:jaxws-api</exclude>
+                                            <exclude>javax.mail</exclude>
+
+<!--                                            Enforce minimal versions of jakarta dependencies-->
+                                            <exclude>jakarta.servlet:jakarta.servlet-api:(, 5.0.0)</exclude>
+                                            <exclude>jakarta.xml.bind:jakarta.xml.bind-api:(, 3.0.1)</exclude>
+                                            <exclude>jakarta.json:jakarta.json-api:(, 2.0.1)</exclude>
+                                            <exclude>jakarta.servlet.jsp:jakarta.servlet.jsp-api:(, 3.0.0)</exclude>
+                                            <exclude>jakarta.annotation:jakarta.annotation-api:(, 2.0.0)</exclude>
+<!--                                            <exclude>jakarta.transaction:jakarta.transaction-api:(, 2.0.0)</exclude>-->
+                                            <exclude>jakarta.jms:jakarta.jms-api:(, 3.0.0)</exclude>
+                                            <exclude>jakarta.activation:jakarta.activation-api:(, 2.0.1)</exclude>
+                                            <exclude>jakarta.xml.ws:jakarta.xml.ws-api:(, 3.0.1)</exclude>
+                                            <exclude>jakarta.xml.soap:jakarta.xml.soap-api:(, 2.0.1)</exclude>
+                                            <exclude>jakarta.jws:jakarta.jws-api:(, 3.0.0)</exclude>
+
+                                        </excludes>
+                                    </bannedDependencies>
+                                </rules>
+                                <fail>true</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -8,8 +8,8 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.mail.FolderNotFoundException;
-import javax.mail.MessagingException;
+import jakarta.mail.FolderNotFoundException;
+import jakarta.mail.MessagingException;
 
 public class ImapSitesTests extends EmailTest
 {

@@ -655,6 +655,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             try
             {
                 directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, contentMimetype, validFor);
+                if (directAccessUrl != null) {
+                    directAccessUrl.setFileName(fileName);
+                }
             }
             catch (UnsupportedOperationException ex)
             {

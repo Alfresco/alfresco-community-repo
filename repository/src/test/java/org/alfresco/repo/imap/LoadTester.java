@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.imap;
 
-import javax.mail.Flags;
+import jakarta.mail.Flags;
 import javax.transaction.UserTransaction;
 import java.io.IOException;
 import java.util.Date;

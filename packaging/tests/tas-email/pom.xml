@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>23.1.0.179-SNAPSHOT</version>
+        <version>23.1.0.191-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -29,6 +29,11 @@
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>email</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.mail</groupId>
+            <artifactId>jakarta.mail-api</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

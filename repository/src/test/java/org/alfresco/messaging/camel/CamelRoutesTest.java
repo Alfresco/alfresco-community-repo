@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -62,16 +62,16 @@ public class CamelRoutesTest
     @Autowired
     protected CamelContext camelContext;
     
-    @Produce("direct-vm:alfresco.test.1")
+    @Produce("direct:alfresco.test.1")
     protected ProducerTemplate template1;
 
-    @Produce("direct-vm:alfresco.test.2")
+    @Produce("direct:alfresco.test.2")
     protected ProducerTemplate template2;
 
-    @Produce("direct-vm:alfresco.default")
+    @Produce("direct:alfresco.default")
     protected ProducerTemplate template3;
 
-    @Produce("direct-vm:alfresco.test.transacted")
+    @Produce("direct:alfresco.test.transacted")
     protected ProducerTemplate template4;
 
     @Autowired

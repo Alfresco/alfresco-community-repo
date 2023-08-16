@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,18 +25,12 @@
  */
 package org.alfresco.opencmis;
 
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -44,10 +38,8 @@ import java.util.Set;
  * 
  * @author janv
  */
-public class CMISHttpServletResponse implements HttpServletResponse
+public class CMISHttpServletResponse extends HttpServletResponseWrapper
 {
-    protected HttpServletResponse httpResp;
-
     protected Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
     private final static String HDR_CONTENT_DISPOSITION = "Content-Disposition";
@@ -57,89 +49,21 @@ public class CMISHttpServletResponse implements HttpServletResponse
 
 	public CMISHttpServletResponse(WebScriptResponse res, Set<String> nonAttachContentTypes)
 	{
-		httpResp = WebScriptServletRuntime.getHttpServletResponse(res);
+		super(WebScriptServletRuntime.getHttpServletResponse(res));
         this.nonAttachContentTypes = nonAttachContentTypes;
 	}
 
     @Override
-    public void addCookie(Cookie cookie)
-    {
-        httpResp.addCookie(cookie);
-    }
-
-    @Override
-    public boolean containsHeader(String name)
-    {
-        return httpResp.containsHeader(name);
-    }
-
-    @Override
-    public String encodeURL(String url)
-    {
-        return httpResp.encodeURL(url);
-    }
-
-    @Override
-    public String encodeRedirectURL(String url)
-    {
-        return httpResp.encodeRedirectURL(url);
-    }
-
-    @Override
-    public String encodeUrl(String url)
-    {
-        return encodeUrl(url);
-    }
-
-    @Override
-    public String encodeRedirectUrl(String url)
-    {
-        return httpResp.encodeRedirectUrl(url);
-    }
-
-    @Override
-    public void sendError(int sc, String msg) throws IOException
-    {
-        httpResp.sendError(sc, msg);
-    }
-
-    @Override
-    public void sendError(int sc) throws IOException
-    {
-        httpResp.sendError(sc);
-    }
-
-    @Override
-    public void sendRedirect(String location) throws IOException
-    {
-        httpResp.sendRedirect(location);
-    }
-
-    @Override
-    public void setDateHeader(String name, long date)
-    {
-        httpResp.setDateHeader(name, date);
-    }
-
-    @Override
-    public void addDateHeader(String name, long date)
-    {
-        httpResp.addDateHeader(name, date);
-    }
-
-    @Override
     public void setHeader(String name, String value)
     {
-        httpResp.setHeader(name, getStringHeaderValue(name, value, httpResp.getContentType()));
+        super.setHeader(name, getStringHeaderValue(name, value, super.getContentType()));
     }
 
     @Override
     public void addHeader(String name, String value)
     {
-        httpResp.addHeader(name, getStringHeaderValue(name, value, httpResp.getContentType()));
+        super.addHeader(name, getStringHeaderValue(name, value, super.getContentType()));
     }
-    
-    
 
     private String getStringHeaderValue(String name, String value, String contentType)
     {
@@ -160,143 +84,5 @@ public class CMISHttpServletResponse implements HttpServletResponse
         }
 
         return value;
-    }
-
-    @Override
-    public void setIntHeader(String name, int value)
-    {
-        httpResp.setIntHeader(name, value);
-    }
-
-    @Override
-    public void addIntHeader(String name, int value)
-    {
-        httpResp.addIntHeader(name, value);
-    }
-
-    @Override
-    public void setStatus(int sc)
-    {
-        httpResp.setStatus(sc);
-    }
-
-    @Override
-    public void setStatus(int sc, String sm)
-    {
-        httpResp.setStatus(sc, sm);
-    }
-
-    @Override
-    public int getStatus()
-    {
-        return httpResp.getStatus();
-    }
-
-    @Override
-    public String getHeader(String name)
-    {
-        return httpResp.getHeader(name);
-    }
-
-    @Override
-    public Collection<String> getHeaders(String name)
-    {
-        return httpResp.getHeaders(name);
-    }
-
-    @Override
-    public Collection<String> getHeaderNames()
-    {
-        return httpResp.getHeaderNames();
-    }
-
-    @Override
-    public String getCharacterEncoding()
-    {
-        return httpResp.getCharacterEncoding();
-    }
-
-    @Override
-    public String getContentType()
-    {
-        return httpResp.getContentType();
-    }
-
-    @Override
-    public ServletOutputStream getOutputStream() throws IOException
-    {
-        return httpResp.getOutputStream();
-    }
-
-    @Override
-    public PrintWriter getWriter() throws IOException
-    {
-        return httpResp.getWriter();
-    }
-
-    @Override
-    public void setCharacterEncoding(String charset)
-    {
-        httpResp.setCharacterEncoding(charset);
-    }
-
-    @Override
-    public void setContentLength(int len)
-    {
-        httpResp.setContentLength(len);
-    }
-
-    @Override
-    public void setContentType(String type)
-    {
-        httpResp.setContentType(type);
-    }
-
-    @Override
-    public void setBufferSize(int size)
-    {
-        httpResp.setBufferSize(size);
-    }
-
-    @Override
-    public int getBufferSize()
-    {
-        return httpResp.getBufferSize();
-    }
-
-    @Override
-    public void flushBuffer() throws IOException
-    {
-        httpResp.flushBuffer();
-    }
-
-    @Override
-    public void resetBuffer()
-    {
-        httpResp.resetBuffer();
-    }
-
-    @Override
-    public boolean isCommitted()
-    {
-        return httpResp.isCommitted();
-    }
-
-    @Override
-    public void reset()
-    {
-        httpResp.reset();
-    }
-
-    @Override
-    public void setLocale(Locale loc)
-    {
-        httpResp.setLocale(loc);
-    }
-
-    @Override
-    public Locale getLocale()
-    {
-        return httpResp.getLocale();
     }
 }

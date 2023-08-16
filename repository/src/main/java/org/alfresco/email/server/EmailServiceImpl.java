@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,7 +28,7 @@ package org.alfresco.email.server;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.mail.internet.InternetAddress;
+import jakarta.mail.internet.InternetAddress;
 
 import org.alfresco.email.server.handler.EmailMessageHandler;
 import org.alfresco.error.AlfrescoRuntimeException;

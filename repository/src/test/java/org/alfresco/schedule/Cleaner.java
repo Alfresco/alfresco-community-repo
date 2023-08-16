@@ -55,11 +55,11 @@ public class Cleaner
     private final NodeService nodeService;
     private final TransactionService transactionService;
 
-    private final String archiveStoreUrl = "archive://SpacesStore";
+    private static final String ARCHIVE_STORE_URL = "archive://SpacesStore";
     private final int deleteBatchCount;
     private List<NodeRef> nodesToClean;
 
-    private int numErrors = 0;
+    private int numErrors;
 
     private static final int REMOVAL_WAIT_TIME_MS = 5000;
 
@@ -135,7 +135,7 @@ public class Cleaner
      */
     private List<ChildAssociationRef> getChildAssocs()
     {
-        StoreRef archiveStore = new StoreRef(archiveStoreUrl);
+        StoreRef archiveStore = new StoreRef(ARCHIVE_STORE_URL);
         NodeRef archiveRoot = nodeService.getRootNode(archiveStore);
         return nodeService.getChildAssocs(archiveRoot, ContentModel.ASSOC_CHILDREN, RegexQNamePattern.MATCH_ALL, deleteBatchCount,
                 false);

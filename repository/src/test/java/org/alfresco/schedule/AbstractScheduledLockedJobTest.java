@@ -40,12 +40,12 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.quartz.SchedulerAccessorBean;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -70,7 +70,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
     private SchedulerAccessorBean testCleanerAccessor;
     private JobDetail testCleanerJobDetail;
 
-    private static final Log LOGGER = LogFactory.getLog(AbstractScheduledLockedJobTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractScheduledLockedJobTest.class);
 
     /**
      * Sets services and job beans
@@ -110,9 +110,8 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
             Thread.sleep(2000);
         }
 
-        for (int i = 0; i < threads.length; i++)
+        for (CleanerThread t : threads)
         {
-            CleanerThread t = threads[i];
             if (t.hasErrors())
             {
                 fail("An error has occurred when executing multiple cleaner jobs at the same time");

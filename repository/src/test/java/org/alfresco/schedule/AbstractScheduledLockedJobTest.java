@@ -192,7 +192,7 @@ public class AbstractScheduledLockedJobTest extends BaseSpringTest
                 testCleanerJobDetail = (JobDetail) applicationContext.getBean("testCleanerJobDetail");
                 testCleaner = (Cleaner) testCleanerJobDetail.getJobDataMap().get("testCleaner");
                 testCleanerAccessor.getScheduler().triggerJob(testCleanerJobDetail.getKey());
-                LOGGER.info("Thread " + this.threadNum + " has started");
+                LOGGER.info("Thread {} has started", this.threadNum);
                 this.started = true;
             }
             catch (SchedulerException e)

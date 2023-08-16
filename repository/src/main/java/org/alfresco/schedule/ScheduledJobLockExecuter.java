@@ -88,22 +88,23 @@ public class ScheduledJobLockExecuter
     public void execute(JobExecutionContext jobContext) throws JobExecutionException
     {
         LockCallback lockCallback = new LockCallback();
+        String lockName = lockQName.getLocalName();
         try
         {
-            LOGGER.debug(String.format("   Job %s started.", lockQName.getLocalName()));
+            LOGGER.debug("   Job {} started.", lockName);
             refreshLock(lockCallback);
             job.executeJob(jobContext);
-            LOGGER.debug(String.format("   Job %s completed.", lockQName.getLocalName()));
+            LOGGER.debug("   Job {} completed.", lockName);
         }
         catch (LockAcquisitionException e)
         {
             // Job being done by another process
-            LOGGER.debug(String.format("   Job %s already underway.", lockQName.getLocalName()));
+            LOGGER.debug("   Job {} already underway.", lockName);
         }
         catch (VmShutdownException e)
         {
             // Aborted
-            LOGGER.debug(String.format("   Job %s aborted.", lockQName.getLocalName()));
+            LOGGER.debug("   Job {} aborted.", lockName);
         }
         finally
         {

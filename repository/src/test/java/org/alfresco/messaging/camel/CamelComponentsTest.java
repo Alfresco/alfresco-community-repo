@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -48,29 +48,11 @@ public class CamelComponentsTest {
     @Autowired
     protected CamelContext camelContext;
 
-    @Produce("activemq:queue:alfresco.test")
-    protected ProducerTemplate activemqTemplate;
-
     @Produce("amqp:queue:alfresco.test")
     protected ProducerTemplate amqpTemplate;
 
     @Produce("jms:queue:alfresco.test")
     protected ProducerTemplate jmsTemplate;
-
-
-    @Test
-    public void testActivemqComponent()
-    {
-        final String msg = "ping <activemq>";
-
-        activemqTemplate.sendBody(msg);
-
-        final Object reply = camelContext
-                .createConsumerTemplate()
-                .receiveBody("activemq:queue:alfresco.test", 2000);
-
-        assertEquals(msg, reply);
-    }
 
     @Test
     public void testAmqpComponent()

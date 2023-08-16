@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -38,18 +38,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.http.HttpServlet;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.http.HttpServlet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
@@ -306,6 +307,8 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		@Override
 		public ServletContext getServletContext()
 		{
+
+
 			return new ServletContext()
 			{
 
@@ -424,12 +427,6 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 				}
 
 				@Override
-				public Servlet getServlet(String arg0) throws ServletException
-				{
-					return null;
-				}
-
-				@Override
 				public String getServletContextName()
 				{
 					return null;
@@ -449,6 +446,12 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 
 				@Override
 				public ServletRegistration.Dynamic addServlet(String servletName, Class<? extends Servlet> servletClass)
+				{
+					return null;
+				}
+
+				@Override
+				public Dynamic addJspFile(String servletName, String jspFile)
 				{
 					return null;
 				}
@@ -574,24 +577,49 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 				}
 
 				@Override
-				public Enumeration getServletNames()
+				public String getVirtualServerName()
 				{
 					return null;
 				}
 
 				@Override
-				public Enumeration getServlets()
+				public int getSessionTimeout()
+				{
+					return 0;
+				}
+
+				@Override
+				public void setSessionTimeout(int sessionTimeout)
+				{
+
+				}
+
+				@Override
+				public String getRequestCharacterEncoding()
 				{
 					return null;
+				}
+
+				@Override
+				public void setRequestCharacterEncoding(String encoding)
+				{
+
+				}
+
+				@Override
+				public String getResponseCharacterEncoding()
+				{
+					return null;
+				}
+
+				@Override
+				public void setResponseCharacterEncoding(String encoding)
+				{
+
 				}
 
 				@Override
 				public void log(String arg0)
-				{
-				}
-
-				@Override
-				public void log(Exception arg0, String arg1)
 				{
 				}
 

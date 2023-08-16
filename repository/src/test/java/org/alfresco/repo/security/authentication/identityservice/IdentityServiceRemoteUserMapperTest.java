@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.function.Supplier;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import junit.framework.TestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;

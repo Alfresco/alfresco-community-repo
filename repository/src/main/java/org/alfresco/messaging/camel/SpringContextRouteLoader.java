@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -66,9 +66,8 @@ public class SpringContextRouteLoader implements ApplicationContextAware, Initia
     @SuppressWarnings("unchecked")
     public void addRoutesToCamelContext() throws Exception
     {
-        ModelCamelContext modelCamelContext = applicationContext
-            .getBean(camelContextId, CamelContext.class)
-            .adapt(ModelCamelContext.class);
+        ModelCamelContext modelCamelContext = (ModelCamelContext)applicationContext
+            .getBean(camelContextId, CamelContext.class);
         ArrayList<RouteDefinition> routeDefinitions = (ArrayList<RouteDefinition>) applicationContext.getBean(routeContextId);
         modelCamelContext.addRouteDefinitions(routeDefinitions);
     }

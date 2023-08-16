@@ -19,10 +19,9 @@
         <constructor-arg value="java.lang.Object" />
     </bean>
 
-    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-        init-method="start" destroy-method="stop">
+    <bean id="pooledConnectionFactory" class="org.messaginghub.pooled.jms.JmsPoolConnectionFactory"
+          init-method="start" destroy-method="stop">
         <property name="maxConnections" value="${messaging.broker.connections.max}" />
-        <property name="createConnectionOnStartup" value="false"/>
         <property name="connectionFactory" ref="activeMqConnectionFactory" />
     </bean>
     
@@ -37,10 +36,6 @@
     </bean>
 
     <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
-        <property name="configuration" ref="jmsConfig"/>
-    </bean>
-
-    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
         <property name="configuration" ref="jmsConfig"/>
     </bean>
 

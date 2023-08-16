@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,7 +30,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.mockito.Mockito.when;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.site.SiteServiceInternal;

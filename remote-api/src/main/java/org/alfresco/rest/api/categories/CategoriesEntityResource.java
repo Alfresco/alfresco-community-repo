@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api.categories;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Categories;
 import org.alfresco.rest.api.model.Category;

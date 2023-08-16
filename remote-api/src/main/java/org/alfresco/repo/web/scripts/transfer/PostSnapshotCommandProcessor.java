@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,14 +28,14 @@ package org.alfresco.repo.web.scripts.transfer;
 
 import java.io.OutputStream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.transfer.TransferCommons;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -43,7 +43,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.springframework.extensions.webscripts.servlet.FormData.FormField;
 
 /**
  * This command processor is used to receive the snapshot for a given transfer.
@@ -100,7 +99,7 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
         //Read the transfer id from the request
         String transferId = servletRequest.getParameter("transferId");
         
-        if ((transferId == null) || !ServletFileUpload.isMultipartContent(servletRequest)) 
+        if ((transferId == null) || !JakartaServletFileUpload.isMultipartContent(servletRequest))
         {
             logger.debug("bad request, not multipart");
             resp.setStatus(Status.STATUS_BAD_REQUEST);
@@ -111,15 +110,15 @@ public class PostSnapshotCommandProcessor implements CommandProcessor
         {
             logger.debug("about to upload manifest file");
 
-            ServletFileUpload upload = new ServletFileUpload();
-            FileItemIterator iter = upload.getItemIterator(servletRequest);
+            JakartaServletFileUpload upload = new JakartaServletFileUpload();
+            FileItemInputIterator iter = upload.getItemIterator(servletRequest);
             while (iter.hasNext()) 
             {
-                FileItemStream item = iter.next();
+                FileItemInput item = iter.next();
                 if (!item.isFormField() && TransferCommons.PART_NAME_MANIFEST.equals(item.getFieldName())) 
                 {
                     logger.debug("got manifest file");
-                    receiver.saveSnapshot(transferId, item.openStream());
+                    receiver.saveSnapshot(transferId, item.getInputStream());
                 }
             }
           

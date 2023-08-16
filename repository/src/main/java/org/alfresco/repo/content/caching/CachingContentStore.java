@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -45,7 +45,6 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -425,8 +424,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         return url.hashCode() & (numLocks - 1);
     }
-    
-    @Required
+
     public void setBackingStore(ContentStore backingStore)
     {
         this.backingStore = backingStore;
@@ -442,7 +440,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         return backingStore.toString();
     }
 
-    @Required
     public void setCache(ContentCache cache)
     {
         this.cache = cache;
@@ -478,7 +475,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
      * 
      * @param quota QuotaManagerStrategy
      */
-    @Required
     public void setQuota(QuotaManagerStrategy quota)
     {
         this.quota = quota;

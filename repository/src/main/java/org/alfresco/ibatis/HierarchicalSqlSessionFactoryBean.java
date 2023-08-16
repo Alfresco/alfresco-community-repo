@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -49,10 +49,8 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.TypeHandler;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.transaction.SpringManagedTransactionFactory;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.NestedIOException;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
@@ -406,7 +404,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
                 xmlConfigBuilder = new HierarchicalXMLConfigBuilder(resourceLoader, this.configLocation.getInputStream(), null, this.configurationProperties);
                 configuration = xmlConfigBuilder.getConfiguration();
             } catch (Exception ex) {
-                throw new NestedIOException("Failed to parse config resource: " + this.configLocation, ex);
+                throw new IOException("Failed to parse config resource: " + this.configLocation, ex);
             } finally {
                 ErrorContext.instance().reset();
             }
@@ -484,7 +482,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
                     this.logger.debug("Parsed configuration file: '" + this.configLocation + "'");
                 }
             } catch (Exception ex) {
-                throw new NestedIOException("Failed to parse config resource: " + this.configLocation, ex);
+                throw new IOException("Failed to parse config resource: " + this.configLocation, ex);
             } finally {
                 ErrorContext.instance().reset();
             }
@@ -503,7 +501,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
             try {
                 configuration.setDatabaseId(this.databaseIdProvider.getDatabaseId(this.dataSource));
             } catch (SQLException e) {
-                throw new NestedIOException("Failed getting a databaseId", e);
+                throw new IOException("Failed getting a databaseId", e);
             }
         }
         */
@@ -519,7 +517,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
                             configuration, mapperLocation.toString(), configuration.getSqlFragments());
                     xmlMapperBuilder.parse();
                 } catch (Exception e) {
-                    throw new NestedIOException("Failed to parse mapping resource: '" + mapperLocation + "'", e);
+                    throw new IOException("Failed to parse mapping resource: '" + mapperLocation + "'", e);
                 } finally {
                     ErrorContext.instance().reset();
                 }
@@ -565,8 +563,8 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
     /**
      * {@inheritDoc}
      */
-    public void onApplicationEvent(ApplicationEvent event) {
-        if (failFast && event instanceof ContextRefreshedEvent) {
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (failFast) {
             // fail-fast -> check all statements are completed
             this.sqlSessionFactory.getConfiguration().getMappedStatementNames();
         }

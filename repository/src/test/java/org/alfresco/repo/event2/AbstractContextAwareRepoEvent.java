@@ -34,7 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import javax.jms.ConnectionFactory;
+import jakarta.jms.ConnectionFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.NamespaceDAO;

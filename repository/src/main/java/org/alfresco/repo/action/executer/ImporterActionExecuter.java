@@ -415,8 +415,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                 ZipArchiveEntry entry = e.nextElement();
                 if (!entry.isDirectory())
                 {
-                    fileName = entry.getName().replaceAll("\\?","_");
-                    fileName = StringUtils.stripAccents(fileName);
+                    fileName = StringUtils.stripAccents(entry.getName()).replaceAll("\\?","_");
                     fileName = fileName.replace('/', File.separatorChar);
 
                     if (fileName.startsWith("/") || fileName.indexOf(":" + File.separator) == 1 || fileName.contains(".." + File.separator))

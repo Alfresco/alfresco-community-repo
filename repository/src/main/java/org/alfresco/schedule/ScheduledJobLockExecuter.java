@@ -184,7 +184,7 @@ public class ScheduledJobLockExecuter
         public void lockReleased()
         {
             running.set(false);
-            LOGGER.debug("Lock release notification: " + lockQName);
+            LOGGER.debug("Lock release notification: {}", lockQName);
         }
     }
 }

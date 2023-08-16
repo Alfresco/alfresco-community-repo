@@ -66,6 +66,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.InputStreamStatistics;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -261,7 +262,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                            }
                        }
                        logger.info("Encoding after: "+encoding);
-                       zipFile = new ZipFile(tempFile, encoding, true);
+                       zipFile = new ZipFile(tempFile, encoding, false);
                        // build a temp dir name based on the ID of the noderef we are importing
                        // also use the long life temp folder as large ZIP files can take a while
                        File alfTempDir = TempFileProvider.getLongLifeTempDir("import");
@@ -414,7 +415,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                 ZipArchiveEntry entry = e.nextElement();
                 if (!entry.isDirectory())
                 {
-                    fileName = entry.getName();
+                    fileName = entry.getName().replaceAll("\\?","_");
+                    fileName = StringUtils.stripAccents(fileName);
                     fileName = fileName.replace('/', File.separatorChar);
 
                     if (fileName.startsWith("/") || fileName.indexOf(":" + File.separator) == 1 || fileName.contains(".." + File.separator))

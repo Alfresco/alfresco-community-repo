@@ -138,8 +138,7 @@ public class RegexConstraint extends AbstractConstraint
     protected void evaluateSingleValue(Object value)
     {
         // convert the value to a String
-        String valueStr = StringUtils.stripAccents(DefaultTypeConverter.INSTANCE.convert(String.class, value));
-        valueStr=valueStr.replaceAll(patternMatcher.pattern(),"_");
+        String valueStr = DefaultTypeConverter.INSTANCE.convert(String.class, value);
         Matcher matcher = patternMatcher.matcher(valueStr);
         boolean matches = matcher.matches();
         if (matches != requiresMatch)

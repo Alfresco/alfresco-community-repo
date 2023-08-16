@@ -25,16 +25,19 @@
  */
 package org.alfresco.schedule;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VmShutdownListener.VmShutdownException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class encapsulates the {@link org.alfresco.repo.lock.JobLockService JobLockService}
@@ -56,7 +59,7 @@ public class ScheduledJobLockExecuter
 {
     private static final long LOCK_TTL = 30000L;
 
-    private static Log logger = LogFactory.getLog(ScheduledJobLockExecuter.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScheduledJobLockExecuter.class);
     private static ThreadLocal<Pair<Long, String>> lockThreadLocal = new ThreadLocal<Pair<Long, String>>();
 
     private final JobLockService jobLockService;
@@ -84,51 +87,42 @@ public class ScheduledJobLockExecuter
      */
     public void execute(JobExecutionContext jobContext) throws JobExecutionException
     {
+        LockCallback lockCallback = new LockCallback();
+        String lockName = lockQName.getLocalName();
         try
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s started.", lockQName.getLocalName()));
-            }
-            refreshLock();
+            LOGGER.debug("   Job {} started.", lockName);
+            refreshLock(lockCallback);
             job.executeJob(jobContext);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s completed.", lockQName.getLocalName()));
-            }
+            LOGGER.debug("   Job {} completed.", lockName);
         }
         catch (LockAcquisitionException e)
         {
             // Job being done by another process
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s already underway.", lockQName.getLocalName()));
-            }
+            LOGGER.debug("   Job {} already underway.", lockName);
         }
         catch (VmShutdownException e)
         {
             // Aborted
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(String.format("   Job %s aborted.", lockQName.getLocalName()));
-            }
+            LOGGER.debug("   Job {} aborted.", lockName);
         }
         finally
         {
-            releaseLock();
+            releaseLock(lockCallback);
         }
     }
 
     /**
      * Lazily update the job lock
      */
-    private void refreshLock()
+    private void refreshLock(LockCallback lockCallback)
     {
         Pair<Long, String> lockPair = lockThreadLocal.get();
         if (lockPair == null)
         {
             String lockToken = jobLockService.getLock(lockQName, LOCK_TTL);
-            Long lastLock = new Long(System.currentTimeMillis());
+            jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL, lockCallback);
+            Long lastLock = Long.valueOf(System.currentTimeMillis());
             // We have not locked before
             lockPair = new Pair<Long, String>(lastLock, lockToken);
             lockThreadLocal.set(lockPair);
@@ -141,7 +135,7 @@ public class ScheduledJobLockExecuter
             // Only refresh the lock if we are past a threshold
             if (now - lastLock > (long) (LOCK_TTL / 2L))
             {
-                jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL);
+                jobLockService.refreshLock(lockToken, lockQName, LOCK_TTL, lockCallback);
                 lastLock = System.currentTimeMillis();
                 lockPair = new Pair<Long, String>(lastLock, lockToken);
                 lockThreadLocal.set(lockPair);
@@ -152,8 +146,13 @@ public class ScheduledJobLockExecuter
     /**
      * Release the lock after the job completes
      */
-    private void releaseLock()
+    private void releaseLock(LockCallback lockCallback)
     {
+        if (lockCallback != null)
+        {
+            lockCallback.running.set(false);
+        }
+
         Pair<Long, String> lockPair = lockThreadLocal.get();
         if (lockPair != null)
         {
@@ -169,5 +168,23 @@ public class ScheduledJobLockExecuter
             }
         }
         // else: We can't release without a token
+    }
+
+    private class LockCallback implements JobLockRefreshCallback
+    {
+        final AtomicBoolean running = new AtomicBoolean(true);
+
+        @Override
+        public boolean isActive()
+        {
+            return running.get();
+        }
+
+        @Override
+        public void lockReleased()
+        {
+            running.set(false);
+            LOGGER.debug("Lock release notification: {}", lockQName);
+        }
     }
 }

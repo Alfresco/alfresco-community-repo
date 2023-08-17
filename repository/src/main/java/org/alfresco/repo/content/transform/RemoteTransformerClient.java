@@ -208,10 +208,7 @@ public class RemoteTransformerClient
         }
         catch (AlfrescoRuntimeException e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(e.getMessage());
-            }
+            logger.error(e.getMessage());
             throw e;
         }
     }

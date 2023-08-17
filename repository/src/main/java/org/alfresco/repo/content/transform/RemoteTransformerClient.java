@@ -198,6 +198,7 @@ public class RemoteTransformerClient
                     // In the case of transform requests, unlike version checks, it is only the failure to connect that
                     // forces a wait before trying again.
                     connectionFailed();
+                    logger.error(e.getMessage());
                     throw new AlfrescoRuntimeException(name + " failed to connect or to read the response", e);
                 }
             }
@@ -208,7 +209,10 @@ public class RemoteTransformerClient
         }
         catch (AlfrescoRuntimeException e)
         {
-            logger.error(e.getMessage());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(e.getMessage());
+            }
             throw e;
         }
     }

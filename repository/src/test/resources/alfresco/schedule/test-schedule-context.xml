@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="testCleaner" class="org.alfresco.schedule.Cleaner">
+        <constructor-arg ref="nodeService" />
+        <constructor-arg ref="transactionService" />
+        <constructor-arg value="100" />
+    </bean>
+    
+    <bean id="testSchedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">
+        <property name="scheduler" ref="schedulerFactory"/>
+        <property name="triggers">
+            <list>
+                <ref bean="testCleanerTrigger"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="testCleanerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="cronExpression" value="* * * * * ? 2099"/>
+        <property name="jobDetail" ref="testCleanerJobDetail"/>
+    </bean>    
+
+    <bean id="testCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="org.alfresco.schedule.CleanerJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="testCleaner" value-ref="testCleaner" />
+                <entry key="jobLockService" value-ref="jobLockService" />
+            </map>
+        </property>
+    </bean>
+</beans>

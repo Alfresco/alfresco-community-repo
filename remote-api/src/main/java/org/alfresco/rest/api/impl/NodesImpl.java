@@ -68,6 +68,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2;
 import org.alfresco.repo.rendition2.RenditionService2;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -148,6 +149,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -216,6 +218,7 @@ public class NodesImpl implements Nodes
     private LockService lockService;
     private VirtualStore smartStore; // note: remove as part of REPO-1173
     private ClassDefinitionMapper classDefinitionMapper;
+    private RuleService ruleService;
 
     private enum Activity_Type
     {
@@ -336,6 +339,11 @@ public class NodesImpl implements Nodes
     public void setClassDefinitionMapper(ClassDefinitionMapper classDefinitionMapper)
     {
         this.classDefinitionMapper = classDefinitionMapper;
+    }
+
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
     }
 
     // excluded namespaces (aspects, properties, assoc types)
@@ -2543,6 +2551,8 @@ public class NodesImpl implements Nodes
             Set<QName> aspectsToAdd = new HashSet<>(3);
             Set<QName> aspectsToRemove = new HashSet<>(3);
 
+            boolean hasRules = ruleService.hasRules(nodeRef);
+
             for (QName aspectQName : aspectQNames)
             {
                 if (EXCLUDED_NS.contains(aspectQName.getNamespaceURI()) || excludedAspects.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
@@ -2558,7 +2568,7 @@ public class NodesImpl implements Nodes
 
             for (QName existingAspect : existingAspects)
             {
-                if (EXCLUDED_NS.contains(existingAspect.getNamespaceURI()) || excludedAspects.contains(existingAspect) || existingAspect.equals(ContentModel.ASPECT_AUDITABLE))
+                if (EXCLUDED_NS.contains(existingAspect.getNamespaceURI()) || excludedAspects.contains(existingAspect) || existingAspect.equals(ContentModel.ASPECT_AUDITABLE) || existingAspect.equals(RuleModel.ASPECT_RULES) && hasRules)
                 {
                     continue; // ignore
                 }

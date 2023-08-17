@@ -29,7 +29,7 @@ package org.alfresco.repo.node.cleanup;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.of;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

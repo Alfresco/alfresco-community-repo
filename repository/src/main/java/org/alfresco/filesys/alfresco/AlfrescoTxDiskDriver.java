@@ -29,8 +29,8 @@ package org.alfresco.filesys.alfresco;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.server.SrvSession;

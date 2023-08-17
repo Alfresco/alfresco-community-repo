@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.search;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.DisabledFeatureException;

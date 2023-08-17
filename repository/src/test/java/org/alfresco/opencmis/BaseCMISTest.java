@@ -27,8 +27,8 @@ package org.alfresco.opencmis;
 
 import java.util.Date;
 
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.Status;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.mapping.CMISMapping;

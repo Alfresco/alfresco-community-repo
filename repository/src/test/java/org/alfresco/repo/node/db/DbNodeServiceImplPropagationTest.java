@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryComponent;

@@ -38,7 +38,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;

@@ -28,7 +28,7 @@ package org.alfresco.repo.action.scheduled;
 import java.util.Date;
 import java.util.List;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;

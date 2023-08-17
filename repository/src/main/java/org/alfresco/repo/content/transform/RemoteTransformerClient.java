@@ -167,7 +167,6 @@ public class RemoteTransformerClient
                             }
                             catch (IOException e)
                             {
-                                logger.error(e.getMessage());
                                 throw new AlfrescoRuntimeException(name + " failed to read the returned content", e);
                             }
                         }

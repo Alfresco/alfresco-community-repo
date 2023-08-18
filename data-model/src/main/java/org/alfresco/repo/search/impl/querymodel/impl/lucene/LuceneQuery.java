@@ -70,7 +70,7 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
         QueryParserExpressionAdaptor<Q, E> expressionBuilder = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
 
         boolean must = false;
-        boolean must_not = false;
+        boolean mustNot = false;
 
         if (selectors != null)
         {
@@ -118,7 +118,7 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
                         break;
                     case EXCLUDE:
                         expressionBuilder.addExcluded(constraintQuery, constraint.getBoost());
-                        must_not = true;
+                        mustNot = true;
                         break;
                     }
                 }
@@ -129,7 +129,7 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
             }
         }
 
-        if (!must && must_not)
+        if (!must && mustNot)
         {
             expressionBuilder.addRequired(luceneContext.getLuceneQueryParserAdaptor().getMatchAllNodesQuery());
         }
@@ -158,10 +158,10 @@ public class LuceneQuery<Q, S, E extends Throwable> extends BaseQuery implements
     {
         if ((getOrderings() == null) || (getOrderings().size() == 0))
         {
-            return Collections.<SortDefinition>emptyList();
+            return Collections.emptyList();
         }
 
-        ArrayList<SortDefinition> definitions = new ArrayList<SortDefinition>(getOrderings().size());
+        List<SortDefinition> definitions = new ArrayList<>(getOrderings().size());
 
         for (Ordering ordering : getOrderings())
         {

@@ -60,7 +60,7 @@ public class LuceneConjunction<Q, S, E extends Throwable> extends BaseConjunctio
     {
         QueryParserExpressionAdaptor<Q, E> expressionAdaptor = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
         boolean must = false;
-        boolean must_not = false;
+        boolean mustNot = false;
         for (Constraint constraint : getConstraints())
         {
             if (constraint instanceof LuceneQueryBuilderComponent)
@@ -83,7 +83,7 @@ public class LuceneConjunction<Q, S, E extends Throwable> extends BaseConjunctio
                         break;
                     case EXCLUDE:
                         expressionAdaptor.addExcluded(constraintQuery, constraint.getBoost());
-                        must_not = true;
+                        mustNot = true;
                         break;
                     }
                 }
@@ -93,7 +93,7 @@ public class LuceneConjunction<Q, S, E extends Throwable> extends BaseConjunctio
                 throw new UnsupportedOperationException();
             }
         }
-        if(!must && must_not)
+        if(!must && mustNot)
         {
             expressionAdaptor.addRequired(luceneContext.getLuceneQueryParserAdaptor().getMatchAllNodesQuery());
         }

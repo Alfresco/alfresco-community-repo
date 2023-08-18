@@ -15,10 +15,12 @@
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
+         <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>org.glassfish.jaxb</groupId>
          <artifactId>jaxb-runtime</artifactId>
+         <scope>provided</scope>
       </dependency>
       <!-- REPO-5047 - Replaces org.apache.geronimo.specs:geronimo-jta_1.1_spec -->
       <dependency>

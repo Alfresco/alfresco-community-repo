@@ -58,10 +58,9 @@ public class LuceneConjunction<Q, S, E extends Throwable> extends BaseConjunctio
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, QueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext)
             throws E
     {
-       
         QueryParserExpressionAdaptor<Q, E> expressionAdaptor = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
         boolean must = false;
-        boolean must_not = false;
+        boolean mustNot = false;
         for (Constraint constraint : getConstraints())
         {
             if (constraint instanceof LuceneQueryBuilderComponent)
@@ -84,23 +83,20 @@ public class LuceneConjunction<Q, S, E extends Throwable> extends BaseConjunctio
                         break;
                     case EXCLUDE:
                         expressionAdaptor.addExcluded(constraintQuery, constraint.getBoost());
-                        must_not = true;
+                        mustNot = true;
                         break;
                     }
-                    
                 }
             }
             else
             {
                 throw new UnsupportedOperationException();
             }
-            if(!must &&  must_not)
-            {
-                expressionAdaptor.addRequired(luceneContext.getLuceneQueryParserAdaptor().getMatchAllNodesQuery());
-            }
+        }
+        if(!must && mustNot)
+        {
+            expressionAdaptor.addRequired(luceneContext.getLuceneQueryParserAdaptor().getMatchAllNodesQuery());
         }
         return expressionAdaptor.getQuery();
-
     }
-
 }

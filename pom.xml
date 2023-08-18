@@ -178,7 +178,7 @@
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-runtime</artifactId>
+                <artifactId>jaxb-impl</artifactId>
                 <version>4.0.3</version>
             </dependency>
 
@@ -1112,10 +1112,10 @@
                                             <exclude>jakarta.jws:jakarta.jws-api:(, 3.0.0)</exclude>
 <!--                                            Enforce one version of Jaxb-->
                                             <exclude>jaxb-runtime</exclude>
-                                            <exclude>jaxb-core</exclude>
+                                            <exclude>jaxb-impl</exclude>
                                         </excludes>
                                         <includes>
-                                            <include>com.sun.xml.bind:jaxb-runtime:4.0.3</include>
+                                            <include>com.sun.xml.bind:jaxb-impl:4.0.3</include>
                                             <include>com.sun.xml.bind:jaxb-core:4.0.3</include>
                                         </includes>
                                     </bannedDependencies>

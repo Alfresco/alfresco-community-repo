@@ -50,8 +50,8 @@
         </dependency>
         <!-- REPO-3918 needed libraries for Java 11 -->
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

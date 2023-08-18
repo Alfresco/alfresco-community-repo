@@ -86,7 +86,7 @@
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>4.0.0-RC2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.camel.version>4.0.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.96.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.2</dependency.activemq.version>
         <dependency.apache-compress.version>1.23.0</dependency.apache-compress.version>
@@ -867,6 +867,16 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-core</artifactId>
                 <version>${dependency.camel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
@@ -1119,15 +1129,15 @@
                                             <exclude>org.bouncycastle</exclude>
 <!--                                            Enforce one version of Jaxb-->
                                             <exclude>jaxb-runtime</exclude>
-                                            <exclude>jaxb-impl</exclude>
+                                            <exclude>com.sun.xml.bind:jaxb-impl</exclude>
                                         </excludes>
                                         <includes>
                                             <include>org.bouncycastle:bcprov-jdk15to18:[1.74,)</include>
                                             <include>org.bouncycastle:bcmail-jdk15to18:[1.74,)</include>
                                             <include>org.bouncycastle:bcpkix-jdk15to18:[1.74,)</include>
                                             <include>org.bouncycastle:bcutil-jdk15to18:[1.74,)</include>
-                                            <include>com.sun.xml.bind:jaxb-impl:4.0.3</include>
-                                            <include>com.sun.xml.bind:jaxb-core:4.0.3</include>
+                                            <include>org.glassfish.jaxb:jaxb-runtime:[4.0.0, )</include>
+                                            <include>org.glassfish.jaxb:jaxb-core:[4.0.0, )</include>
                                         </includes>
                                     </bannedDependencies>
                                 </rules>

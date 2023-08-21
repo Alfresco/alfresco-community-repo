@@ -31,7 +31,6 @@ import java.util.concurrent.Callable;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.util.PropertyCheck;
-import org.gytheio.messaging.MessagingException;
 import org.springframework.beans.factory.InitializingBean;
 
 /**

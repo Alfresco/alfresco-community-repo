@@ -1130,17 +1130,13 @@
 <!--                                            Enforce ban bouncycastle dependencies other than specified under <includes> section-->
                                             <exclude>org.bouncycastle</exclude>
 <!--                                            Enforce one version of Jaxb-->
-                                            <exclude>jaxb-runtime</exclude>
-                                            <exclude>com.sun.xml.bind:jaxb-impl</exclude>
-                                            <exclude>com.sun.xml.bind:jaxb-core</exclude>
+                                            <exclude>com.sun.xml.bind</exclude>
                                         </excludes>
                                         <includes>
                                             <include>org.bouncycastle:bcprov-jdk15to18:[1.74,)</include>
                                             <include>org.bouncycastle:bcmail-jdk15to18:[1.74,)</include>
                                             <include>org.bouncycastle:bcpkix-jdk15to18:[1.74,)</include>
                                             <include>org.bouncycastle:bcutil-jdk15to18:[1.74,)</include>
-                                            <include>org.glassfish.jaxb:jaxb-runtime:[4.0.0, )</include>
-                                            <include>org.glassfish.jaxb:jaxb-core:[4.0.0, )</include>
                                         </includes>
                                     </bannedDependencies>
                                 </rules>

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.193-SNAPSHOT</version>
+    <version>23.1.0.197-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -62,7 +62,7 @@
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>8.46</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.76</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.4.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>
         <dependency.org-json.version>20230618</dependency.org-json.version>
@@ -86,7 +86,7 @@
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>4.0.0-RC2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.camel.version>4.0.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.96.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.2</dependency.activemq.version>
         <dependency.apache-compress.version>1.23.0</dependency.apache-compress.version>
@@ -99,7 +99,8 @@
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
         <dependency.pooled-jms.version>3.1.0</dependency.pooled-jms.version>
 
-        <dependency.jakarta-ee-jaxb-api.version>3.0.1</dependency.jakarta-ee-jaxb-api.version>
+        <dependency.jakarta-ee-jaxb-api.version>4.0.0</dependency.jakarta-ee-jaxb-api.version>
+        <dependency.jakarta-ee-jaxb-impl.version>4.0.3</dependency.jakarta-ee-jaxb-impl.version>
         <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
         <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
         <dependency.jakarta-soap-api.version>2.0.1</dependency.jakarta-soap-api.version>
@@ -179,7 +180,12 @@
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
-                <version>${dependency.jakarta-ee-jaxb-api.version}</version>
+                <version>${dependency.jakarta-ee-jaxb-impl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>${dependency.jakarta-ee-jaxb-impl.version}</version>
             </dependency>
 
             <dependency>
@@ -663,12 +669,17 @@
             <!-- Enforce newer version -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15on</artifactId>
+                <artifactId>bcprov-jdk15to18</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcmail-jdk15on</artifactId>
+                <artifactId>bcmail-jdk15to18</artifactId>
+                <version>${dependency.bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15to18</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
@@ -862,6 +873,12 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-core</artifactId>
                 <version>${dependency.camel.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
@@ -1111,8 +1128,17 @@
                                             <exclude>jakarta.xml.ws:jakarta.xml.ws-api:(, 3.0.1)</exclude>
                                             <exclude>jakarta.xml.soap:jakarta.xml.soap-api:(, 2.0.1)</exclude>
                                             <exclude>jakarta.jws:jakarta.jws-api:(, 3.0.0)</exclude>
-
+<!--                                            Enforce ban bouncycastle dependencies other than specified under <includes> section-->
+                                            <exclude>org.bouncycastle</exclude>
+<!--                                            Enforce one version of Jaxb-->
+                                            <exclude>com.sun.xml.bind</exclude>
                                         </excludes>
+                                        <includes>
+                                            <include>org.bouncycastle:bcprov-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcmail-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcpkix-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcutil-jdk15to18:[1.74,)</include>
+                                        </includes>
                                     </bannedDependencies>
                                 </rules>
                                 <fail>true</fail>

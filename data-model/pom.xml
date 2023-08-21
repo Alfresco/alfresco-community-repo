@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>23.1.0.193-SNAPSHOT</version>
+        <version>23.1.0.197-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -198,6 +198,10 @@
                     <artifactId>bcprov-jdk15on</artifactId>
                 </exclusion>
                 <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcmail-jdk15on</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
                 </exclusion>
@@ -220,7 +224,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcmail-jdk15to18</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>

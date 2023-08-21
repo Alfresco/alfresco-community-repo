@@ -44,6 +44,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -198,6 +199,7 @@ public class RemoteTransformerClient
                     // In the case of transform requests, unlike version checks, it is only the failure to connect that
                     // forces a wait before trying again.
                     connectionFailed();
+                    logHttpClientTimeoutException(e, logger);
                     throw new AlfrescoRuntimeException(name + " failed to connect or to read the response", e);
                 }
             }
@@ -213,6 +215,14 @@ public class RemoteTransformerClient
                 logger.debug(e.getMessage());
             }
             throw e;
+        }
+    }
+
+    private void logHttpClientTimeoutException(IOException e, Log logger)
+    {
+        if (e instanceof ConnectTimeoutException)
+        {
+            logger.error(e.getMessage());
         }
     }
 

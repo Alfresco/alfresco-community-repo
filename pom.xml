@@ -99,7 +99,8 @@
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
         <dependency.pooled-jms.version>3.1.0</dependency.pooled-jms.version>
 
-        <dependency.jakarta-ee-jaxb-api.version>3.0.1</dependency.jakarta-ee-jaxb-api.version>
+        <dependency.jakarta-ee-jaxb-api.version>4.0.0</dependency.jakarta-ee-jaxb-api.version>
+        <dependency.jakarta-ee-jaxb-impl.version>4.0.3</dependency.jakarta-ee-jaxb-impl.version>
         <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
         <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
         <dependency.jakarta-soap-api.version>2.0.1</dependency.jakarta-soap-api.version>
@@ -174,12 +175,17 @@
             <dependency>
                 <groupId>jakarta.xml.bind</groupId>
                 <artifactId>jakarta.xml.bind-api</artifactId>
-                <version>4.0.0</version>
+                <version>${dependency.jakarta-ee-jaxb-api.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jaxb</groupId>
                 <artifactId>jaxb-runtime</artifactId>
-                <version>4.0.3</version>
+                <version>${dependency.jakarta-ee-jaxb-impl.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-core</artifactId>
+                <version>${dependency.jakarta-ee-jaxb-impl.version}</version>
             </dependency>
 
             <dependency>
@@ -1126,6 +1132,7 @@
 <!--                                            Enforce one version of Jaxb-->
                                             <exclude>jaxb-runtime</exclude>
                                             <exclude>com.sun.xml.bind:jaxb-impl</exclude>
+                                            <exclude>com.sun.xml.bind:jaxb-core</exclude>
                                         </excludes>
                                         <includes>
                                             <include>org.bouncycastle:bcprov-jdk15to18:[1.74,)</include>

@@ -9,7 +9,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.mail.MessagingException;
+import jakarta.mail.MessagingException;
 
 public class ImapDeleteMessagesTests extends EmailTest
 {

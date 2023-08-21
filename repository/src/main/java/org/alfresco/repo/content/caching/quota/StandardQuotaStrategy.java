@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,10 +26,6 @@
 package org.alfresco.repo.content.caching.quota;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.alfresco.repo.content.caching.ContentCacheImpl;
@@ -40,7 +36,6 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Required;
 
 /**
  * Quota manager for the CachingContentStore that has the following characteristics:
@@ -327,15 +322,12 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
     {
         this.normalCleanThresholdSec = normalCleanThresholdSec;
     }
-    
-    @Required
+
     public void setCache(ContentCacheImpl cache)
     {
         this.cache = cache;
     }
 
-
-    @Required
     public void setCleaner(CachedContentCleaner cleaner)
     {
         this.cleaner = cleaner;

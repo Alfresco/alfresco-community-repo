@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,12 +27,12 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.web.filter.beans.DependencyInjectedFilter;
@@ -89,7 +89,7 @@ public class WebScriptSSOAuthenticationFilter extends BaseAuthenticationFilter i
     }
 
     /* (non-Javadoc)
-     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#doFilter(javax.servlet.ServletContext, javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#doFilter(jakarta.servlet.ServletContext, jakarta.servlet.ServletRequest, jakarta.servlet.ServletResponse, jakarta.servlet.FilterChain)
      */
     public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain)
             throws IOException, ServletException

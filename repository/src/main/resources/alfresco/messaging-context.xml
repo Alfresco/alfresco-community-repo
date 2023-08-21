@@ -47,7 +47,7 @@
 
     <bean id="transactionAwareEventProducer" class="org.alfresco.repo.rawevents.TransactionAwareEventProducer">
         <property name="producer" ref="camelProducerTemplate" />
-        <property name="endpoint" value="direct-vm:alfresco.raw.events" />
+        <property name="endpoint" value="direct:alfresco.raw.events" />
         <property name="objectMapper" ref="alfrescoEventObjectMapper"/>
     </bean>
 

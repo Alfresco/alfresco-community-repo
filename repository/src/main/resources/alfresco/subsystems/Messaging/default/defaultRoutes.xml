@@ -6,7 +6,7 @@
 
     <routeContext id="deadLetterRoutes" xmlns="http://camel.apache.org/schema/spring">
         <route id="alfresco.default.deadLetter">
-            <from uri="direct-vm:alfresco.default" />
+            <from uri="direct:alfresco.default" />
             <to uri="bean:deadLetterQueue" />
         </route>
     </routeContext>

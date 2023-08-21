@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -86,6 +86,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.testng.Assert;
@@ -630,36 +631,42 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
 
         STEP(restRequest.toString());
 
-        Response returnedResponse;
-        switch (restRequest.getHttpMethod())
+        final Response returnedResponse;
+        HttpMethod httpMethod = restRequest.getHttpMethod();
+        if (HttpMethod.GET.equals(httpMethod))
         {
-            case GET:
-                returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
-            case DELETE:
-                returnedResponse = onRequest().delete(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
-            case HEAD:
-                returnedResponse = onRequest().head(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
-            case OPTIONS:
-                returnedResponse = onRequest().options(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
-            case POST:
-                returnedResponse = onRequest().body(restRequest.getBody())
-                        .post(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
-            case PUT:
-                returnedResponse = onRequest().body(restRequest.getBody())
-                        .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
-                        .put(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
-            case TRACE:
-                returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
-            default:
-                returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
-                break;
+            returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
+        else if (HttpMethod.DELETE.equals(httpMethod))
+        {
+            returnedResponse = onRequest().delete(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
+        else if (HttpMethod.HEAD.equals(httpMethod))
+        {
+            returnedResponse = onRequest().head(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
+        else if (HttpMethod.OPTIONS.equals(httpMethod))
+        {
+            returnedResponse = onRequest().options(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
+        else if (HttpMethod.POST.equals(httpMethod))
+        {
+            returnedResponse = onRequest().body(restRequest.getBody())
+                                          .post(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
+        else if (HttpMethod.PUT.equals(httpMethod))
+        {
+            returnedResponse = onRequest().body(restRequest.getBody())
+                                          .contentType(ContentType.JSON.withCharset(restRequest.getContentType()))
+                                          .put(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
+        else if (HttpMethod.TRACE.equals(httpMethod))
+        {
+            returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
+        }
+        else
+        {
+            returnedResponse = onRequest().get(restRequest.getPath(), restRequest.getPathParams()).andReturn();
         }
 
         logResponseInformation(restRequest, returnedResponse);

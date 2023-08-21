@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,8 +21,8 @@ package org.alfresco.encryption;
 import java.io.IOException;
 import java.security.AlgorithmParameters;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpMethod;
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -40,7 +40,7 @@ public class TestingRouteBuilder extends RouteBuilder
     @Override
     public void configure() throws Exception
     {
-        from("direct-vm:alfresco.test.2")
+        from("direct:alfresco.test.2")
             .to("mock:result2");
     }
 

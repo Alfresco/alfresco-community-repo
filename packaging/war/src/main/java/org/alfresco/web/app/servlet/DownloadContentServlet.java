@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository WAR Community
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,9 +30,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
@@ -66,7 +66,7 @@ public class DownloadContentServlet extends HttpServlet
    private static final String URL_DIRECT_LONG = "direct";
 
    /**
-    * @see javax.servlet.http.HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
+    * @see jakarta.servlet.http.HttpServlet#doGet(HttpServletRequest, HttpServletResponse)
     */
    protected void doGet(final HttpServletRequest req, final HttpServletResponse res)
       throws IOException

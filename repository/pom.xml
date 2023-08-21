@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>23.1.0.183-SNAPSHOT</version>
+        <version>23.1.0.197-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -40,13 +40,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-greenmail</artifactId>
             <version>${dependency.alfresco-greenmail.version}</version>
-            <exclusions>
-                <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
-                <exclusion>
-                    <groupId>com.sun.mail</groupId>
-                    <artifactId>javax.mail</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Jakarta... -->
@@ -68,8 +61,22 @@
         </dependency>
 
         <dependency>
+            <groupId>org.messaginghub</groupId>
+            <artifactId>pooled-jms</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
         </dependency>
 
         <dependency>
@@ -77,8 +84,8 @@
             <artifactId>commons-dbcp2</artifactId>
         </dependency>
         <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-fileupload2-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -87,7 +94,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.13.0</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -181,9 +188,9 @@
             <artifactId>spring-web</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.subethamail</groupId>
+            <groupId>com.github.davidmoten</groupId>
             <artifactId>subethasmtp</artifactId>
-            <version>3.1.7</version>
+            <version>6.0.5</version>
             <exclusions>
                 <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>
@@ -245,7 +252,7 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
+            <artifactId>bcprov-jdk15to18</artifactId>
         </dependency>
         <dependency>
             <groupId>net.sf</groupId>
@@ -310,9 +317,8 @@
             <version>${dependency.poi.version}</version>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
         </dependency>
 
         <dependency>
@@ -357,18 +363,6 @@
             <groupId>org.apache.chemistry.opencmis</groupId>
             <artifactId>chemistry-opencmis-commons-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
-            <exclusions>
-              <!-- REPO-4998 - Exclusion due to classpath conflicts between org.codehaus.woodstox:woodstox-core-asl and com.fasterxml.woodstox:woodstox-core -->
-              <exclusion>
-                <groupId>org.codehaus.woodstox</groupId>
-                <artifactId>woodstox-core-asl</artifactId>
-              </exclusion>
-              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-jta_1.1_spec</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- REPO-4998 - Added to replace transitive dependency org.codehaus.woodstox:woodstox-core-asl -->
@@ -406,14 +400,20 @@
         </dependency>
 
         <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.5.10</version>
+            <version>3.5.13</version>
         </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis-spring</artifactId>
-            <version>2.0.7</version>
+            <version>3.0.2</version>
         </dependency>
 
         <!-- Activiti -->
@@ -578,6 +578,12 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.angus</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -594,10 +600,6 @@
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-directvm</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -624,20 +626,8 @@
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-client</artifactId>
+            <artifactId>activemq-client-jakarta</artifactId>
             <version>${dependency.activemq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-pool</artifactId>
-            <version>${dependency.activemq.version}</version>
-            <exclusions>
-                <!-- Duplicates classes from jakarta.transaction:jakarta.transaction-api -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-jta_1.1_spec</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Transform dependencies -->
@@ -755,18 +745,6 @@
             <artifactId>chemistry-opencmis-client-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
             <scope>test</scope>
-            <exclusions>
-              <!-- REPO-5009 Excluded to avoid duplicated classes with javax.jws:javax.jws-api (using jakarta.jws:jakarta.jws-api now - see REPO-5031) -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
-              </exclusion>
-              <!-- [ACS-544] Excluded as conflicts with JDK9+ as it includes javax.transaction -->
-              <exclusion>
-                <groupId>org.apache.geronimo.specs</groupId>
-                <artifactId>geronimo-jta_1.1_spec</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.taglibs</groupId>

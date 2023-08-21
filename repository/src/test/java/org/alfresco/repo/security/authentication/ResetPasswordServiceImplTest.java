@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -59,7 +59,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMessage;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.EmptyStackException;

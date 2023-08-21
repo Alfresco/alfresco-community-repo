@@ -62,14 +62,17 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.SSLContexts;
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.client5.http.ssl.TrustAllStrategy;
+import org.apache.hc.core5.ssl.SSLContextBuilder;
+import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
@@ -262,10 +265,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             try
             {
                 HttpClientBuilder clientBuilder = HttpClients.custom();
-
-                applyConnectionConfiguration(clientBuilder);
-                applySSLConfiguration(clientBuilder);
-
+                applyConfiguration(clientBuilder);
                 return clientBuilder.build();
             }
             catch (Exception e)
@@ -274,18 +274,28 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             }
         }
 
-        private void applyConnectionConfiguration(HttpClientBuilder builder)
+        private void applyConfiguration(HttpClientBuilder builder) throws Exception
         {
-            final RequestConfig requestConfig = RequestConfig.custom()
-                                                             .setConnectTimeout(config.getClientConnectionTimeout())
-                                                             .setSocketTimeout(config.getClientSocketTimeout())
-                                                             .build();
+            final PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder.create();
 
-            builder.setDefaultRequestConfig(requestConfig)
-                   .setMaxConnTotal(config.getConnectionPoolSize());
+            applyConnectionConfiguration(connectionManagerBuilder);
+            applySSLConfiguration(connectionManagerBuilder);
+
+            builder.setConnectionManager(connectionManagerBuilder.build());
         }
 
-        private void applySSLConfiguration(HttpClientBuilder builder) throws Exception
+        private void applyConnectionConfiguration(PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder)
+        {
+            final ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                    .setConnectTimeout(config.getClientConnectionTimeout(), TimeUnit.MILLISECONDS)
+                    .setSocketTimeout(config.getClientSocketTimeout(), TimeUnit.MILLISECONDS)
+                    .build();
+
+            connectionManagerBuilder.setMaxConnTotal(config.getConnectionPoolSize());
+            connectionManagerBuilder.setDefaultConnectionConfig(connectionConfig);
+        }
+
+        private void applySSLConfiguration(PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder) throws Exception
         {
             SSLContextBuilder sslContextBuilder = null;
             if (config.isDisableTrustManager())
@@ -312,15 +322,19 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 sslContextBuilder.loadKeyMaterial(new File(config.getClientKeystore()), keystorePassword, keyPassword);
             }
 
+            final SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = SSLConnectionSocketFactoryBuilder.create();
+
             if (sslContextBuilder != null)
             {
-                builder.setSSLContext(sslContextBuilder.build());
+                sslConnectionSocketFactoryBuilder.setSslContext(sslContextBuilder.build());
             }
 
             if (config.isDisableTrustManager() || config.isAllowAnyHostname())
             {
-                builder.setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
+                sslConnectionSocketFactoryBuilder.setHostnameVerifier(NoopHostnameVerifier.INSTANCE);
             }
+            final SSLConnectionSocketFactory sslConnectionSocketFactory = sslConnectionSocketFactoryBuilder.build();
+            connectionManagerBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
         }
 
         private char[] asCharArray(String value, char[] nullValue)

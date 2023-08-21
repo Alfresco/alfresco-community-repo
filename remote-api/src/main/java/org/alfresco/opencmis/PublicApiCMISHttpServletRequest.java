@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -55,12 +55,12 @@ public class PublicApiCMISHttpServletRequest extends CMISHttpServletRequest
 
 		if(apiScope != null)
 		{
-			httpReq.setAttribute("apiScope", apiScope);
+			setAttribute("apiScope", apiScope);
 		}
 
 		if(apiVersion != null)
 		{
-			httpReq.setAttribute("apiVersion", apiVersion);
+			setAttribute("apiVersion", apiVersion);
 		}
 	}
 

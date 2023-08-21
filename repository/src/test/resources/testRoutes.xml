@@ -7,17 +7,17 @@
 
     <routeContext id="deadLetterRoutes" xmlns="http://camel.apache.org/schema/spring">
         <route>
-            <from uri="direct-vm:alfresco.default" />
+            <from uri="direct:alfresco.default" />
             <to uri="mock:dlq" />
         </route>
     </routeContext>
     <routeContext id="customRoutes" xmlns="http://camel.apache.org/schema/spring">
         <route>
-            <from uri="direct-vm:alfresco.test.1" />
+            <from uri="direct:alfresco.test.1" />
             <to uri="mock:result1" />
         </route>
         <route>
-            <from uri="direct-vm:alfresco.test.transacted" />
+            <from uri="direct:alfresco.test.transacted" />
             <to uri="amqp:queue:alfresco.test.transacted" />
         </route>
         <route>

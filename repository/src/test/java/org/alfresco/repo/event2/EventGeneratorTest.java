@@ -39,7 +39,6 @@ import jakarta.jms.MessageListener;
 import jakarta.jms.Session;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.event.databind.ObjectMapperFactory;
 import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.activemq.ActiveMQConnection;
@@ -51,23 +50,24 @@ import org.apache.activemq.command.ActiveMQTopic;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.annotation.DirtiesContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class EventGeneratorTest extends AbstractContextAwareRepoEvent
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
-
-    private static final long DUMP_BROKER_TIMEOUT = 50000000l;
-
-    @Autowired @Qualifier("event2ObjectMapper")
-    private ObjectMapper objectMapper;
+    private static final long DUMP_BROKER_TIMEOUT = 50000000L;
 
     private ActiveMQConnection connection;
     protected List<RepoEvent<?>> receivedEvents;
+
+    @BeforeClass
+    public static void beforeClass()
+    {
+        System.setProperty("repo.event2.queue.skip", "false");
+    }
 
     @Before
     public void startupTopicListener() throws Exception
@@ -116,11 +116,6 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         }
     }
 
-    protected ObjectMapper createObjectMapper()
-    {
-        return ObjectMapperFactory.createInstance();
-    }
-
     @After
     public void shutdownTopicListener() throws Exception
     {
@@ -129,30 +124,21 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void shouldReceiveEvent2EventsOnNodeCreation() throws Exception
+    public void shouldReceiveEvent2EventsOnNodeCreation()
     {
         createNode(ContentModel.TYPE_CONTENT);
 
         Awaitility.await().atMost(6, TimeUnit.SECONDS).until(() -> receivedEvents.size() == 1);
 
+        assertEquals(1, EVENT_CONTAINER.getEvents().size());
+        assertEquals(1, receivedEvents.size());
         RepoEvent<?> sent = getRepoEvent(1);
         RepoEvent<?> received = receivedEvents.get(0);
         assertEventsEquals("Events are different!", sent, received);
     }
 
-    private void assertEventsEquals(String message, RepoEvent<?> expected, RepoEvent<?> current)
-    {
-        if (DEBUG)
-        {
-            System.err.println("XP: " + expected);
-            System.err.println("CU: " + current);
-        }
-        
-        assertEquals(message, expected, current);
-    }
-
     @Test
-    public void shouldReceiveEvent2EventsInOrder() throws Exception
+    public void shouldReceiveEvent2EventsInOrder()
     {
         NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         updateNodeName(nodeRef, "TestFile-" + System.currentTimeMillis() + ".txt");
@@ -163,9 +149,20 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         RepoEvent<?> sentCreation = getRepoEvent(1);
         RepoEvent<?> sentUpdate = getRepoEvent(2);
         RepoEvent<?> sentDeletion = getRepoEvent(3);
-        assertEquals("Expected create event!", sentCreation, (RepoEvent<?>) receivedEvents.get(0));
-        assertEquals("Expected update event!", sentUpdate, (RepoEvent<?>) receivedEvents.get(1));
-        assertEquals("Expected delete event!", sentDeletion, (RepoEvent<?>) receivedEvents.get(2));
+        assertEquals("Expected create event!", sentCreation, receivedEvents.get(0));
+        assertEquals("Expected update event!", sentUpdate, receivedEvents.get(1));
+        assertEquals("Expected delete event!", sentDeletion, receivedEvents.get(2));
+    }
+
+    private void assertEventsEquals(String message, RepoEvent<?> expected, RepoEvent<?> current)
+    {
+        if (DEBUG)
+        {
+            System.err.println("XP: " + expected);
+            System.err.println("CU: " + current);
+        }
+
+        assertEquals(message, expected, current);
     }
 
     private static String getText(Message message)
@@ -174,7 +171,8 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
         {
             ActiveMQTextMessage am = (ActiveMQTextMessage) message;
             return am.getText();
-        } catch (JMSException e)
+        }
+        catch (JMSException e)
         {
             return null;
         }
@@ -206,7 +204,8 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 try
                 {
                     System.out.println("- " + queue.getQueueName());
-                } catch (JMSException e)
+                }
+                catch (JMSException e)
                 {
                     e.printStackTrace();
                 }
@@ -219,7 +218,8 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
                 try
                 {
                     System.out.println("- " + topic.getTopicName());
-                } catch (JMSException e)
+                }
+                catch (JMSException e)
                 {
                     e.printStackTrace();
                 }
@@ -230,18 +230,14 @@ public class EventGeneratorTest extends AbstractContextAwareRepoEvent
             MessageConsumer consumer = session.createConsumer(destination);
 
             System.out.println("\nListening to topic " + EVENT2_TOPIC_NAME + "...");
-            consumer.setMessageListener(new MessageListener()
-            {
-                @Override
-                public void onMessage(Message message)
-                {
-                    String text = getText(message);
-                    System.out.println("Received message " + message + "\n" + text + "\n");
-                }
+            consumer.setMessageListener(message -> {
+                String text = getText(message);
+                System.out.println("Received message " + message + "\n" + text + "\n");
             });
 
             Thread.sleep(timeout);
-        } finally
+        }
+        finally
         {
             connection.close();
         }

@@ -767,7 +767,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         
         void addEvents(List<Event> events)
         {
-            events.addAll(events);
+            this.events.addAll(events);
         }
 
         void clear()

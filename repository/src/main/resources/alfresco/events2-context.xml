@@ -41,11 +41,9 @@
         <property name="transactionService" ref="transactionService"/>
         <property name="personService" ref="personService"/>
         <property name="nodeResourceHelper" ref="nodeResourceHelper"/>
-        <property name="eventGeneratorQueue" ref="eventGeneratorQueue"/>
+        <property name="eventSender" ref="#{ ${repo.event2.queue.skip} == true ? 'directEventSender' : 'enqueuingEventSender' }"/>
         <property name="nodeDAO" ref="nodeDAO"/>
-        <property name="enabled">
-            <value>${repo.event2.enabled}</value>
-        </property>
+        <property name="enabled" value="${repo.event2.enabled}"/>
     </bean>
 
     <bean id="baseNodeResourceHelper" abstract="true">
@@ -61,14 +59,13 @@
 
     <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2"/>
 
-    <bean id="eventGeneratorQueue" class="org.alfresco.repo.event2.EventGeneratorQueue" >
-        <property name="enqueueThreadPoolExecutor">
-            <ref bean="eventAsyncEnqueueThreadPool" />
-        </property>
-        <property name="dequeueThreadPoolExecutor">
-            <ref bean="eventAsyncDequeueThreadPool" />
-        </property>
-       <property name="event2MessageProducer" ref="event2MessageProducer"/>
+    <bean id="directEventSender" class="org.alfresco.repo.event2.DirectEventSender">
+        <property name="event2MessageProducer" ref="event2MessageProducer"/>
+    </bean>
+
+    <bean id="enqueuingEventSender" class="org.alfresco.repo.event2.EnqueuingEventSender" parent="directEventSender" lazy-init="true">
+        <property name="enqueueThreadPoolExecutor" ref="eventAsyncEnqueueThreadPool"/>
+        <property name="dequeueThreadPoolExecutor" ref="eventAsyncDequeueThreadPool"/>
     </bean>
 
     <bean id="eventAsyncEnqueueThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">

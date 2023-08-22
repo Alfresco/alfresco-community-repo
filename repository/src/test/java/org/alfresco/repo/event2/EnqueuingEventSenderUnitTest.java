@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
@@ -51,9 +52,9 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-public class EventGeneratorQueueUnitTest
+public class EnqueuingEventSenderUnitTest
 {
-    private EventGeneratorQueue queue;
+    private EnqueuingEventSender eventSender;
 
     private Event2MessageProducer bus;
     private ExecutorService enqueuePool;
@@ -64,15 +65,15 @@ public class EventGeneratorQueueUnitTest
     @Before
     public void setup() 
     {
-        queue = new EventGeneratorQueue();
+        eventSender = new EnqueuingEventSender();
 
         enqueuePool = newThreadPool();
-        queue.setEnqueueThreadPoolExecutor(enqueuePool);
+        eventSender.setEnqueueThreadPoolExecutor(enqueuePool);
         dequeuePool = newThreadPool();
-        queue.setDequeueThreadPoolExecutor(dequeuePool);
+        eventSender.setDequeueThreadPoolExecutor(dequeuePool);
 
         bus = mock(Event2MessageProducer.class);
-        queue.setEvent2MessageProducer(bus);
+        eventSender.setEvent2MessageProducer(bus);
 
         events = new HashMap<>();
 
@@ -83,6 +84,7 @@ public class EventGeneratorQueueUnitTest
     public void teardown() 
     {
         enqueuePool.shutdown();
+        dequeuePool.shutdown();
     }
 
     private void setupEventsRecorder()
@@ -104,7 +106,7 @@ public class EventGeneratorQueueUnitTest
     @Test
     public void shouldReceiveSingleQuickMessage() throws Exception 
     {
-        queue.accept(messageWithDelay("A", 55l));
+        eventSender.accept(messageWithDelay("A", 55l));
 
         sleep(150l);
 
@@ -115,7 +117,7 @@ public class EventGeneratorQueueUnitTest
     @Test
     public void shouldNotReceiveEventsWhenMessageIsNull() throws Exception 
     {
-        queue.accept(() -> { return null; });
+        eventSender.accept(() -> { return null; });
 
         sleep(150l);
 
@@ -124,9 +126,9 @@ public class EventGeneratorQueueUnitTest
 
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderScenarioOne() throws Exception {
-        queue.accept(messageWithDelay("A", 0l));
-        queue.accept(messageWithDelay("B", 100l));
-        queue.accept(messageWithDelay("C", 200l));
+        eventSender.accept(messageWithDelay("A", 0l));
+        eventSender.accept(messageWithDelay("B", 100l));
+        eventSender.accept(messageWithDelay("C", 200l));
 
         sleep(450l);
 
@@ -139,9 +141,9 @@ public class EventGeneratorQueueUnitTest
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderScenarioTwo() throws Exception
     {
-        queue.accept(messageWithDelay("A", 300l));
-        queue.accept(messageWithDelay("B", 150l));
-        queue.accept(messageWithDelay("C", 0l));
+        eventSender.accept(messageWithDelay("A", 300l));
+        eventSender.accept(messageWithDelay("B", 150l));
+        eventSender.accept(messageWithDelay("C", 0l));
 
         sleep(950l);
 
@@ -154,10 +156,10 @@ public class EventGeneratorQueueUnitTest
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisoned() throws Exception
     {
-        queue.accept(messageWithDelay("A", 300l));
-        queue.accept(() -> {throw new RuntimeException("Boom! (not to worry, this is a test)");});
-        queue.accept(messageWithDelay("B", 55l));
-        queue.accept(messageWithDelay("C", 0l));
+        eventSender.accept(messageWithDelay("A", 300l));
+        eventSender.accept(() -> {throw new RuntimeException("Boom! (not to worry, this is a test)");});
+        eventSender.accept(messageWithDelay("B", 55l));
+        eventSender.accept(messageWithDelay("C", 0l));
 
         sleep(950l);
 
@@ -170,12 +172,12 @@ public class EventGeneratorQueueUnitTest
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisoned() throws Exception
     {
-        Callable<RepoEvent<?>> makerB = messageWithDelay("B", 55l);
-        RepoEvent<?> messageB = makerB.call();
+        Callable<Optional<RepoEvent<?>>> makerB = messageWithDelay("B", 55l);
+        RepoEvent<?> messageB = makerB.call().get();
         doThrow(new RuntimeException("Boom! (not to worry, this is a test)")).when(bus).send(messageB);
-        queue.accept(messageWithDelay("A", 300l));
-        queue.accept(makerB);
-        queue.accept(messageWithDelay("C", 0l));
+        eventSender.accept(messageWithDelay("A", 300l));
+        eventSender.accept(makerB);
+        eventSender.accept(messageWithDelay("C", 0l));
 
         sleep(950l);
 
@@ -187,10 +189,10 @@ public class EventGeneratorQueueUnitTest
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenMakerPoisonedWithError() throws Exception
     {
-        queue.accept(messageWithDelay("A", 300l));
-        queue.accept(() -> {throw new OutOfMemoryError("Boom! (not to worry, this is a test)");});
-        queue.accept(messageWithDelay("B", 55l));
-        queue.accept(messageWithDelay("C", 0l));
+        eventSender.accept(messageWithDelay("A", 300l));
+        eventSender.accept(() -> {throw new OutOfMemoryError("Boom! (not to worry, this is a test)");});
+        eventSender.accept(messageWithDelay("B", 55l));
+        eventSender.accept(messageWithDelay("C", 0l));
 
         sleep(950l);
 
@@ -203,12 +205,12 @@ public class EventGeneratorQueueUnitTest
     @Test
     public void shouldReceiveMultipleMessagesPreservingOrderEvenWhenSenderPoisonedWithError() throws Exception
     {
-        Callable<RepoEvent<?>> makerB = messageWithDelay("B", 55l);
-        RepoEvent<?> messageB = makerB.call();
+        Callable<Optional<RepoEvent<?>>> makerB = messageWithDelay("B", 55l);
+        RepoEvent<?> messageB = makerB.call().get();
         doThrow(new OutOfMemoryError("Boom! (not to worry, this is a test)")).when(bus).send(messageB);
-        queue.accept(messageWithDelay("A", 300l));
-        queue.accept(makerB);
-        queue.accept(messageWithDelay("C", 0l));
+        eventSender.accept(messageWithDelay("A", 300l));
+        eventSender.accept(makerB);
+        eventSender.accept(messageWithDelay("C", 0l));
 
         sleep(950l);
 
@@ -217,33 +219,32 @@ public class EventGeneratorQueueUnitTest
         assertEquals("C", recordedEvents.get(1).getId());
     }
 
-    private Callable<RepoEvent<?>> messageWithDelay(String id, long delay)
+    private Callable<Optional<RepoEvent<?>>> messageWithDelay(String id, long delay)
     {
-        Callable<RepoEvent<?>> res = new Callable<RepoEvent<?>>() {
-
+        return new Callable<Optional<RepoEvent<?>>>()
+        {
             @Override
-            public RepoEvent<?> call() throws Exception
+            public Optional<RepoEvent<?>> call() throws Exception
             {
-                if(delay != 0)
+                if (delay != 0)
                 {
-                    sleep(delay); 
+                    sleep(delay);
                 }
-                return newRepoEvent(id);
-            } 
-            
+                return Optional.of(newRepoEvent(id));
+            }
+
             @Override
             public String toString()
             {
                 return id;
             }
         };
-        return res;
     }
     
     private RepoEvent<?> newRepoEvent(String id)
     {
         RepoEvent<?> ev = events.get(id);
-        if (ev!=null)
+        if (ev != null)
             return ev;
         
         ev = mock(RepoEvent.class);

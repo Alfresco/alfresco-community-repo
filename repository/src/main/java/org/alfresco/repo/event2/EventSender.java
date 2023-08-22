@@ -25,20 +25,19 @@
  */
 package org.alfresco.repo.event2;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Optional;
+import java.util.concurrent.Callable;
 
-@RunWith(Suite.class)
-@SuiteClasses({ CreateRepoEventIT.class,
-                UpdateRepoEventIT.class,
-                DeleteRepoEventIT.class,
-                ChildAssociationRepoEventIT.class,
-                PeerAssociationRepoEventIT.class,
-                EnqueuingEventGeneratorTest.class,
-                DirectEventGeneratorTest.class,
-                EventGeneratorDisabledTest.class
-})
-public class RepoEvent2ITSuite
+import org.alfresco.repo.event.v1.model.RepoEvent;
+
+/**
+ * Interface representing an asynchronous event sender.
+ */
+public interface EventSender
 {
+    /**
+     * Accepts a callback function creating an event and sends this event to specified destination.
+     * @param eventProducer - callback function that creates an event
+     */
+    void accept(Callable<Optional<RepoEvent<?>>> eventProducer);
 }

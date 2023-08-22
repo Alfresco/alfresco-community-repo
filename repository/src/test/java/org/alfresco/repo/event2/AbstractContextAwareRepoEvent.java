@@ -23,7 +23,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.repo.event2;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -72,6 +71,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -108,22 +108,23 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     @Autowired
     protected CustomModelService customModelService;
 
-    @Qualifier("descriptorComponent")
     @Autowired
+    @Qualifier("descriptorComponent")
     protected DescriptorService descriptorService;
 
     @Autowired
-    protected ObjectMapper event2ObjectMapper;
+    @Qualifier("event2ObjectMapper")
+    protected ObjectMapper objectMapper;
 
-    @Autowired @Qualifier("eventGeneratorV2")
+    @Autowired
+    @Qualifier("eventGeneratorV2")
     protected EventGenerator eventGenerator;
 
     @Autowired
-    @Qualifier("eventGeneratorQueue")
-    protected EventGeneratorQueue eventQueue;
-
-    @Autowired
     private NamespaceDAO namespaceDAO;
+
+    @Value("${repo.event2.queue.skip}")
+    protected boolean skipEventQueue;
 
     protected NodeRef rootNodeRef;
 
@@ -134,7 +135,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     }
 
     @AfterClass
-    public static void afterAll() throws Exception
+    public static void afterAll()
     {
         CAMEL_CONTEXT.stop();
     }
@@ -144,7 +145,7 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
     {
         if (!isCamelConfigured)
         {
-            dataFormat = new JacksonDataFormat(event2ObjectMapper, RepoEvent.class);
+            dataFormat = new JacksonDataFormat(objectMapper, RepoEvent.class);
             configRoute();
             isCamelConfigured = true;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2023 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,7 +53,7 @@ public interface TransactionListener
      * on the state of the transaction.
      * <p>
      * Although all transaction resources are still available, this method should
-     * be used only for cleaning up resources after a commit has occured.
+     * be used only for cleaning up resources after a commit has occurred.
      */
     void afterCommit();
 
@@ -64,7 +64,7 @@ public interface TransactionListener
      * on the state of the transaction.
      * <p>
      * Although all transaction resources are still available, this method should
-     * be used only for cleaning up resources after a rollback has occured.
+     * be used only for cleaning up resources after a rollback has occurred.
      */
     void afterRollback();
 }

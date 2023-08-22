@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,14 +25,8 @@
  */
 package org.alfresco.repo.event2;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
-import org.alfresco.repo.event.v1.model.DataAttributes;
-import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.PeerAssociationResource;
-import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.namespace.QName;
 
@@ -41,50 +35,12 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Sara Aspery
  */
-public class PeerAssociationEventConsolidator implements PeerAssociationEventSupportedPolicies
+public class PeerAssociationEventConsolidator extends EventConsolidator<AssociationRef, PeerAssociationResource> implements PeerAssociationEventSupportedPolicies
 {
-    private final Deque<EventType> eventTypes;
-
-    protected final AssociationRef associationRef;
-
-    private PeerAssociationResource resource;
-    private final NodeResourceHelper helper;
 
     public PeerAssociationEventConsolidator(AssociationRef associationRef, NodeResourceHelper helper)
     {
-        this.eventTypes = new ArrayDeque<>();
-        this.associationRef = associationRef;
-        this.helper = helper;
-    }
-
-    /**
-     * Builds and returns the {@link RepoEvent} instance.
-     *
-     * @param eventInfo the object holding the event information
-     * @return the {@link RepoEvent} instance
-     */
-    public RepoEvent<DataAttributes<PeerAssociationResource>> getRepoEvent(EventInfo eventInfo)
-    {
-        EventType eventType = getDerivedEvent();
-
-        DataAttributes<PeerAssociationResource> eventData = buildEventData(eventInfo, resource);
-
-        return RepoEvent.<DataAttributes<PeerAssociationResource>>builder()
-                    .setId(eventInfo.getId())
-                    .setSource(eventInfo.getSource())
-                    .setTime(eventInfo.getTimestamp())
-                    .setType(eventType.getType())
-                    .setData(eventData)
-                    .setDataschema(EventJSONSchema.getSchemaV1(eventType))
-                    .build();
-    }
-
-    protected DataAttributes<PeerAssociationResource> buildEventData(EventInfo eventInfo, PeerAssociationResource resource)
-    {
-        return EventData.<PeerAssociationResource>builder()
-                    .setEventGroupId(eventInfo.getTxnId())
-                    .setResource(resource)
-                    .build();
+        super(associationRef, helper);
     }
 
     /**
@@ -120,12 +76,10 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
         return new PeerAssociationResource(sourceId, targetId, assocType);
     }
 
-    /**
-     * @return a derived event for a transaction.
-     */
-    private EventType getDerivedEvent()
+    @Override
+    protected EventType getDerivedEvent()
     {
-        if (isTemporaryPeerAssociation())
+        if (isTemporaryEntity())
         {
             // This event will be filtered out, but we set the correct
             // event type anyway for debugging purposes
@@ -146,34 +100,16 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
         }
     }
 
-    /**
-     * Whether or not the association has been created and then deleted, i.e. a temporary association.
-     *
-     * @return {@code true} if the association has been created and then deleted, otherwise false
-     */
-    public boolean isTemporaryPeerAssociation()
+    @Override
+    public boolean isTemporaryEntity()
     {
         return eventTypes.contains(EventType.PEER_ASSOC_CREATED) && eventTypes.getLast() == EventType.PEER_ASSOC_DELETED;
     }
 
-    /**
-     * Get peer association type.
-     *
-     * @return QName the peer association type
-     */
-    public QName getAssocType()
+    @Override
+    public QName getEntityType()
     {
-        return associationRef.getTypeQName();
-    }
-
-    /**
-     * Get event types.
-     *
-     * @return Deque<EventType> queue of event types
-     */
-    public Deque<EventType> getEventTypes()
-    {
-        return eventTypes;
+        return entityReference.getTypeQName();
     }
 }
 

@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 
@@ -42,6 +43,7 @@ import org.springframework.test.context.ContextHierarchy;
     // Context hierarchy inherits context config from parent classes and extends it with TestConfig from this class
     @ContextConfiguration(classes = DirectEventGeneratorTest.TestConfig.class)
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class DirectEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired
@@ -56,6 +58,7 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
         System.setProperty("repo.event2.queue.skip", "true");
     }
 
+    //@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     public void testIfEnqueuingEventSenderIsNotInstantiated()
     {
@@ -65,6 +68,7 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
         assertFalse(instantiatedBeans.contains("enqueuingEventSender"));
     }
 
+    //@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     public void testIfDirectSenderIsSetInEventGenerator()
     {

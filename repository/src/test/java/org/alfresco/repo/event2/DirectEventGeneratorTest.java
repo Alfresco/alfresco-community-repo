@@ -58,7 +58,6 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
         System.setProperty("repo.event2.queue.skip", "true");
     }
 
-    //@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     public void testIfEnqueuingEventSenderIsNotInstantiated()
     {
@@ -68,7 +67,6 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
         assertFalse(instantiatedBeans.contains("enqueuingEventSender"));
     }
 
-    //@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     public void testIfDirectSenderIsSetInEventGenerator()
     {

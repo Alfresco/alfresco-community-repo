@@ -29,12 +29,13 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.DirtiesContext;
 
+
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class EnqueuingEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired
     private EventSender enqueuingEventSender;
 
-    //@DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test
     public void testIfEnqueuingSenderIsSetInEventGenerator()
     {

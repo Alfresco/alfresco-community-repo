@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,7 +25,7 @@
  */
 package org.alfresco.service.transaction;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.NotAuditable;
@@ -33,9 +33,9 @@ import org.alfresco.service.NotAuditable;
 /**
  * Contract for retrieving access to a user transaction.
  * <p>
- * Note that the implementation of the  <code>javax.transaction.UserTransaction</code>
+ * Note that the implementation of the  <code>jakarta.transaction.UserTransaction</code>
  * is not able to provide the full set of status codes available on the
- * <code>javax.transaction.Status</code> class.
+ * <code>jakarta.transaction.Status</code> class.
  *
  * @author David Caruana
  */

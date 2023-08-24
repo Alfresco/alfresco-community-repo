@@ -37,7 +37,7 @@ import java.util.Map;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 

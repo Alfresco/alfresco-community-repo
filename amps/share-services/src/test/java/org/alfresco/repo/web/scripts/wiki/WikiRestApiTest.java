@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 - 2020 Alfresco Software Limited.
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited.
  *
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of the paid license agreement will prevail.
@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.archive.NodeArchiveService;

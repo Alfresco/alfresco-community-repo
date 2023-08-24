@@ -105,7 +105,7 @@
         <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
         <dependency.jakarta-soap-api.version>2.0.1</dependency.jakarta-soap-api.version>
         <dependency.jakarta-annotation-api.version>2.1.1</dependency.jakarta-annotation-api.version>
-        <dependency.jakarta-transaction-api.version>1.3.3</dependency.jakarta-transaction-api.version>
+        <dependency.jakarta-transaction-api.version>2.0.1</dependency.jakarta-transaction-api.version>
         <dependency.jakarta-jws-api.version>3.0.0</dependency.jakarta-jws-api.version>
         <dependency.jakarta-ee-mail.version>2.0.1</dependency.jakarta-ee-mail.version>
         <dependency.jakarta-ee-activation.version>2.0.1</dependency.jakarta-ee-activation.version>
@@ -117,7 +117,7 @@
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.4.2-A5</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.6.2-A1</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.6.2-A2</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
@@ -1114,6 +1114,7 @@
                                             <exclude>javax.xml.soap:saaj-api</exclude>
                                             <exclude>javax.xml.ws:jaxws-api</exclude>
                                             <exclude>javax.mail</exclude>
+                                            <exclude>javax.transaction</exclude>
 
 <!--                                            Enforce minimal versions of jakarta dependencies-->
                                             <exclude>jakarta.servlet:jakarta.servlet-api:(, 5.0.0)</exclude>
@@ -1121,7 +1122,7 @@
                                             <exclude>jakarta.json:jakarta.json-api:(, 2.0.1)</exclude>
                                             <exclude>jakarta.servlet.jsp:jakarta.servlet.jsp-api:(, 3.0.0)</exclude>
                                             <exclude>jakarta.annotation:jakarta.annotation-api:(, 2.0.0)</exclude>
-<!--                                            <exclude>jakarta.transaction:jakarta.transaction-api:(, 2.0.0)</exclude>-->
+                                            <exclude>jakarta.transaction:jakarta.transaction-api:(, 2.0.1)</exclude>
                                             <exclude>jakarta.jms:jakarta.jms-api:(, 3.0.0)</exclude>
                                             <exclude>jakarta.activation:jakarta.activation-api:(, 2.0.1)</exclude>
                                             <exclude>jakarta.xml.ws:jakarta.xml.ws-api:(, 3.0.1)</exclude>

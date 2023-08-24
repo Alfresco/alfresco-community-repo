@@ -27,7 +27,9 @@ package org.alfresco.repo.event2;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class EnqueuingEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired

@@ -34,12 +34,10 @@ import org.junit.runners.Suite.SuiteClasses;
                 UpdateRepoEventIT.class,
                 DeleteRepoEventIT.class,
                 ChildAssociationRepoEventIT.class,
-
-
+                PeerAssociationRepoEventIT.class,
                 DirectEventGeneratorTest.class,
                 EnqueuingEventGeneratorTest.class,
-                EventGeneratorDisabledTest.class,
-    PeerAssociationRepoEventIT.class
+                EventGeneratorDisabledTest.class
 })
 public class RepoEvent2ITSuite
 {

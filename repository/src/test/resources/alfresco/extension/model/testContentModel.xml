@@ -583,6 +583,9 @@
                <type>d:text</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
             </property>
             <property name="cm:modified">
                <title>Modified</title>
@@ -600,6 +603,9 @@
                <type>d:text</type>
                <protected>true</protected>
                <mandatory enforced="true">true</mandatory>
+               <index enabled="true">
+                  <tokenised>false</tokenised>
+               </index>
             </property>
             <property name="cm:accessed">
                <title>Accessed</title>

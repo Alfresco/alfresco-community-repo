@@ -30,9 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.alfresco.model.ContentModel;
 import org.awaitility.Awaitility;
 import org.junit.Test;
-import org.springframework.test.annotation.DirtiesContext;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class EventGeneratorDisabledTest extends EventGeneratorTest
 {
     @Test

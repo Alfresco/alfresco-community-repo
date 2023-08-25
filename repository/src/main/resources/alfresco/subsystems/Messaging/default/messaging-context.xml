@@ -39,6 +39,10 @@
         <property name="configuration" ref="jmsConfig"/>
     </bean>
 
+    <bean id="activemq" class="org.apache.camel.component.activemq.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig"/>
+    </bean>
+
     <bean id="amqp" class="org.apache.camel.component.amqp.AMQPComponent">
         <property name="configuration" ref="jmsConfig"/>
     </bean>

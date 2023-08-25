@@ -103,7 +103,7 @@
         <dependency.jakarta-ee-jaxb-impl.version>4.0.3</dependency.jakarta-ee-jaxb-impl.version>
         <dependency.java-ee-jaxb-api.version>2.3.3</dependency.java-ee-jaxb-api.version>
         <dependency.jakarta-ws-api.version>3.0.1</dependency.jakarta-ws-api.version>
-        <dependency.jakarta-soap-api.version>2.0.1</dependency.jakarta-soap-api.version>
+        <dependency.jakarta-soap-api.version>3.0.0</dependency.jakarta-soap-api.version>
         <dependency.jakarta-annotation-api.version>2.1.1</dependency.jakarta-annotation-api.version>
         <dependency.jakarta-transaction-api.version>2.0.1</dependency.jakarta-transaction-api.version>
         <dependency.jakarta-jws-api.version>3.0.0</dependency.jakarta-jws-api.version>

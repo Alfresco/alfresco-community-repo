@@ -30,7 +30,7 @@ import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
 import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 import static org.springframework.http.HttpMethod.PUT;
 
-import javax.json.JsonArrayBuilder;
+import jakarta.json.JsonArrayBuilder;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;

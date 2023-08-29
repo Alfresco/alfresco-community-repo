@@ -2,8 +2,8 @@ package org.alfresco.rest.nodes;
 
 import static org.junit.Assert.assertEquals;
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;

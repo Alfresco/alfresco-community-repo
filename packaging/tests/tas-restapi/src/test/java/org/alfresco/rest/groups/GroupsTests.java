@@ -2,8 +2,8 @@ package org.alfresco.rest.groups;
 
 import java.util.UUID;
 
-import javax.json.Json;
-import javax.json.JsonObject;
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.RetryOperation;

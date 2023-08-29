@@ -26,8 +26,8 @@
  */
 package org.alfresco.rest.core.v0;
 
-import javax.json.Json;
-import javax.json.JsonReader;
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;

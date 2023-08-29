@@ -35,7 +35,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
-import javax.json.Json;
+import jakarta.json.Json;
 import java.util.Collections;
 import java.util.List;
 

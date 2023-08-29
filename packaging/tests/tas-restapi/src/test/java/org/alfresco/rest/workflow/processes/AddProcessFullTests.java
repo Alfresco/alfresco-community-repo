@@ -1,6 +1,6 @@
 package org.alfresco.rest.workflow.processes;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.RestTest;

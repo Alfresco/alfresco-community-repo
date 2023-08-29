@@ -183,7 +183,6 @@
         <dependency>
             <groupId>org.eclipse.parsson</groupId>
             <artifactId>parsson</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

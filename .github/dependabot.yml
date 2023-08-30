@@ -14,15 +14,6 @@ updates:
     timezone: Africa/Abidjan
   open-pull-requests-limit: 99
   ignore:
-  - dependency-name: com.google.code.gson:gson
-    versions:
-    - "> 2.8.6"
-  - dependency-name: io.fabric8:fabric8-maven-plugin
-    versions:
-    - "> 4.4.0"
-  - dependency-name: javax.servlet:javax.servlet-api
-    versions:
-    - "> 3.0.1"
   - dependency-name: org.acegisecurity:acegi-security
     versions:
     - "> 0.8.2_patched"
@@ -52,28 +43,13 @@ updates:
     - "> 1.0.0"
   - dependency-name: org.freemarker:freemarker
     versions:
-    - "> 2.3.20-alfresco-patched-20200421"
-  - dependency-name: org.eclipse.jetty:jetty-server
-    versions:
-    - 9.4.38.v20210224
+    - "> 2.3.31-alfresco-patched"
   - dependency-name: org.alfresco.tas:cmis
     versions:
     - "1.28"
   - dependency-name: org.alfresco.tas:restapi
     versions:
     - "1.55"
-  - dependency-name: org.eclipse.jetty:jetty-security
-    versions:
-    - 11.0.1
-  - dependency-name: org.alfresco.aos-module:alfresco-vti-bin
-    versions:
-    - 1.4.0-M1
-  - dependency-name: org.alfresco.aos-module:alfresco-aos-module-distributionzip
-    versions:
-    - 1.4.0-M1
-  - dependency-name: org.alfresco.aos-module:alfresco-aos-module
-    versions:
-    - 1.4.0-M1
   registries:
   - maven-repository-artifacts-alfresco-com-nexus-content-groups-int
 - package-ecosystem: "docker"

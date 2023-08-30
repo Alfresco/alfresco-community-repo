@@ -31,15 +31,10 @@ import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCustomAspectModel;
 import org.alfresco.rest.model.RestCustomModel;
 import org.alfresco.rest.model.RestCustomTypeModel;
-import org.alfresco.rest.model.RestGroupsModelsCollection;
 import org.alfresco.utility.model.CustomAspectModel;
-import org.alfresco.utility.model.CustomAspectPropertiesModel;
 import org.alfresco.utility.model.CustomContentModel;
 import org.springframework.http.HttpMethod;
 
-import jakarta.json.Json;
-import jakarta.json.JsonArrayBuilder;
-import jakarta.json.JsonObject;
 
 /**
  * @author Bogdan Bocancea

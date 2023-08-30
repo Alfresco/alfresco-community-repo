@@ -44,12 +44,6 @@ updates:
   - dependency-name: org.freemarker:freemarker
     versions:
     - "> 2.3.31-alfresco-patched"
-  - dependency-name: org.alfresco.tas:cmis
-    versions:
-    - "1.28"
-  - dependency-name: org.alfresco.tas:restapi
-    versions:
-    - "1.55"
   registries:
   - maven-repository-artifacts-alfresco-com-nexus-content-groups-int
 - package-ecosystem: "docker"

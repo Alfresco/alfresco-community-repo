@@ -96,8 +96,8 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
         run: |
-          mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl core,data-model -am -DfailIfNoTests=false
-          mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
+          mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl core,data-model -am -DfailIfNoTests=false
+          mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -139,7 +139,7 @@ jobs:
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -169,7 +169,7 @@ jobs:
         env:
           MARIADB_VERSION: ${{ matrix.version }}
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -195,7 +195,7 @@ jobs:
         env:
           MARIADB_VERSION: 10.6
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -221,7 +221,7 @@ jobs:
         env:
           MYSQL_VERSION: 8
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -246,7 +246,7 @@ jobs:
         env:
           POSTGRES_VERSION: 13.7
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -271,7 +271,7 @@ jobs:
         env:
           POSTGRES_VERSION: 14.4
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -292,7 +292,7 @@ jobs:
       - name: "Run ActiveMQ"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -359,7 +359,7 @@ jobs:
           fi
           docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -422,7 +422,7 @@ jobs:
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B verify -Tauto -Dparallel=all -DperCoreThreadCount=true -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: mvn -B verify -T 2C -Dparallel=all -DperCoreThreadCount=true -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
       - name: "Print output after success"
         if: ${{ always() && steps.tests.outcome == 'success' }}
         run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
@@ -449,7 +449,7 @@ jobs:
       - name: "Run Postgres 14.4 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -480,7 +480,7 @@ jobs:
           bash ./scripts/ci/build.sh
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --file amps/ags/pom.xml -B verify -Tauto -Dparallel=all -DperCoreThreadCount=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
+        run: mvn --file amps/ags/pom.xml -B verify -T 2C -Dparallel=all -DperCoreThreadCount=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -511,7 +511,7 @@ jobs:
           bash ./scripts/ci/build.sh
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --file amps/ags/pom.xml -B verify -Tauto -Dparallel=all -DperCoreThreadCount=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
+        run: mvn --file amps/ags/pom.xml -B verify -T 2C -Dparallel=all -DperCoreThreadCount=true -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -541,10 +541,10 @@ jobs:
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
-          mvn -B install -Tauto -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
+          mvn -B install -T 2C -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -Tauto -Dparallel=all -DperCoreThreadCount=true -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
+        run: mvn -B test -T 2C -Dparallel=all -DperCoreThreadCount=true -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
       - name: "Configure AWS credentials"
         if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@v1

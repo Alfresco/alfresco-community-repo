@@ -15,14 +15,6 @@
         <scripts.directory>${project.parent.parent.basedir}/scripts</scripts.directory>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>content-services-community</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>

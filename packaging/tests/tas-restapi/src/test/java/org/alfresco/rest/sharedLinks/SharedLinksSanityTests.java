@@ -1,6 +1,6 @@
 package org.alfresco.rest.sharedLinks;
 
-import javax.json.Json;
+import jakarta.json.Json;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;

@@ -7,7 +7,7 @@ import io.restassured.http.ContentType;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;

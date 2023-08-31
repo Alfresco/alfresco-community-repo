@@ -39,8 +39,8 @@
  */
 package org.alfresco.rest.requests.search;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 import io.restassured.RestAssured;
 

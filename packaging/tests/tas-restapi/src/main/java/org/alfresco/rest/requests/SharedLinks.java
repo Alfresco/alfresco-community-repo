@@ -27,7 +27,7 @@ package org.alfresco.rest.requests;
 
 import java.util.HashMap;
 
-import javax.json.JsonArrayBuilder;
+import jakarta.json.JsonArrayBuilder;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;

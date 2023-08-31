@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import io.restassured.RestAssured;
 import java.io.File;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import jakarta.mail.Flags;
 import jakarta.mail.MessagingException;
 

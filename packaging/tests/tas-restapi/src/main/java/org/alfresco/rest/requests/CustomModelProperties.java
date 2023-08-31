@@ -33,8 +33,8 @@ import org.alfresco.utility.model.CustomContentModel;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

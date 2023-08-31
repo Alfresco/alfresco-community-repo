@@ -1,6 +1,6 @@
 package org.alfresco.rest.downloads;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;

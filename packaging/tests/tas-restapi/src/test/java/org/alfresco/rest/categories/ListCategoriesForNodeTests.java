@@ -32,7 +32,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
-import javax.json.Json;
+import jakarta.json.Json;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

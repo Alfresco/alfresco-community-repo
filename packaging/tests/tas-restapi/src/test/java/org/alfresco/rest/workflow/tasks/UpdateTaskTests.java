@@ -19,7 +19,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import javax.json.JsonObject;
+import jakarta.json.JsonObject;
 import java.util.HashMap;
 
 public class UpdateTaskTests extends RestTest

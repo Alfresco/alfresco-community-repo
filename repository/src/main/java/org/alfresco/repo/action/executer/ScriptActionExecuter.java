@@ -236,11 +236,14 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
         ActionService actionService = this.serviceRegistry.getActionService();
         ActionDefinition actDef = actionService.getActionDefinition(action.getActionDefinitionName());
         ParameterDefinition parameterDef = actDef.getParameterDefintion(PARAM_SCRIPTREF);
-        String paramConstraintName = parameterDef.getParameterConstraintName();
-        if (paramConstraintName != null)
+        if (parameterDef != null)
         {
-            ParameterConstraint paramConstraint = actionService.getParameterConstraint(paramConstraintName);
-            return paramConstraint.isValidValue(scriptRef.toString());
+            String paramConstraintName = parameterDef.getParameterConstraintName();
+            if (paramConstraintName != null)
+            {
+                ParameterConstraint paramConstraint = actionService.getParameterConstraint(paramConstraintName);
+                return paramConstraint.isValidValue(scriptRef.toString());
+            }
         }
         return true;
     }

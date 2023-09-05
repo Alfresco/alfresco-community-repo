@@ -196,7 +196,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
      * @param plugins list of plugins
      *
      */
-    public void setPlugins(Interceptor[] plugins) {
+    public void setPlugins(Interceptor... plugins) {
         this.plugins = plugins;
     }
 
@@ -244,7 +244,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
      *
      * @param typeHandlers Type handler list
      */
-    public void setTypeHandlers(TypeHandler<?>[] typeHandlers) {
+    public void setTypeHandlers(TypeHandler<?>... typeHandlers) {
         this.typeHandlers = typeHandlers;
     }
 
@@ -255,7 +255,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
      *
      * @param typeAliases Type aliases list
      */
-    public void setTypeAliases(Class<?>[] typeAliases) {
+    public void setTypeAliases(Class<?>... typeAliases) {
         this.typeAliases = typeAliases;
     }
 
@@ -288,7 +288,7 @@ public class HierarchicalSqlSessionFactoryBean extends SqlSessionFactoryBean
      * This property being based on Spring's resource abstraction also allows for specifying
      * resource patterns here: e.g. "classpath*:sqlmap/*-mapper.xml".
      */
-    public void setMapperLocations(Resource[] mapperLocations) {
+    public void setMapperLocations(Resource... mapperLocations) {
         this.mapperLocations = mapperLocations;
     }
 

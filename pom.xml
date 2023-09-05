@@ -56,6 +56,7 @@
         <dependency.alfresco-greenmail.version>7.0</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.23</dependency.acs-event-model.version>
 
+        <dependency.aspectj.version>1.9.20.1</dependency.aspectj.version>
         <dependency.spring.version>6.0.9</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.15.2</dependency.jackson.version>

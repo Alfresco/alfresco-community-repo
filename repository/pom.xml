@@ -726,7 +726,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.20.1</version>
+            <version>${dependency.aspectj.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
@@ -890,6 +890,13 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${dependency.aspectj.version}</version>
+                    </dependency>
+                </dependencies>
            </plugin>
 
             <plugin>

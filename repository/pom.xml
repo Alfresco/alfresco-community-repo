@@ -726,7 +726,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.19</version>
+            <version>${dependency.aspectj.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
@@ -870,9 +870,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.github.m50d</groupId>
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.11.1</version>
+                <version>1.14.0</version>
                 <executions>
                     <execution>
                         <!-- phase>process-sources</phase -->
@@ -890,6 +890,13 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${dependency.aspectj.version}</version>
+                    </dependency>
+                </dependencies>
            </plugin>
 
             <plugin>

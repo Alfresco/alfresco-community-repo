@@ -156,7 +156,7 @@ public class ChainingSubsystemProxyFactory extends ProxyFactoryBean
      */
     @SuppressWarnings("rawtypes")
     @Override
-    public void setInterfaces(Class[] interfaces)
+    public void setInterfaces(Class... interfaces)
     {
         super.setInterfaces(interfaces);
         // Make it possible to export the object via JMX

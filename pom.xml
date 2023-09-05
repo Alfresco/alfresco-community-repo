@@ -115,8 +115,6 @@
         <dependency.jakarta-ee-json-impl.version>1.1.4</dependency.jakarta-ee-json-impl.version>
         <dependency.jakarta-json-path.version>2.8.0</dependency.jakarta-json-path.version>
         <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
-        <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
-
         <alfresco.googledrive.version>3.4.2-A5</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.6.2-A2</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
@@ -285,17 +283,6 @@
                 <groupId> net.minidev</groupId>
                 <artifactId>json-smart</artifactId>
                 <version>${dependency.json-smart.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jakarta.xml.rpc</groupId>
-                <artifactId>jakarta.xml.rpc-api</artifactId>
-                <version>${dependency.jakarta-rpc-api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.xml.rpc</groupId>
-                <artifactId>jaxrpc-impl</artifactId>
-                <version>${dependency.jakarta-rpc-api.version}</version>
             </dependency>
 
             <!--CMIS-->

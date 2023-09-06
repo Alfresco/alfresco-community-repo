@@ -101,8 +101,8 @@ public class DeleteNotExistsV3ExecutorTest
             {
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_READ_ONLY)).thenReturn("true");
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_TIMEOUT_SECONDS)).thenReturn("-1");
-                DeleteNotExistsV3Executor DeleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
-                DeleteNotExistsV3Executor.execute();
+                DeleteNotExistsV3Executor deleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
+                deleteNotExistsV3Executor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);
                 assertEquals(7, res.size());
@@ -117,8 +117,8 @@ public class DeleteNotExistsV3ExecutorTest
             {
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_READ_ONLY)).thenReturn("false");
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_TIMEOUT_SECONDS)).thenReturn("-1");
-                DeleteNotExistsV3Executor DeleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
-                DeleteNotExistsV3Executor.execute();
+                DeleteNotExistsV3Executor deleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
+                deleteNotExistsV3Executor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);
                 assertEquals(5, res.size());
@@ -150,8 +150,8 @@ public class DeleteNotExistsV3ExecutorTest
             {
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_DELETE_BATCH_SIZE)).thenReturn("1");
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_READ_ONLY)).thenReturn("false");
-                DeleteNotExistsV3Executor DeleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
-                DeleteNotExistsV3Executor.execute();
+                DeleteNotExistsV3Executor deleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
+                deleteNotExistsV3Executor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);
                 assertEquals(5, res.size());
@@ -219,8 +219,8 @@ public class DeleteNotExistsV3ExecutorTest
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_READ_ONLY)).thenReturn("false");
                 when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_TIMEOUT_SECONDS)).thenReturn("-1");
                 when(properties.getProperty("system.delete_not_exists.temp_tst_tbl_1.skipToId")).thenReturn("6");
-                DeleteNotExistsV3Executor DeleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
-                DeleteNotExistsV3Executor.execute();
+                DeleteNotExistsV3Executor deleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
+                deleteNotExistsV3Executor.execute();
 
                 List<String> res = jdbcTmpl.queryForList(select, String.class);
                 assertEquals(7, res.size());

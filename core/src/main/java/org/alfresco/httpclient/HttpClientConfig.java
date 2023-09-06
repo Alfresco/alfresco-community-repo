@@ -100,7 +100,7 @@ public class HttpClientConfig
         Map<String, String> resultProperties = getHttpClientPropertiesForService(properties);
         Map<String, String> systemProperties = getHttpClientPropertiesForService(System.getProperties());
 
-        systemProperties.forEach((k, v) -> resultProperties.put(k, v)); //Override/Add to Global Properties results with values from System Properties
+        resultProperties.putAll(systemProperties); //Override/Add to Global Properties results with values from System Properties
 
         return resultProperties;
     }

@@ -108,7 +108,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 
         // --DELETE_NOT_EXISTS primaryTable.key,secondaryTable1.key1,... batch.size.property
         String[] args = sql.split("[ \\t]+(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-        if (args.length == 3 && (args[1].indexOf('.')) != -1)
+        if (args.length >= 3 && args[1].indexOf('.') != -1)
         {
             String[] tableColumnArgs = args[1].split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
             if (tableColumnArgs.length >= 2)
@@ -132,6 +132,10 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 
                 String timeoutSecString = globalProperties.getProperty(PROPERTY_TIMEOUT_SECONDS);
                 timeoutSec = timeoutSecString == null ? -1 : Long.parseLong(timeoutSecString);
+
+                // Only implemented in v3. In v2 the skip is not used
+                String skipToIdString = (args.length == 4) ? globalProperties.getProperty(args[3]) : null;
+                Long skipToId = skipToIdString == null ? 0L : Long.parseLong(skipToIdString);
 
                 // Compute upper limits
                 Long[] tableUpperLimits = new Long[tableColumnArgs.length];
@@ -159,7 +163,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                     }
                 }
 
-                process(tableColumn, tableUpperLimits, optionalWhereClauses);
+                process(tableColumn, tableUpperLimits, optionalWhereClauses, skipToId);
             }
         }
     }
@@ -622,5 +626,11 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                 closeQuietly(resultSet);
             }
         }
+    }
+
+    protected void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits, String[] optionalWhereClauses,
+            Long skipToId) throws SQLException
+    {
+        process(tableColumn, tableUpperLimits, optionalWhereClauses);
     }
 }

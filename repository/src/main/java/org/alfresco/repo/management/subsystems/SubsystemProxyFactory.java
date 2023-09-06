@@ -89,7 +89,7 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
 
     @SuppressWarnings("unchecked")
     @Override
-    public void setInterfaces(Class[] interfaces)
+    public void setInterfaces(Class... interfaces)
     {
         super.setInterfaces(interfaces);
         // Make it possible to export the object via JMX

@@ -86,7 +86,7 @@ public class DeleteNotExistsV3ExecutorTest
     {
         scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/delete-not-exists/test-data1.sql");
 
-        String sql = "--DELETE_NOT_EXISTS_V3 temp_tst_tbl_1.id,temp_tst_tbl_2.tbl_2_id,temp_tst_tbl_3.tbl_3_id,temp_tst_tbl_4.tbl_4_id system.delete_not_exists.batchsize";
+        String sql = "--DELETE_NOT_EXISTS_V3 temp_tst_tbl_1.id,temp_tst_tbl_2.tbl_2_id,temp_tst_tbl_3.tbl_3_id,temp_tst_tbl_4.tbl_4_id system.delete_not_exists.batchsize system.delete_not_exists.temp_tst_tbl_1.skipToId";
         int line = 1;
         File scriptFile = Mockito.mock(File.class);
         Properties properties = Mockito.mock(Properties.class);
@@ -137,7 +137,7 @@ public class DeleteNotExistsV3ExecutorTest
     {
         scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/delete-not-exists/test-data1.sql");
 
-        String sql = "--DELETE_NOT_EXISTS_V3 temp_tst_tbl_1.id,temp_tst_tbl_2.tbl_2_id,temp_tst_tbl_3.tbl_3_id,temp_tst_tbl_4.tbl_4_id system.delete_not_exists.batchsize";
+        String sql = "--DELETE_NOT_EXISTS_V3 temp_tst_tbl_1.id,temp_tst_tbl_2.tbl_2_id,temp_tst_tbl_3.tbl_3_id,temp_tst_tbl_4.tbl_4_id system.delete_not_exists.batchsize system.delete_not_exists.temp_tst_tbl_1.skipToId";
         int line = 1;
         File scriptFile = Mockito.mock(File.class);
         Properties properties = Mockito.mock(Properties.class);
@@ -170,7 +170,7 @@ public class DeleteNotExistsV3ExecutorTest
     {
         scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/delete-not-exists/test-data1.sql");
 
-        String sql = "--DELETE_NOT_EXISTS_V3 temp_tst_tbl_1.id,temp_tst_tbl_2.tbl_2_id,temp_tst_tbl_3.tbl_3_id,temp_tst_tbl_4.tbl_4_id system.delete_not_exists.batchsize";
+        String sql = "--DELETE_NOT_EXISTS_V3 temp_tst_tbl_1.id,temp_tst_tbl_2.tbl_2_id,temp_tst_tbl_3.tbl_3_id,temp_tst_tbl_4.tbl_4_id system.delete_not_exists.batchsize system.delete_not_exists.temp_tst_tbl_1.skipToId";
         int line = 1;
         File scriptFile = Mockito.mock(File.class);
         Properties properties = Mockito.mock(Properties.class);
@@ -195,6 +195,44 @@ public class DeleteNotExistsV3ExecutorTest
                 assertEquals("4", res.get(2));
                 assertEquals("10", res.get(3));
                 assertEquals("11", res.get(4));
+            }
+        }
+    }
+
+    @Test()
+    public void testSkip() throws Exception
+    {
+        scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/delete-not-exists/test-data1.sql");
+
+        String sql = "--DELETE_NOT_EXISTS_V3 temp_tst_tbl_1.id,temp_tst_tbl_2.tbl_2_id,temp_tst_tbl_3.tbl_3_id,temp_tst_tbl_4.tbl_4_id system.delete_not_exists.batchsize system.delete_not_exists.temp_tst_tbl_1.skipToId";
+        int line = 1;
+        File scriptFile = Mockito.mock(File.class);
+        Properties properties = Mockito.mock(Properties.class);
+
+        String select = "select id from temp_tst_tbl_1 order by id ASC";
+
+        try (Connection connection = dataSource.getConnection())
+        {
+            connection.setAutoCommit(true);
+            {
+                when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_BATCH_SIZE)).thenReturn("2");
+                when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_READ_ONLY)).thenReturn("false");
+                when(properties.getProperty(DeleteNotExistsV3Executor.PROPERTY_TIMEOUT_SECONDS)).thenReturn("-1");
+                when(properties.getProperty("system.delete_not_exists.temp_tst_tbl_1.skipToId")).thenReturn("6");
+                DeleteNotExistsV3Executor DeleteNotExistsV3Executor = createDeleteNotExistsV3Executor(dialect, connection, sql, line, scriptFile, properties);
+                DeleteNotExistsV3Executor.execute();
+
+                List<String> res = jdbcTmpl.queryForList(select, String.class);
+                assertEquals(7, res.size());
+
+                // We are only processing Ids after 6, so all ids < 6 must remain untouched
+                assertEquals("1", res.get(0));
+                assertEquals("2", res.get(1));
+                assertEquals("3", res.get(2));
+                assertEquals("4", res.get(3));
+                assertEquals("5", res.get(4));
+                assertEquals("10", res.get(5));
+                assertEquals("11", res.get(6));
             }
         }
     }

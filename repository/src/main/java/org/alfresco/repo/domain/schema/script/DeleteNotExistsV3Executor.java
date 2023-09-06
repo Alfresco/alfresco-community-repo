@@ -109,11 +109,18 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
     protected void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits, String[] optionalWhereClauses)
             throws SQLException
     {
+        process(tableColumn, tableUpperLimits, optionalWhereClauses, 0L);
+    }
+
+    @Override
+    protected void process(Pair<String, String>[] tableColumn, Long[] tableUpperLimits, String[] optionalWhereClauses, Long skipToId)
+            throws SQLException
+    {
         String primaryTableName = tableColumn[0].getFirst();
         String primaryColumnName = tableColumn[0].getSecond();
         String primaryWhereClause = optionalWhereClauses[0];
 
-        Long primaryId = 0L;
+        Long primaryId = skipToId;
 
         deletedCount = 0L;
         startTime = new Date();

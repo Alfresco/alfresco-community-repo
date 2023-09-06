@@ -135,7 +135,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
 
                 // Only implemented in v3. In v2 the skip is not used
                 String skipToIdString = (args.length == 4) ? globalProperties.getProperty(args[3]) : null;
-                Long skipToId = skipToIdString == null ? 0L : Integer.parseInt(skipToIdString);
+                Long skipToId = skipToIdString == null ? 0L : Long.parseLong(skipToIdString);
 
                 // Compute upper limits
                 Long[] tableUpperLimits = new Long[tableColumnArgs.length];

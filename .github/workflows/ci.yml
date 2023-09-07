@@ -396,11 +396,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: ${{ matrix.jre-version || '17' }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           bash ./scripts/ci/init.sh
-          BUILD_OPTIONS="-Ddocker.buildArg.JRE_VERSION=${{ matrix.jre-version }} ${BUILD_OPTIONS}" bash ./scripts/ci/build.sh
+          export BUILD_OPTIONS="-Ddocker.buildArg.JRE_VERSION=${{ matrix.jre-version }} ${BUILD_OPTIONS}"
+          bash ./scripts/ci/build.sh
       - name: "Set up the environment"
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml

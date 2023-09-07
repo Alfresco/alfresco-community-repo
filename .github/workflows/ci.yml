@@ -385,8 +385,11 @@ jobs:
             pom-dir: tas-email
           - test-name: "WebDAV TAS tests"
             pom-dir: tas-webdav
-          - test-name: "Integration TAS tests"
+          - test-name: "Integration TAS tests (Java 17)"
             pom-dir: tas-integration
+          - test-name: "Integration TAS tests (Java 11)"
+            pom-dir: tas-integration
+            jre-version: 11
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
@@ -397,7 +400,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           bash ./scripts/ci/init.sh
-          bash ./scripts/ci/build.sh
+          BUILD_OPTIONS="-Ddocker.buildArg.JRE_VERSION=${{ matrix.jre-version }} ${BUILD_OPTIONS}" bash ./scripts/ci/build.sh
       - name: "Set up the environment"
         run: |
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml

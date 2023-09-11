@@ -190,7 +190,7 @@
         <dependency>
             <groupId>com.github.davidmoten</groupId>
             <artifactId>subethasmtp</artifactId>
-            <version>6.0.6</version>
+            <version>6.0.7</version>
             <exclusions>
                 <!-- Duplicate classes from com.sun.mail:jakarta.mail -->
                 <exclusion>

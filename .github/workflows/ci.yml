@@ -77,8 +77,6 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: Alfresco/ya-pmd-scan@v2.0.0
-        with:
-          fail-on-new-issues: "false"
 
   all_unit_tests_suite:
     name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"

@@ -536,6 +536,7 @@
         <property name="poster" ref="activitiesPoster" />
         <property name="smartStore" ref="smartStore"/>
         <property name="classDefinitionMapper" ref="classDefinitionMapper" />
+        <property name="ruleService" ref="RuleService" />
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

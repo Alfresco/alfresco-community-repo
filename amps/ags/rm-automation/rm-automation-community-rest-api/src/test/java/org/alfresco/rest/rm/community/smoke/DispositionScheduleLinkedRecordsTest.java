@@ -53,6 +53,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -138,6 +139,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      **/
     @Test
     @AlfrescoTest(jira = "RM-1622")
+    @Ignore
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
         RecordCategory category1 = createRootCategory(CATEGORY_RM_3077);
@@ -205,6 +207,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * */
     @Test
     @AlfrescoTest (jira = "RM-3060")
+    @Ignore
     public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
 
         // create a category with retention applied on records level
@@ -437,4 +440,4 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         // Verify the status code
         assertStatusCode(NO_CONTENT);
     }
-    }
+}

@@ -34,9 +34,9 @@ public class LoggingDeadLetterQueue
 
     public void onReceive(Object message)
     {
-        if (LOG.isDebugEnabled() && message != null)
+        if (message != null)
         {
-            LOG.debug("Received:\n\n" + message + "\n\n");
+            LOG.debug("Received:\n\n{}}\n\n", message);
         }
     }
 }

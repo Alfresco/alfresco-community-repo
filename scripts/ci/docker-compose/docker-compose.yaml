@@ -27,7 +27,8 @@ services:
       - "61616:61616" # OpenWire
   mtls-transform-core-aio:
     profiles: ["with-mtls-transform-core-aio"]
-    image: quay.io/alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
+    # image: quay.io/alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
+    image: quay.io/alfresco/dev:alfresco-transform-core-aio-pdf
     hostname: transform-core-aio
     ports:
       - 8090:8090

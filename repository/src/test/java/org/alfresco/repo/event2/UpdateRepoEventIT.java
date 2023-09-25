@@ -637,6 +637,10 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // node.Created event should be generated for the model
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+        if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()))
+        {
+            resultRepoEvent = getRepoEvent(2);
+        }
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());

@@ -32,10 +32,7 @@ import org.apache.camel.ProducerTemplate;
 
 class CamelMessageProducer implements MessageProducer
 {
-    private static final String HEADER_JMS_AMQP_MESSAGE_FORMAT = "JMS_AMQP_MESSAGE_FORMAT";
-    private static final Long HEADER_JMS_AMQP_MESSAGE_FORMAT_VALUE = 0L;
-    private static final String ERROR_SENDING = "Could not send message";
-
+    private static final Map<String, Object> AMQP_HEADERS = Map.of("JMS_AMQP_MESSAGE_FORMAT", 0L);
     private final ProducerTemplate producer;
     private final String endpoint;
 
@@ -50,17 +47,11 @@ class CamelMessageProducer implements MessageProducer
     {
         try
         {
-            producer.sendBodyAndHeaders(endpoint, message, getHeaders());
+            producer.sendBodyAndHeaders(endpoint, message, AMQP_HEADERS);
         }
         catch (Exception e)
         {
-            throw new MessagingException(ERROR_SENDING, e);
+            throw new MessagingException("Could not send message", e);
         }
     }
-
-    private Map<String, Object> getHeaders()
-    {
-        return Map.of(HEADER_JMS_AMQP_MESSAGE_FORMAT, HEADER_JMS_AMQP_MESSAGE_FORMAT_VALUE);
-    }
-
 }

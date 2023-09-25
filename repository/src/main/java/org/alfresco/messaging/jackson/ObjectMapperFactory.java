@@ -40,6 +40,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class ObjectMapperFactory
 {
+    private ObjectMapperFactory()
+    {
+        //no instantiation
+    }
+
     public static ObjectMapper createInstance()
     {
         QpidJsonBodyCleanerObjectMapper mapper = new QpidJsonBodyCleanerObjectMapper();
@@ -81,7 +86,7 @@ public class ObjectMapperFactory
             StringWriter writer = new StringWriter();
             IOUtils.copy(inputStream, writer, DEFAULT_ENCODING);
             String content = writer.toString();
-            content = content.substring(content.indexOf("{"));
+            content = content.substring(content.indexOf('{'));
             return readValue(content, valueType);
         }
     }

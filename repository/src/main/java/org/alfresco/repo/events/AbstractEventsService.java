@@ -74,8 +74,6 @@ import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.gytheio.messaging.MessageProducer;
-import org.gytheio.messaging.MessagingException;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
@@ -294,7 +292,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     }
 
     /**
-     * Filter out event before sending them to {@link org.gytheio.messaging.MessageProducer}
+     * Filter out event before sending them to {@link MessageProducer}
      * 
      * @param events the events to be filtered
      * 

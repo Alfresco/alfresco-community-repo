@@ -79,7 +79,6 @@
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.7</dependency.slf4j.version>
         <dependency.log4j.version>2.20.0</dependency.log4j.version>
-        <dependency.gytheio.version>0.20.0-A1</dependency.gytheio.version>
         <dependency.groovy.version>3.0.19</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
         <dependency.spring-security.version>6.1.3</dependency.spring-security.version>
@@ -1036,7 +1035,7 @@
                             <configuration>
                                 <failOnMissing>true</failOnMissing>
                                 <excludedScopes>provided,test</excludedScopes>
-                                <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
+                                <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti).*</excludedGroups>
                                 <failIfWarning>true</failIfWarning>
                                 <includedLicenses>
                                     https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicenses.txt

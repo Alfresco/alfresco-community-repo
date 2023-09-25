@@ -30,8 +30,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.gytheio.messaging.MessageProducer;
-import org.gytheio.messaging.MessagingException;
 
 public class ExceptionEventsServiceImpl extends AbstractEventsService implements ExceptionEventsService
 {

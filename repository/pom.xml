@@ -561,21 +561,6 @@
             <version>1.2.14</version>
         </dependency>
         <dependency>
-            <groupId>org.gytheio</groupId>
-            <artifactId>gytheio-messaging-camel</artifactId>
-            <version>${dependency.gytheio.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.camel</groupId>
-                    <artifactId>camel-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.camel</groupId>
-                    <artifactId>camel-jackson</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
             <exclusions>

@@ -3203,13 +3203,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     // Invoke policy behaviour
                     invokeBeforeUpdateNode(parentNodeRef);
 
+                    Map<QName, Serializable> propertiesBefore = nodeDAO.getNodeProperties(parentNodeId);
                     // Touch the node; it is cm:auditable
                     boolean changed = nodeDAO.setModifiedProperties(parentNodeId, modifiedDate, modifiedByToPropagate);
+                    Map<QName, Serializable> propertiesAfter = nodeDAO.getNodeProperties(parentNodeId);
 
                     if (changed)
                     {
                         // Invoke policy behaviour
                         invokeOnUpdateNode(parentNodeRef);
+                        invokeOnUpdateProperties(parentNodeRef, propertiesBefore, propertiesAfter);
                     }
 
                     return null;

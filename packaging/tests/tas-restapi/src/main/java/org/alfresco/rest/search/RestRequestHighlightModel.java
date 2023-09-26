@@ -39,14 +39,8 @@ import org.alfresco.utility.model.TestModel;
  */
 public class RestRequestHighlightModel extends TestModel implements IRestModel<RestRequestHighlightModel>
 {
-    @JsonProperty (value = "entry")
+    @JsonProperty ("entry")
     RestRequestHighlightModel model;
-
-    @Override
-    public RestRequestHighlightModel onModel()
-    {
-        return model;
-    }
 
     /** The string used to mark the start of a highlight in a fragment. */
     private String prefix;
@@ -64,6 +58,12 @@ public class RestRequestHighlightModel extends TestModel implements IRestModel<R
     private boolean usePhraseHighlighter;
     /** The fields to highlight and field specific configuration properties for each field */
     private List<RestRequestFieldsModel> fields;
+
+    @Override
+    public RestRequestHighlightModel onModel()
+    {
+        return model;
+    }
 
     public String getPrefix()
     {
@@ -115,7 +115,7 @@ public class RestRequestHighlightModel extends TestModel implements IRestModel<R
         this.maxAnalyzedChars = maxAnalyzedChars;
     }
 
-    public boolean getMergeContiguous()
+    public boolean isMergeContiguous()
     {
         return this.mergeContiguous;
     }
@@ -125,7 +125,7 @@ public class RestRequestHighlightModel extends TestModel implements IRestModel<R
         this.mergeContiguous = mergeContiguous;
     }
 
-    public boolean getUsePhraseHighlighter()
+    public boolean isUsePhraseHighlighter()
     {
         return this.usePhraseHighlighter;
     }

@@ -669,10 +669,14 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        // we should have 3 events, node.Created for the model, node.Created for the node and node.Updated
-        checkNumOfEvents(3);
+        // we should have 4 events, node.Created for the model, node.Created for the node and node.Updated for their parents
+        checkNumOfEvents(4);
 
         resultRepoEvent = getRepoEvent(3);
+        if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()))
+        {
+            resultRepoEvent = getRepoEvent(4);
+        }
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
         nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName, nodeResource.getNodeType());

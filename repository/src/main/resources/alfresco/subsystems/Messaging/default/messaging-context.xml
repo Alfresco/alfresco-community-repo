@@ -11,7 +11,7 @@
 
     <context:component-scan base-package="org.alfresco.messaging.camel.configuration"/>
 
-    <bean id="messagingObjectMapper" class="org.gytheio.messaging.jackson.ObjectMapperFactory"
+    <bean id="messagingObjectMapper" class="org.alfresco.messaging.jackson.ObjectMapperFactory"
         factory-method="createInstance" />
         
     <bean id="defaultDataFormat" class="org.apache.camel.component.jackson.JacksonDataFormat">
@@ -96,6 +96,6 @@
     </bean>
     
     <!-- In the default routes, this is where a message goes if no queue is specified -->
-    <bean id="deadLetterQueue" class="org.gytheio.messaging.LoggingDeadLetterQueue" />
+    <bean id="deadLetterQueue" class="org.alfresco.messaging.LoggingDeadLetterQueue" />
     
 </beans>

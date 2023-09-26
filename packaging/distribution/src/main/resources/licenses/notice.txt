@@ -208,10 +208,6 @@ Hibernate   http://www.hibernate.org/
 jid3lib http://javamusictag.sourceforge.net/
 TinyMCE http://www.tinymce.com/
 
-                
-=== LGPL 3.0 ===
-Gytheio https://github.com/Alfresco/gytheio
-
 
 === MIT License ===
 Bouncy Castle   http://www.bouncycastle.org/ 

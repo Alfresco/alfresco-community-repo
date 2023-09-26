@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>23.1.0.224-SNAPSHOT</version>
+        <version>23.1.0.230-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -559,21 +559,6 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-sync-events</artifactId>
             <version>1.2.14</version>
-        </dependency>
-        <dependency>
-            <groupId>org.gytheio</groupId>
-            <artifactId>gytheio-messaging-camel</artifactId>
-            <version>${dependency.gytheio.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.camel</groupId>
-                    <artifactId>camel-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.camel</groupId>
-                    <artifactId>camel-jackson</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>

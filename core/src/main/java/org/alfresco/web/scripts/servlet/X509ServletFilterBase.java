@@ -74,7 +74,6 @@ public abstract class X509ServletFilterBase implements Filter
                 logger.debug("Initializing X509ServletFilter");
             }
 
-            this.handleClientAuth();
 
             this.enforce = checkEnforce(config.getServletContext());
 
@@ -85,6 +84,8 @@ public abstract class X509ServletFilterBase implements Filter
 
             if (this.enforce)
             {
+                this.handleClientAuth();
+
                 /*
                 * We are enforcing so get the cert-contains string.
                 */

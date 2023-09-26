@@ -28,6 +28,8 @@ package org.alfresco.repo.event2;
 import static org.alfresco.repo.event2.NodeResourceHelper.getLocalizedPropertiesBefore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -159,5 +161,17 @@ public class NodeResourceHelperUnitTest
         then(secondaryParentMock).shouldHaveNoMoreInteractions();
         then(parentRefMock).should().getId();
         then(parentRefMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testGetNoneSecondaryParents()
+    {
+        NodeRef nodeRefMock = mock(NodeRef.class);
+
+        // when
+        List<String> secondaryParents = nodeResourceHelper.getSecondaryParents(nodeRefMock);
+
+        assertNotNull(secondaryParents);
+        assertTrue(secondaryParents.isEmpty());
     }
 }

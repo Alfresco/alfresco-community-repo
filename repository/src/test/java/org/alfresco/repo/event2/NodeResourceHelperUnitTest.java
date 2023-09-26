@@ -28,14 +28,41 @@ package org.alfresco.repo.event2;
 import static org.alfresco.repo.event2.NodeResourceHelper.getLocalizedPropertiesBefore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class NodeResourceHelperUnitTest
 {
+    @Mock
+    private NodeService nodeServiceMock;
+
+    @InjectMocks
+    private NodeResourceHelper nodeResourceHelper;
+
+    @Before
+    public void setUp() throws Exception
+    {
+        MockitoAnnotations.openMocks(this);
+    }
+
     @Test
     public void shouldExtractOnlyRelevantPropertiesForBeforeNode()
     {
@@ -110,5 +137,27 @@ public class NodeResourceHelperUnitTest
             this.put(language, value);
             return this;
         }
+    }
+
+    @Test
+    public void testGetSecondaryParents()
+    {
+        NodeRef nodeRefMock = mock(NodeRef.class);
+        NodeRef parentRefMock = mock(NodeRef.class);
+        ChildAssociationRef secondaryParentMock = mock(ChildAssociationRef.class);
+        given(nodeServiceMock.getParentAssocs(any(NodeRef.class))).willReturn(List.of(secondaryParentMock));
+        given(secondaryParentMock.isPrimary()).willReturn(false);
+        given(secondaryParentMock.getParentRef()).willReturn(parentRefMock);
+
+        // when
+        nodeResourceHelper.getSecondaryParents(nodeRefMock);
+
+        then(nodeServiceMock).should().getParentAssocs(nodeRefMock);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(secondaryParentMock).should().isPrimary();
+        then(secondaryParentMock).should().getParentRef();
+        then(secondaryParentMock).shouldHaveNoMoreInteractions();
+        then(parentRefMock).should().getId();
+        then(parentRefMock).shouldHaveNoMoreInteractions();
     }
 }

@@ -65,6 +65,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     private QName nodeType;
     private QName nodeTypeBefore;
     private List<String> primaryHierarchyBefore;
+    private List<String> secondaryParentsBefore;
     private boolean resourceBeforeAllFieldsNull = true;
 
     public NodeEventConsolidator(NodeResourceHelper nodeResourceHelper)
@@ -144,7 +145,27 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         eventTypes.add(EventType.NODE_UPDATED);
 
         createBuilderIfAbsent(newChildAssocRef.getChildRef());
-        setBeforePrimaryHierarchy(helper.getPrimaryHierarchy(oldChildAssocRef.getParentRef(), true));
+        if (newChildAssocRef.isPrimary())
+        {
+            setBeforePrimaryHierarchy(helper.getPrimaryHierarchy(oldChildAssocRef.getParentRef(), true));
+        }
+        else
+        {
+            List<String> secondaryParents = helper.getSecondaryParents(newChildAssocRef.getChildRef());
+            // create a new secondary association event takes place
+            if (newChildAssocRef.getParentRef() != null)
+            {
+                // recreate secondary parents previous state
+                secondaryParents.remove(newChildAssocRef.getParentRef().getId());
+            }
+            // remove a secondary association event takes place
+            else if(oldChildAssocRef.getParentRef() != null && !secondaryParents.contains(oldChildAssocRef.getParentRef().getId()))
+            {
+                // recreate secondary parents previous state
+                secondaryParents.add(oldChildAssocRef.getParentRef().getId());
+            }
+            setSecondaryParentsBefore(secondaryParents);
+        }
     }
 
     @Override
@@ -174,7 +195,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         eventTypes.add(EventType.NODE_DELETED);
-        createBuilderIfAbsent(nodeRef, false);
+        createBuilderIfAbsent(nodeRef);
     }
 
     @Override
@@ -240,6 +261,19 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         }
     }
 
+    private void setSecondaryParentsBefore(List<String> secondaryParents)
+    {
+        if (this.secondaryParentsBefore == null)
+        {
+            this.secondaryParentsBefore = secondaryParents;
+        }
+    }
+
+    List<String> getSecondaryParentsBefore()
+    {
+        return secondaryParentsBefore;
+    }
+
     private NodeResource buildNodeResource()
     {
         if (resourceBuilder == null)
@@ -283,7 +317,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 resourceBeforeAllFieldsNull = false;
             }
 
-            Map<String, Map<String, String>> localizedProps =helper.getLocalizedPropertiesBefore(changedPropsBefore, after);
+            Map<String, Map<String, String>> localizedProps = helper.getLocalizedPropertiesBefore(changedPropsBefore, after);
             if (!localizedProps.isEmpty())
             {
                 builder.setLocalizedProperties(localizedProps);
@@ -309,8 +343,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 builder.setModifiedByUser(modifier);
                 resourceBeforeAllFieldsNull = false;
             }
-            modifiedAt =
-                        helper.getZonedDateTime((Date) changedPropsBefore.get(ContentModel.PROP_MODIFIED));
+            modifiedAt = helper.getZonedDateTime((Date) changedPropsBefore.get(ContentModel.PROP_MODIFIED));
         }
 
         // Handle case where the content does not exist on the propertiesBefore
@@ -331,6 +364,12 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         if (primaryHierarchyBefore != null && !primaryHierarchyBefore.isEmpty())
         {
             builder.setPrimaryHierarchy(primaryHierarchyBefore);
+            resourceBeforeAllFieldsNull = false;
+        }
+
+        if (secondaryParentsBefore != null)
+        {
+            builder.setSecondaryParents(secondaryParentsBefore);
             resourceBeforeAllFieldsNull = false;
         }
 

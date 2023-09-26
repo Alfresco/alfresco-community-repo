@@ -152,16 +152,15 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         else
         {
             List<String> secondaryParents = helper.getSecondaryParents(newChildAssocRef.getChildRef());
-            // create a new secondary association event takes place
             if (newChildAssocRef.getParentRef() != null)
             {
-                // recreate secondary parents previous state
+                // on create secondary child association event takes place - recreate secondary parents previous state
                 secondaryParents.remove(newChildAssocRef.getParentRef().getId());
             }
-            // remove a secondary association event takes place
+
             else if(oldChildAssocRef.getParentRef() != null && !secondaryParents.contains(oldChildAssocRef.getParentRef().getId()))
             {
-                // recreate secondary parents previous state
+                // before remove secondary child association event takes place - recreate secondary parents previous state
                 secondaryParents.add(oldChildAssocRef.getParentRef().getId());
             }
             setSecondaryParentsBefore(secondaryParents);

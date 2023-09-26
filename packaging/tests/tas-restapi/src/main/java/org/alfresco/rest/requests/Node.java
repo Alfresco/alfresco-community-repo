@@ -859,7 +859,7 @@ public class Node extends ModelRequest<Node>
     public RestNodeChildAssociationModel addSecondaryChild(RestNodeChildAssociationModel secondaryChildAssociation)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, secondaryChildAssociation.toJson(), "nodes/{nodeId}/secondary-children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
-        return restWrapper.processModels(RestNodeChildAssociationModel.class, request);
+        return restWrapper.processModel(RestNodeChildAssociationModel.class, request);
     }
 
     /**

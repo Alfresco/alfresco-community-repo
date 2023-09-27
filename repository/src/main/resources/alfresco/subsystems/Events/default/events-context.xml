@@ -9,9 +9,9 @@
                            http://www.springframework.org/schema/tx      http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
                            http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <bean id="eventsDispatcher" class="org.gytheio.messaging.camel.CamelMessageProducer">
-        <property name="producer" ref="camelProducerTemplate" />
-        <property name="endpoint" value="direct:alfresco.events" />
+    <bean id="eventsDispatcher" class="org.alfresco.repo.events.CamelMessageProducer">
+        <constructor-arg ref="camelProducerTemplate" />
+        <constructor-arg value="direct:alfresco.events" />
     </bean>
 
     <bean id="eventsRegistry" class="org.alfresco.sync.events.EventRegistryImpl">

@@ -152,7 +152,7 @@ public class NodeResourceHelperUnitTest
         given(secondaryParentMock.getParentRef()).willReturn(parentRefMock);
 
         // when
-        nodeResourceHelper.getSecondaryParents(nodeRefMock);
+        List<String> secondaryParents = nodeResourceHelper.getSecondaryParents(nodeRefMock);
 
         then(nodeServiceMock).should().getParentAssocs(nodeRefMock);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
@@ -161,6 +161,7 @@ public class NodeResourceHelperUnitTest
         then(secondaryParentMock).shouldHaveNoMoreInteractions();
         then(parentRefMock).should().getId();
         then(parentRefMock).shouldHaveNoMoreInteractions();
+        assertNotNull(secondaryParents);
     }
 
     @Test

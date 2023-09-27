@@ -87,7 +87,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         });
 
         checkNumOfEvents(2);
-        
+
         resultRepoEvent = getRepoEvent(2);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(),
             resultRepoEvent.getType());
@@ -227,7 +227,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         });
 
         checkNumOfEvents(2);
-        
+
         resultRepoEvent = getRepoEvent(2);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
 
@@ -625,7 +625,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // Create active model
         CustomModelDefinition modelDefinition =
-                retryingTransactionHelper.doInTransaction(() -> customModelService.createCustomModel(model, true));
+            retryingTransactionHelper.doInTransaction(() -> customModelService.createCustomModel(model, true));
 
         assertNotNull(modelDefinition);
         assertEquals(modelName, modelDefinition.getName().getLocalName());
@@ -637,10 +637,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // node.Created event should be generated for the model
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()))
-        {
-            resultRepoEvent = getRepoEvent(2);
-        }
+
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());
@@ -651,13 +648,8 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
 
         // node.Created event should be generated
-        resultRepoEvent = getRepoEvent(2);
+        resultRepoEvent = getRepoEvent(3);
         nodeResource = getNodeResource(resultRepoEvent);
-        if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()) && "cm:content".equals(nodeResource.getNodeType()))
-        {
-            resultRepoEvent = getRepoEvent(3);
-            nodeResource = getNodeResource(resultRepoEvent);
-        }
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
 
@@ -670,19 +662,15 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        // we should have 4 events, node.Created for the model, node.Created for the node and node.Updated for their parents
+        // we should have 4 events, node.Created for the model, node.Updated for the parent, node.Created for the node and node.Updated
         checkNumOfEvents(4);
 
-        resultRepoEvent = getRepoEvent(3);
-        if(!EventType.NODE_UPDATED.getType().equals(resultRepoEvent.getType()))
-        {
-            resultRepoEvent = getRepoEvent(4);
-        }
+        resultRepoEvent = getRepoEvent(4);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
         nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName, nodeResource.getNodeType());
 
-        NodeResource resourceBefore = getNodeResourceBefore(3);
+        NodeResource resourceBefore = getNodeResourceBefore(4);
         assertEquals("Incorrect node type was found", "cm:content", resourceBefore.getNodeType());
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getContent());
@@ -801,7 +789,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         });
 
         checkNumOfEvents(4);
-        
+
         NodeResource resourceBefore = getNodeResourceBefore(4);
         NodeResource resource = getNodeResource(4);
 
@@ -1033,7 +1021,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         NodeResource resource = getNodeResource(1);
         final Set<String> originalAspects = resource.getAspectNames();
         assertNotNull(originalAspects);
-        
+
         retryingTransactionHelper.doInTransaction(() -> {
             // Add cm:geographic aspect with default value
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_GEOGRAPHIC, null);

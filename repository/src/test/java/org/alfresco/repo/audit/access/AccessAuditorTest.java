@@ -291,7 +291,7 @@ public class AccessAuditorTest
         txn.commit();
         txn = null;
         
-        assertEquals(2, auditMapList.size());
+        assertEquals(1, auditMapList.size());
         Map<String, Serializable> auditMap = auditMapList.get(0);
         assertEquals("CREATE", auditMap.get("action"));
         assertContains("createNode", auditMap.get("sub-actions"));
@@ -310,7 +310,7 @@ public class AccessAuditorTest
       
       // TODO do we record the parent or the full path? Do we need to?
 
-      assertEquals(2, auditMapList.size());
+      assertEquals(1, auditMapList.size());
       Map<String, Serializable> auditMap = auditMapList.get(0);
       assertEquals("COPY", auditMap.get("action"));
       assertContains("createNode", auditMap.get("sub-actions"));
@@ -354,7 +354,7 @@ public class AccessAuditorTest
         
         // TODO do we record the parent or the full path? Do we need to?
         
-        assertEquals(2, auditMapList.size());
+        assertEquals(1, auditMapList.size());
         Map<String, Serializable> auditMap = auditMapList.get(0);
         assertEquals("MOVE", auditMap.get("action"));
         assertContains("moveNode", auditMap.get("sub-actions"));
@@ -388,7 +388,7 @@ public class AccessAuditorTest
         txn.commit();
         txn = null;
         
-        assertEquals(2, auditMapList.size());
+        assertEquals(1, auditMapList.size());
         Map<String, Serializable> auditMap = auditMapList.get(0);
         assertEquals("DELETE", auditMap.get("action"));
         assertContains("deleteNode", auditMap.get("sub-actions"));
@@ -533,7 +533,7 @@ public class AccessAuditorTest
         txn.commit();
         txn = null;
 
-        assertEquals(3, auditMapList.size());
+        assertEquals(2, auditMapList.size());
         boolean origIn0 = ((String)auditMapList.get(0).get("path")).endsWith("cm:content1");
         Map<String, Serializable> origMap = auditMapList.get(origIn0 ? 0 : 1);
         Map<String, Serializable> workMap = auditMapList.get(origIn0 ? 1 : 0);

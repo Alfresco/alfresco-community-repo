@@ -131,7 +131,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(1, childAssociationRefs.size());
         assertFalse(childAssociationRefs.get(0).isPrimary());
         
-        checkNumOfEvents(3);
+        checkNumOfEvents(4);
         
         retryingTransactionHelper.doInTransaction(() ->
             nodeService.removeChildAssociation(childAssociationRef));
@@ -141,9 +141,9 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         assertEquals(0, childAssociationRefs.size());
 
-        checkNumOfEvents(4);
+        checkNumOfEvents(5);
 
-        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getRepoEventWithoutWait(4);
+        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getFilteredEvent(EventType.CHILD_ASSOC_DELETED,0);
 
         assertEquals("Wrong repo event type.", EventType.CHILD_ASSOC_DELETED.getType(), childAssocRepoEvent.getType());
         assertNotNull("Repo event ID is not available. ", childAssocRepoEvent.getId());

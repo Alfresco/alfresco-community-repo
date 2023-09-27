@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.1.0.230-SNAPSHOT</version>
+    <version>23.1.0.231-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -57,7 +57,8 @@
         <dependency.acs-event-model.version>0.0.23</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.20.1</dependency.aspectj.version>
-        <dependency.spring.version>6.0.9</dependency.spring.version>
+        <dependency.spring.version>6.0.12</dependency.spring.version>
+        <dependency.spring-security.version>6.1.4</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.15.2</dependency.jackson.version>
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
@@ -81,7 +82,6 @@
         <dependency.log4j.version>2.20.0</dependency.log4j.version>
         <dependency.groovy.version>3.0.19</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>6.1.3</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
@@ -967,6 +967,16 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
+                    </configuration>
+                </plugin>
                 <!-- Ensure consistent maven-release-plugin version-->
                 <plugin>
                     <artifactId>maven-release-plugin</artifactId>

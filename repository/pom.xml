@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>23.1.0.230-SNAPSHOT</version>
+        <version>23.1.0.231-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -862,6 +862,9 @@
                     <showWeaveInfo>true</showWeaveInfo>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <additionalCompilerArgs>
+                        <arg>-parameters</arg>
+                    </additionalCompilerArgs>
                 </configuration>
                 <dependencies>
                     <dependency>

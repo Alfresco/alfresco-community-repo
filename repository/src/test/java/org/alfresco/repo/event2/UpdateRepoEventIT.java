@@ -673,7 +673,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         checkNumOfEvents(4);
 
         resultRepoEvent = getRepoEvent(3);
-        if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()))
+        if(!EventType.NODE_UPDATED.getType().equals(resultRepoEvent.getType()))
         {
             resultRepoEvent = getRepoEvent(4);
         }
@@ -820,7 +820,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getModifiedByUser());
         assertNull(resourceBefore.getCreatedAt());
         assertNull(resourceBefore.getCreatedByUser());
-        assertNull(resourceBefore.getProperties());
+        assertNotNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNotNull(resourceBefore.getPrimaryHierarchy());
         assertNull("Content should have been null.", resource.getContent());

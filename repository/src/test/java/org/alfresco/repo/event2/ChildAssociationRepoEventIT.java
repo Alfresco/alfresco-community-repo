@@ -141,7 +141,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         assertEquals(0, childAssociationRefs.size());
 
-        checkNumOfEvents(5);
+        checkNumOfEvents(6);
 
         final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getFilteredEvent(EventType.CHILD_ASSOC_DELETED,0);
 

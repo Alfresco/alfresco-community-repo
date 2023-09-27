@@ -652,12 +652,13 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // node.Created event should be generated
         resultRepoEvent = getRepoEvent(2);
+        nodeResource = getNodeResource(resultRepoEvent);
         if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()) && "cm:content".equals(nodeResource.getNodeType()))
         {
             resultRepoEvent = getRepoEvent(3);
+            nodeResource = getNodeResource(resultRepoEvent);
         }
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
-        nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
 
         QName typeQName = QName.createQName("{" + namespacePair.getFirst()+ "}" + typeName);

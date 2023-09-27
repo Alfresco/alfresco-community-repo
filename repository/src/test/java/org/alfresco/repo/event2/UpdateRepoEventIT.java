@@ -652,7 +652,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 
         // node.Created event should be generated
         resultRepoEvent = getRepoEvent(2);
-        if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()))
+        if(!EventType.NODE_CREATED.getType().equals(resultRepoEvent.getType()) || "cm:content".equals(nodeResource.getNodeType()))
         {
             resultRepoEvent = getRepoEvent(3);
         }
@@ -830,7 +830,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(resource.getModifiedByUser());
         assertNotNull(resource.getAspectNames());
         assertNull(resource.getContent());
-        assertTrue(resource.getProperties().isEmpty());
+        assertFalse(resource.getProperties().isEmpty());
     }
 
     @Test

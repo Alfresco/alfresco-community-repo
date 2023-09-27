@@ -79,7 +79,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         checkNumOfEvents(4);
 
-        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getRepoEventWithoutWait(3);
+        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getFilteredEvent(EventType.CHILD_ASSOC_CREATED, 0);
 
         assertEquals("Wrong repo event type.", EventType.CHILD_ASSOC_CREATED.getType(), childAssocRepoEvent.getType());
         assertNotNull("Repo event ID is not available.", childAssocRepoEvent.getId());
@@ -330,7 +330,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        checkNumOfEvents(7);
+        checkNumOfEvents(10);
         // 3 assoc.child.Created events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_CREATED);
         assertEquals("Wrong association events number",3, childAssocEvents.size());
@@ -715,6 +715,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("org.alfresco.event.node.Created", repoEvents.get(0).getType());
         assertEquals("org.alfresco.event.node.Created", repoEvents.get(1).getType());
         assertEquals("org.alfresco.event.node.Updated", repoEvents.get(2).getType());
-        assertEquals("org.alfresco.event.assoc.child.Created", repoEvents.get(3).getType());
+        assertEquals("org.alfresco.event.node.Updated", repoEvents.get(3).getType());
+        assertEquals("org.alfresco.event.assoc.child.Created", repoEvents.get(4).getType());
     }
 }

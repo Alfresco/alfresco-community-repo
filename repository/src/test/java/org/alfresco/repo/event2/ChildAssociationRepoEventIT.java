@@ -541,7 +541,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
     }
     
     @Test
-    public void testDeleteAssociationOneParentMultipleChildrenDifferentTransactions()
+    public void testDeleteAssociationMultipleParentOneChildrenDifferentTransactions()
     {
         final NodeRef parent1NodeRef = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef parent2NodeRef = createNode(ContentModel.TYPE_FOLDER);
@@ -583,9 +583,6 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         }
 
         checkNumOfEvents(14);
-
-        //resultRepoEvent = getRepoEventWithoutWait(5);
-        //assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
 
         // 3 assoc.child.Deleted events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_DELETED);

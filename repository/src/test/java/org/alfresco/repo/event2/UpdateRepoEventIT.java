@@ -635,6 +635,9 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         Collection<TypeDefinition> types = modelDefinition.getTypeDefinitions();
         assertEquals(1, types.size());
 
+        // we should have only 2 events, node.Created and node.Updated
+        checkNumOfEvents(2);
+
         // node.Created event should be generated for the model
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getFilteredEvent(EventType.NODE_CREATED, 0);
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());

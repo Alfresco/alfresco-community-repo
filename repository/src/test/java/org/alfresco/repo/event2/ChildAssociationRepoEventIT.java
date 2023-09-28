@@ -143,7 +143,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         checkNumOfEvents(6);
 
-        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getFilteredEvent(EventType.CHILD_ASSOC_DELETED,0);
+        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getFilteredEvent(EventType.CHILD_ASSOC_DELETED, 0);
 
         assertEquals("Wrong repo event type.", EventType.CHILD_ASSOC_DELETED.getType(), childAssocRepoEvent.getType());
         assertNotNull("Repo event ID is not available. ", childAssocRepoEvent.getId());

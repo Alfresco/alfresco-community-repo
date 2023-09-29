@@ -60,7 +60,7 @@ public class SearchScoreModel extends TestModel implements IRestModel<SearchScor
     @JsonProperty(required = true)
     private float score;
     
-    private List<ResponseHighLightModel> highlight;
+    private List<ResponseHighlightModel> highlight;
 
     public float getScore()
     {
@@ -78,12 +78,12 @@ public class SearchScoreModel extends TestModel implements IRestModel<SearchScor
         return this;
     }
 
-    public List<ResponseHighLightModel> getHighlight()
+    public List<ResponseHighlightModel> getHighlight()
     {
         return highlight;
     }
 
-    public void setHighlight(List<ResponseHighLightModel> highlight)
+    public void setHighlight(List<ResponseHighlightModel> highlight)
     {
         this.highlight = highlight;
     }

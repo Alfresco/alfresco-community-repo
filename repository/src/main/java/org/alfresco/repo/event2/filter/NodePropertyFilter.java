@@ -52,18 +52,18 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_CASCADE_TX,
                                                                 ContentModel.PROP_CASCADE_CRC);
 
-    private final List<String> nodeAspectsBlackList;
+    private final List<String> nodePropertiesBlackList;
 
     public NodePropertyFilter()
     {
-        this.nodeAspectsBlackList = parseFilterList(FILTERED_PROPERTIES);
+        this.nodePropertiesBlackList = parseFilterList(FILTERED_PROPERTIES);
     }
 
     @Override
     public Set<QName> getExcludedTypes()
     {
         Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
-        nodeAspectsBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
+        nodePropertiesBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
         return result;
     }
 

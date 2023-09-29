@@ -3,8 +3,7 @@ version: "3"
 services:
   transform-core-aio:
     profiles: ["with-transform-core-aio"]
-    # image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
-    image: quay.io/alfresco/dev:alfresco-transform-core-aio-pdf
+    image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
     environment:
       JAVA_OPTS: " -Xms256m -Xmx256m"
     ports:
@@ -27,8 +26,7 @@ services:
       - "61616:61616" # OpenWire
   mtls-transform-core-aio:
     profiles: ["with-mtls-transform-core-aio"]
-    # image: quay.io/alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
-    image: quay.io/alfresco/dev:alfresco-transform-core-aio-pdf
+    image: quay.io/alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
     hostname: transform-core-aio
     ports:
       - 8090:8090

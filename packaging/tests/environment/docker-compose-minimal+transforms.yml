@@ -89,8 +89,7 @@ services:
       - 61613:61613 # STOMP
 
   transform-core-aio:
-    # image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
-    image: quay.io/alfresco/dev:alfresco-transform-core-aio-pdf
+    image: alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
     environment:
       JAVA_OPTS: " -Xms256m -Xmx512m"
     ports:

@@ -73,8 +73,7 @@ public abstract class X509ServletFilterBase implements Filter
             {
                 logger.debug("Initializing X509ServletFilter");
             }
-
-
+            
             this.enforce = checkEnforce(config.getServletContext());
 
             if(logger.isDebugEnabled())

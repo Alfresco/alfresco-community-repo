@@ -862,9 +862,6 @@
                     <showWeaveInfo>true</showWeaveInfo>
                     <source>1.8</source>
                     <target>1.8</target>
-                    <additionalCompilerArgs>
-                        <arg>-parameters</arg>
-                    </additionalCompilerArgs>
                 </configuration>
                 <dependencies>
                     <dependency>

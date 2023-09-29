@@ -27,8 +27,6 @@ package org.alfresco.repo.event2;
 
 import static java.util.Optional.ofNullable;
 
-import static org.alfresco.model.ContentModel.PROP_CASCADE_TX;
-
 import java.io.Serializable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -207,7 +205,7 @@ public class NodeResourceHelper implements InitializingBean
         Map<String, Serializable> filteredProps = new HashMap<>(props.size());
 
         props.forEach((k, v) -> {
-            if (!nodePropertyFilter.isExcluded(k) || PROP_CASCADE_TX.equals(k))
+            if (!nodePropertyFilter.isExcluded(k))
             {
                 if (v instanceof MLText)
                 {

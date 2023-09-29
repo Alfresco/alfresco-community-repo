@@ -63,7 +63,7 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     public Set<QName> getExcludedTypes()
     {
         Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
-        nodePropertiesBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
+        nodePropertiesBlackList.forEach(nodeProperty-> result.addAll(expandTypeDef(nodeProperty)));
         return result;
     }
 

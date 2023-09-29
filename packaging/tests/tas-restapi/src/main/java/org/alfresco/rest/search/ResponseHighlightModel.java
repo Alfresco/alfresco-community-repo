@@ -44,6 +44,7 @@
 package org.alfresco.rest.search;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.utility.model.TestModel;
@@ -52,11 +53,11 @@ import org.alfresco.utility.model.TestModel;
  * @author Michael Suzuki
  *
  */
-public class ResponseHighLightModel extends TestModel implements IRestModel<ResponseHighLightModel>
+public class ResponseHighlightModel extends TestModel implements IRestModel<ResponseHighlightModel>
 {
-    private ResponseHighLightModel model;
+    private ResponseHighlightModel model;
     private String field;
-    private List<Object> snippets;
+    private List<String> snippets;
     
     public String getField()
     {
@@ -66,19 +67,44 @@ public class ResponseHighLightModel extends TestModel implements IRestModel<Resp
     {
         this.field = field;
     }
-    public List<Object> getSnippets()
+    public List<String> getSnippets()
     {
         return snippets;
     }
-    public void setSnippets(List<Object> snippets)
+    public void setSnippets(List<String> snippets)
     {
         this.snippets = snippets;
     }
     @Override
-    public ResponseHighLightModel onModel()
+    public ResponseHighlightModel onModel()
     {
         return model;
     }
-    
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        ResponseHighlightModel that = (ResponseHighlightModel) o;
+        return Objects.equals(model, that.model) && Objects.equals(field, that.field) && Objects.equals(snippets, that.snippets);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(model, field, snippets);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "ResponseHighlightModel{model=%s, field=%s, snippets=%s}".formatted(model, field, snippets);
+    }
 }

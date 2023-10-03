@@ -119,6 +119,9 @@ public class EventFilterUnitTest
         assertTrue("System properties are excluded by default.",
                    propertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
 
+        assertFalse("Property cascadeTx is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_TX));
+        assertFalse("Property cascadeCRC is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_CRC));
+
         assertFalse(propertyFilter.isExcluded(ContentModel.PROP_TITLE));
     }
 

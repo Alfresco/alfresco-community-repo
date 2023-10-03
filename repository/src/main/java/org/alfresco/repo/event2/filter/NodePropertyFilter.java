@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -48,19 +48,31 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
                                                                       ContentModel.PROP_CREATOR,
                                                                       ContentModel.PROP_CREATED,
                                                                       ContentModel.PROP_CONTENT);
+    // These properties should not be excluded from the properties object
+    private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_CASCADE_TX,
+                                                                ContentModel.PROP_CASCADE_CRC);
 
-    private final List<String> nodeAspectsBlackList;
+    private final List<String> nodePropertiesBlackList;
 
     public NodePropertyFilter()
     {
-        this.nodeAspectsBlackList = parseFilterList(FILTERED_PROPERTIES);
+        this.nodePropertiesBlackList = parseFilterList(FILTERED_PROPERTIES);
     }
 
     @Override
     public Set<QName> getExcludedTypes()
     {
         Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
-        nodeAspectsBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
+        nodePropertiesBlackList.forEach(nodeProperty-> result.addAll(expandTypeDef(nodeProperty)));
         return result;
+    }
+
+    @Override
+    public boolean isExcluded(QName qName)
+    {
+        if(qName != null && ALLOWED_PROPERTIES.contains(qName)){
+            return false;
+        }
+        return super.isExcluded(qName);
     }
 }

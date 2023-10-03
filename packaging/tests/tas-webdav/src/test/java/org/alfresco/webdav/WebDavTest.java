@@ -12,6 +12,9 @@ import org.testng.annotations.BeforeSuite;
 @ContextConfiguration("classpath:alfresco-webdav-context.xml")
 public abstract class WebDavTest extends AbstractTestNGSpringContextTests
 {
+
+    private static final Logger LOG = LogFactory.getLogger();
+
     @Autowired
     protected DataSite dataSite;
 
@@ -27,13 +30,25 @@ public abstract class WebDavTest extends AbstractTestNGSpringContextTests
     @Autowired
     WebDavWrapper webDavProtocol;
 
-    @BeforeSuite(alwaysRun=true)
+    @BeforeSuite(alwaysRun = true)
     public void setup() throws Exception
     {
         super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
         // Since alfresco 6.0 JMX connection is deprecated
         // The webdav protocol is enabled by default.
-        //webDavProtocol.assertThat().protocolIsEnabled();
+        // webDavProtocol.assertThat().protocolIsEnabled();
+    }
+
+    @BeforeMethod(alwaysRun = true)
+    public void showStartTestInfo(Method method)
+    {
+        LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void showEndTestInfo(Method method)
+    {
+        LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
 }

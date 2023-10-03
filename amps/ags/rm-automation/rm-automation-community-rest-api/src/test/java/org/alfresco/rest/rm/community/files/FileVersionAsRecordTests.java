@@ -61,7 +61,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -207,9 +206,8 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * Then I receive an error indicating that I have attempted to file version as record a document into an invalid
      * record folder
      * And the document is not declared as a version record
-     */
-    @Test (dataProvider = "invalidDestinationPaths", groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
-    @Ignore
+
+    @Test (dataProvider = "invalidDestinationPaths")
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record version with an invalid location parameter value");
@@ -219,6 +217,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         STEP("Check the exception thrown in alfresco logs");
         dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException);
     }
+    */
 
     /**
      * Given I am an user with read only permissions on a record folder

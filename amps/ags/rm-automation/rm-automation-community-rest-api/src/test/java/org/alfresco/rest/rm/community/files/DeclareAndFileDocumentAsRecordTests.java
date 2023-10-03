@@ -72,7 +72,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -257,9 +256,8 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
      * When I execute the action
      * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
      * And the document is not declared as a record
-     */
-    @Test (dataProvider = "invalidDestinationPaths",groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
-    @Ignore
+
+    @Test (dataProvider = "invalidDestinationPaths")
     public void declareAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record with an invalid location parameter value");
@@ -272,6 +270,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         STEP("Check that the file is not a record");
         assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
     }
+    */
 
     /**
      * Given I declare a record using the v1 API

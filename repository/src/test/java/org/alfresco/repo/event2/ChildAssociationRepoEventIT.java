@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -77,9 +77,9 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(1, childAssociationRefs.size());
         assertFalse(childAssociationRefs.get(0).isPrimary());
 
-        checkNumOfEvents(3);
+        checkNumOfEvents(4);
 
-        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getRepoEventWithoutWait(3);
+        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getFilteredEvent(EventType.CHILD_ASSOC_CREATED, 0);
 
         assertEquals("Wrong repo event type.", EventType.CHILD_ASSOC_CREATED.getType(), childAssocRepoEvent.getType());
         assertNotNull("Repo event ID is not available.", childAssocRepoEvent.getId());
@@ -131,7 +131,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(1, childAssociationRefs.size());
         assertFalse(childAssociationRefs.get(0).isPrimary());
         
-        checkNumOfEvents(3);
+        checkNumOfEvents(4);
         
         retryingTransactionHelper.doInTransaction(() ->
             nodeService.removeChildAssociation(childAssociationRef));
@@ -141,9 +141,9 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         assertEquals(0, childAssociationRefs.size());
 
-        checkNumOfEvents(4);
+        checkNumOfEvents(6);
 
-        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getRepoEventWithoutWait(4);
+        final RepoEvent<EventData<ChildAssociationResource>> childAssocRepoEvent = getFilteredEvent(EventType.CHILD_ASSOC_DELETED, 0);
 
         assertEquals("Wrong repo event type.", EventType.CHILD_ASSOC_DELETED.getType(), childAssocRepoEvent.getType());
         assertNotNull("Repo event ID is not available. ", childAssocRepoEvent.getId());
@@ -212,7 +212,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        checkNumOfEvents(7);
+        checkNumOfEvents(8);
         
         // 3 assoc.child.Created events should be created
 
@@ -268,7 +268,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        checkNumOfEvents(7);
+        checkNumOfEvents(8);
         // 3 assoc.child.Created events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_CREATED);
         assertEquals("Wrong association events number",3, childAssocEvents.size());
@@ -330,7 +330,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        checkNumOfEvents(7);
+        checkNumOfEvents(10);
         // 3 assoc.child.Created events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_CREATED);
         assertEquals("Wrong association events number",3, childAssocEvents.size());
@@ -388,7 +388,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        checkNumOfEvents(7);
+        checkNumOfEvents(10);
         // 3 assoc.child.Created events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_CREATED);
         assertEquals("Wrong association events number",3, childAssocEvents.size());
@@ -432,7 +432,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        checkNumOfEvents(7);
+        checkNumOfEvents(10);
         // 3 assoc.child.Created events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_CREATED);
         assertEquals("Wrong association events number",3, childAssocEvents.size());
@@ -501,7 +501,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        checkNumOfEvents(10);
+        checkNumOfEvents(12);
 
         // 3 assoc.child.Deleted events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_DELETED);
@@ -557,7 +557,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
                 nodeService.removeChildAssociation(childAssociationRef));
         }
 
-        checkNumOfEvents(10);
+        checkNumOfEvents(14);
 
         // 3 assoc.child.Deleted events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_DELETED);
@@ -619,7 +619,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         deleteNode(parentNodeRef);
 
-        checkNumOfEvents(11);
+        checkNumOfEvents(17);
 
         // 3 assoc.child.Deleted events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_DELETED);
@@ -670,7 +670,7 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
 
         deleteNode(childNodeRef);
 
-        checkNumOfEvents(11);
+        checkNumOfEvents(12);
 
         // 3 assoc.child.Deleted events should be created
         List<RepoEvent<EventData<ChildAssociationResource>>> childAssocEvents = getFilteredEvents(EventType.CHILD_ASSOC_DELETED);
@@ -708,13 +708,14 @@ public class ChildAssociationRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(1, childAssociationRefs.size());
         assertFalse(childAssociationRefs.get(0).isPrimary());
 
-        checkNumOfEvents(4);
+        checkNumOfEvents(5);
 
         // Check the node events occur before the child association event
         List<RepoEvent<?>> repoEvents = getRepoEventsContainer().getEvents();
         assertEquals("org.alfresco.event.node.Created", repoEvents.get(0).getType());
         assertEquals("org.alfresco.event.node.Created", repoEvents.get(1).getType());
         assertEquals("org.alfresco.event.node.Updated", repoEvents.get(2).getType());
-        assertEquals("org.alfresco.event.assoc.child.Created", repoEvents.get(3).getType());
+        assertEquals("org.alfresco.event.node.Updated", repoEvents.get(3).getType());
+        assertEquals("org.alfresco.event.assoc.child.Created", repoEvents.get(4).getType());
     }
 }

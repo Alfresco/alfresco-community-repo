@@ -572,8 +572,11 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         Collection<TypeDefinition> types = modelDefinition.getTypeDefinitions();
         assertEquals(1, types.size());
 
+        // we should have only 2 events, node.Created and node.Updated
+        checkNumOfEvents(2);
+
         // node.Created event should be generated for the model
-        RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+        RepoEvent<EventData<NodeResource>> resultRepoEvent = getFilteredEvent(EventType.NODE_CREATED, 0);
         assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());
@@ -584,9 +587,9 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
 
         // node.Created event should be generated
-        resultRepoEvent = getRepoEvent(2);
-        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        resultRepoEvent = getRepoEvent(3);
         nodeResource = getNodeResource(resultRepoEvent);
+        assertEquals("Wrong repo event type.", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         assertEquals("cm:content node type was not found", "cm:content", nodeResource.getNodeType());
 
         QName typeQName = QName.createQName("{" + namespacePair.getFirst()+ "}" + typeName);
@@ -598,15 +601,15 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
             return null;
         });
 
-        // we should have 3 events, node.Created for the model, node.Created for the node and node.Updated
-        checkNumOfEvents(3);
+        // we should have 4 events, node.Created for the model, node.Updated for the parent, node.Created for the node and node.Updated
+        checkNumOfEvents(4);
 
-        resultRepoEvent = getRepoEvent(3);
+        resultRepoEvent = getRepoEvent(4);
         assertEquals("Wrong repo event type.", EventType.NODE_UPDATED.getType(), resultRepoEvent.getType());
         nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", namespacePair.getSecond() + QName.NAMESPACE_PREFIX + typeName, nodeResource.getNodeType());
 
-        NodeResource resourceBefore = getNodeResourceBefore(3);
+        NodeResource resourceBefore = getNodeResourceBefore(4);
         assertEquals("Incorrect node type was found", "cm:content", resourceBefore.getNodeType());
         assertNull(resourceBefore.getId());
         assertNull(resourceBefore.getContent());
@@ -745,7 +748,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getModifiedByUser());
         assertNull(resourceBefore.getCreatedAt());
         assertNull(resourceBefore.getCreatedByUser());
-        assertNull(resourceBefore.getProperties());
+        assertNotNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNotNull(resourceBefore.getPrimaryHierarchy());
         assertNull("Content should have been null.", resource.getContent());
@@ -755,7 +758,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNotNull(resource.getModifiedByUser());
         assertNotNull(resource.getAspectNames());
         assertNull(resource.getContent());
-        assertTrue(resource.getProperties().isEmpty());
+        assertFalse(resource.getProperties().isEmpty());
     }
 
     @Test

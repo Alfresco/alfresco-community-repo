@@ -49,6 +49,9 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
                                                                       ContentModel.PROP_CREATOR,
                                                                       ContentModel.PROP_CREATED,
                                                                       ContentModel.PROP_CONTENT);
+    // These properties should not be excluded from the properties object
+    private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_CASCADE_TX,
+                                                                ContentModel.PROP_CASCADE_CRC);
 
     private final List<String> nodePropertiesBlackList = new ArrayList<>();
 
@@ -63,7 +66,16 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     public Set<QName> getExcludedTypes()
     {
         Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
-        nodePropertiesBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
+        nodePropertiesBlackList.forEach(nodeProperty-> result.addAll(expandTypeDef(nodeProperty)));
         return result;
+    }
+
+    @Override
+    public boolean isExcluded(QName qName)
+    {
+        if(qName != null && ALLOWED_PROPERTIES.contains(qName)){
+            return false;
+        }
+        return super.isExcluded(qName);
     }
 }

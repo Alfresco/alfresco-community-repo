@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -3203,13 +3203,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     // Invoke policy behaviour
                     invokeBeforeUpdateNode(parentNodeRef);
 
+                    Map<QName, Serializable> propertiesBefore = nodeDAO.getNodeProperties(parentNodeId);
                     // Touch the node; it is cm:auditable
                     boolean changed = nodeDAO.setModifiedProperties(parentNodeId, modifiedDate, modifiedByToPropagate);
 
                     if (changed)
                     {
+                        Map<QName, Serializable> propertiesAfter = nodeDAO.getNodeProperties(parentNodeId);
                         // Invoke policy behaviour
                         invokeOnUpdateNode(parentNodeRef);
+                        invokeOnUpdateProperties(parentNodeRef, propertiesBefore, propertiesAfter);
                     }
 
                     return null;

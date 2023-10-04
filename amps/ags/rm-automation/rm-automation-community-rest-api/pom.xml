@@ -102,5 +102,17 @@
          <groupId>org.bouncycastle</groupId>
          <artifactId>bcpkix-jdk15to18</artifactId>
       </dependency>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>restapi</artifactId>
+         <version>23.1.0.233</version>
+         <scope>test</scope>
+      </dependency>
+       <dependency>
+           <groupId>org.alfresco.tas</groupId>
+           <artifactId>restapi</artifactId>
+           <version>23.1.0.233</version>
+           <scope>compile</scope>
+       </dependency>
    </dependencies>
 </project>

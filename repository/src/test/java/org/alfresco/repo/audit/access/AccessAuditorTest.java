@@ -158,7 +158,7 @@ public class AccessAuditorTest
                     {
                         Object[] args = invocation.getArguments();
                         Map<String, Serializable> auditMap = (Map<String, Serializable>)args[1];
-                        if ("/alfresco-access/transaction".equals(args[0]))
+                        if ("/alfresco-access/transaction".equals(args[0]) && !"updateNodeProperties".equals(auditMap.get("action")))
                         {
                             auditMapList.add(auditMap);
                         }

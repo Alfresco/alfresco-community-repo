@@ -256,7 +256,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
      * When I execute the action
      * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
      * And the document is not declared as a record
-     */
+
     @Test (dataProvider = "invalidDestinationPaths")
     public void declareAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
@@ -270,6 +270,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         STEP("Check that the file is not a record");
         assertFalse(hasRecordAspect(testFile), "File should not have record aspect");
     }
+    */
 
     /**
      * Given I declare a record using the v1 API

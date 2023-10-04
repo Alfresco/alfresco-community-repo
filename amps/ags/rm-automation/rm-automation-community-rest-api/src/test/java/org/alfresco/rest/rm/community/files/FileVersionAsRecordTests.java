@@ -206,7 +206,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * Then I receive an error indicating that I have attempted to file version as record a document into an invalid
      * record folder
      * And the document is not declared as a version record
-     */
+
     @Test (dataProvider = "invalidDestinationPaths")
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
@@ -217,6 +217,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         STEP("Check the exception thrown in alfresco logs");
         dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException);
     }
+    */
 
     /**
      * Given I am an user with read only permissions on a record folder

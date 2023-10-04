@@ -1,6 +1,6 @@
 # alfresco-community-repo
 
-[![Build Status](https://travis-ci.com/Alfresco/alfresco-community-repo.svg?branch=master)](https://travis-ci.com/Alfresco/alfresco-community-repo)
+[![Build Status](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml/badge.svg?branch=release/7.1.0)](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml)
 
 This project contains the bulk of the [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository) code.
 
@@ -33,7 +33,7 @@ Repository is a library packaged as a jar file which contains the following:
 
 Tests are combined into test classes split by test type or Spring application context used in the test, see classes
 in _src/test/java/org/alfresco_. All of these classes as well as individual tests can be run by specifying the test
-class name and a set of DB connection properties. Check the travis.yml file for docker images that should be started
+class name and a set of DB connection properties. Check the ci.yml file for docker images that should be started
 to provide a suitable test environment. For example:
 ~~~
 mvn clean test -Dtest=SomeRepoTest -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql:alfresco -Ddb.username=alfresco -Ddb.password=alfresco

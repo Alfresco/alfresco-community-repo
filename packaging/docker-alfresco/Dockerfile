@@ -62,13 +62,13 @@ RUN sed -i -e "s_appender.rolling.fileName\=alfresco.log_appender.rolling.fileNa
 
 # fontconfig is required by Activiti worflow diagram generator
 # installing pinned dependencies as well
-RUN yum install -y fontconfig-2.13.1-4.el8 \
-                   dejavu-fonts-common-2.35-7.el8 \
-                   fontpackages-filesystem-1.44-22.el8 \
-                   freetype-2.9.1-9.el8 \
-                   libpng-1.6.34-5.el8 \
-                   dejavu-sans-fonts-2.35-7.el8 && \
-    yum clean all
+#RUN yum install -y fontconfig-2.13.1-4.el8 \
+#                   dejavu-fonts-common-2.35-7.el8 \
+#                   fontpackages-filesystem-1.44-22.el8 \
+#                   freetype-2.9.1-9.el8 \
+#                   libpng-1.6.34-5.el8 \
+#                   dejavu-sans-fonts-2.35-7.el8 && \
+#    yum clean all
 
 # The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 
 # group only has restricted permissions and world has no permissions.

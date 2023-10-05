@@ -57,7 +57,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +137,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      **/
     @Test
     @AlfrescoTest(jira = "RM-1622")
-    public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
+    public void dispositionScheduleLinkedRecords() throws Exception {
         STEP("Create record category");
         RecordCategory category1 = createRootCategory(CATEGORY_RM_3077);
 
@@ -205,7 +204,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      */
     @Test
     @AlfrescoTest(jira = "RM-3060")
-    public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
+    public void sameDispositionScheduleLinkedRecords() throws Exception {
 
         // create a category with retention applied on records level
         RecordCategory recordCategory = getRestAPIFactory().getFilePlansAPI(rmAdmin)

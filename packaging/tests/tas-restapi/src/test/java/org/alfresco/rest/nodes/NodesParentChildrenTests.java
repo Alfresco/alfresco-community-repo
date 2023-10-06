@@ -125,11 +125,10 @@ public class NodesParentChildrenTests extends RestTest
         RestNodeChildAssociationModel childAssoc1 = new RestNodeChildAssociationModel(nodesBuilder.getNode("f1").getId(), "cm:contains");
         RestNodeChildAssociationModel childAssoc2 = new RestNodeChildAssociationModel(nodesBuilder.getNode("f2").getId(), "cm:contains");
         RestNodeChildAssociationModel childAssoc3 = new RestNodeChildAssociationModel(nodesBuilder.getNode("f3").getId(), "cm:preferenceImage");
-        String secondaryChildrenBody = "[" + childAssoc1.toJson() + "," + childAssoc2.toJson() + "," + childAssoc3.toJson() + "]";
 
         STEP("3. Create secondary child associations using POST /nodes/{nodeId}/secondary-children");
         RestNodeChildAssocModelCollection secondaryChildAssoc = restClient.withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel())
-                .createSecondaryChildren(secondaryChildrenBody);
+            .addSecondaryChildren(childAssoc1, childAssoc2, childAssoc3);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         secondaryChildAssoc.getEntryByIndex(0).assertThat().field("childId").is(childAssoc1.getChildId());
         secondaryChildAssoc.getEntryByIndex(1).assertThat().field("childId").is(childAssoc2.getChildId());
@@ -142,7 +141,7 @@ public class NodesParentChildrenTests extends RestTest
         secondaryChildren.assertThat().entriesListCountIs(2);
 
         STEP("5. Check using DELETE /nodes/{nodeId}/secondary-children/{childId} that a secondary child can be deleted");
-        restClient.withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).deleteSecondaryChild(secondaryChildren.getEntryByIndex(0));
+        restClient.withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).removeSecondaryChild(secondaryChildren.getEntryByIndex(0));
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
         STEP("6. Check using GET /nodes/{nodeId}/secondary-children that a secondary child association was deleted");
@@ -182,7 +181,7 @@ public class NodesParentChildrenTests extends RestTest
 
         STEP("2. Create secondary child associations using POST /nodes/{nodeId}/secondary-children");
         RestNodeChildAssociationModel childAssoc = new RestNodeChildAssociationModel(nodesBuilder.getNode("f1").getId(), "cm:contains");
-        restClient.withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).createSecondaryChildren(childAssoc.toJson());
+        restClient.withCoreAPI().usingNode(nodesBuilder.getNode("F1").toContentModel()).addSecondaryChild(childAssoc);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         STEP("3. Get all parents for file 'f1' - both primary and secondary");

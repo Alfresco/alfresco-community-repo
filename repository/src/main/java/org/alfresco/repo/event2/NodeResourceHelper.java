@@ -26,6 +26,7 @@
 package org.alfresco.repo.event2;
 
 import static java.util.Optional.ofNullable;
+import static java.util.function.Predicate.not;
 
 import java.io.Serializable;
 import java.time.ZoneId;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 
@@ -145,21 +147,23 @@ public class NodeResourceHelper implements InitializingBean
         // minor: save one lookup if creator & modifier are the same
         Map<String, UserInfo> mapUserCache = new HashMap<>(2);
 
-        return NodeResource.builder().setId(nodeRef.getId())
-                           .setName((String) properties.get(ContentModel.PROP_NAME))
-                           .setNodeType(getQNamePrefixString(type))
-                           .setIsFile(isSubClass(type, ContentModel.TYPE_CONTENT))
-                           .setIsFolder(isSubClass(type, ContentModel.TYPE_FOLDER))
-                           .setCreatedByUser(getUserInfo((String) properties.get(ContentModel.PROP_CREATOR), mapUserCache))
-                           .setCreatedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_CREATED)))
-                           .setModifiedByUser(getUserInfo((String) properties.get(ContentModel.PROP_MODIFIER), mapUserCache))
-                           .setModifiedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_MODIFIED)))
-                           .setContent(getContentInfo(properties))
-                           .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
-                           .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
-                           .setProperties(mapToNodeProperties(properties))
-                           .setLocalizedProperties(mapToNodeLocalizedProperties(properties))
-                           .setAspectNames(getMappedAspects(nodeRef));
+        return NodeResource.builder()
+            .setId(nodeRef.getId())
+            .setName((String) properties.get(ContentModel.PROP_NAME))
+            .setNodeType(getQNamePrefixString(type))
+            .setIsFile(isSubClass(type, ContentModel.TYPE_CONTENT))
+            .setIsFolder(isSubClass(type, ContentModel.TYPE_FOLDER))
+            .setCreatedByUser(getUserInfo((String) properties.get(ContentModel.PROP_CREATOR), mapUserCache))
+            .setCreatedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_CREATED)))
+            .setModifiedByUser(getUserInfo((String) properties.get(ContentModel.PROP_MODIFIER), mapUserCache))
+            .setModifiedAt(getZonedDateTime((Date)properties.get(ContentModel.PROP_MODIFIED)))
+            .setContent(getContentInfo(properties))
+            .setPrimaryAssocQName(getPrimaryAssocQName(nodeRef))
+            .setPrimaryHierarchy(PathUtil.getNodeIdsInReverse(path, false))
+            .setProperties(mapToNodeProperties(properties))
+            .setLocalizedProperties(mapToNodeLocalizedProperties(properties))
+            .setAspectNames(getMappedAspects(nodeRef))
+            .setSecondaryParents(getSecondaryParents(nodeRef));
     }
 
     private boolean isSubClass(QName className, QName ofClassQName)
@@ -411,6 +415,21 @@ public class NodeResourceHelper implements InitializingBean
     {
         final Path path = nodeService.getPath(nodeRef);
         return PathUtil.getNodeIdsInReverse(path, showLeaf);
+    }
+
+    /**
+     * Gathers node's secondary parents.
+     *
+     * @param nodeRef - node reference
+     * @return a list of node's secondary parents.
+     */
+    public List<String> getSecondaryParents(final NodeRef nodeRef)
+    {
+        return nodeService.getParentAssocs(nodeRef).stream()
+            .filter(not(ChildAssociationRef::isPrimary))
+            .map(ChildAssociationRef::getParentRef)
+            .map(NodeRef::getId)
+            .collect(Collectors.toList());
     }
 
     public PermissionService getPermissionService()

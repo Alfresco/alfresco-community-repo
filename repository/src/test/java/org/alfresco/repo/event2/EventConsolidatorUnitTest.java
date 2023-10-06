@@ -27,24 +27,38 @@ package org.alfresco.repo.event2;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.event.v1.model.EventType;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.junit.Before;
 import org.junit.Test;
 
 public class EventConsolidatorUnitTest
 {
-    private NodeResourceHelper nodeResourceHelper = mock(NodeResourceHelper.class);
-    
+    private final NodeResourceHelper nodeResourceHelper = mock(NodeResourceHelper.class);
+    private NodeEventConsolidator eventConsolidator;
+
+    @Before
+    public void setUp() throws Exception
+    {
+        eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
+    }
+
     @Test
     public void testGetMappedAspectsBeforeRemovedAndAddedEmpty()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
-        
         Set<String> currentAspects = new HashSet<>();
         currentAspects.add("cm:geographic");
         currentAspects.add("cm:auditable");
@@ -57,7 +71,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectRemoved()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
         Set<String> currentAspects = new HashSet<>();
@@ -79,7 +92,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectAdded()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
         Set<String> currentAspects = new HashSet<>();
@@ -102,7 +114,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectAddedAndRemoved()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
         Set<String> currentAspects = new HashSet<>();
@@ -125,7 +136,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectRemovedAndAdded()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -150,8 +160,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectAddedTwiceRemovedOnce()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
-
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -178,8 +186,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_AspectRemovedTwiceAddedOnce()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
-
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -206,7 +212,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testGetMappedAspectsBefore_FilteredAspectAdded()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASPECT_COPIEDFROM);
 
         Set<String> currentAspects = new HashSet<>();
@@ -227,7 +232,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspect()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         
         assertEquals(1, eventConsolidator.getAspectsAdded().size());
@@ -238,7 +242,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testRemoveAspect()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
         assertEquals(0, eventConsolidator.getAspectsAdded().size());
@@ -249,7 +252,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspectRemoveAspect()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -260,7 +262,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testRemoveAspectAddAspect()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
@@ -271,7 +272,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspectTwiceRemoveAspectOnce()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
@@ -284,7 +284,6 @@ public class EventConsolidatorUnitTest
     @Test
     public void testAddAspectOnceRemoveAspectTwice()
     {
-        NodeEventConsolidator eventConsolidator = new NodeEventConsolidator(nodeResourceHelper);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
         eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
@@ -292,5 +291,84 @@ public class EventConsolidatorUnitTest
         assertEquals(0, eventConsolidator.getAspectsAdded().size());
         assertEquals(1, eventConsolidator.getAspectsRemoved().size());
         assertTrue(eventConsolidator.getAspectsRemoved().contains(ContentModel.ASSOC_CONTAINS));
+    }
+
+    @Test
+    public void testOnMoveNodeWithPrimaryParent()
+    {
+        ChildAssociationRef oldAssociationMock = mock(ChildAssociationRef.class);
+        ChildAssociationRef newAssociationMock = mock(ChildAssociationRef.class);
+        NodeRef parentRefMock = mock(NodeRef.class);
+        given(newAssociationMock.isPrimary()).willReturn(true);
+        given(oldAssociationMock.getParentRef()).willReturn(parentRefMock);
+
+        eventConsolidator.onMoveNode(oldAssociationMock, newAssociationMock);
+
+        then(newAssociationMock).should().getChildRef();
+        then(newAssociationMock).should().isPrimary();
+        then(newAssociationMock).shouldHaveNoMoreInteractions();
+        then(nodeResourceHelper).should().getPrimaryHierarchy(parentRefMock, true);
+        assertTrue("Node event consolidator should contain event type: UPDATED", eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
+
+    }
+
+    @Test
+    public void testOnMoveNodeAfterSecondaryParentAdded()
+    {
+        ChildAssociationRef oldAssociationMock = mock(ChildAssociationRef.class);
+        ChildAssociationRef newAssociationMock = mock(ChildAssociationRef.class);
+        NodeRef nodeRefMock = mock(NodeRef.class);
+        NodeRef parentRefMock = mock(NodeRef.class);
+        List<String> secondaryParentsMock = mock(List.class);
+        given(newAssociationMock.isPrimary()).willReturn(false);
+        given(newAssociationMock.getChildRef()).willReturn(nodeRefMock);
+        given(newAssociationMock.getParentRef()).willReturn(parentRefMock);
+        given(parentRefMock.getId()).willReturn("parent-id");
+        given(nodeResourceHelper.getSecondaryParents(any(NodeRef.class))).willReturn(secondaryParentsMock);
+
+        // when
+        eventConsolidator.onMoveNode(oldAssociationMock, newAssociationMock);
+
+        then(newAssociationMock).should().isPrimary();
+        then(newAssociationMock).should(times(2)).getChildRef();
+        then(newAssociationMock).should(times(2)).getParentRef();
+        then(newAssociationMock).shouldHaveNoMoreInteractions();
+        then(oldAssociationMock).shouldHaveNoInteractions();
+        then(nodeResourceHelper).should().getSecondaryParents(nodeRefMock);
+        then(secondaryParentsMock).should().remove("parent-id");
+        then(secondaryParentsMock).shouldHaveNoMoreInteractions();
+        assertTrue("Node event consolidator should contain event type: UPDATED", eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
+        assertEquals(secondaryParentsMock, eventConsolidator.getSecondaryParentsBefore());
+    }
+
+    @Test
+    public void testOnMoveNodeBeforeSecondaryParentRemoved()
+    {
+        ChildAssociationRef oldAssociationMock = mock(ChildAssociationRef.class);
+        ChildAssociationRef newAssociationMock = mock(ChildAssociationRef.class);
+        NodeRef nodeRefMock = mock(NodeRef.class);
+        NodeRef parentRefMock = mock(NodeRef.class);
+        List<String> secondaryParentsMock = mock(List.class);
+        given(newAssociationMock.isPrimary()).willReturn(false);
+        given(newAssociationMock.getChildRef()).willReturn(nodeRefMock);
+        given(oldAssociationMock.getParentRef()).willReturn(parentRefMock);
+        given(parentRefMock.getId()).willReturn("parent-id");
+        given(nodeResourceHelper.getSecondaryParents(any(NodeRef.class))).willReturn(secondaryParentsMock);
+
+        // when
+        eventConsolidator.onMoveNode(oldAssociationMock, newAssociationMock);
+
+        then(newAssociationMock).should().isPrimary();
+        then(newAssociationMock).should(times(2)).getChildRef();
+        then(newAssociationMock).should().getParentRef();
+        then(newAssociationMock).shouldHaveNoMoreInteractions();
+        then(oldAssociationMock).should(times(3)).getParentRef();
+        then(oldAssociationMock).shouldHaveNoMoreInteractions();
+        then(nodeResourceHelper).should().getSecondaryParents(nodeRefMock);
+        then(secondaryParentsMock).should().contains("parent-id");
+        then(secondaryParentsMock).should().add("parent-id");
+        then(secondaryParentsMock).shouldHaveNoMoreInteractions();
+        assertTrue("Node event consolidator should contain event type: NODE_UPDATED", eventConsolidator.getEventTypes().contains(EventType.NODE_UPDATED));
+        assertEquals(secondaryParentsMock, eventConsolidator.getSecondaryParentsBefore());
     }
 }

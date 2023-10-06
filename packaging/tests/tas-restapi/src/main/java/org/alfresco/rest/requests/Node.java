@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Stream;
 
 import io.restassured.http.ContentType;
 import org.alfresco.rest.core.JsonBodyGenerator;
@@ -51,9 +52,11 @@ import org.alfresco.rest.model.RestCommentModelsCollection;
 import org.alfresco.rest.model.RestNodeAssocTargetModel;
 import org.alfresco.rest.model.RestNodeAssociationModel;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
+import org.alfresco.rest.model.RestNodeAssociationTypeModel;
 import org.alfresco.rest.model.RestNodeBodyModel;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeChildAssocModelCollection;
+import org.alfresco.rest.model.RestNodeChildAssociationModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestNodeModelsCollection;
 import org.alfresco.rest.model.RestRatingModel;
@@ -72,6 +75,7 @@ import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.RepoTestModel;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.reporters.Files;
@@ -824,25 +828,118 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Create secondary children association using POST call 'nodes/{nodeId}/secondary-children
-     * Use a list of secondary children nodes
+     * Creates a secondary child association using POST call to: 'nodes/{nodeId}/secondary-children'.
      *
-     * @return a collection of nodes
+     * @param secondaryChild - node, which should become a secondary child
+     * @return a node's parent-child association
      */
-    public RestNodeChildAssocModelCollection createSecondaryChildren(String secondaryChildren)
+    public RestNodeChildAssociationModel addSecondaryChild(RepoTestModel secondaryChild)
     {
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, secondaryChildren, "nodes/{nodeId}/secondary-children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        return addSecondaryChild("cm:contains", secondaryChild);
+    }
+
+    /**
+     * Creates a secondary child association using POST call to: 'nodes/{nodeId}/secondary-children'.
+     *
+     * @param associationType - type of secondary parent-child relationship association
+     * @param secondaryChild - node, which should become a secondary child
+     * @return a node's parent-child association
+     */
+    public RestNodeChildAssociationModel addSecondaryChild(String associationType, RepoTestModel secondaryChild)
+    {
+        return addSecondaryChild(new RestNodeChildAssociationModel(secondaryChild.getNodeRef(), associationType));
+    }
+
+    /**
+     * Creates a secondary child association using POST call to: 'nodes/{nodeId}/secondary-children'.
+     *
+     * @param secondaryChildAssociation - node's secondary parent-child association model
+     * @return a node's parent-child association
+     */
+    public RestNodeChildAssociationModel addSecondaryChild(RestNodeChildAssociationModel secondaryChildAssociation)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, secondaryChildAssociation.toJson(), "nodes/{nodeId}/secondary-children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        return restWrapper.processModel(RestNodeChildAssociationModel.class, request);
+    }
+
+    /**
+     * Creates a secondary children association using POST call to: 'nodes/{nodeId}/secondary-children'.
+     *
+     * @param secondaryChildren - nodes, which should become secondary children
+     * @return a collection of node's parent-child associations
+     */
+    public RestNodeChildAssocModelCollection addSecondaryChildren(RepoTestModel... secondaryChildren)
+    {
+        return addSecondaryChildren("cm:contains", secondaryChildren);
+    }
+
+    /**
+     * Creates a secondary children association using POST call to: 'nodes/{nodeId}/secondary-children'.
+     *
+     * @param associationType - type of secondary parent-child relationship association
+     * @param secondaryChildren - nodes, which should become secondary children
+     * @return a collection of node's parent-child associations
+     */
+    public RestNodeChildAssocModelCollection addSecondaryChildren(String associationType, RepoTestModel... secondaryChildren)
+    {
+        return addSecondaryChildren(Stream.of(secondaryChildren)
+            .map(child -> new RestNodeChildAssociationModel(child.getNodeRef(), associationType))
+            .toArray(RestNodeChildAssociationModel[]::new));
+    }
+
+    /**
+     * Creates a secondary children association using POST call to: 'nodes/{nodeId}/secondary-children'.
+     *
+     * @param secondaryChildrenAssociations - node's secondary parent-child association models
+     * @return a collection of node's parent-child associations
+     */
+    public RestNodeChildAssocModelCollection addSecondaryChildren(RestNodeChildAssociationModel... secondaryChildrenAssociations)
+    {
+        String requestBody = arrayToJson(Stream.of(secondaryChildrenAssociations).toList());
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, requestBody, "nodes/{nodeId}/secondary-children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModels(RestNodeChildAssocModelCollection.class, request);
     }
 
     /**
-     * Delete secondary children using DELETE call 'nodes/{nodeId}/secondary-children/{childId}
+     * Removes secondary child association using DELETE call 'nodes/{nodeId}/secondary-children/{childId}'.
      *
-     * @return a collection of nodes
+     * @param secondaryChild - node, which should NOT be a secondary child anymore
      */
-    public void deleteSecondaryChild(RestNodeAssociationModel child)
+    public void removeSecondaryChild(RepoTestModel secondaryChild)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/secondary-children/{childId}?{parameters}", repoModel.getNodeRef(), child.getId(), restWrapper.getParameters());
+        removeSecondaryChild(null, secondaryChild);
+    }
+
+    /**
+     * Removes secondary child association using DELETE call 'nodes/{nodeId}/secondary-children/{childId}'.
+     *
+     * @param associationType - type of secondary parent-child relationship association
+     * @param secondaryChild - node, which should NOT be a secondary child anymore
+     */
+    public void removeSecondaryChild(String associationType, RepoTestModel secondaryChild)
+    {
+        RestNodeAssociationModel associationModel = new RestNodeAssociationModel();
+        RestNodeAssociationTypeModel associationTypeModel = new RestNodeAssociationTypeModel();
+        if (associationType != null)
+        {
+            associationTypeModel.setAssocType(associationType);
+        }
+        associationModel.setAssociation(associationTypeModel);
+        associationModel.setId(secondaryChild.getNodeRef());
+        removeSecondaryChild(associationModel);
+    }
+
+    /**
+     * Removes secondary child association using DELETE call 'nodes/{nodeId}/secondary-children/{childId}'.
+     *
+     * @param secondaryChildAssociation - node's secondary parent-child association to remove
+     */
+    public void removeSecondaryChild(RestNodeAssociationModel secondaryChildAssociation)
+    {
+        String parameters = StringUtils.isNotEmpty(secondaryChildAssociation.getAssociation().getAssocType()) ?
+            "assocType=" + secondaryChildAssociation.getAssociation().getAssocType() + "&" + restWrapper.getParameters() :
+            restWrapper.getParameters();
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/secondary-children/{childId}?{parameters}", repoModel.getNodeRef(), secondaryChildAssociation.getId(), parameters);
         restWrapper.processEmptyModel(request);
     }
 

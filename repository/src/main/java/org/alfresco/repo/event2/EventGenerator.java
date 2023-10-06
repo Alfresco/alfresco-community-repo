@@ -311,12 +311,24 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     public void onCreateChildAssociation(ChildAssociationRef childAssociationRef, boolean isNewNode)
     {
         getEventConsolidator(childAssociationRef).onCreateChildAssociation(childAssociationRef, isNewNode);
+        if (!childAssociationRef.isPrimary())
+        {
+            // if this is a secondary relationship simulate node move event to store state of previous secondary parents
+            ChildAssociationRef oldChildAssociationRef = childAssociationWithoutParentOf(childAssociationRef);
+            getEventConsolidator(childAssociationRef.getChildRef()).onMoveNode(oldChildAssociationRef, childAssociationRef);
+        }
     }
 
     @Override
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssociationRef)
     {
         getEventConsolidator(childAssociationRef).beforeDeleteChildAssociation(childAssociationRef);
+        if (!childAssociationRef.isPrimary())
+        {
+            // if this is a secondary relationship simulate node move event to store state of previous secondary parents
+            ChildAssociationRef newChildAssociationRef = childAssociationWithoutParentOf(childAssociationRef);
+            getEventConsolidator(childAssociationRef.getChildRef()).onMoveNode(childAssociationRef, newChildAssociationRef);
+        }
     }
 
     @Override
@@ -501,6 +513,18 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         Long currentTransactionCommitTime = nodeDAO.getCurrentTransactionCommitTime();
         Instant commitTimeMs = Instant.ofEpochMilli(currentTransactionCommitTime);
         return ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
+    }
+
+    private static ChildAssociationRef childAssociationWithoutParentOf(ChildAssociationRef childAssociationRef)
+    {
+        return new ChildAssociationRef(
+            null,
+            null,
+            childAssociationRef.getQName(),
+            childAssociationRef.getChildRef(),
+            childAssociationRef.isPrimary(),
+            childAssociationRef.getNthSibling()
+        );
     }
 
     @Override

@@ -416,9 +416,7 @@
                   <configuration>
                      <images>
                         <image>
-                           <!-- TODO upgrade this old postgres version -->
-                           <name>postgres:9.4.12</name>
-                           <!--<name>postgres:13.3</name>-->
+                           <name>postgres:15.4</name>
                            <run>
                               <ports>
                                  <port>${postgresql.tests.port}:${postgresql.port}</port>

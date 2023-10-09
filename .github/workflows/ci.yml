@@ -223,8 +223,8 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_13_7_tests:
-    name: "Repository - PostgreSQL 13.7 tests"
+  repository_postgresql_13_12_tests:
+    name: "Repository - PostgreSQL 13.12 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -239,17 +239,42 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 13.7 database"
+      - name: "Run PostgreSQL 13.12 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
-          POSTGRES_VERSION: 13.7
+          POSTGRES_VERSION: 13.12
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_14_4_tests:
-    name: "Repository - PostgreSQL 14.4 tests"
+  repository_postgresql_14_9_tests:
+    name: "Repository - PostgreSQL 14.9 tests"
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run PostgreSQL 14.9 database"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
+        env:
+          POSTGRES_VERSION: 14.9
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_postgresql_15_4_tests:
+    name: "Repository - PostgreSQL 15.4 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -264,10 +289,10 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 14.4 database"
+      - name: "Run PostgreSQL 15.4 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
-          POSTGRES_VERSION: 14.4
+          POSTGRES_VERSION: 15.4
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
       - name: "Clean Maven cache"
@@ -444,7 +469,7 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run Postgres 14.4 database"
+      - name: "Run Postgres 15.4 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
         run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco

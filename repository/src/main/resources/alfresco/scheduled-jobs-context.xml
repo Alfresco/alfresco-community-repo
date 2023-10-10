@@ -187,7 +187,7 @@
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
             <bean id="upgradePasswordHashJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-                <property name="jobClass" value="org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob"/>
+                <property name="jobClass" value="org.alfresco.repo.security.authentication.UpgradePasswordHashWorker$UpgradePasswordHashJob"/>
                 <property name="jobDataAsMap">
                     <map>
                         <entry key="upgradePasswordHashWorker" value-ref="upgradePasswordHashWorker"/>

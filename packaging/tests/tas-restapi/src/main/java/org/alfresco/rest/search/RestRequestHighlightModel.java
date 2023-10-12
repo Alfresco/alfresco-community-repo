@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.search;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -205,7 +206,13 @@ public class RestRequestHighlightModel extends TestModel implements IRestModel<R
 
         public RestRequestHighlightModelBuilder fields(List<String> fields)
         {
-            this.fields = fields.stream().map(field -> new RestRequestFieldsModel(field)).toList();
+            this.fields = fields.stream().map(RestRequestFieldsModel::of).toList();
+            return this;
+        }
+
+        public RestRequestHighlightModelBuilder fields(RestRequestFieldsModel... fields)
+        {
+            this.fields = Arrays.stream(fields).toList();
             return this;
         }
 

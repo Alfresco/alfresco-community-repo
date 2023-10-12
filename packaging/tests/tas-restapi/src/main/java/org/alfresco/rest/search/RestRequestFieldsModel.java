@@ -46,7 +46,9 @@ public class RestRequestFieldsModel extends TestModel implements IRestModel<Rest
     private String prefix;
     private String postfix;
 
-    public RestRequestFieldsModel() {}
+    public RestRequestFieldsModel() {
+        super();
+    }
 
     public static RestRequestFieldsModel of(String field)
     {

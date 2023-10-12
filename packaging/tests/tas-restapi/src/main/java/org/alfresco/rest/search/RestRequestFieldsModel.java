@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,24 +23,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-/*
- * Copyright (C) 2017 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.alfresco.rest.search;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,23 +37,38 @@ import org.alfresco.utility.model.TestModel;
  */
 public class RestRequestFieldsModel extends TestModel implements IRestModel<RestRequestFieldsModel>
 {
-    public RestRequestFieldsModel(){}
-    
-    public RestRequestFieldsModel(String fieldValue)
-    {
-        this.field = fieldValue;
-    }
     
     @JsonProperty(value = "entry")
     RestRequestFieldsModel model;
+
+    @JsonProperty(required = true)
+    private String field;
+    private String prefix;
+    private String postfix;
+
+    public RestRequestFieldsModel() {}
+
+    public static RestRequestFieldsModel of(String field)
+    {
+        RestRequestFieldsModel fieldModel = new RestRequestFieldsModel();
+        fieldModel.setField(field);
+        return fieldModel;
+    }
+
+    public static RestRequestFieldsModel of(String field, String prefix, String postfix)
+    {
+        RestRequestFieldsModel fieldModel = new RestRequestFieldsModel();
+        fieldModel.setField(field);
+        fieldModel.setPrefix(prefix);
+        fieldModel.setPostfix(postfix);
+        return fieldModel;
+    }
 
     @Override
     public RestRequestFieldsModel onModel()
     {
         return model;
     }
-    @JsonProperty(required = true)
-    private String field;
 
     public String getField()
     {
@@ -82,8 +79,64 @@ public class RestRequestFieldsModel extends TestModel implements IRestModel<Rest
     {
         this.field = field;
     }
-    
-    
 
+    public String getPrefix()
+    {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix)
+    {
+        this.prefix = prefix;
+    }
+
+    public String getPostfix()
+    {
+        return postfix;
+    }
+
+    public void setPostfix(String postfix)
+    {
+        this.postfix = postfix;
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String field;
+        private String prefix;
+        private String postfix;
+
+        public Builder field(String field)
+        {
+            this.field = field;
+            return this;
+        }
+
+        public Builder prefix(String prefix)
+        {
+            this.prefix = prefix;
+            return this;
+        }
+
+        public Builder postfix(String postfix)
+        {
+            this.postfix = postfix;
+            return this;
+        }
+
+        public RestRequestFieldsModel build()
+        {
+            RestRequestFieldsModel fieldModel = new RestRequestFieldsModel();
+            fieldModel.setField(field);
+            fieldModel.setPrefix(prefix);
+            fieldModel.setPostfix(postfix);
+            return fieldModel;
+        }
+    }
 }
  

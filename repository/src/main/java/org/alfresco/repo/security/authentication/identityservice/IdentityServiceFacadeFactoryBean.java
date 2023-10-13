@@ -57,6 +57,7 @@ import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
+import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
@@ -88,7 +89,9 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.core.converter.ClaimTypeConverter;
 import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -96,7 +99,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.web.client.RestOperations;
@@ -361,12 +363,18 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                                            .map(OIDCProviderMetadata::getAuthorizationEndpointURI)
                                            .map(URI::toASCIIString)
                                            .orElse(null);
+
+            final String issuerUri = Optional.of(metadata)
+                    .map(OIDCProviderMetadata::getIssuer)
+                    .map(Issuer::getValue)
+                    .orElseGet(config::getIssuerUrl);
+
             return ClientRegistration
                     .withRegistrationId("ids")
                     .authorizationUri(authUri)
                     .tokenUri(metadata.getTokenEndpointURI().toASCIIString())
                     .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
-                    .issuerUri(config.getIssuerUrl())
+                    .issuerUri(issuerUri)
                     .authorizationGrantType(AuthorizationGrantType.PASSWORD);
         }
 
@@ -549,6 +557,34 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             }
             return uri;
         }
+    }
+
+    static class JwtIssuerValidator implements OAuth2TokenValidator<Jwt>
+    {
+        private final String requiredIssuer;
+
+        public JwtIssuerValidator(String issuer)
+        {
+            this.requiredIssuer = requireNonNull(issuer, "issuer cannot be null");
+        }
+
+        @Override
+        public OAuth2TokenValidatorResult validate(Jwt token)
+        {
+            requireNonNull(token, "token cannot be null");
+            final Object issuer = token.getClaim(JwtClaimNames.ISS);
+            if (issuer != null && requiredIssuer.equals(issuer.toString()))
+            {
+                return OAuth2TokenValidatorResult.success();
+            }
+
+            final OAuth2Error error = new OAuth2Error(
+                    OAuth2ErrorCodes.INVALID_TOKEN,
+                    "The iss claim is not valid. Expected `%s` but got `%s`.".formatted(requiredIssuer, issuer),
+                    "https://tools.ietf.org/html/rfc6750#section-3.1");
+            return OAuth2TokenValidatorResult.failure(error);
+        }
+
     }
 
     private static boolean isDefined(String value)

@@ -31,15 +31,20 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtDecoderProvider;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtIssuerValidator;
 import org.junit.Test;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 public class IdentityServiceFacadeFactoryBeanTest
 {
+    private static final String EXPECTED_ISSUER = "expected-issuer";
     @Test
     public void shouldCreateJwtDecoderWithoutIDSWhenPublicKeyIsProvided()
     {
@@ -60,6 +65,55 @@ public class IdentityServiceFacadeFactoryBeanTest
         assertThat(claims).isNotNull()
                           .isNotEmpty()
                           .containsEntry(USERNAME_CLAIM, "piotrek");
+    }
+
+    @Test
+    public void shouldFailWithNotMatchingIssuerURIs()
+    {
+        final JwtIssuerValidator issuerValidator = new JwtIssuerValidator(EXPECTED_ISSUER);
+
+        final OAuth2TokenValidatorResult validationResult = issuerValidator.validate(tokenWithIssuer("different-issuer"));
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult.hasErrors()).isTrue();
+        assertThat(validationResult.getErrors()).hasSize(1);
+
+        final OAuth2Error error = validationResult.getErrors().iterator().next();
+        assertThat(error).isNotNull();
+        assertThat(error.getDescription()).contains(EXPECTED_ISSUER, "different-issuer");
+    }
+
+    @Test
+    public void shouldFailWithNullIssuerURI()
+    {
+        final JwtIssuerValidator issuerValidator = new JwtIssuerValidator(EXPECTED_ISSUER);
+
+        final OAuth2TokenValidatorResult validationResult = issuerValidator.validate(tokenWithIssuer(null));
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult.hasErrors()).isTrue();
+        assertThat(validationResult.getErrors()).hasSize(1);
+
+        final OAuth2Error error = validationResult.getErrors().iterator().next();
+        assertThat(error).isNotNull();
+        assertThat(error.getDescription()).contains(EXPECTED_ISSUER, "null");
+    }
+
+    @Test
+    public void shouldSucceedWithMatchingIssuerURI()
+    {
+        final JwtIssuerValidator issuerValidator = new JwtIssuerValidator(EXPECTED_ISSUER);
+
+        final OAuth2TokenValidatorResult validationResult = issuerValidator.validate(tokenWithIssuer(EXPECTED_ISSUER));
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult.hasErrors()).isFalse();
+        assertThat(validationResult.getErrors()).isEmpty();
+    }
+
+    private Jwt tokenWithIssuer(String issuer)
+    {
+        return Jwt.withTokenValue(UUID.randomUUID().toString())
+                  .issuer(issuer)
+                  .header("JUST", "FOR TESTING")
+                  .build();
     }
 
 }

@@ -580,7 +580,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
             final OAuth2Error error = new OAuth2Error(
                     OAuth2ErrorCodes.INVALID_TOKEN,
-                    "The iss claim is not valid. Expected `%s` but got `%s`.".formatted(requiredIssuer, issuer),
+                    String.format("The iss claim is not valid. Expected `%s` but got `%s`.", requiredIssuer, issuer),
                     "https://tools.ietf.org/html/rfc6750#section-3.1");
             return OAuth2TokenValidatorResult.failure(error);
         }

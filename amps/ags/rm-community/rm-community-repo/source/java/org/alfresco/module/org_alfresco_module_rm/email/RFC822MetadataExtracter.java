@@ -61,6 +61,7 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+        super.setNodeService(nodeService);
     }
 
     /**

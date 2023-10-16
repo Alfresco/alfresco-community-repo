@@ -142,16 +142,16 @@ public class Sampletest extends BaseRMRestTest {
         createRecordFolder(copyCategoryId, COPY_FOLDER_RM_3077);
 
         // create record  files
-//        String electronicRecord = "RM-2801 electronic record";
-//        Record elRecord = createElectronicRecord(catFolder.getId(), electronicRecord);
-//        String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
-//            getDataUser().usingAdmin().getAdminUser().getPassword(), catFolder.getName(), electronicRecord);
-//
-//        String nonElectronicRecord = "RM-2801 non-electronic record";
-//        Record nonElRecord = createNonElectronicRecord(catFolder.getId(), nonElectronicRecord);
-//        String nonElRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
-//            getDataUser().usingAdmin().getAdminUser().getPassword(), catFolder.getName(), nonElectronicRecord);
-//
+        String electronicRecord = "RM-2801 electronic record";
+        Record elRecord = createElectronicRecord(catFolder.getId(), electronicRecord);
+        String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), catFolder.getName(), electronicRecord);
+
+        String nonElectronicRecord = "RM-2801 non-electronic record";
+        Record nonElRecord = createNonElectronicRecord(catFolder.getId(), nonElectronicRecord);
+        String nonElRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), catFolder.getName(), nonElectronicRecord);
+
 //        // link the records to copy folder, then complete them
 //        List<String> recordLists = new ArrayList<>();
 //        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());

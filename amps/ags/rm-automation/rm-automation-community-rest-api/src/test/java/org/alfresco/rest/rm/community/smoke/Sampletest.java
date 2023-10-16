@@ -163,14 +163,14 @@ public class Sampletest extends BaseRMRestTest {
         recordsAPI.completeRecord(rmAdmin.getUsername(), rmAdmin.getPassword(), elRecordFullName);
         recordsAPI.completeRecord(rmAdmin.getUsername(), rmAdmin.getPassword(), nonElRecordFullName);
 
-//        // edit disposition date
-//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-//            getAdminUser().getPassword(),editDispositionDateJson(), catFolder.getName());
-//
-//        // cut off the Folder
-//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-//            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"), catFolder.getName());
-//
+        // edit disposition date
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(), catFolder.getName());
+
+        // cut off the Folder
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"), catFolder.getName());
+
 //        // Verify the Content
 //        Node electronicNode = getNode(elRecord.getId());
 //        assertTrue("The content of " + electronicRecord + " is available",

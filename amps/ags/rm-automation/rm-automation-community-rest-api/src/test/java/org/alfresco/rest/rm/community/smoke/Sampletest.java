@@ -152,17 +152,17 @@ public class Sampletest extends BaseRMRestTest {
         String nonElRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), catFolder.getName(), nonElectronicRecord);
 
-//        // link the records to copy folder, then complete them
-//        List<String> recordLists = new ArrayList<>();
-//        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
-//        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + nonElRecord.getId());
-//
-//        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
-//            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK, COPY_CATEGORY_RM_3077 + "/" +
-//                COPY_FOLDER_RM_3077, recordLists);
-//        recordsAPI.completeRecord(rmAdmin.getUsername(), rmAdmin.getPassword(), elRecordFullName);
-//        recordsAPI.completeRecord(rmAdmin.getUsername(), rmAdmin.getPassword(), nonElRecordFullName);
-//
+        // link the records to copy folder, then complete them
+        List<String> recordLists = new ArrayList<>();
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + nonElRecord.getId());
+
+        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK, COPY_CATEGORY_RM_3077 + "/" +
+                COPY_FOLDER_RM_3077, recordLists);
+        recordsAPI.completeRecord(rmAdmin.getUsername(), rmAdmin.getPassword(), elRecordFullName);
+        recordsAPI.completeRecord(rmAdmin.getUsername(), rmAdmin.getPassword(), nonElRecordFullName);
+
 //        // edit disposition date
 //        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
 //            getAdminUser().getPassword(),editDispositionDateJson(), catFolder.getName());

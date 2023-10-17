@@ -66,8 +66,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 public class SampleTests extends BaseRMRestTest {
@@ -81,7 +80,7 @@ public class SampleTests extends BaseRMRestTest {
     private RecordsAPI recordsAPI;
     @Autowired
     private RecordFoldersAPI recordFoldersAPI;
-    private final static String TEST_PREFIX = generateTestPrefix(DispositionScheduleLinkedRecordsTest.class);
+    private final static String TEST_PREFIX = generateTestPrefix(SampleTests.class);
     private static final String CATEGORY_RM_3077 = TEST_PREFIX + "RM-3077_manager_sees_me";
     private static final String COPY_CATEGORY_RM_3077 = "Copy_of_" + CATEGORY_RM_3077;
     private static final String FOLDER_RM_3077 = "RM-3077_folder_" + CATEGORY_RM_3077;
@@ -234,6 +233,8 @@ public class SampleTests extends BaseRMRestTest {
         // edit disposition date
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
+        AssertJUnit.assertNull("The properties are present even after cutting off the record.", firstElectronicRecord.getProperties().getTitle());
+
     }
     @Test
     @AlfrescoTest (jira = "RM-3060")

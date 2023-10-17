@@ -25,6 +25,7 @@
  * #L%
  */
 package org.alfresco.rest.rm.community.smoke;
+import org.alfresco.rest.core.v0.RMEvents;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.requests.Node;
@@ -43,21 +44,26 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_REF_WORKSPACE_SPACES_STORE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.DATE_FILED;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.CUT_OFF_ASPECT;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertNull;
@@ -229,6 +235,136 @@ public class SampleTests extends BaseRMRestTest {
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
     }
+    @Test
+    @AlfrescoTest (jira = "RM-3060")
+    public void samplesameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
+
+        // create a category with retention applied on records level
+        RecordCategory recordCategory = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(FIRST_CATEGORY_RM_3060).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+        dispositionScheduleService.createCategoryRetentionSchedule(FIRST_CATEGORY_RM_3060, true);
+        dispositionScheduleService.addCutOffAfterPeriodStep(FIRST_CATEGORY_RM_3060, "week|1", DATE_FILED);
+        dispositionScheduleService.addTransferAfterEventStep(
+            FIRST_CATEGORY_RM_3060, TRANSFER_LOCATION, RMEvents.CASE_CLOSED.getEventName());
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(FIRST_CATEGORY_RM_3060, "week|1", CUT_OFF_DATE);
+
+        // make a copy of the category created
+        String categorySecondId = copyCategory(getAdminUser(), recordCategory.getId(), SECOND_CATEGORY_RM_3060);
+
+        // create a folder on the category firstCategoryRM3060 with a complete electronic record
+        RecordCategoryChild firstFolderRecordCategoryChild = createRecordFolder(recordCategory.getId(),
+            FIRST_FOLDER_RM_3060);
+        Record firstElectronicRecord = createElectronicRecord(firstFolderRecordCategoryChild.getId(),
+            ELECTRONIC_RECORD_RM_3060);
+
+        String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), FIRST_FOLDER_RM_3060, ELECTRONIC_RECORD_RM_3060);
+        String elRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_3060 + "/" + FIRST_FOLDER_RM_3060);
+
+        recordsAPI.completeRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), elRecordFullName);
+
+        // create a folder on the category secondCategoryRM3060 with a non electronic record
+        RecordCategoryChild secondFolderRecordCategoryChild = createRecordFolder(categorySecondId,
+            SECOND_FOLDER_RM_3060);
+        Record secondNonElectronicRecord = createNonElectronicRecord(secondFolderRecordCategoryChild.getId(),
+            NON_ELECTRONIC_RECORD_RM_3060);
+
+        // link the nonElectronicRecordRM3060 to firstFolderRM3060
+        List<String> recordLists = new ArrayList<>();
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + secondNonElectronicRecord.getId());
+
+        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK, SECOND_CATEGORY_RM_3060 + "/" +
+                SECOND_FOLDER_RM_3060, recordLists);
+        String nonElRecordFullName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(),
+            SECOND_FOLDER_RM_3060, secondNonElectronicRecord.getName());
+        String nonElRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordFullName, "/" + SECOND_CATEGORY_RM_3060
+                + "/" + SECOND_FOLDER_RM_3060);
+
+        // complete records and cut them off
+        recordsAPI.completeRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), nonElRecordFullName);
+
+        // edit the disposition date
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),nonElRecordNameNodeRef);
+
+        // cut off the record
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),nonElRecordNameNodeRef);
+
+        //check the record is cut off
+        AssertJUnit.assertTrue("The file " + NON_ELECTRONIC_RECORD_RM_3060 + " has not been successfully cut off.", getRestAPIFactory().getRecordsAPI().getRecord(secondNonElectronicRecord.getId()).getAspectNames().contains(CUT_OFF_ASPECT));
+
+        // link the electronic record to secondFolderRM3060
+        recordLists.clear();
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + secondNonElectronicRecord.getId());
+        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK, SECOND_CATEGORY_RM_3060 + "/" +
+                SECOND_FOLDER_RM_3060, recordLists);
+
+        // edit the disposition date and cut off the record
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRef);
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),elRecordNameNodeRef);
+
+        AssertJUnit.assertTrue("The file " + ELECTRONIC_RECORD_RM_3060 + " has not been successfully cut off.", getRestAPIFactory().getRecordsAPI().getRecord(firstElectronicRecord.getId()).getAspectNames().contains(CUT_OFF_ASPECT));
+
+        // open the record and complete the disposition schedule event
+        rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
+            getAdminUser().getPassword(), elRecordFullName, RMEvents.CASE_CLOSED, Instant.now());
+        rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
+            getAdminUser().getPassword(), nonElRecordFullName, RMEvents.CASE_CLOSED, Instant.now());
+
+        // transfer the files & complete transfers
+        HttpResponse nonElRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+                getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordFullName, "/" + SECOND_CATEGORY_RM_3060
+                    + "/" + SECOND_FOLDER_RM_3060));
+
+        String nonElRecordNameTransferId = getTransferId(nonElRecordNameHttpResponse,nonElRecordNameNodeRef);
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),nonElRecordNameTransferId);
+
+        HttpResponse elRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+                getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_3060
+                    + "/" + FIRST_FOLDER_RM_3060));
+
+        String elRecordNameTransferId = getTransferId(elRecordNameHttpResponse,elRecordNameNodeRef);
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),elRecordNameTransferId);
+
+        AssertJUnit.assertTrue("The file " + ELECTRONIC_RECORD_RM_3060 + " has not been successfully transferred", getRestAPIFactory().getRecordsAPI().getRecord(firstElectronicRecord.getId()).getAspectNames().contains(TRANSFER_TYPE));
+        AssertJUnit.assertTrue("The file " + NON_ELECTRONIC_RECORD_RM_3060 + " has not been successfully transferred.", getRestAPIFactory().getRecordsAPI().getRecord(secondNonElectronicRecord.getId()).getAspectNames().contains(TRANSFER_TYPE));
+
+        // edit the disposition date for nonElectronicRecordRM3060 & electronicRecordRM3060
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),nonElRecordNameNodeRef);
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRef);
+
+        // destroy nonElectronicRecordRM3060 & electronicRecordRM3060 records
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),nonElRecordNameNodeRef);
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),elRecordNameNodeRef);
+
+        // check the file is not displayed
+        assertNull("The file " + NON_ELECTRONIC_RECORD_RM_3060 + " has not been successfully destroyed.", secondNonElectronicRecord.getContent());
+        assertNull("The file " + ELECTRONIC_RECORD_RM_3060 + " has not been successfully destroyed.", firstElectronicRecord.getContent());
+
+        // delete precondition
+        deleteRecordCategory(recordCategory.getId());
+        deleteRecordCategory(categorySecondId);
+    }
+
     @Test (dependsOnMethods = {"samplesameLevelDispositionScheduleStepsPeriodsCalculation" })
     public void sampledeleteLongestPeriodTestPrecondition() {
         // Delete the RM site
@@ -264,6 +400,21 @@ public class SampleTests extends BaseRMRestTest {
         repoTestModel.setNodeRef(recordId);
         return getRestAPIFactory().getNodeAPI(repoTestModel);
     }
+    private String getTransferId(HttpResponse httpResponse,String nodeRef) {
+        HttpEntity entity = httpResponse.getEntity();
+        String responseString;
+        try {
+            responseString = EntityUtils.toString(entity, "UTF-8");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        JSONObject result = new JSONObject(responseString);
+        return result
+            .getJSONObject("results")
+            .get(nodeRef)
+            .toString();
+    }
+
 
 
 }

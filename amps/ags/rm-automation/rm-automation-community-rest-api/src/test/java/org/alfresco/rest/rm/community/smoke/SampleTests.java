@@ -392,7 +392,7 @@ public class SampleTests extends BaseRMRestTest {
         }
         catch (Exception e)
         {
-            throw new RuntimeException("Problem copying category.", e);
+            throw e;
         }
         return restNodeModel.getId();
     }

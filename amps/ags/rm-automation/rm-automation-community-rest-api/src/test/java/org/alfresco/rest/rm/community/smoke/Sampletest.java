@@ -173,13 +173,12 @@ public class Sampletest extends BaseRMRestTest {
 
         // Verify the Content
         Node electronicNode = getNode(elRecord.getId());
-        System.out.println("SABJANWA"+electronicNode.getNodeContent().getResponse().getBody().asString());
         assertTrue("The content of " + electronicRecord + " is available",
             StringUtils.isEmpty(electronicNode.getNodeContent().getResponse().getBody().asString()));
-//
-//        // verify the Properties
-//        AssertJUnit.assertNull("The properties are present even after cutting off the record.", elRecord.getProperties().getTitle());
-//
+
+        // verify the Properties
+        AssertJUnit.assertNull("The properties are present even after cutting off the record.", elRecord.getProperties().getTitle());
+
         // delete precondition
         deleteRecordCategory(category1.getId());
         deleteRecordCategory(copyCategoryId);

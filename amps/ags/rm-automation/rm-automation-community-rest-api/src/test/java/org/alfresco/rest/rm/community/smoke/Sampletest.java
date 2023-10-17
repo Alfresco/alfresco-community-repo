@@ -183,6 +183,61 @@ public class Sampletest extends BaseRMRestTest {
         deleteRecordCategory(category1.getId());
         deleteRecordCategory(copyCategoryId);
     }
+
+    @Test
+    @AlfrescoTest(jira = "RM-1622")
+    public void samplesameLevelDispositionScheduleStepsPeriodsCalculation() throws Exception {
+
+        // create a category with retention applied on records level
+        RecordCategory catsameLevel1  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(
+                    FIRST_CATEGORY_RM_1622).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+        RecordCategory catsameLevel2  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(
+                    SECOND_CATEGORY_RM_1622).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+
+        // create retention schedule applied on records for category 1
+        dispositionScheduleService.createCategoryRetentionSchedule(FIRST_CATEGORY_RM_1622, true);
+
+        // with retain immediately after record creation date and cut 1 day after record creation date
+        dispositionScheduleService.addCutOffAfterPeriodStep(FIRST_CATEGORY_RM_1622, "day|1", DATE_FILED);
+
+
+        // create a folder on the category firstCategoryRM1622 with a complete electronic record
+        RecordCategoryChild firstFolderRecordCategoryChild = createRecordFolder(catsameLevel1.getId(),
+            FIRST_FOLDER_RM_1622);
+        Record firstElectronicRecord = createElectronicRecord(firstFolderRecordCategoryChild.getId(),
+            ELECTRONIC_RECORD_RM_1622);
+
+        String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), FIRST_FOLDER_RM_1622, ELECTRONIC_RECORD_RM_1622);
+        recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_1622 + "/" + FIRST_FOLDER_RM_1622);
+
+        recordsAPI.completeRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), elRecordFullName);
+
+        // create a folder on the category secondCategoryRM1622 with a non electronic record
+        createRecordFolder(catsameLevel2.getId(), SECOND_FOLDER_RM_1622);
+        String elRecordNameNodeRefs = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_1622 + "/" + FIRST_FOLDER_RM_1622);
+
+
+        // link it to the folder in second category through the details page
+        List<String> recordLists = new ArrayList<>();
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + firstElectronicRecord.getId());
+
+        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK, SECOND_CATEGORY_RM_1622 + "/" +
+                SECOND_FOLDER_RM_1622, recordLists);
+
+        // edit disposition date
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
+    }
+
     private String copyCategory(UserModel user, String categoryId, String copyName) {
         RepoTestModel repoTestModel = new RepoTestModel() {};
         repoTestModel.setNodeRef(categoryId);

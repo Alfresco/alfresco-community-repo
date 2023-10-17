@@ -25,7 +25,6 @@
  * #L%
  */
 package org.alfresco.rest.rm.community.smoke;
-
 import org.alfresco.rest.core.v0.RMEvents;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeModel;
@@ -64,16 +63,14 @@ import java.util.List;
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_REF_WORKSPACE_SPACES_STORE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.CUT_OFF_ASPECT;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.DATE_FILED;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
-public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
+public class SampleTests extends BaseRMRestTest {
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
@@ -84,10 +81,10 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     private RecordsAPI recordsAPI;
     @Autowired
     private RecordFoldersAPI recordFoldersAPI;
-    private final static  String TEST_PREFIX = generateTestPrefix(DispositionScheduleLinkedRecordsTest.class);
+    private final static String TEST_PREFIX = generateTestPrefix(DispositionScheduleLinkedRecordsTest.class);
     private static final String CATEGORY_RM_3077 = TEST_PREFIX + "RM-3077_manager_sees_me";
     private static final String COPY_CATEGORY_RM_3077 = "Copy_of_" + CATEGORY_RM_3077;
-    private static final String FOLDER_RM_3077 = "RM-3077_folder_"+ CATEGORY_RM_3077;
+    private static final String FOLDER_RM_3077 = "RM-3077_folder_" + CATEGORY_RM_3077;
     private static final String COPY_FOLDER_RM_3077 = "Copy_of_" + FOLDER_RM_3077;
     private static final String FIRST_CATEGORY_RM_3060 = TEST_PREFIX + "RM-3060_category_record";
     private static final String SECOND_CATEGORY_RM_3060 = "Copy_of_" + FIRST_CATEGORY_RM_3060;
@@ -114,7 +111,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         // create "rm admin" user if it does not exist and assign it to RM Administrator role
         rmAdmin = getDataUser().createRandomTestUser();
         rmRolesAndActionsAPI.assignRoleToUser(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(),rmAdmin.getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), rmAdmin.getUsername(),
             UserRoles.ROLE_RM_ADMIN.roleId);
 
         // create "rm Manager" user if it does not exist and assign it to RM Administrator role
@@ -123,21 +120,9 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             getDataUser().usingAdmin().getAdminUser().getPassword(), rmManager.getUsername(),
             UserRoles.ROLE_RM_MANAGER.roleId);
     }
-
-    /**
-     * Disposition Schedule on Record Folder with linked records test
-     * <p>
-     * Precondition:
-     * <p>
-     * Create rm_manager user that would have RM Managers role, rm_admin that would have RM Administrator role.
-     * Log in with admin user, create a category "manager sees me", give rm_manager read&file permission over it.
-     * Create a disposition schedule for it that would cut off folders after 1 day from created date. Copy the category.
-     * <p>
-     * <p/> TestRail Test C775<p/>
-     **/
     @Test
     @AlfrescoTest(jira = "RM-1622")
-    public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
+    public void sampledispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
         RecordCategory category1 = createRootCategory(CATEGORY_RM_3077);
 
@@ -197,14 +182,62 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         deleteRecordCategory(copyCategoryId);
     }
 
-    /**
-     * Test covering RM-3060
-     * Check the disposition steps for a record can be executed
-     * When the record is linked to a folder with the same disposition schedule
-     * */
-    @Test(enabled=false)
+    @Test
+    @AlfrescoTest(jira = "RM-1622")
+    public void samplesameLevelDispositionScheduleStepsPeriodsCalculation() throws Exception {
+
+        // create a category with retention applied on records level
+        RecordCategory catsameLevel1  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(
+                    FIRST_CATEGORY_RM_1622).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+        RecordCategory catsameLevel2  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(
+                    SECOND_CATEGORY_RM_1622).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+
+        // create retention schedule applied on records for category 1
+        dispositionScheduleService.createCategoryRetentionSchedule(FIRST_CATEGORY_RM_1622, true);
+
+        // with retain immediately after record creation date and cut 1 day after record creation date
+        dispositionScheduleService.addCutOffAfterPeriodStep(FIRST_CATEGORY_RM_1622, "day|1", DATE_FILED);
+
+
+        // create a folder on the category firstCategoryRM1622 with a complete electronic record
+        RecordCategoryChild firstFolderRecordCategoryChild = createRecordFolder(catsameLevel1.getId(),
+            FIRST_FOLDER_RM_1622);
+        Record firstElectronicRecord = createElectronicRecord(firstFolderRecordCategoryChild.getId(),
+            ELECTRONIC_RECORD_RM_1622);
+
+        String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), FIRST_FOLDER_RM_1622, ELECTRONIC_RECORD_RM_1622);
+        recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_1622 + "/" + FIRST_FOLDER_RM_1622);
+
+        recordsAPI.completeRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), elRecordFullName);
+
+        // create a folder on the category secondCategoryRM1622 with a non electronic record
+        createRecordFolder(catsameLevel2.getId(), SECOND_FOLDER_RM_1622);
+        String elRecordNameNodeRefs = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_1622 + "/" + FIRST_FOLDER_RM_1622);
+
+
+        // link it to the folder in second category through the details page
+        List<String> recordLists = new ArrayList<>();
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + firstElectronicRecord.getId());
+
+        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK, SECOND_CATEGORY_RM_1622 + "/" +
+                SECOND_FOLDER_RM_1622, recordLists);
+
+        // edit disposition date
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
+    }
+    @Test
     @AlfrescoTest (jira = "RM-3060")
-    public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
+    public void samplesameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
 
         // create a category with retention applied on records level
         RecordCategory recordCategory = getRestAPIFactory().getFilePlansAPI(rmAdmin)
@@ -324,12 +357,21 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             getAdminUser().getPassword(),new JSONObject().put("name","destroy"),elRecordNameNodeRef);
 
         // check the file is not displayed
-       assertNull("The file " + NON_ELECTRONIC_RECORD_RM_3060 + " has not been successfully destroyed.", secondNonElectronicRecord.getContent());
-       assertNull("The file " + ELECTRONIC_RECORD_RM_3060 + " has not been successfully destroyed.", firstElectronicRecord.getContent());
+        assertNull("The file " + NON_ELECTRONIC_RECORD_RM_3060 + " has not been successfully destroyed.", secondNonElectronicRecord.getContent());
+        assertNull("The file " + ELECTRONIC_RECORD_RM_3060 + " has not been successfully destroyed.", firstElectronicRecord.getContent());
 
         // delete precondition
         deleteRecordCategory(recordCategory.getId());
         deleteRecordCategory(categorySecondId);
+    }
+
+    @Test (dependsOnMethods = {"samplesameLevelDispositionScheduleStepsPeriodsCalculation" })
+    public void sampledeleteLongestPeriodTestPrecondition() {
+        // Delete the RM site
+        getRestAPIFactory().getRMSiteAPI().deleteRMSite();
+
+        // Verify the status code
+        assertStatusCode(NO_CONTENT);
     }
 
     private String copyCategory(UserModel user, String categoryId, String copyName) {
@@ -358,7 +400,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         repoTestModel.setNodeRef(recordId);
         return getRestAPIFactory().getNodeAPI(repoTestModel);
     }
-
     private String getTransferId(HttpResponse httpResponse,String nodeRef) {
         HttpEntity entity = httpResponse.getEntity();
         String responseString;
@@ -374,66 +415,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             .toString();
     }
 
-    @Test(enabled = false)
-    @AlfrescoTest(jira = "RM-1622")
-    public void sameLevelDispositionScheduleStepsPeriodsCalculation() throws Exception {
-
-        // create a category with retention applied on records level
-        RecordCategory catsameLevel1  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
-                                                           .createRootRecordCategory(RecordCategory.builder().name(
-                                                                   FIRST_CATEGORY_RM_1622).build(),
-                                                               RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
-        RecordCategory catsameLevel2  = getRestAPIFactory().getFilePlansAPI(rmAdmin)
-                                                           .createRootRecordCategory(RecordCategory.builder().name(
-                                                                   SECOND_CATEGORY_RM_1622).build(),
-                                                               RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
-
-        // create retention schedule applied on records for category 1
-        dispositionScheduleService.createCategoryRetentionSchedule(FIRST_CATEGORY_RM_1622, true);
-
-        // with retain immediately after record creation date and cut 1 day after record creation date
-        dispositionScheduleService.addCutOffAfterPeriodStep(FIRST_CATEGORY_RM_1622, "day|1", DATE_FILED);
 
 
-        // create a folder on the category firstCategoryRM1622 with a complete electronic record
-        RecordCategoryChild firstFolderRecordCategoryChild = createRecordFolder(catsameLevel1.getId(),
-            FIRST_FOLDER_RM_1622);
-        Record firstElectronicRecord = createElectronicRecord(firstFolderRecordCategoryChild.getId(),
-            ELECTRONIC_RECORD_RM_1622);
-
-        String elRecordFullName = recordsAPI.getRecordFullName(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(), FIRST_FOLDER_RM_1622, ELECTRONIC_RECORD_RM_1622);
-       recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_1622 + "/" + FIRST_FOLDER_RM_1622);
-
-        recordsAPI.completeRecord(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(), elRecordFullName);
-
-        // create a folder on the category secondCategoryRM1622 with a non electronic record
-        createRecordFolder(catsameLevel2.getId(), SECOND_FOLDER_RM_1622);
-        String elRecordNameNodeRefs = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + FIRST_CATEGORY_RM_1622 + "/" + FIRST_FOLDER_RM_1622);
-
-
-        // link it to the folder in second category through the details page
-        List<String> recordLists = new ArrayList<>();
-        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + firstElectronicRecord.getId());
-
-        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK, SECOND_CATEGORY_RM_1622 + "/" +
-                SECOND_FOLDER_RM_1622, recordLists);
-
-        // edit disposition date
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
-    }
-
-    @Test (dependsOnMethods = {"sameLevelDispositionScheduleStepsPeriodsCalculation" })
-    public void deleteLongestPeriodTestPrecondition() {
-        // Delete the RM site
-        getRestAPIFactory().getRMSiteAPI().deleteRMSite();
-
-        // Verify the status code
-        assertStatusCode(NO_CONTENT);
-    }
 }

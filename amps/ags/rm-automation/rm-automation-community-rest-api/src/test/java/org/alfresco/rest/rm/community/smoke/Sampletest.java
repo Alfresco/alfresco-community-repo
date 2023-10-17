@@ -171,10 +171,11 @@ public class Sampletest extends BaseRMRestTest {
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","cutoff"), catFolder.getName());
 
-//        // Verify the Content
-//        Node electronicNode = getNode(elRecord.getId());
-//        assertTrue("The content of " + electronicRecord + " is available",
-//            StringUtils.isEmpty(electronicNode.getNodeContent().getResponse().getBody().asString()));
+        // Verify the Content
+        Node electronicNode = getNode(elRecord.getId());
+        System.out.println("SABJANWA"+electronicNode.getNodeContent().getResponse().getBody().asString());
+        assertTrue("The content of " + electronicRecord + " is available",
+            StringUtils.isEmpty(electronicNode.getNodeContent().getResponse().getBody().asString()));
 //
 //        // verify the Properties
 //        AssertJUnit.assertNull("The properties are present even after cutting off the record.", elRecord.getProperties().getTitle());

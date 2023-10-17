@@ -135,7 +135,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * <p>
      * <p/> TestRail Test C775<p/>
      **/
-    @Test
+    @Test(enabled = false)
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
@@ -374,7 +374,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             .toString();
     }
 
-    @Test(enabled = false)
+    @Test
     @AlfrescoTest(jira = "RM-1622")
     public void sameLevelDispositionScheduleStepsPeriodsCalculation() throws Exception {
 

@@ -25,7 +25,6 @@
  * #L%
  */
 package org.alfresco.rest.rm.community.smoke;
-import org.alfresco.rest.core.v0.RMEvents;
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.requests.Node;
@@ -44,35 +43,28 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_REF_WORKSPACE_SPACES_STORE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.CUT_OFF_ASPECT;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.DATE_FILED;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 
-public class Sampletest extends BaseRMRestTest {
+public class SampleTests extends BaseRMRestTest {
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
@@ -236,6 +228,14 @@ public class Sampletest extends BaseRMRestTest {
         // edit disposition date
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
+    }
+    @Test (dependsOnMethods = {"samplesameLevelDispositionScheduleStepsPeriodsCalculation" })
+    public void sampledeleteLongestPeriodTestPrecondition() {
+        // Delete the RM site
+        getRestAPIFactory().getRMSiteAPI().deleteRMSite();
+
+        // Verify the status code
+        assertStatusCode(NO_CONTENT);
     }
 
     private String copyCategory(UserModel user, String categoryId, String copyName) {

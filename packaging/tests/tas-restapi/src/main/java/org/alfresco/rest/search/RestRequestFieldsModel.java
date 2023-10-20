@@ -45,6 +45,9 @@ public class RestRequestFieldsModel extends TestModel implements IRestModel<Rest
     private String field;
     private String prefix;
     private String postfix;
+    private Integer snippetCount;
+    private Integer fragmentSize;
+    private Boolean mergeContiguous;
 
     public RestRequestFieldsModel() {
         super();
@@ -102,6 +105,36 @@ public class RestRequestFieldsModel extends TestModel implements IRestModel<Rest
         this.postfix = postfix;
     }
 
+    public Integer getSnippetCount()
+    {
+        return snippetCount;
+    }
+
+    public void setSnippetCount(Integer snippetCount)
+    {
+        this.snippetCount = snippetCount;
+    }
+
+    public Integer getFragmentSize()
+    {
+        return fragmentSize;
+    }
+
+    public void setFragmentSize(Integer fragmentSize)
+    {
+        this.fragmentSize = fragmentSize;
+    }
+
+    public Boolean getMergeContiguous()
+    {
+        return mergeContiguous;
+    }
+
+    public void setMergeContiguous(Boolean mergeContiguous)
+    {
+        this.mergeContiguous = mergeContiguous;
+    }
+
     public static Builder builder()
     {
         return new Builder();
@@ -112,6 +145,9 @@ public class RestRequestFieldsModel extends TestModel implements IRestModel<Rest
         private String field;
         private String prefix;
         private String postfix;
+        private Integer snippetCount;
+        private Integer fragmentSize;
+        private Boolean mergeContiguous;
 
         public Builder field(String field)
         {
@@ -131,14 +167,33 @@ public class RestRequestFieldsModel extends TestModel implements IRestModel<Rest
             return this;
         }
 
+        public Builder snippetCount(Integer snippetCount)
+        {
+            this.snippetCount = snippetCount;
+            return this;
+        }
+        public Builder fragmentSize(Integer fragmentSize)
+        {
+            this.fragmentSize = fragmentSize;
+            return this;
+        }
+
+        public Builder mergeContiguous(Boolean mergeContiguous)
+        {
+            this.mergeContiguous = mergeContiguous;
+            return this;
+        }
+
         public RestRequestFieldsModel build()
         {
             RestRequestFieldsModel fieldModel = new RestRequestFieldsModel();
             fieldModel.setField(field);
             fieldModel.setPrefix(prefix);
             fieldModel.setPostfix(postfix);
+            fieldModel.setSnippetCount(snippetCount);
+            fieldModel.setFragmentSize(fragmentSize);
+            fieldModel.setMergeContiguous(mergeContiguous);
             return fieldModel;
         }
     }
 }
- 

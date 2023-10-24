@@ -303,6 +303,7 @@
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
+            <version>4.6.0</version>
          </plugin>
 
          <plugin>

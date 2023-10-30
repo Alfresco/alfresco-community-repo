@@ -11,6 +11,7 @@ on:
     branches:
       - feature/**
       - fix/**
+      - hack-build-cache
   workflow_call:
   workflow_dispatch:
 

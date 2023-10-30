@@ -20,7 +20,7 @@ else
   PHASE="package"
 fi
 
-mvn -B -V $PHASE -DskipTests -Dmaven.javadoc.skip=true $PROFILES $BUILD_OPTIONS
+mvnd -B -V $PHASE -DskipTests -Dmaven.javadoc.skip=true $PROFILES $BUILD_OPTIONS
 
 popd
 set +vex

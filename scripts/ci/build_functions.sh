@@ -67,7 +67,7 @@ function evaluatePomProperty() {
 
   pushd "$(dirname "${BASH_SOURCE[0]}")/../../" >/dev/null
 
-  mvn -B -q help:evaluate -Dexpression="${KEY}" -DforceStdout
+  mvnd -B -q help:evaluate -Dexpression="${KEY}" -DforceStdout
 
   popd >/dev/null
 }
@@ -116,7 +116,7 @@ function buildUpstreamTag() {
 
   cd "$(basename "${UPSTREAM_REPO%.git}")"
 
-  mvn -B -V clean package -DskipTests -Dmaven.javadoc.skip=true "-Dimage.tag=${TAG}" ${EXTRA_BUILD_ARGUMENTS}
+  mvnd -B -V clean package -DskipTests -Dmaven.javadoc.skip=true "-Dimage.tag=${TAG}" ${EXTRA_BUILD_ARGUMENTS}
 
   popd
 }
@@ -129,8 +129,8 @@ function buildSameBranchOnUpstream() {
 
   cd "$(basename "${UPSTREAM_REPO%.git}")"
 
-  mvn -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true ${EXTRA_BUILD_ARGUMENTS}
-  mvn -B -V -q install -DskipTests -f packaging/tests/pom.xml
+  mvnd -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true ${EXTRA_BUILD_ARGUMENTS}
+  mvnd -B -V -q install -DskipTests -f packaging/tests/pom.xml
 
   popd
 }
@@ -146,7 +146,7 @@ function pullUpstreamTagAndBuildDockerImage() {
 
   cd "$(basename "${UPSTREAM_REPO%.git}")"
 
-  mvn -B -V clean package -DskipTests -Dmaven.javadoc.skip=true "-Dimage.tag=${TAG}" ${EXTRA_BUILD_ARGUMENTS}
+  mvnd -B -V clean package -DskipTests -Dmaven.javadoc.skip=true "-Dimage.tag=${TAG}" ${EXTRA_BUILD_ARGUMENTS}
 
   popd
 }
@@ -163,8 +163,8 @@ function pullAndBuildSameBranchOnUpstream() {
 
   cd "$(basename "${UPSTREAM_REPO%.git}")"
 
-  mvn -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true ${EXTRA_BUILD_ARGUMENTS}
-  mvn -B -V -q install -DskipTests -f packaging/tests/pom.xml
+  mvnd -B -V -q clean install -DskipTests -Dmaven.javadoc.skip=true ${EXTRA_BUILD_ARGUMENTS}
+  mvnd -B -V -q install -DskipTests -f packaging/tests/pom.xml
 
   popd
 }

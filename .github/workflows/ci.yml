@@ -46,11 +46,6 @@ jobs:
         run: bash ./scripts/ci/prepare.sh
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          # provide access to SSH user that triggered the build
-          limit-access-to-actor: true
 
   veracode:
     name: "Source Clear Scan (SCA)"

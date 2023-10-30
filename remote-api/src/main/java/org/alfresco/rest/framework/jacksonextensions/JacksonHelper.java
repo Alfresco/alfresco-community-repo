@@ -104,13 +104,9 @@ public class JacksonHelper implements InitializingBean
             JsonGenerator generator = objectMapper.getFactory().createGenerator(outStream, encoding);
             writer.writeContents(generator, objectMapper);
         }
-        catch (JsonMappingException error)
+        catch (JsonMappingException | JsonGenerationException error)
         {
-            logger.error("Failed to write Json output", error);
-        } 
-        catch (JsonGenerationException generror)
-        {
-            logger.error("Failed to write Json output", generror);
+            throw new IOException("Failed to write Json output", error);
         }
     }
        

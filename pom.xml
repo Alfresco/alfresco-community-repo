@@ -115,7 +115,7 @@
         <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
         <alfresco.googledrive.version>4.0.0-A2</alfresco.googledrive.version>
         <alfresco.aos-module.version>2.0.0-A2</alfresco.aos-module.version>
-        <alfresco.api-explorer.version>23.1.0-A2</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
+        <alfresco.api-explorer.version>23.1.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.0.1</license-maven-plugin.version>

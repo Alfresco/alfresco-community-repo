@@ -373,7 +373,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
         final ClientApp clientApp = getClientAppConfig(clientName);
         Map<String, Serializable> emailTemplateModel = Collections.singletonMap(FTL_RESET_PASSWORD_URL,
-                    createResetPasswordUrl(clientApp, id, key));
+                    createResetPasswordUrl(clientApp, id, key, userName));
 
         final String templatePath = emailHelper.getEmailTemplate(clientName,
                     getResetPasswordEmailTemplate(clientApp),
@@ -504,6 +504,21 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         return UrlUtil.replaceShareUrlPlaceholder(url, sysAdminParams);
     }
 
+    private String getAdwUrl(String url, String propName)
+    {
+        if (url == null)
+        {
+            LOGGER.warn("The url for the property [" + propName + "] is not configured.");
+            return "";
+        }
+
+        if (url.endsWith("/"))
+        {
+            url = url.substring(0, url.length() - 1);
+        }
+        return UrlUtil.replaceAdwUrlPlaceholder(url, sysAdminParams);
+    }
+
     protected String getResetPasswordEmailTemplate(ClientApp clientApp)
     {
         return clientApp.getProperty("requestResetPasswordTemplatePath");
@@ -517,27 +532,33 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     /**
      * This method creates a URL for the 'reset password' link which appears in the email
      */
-    protected String createResetPasswordUrl(ClientApp clientApp, final String id, final String key)
+    protected String createResetPasswordUrl(ClientApp clientApp, final String id, final String key, final String userName)
     {
         StringBuilder sb = new StringBuilder(100);
 
         String pageUrl = clientApp.getProperty("resetPasswordPageUrl");
-        if (StringUtils.isEmpty(pageUrl))
-        {
-            sb.append(UrlUtil.getShareUrl(sysAdminParams));
 
-            LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
+        if(clientApp.getName().equals("adw")) {
+            sb.append(getAdwUrl(pageUrl, ""));
+            LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
+            sb.append("?key=").append(key)
+                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id)).append("&userName=").append(userName);
+
+        }
+        else {
+            if (StringUtils.isEmpty(pageUrl)) {
+                sb.append(UrlUtil.getShareUrl(sysAdminParams));
+
+                LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
                         + "]. The default base url of Share will be used [" + sb.toString() + "]");
-        }
-        else
-        {
-            // We pass an empty string as we know that the pageUrl is not null
-            sb.append(getUrl(pageUrl, ""));
-        }
+            } else {
+                // We pass an empty string as we know that the pageUrl is not null
+                sb.append(getUrl(pageUrl, ""));
+            }
 
-        sb.append("?key=").append(key)
+            sb.append("?key=").append(key)
                     .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
-
+        }
         return sb.toString();
     }
 

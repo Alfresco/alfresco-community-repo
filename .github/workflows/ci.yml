@@ -40,6 +40,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
@@ -94,6 +96,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run tests"
@@ -132,6 +136,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -166,6 +172,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -193,6 +201,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.6 database"
@@ -220,6 +230,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -246,6 +258,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 13.12 database"
@@ -272,6 +286,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.9 database"
@@ -298,6 +314,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 15.4 database"
@@ -322,6 +340,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -373,6 +393,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -444,6 +466,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -482,6 +506,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 15.4 database"
@@ -512,6 +538,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -544,6 +572,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -572,6 +602,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -618,6 +650,8 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2      
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@hack-build-cache
+        with:
+          build-cache: "true"
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

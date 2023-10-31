@@ -413,14 +413,16 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         String transformName = targetMimetype + '/' + sourceMimetype;
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
 
-        Map<String, String> transformOptions = new HashMap<String, String>();
-        transformOptions.putAll(options);
-
+        Map<String, String> transformOptions = new HashMap<>();
         RenditionDefinition2 renditionDefinition2 = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
 
         if (renditionDefinition2 != null)
         {
             transformOptions.putAll(renditionDefinition2.getTransformOptions());
+        }
+        else
+        {
+            transformOptions.putAll(options);
         }
 
         TransformDefinition transformDefinition = new TransformDefinition(transformName, targetMimetype, transformOptions, null,

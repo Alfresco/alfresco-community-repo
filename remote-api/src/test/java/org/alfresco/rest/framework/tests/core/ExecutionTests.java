@@ -262,13 +262,15 @@ public class ExecutionTests extends AbstractContextTest implements ResponseWrite
     {
         AbstractResourceWebScript executor = getExecutor();
         Map<String, String> templateVars = new HashMap();
+
+        WebScriptResponse response = mockResponse();
         templateVars.put("apiScope", "private");
         templateVars.put("apiVersion", "1");
         templateVars.put("apiName", "alfrescomock");
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
-        executor.execute(ApiAssistant.determineApi(templateVars), mockRequest(templateVars,new HashMap<String, List<String>>(1)), mock(WebScriptResponse.class));
+        executor.execute(ApiAssistant.determineApi(templateVars), mockRequest(templateVars,new HashMap<String, List<String>>(1)), response);
 
-        WebScriptResponse response = mockResponse();
+        response = mockResponse();
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "bad");
         executor.execute(api, mockRequest(templateVars,new HashMap<String, List<String>>(1)), response);
         //throws a runtime exception so INTERNAL_SERVER_ERROR

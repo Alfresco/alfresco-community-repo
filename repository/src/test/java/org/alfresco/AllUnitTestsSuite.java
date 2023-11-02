@@ -134,6 +134,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.impl.solr.SolrQueryHTTPClientTest.class,
     org.alfresco.repo.search.impl.solr.SolrSQLHttpClientTest.class,
     org.alfresco.repo.search.impl.solr.SolrStatsResultTest.class,
+    org.alfresco.repo.search.impl.solr.SolrJSONResultTest.class,
     org.alfresco.repo.search.impl.solr.SolrSQLJSONResultMetadataSetTest.class,
     org.alfresco.repo.search.impl.solr.facet.SolrFacetComparatorTest.class,
     org.alfresco.repo.search.impl.solr.facet.FacetQNameUtilsTest.class,

@@ -485,7 +485,7 @@ public class SolrJSONResultSet implements SearchEngineResultSet {
             Set<Metric> metrics = new HashSet<>(1);
             List<GenericFacetResponse> nested = new ArrayList<>();
             String field = piv.getString("field");
-            String value = piv.getString("value");
+            String value = piv.get("value") != null ? piv.get("value").toString() : null;
             if (piv.has("stats"))
             {
                 JSONObject stats = piv.getJSONObject("stats");

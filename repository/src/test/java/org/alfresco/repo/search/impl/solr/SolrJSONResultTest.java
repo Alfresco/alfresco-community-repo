@@ -56,7 +56,7 @@ public class SolrJSONResultTest
     private @Mock NodeService nodeService;
     private @Mock NodeDAO nodeDao;
 
-    private final String JSON = "{\r\n"
+    private static final String JSON = "{\r\n"
             + "    \"responseHeader\":{\r\n"
             + "       \"QTime\":7,\r\n"
             + "       \"status\":0\r\n"

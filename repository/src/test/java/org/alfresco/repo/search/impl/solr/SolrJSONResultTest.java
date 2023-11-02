@@ -56,7 +56,7 @@ public class SolrJSONResultTest
     private @Mock NodeService nodeService;
     private @Mock NodeDAO nodeDao;
 
-    private final String JSON_OBJECT = "{\r\n"
+    private final String JSON = "{\r\n"
             + "    \"responseHeader\":{\r\n"
             + "       \"QTime\":7,\r\n"
             + "       \"status\":0\r\n"
@@ -344,10 +344,10 @@ public class SolrJSONResultTest
     @Test
     public void testMNT23152() throws JSONException
     {
-        JSONObject json = new JSONObject(JSON_OBJECT);
+        JSONObject json = new JSONObject(JSON);
         SearchParameters parameters = new SearchParameters();
         SolrJSONResultSet s = new SolrJSONResultSet(json, parameters, nodeService, nodeDao, LimitBy.UNLIMITED, 10);
         List<GenericFacetResponse> pivotsFacet = s.getPivotFacets();
-        assertTrue("The pivots facets shouldn't be empty", pivotsFacet != null && pivotsFacet.size() > 0);
+        assertTrue("The pivots facets shouldn't be empty", pivotsFacet != null && !pivotsFacet.isEmpty());
     }
 }

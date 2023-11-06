@@ -31,6 +31,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.repo.rendition2.RenditionDefinitionRegistry2Impl;
 import org.alfresco.repo.rendition2.RenditionService2;
 import org.alfresco.repo.rendition2.TransformDefinition;
@@ -411,12 +412,21 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
         // is used to cache the transform name that will be used.
         String transformName = targetMimetype + '/' + sourceMimetype;
         String renditionName = TransformDefinition.convertToRenditionName(transformName);
-        TransformDefinition transformDefinition = (TransformDefinition) renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
-        if (transformDefinition == null)
+
+        Map<String, String> transformOptions = new HashMap<>();
+        RenditionDefinition2 renditionDefinition2 = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
+
+        if (renditionDefinition2 != null)
         {
-            transformDefinition = new TransformDefinition(transformName, targetMimetype,
-                    options, null, null, null, renditionDefinitionRegistry2);
+            transformOptions.putAll(renditionDefinition2.getTransformOptions());
         }
+        else
+        {
+            transformOptions.putAll(options);
+        }
+
+        TransformDefinition transformDefinition = new TransformDefinition(transformName, targetMimetype, transformOptions, null,
+                null, null, renditionDefinitionRegistry2);
 
         if (logger.isTraceEnabled())
         {

@@ -23,20 +23,28 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.HttpRequestRetryStrategy;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.ConnectionConfig.Builder;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultHttpRequestRetryStrategy;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpRequestInterceptor;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 
 public class HttpClient4Factory
@@ -72,17 +80,18 @@ public class HttpClient4Factory
     public static CloseableHttpClient createHttpClient(HttpClientConfig config, HttpClientConnectionManager connectionManager)
     {
         HttpClientBuilder clientBuilder = HttpClients.custom();
+        PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder.create();
 
         if(config.isMTLSEnabled())
         {
-            clientBuilder.addInterceptorFirst((HttpRequestInterceptor) (request, context) -> {
+            clientBuilder.addRequestInterceptorFirst((request, details, context) -> {
                 if (!((HttpHost) context.getAttribute(HTTP_TARGET_HOST)).getSchemeName().equals(HTTPS_PROTOCOL))
                 {
                     String msg = "mTLS is enabled but provided URL does not use a secured protocol";
                     throw new HttpClientException(msg);
                 }
             });
-            clientBuilder.setSSLSocketFactory(getSslConnectionSocketFactory(config));
+            connectionManagerBuilder.setSSLSocketFactory(getSslConnectionSocketFactory(config));
         }
 
         if (connectionManager != null)
@@ -92,20 +101,20 @@ public class HttpClient4Factory
         else
         {
             //Setting a connectionManager overrides these properties
-            config.getMaxTotalConnections().ifPresent(v -> clientBuilder.setMaxConnTotal(v));
-            config.getMaxHostConnections().ifPresent(v -> clientBuilder.setMaxConnPerRoute(v));
+            config.getMaxTotalConnections().ifPresent(connectionManagerBuilder::setMaxConnTotal);
+            config.getMaxHostConnections().ifPresent(connectionManagerBuilder::setMaxConnPerRoute);
+            clientBuilder.setConnectionManager(connectionManagerBuilder.build());
         }
 
+        Builder connectionConfigBuilder = ConnectionConfig.custom();
         RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
-        config.getConnectionTimeout().ifPresent(v -> requestConfigBuilder.setConnectTimeout(v));
-        config.getConnectionRequestTimeout().ifPresent(v -> requestConfigBuilder.setConnectionRequestTimeout(v));
-        config.getSocketTimeout().ifPresent(v -> requestConfigBuilder.setSocketTimeout(v));
+        config.getConnectionTimeout().ifPresent(v -> connectionConfigBuilder.setConnectTimeout(Timeout.ofSeconds(v)));
+        config.getConnectionRequestTimeout().ifPresent(v -> requestConfigBuilder.setConnectionRequestTimeout(Timeout.ofSeconds(v)));
+        config.getSocketTimeout().ifPresent(v -> connectionConfigBuilder.setSocketTimeout(Timeout.ofSeconds(v)));
 
-        RequestConfig requestConfig = requestConfigBuilder.build();
+        clientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
-        clientBuilder.setDefaultRequestConfig(requestConfig);
-
-        clientBuilder.setRetryHandler(new StandardHttpRequestRetryHandler(5, false));
+        clientBuilder.setRetryStrategy(new DefaultHttpRequestRetryStrategy(5, TimeValue.ofSeconds(1L)));
 
         return clientBuilder.build();
     }
@@ -116,7 +125,7 @@ public class HttpClient4Factory
                 createSSLContext(config),
                 new String[] { TLS_V_1_2, TLS_V_1_3 },
                 null,
-                config.isHostnameVerificationDisabled() ? new NoopHostnameVerifier() : SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+                config.isHostnameVerificationDisabled() ? new NoopHostnameVerifier() : new DefaultHostnameVerifier());
     }
 
     public static PoolingHttpClientConnectionManager createPoolingConnectionManager(HttpClientConfig config)
@@ -126,8 +135,8 @@ public class HttpClient4Factory
         {
             poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager(
                     RegistryBuilder.<ConnectionSocketFactory>create()
-                   .register("https", getSslConnectionSocketFactory(config))
-                   .build());
+                                   .register("https", getSslConnectionSocketFactory(config))
+                                   .build());
         }
         else
         {
@@ -136,8 +145,8 @@ public class HttpClient4Factory
                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
                    .build());
         }
-        config.getMaxTotalConnections().ifPresent(v -> poolingHttpClientConnectionManager.setMaxTotal(v));
-        config.getMaxHostConnections().ifPresent(v -> poolingHttpClientConnectionManager.setDefaultMaxPerRoute(v));
+        config.getMaxTotalConnections().ifPresent(poolingHttpClientConnectionManager::setMaxTotal);
+        config.getMaxHostConnections().ifPresent(poolingHttpClientConnectionManager::setDefaultMaxPerRoute);
 
         return poolingHttpClientConnectionManager;
     }

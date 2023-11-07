@@ -38,17 +38,17 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.ConnectTimeoutException;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+
 
 /**
  * Client class that transfers content (from a ContentReader) to a remote transformation agent together with
@@ -138,15 +138,10 @@ public class RemoteTransformerClient
             {
                 try (CloseableHttpResponse response = execute(httpclient, httppost))
                 {
-                    StatusLine statusLine = response.getStatusLine();
-                    if (statusLine == null)
-                    {
-                        throw new AlfrescoRuntimeException(name+" returned no status " + url + ' ' + args);
-                    }
                     HttpEntity resEntity = response.getEntity();
                     if (resEntity != null)
                     {
-                        int statusCode = statusLine.getStatusCode();
+                        int statusCode = response.getCode();
                         if (statusCode == 200)
                         {
                             try
@@ -154,8 +149,8 @@ public class RemoteTransformerClient
                                 if (logger.isDebugEnabled())
                                 {
                                     long responseContentLength = resEntity.getContentLength();
-                                    Header responseContentEncoding = resEntity.getContentEncoding();
-                                    Header responseContentType = resEntity.getContentType();
+                                    String responseContentEncoding = resEntity.getContentEncoding();
+                                    String responseContentType = resEntity.getContentType();
                                     logger.debug(name + ' ' + sourceExtension + ' ' + targetExtension +
                                             " returned. length=" + responseContentLength +
                                             " type=" + responseContentType +
@@ -194,7 +189,7 @@ public class RemoteTransformerClient
                         throw new AlfrescoRuntimeException(name + " did not return an entity " + url);
                     }
                 }
-                catch (IOException e)
+                catch (IOException | ParseException e)
                 {
                     // In the case of transform requests, unlike version checks, it is only the failure to connect that
                     // forces a wait before trying again.
@@ -218,7 +213,7 @@ public class RemoteTransformerClient
         }
     }
 
-    private void logHttpClientTimeoutException(IOException e, Log logger)
+    private void logHttpClientTimeoutException(Exception e, Log logger)
     {
         if (e instanceof ConnectTimeoutException)
         {
@@ -250,15 +245,10 @@ public class RemoteTransformerClient
             {
                 try (CloseableHttpResponse response = execute(httpclient, httpGet))
                 {
-                    StatusLine statusLine = response.getStatusLine();
-                    if (statusLine == null)
-                    {
-                        throw new AlfrescoRuntimeException(name+" check returned no status " + url);
-                    }
                     HttpEntity resEntity = response.getEntity();
                     if (resEntity != null)
                     {
-                        int statusCode = statusLine.getStatusCode();
+                        int statusCode = response.getCode();
                         if (statusCode == 200)
                         {
                             try
@@ -268,8 +258,8 @@ public class RemoteTransformerClient
                                 if (logger.isTraceEnabled())
                                 {
                                     long responseContentLength = resEntity.getContentLength();
-                                    Header responseContentType = resEntity.getContentType();
-                                    Header responseContentEncoding = resEntity.getContentEncoding();
+                                    String responseContentType = resEntity.getContentType();
+                                    String responseContentEncoding = resEntity.getContentEncoding();
                                     logger.trace(name +
                                             " check returned. length=" + responseContentLength +
                                             " type=" + responseContentType +
@@ -283,7 +273,7 @@ public class RemoteTransformerClient
                                 setCheckResult(success);
                                 return success;
                             }
-                            catch (IOException e)
+                            catch (IOException | ParseException e)
                             {
                                 throw new AlfrescoRuntimeException(name + " check failed to read the returned content", e);
                             }
@@ -299,7 +289,7 @@ public class RemoteTransformerClient
                         throw new AlfrescoRuntimeException(name + " check did not return an entity " + url);
                     }
                 }
-                catch (IOException e)
+                catch (IOException | ParseException e)
                 {
                     throw new AlfrescoRuntimeException(name + " check failed to connect or to read the response", e);
                 }
@@ -363,7 +353,7 @@ public class RemoteTransformerClient
     }
 
     // Strip out just the error message in the response
-    private String getErrorMessage(HttpEntity resEntity) throws IOException
+    private String getErrorMessage(HttpEntity resEntity) throws IOException, ParseException
     {
         String message = "";
         String content = getContent(resEntity);
@@ -380,7 +370,7 @@ public class RemoteTransformerClient
     }
 
     // Tests mock the return values
-    String getContent(HttpEntity resEntity) throws IOException
+    String getContent(HttpEntity resEntity) throws IOException, ParseException
     {
         return EntityUtils.toString(resEntity);
     }

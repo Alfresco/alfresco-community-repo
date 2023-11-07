@@ -109,7 +109,7 @@ public class KeywordSearch extends DeclarativeWebScript
         int startPage = 1;
         try
         {
-            startPage = new Integer(startPageArg);
+            startPage = Integer.valueOf(startPageArg);
         }
         catch(NumberFormatException e)
         {
@@ -119,7 +119,7 @@ public class KeywordSearch extends DeclarativeWebScript
         int itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         try
         {
-            itemsPerPage = new Integer(itemsPerPageArg);
+            itemsPerPage = Integer.valueOf(itemsPerPageArg);
         }
         catch(NumberFormatException e)
         {

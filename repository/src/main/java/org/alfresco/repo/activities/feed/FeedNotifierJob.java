@@ -67,7 +67,7 @@ public class FeedNotifierJob implements Job
             repeatInterval = ((SimpleTrigger)trigger).getRepeatInterval();
         }
         
-        final int repeatIntervalMins = new Long(repeatInterval == null ? 0L : repeatInterval / 1000 / 60).intValue();
+        final int repeatIntervalMins = Long.valueOf(repeatInterval == null ? 0L : repeatInterval / 1000 / 60).intValue();
         
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {

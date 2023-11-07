@@ -445,7 +445,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         	Thread.sleep(1000);
         }
         assertTrue("Expected at least one entry", jsonEntries.length() > 0);
-        assertEquals("Entry count and physical count don't match", new Long(jsonEntries.length()), entryCount);
+        assertEquals("Entry count and physical count don't match", Long.valueOf(jsonEntries.length()), entryCount);
         JSONObject jsonEntry = jsonEntries.getJSONObject(0);
         Long entryId = jsonEntry.getLong(AbstractAuditWebScript.JSON_KEY_ENTRY_ID);
         assertNotNull("No entry ID", entryId);
@@ -483,7 +483,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         assertTrue("Should have found entries", jsonEntries.length() > 0);
         
         // Now login with failure using a GUID and ensure that we can find it
-        String missingUser = new Long(System.currentTimeMillis()).toString();
+        String missingUser = Long.valueOf(System.currentTimeMillis()).toString();
 
         // Query for event that has not happened
         url = "/api/audit/query/" + APP_REPOTEST_NAME + "/repositorytest/login/error/user" + "?value=" + missingUser;

@@ -520,8 +520,8 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             }
 
             String[] parts = currentVersionLabel.split("\\.");
-            int majorVer = new Integer(parts[0]).intValue();
-            int minorVer = new Integer(parts[1]).intValue();
+            int majorVer = Integer.valueOf(parts[0]).intValue();
+            int minorVer = Integer.valueOf(parts[1]).intValue();
 
             if (expectedMajorVersion)
             {

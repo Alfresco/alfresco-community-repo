@@ -147,7 +147,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
         // no pun intended
         quickFile = AbstractContentTransformerTest.loadQuickTestFile("jpg");
-        TEST_CONTENT = new byte[new Long(quickFile.length()).intValue()];
+        TEST_CONTENT = new byte[Long.valueOf(quickFile.length()).intValue()];
         new FileInputStream(quickFile).read(TEST_CONTENT);
         testNode = createTestFile(userOneHome, TEST_NAME, quickFile);
         

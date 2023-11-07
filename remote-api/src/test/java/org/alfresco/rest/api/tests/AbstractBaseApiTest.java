@@ -913,8 +913,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     {
         String[] parts = currentVersionLabel.split("\\.");
 
-        int majorVer = new Integer(parts[0]).intValue();
-        int minorVer = new Integer(parts[1]).intValue();
+        int majorVer = Integer.valueOf(parts[0]).intValue();
+        int minorVer = Integer.valueOf(parts[1]).intValue();
 
         Map<String, String> params = new HashMap<>();
         params.put(Nodes.PARAM_OVERWRITE, "true");

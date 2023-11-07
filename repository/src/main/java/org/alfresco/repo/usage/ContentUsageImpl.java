@@ -515,7 +515,7 @@ public class ContentUsageImpl implements ContentUsageService,
     {
         if (personNodeRef != null)
         {     
-            nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, new Long(currentUsage));
+            nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, Long.valueOf(currentUsage));
         }
     }
     
@@ -584,7 +584,7 @@ public class ContentUsageImpl implements ContentUsageService,
         NodeRef personNodeRef = getPerson(userName);
         if (personNodeRef != null)
         {
-            nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_QUOTA, new Long(currentQuota));
+            nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_QUOTA, Long.valueOf(currentQuota));
         }
     }
     

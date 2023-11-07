@@ -163,7 +163,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
      */
     public void setMaxUsers(int maxUsers)
     {
-        this.maxUsers = new Integer(maxUsers);
+        this.maxUsers = Integer.valueOf(maxUsers);
     }
 
     @Override

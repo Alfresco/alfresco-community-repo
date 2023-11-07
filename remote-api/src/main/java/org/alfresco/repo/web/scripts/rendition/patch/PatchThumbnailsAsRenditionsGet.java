@@ -149,7 +149,7 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
         }
 
         Map<String, Object> model = new HashMap<String, Object>();
-    	model.put("patchedNodeCount", new Long(patchedNodeRefs));
+    	model.put("patchedNodeCount", Long.valueOf(patchedNodeRefs));
     	
         return model;
     }

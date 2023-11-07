@@ -38,7 +38,7 @@ import org.alfresco.util.EqualsHelper;
  */
 public class ContentDataEntity
 {
-    public static final Long CONST_LONG_ZERO = new Long(0L);
+    public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
     
     private Long id;
     private Long version;

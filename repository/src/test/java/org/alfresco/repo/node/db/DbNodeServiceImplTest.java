@@ -183,7 +183,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             {
                 txnIdStr = AlfrescoTransactionSupport.getTransactionId();
                 // Make a change
-                nodeService.setProperty(rootNodeRef, ContentModel.PROP_COUNTER, new Integer(5));
+                nodeService.setProperty(rootNodeRef, ContentModel.PROP_COUNTER, Integer.valueOf(5));
                 // Reschedule for removal
                 AlfrescoTransactionSupport.bindListener(this);
             }
@@ -660,8 +660,8 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             assertTrue("content not correct", refs.contains(n1Ref));
             
             // Double
-            Double alfLat = new Double(51.5216666);
-            Double alfLon = new Double(0.43);
+            Double alfLat = Double.valueOf(51.5216666);
+            Double alfLon = Double.valueOf(0.43);
             nodeService.setProperty(n1Ref.getChildRef(), ContentModel.PROP_LATITUDE, alfLat);      
             refs = nodeService.getChildAssocsByPropertyValue(parentNodeRef, ContentModel.PROP_LATITUDE, alfLat);
             assertTrue("failed to read one assoc", refs.size() == 1);

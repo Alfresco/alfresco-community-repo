@@ -263,7 +263,7 @@ public class ConcurrentNodeServiceTest extends TestCase
             {
                 errors.add("\n   Prop " + properties[i] + " : " + value);
             }
-            else if (!value.equals(new Integer(loops)))
+            else if (!value.equals(Integer.valueOf(loops)))
             {
                 errors.add("\n   Prop " + properties[i] + " : " + value);
             }

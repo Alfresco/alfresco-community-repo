@@ -290,7 +290,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
 
         }
         attributeService.setAttribute(
-                new Long(System.currentTimeMillis()),
+                Long.valueOf(System.currentTimeMillis()),
                 KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_USERS);
         attributeService.setAttribute(
                 userCount,
@@ -322,7 +322,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
             documentCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_DOCUMENTS, idsParam);
         }
         attributeService.setAttribute(
-                new Long(System.currentTimeMillis()),
+                Long.valueOf(System.currentTimeMillis()),
                 KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_DOCUMENTS);
         attributeService.setAttribute(
                 documentCount,

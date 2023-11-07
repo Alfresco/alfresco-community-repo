@@ -242,8 +242,8 @@ public class DownloadStorage
         validateNode(nodeRef);
         
         nodeService.setProperty(nodeRef, DownloadModel.PROP_STATUS, status.getStatus().toString());
-        nodeService.setProperty(nodeRef, DownloadModel.PROP_DONE, new Long(status.getDone()));
-        nodeService.setProperty(nodeRef, DownloadModel.PROP_TOTAL, new Long(status.getTotal()));
+        nodeService.setProperty(nodeRef, DownloadModel.PROP_DONE, Long.valueOf(status.getDone()));
+        nodeService.setProperty(nodeRef, DownloadModel.PROP_TOTAL, Long.valueOf(status.getTotal()));
         nodeService.setProperty(nodeRef, DownloadModel.PROP_FILES_ADDED, status.getFilesAdded());
         nodeService.setProperty(nodeRef, DownloadModel.PROP_TOTAL_FILES, status.getTotalFiles());
     }

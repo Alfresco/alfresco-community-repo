@@ -141,7 +141,7 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
         Long checkValue = (Long) nodeService.getProperty(workingNodeRef, PROP_CHECK_VALUE);
         if (checkValue == null)
         {
-            checkValue = new Long(0);
+            checkValue = Long.valueOf(0);
             nodeService.setProperty(workingNodeRef, PROP_CHECK_VALUE, checkValue);
         }
         return checkValue;
@@ -155,7 +155,7 @@ public class RetryingTransactionHelperTest extends BaseSpringTest
     private Long incrementCheckValue()
     {
         Long checkValue = getCheckValue();
-        checkValue = new Long(checkValue.longValue() + 1L);
+        checkValue = Long.valueOf(checkValue.longValue() + 1L);
         nodeService.setProperty(workingNodeRef, PROP_CHECK_VALUE, checkValue);
         return checkValue;
     }

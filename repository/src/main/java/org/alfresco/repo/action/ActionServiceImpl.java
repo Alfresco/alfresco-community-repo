@@ -1318,8 +1318,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             {
                 logger.debug("SAVING OR = " + ((CompositeActionCondition) condition).isORCondition());
             }
-            this.nodeService.setProperty(conditionNodeRef, ActionModel.PROP_CONDITION_ANDOR, new Boolean(
-                        ((CompositeActionCondition) condition).isORCondition()));
+            this.nodeService.setProperty(conditionNodeRef, ActionModel.PROP_CONDITION_ANDOR, Boolean.valueOf(((CompositeActionCondition) condition).isORCondition()));
         }
     }
 

@@ -177,7 +177,7 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
                 
                 // We'll use the raw, small 'n' nodeService as the big 'N' NodeService's interceptors would limit results.
                 List<ChildAssociationRef> fmPostChildren = rawNodeService.getChildAssocs(topicNode, childNodeTypeQNames);
-                result = new Integer(fmPostChildren.size());
+                result = Integer.valueOf(fmPostChildren.size());
             }
         }
         return result;

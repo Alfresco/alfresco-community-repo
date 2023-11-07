@@ -467,7 +467,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 }
                 else
                 {
-                    minChildNodeIdInclusive = new Long(childNodeId.longValue() + 1L);
+                    minChildNodeIdInclusive = Long.valueOf(childNodeId.longValue() + 1L);
                 }
                 // Invalidate the node cache
                 childNodeIds.add(childNodeId);

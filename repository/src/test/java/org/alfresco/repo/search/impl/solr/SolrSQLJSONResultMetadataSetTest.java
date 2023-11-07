@@ -45,7 +45,7 @@ public class SolrSQLJSONResultMetadataSetTest
         SolrSQLJSONResultSet ssjr = new SolrSQLJSONResultSet(json, null);
         Assert.assertNotNull(ssjr);
         Assert.assertNotNull(ssjr.getQueryTime());
-        Assert.assertEquals(new Long(96), ssjr.getQueryTime());
+        Assert.assertEquals(Long.valueOf(96), ssjr.getQueryTime());
         Assert.assertEquals(3, ssjr.getNumberFound());
         Assert.assertNotNull(ssjr.getSolrResponse());
         Assert.assertEquals(response, ssjr.getSolrResponse());

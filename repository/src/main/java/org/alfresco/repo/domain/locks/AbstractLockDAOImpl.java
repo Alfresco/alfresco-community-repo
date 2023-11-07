@@ -249,7 +249,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             {
                 throw new LockAcquisitionException(
                         LockAcquisitionException.ERR_LOCK_UPDATE_COUNT,
-                        lockQName, lockToken, new Integer(updateCount), new Integer(requiredUpdateCount));
+                        lockQName, lockToken, Integer.valueOf(updateCount), Integer.valueOf(requiredUpdateCount));
             }
         }
         else

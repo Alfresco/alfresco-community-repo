@@ -82,11 +82,11 @@ public class StripingFilesystemTracker extends AbstractFilesystemTracker
 
 	protected List<ImportableItem> getDirectoriesToProcess(int level)
 	{
-		List<ImportableItem> dirs = directoriesToProcess.get(new Integer(level));
+		List<ImportableItem> dirs = directoriesToProcess.get(Integer.valueOf(level));
 		if(dirs == null)
 		{
 			dirs = new ArrayList<ImportableItem>();
-			directoriesToProcess.put(new Integer(level), dirs);
+			directoriesToProcess.put(Integer.valueOf(level), dirs);
 		}
 
 		return dirs;

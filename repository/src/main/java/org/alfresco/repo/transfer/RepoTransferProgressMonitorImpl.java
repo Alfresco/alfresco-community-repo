@@ -87,7 +87,7 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
     {
         NodeRef nodeRef = getTransferRecord(transferId);
         testCancelled(nodeRef);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, new Integer(currPos));
+        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, Integer.valueOf(currPos));
     }
 
     /*
@@ -99,8 +99,8 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
     {
         NodeRef nodeRef = getTransferRecord(transferId);
         testCancelled(nodeRef);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, new Integer(currPos));
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_ENDPOINT, new Integer(endPos));
+        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, Integer.valueOf(currPos));
+        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_ENDPOINT, Integer.valueOf(endPos));
     }
 
     /*

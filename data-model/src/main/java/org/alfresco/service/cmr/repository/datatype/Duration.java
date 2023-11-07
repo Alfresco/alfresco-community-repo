@@ -190,7 +190,7 @@ public class Duration implements Comparable, Serializable
             {
                if (token == StreamTokenizer.TT_NUMBER)
                {
-                  nval = new Double(tok.nval);
+                  nval = Double.valueOf(tok.nval);
                }
                else if (token == StreamTokenizer.TT_EOF)
                {

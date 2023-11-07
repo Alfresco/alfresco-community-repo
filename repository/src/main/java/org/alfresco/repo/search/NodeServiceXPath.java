@@ -217,7 +217,7 @@ public class NodeServiceXPath extends BaseXPath
 
         public static Double evaluate(Context context)
         {
-            return new Double(1);
+            return Double.valueOf(1);
         }
     }
 
@@ -475,7 +475,7 @@ public class NodeServiceXPath extends BaseXPath
 
     static class Score implements Function
     {
-        private Double one = new Double(1);
+        private Double one = Double.valueOf(1);
 
         public Object call(Context context, List args) throws FunctionCallException
         {

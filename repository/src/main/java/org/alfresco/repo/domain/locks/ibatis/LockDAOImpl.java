@@ -147,8 +147,8 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         updateLockEntity.setLockToken(lockToken == null ? null : lockToken.toLowerCase());
         long now = (timeToLive > 0) ? System.currentTimeMillis() : 0L;
         long exp = (timeToLive > 0) ? (now + timeToLive) : 0L;
-        updateLockEntity.setStartTime(new Long(now));
-        updateLockEntity.setExpiryTime(new Long(exp));
+        updateLockEntity.setStartTime(Long.valueOf(now));
+        updateLockEntity.setExpiryTime(Long.valueOf(exp));
         
         int updated = template.update(UPDATE_LOCK, updateLockEntity);
         if (updated != 1)
@@ -174,8 +174,8 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         params.put("newLockToken", newLockToken == null ? null : newLockToken.toLowerCase());
         long now = (timeToLive > 0) ? System.currentTimeMillis() : 0L;
         long exp = (timeToLive > 0) ? (now + timeToLive) : 0L;
-        params.put("newStartTime", new Long(now));
-        params.put("newExpiryTime", new Long(exp));
+        params.put("newStartTime", Long.valueOf(now));
+        params.put("newExpiryTime", Long.valueOf(exp));
         int updateCount = template.update(UPDATE_EXCLUSIVE_LOCK, params);
         // Done
         return updateCount;

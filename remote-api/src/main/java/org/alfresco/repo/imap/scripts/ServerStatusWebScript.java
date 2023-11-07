@@ -57,7 +57,7 @@ public class ServerStatusWebScript extends AbstractWebScript implements Applicat
         // hence providing ability for subsystem to be disabled (whilst still supporting ability to check status and/or dynamically start via JMX)
         String isEnabled = (String)subsystem.getProperty("imap.server.enabled");
         
-        if (new Boolean(isEnabled).booleanValue())
+        if (Boolean.valueOf(isEnabled).booleanValue())
         {
             res.getWriter().write("enabled");
         }

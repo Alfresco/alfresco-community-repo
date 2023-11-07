@@ -46,7 +46,7 @@ public class ContentUrlEntity implements Serializable
      * 
      */
     private static final long serialVersionUID = -7697859151521433536L;
-    public static final Long CONST_LONG_ZERO = new Long(0L);
+    public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
     public static final String EMPTY_URL = "empty";
     
     private Long id;

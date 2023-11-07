@@ -269,8 +269,8 @@ public class ScriptExecutorImpl implements ScriptExecutor
                 varAssignments.put("FALSE", "0");
             }
             long now = System.currentTimeMillis();
-            varAssignments.put("now", new Long(now).toString());
-            varAssignments.put("NOW", new Long(now).toString());
+            varAssignments.put("now", Long.valueOf(now).toString());
+            varAssignments.put("NOW", Long.valueOf(now).toString());
             
             while(true)
             {

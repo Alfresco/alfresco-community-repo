@@ -133,7 +133,7 @@ public class QuickShareThumbnailContentGet extends QuickShareContentGet
             String phString = req.getParameter("ph");
             if (phString != null)
             {
-               ph = new Boolean(phString);
+               ph = Boolean.valueOf(phString);
             }
             
             Scriptable scope = new BaseScopableProcessorExtension().getScope(); // note: required for ValueConverter (collection)

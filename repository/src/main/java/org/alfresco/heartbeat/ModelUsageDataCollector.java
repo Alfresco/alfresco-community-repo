@@ -105,9 +105,9 @@ public class ModelUsageDataCollector extends HBBaseDataCollector implements Init
                 () -> customModelService.getCustomModelsInfo(), true);
 
         Map<String, Object> modelUsageValues = new HashMap<>();
-        modelUsageValues.put("numOfActiveModels", new Integer(customModelsInfo.getNumberOfActiveModels()));
-        modelUsageValues.put("numOfActiveTypes", new Integer(customModelsInfo.getNumberOfActiveTypes()));
-        modelUsageValues.put("numOfActiveAspects", new Integer(customModelsInfo.getNumberOfActiveAspects()));
+        modelUsageValues.put("numOfActiveModels", Integer.valueOf(customModelsInfo.getNumberOfActiveModels()));
+        modelUsageValues.put("numOfActiveTypes", Integer.valueOf(customModelsInfo.getNumberOfActiveTypes()));
+        modelUsageValues.put("numOfActiveAspects", Integer.valueOf(customModelsInfo.getNumberOfActiveAspects()));
         HBData modelUsageData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),

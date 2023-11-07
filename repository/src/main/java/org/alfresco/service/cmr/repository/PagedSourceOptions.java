@@ -48,7 +48,7 @@ import org.alfresco.service.cmr.repository.AbstractTransformationSourceOptions;
  */
 public class PagedSourceOptions extends AbstractTransformationSourceOptions
 {
-    public static final Integer PAGE_1 = new Integer(1);
+    public static final Integer PAGE_1 = Integer.valueOf(1);
 
     /** The start of the page range in the source document */
     private Integer startPageNumber;

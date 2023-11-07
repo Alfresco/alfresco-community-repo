@@ -90,8 +90,8 @@ public class DefaultTypeConverterTest extends TestCase
 
     public void testToString()
     {
-        assertEquals("true", DefaultTypeConverter.INSTANCE.convert(String.class, new Boolean(true)));
-        assertEquals("false", DefaultTypeConverter.INSTANCE.convert(String.class, new Boolean(false)));
+        assertEquals("true", DefaultTypeConverter.INSTANCE.convert(String.class, Boolean.valueOf(true)));
+        assertEquals("false", DefaultTypeConverter.INSTANCE.convert(String.class, Boolean.valueOf(false)));
         assertEquals("v", DefaultTypeConverter.INSTANCE.convert(String.class, Character.valueOf('v')));
         assertEquals("3", DefaultTypeConverter.INSTANCE.convert(String.class, Byte.valueOf("3")));
         assertEquals("4", DefaultTypeConverter.INSTANCE.convert(String.class, Short.valueOf("4")));

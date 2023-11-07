@@ -55,11 +55,11 @@ public class CannedQueryTest extends TestCase
         RESULTS_TWO = new ArrayList<Long>(10);
         for (int i = 0; i < 10; i++)
         {
-            RESULTS_TWO.add(new Long(i));
+            RESULTS_TWO.add(Long.valueOf(i));
         }
         ANTI_RESULTS = new HashSet<Object>();
         ANTI_RESULTS.add("ONE_5");
-        ANTI_RESULTS.add(new Long(5));
+        ANTI_RESULTS.add(Long.valueOf(5));
     }
     
     @SuppressWarnings("rawtypes")

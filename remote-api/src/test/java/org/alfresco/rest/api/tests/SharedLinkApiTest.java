@@ -209,7 +209,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(file1_MimeType, resp.getContent().getMimeType());
         assertEquals("Adobe PDF Document", resp.getContent().getMimeTypeName());
 
-        assertEquals(new Long(file1_originalBytes.length), resp.getContent().getSizeInBytes());
+        assertEquals(Long.valueOf(file1_originalBytes.length), resp.getContent().getSizeInBytes());
         assertEquals("UTF-8", resp.getContent().getEncoding());
 
        // assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed

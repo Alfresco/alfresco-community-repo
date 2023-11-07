@@ -205,7 +205,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
         {
             Map<String, Serializable> rawMap = newRawMap();
-            rawMap.put("unknown1", new Integer(1));
+            rawMap.put("unknown1", Integer.valueOf(1));
             rawMap.put("unknown2", "TWO");
             return rawMap;
         }

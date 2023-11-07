@@ -419,7 +419,7 @@ public class RatingServiceImpl implements RatingService, Extensible
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingTotalRollupAlgorithm.ROLLUP_NAME);
         if (result == null)
         {
-            result = new Float(0f);
+            result = Float.valueOf(0f);
         }
         
         return (Float)result;
@@ -440,7 +440,7 @@ public class RatingServiceImpl implements RatingService, Extensible
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingCountRollupAlgorithm.ROLLUP_NAME);
         if (result == null)
         {
-            result = new Integer(0);
+            result = Integer.valueOf(0);
         }
         
         return (Integer)result;

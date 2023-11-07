@@ -385,9 +385,9 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         properties.put(QName.createQName(ns, "mvp"), slist);
         
         ArrayList<Integer> ilist = new ArrayList<Integer>();
-        ilist.add(new Integer(1));
-        ilist.add(new Integer(2));
-        ilist.add(new Integer(3));
+        ilist.add(Integer.valueOf(1));
+        ilist.add(Integer.valueOf(2));
+        ilist.add(Integer.valueOf(3));
         
         properties.put(QName.createQName(ns, "mvi"), ilist);
         
@@ -709,7 +709,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
             }
             else
             {
-                value = new Long(System.currentTimeMillis());
+                value = Long.valueOf(System.currentTimeMillis());
             }
             // add it
             properties.put(propertyQName, value);
@@ -2449,7 +2449,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     {
         Serializable nodeDbId = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
         // Now set it
-        nodeService.setProperty(rootNodeRef, ContentModel.PROP_NODE_DBID, new Long(-1));
+        nodeService.setProperty(rootNodeRef, ContentModel.PROP_NODE_DBID, Long.valueOf(-1));
         Serializable nodeDbIdCheck = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
         assertEquals("Cannot set Node DB ID", nodeDbId, nodeDbIdCheck);
     }
@@ -2901,7 +2901,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         Map<QName, Serializable> checkProperties = new HashMap<QName, Serializable>();
         checkProperties.put(ContentModel.PROP_ENABLED, Boolean.TRUE);
         checkProperties.put(ContentModel.PROP_COUNTER, 100);
-        checkProperties.put(ContentModel.PROP_LATITUDE, new Double(51.521)); 
+        checkProperties.put(ContentModel.PROP_LATITUDE, Double.valueOf(51.521)); 
         checkProperties.put(ContentModel.PROP_SUBJECT, "Hello World");
 
         for (QName propertyQName : checkProperties.keySet())

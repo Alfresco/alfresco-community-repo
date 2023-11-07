@@ -441,7 +441,7 @@ public class PropertyValueDAOTest
     {
         for (short i = 0; i < 100; i++)
         {
-            runPropertyValueTest(new Short(i));
+            runPropertyValueTest(Short.valueOf(i));
         }
     }
     
@@ -450,7 +450,7 @@ public class PropertyValueDAOTest
     {
         for (int i = 0; i < 100; i++)
         {
-            runPropertyValueTest(new Integer(i));
+            runPropertyValueTest(Integer.valueOf(i));
         }
     }
     
@@ -459,7 +459,7 @@ public class PropertyValueDAOTest
     {
         for (long i = 0; i < 100; i++)
         {
-            runPropertyValueTest(new Long(i));
+            runPropertyValueTest(Long.valueOf(i));
         }
     }
     
@@ -468,7 +468,7 @@ public class PropertyValueDAOTest
     {
         for (long i = 0; i < 100; i++)
         {
-            runPropertyValueTest(new Float((float)i + 0.01F));
+            runPropertyValueTest(Float.valueOf((float) i + 0.01F));
         }
     }
     
@@ -477,7 +477,7 @@ public class PropertyValueDAOTest
     {
         for (long i = 0; i < 100; i++)
         {
-            runPropertyValueTest(new Double((double)i + 0.01D));
+            runPropertyValueTest(Double.valueOf((double) i + 0.01D));
         }
     }
     

@@ -121,7 +121,7 @@ public class AssociationRef implements EntityRef, Serializable
         String targetNodeRefStr = tokenizer.nextToken();
         String assocTypeQNameStr = tokenizer.nextToken();
         
-        this.id = new Long(idStr);
+        this.id = Long.valueOf(idStr);
         this.sourceRef = new NodeRef(sourceNodeRefStr);
         this.targetRef = new NodeRef(targetNodeRefStr);
         this.assocTypeQName = QName.createQName(assocTypeQNameStr);

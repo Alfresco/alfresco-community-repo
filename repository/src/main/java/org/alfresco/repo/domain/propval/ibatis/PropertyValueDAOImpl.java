@@ -178,7 +178,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyDateValueEntity result = template.selectOne(
                 SELECT_PROPERTY_DATE_VALUE_BY_VALUE,
-                new Long(value.getTime()));
+                Long.valueOf(value.getTime()));
         // The ID is the actual time in ms (GMT)
         return result;
     }

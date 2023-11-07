@@ -1182,7 +1182,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 else if (command[2].equals("package"))
                 {
                     QName qname = QName.createQName(command[1], namespaceService);
-                    int number = new Integer(command[3]);
+                    int number = Integer.valueOf(command[3]);
                     NodeRef packageNodeRef = workflowService.createPackage(null);
                     for (int i = 0; i < number; i++)
                     {

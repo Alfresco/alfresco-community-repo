@@ -661,8 +661,8 @@ public class PatchServiceImpl implements PatchService
     {
         public int compare(Patch p1, Patch p2)
         {
-            Integer i1 = new Integer(p1.getTargetSchema());
-            Integer i2 = new Integer(p2.getTargetSchema());
+            Integer i1 = Integer.valueOf(p1.getTargetSchema());
+            Integer i2 = Integer.valueOf(p2.getTargetSchema());
             return i1.compareTo(i2);
         }
     }

@@ -445,7 +445,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
          
         // activate/deactivate the model 
-        nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, new Boolean(activate));
+        nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, Boolean.valueOf(activate));
         
         // note: model will be loaded/unloaded as part of DictionaryModelType.beforeCommit()
         return modelQName;

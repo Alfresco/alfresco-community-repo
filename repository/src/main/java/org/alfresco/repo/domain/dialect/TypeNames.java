@@ -76,7 +76,7 @@ public class TypeNames {
      */
     public String get(int typecode) throws IllegalArgumentException
     {
-        String result = (String) defaults.get( new Integer(typecode) );
+        String result = (String) defaults.get( Integer.valueOf(typecode) );
         if (result == null)
         {
             throw new IllegalArgumentException("No Dialect mapping for JDBC type: " + typecode);
@@ -95,7 +95,7 @@ public class TypeNames {
      */
     public String get(int typecode, int size, int precision, int scale) throws IllegalArgumentException
     {
-        Map map = (Map) weighted.get( new Integer(typecode) );
+        Map map = (Map) weighted.get( Integer.valueOf(typecode) );
         if ( map!=null && map.size()>0 )
         {
             // iterate entries ordered by capacity to find first fit
@@ -125,13 +125,13 @@ public class TypeNames {
      */
     public void put(int typecode, int capacity, String value)
     {
-        TreeMap map = (TreeMap)weighted.get( new Integer(typecode) );
+        TreeMap map = (TreeMap)weighted.get( Integer.valueOf(typecode) );
         if (map == null)
         {// add new ordered map
             map = new TreeMap();
-            weighted.put( new Integer(typecode), map );
+            weighted.put( Integer.valueOf(typecode), map );
         }
-        map.put(new Integer(capacity), value);
+        map.put(Integer.valueOf(capacity), value);
     }
 
     /**
@@ -140,7 +140,7 @@ public class TypeNames {
      */
     public void put(int typecode, String value)
     {
-        defaults.put( new Integer(typecode), value );
+        defaults.put( Integer.valueOf(typecode), value );
     }
 
     private static String replaceOnce(String template, String placeholder, String replacement)

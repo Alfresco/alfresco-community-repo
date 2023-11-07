@@ -146,7 +146,7 @@ public class AdminWebScriptTest extends BaseWebScriptTest
         RepoUsage usage = usageStatus.getUsage();
         LicenseDescriptor licenseDescriptor = descriptorService.getLicenseDescriptor();
         Date validUntil = (licenseDescriptor == null) ? null : licenseDescriptor.getValidUntil(); // might be null
-        Integer checkLevel = new Integer(usageStatus.getLevel().ordinal());
+        Integer checkLevel = Integer.valueOf(usageStatus.getLevel().ordinal());
         
         String url = "/api/admin/usage";
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);

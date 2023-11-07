@@ -600,7 +600,7 @@ public class CommentsTest
         {
             assertTrue("Uncommented node should have EITHER no commentsRollup aspect OR commentCount of zero.",
                     !nodeService.hasAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP) ||
-                    (commentCount != null && commentCount.equals(new Integer(0))
+                    (commentCount != null && commentCount.equals(Integer.valueOf(0))
                             ));
         }
         else

@@ -135,7 +135,7 @@ public class ReplicationDefinitionImpl extends ActionImpl implements Replication
      */
     public void setEnabled(boolean enabled)
     {
-       setParameterValue(REPLICATION_DEFINITION_ENABLED, new Boolean(enabled));
+       setParameterValue(REPLICATION_DEFINITION_ENABLED, Boolean.valueOf(enabled));
     }
 
     /*

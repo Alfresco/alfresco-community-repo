@@ -358,11 +358,11 @@ public class UserUsageTrackingComponentTest extends TestCase
             
             if (isCleared)
             {
-                assertTrue(sizeCurrent == null || (new Long(0L)).equals(sizeCurrent));
+                assertTrue(sizeCurrent == null || (Long.valueOf(0L)).equals(sizeCurrent));
             }
             else
             {
-                assertFalse(sizeCurrent == null || (new Long(0L)).equals(sizeCurrent));
+                assertFalse(sizeCurrent == null || (Long.valueOf(0L)).equals(sizeCurrent));
             }
         }
     }

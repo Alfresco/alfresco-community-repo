@@ -358,7 +358,7 @@ public class TransferServiceImpl2 implements TransferService2
     public void enableTransferTarget(String name, boolean enable)
     {
         NodeRef nodeRef = lookupTransferTarget(name);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_ENABLED, new Boolean(enable));     
+        nodeService.setProperty(nodeRef, TransferModel.PROP_ENABLED, Boolean.valueOf(enable));     
     }
     
     public boolean targetExists(String name)
@@ -415,7 +415,7 @@ public class TransferServiceImpl2 implements TransferService2
         properties.put(ContentModel.PROP_NAME, update.getName());
         properties.put(ContentModel.PROP_DESCRIPTION, update.getDescription());
         
-        properties.put(TransferModel.PROP_ENABLED, new Boolean(update.isEnabled()));
+        properties.put(TransferModel.PROP_ENABLED, Boolean.valueOf(update.isEnabled()));
         nodeService.setProperties(nodeRef, properties);
         
         TransferTargetImpl newTarget = new TransferTargetImpl();

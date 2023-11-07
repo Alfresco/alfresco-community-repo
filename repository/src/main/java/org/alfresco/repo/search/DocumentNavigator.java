@@ -378,7 +378,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         // MNT-10730
         if (localName != null && (localName.equalsIgnoreCase("true") || localName.equalsIgnoreCase("false")))
         {
-            return Collections.singletonList(new Boolean(Boolean.parseBoolean(localName))).iterator();
+            return Collections.singletonList(Boolean.valueOf(Boolean.parseBoolean(localName))).iterator();
         }
         
         ChildAssociationRef assocRef = (ChildAssociationRef) contextNode;

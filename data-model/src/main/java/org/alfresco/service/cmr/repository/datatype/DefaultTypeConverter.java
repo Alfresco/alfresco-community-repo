@@ -391,7 +391,7 @@ public class DefaultTypeConverter extends TypeConverter
         {
             public Boolean convert(Number source)
             {
-                return new Boolean(source.longValue() > 0);
+                return Boolean.valueOf(source.longValue() > 0);
             }
         });
         addConverter(Number.class, Byte.class, new TypeConverter.Converter<Number, Byte>()
@@ -549,8 +549,8 @@ public class DefaultTypeConverter extends TypeConverter
         //
         // Boolean ->
         //
-        final Long LONG_FALSE = new Long(0L);
-        final Long LONG_TRUE = new Long(1L);
+        final Long LONG_FALSE = Long.valueOf(0L);
+        final Long LONG_TRUE = Long.valueOf(1L);
         addConverter(Boolean.class, Long.class, new TypeConverter.Converter<Boolean, Long>()
                 {
                     public Long convert(Boolean source)

@@ -165,7 +165,7 @@ public class Paging
         {
             try
             {
-                pageNo = new Integer(strPageNo);
+                pageNo = Integer.valueOf(strPageNo);
             }
             catch(NumberFormatException e) {};
         }
@@ -177,7 +177,7 @@ public class Paging
         {
             try
             {
-                pageSize = new Integer(strPageSize);
+                pageSize = Integer.valueOf(strPageSize);
             }
             catch(NumberFormatException e) {};
         }
@@ -189,7 +189,7 @@ public class Paging
         {
             try
             {
-                skipCount = new Integer(strSkipCount);
+                skipCount = Integer.valueOf(strSkipCount);
             }
             catch(NumberFormatException e) {};
         }
@@ -201,7 +201,7 @@ public class Paging
         {
             try
             {
-                maxItems = new Integer(strMaxItems);
+                maxItems = Integer.valueOf(strMaxItems);
             }
             catch(NumberFormatException e) {};
         }

@@ -333,7 +333,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         contentWriter1.putContent(modelOne);
         
         // activate the model
-        nodeService.setProperty(model, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
+        nodeService.setProperty(model, ContentModel.PROP_MODEL_ACTIVE, Boolean.valueOf(true));
         
         return model;
     }

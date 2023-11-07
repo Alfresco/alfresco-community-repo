@@ -351,7 +351,7 @@ public class WebDAV
             }
             else if (davPropName.equals(WebDAV.XML_GET_CONTENT_LENGTH))
             {
-                value = new Long(contentData.getSize());
+                value = Long.valueOf(contentData.getSize());
             }
         }
         return value;

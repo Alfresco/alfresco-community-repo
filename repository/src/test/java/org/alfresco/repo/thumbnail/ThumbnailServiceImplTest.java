@@ -259,8 +259,8 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     {
         ImageTransformationOptions options = new ImageTransformationOptions();
         PagedSourceOptions pagedSourceOptions = new PagedSourceOptions();
-        pagedSourceOptions.setStartPageNumber(new Integer(2));
-        pagedSourceOptions.setEndPageNumber(new Integer(2));
+        pagedSourceOptions.setStartPageNumber(Integer.valueOf(2));
+        pagedSourceOptions.setEndPageNumber(Integer.valueOf(2));
         options.addSourceOptions(pagedSourceOptions);
         
         ThumbnailDefinition thumbnailDefinition = new ThumbnailDefinition(MimetypeMap.MIMETYPE_PDF, options, "doclib_2");

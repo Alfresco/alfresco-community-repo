@@ -232,7 +232,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         		Long assocId = null;
         		try
         		{
-        			assocId = new Long(objectId.substring(CMISConnector.ASSOC_ID_PREFIX.length()));
+        			assocId = Long.valueOf(objectId.substring(CMISConnector.ASSOC_ID_PREFIX.length()));
         		} catch (NumberFormatException nfe)
         		{
         			objecVariant = CMISObjectVariant.INVALID_ID;

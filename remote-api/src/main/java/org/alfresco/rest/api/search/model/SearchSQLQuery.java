@@ -56,7 +56,7 @@ public class SearchSQLQuery
         this.stmt = stmt;
         this.format = format != null ? format : "default";
         this.locales = locales != null ? locales : Collections.emptyList();
-        this.itemLimit = itemLimit == null || itemLimit < 1 ? new Integer(1000) : itemLimit;
+        this.itemLimit = itemLimit == null || itemLimit < 1 ? Integer.valueOf(1000) : itemLimit;
         this.includeMetadata = includeMetadata;
         this.timezone = timezone;
         this.filterQueries = filterQueries != null ? filterQueries : Collections.emptyList();

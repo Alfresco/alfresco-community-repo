@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -485,7 +485,7 @@ public class SolrJSONResultSet implements SearchEngineResultSet {
             Set<Metric> metrics = new HashSet<>(1);
             List<GenericFacetResponse> nested = new ArrayList<>();
             String field = piv.getString("field");
-            String value = piv.getString("value");
+            String value = piv.get("value") != null ? piv.get("value").toString() : null;
             if (piv.has("stats"))
             {
                 JSONObject stats = piv.getJSONObject("stats");

@@ -158,7 +158,7 @@ public class CombinedConfig extends CombinedTransformConfig
                     throw new AlfrescoRuntimeException(remoteType+" on " + url+" did not return an entity " + url);
                 }
             }
-            catch (IOException e)
+            catch (IOException | ParseException e)
             {
                 throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
                         " on " + url, e);
@@ -186,7 +186,7 @@ public class CombinedConfig extends CombinedTransformConfig
     }
 
     // Strip out just the error message in the response
-    private String getErrorMessage(HttpEntity resEntity) throws IOException
+    private String getErrorMessage(HttpEntity resEntity) throws IOException, ParseException
     {
         String message = "";
         String content = getContent(resEntity);

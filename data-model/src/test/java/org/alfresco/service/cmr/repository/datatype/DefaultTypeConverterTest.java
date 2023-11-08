@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -57,8 +57,8 @@ public class DefaultTypeConverterTest extends TestCase
 
     public void testPrimitives()
     {
-        assertEquals(Boolean.valueOf(false), DefaultTypeConverter.INSTANCE.convert(Boolean.class, false));
-        assertEquals(Boolean.valueOf(true), DefaultTypeConverter.INSTANCE.convert(Boolean.class, true));
+        assertEquals(Boolean.FALSE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, false));
+        assertEquals(Boolean.TRUE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, true));
         assertEquals(Character.valueOf('a'), DefaultTypeConverter.INSTANCE.convert(Character.class, 'a'));
         assertEquals(Byte.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Byte.class, (byte) 3));
         assertEquals(Short.valueOf("4"), DefaultTypeConverter.INSTANCE.convert(Short.class, (short) 4));
@@ -70,8 +70,8 @@ public class DefaultTypeConverterTest extends TestCase
 
     public void testNoConversion()
     {
-        assertEquals(Boolean.valueOf(false), DefaultTypeConverter.INSTANCE.convert(Boolean.class, Boolean.valueOf(false)));
-        assertEquals(Boolean.valueOf(true), DefaultTypeConverter.INSTANCE.convert(Boolean.class, Boolean.valueOf(true)));
+        assertEquals(Boolean.FALSE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, Boolean.FALSE));
+        assertEquals(Boolean.TRUE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, Boolean.TRUE));
         assertEquals(Character.valueOf('w'), DefaultTypeConverter.INSTANCE.convert(Character.class, Character.valueOf('w')));
         assertEquals(Byte.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Byte.class, Byte.valueOf("3")));
         assertEquals(Short.valueOf("4"), DefaultTypeConverter.INSTANCE.convert(Short.class, Short.valueOf("4")));
@@ -90,8 +90,8 @@ public class DefaultTypeConverterTest extends TestCase
 
     public void testToString()
     {
-        assertEquals("true", DefaultTypeConverter.INSTANCE.convert(String.class, new Boolean(true)));
-        assertEquals("false", DefaultTypeConverter.INSTANCE.convert(String.class, new Boolean(false)));
+        assertEquals("true", DefaultTypeConverter.INSTANCE.convert(String.class, Boolean.TRUE));
+        assertEquals("false", DefaultTypeConverter.INSTANCE.convert(String.class, Boolean.FALSE));
         assertEquals("v", DefaultTypeConverter.INSTANCE.convert(String.class, Character.valueOf('v')));
         assertEquals("3", DefaultTypeConverter.INSTANCE.convert(String.class, Byte.valueOf("3")));
         assertEquals("4", DefaultTypeConverter.INSTANCE.convert(String.class, Short.valueOf("4")));
@@ -132,8 +132,8 @@ public class DefaultTypeConverterTest extends TestCase
 
     public void testFromString()
     {
-        assertEquals(Boolean.valueOf(true), DefaultTypeConverter.INSTANCE.convert(Boolean.class, "True"));
-        assertEquals(Boolean.valueOf(false), DefaultTypeConverter.INSTANCE.convert(Boolean.class, "woof"));
+        assertEquals(Boolean.TRUE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, "True"));
+        assertEquals(Boolean.FALSE, DefaultTypeConverter.INSTANCE.convert(Boolean.class, "woof"));
         assertEquals(Character.valueOf('w'), DefaultTypeConverter.INSTANCE.convert(Character.class, "w"));
         assertEquals(Byte.valueOf("3"), DefaultTypeConverter.INSTANCE.convert(Byte.class, "3"));
         assertEquals(Short.valueOf("4"), DefaultTypeConverter.INSTANCE.convert(Short.class, "4"));
@@ -316,8 +316,8 @@ public class DefaultTypeConverterTest extends TestCase
     private ArrayList<Object> makeList()
     {
         ArrayList<Object> list = new ArrayList<Object>();
-        list.add(Boolean.valueOf(true));
-        list.add(Boolean.valueOf(false));
+        list.add(Boolean.TRUE);
+        list.add(Boolean.FALSE);
         list.add(Character.valueOf('q'));
         list.add(Byte.valueOf("1"));
         list.add(Short.valueOf("2"));

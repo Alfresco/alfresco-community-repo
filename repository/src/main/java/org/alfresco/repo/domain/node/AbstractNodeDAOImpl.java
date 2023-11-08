@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -467,7 +467,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 }
                 else
                 {
-                    minChildNodeIdInclusive = new Long(childNodeId.longValue() + 1L);
+                    minChildNodeIdInclusive = Long.valueOf(childNodeId.longValue() + 1L);
                 }
                 // Invalidate the node cache
                 childNodeIds.add(childNodeId);

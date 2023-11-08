@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -92,7 +92,7 @@ public class SolrSQLJSONResultSet implements ResultSet, SearchEngineResultMetada
             //Last element will contain the object that hold the solr response time.
             JSONObject time = (JSONObject) docs.get(length -1);
             this.numberFound = length - 1;
-            queryTime = new Long((Integer) time.get("RESPONSE_TIME"));
+            queryTime = Long.valueOf((Integer) time.get("RESPONSE_TIME"));
             // Were hard coding this as we have a hard limit of 1000 results, any more will not be readable.
             this.resultSetMetaData = new SimpleResultSetMetaData(LimitBy.FINAL_SIZE, 
                     PermissionEvaluationMode.EAGER, (SearchParameters)searchParameters);

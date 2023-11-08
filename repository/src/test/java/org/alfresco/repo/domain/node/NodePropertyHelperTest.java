@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -167,9 +167,9 @@ public class NodePropertyHelperTest extends TestCase
     {
         Map<QName, Serializable> in = new HashMap<QName, Serializable>(17);
         in.put(ContentModel.PROP_AUTO_VERSION, Boolean.TRUE);
-        in.put(ContentModel.PROP_HITS, new Integer(1));
-        in.put(ContentModel.PROP_SIZE_CURRENT, new Long(2L));
-        in.put(ContentModel.PROP_RATING_SCORE, new Float(3.0));
+        in.put(ContentModel.PROP_HITS, Integer.valueOf(1));
+        in.put(ContentModel.PROP_SIZE_CURRENT, Long.valueOf(2L));
+        in.put(ContentModel.PROP_RATING_SCORE, Float.valueOf("3.0"));
         in.put(ContentModel.PROP_NAME, "four");
         in.put(ContentModel.PROP_TITLE, new MLText("five"));
         in.put(ContentModel.PROP_REFERENCE, new NodeRef("protocol://identifier/six"));
@@ -214,9 +214,9 @@ public class NodePropertyHelperTest extends TestCase
     {
         Map<QName, Serializable> in = new HashMap<QName, Serializable>(17);
         in.put(QN_BOOLEAN, Boolean.TRUE);
-        in.put(QN_INTEGER, new Integer(1));
-        in.put(QN_LONG, new Long(2L));
-        in.put(QN_FLOAT, new Float(3.0));
+        in.put(QN_INTEGER, Integer.valueOf(1));
+        in.put(QN_LONG, Long.valueOf(2L));
+        in.put(QN_FLOAT, Float.valueOf("3.0"));
         in.put(QN_TEXT, "four");
         in.put(QN_MLTEXT, new MLText("five"));
         in.put(QN_REF, new NodeRef("protocol://identifier/six"));

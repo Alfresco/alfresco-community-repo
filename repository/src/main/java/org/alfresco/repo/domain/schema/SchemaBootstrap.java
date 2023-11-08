@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1248,8 +1248,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 varAssignments.put("FALSE", "0");
             }
             long now = System.currentTimeMillis();
-            varAssignments.put("now", new Long(now).toString());
-            varAssignments.put("NOW", new Long(now).toString());
+            varAssignments.put("now", Long.valueOf(now).toString());
+            varAssignments.put("NOW", Long.valueOf(now).toString());
             
             while(true)
             {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -124,7 +124,7 @@ public class SystemUsageDataCollector extends HBBaseDataCollector implements Ini
             if (osMBean instanceof UnixOperatingSystemMXBean)
             {
                 long openFileDescriptorCount = ((UnixOperatingSystemMXBean) osMBean).getOpenFileDescriptorCount();
-                systemUsageValues.put("openFileDescriptorCount", new Long(openFileDescriptorCount));
+                systemUsageValues.put("openFileDescriptorCount", Long.valueOf(openFileDescriptorCount));
             }
 
             // processor info
@@ -133,11 +133,11 @@ public class SystemUsageDataCollector extends HBBaseDataCollector implements Ini
             int intProcessCpuLoad = (int) Math.round(processCpuLoad);
             int intSystemCpuLoad  = (int) Math.round(systemCpuLoad);
 
-            cpu.put("percentageProcessLoad", new Integer(intProcessCpuLoad) );
-            cpu.put("percentageSystemLoad", new Integer(intSystemCpuLoad));
-            cpu.put("systemLoadAverage", new Double(osMBean.getSystemLoadAverage()));
+            cpu.put("percentageProcessLoad", Integer.valueOf(intProcessCpuLoad) );
+            cpu.put("percentageSystemLoad", Integer.valueOf(intSystemCpuLoad));
+            cpu.put("systemLoadAverage", Double.valueOf(osMBean.getSystemLoadAverage()));
         }
-        cpu.put("availableProcessors", new Integer( runtime.availableProcessors()));
+        cpu.put("availableProcessors", Integer.valueOf(runtime.availableProcessors()));
         systemUsageValues.put("cpu", cpu);
 
         // database connections info
@@ -146,8 +146,8 @@ public class SystemUsageDataCollector extends HBBaseDataCollector implements Ini
             Map<String, Object> db = new HashMap<>();
             int idleConnections = ((BasicDataSource) dataSource).getNumIdle();
             int activeConnections = ((BasicDataSource) dataSource).getNumActive();
-            db.put("idleConnections", new Integer(idleConnections));
-            db.put("activeConnections", new Integer(activeConnections));
+            db.put("idleConnections", Integer.valueOf(idleConnections));
+            db.put("activeConnections", Integer.valueOf(activeConnections));
             systemUsageValues.put("db", db);
         }
 

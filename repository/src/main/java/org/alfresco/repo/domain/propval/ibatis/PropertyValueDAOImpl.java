@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -178,7 +178,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyDateValueEntity result = template.selectOne(
                 SELECT_PROPERTY_DATE_VALUE_BY_VALUE,
-                new Long(value.getTime()));
+                Long.valueOf(value.getTime()));
         // The ID is the actual time in ms (GMT)
         return result;
     }

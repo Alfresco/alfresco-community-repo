@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -67,7 +67,7 @@ public class FeedNotifierJob implements Job
             repeatInterval = ((SimpleTrigger)trigger).getRepeatInterval();
         }
         
-        final int repeatIntervalMins = new Long(repeatInterval == null ? 0L : repeatInterval / 1000 / 60).intValue();
+        final int repeatIntervalMins = Long.valueOf(repeatInterval == null ? 0L : repeatInterval / 1000 / 60).intValue();
         
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {

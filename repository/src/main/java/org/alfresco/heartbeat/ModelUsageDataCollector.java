@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -105,9 +105,9 @@ public class ModelUsageDataCollector extends HBBaseDataCollector implements Init
                 () -> customModelService.getCustomModelsInfo(), true);
 
         Map<String, Object> modelUsageValues = new HashMap<>();
-        modelUsageValues.put("numOfActiveModels", new Integer(customModelsInfo.getNumberOfActiveModels()));
-        modelUsageValues.put("numOfActiveTypes", new Integer(customModelsInfo.getNumberOfActiveTypes()));
-        modelUsageValues.put("numOfActiveAspects", new Integer(customModelsInfo.getNumberOfActiveAspects()));
+        modelUsageValues.put("numOfActiveModels", Integer.valueOf(customModelsInfo.getNumberOfActiveModels()));
+        modelUsageValues.put("numOfActiveTypes", Integer.valueOf(customModelsInfo.getNumberOfActiveTypes()));
+        modelUsageValues.put("numOfActiveAspects", Integer.valueOf(customModelsInfo.getNumberOfActiveAspects()));
         HBData modelUsageData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),

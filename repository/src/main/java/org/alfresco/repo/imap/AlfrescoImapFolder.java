@@ -900,7 +900,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         Long uidNotification = null;
         if (addUid)
         {
-            uidNotification = new Long(uid);
+            uidNotification = Long.valueOf(uid);
         }
         notifyFlagUpdate(msn, flags, uidNotification, silentListener);
 

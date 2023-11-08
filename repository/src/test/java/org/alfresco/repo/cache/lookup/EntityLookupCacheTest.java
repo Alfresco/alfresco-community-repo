@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -124,16 +124,16 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         // Look up by value
         Pair<Long, Object> entityPair = entityLookupCacheA.getByValue(new TestValue("AAA"));
         assertNotNull("Expected value to be found", entityPair);
-        assertEquals("ID is incorrect", new Long(1), entityPair.getFirst());
+        assertEquals("ID is incorrect", Long.valueOf(1), entityPair.getFirst());
         
         // Look up by ID
-        entityPair = entityLookupCacheA.getByKey(new Long(2));
+        entityPair = entityLookupCacheA.getByKey(Long.valueOf(2));
         assertNotNull("Expected value to be found", entityPair);
         
         // Do lookup or create
         entityPair = entityLookupCacheA.getByValue(new TestValue("CCC"));
         assertNotNull("Expected value to be found", entityPair);
-        assertEquals("ID is incorrect", new Long(3), entityPair.getFirst());
+        assertEquals("ID is incorrect", Long.valueOf(3), entityPair.getFirst());
     }
 
     public void testRegions() throws Exception
@@ -349,11 +349,11 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         Long newKey = null;
         if (lastKey == null)
         {
-            newKey = new Long(1);
+            newKey = Long.valueOf(1);
         }
         else
         {
-            newKey = new Long(lastKey.longValue() + 1);
+            newKey = Long.valueOf(lastKey.longValue() + 1);
         }
         database.put(newKey, dbValue);
         return new Pair<Long, Object>(newKey, value);

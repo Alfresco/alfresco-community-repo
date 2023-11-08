@@ -72,7 +72,7 @@ public class CORSContextListener implements ServletContextListener
         WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
 
         Properties gP = (Properties) wc.getBean(BEAN_GLOBAL_PROPERTIES);
-        Boolean corsEnabled = new Boolean(gP.getProperty(CORS_ENABLED));
+        Boolean corsEnabled = Boolean.valueOf(gP.getProperty(CORS_ENABLED));
 
         if(logger.isDebugEnabled())
         {

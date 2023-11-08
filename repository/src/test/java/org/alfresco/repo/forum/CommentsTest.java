@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -600,7 +600,7 @@ public class CommentsTest
         {
             assertTrue("Uncommented node should have EITHER no commentsRollup aspect OR commentCount of zero.",
                     !nodeService.hasAspect(discussableNode, ForumModel.ASPECT_COMMENTS_ROLLUP) ||
-                    (commentCount != null && commentCount.equals(new Integer(0))
+                    (commentCount != null && commentCount.equals(Integer.valueOf(0))
                             ));
         }
         else

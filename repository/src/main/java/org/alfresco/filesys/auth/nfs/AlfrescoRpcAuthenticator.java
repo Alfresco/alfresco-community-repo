@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -138,7 +138,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
             
             // Check that there is a user name mapping for the uid/gid
             
-            Integer idKey = new Integer((gid << 16) + uid);
+            Integer idKey = Integer.valueOf((gid << 16) + uid);
             String userName = m_idMap.get( idKey);
             
             if ( userName == null)
@@ -146,7 +146,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
             
             // Check if the Unix authentication session table is valid
 
-            sessKey = new Long((((long) rpc.getClientAddress().hashCode()) << 32) + (gid << 16) + uid);
+            sessKey = Long.valueOf((((long) rpc.getClientAddress().hashCode()) << 32) + (gid << 16) + uid);
         }
         
         // Check if the session key is valid, if not then the authentication
@@ -219,7 +219,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
 
             // Get the user name mapping for the uid/gid and authenticate
             
-            Integer idKey = new Integer((gid << 16) + uid);
+            Integer idKey = Integer.valueOf((gid << 16) + uid);
             String userName = m_idMap.get( idKey);
 
             // DEBUG
@@ -495,7 +495,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
                 
                 // Check if the mapping already exists
                 
-                Integer idKey = new Integer(( userElem.getGid() << 16) + userElem.getUid());
+                Integer idKey = Integer.valueOf((userElem.getGid() << 16) + userElem.getUid());
                 if ( m_idMap.containsKey( idKey) == false)
                 {
                     // Add the username uid/gid mapping

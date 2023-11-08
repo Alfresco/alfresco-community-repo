@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -149,7 +149,7 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
         }
 
         Map<String, Object> model = new HashMap<String, Object>();
-    	model.put("patchedNodeCount", new Long(patchedNodeRefs));
+    	model.put("patchedNodeCount", Long.valueOf(patchedNodeRefs));
     	
         return model;
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -100,7 +100,7 @@ public class UserAuditFilterTest extends TestCase
             public Map<String, Serializable> execute() throws Throwable
             {
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
-                values.put("/3.1/4.1", new Long(41));
+                values.put("/3.1/4.1", Long.valueOf(41));
                 values.put("/3.1/4.2", "42");
                 values.put("/3.1/4.3", new Date());
                 values.put("/3.1/4.4", "");

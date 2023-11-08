@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1318,8 +1318,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             {
                 logger.debug("SAVING OR = " + ((CompositeActionCondition) condition).isORCondition());
             }
-            this.nodeService.setProperty(conditionNodeRef, ActionModel.PROP_CONDITION_ANDOR, new Boolean(
-                        ((CompositeActionCondition) condition).isORCondition()));
+            this.nodeService.setProperty(conditionNodeRef, ActionModel.PROP_CONDITION_ANDOR, Boolean.valueOf(((CompositeActionCondition) condition).isORCondition()));
         }
     }
 

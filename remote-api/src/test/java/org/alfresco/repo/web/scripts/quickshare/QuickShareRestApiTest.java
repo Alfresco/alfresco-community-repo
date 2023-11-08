@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -147,7 +147,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
         // no pun intended
         quickFile = AbstractContentTransformerTest.loadQuickTestFile("jpg");
-        TEST_CONTENT = new byte[new Long(quickFile.length()).intValue()];
+        TEST_CONTENT = new byte[Long.valueOf(quickFile.length()).intValue()];
         new FileInputStream(quickFile).read(TEST_CONTENT);
         testNode = createTestFile(userOneHome, TEST_NAME, quickFile);
         

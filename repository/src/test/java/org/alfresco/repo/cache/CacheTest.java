@@ -417,7 +417,7 @@ public class CacheTest extends TestCase
         for (int i = 0; i < objectCount; i++)
         {
             String key = Integer.toString(i);
-            Integer value = new Integer(i);
+            Integer value = Integer.valueOf(i);
             cache.put(key, value);
         }
         
@@ -429,7 +429,7 @@ public class CacheTest extends TestCase
             cache.remove(key);
             // add a new value
             key = Integer.toString(i + objectCount);
-            Integer value = new Integer(i + objectCount);
+            Integer value = Integer.valueOf(i + objectCount);
             cache.put(key, value);
         }
         // stop
@@ -567,7 +567,7 @@ public class CacheTest extends TestCase
         {
             txn.begin();
             
-            Object startValue = new Integer(-1);
+            Object startValue = Integer.valueOf(-1);
             String startKey = startValue.toString();
             transactionalCache.put(startKey, startValue);
             

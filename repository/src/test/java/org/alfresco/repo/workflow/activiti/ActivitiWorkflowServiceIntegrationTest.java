@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -412,11 +412,11 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         WorkflowTask result = workflowService.getTaskById(tasks.get(0).getId());
         Map<QName, Serializable> props = result.getProperties();
         Double create1 = (Double) props.get(QName.createQName("http://www.alfresco.org/model/bpm/1.0", "create1"));
-        assertEquals("Create listener was not triggered", new Double(1), create1);
+        assertEquals("Create listener was not triggered", Double.valueOf(1), create1);
         Double complete1 = (Double) props.get(QName.createQName("http://www.alfresco.org/model/bpm/1.0", "complete1"));
-        assertEquals("Complete listener was not triggered", new Double(1), complete1);
+        assertEquals("Complete listener was not triggered", Double.valueOf(1), complete1);
         Double assignment1 = (Double) props.get(QName.createQName("http://www.alfresco.org/model/bpm/1.0", "assignment1"));
-        assertEquals("Assign listener was not triggered", new Double(1), assignment1);
+        assertEquals("Assign listener was not triggered", Double.valueOf(1), assignment1);
     }
     
     /**

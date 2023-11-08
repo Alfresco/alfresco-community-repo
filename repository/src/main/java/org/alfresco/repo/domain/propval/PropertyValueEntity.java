@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -47,8 +47,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class PropertyValueEntity
 {
-    public static final Long LONG_ZERO = new Long(0L);
-    public static final Long LONG_ONE = new Long(1L);
+    public static final Long LONG_ZERO = Long.valueOf(0L);
+    public static final Long LONG_ONE = Long.valueOf(1L);
 
     public static final Short ORDINAL_NULL = 0;
     public static final Short ORDINAL_LONG = 1;
@@ -187,7 +187,7 @@ public class PropertyValueEntity
     static
     {
         // Create a pair for null values
-        PERSISTED_TYPE_NULL = new Pair<Short, Serializable>(PersistedType.NULL.getOrdinalNumber(), new Long(0));
+        PERSISTED_TYPE_NULL = new Pair<Short, Serializable>(PersistedType.NULL.getOrdinalNumber(), Long.valueOf(0));
         // Create the map of ordinal-type
         Map<Short, PersistedType> mapOrdinal = new HashMap<Short, PersistedType>(15);
         for (PersistedType persistedType : PersistedType.values())

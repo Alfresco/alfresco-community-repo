@@ -586,7 +586,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         schedule.setScheduleStart(now);
         assertEquals(now, schedule.getScheduleStart());
         schedule.setScheduleIntervalCount(2);
-        assertEquals(new Integer(2), schedule.getScheduleIntervalCount());
+        assertEquals(Integer.valueOf(2), schedule.getScheduleIntervalCount());
         schedule.setScheduleIntervalPeriod(ScheduledPersistedAction.IntervalPeriod.Day);
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, schedule.getScheduleIntervalPeriod());
     }
@@ -612,7 +612,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
-        assertEquals(new Integer(2), retrieved.getScheduleIntervalCount());
+        assertEquals(Integer.valueOf(2), retrieved.getScheduleIntervalCount());
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
         assertNotNull(((ScheduledPersistedActionImpl) schedule).getPersistedAtNodeRef());
 
@@ -622,7 +622,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(second);
         assertEquals(testAction.getNodeRef(), second.getAction().getNodeRef());
         assertEquals(now, second.getScheduleStart());
-        assertEquals(new Integer(2), second.getScheduleIntervalCount());
+        assertEquals(Integer.valueOf(2), second.getScheduleIntervalCount());
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, second.getScheduleIntervalPeriod());
 
         // Now ensure we can create for an action that didn't have a noderef
@@ -674,7 +674,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
-        assertEquals(new Integer(2), retrieved.getScheduleIntervalCount());
+        assertEquals(Integer.valueOf(2), retrieved.getScheduleIntervalCount());
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // Save and re-load without changes
@@ -688,7 +688,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
-        assertEquals(new Integer(2), retrieved.getScheduleIntervalCount());
+        assertEquals(Integer.valueOf(2), retrieved.getScheduleIntervalCount());
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // Make some small changes
@@ -705,7 +705,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
-        assertEquals(new Integer(3), retrieved.getScheduleIntervalCount());
+        assertEquals(Integer.valueOf(3), retrieved.getScheduleIntervalCount());
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Day, retrieved.getScheduleIntervalPeriod());
 
         // And some more changes
@@ -723,7 +723,7 @@ public class ScheduledPersistedActionServiceTest extends BaseSpringTest
         assertNotNull(retrieved);
         assertEquals(testAction.getNodeRef(), retrieved.getAction().getNodeRef());
         assertEquals(now, retrieved.getScheduleStart());
-        assertEquals(new Integer(3), retrieved.getScheduleIntervalCount());
+        assertEquals(Integer.valueOf(3), retrieved.getScheduleIntervalCount());
         assertEquals(ScheduledPersistedAction.IntervalPeriod.Month, retrieved.getScheduleIntervalPeriod());
     }
 

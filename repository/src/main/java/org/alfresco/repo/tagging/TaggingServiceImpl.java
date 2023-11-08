@@ -1292,7 +1292,7 @@ public class TaggingServiceImpl implements TaggingService,
             @Override
             public Boolean doWork() throws Exception
             {
-                return new Boolean(nodeService.hasAspect(nodeRef,  ContentModel.ASPECT_TAGSCOPE));
+                return Boolean.valueOf(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGSCOPE));
             }
         }, AuthenticationUtil.getSystemUserName());
 

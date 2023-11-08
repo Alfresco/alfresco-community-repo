@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1027,8 +1027,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
         // Create a rendition of an existing image with specified absolute x and
         // y scale.
-        final Integer imageNewXSize = new Integer(36);
-        final Integer imageNewYSize = new Integer(48);
+        final Integer imageNewXSize = Integer.valueOf(36);
+        final Integer imageNewYSize = Integer.valueOf(48);
         final Map<String, Serializable> parameterValues = new HashMap<String, Serializable>();
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, imageNewXSize);
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, imageNewYSize);
@@ -1058,8 +1058,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 assertNotNull("Reader to rendered image was null", reader);
                 BufferedImage img = ImageIO.read(reader.getContentInputStream());
 
-                assertEquals("Rendered image had wrong height", imageNewYSize, new Integer(img.getHeight()));
-                assertEquals("Rendered image had wrong width", imageNewXSize, new Integer(img.getWidth()));
+                assertEquals("Rendered image had wrong height", imageNewYSize, Integer.valueOf(img.getHeight()));
+                assertEquals("Rendered image had wrong width", imageNewXSize, Integer.valueOf(img.getWidth()));
 
                 // The upper left pixel of the image should be pure black.
                 int rgbAtTopLeft = img.getRGB(1, 1);
@@ -2540,8 +2540,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     private void resizeImageAndCheckOrientation(final NodeRef nodeToResize, final Map<String, Serializable> parameterValues, final String topLeft, final String bottomRight)
     {
         //Resize to 100 by 100
-        final Integer imageNewXSize = new Integer(100);
-        final Integer imageNewYSize = new Integer(100);
+        final Integer imageNewXSize = Integer.valueOf(100);
+        final Integer imageNewYSize = Integer.valueOf(100);
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, imageNewXSize);
         parameterValues.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, imageNewYSize);
 

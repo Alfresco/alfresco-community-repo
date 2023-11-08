@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -226,7 +226,7 @@ public class AuditComponentTest extends TestCase
             public Void execute() throws Throwable
             {
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
-                values.put("/3.1/4.1", new Long(41));
+                values.put("/3.1/4.1", Long.valueOf(41));
                 values.put("/3.1/4.2", "42");
                 values.put("/3.1/4.3", new Date());
                 values.put("/3.1/4.4", "");
@@ -295,7 +295,7 @@ public class AuditComponentTest extends TestCase
     {
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
-        Serializable valueC = new Float(16.0F);
+        Serializable valueC = Float.valueOf(16.0F);
         
         final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
         parameters.put("A", valueA);
@@ -342,7 +342,7 @@ public class AuditComponentTest extends TestCase
     {
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
-        Serializable valueC = new Float(16.0F);
+        Serializable valueC = Float.valueOf(16.0F);
         
         final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
         parameters.put("A", valueA);
@@ -376,7 +376,7 @@ public class AuditComponentTest extends TestCase
     
     public void testQuery_Action01() throws Exception
     {
-        final Long beforeTime = new Long(System.currentTimeMillis());
+        final Long beforeTime = Long.valueOf(System.currentTimeMillis());
         
         // Make sure that we have something to search for
         testAudit_Action01();
@@ -480,7 +480,7 @@ public class AuditComponentTest extends TestCase
     {
         Serializable valueA = new Date();
         Serializable valueB = "BBB-value-here";
-        Serializable valueC = new Float(16.0F);
+        Serializable valueC = Float.valueOf(16.0F);
         // Get a noderef
         final Map<String, Serializable> parameters = new HashMap<String, Serializable>(13);
         parameters.put("A", valueA);
@@ -1144,7 +1144,7 @@ public class AuditComponentTest extends TestCase
             @Override
             public Integer doWork() throws Exception
             {
-                return new Integer(auditService.clearAuditByIdRange(applicationName, fromId, toId));
+                return Integer.valueOf(auditService.clearAuditByIdRange(applicationName, fromId, toId));
             }
         };
         return AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());

@@ -46,8 +46,8 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
 
     /** the instance to test */
     private TransactionAwareSingleton<Integer> singleton = new TransactionAwareSingleton<Integer>();
-    private static final Integer INTEGER_ONE = new Integer(1);
-    private static final Integer INTEGER_TWO = new Integer(2);
+    private static final Integer INTEGER_ONE = Integer.valueOf(1);
+    private static final Integer INTEGER_TWO = Integer.valueOf(2);
 
     private TransactionService transactionService;
 
@@ -153,7 +153,7 @@ public class TransactionAwareSingletonTest extends BaseSpringTest
         private boolean finished = false;
         private Throwable error;
         private boolean commit;
-        private Integer value = new Integer((int)System.nanoTime());
+        private Integer value = Integer.valueOf((int) System.nanoTime());
 
         public TestThread(boolean commit)
         {

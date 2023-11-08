@@ -189,7 +189,7 @@ public class AuditDAOTest extends TestCase
             {
                 for (int i = 0; i < count; i++)
                 {
-                    Map<String, Serializable> values = Collections.singletonMap("/a/b/c", (Serializable) new Integer(i));
+                    Map<String, Serializable> values = Collections.singletonMap("/a/b/c", (Serializable) Integer.valueOf(i));
                     long now = System.currentTimeMillis();
                     auditDAO.createAuditEntry(sessionId, now, username, values);
                 }

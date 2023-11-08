@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -249,7 +249,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
             {
                 throw new LockAcquisitionException(
                         LockAcquisitionException.ERR_LOCK_UPDATE_COUNT,
-                        lockQName, lockToken, new Integer(updateCount), new Integer(requiredUpdateCount));
+                        lockQName, lockToken, Integer.valueOf(updateCount), Integer.valueOf(requiredUpdateCount));
             }
         }
         else

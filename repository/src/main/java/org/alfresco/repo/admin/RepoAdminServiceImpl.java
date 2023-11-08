@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -445,7 +445,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
          
         // activate/deactivate the model 
-        nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, new Boolean(activate));
+        nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, Boolean.valueOf(activate));
         
         // note: model will be loaded/unloaded as part of DictionaryModelType.beforeCommit()
         return modelQName;

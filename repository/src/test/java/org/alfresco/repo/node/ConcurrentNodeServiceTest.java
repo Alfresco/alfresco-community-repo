@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -263,7 +263,7 @@ public class ConcurrentNodeServiceTest extends TestCase
             {
                 errors.add("\n   Prop " + properties[i] + " : " + value);
             }
-            else if (!value.equals(new Integer(loops)))
+            else if (!value.equals(Integer.valueOf(loops)))
             {
                 errors.add("\n   Prop " + properties[i] + " : " + value);
             }

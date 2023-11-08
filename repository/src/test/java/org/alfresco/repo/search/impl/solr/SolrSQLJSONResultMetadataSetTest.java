@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -45,7 +45,7 @@ public class SolrSQLJSONResultMetadataSetTest
         SolrSQLJSONResultSet ssjr = new SolrSQLJSONResultSet(json, null);
         Assert.assertNotNull(ssjr);
         Assert.assertNotNull(ssjr.getQueryTime());
-        Assert.assertEquals(new Long(96), ssjr.getQueryTime());
+        Assert.assertEquals(Long.valueOf(96), ssjr.getQueryTime());
         Assert.assertEquals(3, ssjr.getNumberFound());
         Assert.assertNotNull(ssjr.getSolrResponse());
         Assert.assertEquals(response, ssjr.getSolrResponse());

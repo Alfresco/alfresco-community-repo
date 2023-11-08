@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -290,7 +290,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
 
         }
         attributeService.setAttribute(
-                new Long(System.currentTimeMillis()),
+                Long.valueOf(System.currentTimeMillis()),
                 KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_USERS);
         attributeService.setAttribute(
                 userCount,
@@ -322,7 +322,7 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
             documentCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_DOCUMENTS, idsParam);
         }
         attributeService.setAttribute(
-                new Long(System.currentTimeMillis()),
+                Long.valueOf(System.currentTimeMillis()),
                 KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_DOCUMENTS);
         attributeService.setAttribute(
                 documentCount,

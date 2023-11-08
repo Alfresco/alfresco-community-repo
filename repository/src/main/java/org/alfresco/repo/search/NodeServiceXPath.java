@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -217,7 +217,7 @@ public class NodeServiceXPath extends BaseXPath
 
         public static Double evaluate(Context context)
         {
-            return new Double(1);
+            return Double.valueOf(1);
         }
     }
 
@@ -475,7 +475,7 @@ public class NodeServiceXPath extends BaseXPath
 
     static class Score implements Function
     {
-        private Double one = new Double(1);
+        private Double one = Double.valueOf(1);
 
         public Object call(Context context, List args) throws FunctionCallException
         {

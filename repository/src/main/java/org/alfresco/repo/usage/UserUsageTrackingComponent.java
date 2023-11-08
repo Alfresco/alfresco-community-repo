@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -429,7 +429,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                 int clearCount = 0;
                 for (NodeRef personNodeRef : personNodeRefs)
                 {
-                    nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, new Long(-1L));
+                    nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, Long.valueOf(-1L));
                     usageService.deleteDeltas(personNodeRef);
                     
                     if (logger.isTraceEnabled())

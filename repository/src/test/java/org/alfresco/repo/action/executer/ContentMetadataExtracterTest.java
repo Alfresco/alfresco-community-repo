@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -205,7 +205,7 @@ public class ContentMetadataExtracterTest extends BaseSpringTest
         public Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
         {
             Map<String, Serializable> rawMap = newRawMap();
-            rawMap.put("unknown1", new Integer(1));
+            rawMap.put("unknown1", Integer.valueOf(1));
             rawMap.put("unknown2", "TWO");
             return rawMap;
         }

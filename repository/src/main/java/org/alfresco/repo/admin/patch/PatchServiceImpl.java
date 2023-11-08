@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -661,8 +661,8 @@ public class PatchServiceImpl implements PatchService
     {
         public int compare(Patch p1, Patch p2)
         {
-            Integer i1 = new Integer(p1.getTargetSchema());
-            Integer i2 = new Integer(p2.getTargetSchema());
+            Integer i1 = Integer.valueOf(p1.getTargetSchema());
+            Integer i2 = Integer.valueOf(p2.getTargetSchema());
             return i1.compareTo(i2);
         }
     }

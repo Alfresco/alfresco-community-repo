@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -163,7 +163,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
      */
     public void setMaxUsers(int maxUsers)
     {
-        this.maxUsers = new Integer(maxUsers);
+        this.maxUsers = Integer.valueOf(maxUsers);
     }
 
     @Override

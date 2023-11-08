@@ -173,7 +173,7 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
             version.put("hotfix", hotfix.startsWith(".") ? hotfix.substring(1) : hotfix);
         }
         infoValues.put("version", version);
-        infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
+        infoValues.put("schema", Integer.valueOf(serverDescriptor.getSchema()));
         infoValues.put("edition", serverDescriptor.getEdition());
         infoValues.put("deploymentMethod", deploymentMethodProvider.getDeploymentMethod().toString());
 

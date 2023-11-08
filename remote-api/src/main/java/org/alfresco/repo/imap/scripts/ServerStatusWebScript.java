@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -57,7 +57,7 @@ public class ServerStatusWebScript extends AbstractWebScript implements Applicat
         // hence providing ability for subsystem to be disabled (whilst still supporting ability to check status and/or dynamically start via JMX)
         String isEnabled = (String)subsystem.getProperty("imap.server.enabled");
         
-        if (new Boolean(isEnabled).booleanValue())
+        if (Boolean.valueOf(isEnabled).booleanValue())
         {
             res.getWriter().write("enabled");
         }

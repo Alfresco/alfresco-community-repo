@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -320,7 +320,7 @@ public class RepoAdminServiceImplTest extends TestCase
             modelStream.close();
             
             // activate the model
-            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
+            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, Boolean.TRUE);
             
             assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
             
@@ -612,7 +612,7 @@ public class RepoAdminServiceImplTest extends TestCase
             modelStream.close();
             
             // activate the model
-            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
+            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, Boolean.TRUE);
             
             assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
             

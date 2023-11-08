@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -520,8 +520,8 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             }
 
             String[] parts = currentVersionLabel.split("\\.");
-            int majorVer = new Integer(parts[0]).intValue();
-            int minorVer = new Integer(parts[1]).intValue();
+            int majorVer = Integer.valueOf(parts[0]).intValue();
+            int minorVer = Integer.valueOf(parts[1]).intValue();
 
             if (expectedMajorVersion)
             {

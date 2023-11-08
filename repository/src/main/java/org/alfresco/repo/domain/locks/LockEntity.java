@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -38,7 +38,7 @@ import org.alfresco.util.EqualsHelper;
  */
 public class LockEntity
 {
-    public static final Long CONST_LONG_ZERO = new Long(0L);
+    public static final Long CONST_LONG_ZERO = Long.valueOf(0L);
     
     private Long id;
     private Long version;
@@ -138,7 +138,7 @@ public class LockEntity
         }
         else
         {
-            this.version = new Long(version.longValue() + 1L);
+            this.version = Long.valueOf(version.longValue() + 1L);
         }
     }
 

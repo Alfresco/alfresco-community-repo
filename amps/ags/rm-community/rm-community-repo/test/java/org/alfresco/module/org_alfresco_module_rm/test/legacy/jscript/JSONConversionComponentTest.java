@@ -139,7 +139,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             Serializable value = stringValue;
             if (type.equals("boolean"))
             {
-                value = new Boolean(stringValue);
+                value = Boolean.valueOf(stringValue);
             }
             return value;
         }

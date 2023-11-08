@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -146,7 +146,7 @@ public class RhinoScriptTest extends TestCase
                         assertNotNull(obj.get("a", obj));
                         
                         // should resolve "obj.a == 1" - JavaScript objects come back as Number
-                        assertEquals(new Double(1.0), obj.get("a", obj));
+                        assertEquals(Double.valueOf(1.0), obj.get("a", obj));
                         
                         // try another script eval - this time a function call returning a result
                         result = cx.evaluateString(scope, "function f(x) {return x+1} f(7)", "TestJS2", 1, null);

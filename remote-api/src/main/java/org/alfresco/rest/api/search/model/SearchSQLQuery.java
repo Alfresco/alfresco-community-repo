@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -56,7 +56,7 @@ public class SearchSQLQuery
         this.stmt = stmt;
         this.format = format != null ? format : "default";
         this.locales = locales != null ? locales : Collections.emptyList();
-        this.itemLimit = itemLimit == null || itemLimit < 1 ? new Integer(1000) : itemLimit;
+        this.itemLimit = itemLimit == null || itemLimit < 1 ? Integer.valueOf(1000) : itemLimit;
         this.includeMetadata = includeMetadata;
         this.timezone = timezone;
         this.filterQueries = filterQueries != null ? filterQueries : Collections.emptyList();

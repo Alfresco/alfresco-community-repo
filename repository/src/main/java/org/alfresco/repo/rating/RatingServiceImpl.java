@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -419,7 +419,7 @@ public class RatingServiceImpl implements RatingService, Extensible
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingTotalRollupAlgorithm.ROLLUP_NAME);
         if (result == null)
         {
-            result = new Float(0f);
+            result = Float.valueOf(0f);
         }
         
         return (Float)result;
@@ -440,7 +440,7 @@ public class RatingServiceImpl implements RatingService, Extensible
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingCountRollupAlgorithm.ROLLUP_NAME);
         if (result == null)
         {
-            result = new Integer(0);
+            result = Integer.valueOf(0);
         }
         
         return (Integer)result;

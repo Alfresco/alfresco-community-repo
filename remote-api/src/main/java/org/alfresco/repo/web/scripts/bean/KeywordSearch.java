@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -109,7 +109,7 @@ public class KeywordSearch extends DeclarativeWebScript
         int startPage = 1;
         try
         {
-            startPage = new Integer(startPageArg);
+            startPage = Integer.valueOf(startPageArg);
         }
         catch(NumberFormatException e)
         {
@@ -119,7 +119,7 @@ public class KeywordSearch extends DeclarativeWebScript
         int itemsPerPage = DEFAULT_ITEMS_PER_PAGE;
         try
         {
-            itemsPerPage = new Integer(itemsPerPageArg);
+            itemsPerPage = Integer.valueOf(itemsPerPageArg);
         }
         catch(NumberFormatException e)
         {

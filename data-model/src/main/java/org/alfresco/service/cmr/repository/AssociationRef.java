@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -121,7 +121,7 @@ public class AssociationRef implements EntityRef, Serializable
         String targetNodeRefStr = tokenizer.nextToken();
         String assocTypeQNameStr = tokenizer.nextToken();
         
-        this.id = new Long(idStr);
+        this.id = Long.valueOf(idStr);
         this.sourceRef = new NodeRef(sourceNodeRefStr);
         this.targetRef = new NodeRef(targetNodeRefStr);
         this.assocTypeQName = QName.createQName(assocTypeQNameStr);

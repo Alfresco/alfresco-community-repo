@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -187,16 +187,16 @@ public class ThumbnailServiceImplParameterTest
         // As most of the services are mocked out, the actual values used here
         // don't matter.
         final Map<String, Serializable> parametersUnderTest = new HashMap<String, Serializable>();
-        parametersUnderTest.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, new Integer(42));
-        parametersUnderTest.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, new Integer(93));
+        parametersUnderTest.put(ImageRenderingEngine.PARAM_RESIZE_WIDTH, Integer.valueOf(42));
+        parametersUnderTest.put(ImageRenderingEngine.PARAM_RESIZE_HEIGHT, Integer.valueOf(93));
         parametersUnderTest.put(ImageRenderingEngine.PARAM_COMMAND_OPTIONS, "foo");
         parametersUnderTest.put(ImageRenderingEngine.PARAM_MAINTAIN_ASPECT_RATIO, Boolean.TRUE);
         parametersUnderTest.put(ImageRenderingEngine.PARAM_RESIZE_TO_THUMBNAIL, Boolean.FALSE);
         parametersUnderTest.put(ImageRenderingEngine.PARAM_ALLOW_ENLARGEMENT, Boolean.TRUE);
         parametersUnderTest.put(AbstractRenderingEngine.PARAM_TARGET_CONTENT_PROPERTY, ContentModel.PROP_CONTENT);
         parametersUnderTest.put(RenditionService.PARAM_DESTINATION_NODE, dummyNodeRef2);
-        parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_START_PAGE, new Integer(2));
-        parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_END_PAGE, new Integer(2));
+        parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_START_PAGE, Integer.valueOf(2));
+        parametersUnderTest.put(PagedSourceOptionsSerializer.PARAM_SOURCE_END_PAGE, Integer.valueOf(2));
         parametersUnderTest.put(TemporalSourceOptionsSerializer.PARAM_SOURCE_TIME_OFFSET, "00:00:00.5");
         
 

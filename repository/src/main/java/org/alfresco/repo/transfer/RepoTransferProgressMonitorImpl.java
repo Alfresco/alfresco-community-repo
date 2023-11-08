@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -87,7 +87,7 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
     {
         NodeRef nodeRef = getTransferRecord(transferId);
         testCancelled(nodeRef);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, new Integer(currPos));
+        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, Integer.valueOf(currPos));
     }
 
     /*
@@ -99,8 +99,8 @@ public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMon
     {
         NodeRef nodeRef = getTransferRecord(transferId);
         testCancelled(nodeRef);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, new Integer(currPos));
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_ENDPOINT, new Integer(endPos));
+        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, Integer.valueOf(currPos));
+        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_ENDPOINT, Integer.valueOf(endPos));
     }
 
     /*

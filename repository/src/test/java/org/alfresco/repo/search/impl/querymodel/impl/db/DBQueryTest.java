@@ -299,7 +299,7 @@ public class DBQueryTest  implements DictionaryListener
         formattedTestDate = CachingDateFormat.getDateFormat().format(testDate);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "date-ista"), testDate);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "datetime-ista"), testDate);
-        testProperties.put(QName.createQName(TEST_NAMESPACE, "boolean-ista"), Boolean.valueOf(true));
+        testProperties.put(QName.createQName(TEST_NAMESPACE, "boolean-ista"), Boolean.TRUE);
         testProperties.put(QName.createQName(TEST_NAMESPACE, "qname-ista"), QName.createQName("{wibble}wobble"));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "category-ista"), new NodeRef(storeRef, "CategoryId"));
         testProperties.put(QName.createQName(TEST_NAMESPACE, "noderef-ista"), n1);

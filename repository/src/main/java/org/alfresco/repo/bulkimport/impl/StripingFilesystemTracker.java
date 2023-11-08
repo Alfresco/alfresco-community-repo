@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -82,11 +82,11 @@ public class StripingFilesystemTracker extends AbstractFilesystemTracker
 
 	protected List<ImportableItem> getDirectoriesToProcess(int level)
 	{
-		List<ImportableItem> dirs = directoriesToProcess.get(new Integer(level));
+		List<ImportableItem> dirs = directoriesToProcess.get(Integer.valueOf(level));
 		if(dirs == null)
 		{
 			dirs = new ArrayList<ImportableItem>();
-			directoriesToProcess.put(new Integer(level), dirs);
+			directoriesToProcess.put(Integer.valueOf(level), dirs);
 		}
 
 		return dirs;

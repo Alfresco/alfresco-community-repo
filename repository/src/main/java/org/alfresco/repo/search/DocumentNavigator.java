@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -378,7 +378,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         // MNT-10730
         if (localName != null && (localName.equalsIgnoreCase("true") || localName.equalsIgnoreCase("false")))
         {
-            return Collections.singletonList(new Boolean(Boolean.parseBoolean(localName))).iterator();
+            return Collections.singletonList(Boolean.valueOf(Boolean.parseBoolean(localName))).iterator();
         }
         
         ChildAssociationRef assocRef = (ChildAssociationRef) contextNode;

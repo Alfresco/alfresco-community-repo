@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -92,9 +92,9 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector implements Ini
         this.logger.debug("Preparing repository usage (authorities) data...");
 
         Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
+        authoritiesUsageValues.put("numUsers", Integer.valueOf(this.authorityService.getAllAuthoritiesInZone(
                 AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
+        authoritiesUsageValues.put("numGroups", Integer.valueOf(this.authorityService.getAllAuthoritiesInZone(
                 AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
         HBData authoritiesUsageData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),

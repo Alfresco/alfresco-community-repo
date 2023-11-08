@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -177,7 +177,7 @@ public class ForumPostBehaviours implements NodeServicePolicies.OnCreateNodePoli
                 
                 // We'll use the raw, small 'n' nodeService as the big 'N' NodeService's interceptors would limit results.
                 List<ChildAssociationRef> fmPostChildren = rawNodeService.getChildAssocs(topicNode, childNodeTypeQNames);
-                result = new Integer(fmPostChildren.size());
+                result = Integer.valueOf(fmPostChildren.size());
             }
         }
         return result;

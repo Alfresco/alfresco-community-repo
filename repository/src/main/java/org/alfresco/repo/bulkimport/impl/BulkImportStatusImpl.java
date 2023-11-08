@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -126,11 +126,11 @@ public class BulkImportStatusImpl implements BulkImportStatus
         {
             if (endNs != null)
             {
-                result = new Long(endNs - startNs);
+                result = Long.valueOf(endNs - startNs);
             }
             else
             {
-                result = new Long(System.nanoTime() - startNs);
+                result = Long.valueOf(System.nanoTime() - startNs);
             }
         }
         
@@ -151,7 +151,7 @@ public class BulkImportStatusImpl implements BulkImportStatus
         	}
         }
         
-        return new Long(duration);
+        return Long.valueOf(duration);
     }
     
     public Throwable getLastException()

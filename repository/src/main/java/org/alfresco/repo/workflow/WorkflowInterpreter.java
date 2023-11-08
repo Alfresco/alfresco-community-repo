@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1182,7 +1182,7 @@ public class WorkflowInterpreter extends BaseInterpreter
                 else if (command[2].equals("package"))
                 {
                     QName qname = QName.createQName(command[1], namespaceService);
-                    int number = new Integer(command[3]);
+                    int number = Integer.valueOf(command[3]);
                     NodeRef packageNodeRef = workflowService.createPackage(null);
                     for (int i = 0; i < number; i++)
                     {

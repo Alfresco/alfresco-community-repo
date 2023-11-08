@@ -1614,6 +1614,10 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 {
                     Map<Serializable, Serializable> map = (Map<Serializable, Serializable>) container;
                     Serializable mapKey = getPropertyValueById(keyPropId).getSecond();
+                    if(mapKey == null)
+                    {
+                        logger.error("Found null key for id " +  keyPropId +  " with value " + value);
+                    }
                     map.put(mapKey, value);
                 }
                 else if (container instanceof Collection<?>)

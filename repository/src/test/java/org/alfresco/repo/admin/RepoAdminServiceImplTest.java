@@ -320,7 +320,7 @@ public class RepoAdminServiceImplTest extends TestCase
             modelStream.close();
             
             // activate the model
-            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, Boolean.valueOf(true));
+            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, Boolean.TRUE);
             
             assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
             
@@ -612,7 +612,7 @@ public class RepoAdminServiceImplTest extends TestCase
             modelStream.close();
             
             // activate the model
-            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, Boolean.valueOf(true));
+            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, Boolean.TRUE);
             
             assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
             

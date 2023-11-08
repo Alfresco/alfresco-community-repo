@@ -380,10 +380,10 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         }
         properties.put(ContentModel.PROP_PASSWORD_HASH, hashedPassword);
         properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList(compositePasswordEncoder.getPreferredEncoding()));
-        properties.put(ContentModel.PROP_ACCOUNT_EXPIRES, Boolean.valueOf(false));
-        properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
+        properties.put(ContentModel.PROP_ACCOUNT_EXPIRES, Boolean.FALSE);
+        properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.FALSE);
         properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(!emptyPassword));
-        properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
+        properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.FALSE);
         nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI,
                 caseSensitiveUserName), ContentModel.TYPE_USER, properties);
     }

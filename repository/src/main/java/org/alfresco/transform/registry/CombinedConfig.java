@@ -112,7 +112,7 @@ public class CombinedConfig extends CombinedTransformConfig
 
     private boolean addRemoteConfig(CloseableHttpClient httpclient, String baseUrl, String remoteType)
     {
-        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
+        String url = (baseUrl.endsWith("/") ? baseUrl.substring(baseUrl.length() - 1) : baseUrl) + ENDPOINT_TRANSFORM_CONFIG_LATEST;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
         try

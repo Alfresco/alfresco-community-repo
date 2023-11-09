@@ -5,7 +5,7 @@
 #### Alfresco Core
 
 Alfresco Core is a library packaged as a jar file which contains the following:
-* Various helpers and utils
+* Various helpers and utils 
 * Canned queries interface and supporting classes
 * Generic encryption supporting classes
 

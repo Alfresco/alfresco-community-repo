@@ -123,7 +123,7 @@ public class RemoteTransformerClient
 
     void request(Log logger, String sourceExtension, String targetExtension, HttpEntity reqEntity, ContentWriter writer, String args)
     {
-        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform";
+        String url = (baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl) + "transform";
         HttpPost httppost = new HttpPost(url);
         httppost.setEntity(reqEntity);
 

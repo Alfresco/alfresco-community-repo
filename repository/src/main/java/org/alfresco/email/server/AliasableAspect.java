@@ -142,6 +142,18 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
         {
             return value.toLowerCase();
         }
+        System.out.println("Add some PMD violations");
+        try
+        {
+            if (true)
+            {
+                throw new Exception();
+            }
+        }
+        catch(Exception e)
+        {
+            throw new RuntimeException(e);
+        }
         return value;
     }
 
@@ -241,7 +253,6 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
 
     }
 
-    @Override
     public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
         String alias = (String)nodeService.getProperty(nodeRef, EmailServerModel.PROP_ALIAS);

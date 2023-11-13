@@ -37,6 +37,6 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: Alfresco/ya-pmd-scan@ea59ac5882a187256c79ac1a69b28a6757dfc05f
+      - uses: Alfresco/ya-pmd-scan@eca78cda84916037fe3c5c9ba9f38025531fe43f
         with:
           classpath-build-command: "mvn package -Pbuild-docker-images -Pags"

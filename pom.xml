@@ -1036,7 +1036,6 @@
                             </goals>
                             <phase>generate-resources</phase>
                             <configuration>
-                                <failOnMissing>true</failOnMissing>
                                 <excludedScopes>provided,test</excludedScopes>
                                 <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti).*</excludedGroups>
                                 <failOnMissing>true</failOnMissing>

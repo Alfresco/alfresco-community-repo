@@ -71,6 +71,7 @@ jobs:
   veracode_sast:
     name: "Pipeline SAST Scan"
     runs-on: ubuntu-latest
+    needs: [prepare]
     if: >
       ((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request')) &&
       !contains(github.event.head_commit.message, '[skip tests]')

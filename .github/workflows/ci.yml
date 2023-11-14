@@ -40,6 +40,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.35.2
-      - uses: Alfresco/ya-pmd-scan@7f29e2c2d2b1b5e43b9b01e4741b42733c63fcfa
+      - uses: Alfresco/ya-pmd-scan@c3c60ea0d0cb3684bf25c77887e823ccf08a827f
         with:
-          classpath-build-command: "mvn test-compile -Pags -pl \"-:alfresco-community-repo-docker\""
+          classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""

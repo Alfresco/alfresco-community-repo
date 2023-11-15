@@ -288,6 +288,31 @@
         "pdfRendererOptions",
         "imageMagickOptions"
       ]
+    },
+    {
+      "transformerName": "textToPdfFailover",
+      "transformerFailover": [ "textToPdf", "textToPdfViaLO" ],
+      "supportedSourceAndTargetList":[
+        {"sourceMediaType": "text/plain",                    "priority": 10, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "text/csv",                      "priority": 10, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "application/dita+xml",          "priority": 10, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "text/xml",                      "priority": 10, "targetMediaType": "application/pdf"}
+      ]
+    },
+    {
+      "transformerName": "textToPdfViaLO",
+      "transformerPipeline" : [
+        { "transformerName": "string", "targetMediaType": "text/plain" },
+        { "transformerName": "libreoffice" }
+      ],
+      "supportedSourceAndTargetList":[
+        {"sourceMediaType": "text/plain",                    "priority": 150, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "text/csv",                      "priority": 150, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "application/dita+xml",          "priority": 150, "targetMediaType": "application/pdf"},
+        {"sourceMediaType": "text/xml",                      "priority": 150, "targetMediaType": "application/pdf"}
+      ],
+      "transformOptions": [
+      ]
     }
   ]
 }

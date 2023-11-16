@@ -434,7 +434,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre11-rockylinux8</name>
+                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre17-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>
@@ -505,7 +505,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre11-rockylinux8</name>
+                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre17-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>

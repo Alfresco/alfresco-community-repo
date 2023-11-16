@@ -60,7 +60,7 @@
         <dependency.spring.version>6.0.12</dependency.spring.version>
         <dependency.spring-security.version>6.1.4</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.15.2</dependency.jackson.version>
+        <dependency.jackson.version>2.16.0</dependency.jackson.version>
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>9.0</dependency.webscripts.version>

@@ -89,7 +89,7 @@
         <dependency.camel.version>4.0.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.96.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.3</dependency.activemq.version>
-        <dependency.apache-compress.version>1.24.0</dependency.apache-compress.version>
+        <dependency.apache-compress.version>1.25.0</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.67</dependency.swagger-parser.version>

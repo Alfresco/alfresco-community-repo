@@ -20,7 +20,7 @@ services:
       - "5433:5432"
   activemq:
     profiles: ["default", "with-transform-core-aio", "activemq"]
-    image: alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
+    image: alfresco/alfresco-activemq:5.17.6-jre17-rockylinux8
     ports:
       - "5672:5672" # AMQP
       - "61616:61616" # OpenWire

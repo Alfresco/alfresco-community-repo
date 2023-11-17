@@ -10,7 +10,7 @@ services:
       - "8090:8090"
   postgres:
     image: postgres:14.4
-    profiles: ["default", "with-transform-core-aio", "postgres"]
+    profiles: ["default", "with-transform-core-aio", "postgres", "with-mtls-transform-core-aio"]
     environment:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
@@ -19,8 +19,41 @@ services:
     ports:
       - "5433:5432"
   activemq:
-    profiles: ["default", "with-transform-core-aio", "activemq"]
+    profiles: ["default", "with-transform-core-aio", "activemq", "with-mtls-transform-core-aio"]
     image: alfresco/alfresco-activemq:5.17.6-jre17-rockylinux8
     ports:
       - "5672:5672" # AMQP
       - "61616:61616" # OpenWire
+  mtls-transform-core-aio:
+    profiles: ["with-mtls-transform-core-aio"]
+    image: quay.io/alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
+    hostname: transform-core-aio
+    ports:
+      - 8090:8090
+    volumes:
+      - ${GITHUB_WORKSPACE}/keystores/tengineAIO/tengineAIO.truststore:/tengineAIO.truststore
+      - ${GITHUB_WORKSPACE}/keystores/tengineAIO/tengineAIO.keystore:/tengineAIO.keystore
+    environment:
+      ACTIVEMQ_URL: "nio://activemq:61616"
+      ACTIVEMQ_USER: "admin"
+      ACTIVEMQ_PASSWORD: "admin"
+      LOG_LEVEL: debug
+
+      SERVER_SSL_ENABLED: "true"
+      SERVER_SSL_KEY_PASSWORD: "password"
+      SERVER_SSL_KEY_STORE: "file:/tengineAIO.keystore"
+      SERVER_SSL_KEY_STORE_PASSWORD: "password"
+      SERVER_SSL_KEY_STORE_TYPE: "JCEKS"
+
+      SERVER_SSL_CLIENT_AUTH: "need"
+      SERVER_SSL_TRUST_STORE: "file:/tengineAIO.truststore"
+      SERVER_SSL_TRUST_STORE_PASSWORD: "password"
+      SERVER_SSL_TRUST_STORE_TYPE: "JCEKS"
+
+      CLIENT_SSL_KEY_STORE: "file:/tengineAIO.keystore"
+      CLIENT_SSL_KEY_STORE_PASSWORD: "password"
+      CLIENT_SSL_KEY_STORE_TYPE: "JCEKS"
+
+      CLIENT_SSL_TRUST_STORE: "file:/tengineAIO.truststore"
+      CLIENT_SSL_TRUST_STORE_PASSWORD: "password"
+      CLIENT_SSL_TRUST_STORE_TYPE: "JCEKS"

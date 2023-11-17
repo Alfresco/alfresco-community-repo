@@ -344,8 +344,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
         }
 
         @Override
-        @SafeVarargs
-        public final void secondaryContent(ContentModel... contents)
+        public void secondaryContent(ContentModel... contents)
         {
             buildNodeRestRequest(restClient, parent).addSecondaryChildren(contents);
         }
@@ -357,8 +356,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
         }
 
         @Override
-        @SafeVarargs
-        public final void tags(RestTagModel... tags)
+        public void tags(RestTagModel... tags)
         {
             buildNodeRestRequest(restClient, parent).addTags(Stream.of(tags).map(RestTagModel::getTag).toArray(String[]::new));
         }

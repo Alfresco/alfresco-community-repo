@@ -1,18 +1,39 @@
+/*-
+ * #%L
+ * alfresco-tas-restapi
+ * %%
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
 package org.alfresco.rest.repo.resource.general;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.Node;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
 @SuppressWarnings({"PMD.GenericsNaming"})

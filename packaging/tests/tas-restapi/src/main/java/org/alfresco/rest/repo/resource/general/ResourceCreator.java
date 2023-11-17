@@ -21,7 +21,6 @@ public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends C
 {
 
     protected UserModel user;
-    protected List<String> includes;
     protected String name;
     protected String alias;
 
@@ -62,13 +61,6 @@ public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends C
         return self();
     }
 
-    @Override
-    public SELF include(String... includes)
-    {
-        this.includes = Stream.of(includes).collect(Collectors.toList());
-        return self();
-    }
-
     protected String generateRandomName()
     {
         return generateRandomNameWith(RandomStringUtils.randomAlphanumeric(5) + "_");
@@ -81,12 +73,6 @@ public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends C
 
     protected Node buildNodeRestRequest(RestWrapper restClient, RepoTestModel node)
     {
-        Node restRequest = restClient.authenticateUser(user).withCoreAPI().usingNode(node);
-        if (CollectionUtils.isNotEmpty(includes))
-        {
-            restRequest.include(includes.toArray(String[]::new));
-        }
-
-        return restRequest;
+        return restClient.authenticateUser(user).withCoreAPI().usingNode(node);
     }
 }

@@ -27,9 +27,6 @@ public interface Creator<RESOURCE extends TestModel, SELF extends Creator<RESOUR
 
     <USER extends UserModel> SELF asUser(USER user);
 
-    /** Allows to specify fields, which should be included in response */
-    SELF include(String... includes);
-
     RESOURCE create();
 
     interface ContentCreator<CONTENT extends ContentModel, SELF extends ContentCreator<CONTENT, ?>>

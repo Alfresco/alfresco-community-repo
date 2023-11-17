@@ -17,7 +17,6 @@ public abstract class ResourceModifier<RESOURCE extends TestModel, SELF extends 
 {
 
     protected UserModel user;
-    protected List<String> includes;
 
     protected abstract SELF self();
 
@@ -28,21 +27,8 @@ public abstract class ResourceModifier<RESOURCE extends TestModel, SELF extends 
         return self();
     }
 
-    @Override
-    public SELF include(String... includes)
-    {
-        this.includes = Stream.of(includes).collect(Collectors.toList());
-        return self();
-    }
-
     protected Node buildNodeRestRequest(RestWrapper restClient, RepoTestModel node)
     {
-        Node restRequest = restClient.authenticateUser(user).withCoreAPI().usingNode(node);
-        if (CollectionUtils.isNotEmpty(includes))
-        {
-            restRequest.include(includes.toArray(String[]::new));
-        }
-
-        return restRequest;
+        return restClient.authenticateUser(user).withCoreAPI().usingNode(node);
     }
 }

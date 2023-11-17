@@ -22,9 +22,6 @@ public interface Modifier<RESOURCE extends TestModel, SELF extends Modifier<RESO
 
     <USER extends UserModel> SELF asUser(USER user);
 
-    /** Allows to specify fields, which should be included in response */
-    SELF include(String... includes);
-
     void delete();
 
     interface ContentModifier<CONTENT extends ContentModel, SELF extends Modifier<CONTENT, ?>>

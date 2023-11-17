@@ -79,15 +79,9 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         new RepoCategoryModifier(restClient, category, categoriesCache).asUser(user).delete();
     }
 
-    private static org.alfresco.rest.requests.Categories buildCategoryRestRequest(RestWrapper restClient, UserModel user, RestCategoryModel category, List<String> includes)
+    private static org.alfresco.rest.requests.Categories buildCategoryRestRequest(RestWrapper restClient, UserModel user, RestCategoryModel category)
     {
-        org.alfresco.rest.requests.Categories restRequest = restClient.authenticateUser(user).withCoreAPI().usingCategory(category);
-        if (CollectionUtils.isNotEmpty(includes))
-        {
-            restRequest.include(includes.toArray(String[]::new));
-        }
-
-        return restRequest;
+        return restClient.authenticateUser(user).withCoreAPI().usingCategory(category);
     }
 
     public static class RepoCategoryCreator
@@ -187,7 +181,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         @Override
         public RestCategoryModel create()
         {
-            RestCategoryModel category = buildCategoryRestRequest(restClient, user, parent, includes)
+            RestCategoryModel category = buildCategoryRestRequest(restClient, user, parent)
                 .createSingleCategory(RestCategoryModel.builder().name(name).create());
 
             categoriesCache.put(alias, category);
@@ -315,7 +309,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         @Override
         public RestCategoryModel get(String id)
         {
-            return buildCategoryRestRequest(restClient, user, RestCategoryModel.builder().id(id).create(), includes)
+            return buildCategoryRestRequest(restClient, user, RestCategoryModel.builder().id(id).create())
                 .getCategory();
         }
 
@@ -323,7 +317,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         public void delete()
         {
             categoriesCache.remove(category.getId());
-            buildCategoryRestRequest(restClient, user, category, includes).deleteCategory();
+            buildCategoryRestRequest(restClient, user, category).deleteCategory();
         }
     }
 }

@@ -25,9 +25,6 @@ public interface MultiCreator<RESOURCE extends TestModel, SELF extends MultiCrea
 
     <USER extends UserModel> SELF asUser(USER user);
 
-    /** Allows to specify fields, which should be included in response */
-    SELF include(String... includes);
-
     List<RESOURCE> create();
 
     interface ContentsCreator<MODEL extends ContentModel, SELF extends ContentsCreator<MODEL, ?>> extends MultiCreator<MODEL, SELF>

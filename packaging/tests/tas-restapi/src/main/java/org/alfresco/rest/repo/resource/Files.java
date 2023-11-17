@@ -97,7 +97,7 @@ public class Files implements ResourceManager<FileModel, Specifier.FileSpecifier
         private final DataContent dataContent;
         private final Map<String, FileModel> filesCache;
 
-        private PlainFileCreator(DataContent dataContent, Map<String, FileModel> filesCache)
+        protected PlainFileCreator(DataContent dataContent, Map<String, FileModel> filesCache)
         {
             super(new FileModel());
             this.dataContent = dataContent;
@@ -184,7 +184,7 @@ public class Files implements ResourceManager<FileModel, Specifier.FileSpecifier
         private List<String> filesContents;
         private final Map<String, FileModel> filesCache;
 
-        private SerialFilesCreator(DataContent dataContent, Map<String, FileModel> filesCache)
+        protected SerialFilesCreator(DataContent dataContent, Map<String, FileModel> filesCache)
         {
             super();
             this.dataContent = dataContent;
@@ -267,7 +267,7 @@ public class Files implements ResourceManager<FileModel, Specifier.FileSpecifier
     {
         private final Map<String, FileModel> filesCache;
 
-        private PlainFileModifier(DataContent dataContent, RestWrapper restClient, FileModel file, Map<String, FileModel> filesCache)
+        protected PlainFileModifier(DataContent dataContent, RestWrapper restClient, FileModel file, Map<String, FileModel> filesCache)
         {
             super(dataContent, restClient, file);
             this.filesCache = filesCache;

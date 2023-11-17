@@ -102,7 +102,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
         private final DataContent dataContent;
         private final Map<String, FolderModel> foldersCache;
 
-        private RepoFolderCreator(DataContent dataContent, Map<String, FolderModel> foldersCache)
+        protected RepoFolderCreator(DataContent dataContent, Map<String, FolderModel> foldersCache)
         {
             super(new FolderModel());
             this.dataContent = dataContent;
@@ -199,7 +199,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
         private final DataContent dataContent;
         private final Map<String, FolderModel> foldersCache;
 
-        private SerialFoldersCreator(DataContent dataContent, Map<String, FolderModel> foldersCache)
+        protected SerialFoldersCreator(DataContent dataContent, Map<String, FolderModel> foldersCache)
         {
             super();
             this.dataContent = dataContent;
@@ -260,7 +260,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
 
     public static class NestedFoldersCreator extends SerialFoldersCreator
     {
-        private NestedFoldersCreator(DataContent dataContent, Map<String, FolderModel> folders)
+        protected NestedFoldersCreator(DataContent dataContent, Map<String, FolderModel> folders)
         {
             super(dataContent, folders);
         }
@@ -294,7 +294,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
         private final RestWrapper restClient;
         private final Files files;
 
-        public MultiContentCreator(DataContent dataContent, RestWrapper restClient, Files files, Map<String, FolderModel> folders)
+        protected MultiContentCreator(DataContent dataContent, RestWrapper restClient, Files files, Map<String, FolderModel> folders)
         {
             super(dataContent, folders);
             this.files = files;
@@ -371,7 +371,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
         private final Files files;
         private final Map<String, FolderModel> foldersCache;
 
-        private RepoFolderModifier(DataContent dataContent, RestWrapper restClient, FolderModel folder, Files files, Map<String, FolderModel> foldersCache)
+        protected RepoFolderModifier(DataContent dataContent, RestWrapper restClient, FolderModel folder, Files files, Map<String, FolderModel> foldersCache)
         {
             super(dataContent, restClient, folder);
             this.dataContent = dataContent;

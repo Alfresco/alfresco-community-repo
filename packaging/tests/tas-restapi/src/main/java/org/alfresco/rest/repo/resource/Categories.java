@@ -92,7 +92,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         private RestCategoryModel parent;
         private final Map<String, RestCategoryModel> categoriesCache;
 
-        private RepoCategoryCreator(RestWrapper restClient, Map<String, RestCategoryModel> categoriesCache)
+        protected RepoCategoryCreator(RestWrapper restClient, Map<String, RestCategoryModel> categoriesCache)
         {
             super();
             this.restClient = restClient;
@@ -198,7 +198,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         protected RestCategoryModel parent;
         private final Map<String, RestCategoryModel> categoriesCache;
 
-        private SerialCategoriesCreator(RestWrapper restClient, Map<String, RestCategoryModel> categoriesCache)
+        protected SerialCategoriesCreator(RestWrapper restClient, Map<String, RestCategoryModel> categoriesCache)
         {
             super();
             this.restClient = restClient;
@@ -249,7 +249,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
 
     public static class NestedCategoriesCreator extends SerialCategoriesCreator
     {
-        public NestedCategoriesCreator(RestWrapper restClient, Map<String, RestCategoryModel> categories)
+        protected NestedCategoriesCreator(RestWrapper restClient, Map<String, RestCategoryModel> categories)
         {
             super(restClient, categories);
         }
@@ -285,7 +285,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         private final RestCategoryModel category;
         private final Map<String, RestCategoryModel> categoriesCache;
 
-        private RepoCategoryModifier(RestWrapper restClient, RestCategoryModel category, Map<String, RestCategoryModel> categoriesCache)
+        protected RepoCategoryModifier(RestWrapper restClient, RestCategoryModel category, Map<String, RestCategoryModel> categoriesCache)
         {
             super();
             this.restClient = restClient;

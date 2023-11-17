@@ -62,15 +62,15 @@ public class GetProcessesCoreTests extends RestTest
         List<RestProcessModel> processesList = processes.getEntries();
         List<String> processesIds = processesList.stream().map(x -> x.onModel().getId()).toList();
 
+        Assert.assertTrue(Ordering.natural().reverse().isOrdered(processesIds));
+
         List<String> exceptedIds = new ArrayList<>();
         exceptedIds.add(task1.getProcessId());
         exceptedIds.add(task2.getProcessId());
         exceptedIds.add(process3.getId());
         exceptedIds.sort(Collections.reverseOrder());
 
-        Assert.assertTrue(Ordering.natural().reverse().isOrdered(processesIds));
         Assert.assertTrue(Ordering.natural().reverse().isOrdered(exceptedIds));
-
         Assert.assertEquals(exceptedIds.size(), processesIds.size());
 
         for (int i = 0; i < exceptedIds.size(); i++)

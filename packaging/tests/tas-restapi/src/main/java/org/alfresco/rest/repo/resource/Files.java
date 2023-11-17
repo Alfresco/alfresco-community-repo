@@ -206,7 +206,6 @@ public class Files implements ResourceManager<FileModel, Specifier.FileSpecifier
         @Override
         public FilesCreator withRandomContents(int wordsCount, int wordsMaxLength)
         {
-            // TODO use RandomStringGenerator from commons-text?
             return withContents(
                 IntStream.of(0, names.size())
                     .mapToObj(i -> IntStream.range(0, wordsCount)
@@ -238,7 +237,8 @@ public class Files implements ResourceManager<FileModel, Specifier.FileSpecifier
             List<FileModel> createdFiles = new ArrayList<>();
             AtomicInteger i = new AtomicInteger(0);
             fileNames.forEach(fileName -> {
-                createdFiles.add(createFile(fileName, getOrNull(titles, i.get()), getOrNull(descriptions, i.get()), getOrNull(filesContents, i.get()), parent, getOrNull(aliases, i.get())));
+                createdFiles.add(createFile(fileName, getOrNull(titles, i.get()), getOrNull(descriptions, i.get()),
+                    getOrNull(filesContents, i.get()), parent, getOrNull(aliases, i.get())));
                 i.getAndIncrement();
             });
 

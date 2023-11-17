@@ -9,12 +9,16 @@ import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+import org.junit.Assert;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import com.google.common.collect.Ordering;
 
 /**
  * 
@@ -48,8 +52,7 @@ public class GetProcessesCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user gets all processes started by him ordered descending by id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION }, enabled = false)
-    @Ignore("Until ACS-6234 is done")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesOrderedByIdDESC()
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("orderBy=id DESC")
@@ -57,9 +60,23 @@ public class GetProcessesCoreTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         processes.assertThat().entriesListIsNotEmpty();
         List<RestProcessModel> processesList = processes.getEntries();
-        processesList.get(0).onModel().assertThat().field("id").is(process3.getId());
-        processesList.get(1).onModel().assertThat().field("id").is(task2.getProcessId());
-        processesList.get(2).onModel().assertThat().field("id").is(task1.getProcessId());
+        List<String> processesIds = processesList.stream().map(x -> x.onModel().getId()).toList();
+
+        List<String> exceptedIds = new ArrayList<>();
+        exceptedIds.add(task1.getProcessId());
+        exceptedIds.add(task2.getProcessId());
+        exceptedIds.add(process3.getId());
+        exceptedIds.sort(Collections.reverseOrder());
+
+        Assert.assertTrue(Ordering.natural().reverse().isOrdered(processesIds));
+        Assert.assertTrue(Ordering.natural().reverse().isOrdered(exceptedIds));
+
+        Assert.assertEquals(exceptedIds.size(), processesIds.size());
+
+        for (int i = 0; i < exceptedIds.size(); i++)
+        {
+            Assert.assertEquals(processesIds.get(i), exceptedIds.get(i));
+        }
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,

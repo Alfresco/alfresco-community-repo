@@ -9,8 +9,8 @@ import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.junit.Assert;
 import org.springframework.http.HttpStatus;
+import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -57,26 +57,11 @@ public class GetProcessesCoreTests extends RestTest
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("orderBy=id DESC")
                 .withWorkflowAPI().getProcesses();
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processes.assertThat().entriesListIsNotEmpty();
-        List<RestProcessModel> processesList = processes.getEntries();
-        List<String> processesIds = processesList.stream().map(x -> x.onModel().getId()).toList();
-
-        Assert.assertTrue(Ordering.natural().reverse().isOrdered(processesIds));
-
-        List<String> expectedIds = new ArrayList<>();
-        expectedIds.add(task1.getProcessId());
-        expectedIds.add(task2.getProcessId());
-        expectedIds.add(process3.getId());
-        expectedIds.sort(Collections.reverseOrder());
-
-        Assert.assertTrue(Ordering.natural().reverse().isOrdered(expectedIds));
-        Assert.assertEquals(expectedIds.size(), processesIds.size());
-
-        for (int i = 0; i < expectedIds.size(); i++)
-        {
-            Assert.assertEquals(processesIds.get(i), expectedIds.get(i));
-        }
+        processes.assertThat().entriesListIsNotEmpty()
+                 .and().entriesListIsSortedDescBy("id")
+                 .and().entrySetContains("id", task1.getProcessId(), task2.getProcessId(), process3.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,

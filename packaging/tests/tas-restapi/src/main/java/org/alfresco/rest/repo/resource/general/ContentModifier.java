@@ -30,6 +30,7 @@ public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends
 
     protected ContentModifier(DataContent dataContent, RestWrapper restClient, CONTENT contentModel)
     {
+        super();
         this.dataContent = dataContent;
         this.restClient = restClient;
         this.contentModel = contentModel;

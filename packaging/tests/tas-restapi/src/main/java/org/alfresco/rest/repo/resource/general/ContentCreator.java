@@ -20,6 +20,7 @@ public abstract class ContentCreator<CONTENT extends ContentModel, SELF extends 
 
     public ContentCreator(CONTENT contentModel)
     {
+        super();
         this.contentModel = contentModel;
     }
 

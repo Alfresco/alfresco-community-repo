@@ -25,10 +25,12 @@ public class MultiKeyResourceMap<RESOURCE extends TestModel> extends HashMap<Str
 
     public MultiKeyResourceMap(Function<RESOURCE, String> idSupplier, Function<RESOURCE, String> nameSupplier)
     {
+        super();
         this.idSupplier = idSupplier;
         this.nameSupplier = nameSupplier;
     }
 
+    @Override
     public RESOURCE put(String alias, RESOURCE resource)
     {
         String id = idSupplier.apply(resource);
@@ -82,12 +84,9 @@ public class MultiKeyResourceMap<RESOURCE extends TestModel> extends HashMap<Str
     private Object findKey(Object key)
     {
         Object realKey = key;
-        if (key instanceof String k)
+        if (key instanceof String k && (!Pattern.compile(ID_PATTERN).matcher(k).matches() || !super.containsKey(k)))
         {
-            if (!Pattern.compile(ID_PATTERN).matcher(k).matches() || !super.containsKey(k))
-            {
-                realKey = keys.getOrDefault(k, k);
-            }
+            realKey = keys.getOrDefault(k, k);
         }
         return realKey;
     }

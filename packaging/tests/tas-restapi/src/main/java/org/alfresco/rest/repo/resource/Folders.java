@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+@SuppressWarnings("PMD.CouplingBetweenObjects")
 public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpecifier, Modifier.FolderModifier>
 {
     private static final String FOLDER_NAME_PREFIX = "folder";

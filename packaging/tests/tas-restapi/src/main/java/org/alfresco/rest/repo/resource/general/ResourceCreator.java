@@ -15,6 +15,7 @@ import org.alfresco.utility.model.UserModel;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
+@SuppressWarnings({"PMD.GenericsNaming"})
 public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends Creator<RESOURCE, ?>>
     implements Creator<RESOURCE, SELF>
 {

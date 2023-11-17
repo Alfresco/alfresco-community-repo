@@ -7,6 +7,7 @@ import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 
+@SuppressWarnings({"PMD.GenericsNaming"})
 public abstract class ContentCreator<CONTENT extends ContentModel, SELF extends Creator.ContentCreator<CONTENT, ?>>
     extends ResourceCreator<CONTENT, SELF>
     implements Creator.ContentCreator<CONTENT, SELF>

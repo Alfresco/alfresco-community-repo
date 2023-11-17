@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
  * Allows to store data in map and find it using three keys - id, name and alias.
  * @param <RESOURCE> repository resource, e.g. folder, category, etc.
  */
+@SuppressWarnings({"PMD.GenericsNaming"})
 public class MultiKeyResourceMap<RESOURCE extends TestModel> extends HashMap<String, RESOURCE>
 {
     private static final String ID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";

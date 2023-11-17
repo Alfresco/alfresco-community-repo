@@ -13,6 +13,7 @@ import org.alfresco.utility.model.UserModel;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
+@SuppressWarnings({"PMD.GenericsNaming"})
 public abstract class MultipleContentsCreator<CONTENT extends ContentModel, SELF extends MultiCreator.ContentsCreator<CONTENT, ?>>
     extends MultipleResourcesCreator<CONTENT, SELF>
     implements MultiCreator.ContentsCreator<CONTENT, SELF>

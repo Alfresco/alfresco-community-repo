@@ -186,6 +186,7 @@ public class Files implements ResourceManager<FileModel, Specifier.FileSpecifier
 
         private SerialFilesCreator(DataContent dataContent, Map<String, FileModel> filesCache)
         {
+            super();
             this.dataContent = dataContent;
             this.filesCache = filesCache;
         }

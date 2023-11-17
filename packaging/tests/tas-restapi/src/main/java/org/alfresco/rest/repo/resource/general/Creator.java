@@ -20,6 +20,7 @@ import org.apache.commons.lang3.RandomStringUtils;
  * @param <RESOURCE> repository resource, e.g. folder, category, etc.
  * @param <SELF> return type - this interface extension or implementation
  */
+@SuppressWarnings({"PMD.GenericsNaming"})
 public interface Creator<RESOURCE extends TestModel, SELF extends Creator<RESOURCE, ?>>
 {
     SELF withName(String name);

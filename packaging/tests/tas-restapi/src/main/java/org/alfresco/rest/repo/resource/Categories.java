@@ -100,6 +100,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
 
         private RepoCategoryCreator(RestWrapper restClient, Map<String, RestCategoryModel> categoriesCache)
         {
+            super();
             this.restClient = restClient;
             this.categoriesCache = categoriesCache;
         }
@@ -177,7 +178,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
             return super.withRandomName(CATEGORY_NAME_PREFIX + nameSuffix + "_");
         }
         @Override
-        public <CATEGORY extends RestCategoryModel> CategoryCreator underCategory(CATEGORY parent)
+        public CategoryCreator underCategory(RestCategoryModel parent)
         {
             this.parent = parent;
             return this;
@@ -205,6 +206,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
 
         private SerialCategoriesCreator(RestWrapper restClient, Map<String, RestCategoryModel> categoriesCache)
         {
+            super();
             this.restClient = restClient;
             this.categoriesCache = categoriesCache;
         }
@@ -216,7 +218,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
         }
 
         @Override
-        public <CATEGORY extends RestCategoryModel> CategoriesCreator underCategory(CATEGORY parent)
+        public CategoriesCreator underCategory(RestCategoryModel parent)
         {
             this.parent = parent;
             return this;
@@ -291,6 +293,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
 
         private RepoCategoryModifier(RestWrapper restClient, RestCategoryModel category, Map<String, RestCategoryModel> categoriesCache)
         {
+            super();
             this.restClient = restClient;
             this.category = category;
             this.categoriesCache = categoriesCache;

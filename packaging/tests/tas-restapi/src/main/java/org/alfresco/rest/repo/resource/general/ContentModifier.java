@@ -18,6 +18,7 @@ import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 
+@SuppressWarnings({"PMD.GenericsNaming"})
 public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends Modifier.ContentModifier<CONTENT, ?>>
     extends ResourceModifier<CONTENT, SELF>
     implements Modifier.ContentModifier<CONTENT, SELF>

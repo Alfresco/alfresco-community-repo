@@ -18,6 +18,7 @@ import org.alfresco.utility.model.UserModel;
  * @param <RESOURCE> repository resource, e.g. folder, category, etc.
  * @param <SELF> return type - this interface extension or implementation
  */
+@SuppressWarnings({"PMD.GenericsNaming"})
 public interface MultiCreator<RESOURCE extends TestModel, SELF extends MultiCreator<RESOURCE, ?>>
 {
     SELF withNames(String... names);

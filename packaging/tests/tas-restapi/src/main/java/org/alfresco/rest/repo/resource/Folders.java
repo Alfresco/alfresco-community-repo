@@ -200,6 +200,7 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
 
         private SerialFoldersCreator(DataContent dataContent, Map<String, FolderModel> foldersCache)
         {
+            super();
             this.dataContent = dataContent;
             this.foldersCache = foldersCache;
         }
@@ -336,27 +337,27 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
         }
 
         @Override
-        public <CONTENT extends ContentModel> void secondaryContent(CONTENT content)
+        public void secondaryContent(ContentModel content)
         {
             buildNodeRestRequest(restClient, parent).addSecondaryChild(content);
         }
 
         @Override
         @SafeVarargs
-        public final <CONTENT extends ContentModel> void secondaryContent(CONTENT... contents)
+        public final void secondaryContent(ContentModel... contents)
         {
             buildNodeRestRequest(restClient, parent).addSecondaryChildren(contents);
         }
 
         @Override
-        public <TAG extends RestTagModel> void tag(TAG tag)
+        public void tag(RestTagModel tag)
         {
             buildNodeRestRequest(restClient, parent).addTag(tag.getTag());
         }
 
         @Override
         @SafeVarargs
-        public final <TAG extends RestTagModel> void tags(TAG... tags)
+        public final void tags(RestTagModel... tags)
         {
             buildNodeRestRequest(restClient, parent).addTags(Stream.of(tags).map(RestTagModel::getTag).toArray(String[]::new));
         }
@@ -399,13 +400,13 @@ public class Folders implements ResourceManager<FolderModel, Specifier.FolderSpe
             return new Specifier.AssociationSpecifier()
             {
                 @Override
-                public <CONTENT extends ContentModel> void secondaryContent(CONTENT content)
+                public void secondaryContent(ContentModel content)
                 {
                     buildNodeRestRequest(restClient, contentModel).removeSecondaryChild(content);
                 }
 
                 @Override
-                public <TAG extends RestTagModel> void tag(TAG tag)
+                public void tag(RestTagModel tag)
                 {
                     buildNodeRestRequest(restClient, contentModel).deleteTag(tag);
                 }

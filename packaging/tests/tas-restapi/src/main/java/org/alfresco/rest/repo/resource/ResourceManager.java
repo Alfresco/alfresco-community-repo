@@ -12,6 +12,7 @@ import org.alfresco.utility.model.TestModel;
  * @param <SPECIFIER> repository resource specifier, see {@link Specifier}
  * @param <MODIFIER>> repository resource modifier, see {@link Modifier}
  */
+@SuppressWarnings({"PMD.GenericsNaming"})
 public interface ResourceManager<RESOURCE extends TestModel, SPECIFIER extends Specifier, MODIFIER extends Modifier<RESOURCE, ?>>
     extends ResourceIntroducer<SPECIFIER>
 {

@@ -11,6 +11,7 @@ import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
 import org.apache.commons.collections.CollectionUtils;
 
+@SuppressWarnings({"PMD.GenericsNaming"})
 public abstract class ResourceModifier<RESOURCE extends TestModel, SELF extends Modifier<RESOURCE, ?>>
     implements Modifier<RESOURCE, SELF>
 {

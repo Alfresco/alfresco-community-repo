@@ -6,6 +6,7 @@ import org.alfresco.utility.model.ContentModel;
 /**
  * Specifies repository resource to perform an operation on like: add, modify, remove.
  */
+@SuppressWarnings({"PMD.GenericsNaming"})
 public interface Specifier
 {
     interface FolderSpecifier extends Specifier

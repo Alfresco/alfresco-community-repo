@@ -7,12 +7,13 @@ import configparser
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from typing import List
+from pathlib import Path
 import argparse
 
-ROOT_PATH = 'repository/scripts/hazelcast-init/'
-CONFIG_PATH = ROOT_PATH + 'ci-caches.properties'
-OUTPUT_PATH = ROOT_PATH + 'alfresco-hazelcast-config.xml'
-TEMPLATE_PATH = ROOT_PATH + 'alfresco-hazelcast-template.xml'
+ROOT_PATH = Path(__file__).parent
+CONFIG_PATH = ROOT_PATH / 'ci-caches.properties'
+OUTPUT_PATH = ROOT_PATH / 'alfresco-hazelcast-config.xml'
+TEMPLATE_PATH = ROOT_PATH / 'alfresco-hazelcast-template.xml'
 TEMPLATE_PLACEHOLDER = '<!-- CACHES DEFINITION (DO NOT REMOVE THIS PLACEHOLDER) -->'
 PROPS_TO_XML = {
     # time-to-live-seconds with value = x

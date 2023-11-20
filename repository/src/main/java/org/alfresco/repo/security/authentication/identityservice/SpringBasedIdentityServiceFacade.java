@@ -125,7 +125,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         catch (IOException | ParseException | URISyntaxException e)
         {
             LOGGER.warn("Failed to get user information. Reason: " + e.getMessage());
-            throw new UserInfoException(e.getMessage());
+            throw new UserInfoException(e.getMessage(), e);
         }
     }
 

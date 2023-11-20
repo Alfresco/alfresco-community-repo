@@ -91,7 +91,7 @@ public interface IdentityServiceFacade
     class UserInfoException extends IdentityServiceFacadeException
     {
 
-        public UserInfoException(String message)
+        UserInfoException(String message)
         {
             super(message);
         }

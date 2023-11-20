@@ -29,6 +29,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioning;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
@@ -523,12 +524,14 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     private RemoteUserMapper createRemoteUserMapperToUseForTheTest(boolean useIdentityService)
     {
         PersonService personServiceLocal = (PersonService) applicationContext.getBean("PersonService");
+        IdentityServiceJITProvisioning jitProvisioning = (IdentityServiceJITProvisioning) applicationContext.getBean("jitProvisioning");
+
         RemoteUserMapper remoteUserMapper;
         if (useIdentityService)
         {
             InterceptingIdentityRemoteUserMapper interceptingRemoteUserMapper = new InterceptingIdentityRemoteUserMapper();
             interceptingRemoteUserMapper.setActive(true);
-            interceptingRemoteUserMapper.setPersonService(personServiceLocal);
+            interceptingRemoteUserMapper.setIdentityServiceJITProvisioning(jitProvisioning);
             interceptingRemoteUserMapper.setIdentityServiceFacade(null);
             interceptingRemoteUserMapper.setUserIdToReturn(user2);
             remoteUserMapper = interceptingRemoteUserMapper;

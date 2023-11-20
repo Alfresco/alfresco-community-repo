@@ -24,6 +24,9 @@
       <property name="identityServiceFacade">
          <ref bean="identityServiceFacade"/>
       </property>
+      <property name="identityServiceJITProvisioning">
+         <ref bean="jitProvisioning" />
+      </property>
    </bean>
 
    <bean name="identityServiceFacade" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean">
@@ -147,15 +150,20 @@
       <property name="validationFailureSilent">
          <value>${identity-service.authentication.validation.failure.silent}</value>
       </property>
-      <property name="personService">
-         <ref bean="PersonService" />
-      </property>
       <property name="bearerTokenResolver">
          <bean class="org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver" />
       </property>
       <property name="identityServiceFacade">
          <ref bean="identityServiceFacade" />
       </property>
+      <property name="identityServiceJITProvisioning">
+         <ref bean="jitProvisioning" />
+      </property>
+   </bean>
+
+   <bean id="jitProvisioning" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioning">
+      <constructor-arg ref="PersonService"/>
+      <constructor-arg ref="identityServiceFacade"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

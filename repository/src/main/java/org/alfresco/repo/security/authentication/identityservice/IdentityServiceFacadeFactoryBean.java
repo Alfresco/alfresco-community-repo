@@ -58,6 +58,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.oauth2.sdk.id.Issuer;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
@@ -186,6 +187,12 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         public DecodedAccessToken decodeToken(String token) throws TokenDecodingException
         {
             return getTargetFacade().decodeToken(token);
+        }
+
+        @Override
+        public UserInfo getUserInfo(String token)
+        {
+            return getTargetFacade().getUserInfo(token);
         }
 
         private IdentityServiceFacade getTargetFacade()
@@ -389,6 +396,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .tokenUri(metadata.getTokenEndpointURI().toASCIIString())
                     .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
                     .issuerUri(issuerUri)
+                    .userInfoUri(metadata.getUserInfoEndpointURI().toASCIIString())
                     .authorizationGrantType(AuthorizationGrantType.PASSWORD);
         }
 

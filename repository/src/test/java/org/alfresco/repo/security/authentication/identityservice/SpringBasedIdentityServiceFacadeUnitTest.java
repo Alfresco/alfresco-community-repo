@@ -25,11 +25,6 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
@@ -38,6 +33,11 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestOperations;
+
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SpringBasedIdentityServiceFacadeUnitTest
 {
@@ -73,11 +73,25 @@ public class SpringBasedIdentityServiceFacadeUnitTest
                 .havingCause().withNoCause().withMessage("Expected");
     }
 
+
+    @Test
+    public void shouldThrowUserInfoExceptionOnFailure()
+    {
+        final RestOperations restOperations = mock(RestOperations.class);
+        final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
+
+
+        assertThatExceptionOfType(IdentityServiceFacade.UserInfoException.class)
+                    .isThrownBy(() -> facade.getUserInfo(TOKEN));
+    }
+
     private ClientRegistration testRegistration()
     {
         return ClientRegistration.withRegistrationId("test")
                                  .tokenUri("http://localhost")
                                  .clientId("test")
+                                 .userInfoUri("http://localhost/userinfo")
                                  .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                                  .build();
     }

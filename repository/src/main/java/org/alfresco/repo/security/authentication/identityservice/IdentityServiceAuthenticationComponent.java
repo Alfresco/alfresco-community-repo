@@ -50,6 +50,9 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     private IdentityServiceFacade identityServiceFacade;
     /** enabled flag for the identity service subsystem**/
     private boolean active;
+
+    private IdentityServiceJITProvisioning identityServiceJITProvisioning;
+
     private boolean allowGuestLogin;
 
     public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
@@ -60,6 +63,11 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     public void setAllowGuestLogin(boolean allowGuestLogin)
     {
         this.allowGuestLogin = allowGuestLogin;
+    }
+
+    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioning identityServiceJITProvisioning)
+    {
+        this.identityServiceJITProvisioning = identityServiceJITProvisioning;
     }
 
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
@@ -77,10 +85,13 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         try
         {
             // Attempt to verify user credentials
-            identityServiceFacade.authorize(AuthorizationGrant.password(userName, new String(password)));
+            IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(AuthorizationGrant.password(userName, new String(password)));
 
+            String decodedUserName = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
+                        .map(OIDCUserInfo::username)
+                        .orElseThrow(() -> new AuthenticationException("Failed to extract username from token"));
             // Verification was successful so treat as authenticated user
-            setCurrentUser(userName);
+            setCurrentUser(decodedUserName);
         }
         catch (IdentityServiceFacadeException e)
         {

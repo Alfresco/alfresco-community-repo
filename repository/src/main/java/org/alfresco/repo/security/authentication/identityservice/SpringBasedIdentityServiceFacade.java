@@ -25,12 +25,12 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static java.util.Objects.requireNonNull;
-
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.UserInfoRequest;
+import com.nimbusds.openid.connect.sdk.UserInfoResponse;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.oauth2.client.endpoint.AbstractOAuth2AuthorizationGrantRequest;
@@ -55,6 +55,15 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResp
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestOperations;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Objects.requireNonNull;
 
 class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 {
@@ -98,6 +107,26 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         }
 
         return new SpringAccessTokenAuthorization(response);
+    }
+
+    public UserInfo getUserInfo(String token){
+        try
+        {
+            if(token == null || token.isEmpty())
+            {
+                return null;
+            }
+            HTTPResponse httpResponse = new UserInfoRequest(new URI(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUri()), new BearerAccessToken(token))
+                        .toHTTPRequest()
+                        .send();
+            UserInfoResponse userInfoResponse = UserInfoResponse.parse(httpResponse);
+            return  userInfoResponse.toSuccessResponse().getUserInfo();
+        }
+        catch (IOException | ParseException | URISyntaxException e)
+        {
+            LOGGER.warn("Failed to get user information. Reason: " + e.getMessage());
+            throw new UserInfoException(e.getMessage());
+        }
     }
 
     @Override

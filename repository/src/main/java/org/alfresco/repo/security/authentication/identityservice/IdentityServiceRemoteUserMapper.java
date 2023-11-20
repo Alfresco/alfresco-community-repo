@@ -32,7 +32,6 @@ import java.util.Optional;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
 import org.alfresco.service.cmr.security.PersonService;
@@ -50,19 +49,17 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, ActivateableBean
 {
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceRemoteUserMapper.class);
-    static final String USERNAME_CLAIM = "preferred_username";
-    
+
     /** Is the mapper enabled */
     private boolean isEnabled;
     
     /** Are token validation failures handled silently? */
     private boolean isValidationFailureSilent;
 
-    /** The person service. */
-    private PersonService personService;
-
     private BearerTokenResolver bearerTokenResolver;
     private IdentityServiceFacade identityServiceFacade;
+
+    private IdentityServiceJITProvisioning identityServiceJITProvisioning;
 
     /**
      * Sets the active flag
@@ -83,17 +80,6 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     {
         this.isValidationFailureSilent = silent;
     }
-    
-    /**
-     * Sets the person service.
-     * 
-     * @param personService
-     *            the person service
-     */
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
-    }
 
     public void setBearerTokenResolver(BearerTokenResolver bearerTokenResolver)
     {
@@ -103,6 +89,11 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
     {
         this.identityServiceFacade = identityServiceFacade;
+    }
+
+    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioning identityServiceJITProvisioning)
+    {
+        this.identityServiceJITProvisioning = identityServiceJITProvisioning;
     }
 
     /*
@@ -121,14 +112,13 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         }
         try
         {
-            String headerUserId = extractUserFromHeader(request);
+            String normalizedUserId = extractUserFromHeader(request);
 
-            if (headerUserId != null)
+
+            if (normalizedUserId != null)
             {
                 // Normalize the user ID taking into account case sensitivity settings
-                String normalizedUserId =  normalizeUserId(headerUserId);
                 LOGGER.trace("Returning userId: " + AuthenticationUtil.maskUsername(normalizedUserId));
-
                 return normalizedUserId;
             }
         }
@@ -179,11 +169,9 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
             return null;
         }
 
-        final Optional<String> possibleUsername = Optional.ofNullable(bearerToken)
-                                                          .map(identityServiceFacade::decodeToken)
-                                                          .map(t -> t.getClaim(USERNAME_CLAIM))
-                                                          .filter(String.class::isInstance)
-                                                          .map(String.class::cast);
+        final Optional<String> possibleUsername = identityServiceJITProvisioning
+                    .extractUserInfoAndCreateUserIfNeeded(bearerToken)
+                    .map(OIDCUserInfo::username);
 
         if (possibleUsername.isEmpty())
         {
@@ -191,39 +179,10 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
             return null;
         }
 
-        String username = possibleUsername.get();
-        LOGGER.trace("Extracted username: " + AuthenticationUtil.maskUsername(username));
+        String normalizedUsername = possibleUsername.get();
+        LOGGER.trace("Extracted username: " + AuthenticationUtil.maskUsername(normalizedUsername));
 
-        return username;
+        return normalizedUsername;
     }
-    
-    /**
-     * Normalizes a user id, taking into account existing user accounts and case sensitivity settings.
-     * 
-     * @param userId
-     *            the user id
-     * @return the string
-     */
-    private String normalizeUserId(final String userId)
-    {
-        if (userId == null)
-        {
-            return null;
-        }
-        
-        String normalized = AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
-            public String doWork() throws Exception
-            {
-                return personService.getUserIdentifier(userId);
-            }
-        }, AuthenticationUtil.getSystemUserName());
-        
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug("Normalized user name for '" + AuthenticationUtil.maskUsername(userId) + "': " + AuthenticationUtil.maskUsername(normalized));
-        }
-        
-        return normalized == null ? userId : normalized;
-    }
+
 }

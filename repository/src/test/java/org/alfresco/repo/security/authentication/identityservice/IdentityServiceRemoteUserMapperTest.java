@@ -25,27 +25,24 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static java.util.Optional.ofNullable;
-
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper.USERNAME_CLAIM;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.Map;
-import java.util.Vector;
-import java.util.function.Supplier;
-
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import jakarta.servlet.http.HttpServletRequest;
-
 import junit.framework.TestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.Vector;
+import java.util.function.Supplier;
+
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests the Identity Service based authentication subsystem.
@@ -99,9 +96,11 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         final PersonService personService = mock(PersonService.class);
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
 
+        final IdentityServiceJITProvisioning jitProvisioning = new IdentityServiceJITProvisioning(facade, personService);
+
         final IdentityServiceRemoteUserMapper mapper = new IdentityServiceRemoteUserMapper();
         mapper.setIdentityServiceFacade(facade);
-        mapper.setPersonService(personService);
+        mapper.setIdentityServiceJITProvisioning(jitProvisioning);
         mapper.setActive(true);
         mapper.setBearerTokenResolver(new DefaultBearerTokenResolver());
 
@@ -160,7 +159,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         @Override
         public Object getClaim(String claim)
         {
-            return USERNAME_CLAIM.equals(claim) ? usernameSupplier.get() : null;
+            return PersonClaims.PREFERRED_USERNAME_CLAIM_NAME.equals(claim) ? usernameSupplier.get() : null;
         }
     }
 }

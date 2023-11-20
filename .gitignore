@@ -39,6 +39,9 @@ dependency-reduced-pom.xml
 
 hs_err_pid*
 
+# Development
+repository/scripts/hazelcast-init/alfresco-hazelcast-config.xml
+
 # Alfresco runtime
 alf_data
 

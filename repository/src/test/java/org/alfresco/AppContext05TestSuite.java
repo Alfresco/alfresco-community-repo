@@ -60,6 +60,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest.class,
     org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponentTest.class,
     org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapperTest.class,
+    org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningTest.class,
     org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticatorTest.class,
     org.alfresco.repo.security.authentication.external.LocalAuthenticationServiceTest.class,
     org.alfresco.repo.domain.contentdata.ContentDataDAOTest.class,

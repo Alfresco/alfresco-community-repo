@@ -524,15 +524,13 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
     private RemoteUserMapper createRemoteUserMapperToUseForTheTest(boolean useIdentityService)
     {
         PersonService personServiceLocal = (PersonService) applicationContext.getBean("PersonService");
-        IdentityServiceJITProvisioning jitProvisioning = (IdentityServiceJITProvisioning) applicationContext.getBean("jitProvisioning");
 
         RemoteUserMapper remoteUserMapper;
         if (useIdentityService)
         {
             InterceptingIdentityRemoteUserMapper interceptingRemoteUserMapper = new InterceptingIdentityRemoteUserMapper();
             interceptingRemoteUserMapper.setActive(true);
-            interceptingRemoteUserMapper.setIdentityServiceJITProvisioning(jitProvisioning);
-            interceptingRemoteUserMapper.setIdentityServiceFacade(null);
+            interceptingRemoteUserMapper.setIdentityServiceJITProvisioning(null);
             interceptingRemoteUserMapper.setUserIdToReturn(user2);
             remoteUserMapper = interceptingRemoteUserMapper;
         }

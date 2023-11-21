@@ -153,9 +153,6 @@
       <property name="bearerTokenResolver">
          <bean class="org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver" />
       </property>
-      <property name="identityServiceFacade">
-         <ref bean="identityServiceFacade" />
-      </property>
       <property name="identityServiceJITProvisioning">
          <ref bean="jitProvisioning" />
       </property>

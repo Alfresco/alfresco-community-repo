@@ -352,7 +352,7 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext05TestSuite
             compose-profile: default
-            mvn-options: '"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"'
+            mvn-options: '"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.authentication.enable-username-password-authentication=true"'
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite

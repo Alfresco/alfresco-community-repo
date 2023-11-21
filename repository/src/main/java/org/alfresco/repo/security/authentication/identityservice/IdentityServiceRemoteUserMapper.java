@@ -34,7 +34,6 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
-import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -57,7 +56,6 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     private boolean isValidationFailureSilent;
 
     private BearerTokenResolver bearerTokenResolver;
-    private IdentityServiceFacade identityServiceFacade;
 
     private IdentityServiceJITProvisioning identityServiceJITProvisioning;
 
@@ -84,11 +82,6 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
     public void setBearerTokenResolver(BearerTokenResolver bearerTokenResolver)
     {
         this.bearerTokenResolver = bearerTokenResolver;
-    }
-
-    public void setIdentityServiceFacade(IdentityServiceFacade identityServiceFacade)
-    {
-        this.identityServiceFacade = identityServiceFacade;
     }
 
     public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioning identityServiceJITProvisioning)

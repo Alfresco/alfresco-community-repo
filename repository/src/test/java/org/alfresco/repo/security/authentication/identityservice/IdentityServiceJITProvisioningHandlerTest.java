@@ -37,12 +37,12 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-public class IdentityServiceJITProvisioningTest extends BaseSpringTest
+public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 {
     private PersonService personService;
     private NodeService nodeService;
     private IdentityServiceFacade identityServiceFacade;
-    private IdentityServiceJITProvisioning identityServiceJITProvisioning;
+    private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
     private ChildApplicationContextFactory childApplicationContextFactory;
     private final String idsUsername = "johndoe123";
     @Before
@@ -55,7 +55,7 @@ public class IdentityServiceJITProvisioningTest extends BaseSpringTest
         childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory("identity-service1");
 
         identityServiceFacade = (IdentityServiceFacade) childApplicationContextFactory.getApplicationContext().getBean("identityServiceFacade");
-        identityServiceJITProvisioning = (IdentityServiceJITProvisioning) childApplicationContextFactory.getApplicationContext().getBean("jitProvisioning");
+        identityServiceJITProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext().getBean("jitProvisioningHandler");
         IdentityServiceConfig identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext().getBean("identityServiceConfig");
         identityServiceConfig.setAllowAnyHostname(true);
         identityServiceConfig.setClientKeystore(null);
@@ -70,7 +70,7 @@ public class IdentityServiceJITProvisioningTest extends BaseSpringTest
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
                     identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(idsUsername, "password"));
 
-        Optional<OIDCUserInfo> userInfoOptional = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue());
+        Optional<OIDCUserInfo> userInfoOptional = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue());
 
         NodeRef person = personService.getPerson(idsUsername);
 

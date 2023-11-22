@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class IdentityServiceJITProvisioning
+public class IdentityServiceJITProvisioningHandler
 {
     private IdentityServiceFacade identityServiceFacade;
     private PersonService personService;
@@ -55,7 +55,7 @@ public class IdentityServiceJITProvisioning
                     .map(username -> new OIDCUserInfo(username, firstName.orElse(""), lastName.orElse(""), email.orElse("")));
     };
 
-    public IdentityServiceJITProvisioning(IdentityServiceFacade identityServiceFacade, PersonService personService)
+    public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade, PersonService personService)
     {
         this.identityServiceFacade = identityServiceFacade;
         this.personService = personService;
@@ -108,7 +108,7 @@ public class IdentityServiceJITProvisioning
 
     private Optional<OIDCUserInfo> extractUserInfoResponseFromEndpoint(String bearerToken)
     {
-        return Optional.ofNullable(identityServiceFacade.getUserInfo(bearerToken))
+        return identityServiceFacade.getUserInfo(bearerToken)
                     .filter(userInfo -> userInfo.getPreferredUsername() != null && !userInfo.getPreferredUsername().isEmpty())
                     .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.getPreferredUsername()),
                                 Optional.ofNullable(userInfo.getGivenName()).orElse(""), Optional.ofNullable(userInfo.getFamilyName()).orElse(""),

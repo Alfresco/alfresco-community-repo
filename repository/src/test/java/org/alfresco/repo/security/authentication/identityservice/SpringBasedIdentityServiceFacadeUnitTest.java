@@ -34,6 +34,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestOperations;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -75,15 +76,14 @@ public class SpringBasedIdentityServiceFacadeUnitTest
 
 
     @Test
-    public void shouldThrowUserInfoExceptionOnFailure()
+    public void shouldReturnEmptyOptionalOnFailure()
     {
         final RestOperations restOperations = mock(RestOperations.class);
         final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
         final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
 
 
-        assertThatExceptionOfType(IdentityServiceFacade.UserInfoException.class)
-                    .isThrownBy(() -> facade.getUserInfo(TOKEN));
+        assertThat(facade.getUserInfo(TOKEN).isEmpty()).isTrue();
     }
 
     private ClientRegistration testRegistration()

@@ -43,7 +43,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-public class IdentityServiceJITProvisioningUnitTest
+public class IdentityServiceJITProvisioningHandlerUnitTest
 {
 
     @Mock
@@ -58,7 +58,7 @@ public class IdentityServiceJITProvisioningUnitTest
     @Mock
     private UserInfo userInfo;
 
-    private IdentityServiceJITProvisioning identityServiceJITProvisioning;
+    private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
 
     private final String JWT_TOKEN = "myToken";
 
@@ -68,7 +68,7 @@ public class IdentityServiceJITProvisioningUnitTest
         initMocks(this);
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
-        identityServiceJITProvisioning = new IdentityServiceJITProvisioning(identityServiceFacade, personService);
+        identityServiceJITProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class IdentityServiceJITProvisioningUnitTest
         when(personService.personExists("johny123")).thenReturn(true);
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("johny123");
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -95,7 +95,7 @@ public class IdentityServiceJITProvisioningUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn("Doe");
         when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn("johny123@email.com");
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -118,9 +118,9 @@ public class IdentityServiceJITProvisioningUnitTest
         when(personService.personExists("johny123")).thenReturn(false);
 
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("johny123");
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(userInfo);
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -136,9 +136,9 @@ public class IdentityServiceJITProvisioningUnitTest
     public void shouldReturnEmptyOptionalIfUsernameNotExtracted()
     {
 
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(userInfo);
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
 
         assertFalse(result.isPresent());
         verify(personService, times(0)).createPerson(any());
@@ -153,9 +153,9 @@ public class IdentityServiceJITProvisioningUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("");
 
         when(userInfo.getPreferredUsername()).thenReturn("johny123");
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(userInfo);
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());

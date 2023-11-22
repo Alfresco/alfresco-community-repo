@@ -29,7 +29,6 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioning;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper;
 import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;

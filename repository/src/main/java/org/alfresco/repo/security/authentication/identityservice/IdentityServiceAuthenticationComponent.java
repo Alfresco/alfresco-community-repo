@@ -51,7 +51,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     /** enabled flag for the identity service subsystem**/
     private boolean active;
 
-    private IdentityServiceJITProvisioning identityServiceJITProvisioning;
+    private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
 
     private boolean allowGuestLogin;
 
@@ -65,9 +65,9 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         this.allowGuestLogin = allowGuestLogin;
     }
 
-    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioning identityServiceJITProvisioning)
+    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler)
     {
-        this.identityServiceJITProvisioning = identityServiceJITProvisioning;
+        this.identityServiceJITProvisioningHandler = identityServiceJITProvisioningHandler;
     }
 
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
@@ -87,11 +87,11 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
             // Attempt to verify user credentials
             IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(AuthorizationGrant.password(userName, new String(password)));
 
-            String decodedUserName = identityServiceJITProvisioning.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
+            String normalizedUsername = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
                         .map(OIDCUserInfo::username)
-                        .orElseThrow(() -> new AuthenticationException("Failed to extract username from token"));
+                        .orElseThrow(() -> new AuthenticationException("Failed to extract username from token and user info endpoint."));
             // Verification was successful so treat as authenticated user
-            setCurrentUser(decodedUserName);
+            setCurrentUser(normalizedUsername);
         }
         catch (IdentityServiceFacadeException e)
         {

@@ -57,7 +57,7 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
 
     private BearerTokenResolver bearerTokenResolver;
 
-    private IdentityServiceJITProvisioning identityServiceJITProvisioning;
+    private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
 
     /**
      * Sets the active flag
@@ -84,9 +84,9 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         this.bearerTokenResolver = bearerTokenResolver;
     }
 
-    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioning identityServiceJITProvisioning)
+    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler)
     {
-        this.identityServiceJITProvisioning = identityServiceJITProvisioning;
+        this.identityServiceJITProvisioningHandler = identityServiceJITProvisioningHandler;
     }
 
     /*
@@ -162,7 +162,7 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
             return null;
         }
 
-        final Optional<String> possibleUsername = identityServiceJITProvisioning
+        final Optional<String> possibleUsername = identityServiceJITProvisioningHandler
                     .extractUserInfoAndCreateUserIfNeeded(bearerToken)
                     .map(OIDCUserInfo::username);
 

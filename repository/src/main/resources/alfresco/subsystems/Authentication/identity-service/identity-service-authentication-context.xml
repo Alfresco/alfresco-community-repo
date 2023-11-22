@@ -24,8 +24,8 @@
       <property name="identityServiceFacade">
          <ref bean="identityServiceFacade"/>
       </property>
-      <property name="identityServiceJITProvisioning">
-         <ref bean="jitProvisioning" />
+      <property name="identityServiceJITProvisioningHandler">
+         <ref bean="jitProvisioningHandler" />
       </property>
    </bean>
 
@@ -153,12 +153,12 @@
       <property name="bearerTokenResolver">
          <bean class="org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver" />
       </property>
-      <property name="identityServiceJITProvisioning">
-         <ref bean="jitProvisioning" />
+      <property name="identityServiceJITProvisioningHandler">
+         <ref bean="jitProvisioningHandler" />
       </property>
    </bean>
 
-   <bean id="jitProvisioning" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioning">
+   <bean id="jitProvisioningHandler" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandler">
       <constructor-arg ref="PersonService"/>
       <constructor-arg ref="identityServiceFacade"/>
    </bean>

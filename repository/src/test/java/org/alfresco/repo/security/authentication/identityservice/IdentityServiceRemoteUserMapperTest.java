@@ -96,7 +96,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         final PersonService personService = mock(PersonService.class);
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
 
-        final IdentityServiceJITProvisioning jitProvisioning = new IdentityServiceJITProvisioning(facade, personService);
+        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService);
 
         final IdentityServiceRemoteUserMapper mapper = new IdentityServiceRemoteUserMapper();
         mapper.setIdentityServiceJITProvisioning(jitProvisioning);

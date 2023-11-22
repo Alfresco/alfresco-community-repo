@@ -190,7 +190,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
 
         @Override
-        public UserInfo getUserInfo(String token)
+        public Optional<UserInfo> getUserInfo(String token)
         {
             return getTargetFacade().getUserInfo(token);
         }

@@ -68,7 +68,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     private PersonService personService;
 
 
-    private IdentityServiceJITProvisioning jitProvisioning;
+    private IdentityServiceJITProvisioningHandler jitProvisioning;
     private IdentityServiceFacade mockIdentityServiceFacade;
 
     @Before
@@ -80,7 +80,7 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authComponent.setNodeService(nodeService);
         authComponent.setPersonService(personService);
 
-        jitProvisioning = mock(IdentityServiceJITProvisioning.class);
+        jitProvisioning = mock(IdentityServiceJITProvisioningHandler.class);
         mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
         authComponent.setIdentityServiceJITProvisioning(jitProvisioning);
         authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);

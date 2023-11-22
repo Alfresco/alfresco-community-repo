@@ -29,6 +29,7 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -60,7 +61,7 @@ public interface IdentityServiceFacade
      * @param token {@link String} with encoded access token value.
      * @return {@link UserInfo} containing user claims.
      */
-    UserInfo getUserInfo(String token);
+    Optional<UserInfo> getUserInfo(String token);
 
     class IdentityServiceFacadeException extends RuntimeException
     {

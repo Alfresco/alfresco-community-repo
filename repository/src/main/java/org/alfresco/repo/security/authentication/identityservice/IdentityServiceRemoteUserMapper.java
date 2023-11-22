@@ -84,7 +84,7 @@ public class IdentityServiceRemoteUserMapper implements RemoteUserMapper, Activa
         this.bearerTokenResolver = bearerTokenResolver;
     }
 
-    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler)
+    public void setIdentityServiceJITProvisioningHandler(IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler)
     {
         this.identityServiceJITProvisioningHandler = identityServiceJITProvisioningHandler;
     }

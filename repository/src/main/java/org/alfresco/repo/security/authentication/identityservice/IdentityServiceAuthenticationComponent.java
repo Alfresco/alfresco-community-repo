@@ -65,7 +65,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         this.allowGuestLogin = allowGuestLogin;
     }
 
-    public void setIdentityServiceJITProvisioning(IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler)
+    public void setIdentityServiceJITProvisioningHandler(IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler)
     {
         this.identityServiceJITProvisioningHandler = identityServiceJITProvisioningHandler;
     }

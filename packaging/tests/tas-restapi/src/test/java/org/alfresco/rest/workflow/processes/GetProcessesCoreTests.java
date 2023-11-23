@@ -4,17 +4,13 @@ import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestProcessDefinitionModel;
-import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessModelsCollection;
 import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
-
-import java.util.List;
 
 /**
  * 
@@ -48,18 +44,16 @@ public class GetProcessesCoreTests extends RestTest
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Verify user gets all processes started by him ordered descending by id")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION }, enabled = false)
-    @Ignore("Until ACS-6234 is done")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
     public void getProcessesOrderedByIdDESC()
     {
         RestProcessModelsCollection processes = restClient.authenticateUser(userWhoStartsTask).withParams("orderBy=id DESC")
                 .withWorkflowAPI().getProcesses();
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        processes.assertThat().entriesListIsNotEmpty();
-        List<RestProcessModel> processesList = processes.getEntries();
-        processesList.get(0).onModel().assertThat().field("id").is(process3.getId());
-        processesList.get(1).onModel().assertThat().field("id").is(task2.getProcessId());
-        processesList.get(2).onModel().assertThat().field("id").is(task1.getProcessId());
+        processes.assertThat().entriesListIsNotEmpty()
+                 .and().entriesListIsSortedDescBy("id")
+                 .and().entrySetContains("id", task1.getProcessId(), task2.getProcessId(), process3.getId());
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,

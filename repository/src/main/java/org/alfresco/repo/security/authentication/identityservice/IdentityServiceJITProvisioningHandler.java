@@ -26,39 +26,52 @@
 
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.Function;
-
+/**
+ * This class is used to Just in Time user provisioning. It extracts {@link OIDCUserInfo}
+ * from {@link IdentityServiceFacade.DecodedAccessToken} or {@link UserInfo}
+ * and creates a new user if it does not exist in the repository.
+ */
 public class IdentityServiceJITProvisioningHandler
 {
-    private IdentityServiceFacade identityServiceFacade;
-    private PersonService personService;
-    private TransactionService transactionService;
+    private final IdentityServiceFacade identityServiceFacade;
+    private final PersonService personService;
+    private final TransactionService transactionService;
 
     private final Function<IdentityServiceFacade.DecodedAccessToken, Optional<? extends OIDCUserInfo>> mapTokenToUserInfoResponse = token -> {
-        Optional<String> firstName = Optional.ofNullable(token.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME)).filter(String.class::isInstance)
-                    .map(String.class::cast);
-        Optional<String> lastName = Optional.ofNullable(token.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).filter(String.class::isInstance)
-                    .map(String.class::cast);
-        Optional<String> email = Optional.ofNullable(token.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).filter(String.class::isInstance)
-                    .map(String.class::cast);
+        Optional<String> firstName = Optional.ofNullable(token.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME))
+            .filter(String.class::isInstance)
+            .map(String.class::cast);
+        Optional<String> lastName = Optional.ofNullable(token.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME))
+            .filter(String.class::isInstance)
+            .map(String.class::cast);
+        Optional<String> email = Optional.ofNullable(token.getClaim(PersonClaims.EMAIL_CLAIM_NAME))
+            .filter(String.class::isInstance)
+            .map(String.class::cast);
 
-        return Optional.ofNullable(token.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).filter(String.class::isInstance)
-                    .map(String.class::cast).map(this::normalizeUserId)
-                    .map(username -> new OIDCUserInfo(username, firstName.orElse(""), lastName.orElse(""), email.orElse("")));
+        return Optional.ofNullable(token.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
+            .filter(String.class::isInstance)
+            .map(String.class::cast).map(this::normalizeUserId)
+            .map(username -> new OIDCUserInfo(username, firstName.orElse(""), lastName.orElse(""), email.orElse("")));
     };
 
-    public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade, PersonService personService,
-                TransactionService transactionService)
+    public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade,
+        PersonService personService,
+        TransactionService transactionService)
     {
         this.identityServiceFacade = identityServiceFacade;
         this.personService = personService;
@@ -67,11 +80,14 @@ public class IdentityServiceJITProvisioningHandler
 
     public Optional<OIDCUserInfo> extractUserInfoAndCreateUserIfNeeded(String bearerToken)
     {
-        Optional<OIDCUserInfo> userInfoResponse = extractUserInfoResponseFromAccessToken(bearerToken).flatMap(
+        Optional<OIDCUserInfo> userInfoResponse = Optional.ofNullable(bearerToken)
+            .filter(Predicate.not(String::isEmpty))
+            .flatMap(token -> extractUserInfoResponseFromAccessToken(token).flatMap(
                     response -> response.username() == null || response.username().isEmpty() ?
-                                extractUserInfoResponseFromEndpoint(bearerToken) :
-                                Optional.of(response)).or(() -> extractUserInfoResponseFromEndpoint(bearerToken));
-        if(transactionService.isReadOnly())
+                    extractUserInfoResponseFromEndpoint(token) :
+                    Optional.of(response)).or(() -> extractUserInfoResponseFromEndpoint(token)));
+
+        if (transactionService.isReadOnly() || userInfoResponse.isEmpty())
         {
             return userInfoResponse;
         }
@@ -86,7 +102,8 @@ public class IdentityServiceJITProvisioningHandler
                         {
                             if (!userInfo.allFieldsNotEmpty())
                             {
-                                userInfo = extractUserInfoResponseFromEndpoint(bearerToken).orElse(new OIDCUserInfo(userInfo.username(), "", "", ""));
+                                userInfo = extractUserInfoResponseFromEndpoint(bearerToken).orElse(
+                                    new OIDCUserInfo(userInfo.username(), "", "", ""));
                             }
                             HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
                             properties.put(ContentModel.PROP_USERNAME, userInfo.username());
@@ -110,16 +127,18 @@ public class IdentityServiceJITProvisioningHandler
 
     private Optional<OIDCUserInfo> extractUserInfoResponseFromAccessToken(String bearerToken)
     {
-        return Optional.ofNullable(bearerToken).map(identityServiceFacade::decodeToken).flatMap(mapTokenToUserInfoResponse);
+        return Optional.ofNullable(bearerToken).map(identityServiceFacade::decodeToken)
+            .flatMap(mapTokenToUserInfoResponse);
     }
 
     private Optional<OIDCUserInfo> extractUserInfoResponseFromEndpoint(String bearerToken)
     {
         return identityServiceFacade.getUserInfo(bearerToken)
-                    .filter(userInfo -> userInfo.getPreferredUsername() != null && !userInfo.getPreferredUsername().isEmpty())
-                    .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.getPreferredUsername()),
-                                Optional.ofNullable(userInfo.getGivenName()).orElse(""), Optional.ofNullable(userInfo.getFamilyName()).orElse(""),
-                                Optional.ofNullable(userInfo.getEmailAddress()).orElse("")));
+            .filter(userInfo -> userInfo.getPreferredUsername() != null && !userInfo.getPreferredUsername().isEmpty())
+            .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.getPreferredUsername()),
+                Optional.ofNullable(userInfo.getGivenName()).orElse(""),
+                Optional.ofNullable(userInfo.getFamilyName()).orElse(""),
+                Optional.ofNullable(userInfo.getEmailAddress()).orElse("")));
     }
 
     /**

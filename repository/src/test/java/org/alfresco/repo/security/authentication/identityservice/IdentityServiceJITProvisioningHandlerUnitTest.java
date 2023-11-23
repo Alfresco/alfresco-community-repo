@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -92,7 +92,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
         assertFalse(result.get().allFieldsNotEmpty());
-        verify(identityServiceFacade, times(0)).getUserInfo(JWT_TOKEN);
+        verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals("johny123@email.com", result.get().email());
         assertTrue(result.get().allFieldsNotEmpty());
         verify(personService).createPerson(any());
-        verify(identityServiceFacade, times(0)).getUserInfo(JWT_TOKEN);
+        verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN);
     }
 
     @Test
@@ -154,7 +154,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
             JWT_TOKEN);
 
         assertFalse(result.isPresent());
-        verify(personService, times(0)).createPerson(any());
+        verify(personService, never()).createPerson(any());
         verify(identityServiceFacade).getUserInfo(JWT_TOKEN);
     }
 
@@ -177,8 +177,21 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals("", result.get().lastName());
         assertEquals("", result.get().email());
         assertFalse(result.get().allFieldsNotEmpty());
-        verify(personService, times(0)).createPerson(any());
+        verify(personService, never()).createPerson(any());
         verify(identityServiceFacade).getUserInfo(JWT_TOKEN);
+    }
+
+    @Test
+    public void shouldNotCallUserInfoEndpointIfTokenIsNullOrEmpty()
+    {
+        identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(null);
+        identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded("");
+
+        verify(personService, never()).createPerson(any());
+        verify(identityServiceFacade, never()).decodeToken(null);
+        verify(identityServiceFacade, never()).decodeToken("");
+        verify(identityServiceFacade, never()).getUserInfo(null);
+        verify(identityServiceFacade, never()).getUserInfo("");
     }
 
 }

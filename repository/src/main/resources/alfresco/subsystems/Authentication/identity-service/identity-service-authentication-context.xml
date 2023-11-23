@@ -24,7 +24,7 @@
       <property name="identityServiceFacade">
          <ref bean="identityServiceFacade"/>
       </property>
-      <property name="identityServiceJITProvisioningHandler">
+      <property name="jitProvisioningHandler">
          <ref bean="jitProvisioningHandler" />
       </property>
    </bean>
@@ -153,7 +153,7 @@
       <property name="bearerTokenResolver">
          <bean class="org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver" />
       </property>
-      <property name="identityServiceJITProvisioningHandler">
+      <property name="jitProvisioningHandler">
          <ref bean="jitProvisioningHandler" />
       </property>
    </bean>

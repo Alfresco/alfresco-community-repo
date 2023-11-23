@@ -25,64 +25,142 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Field;
+import java.util.Optional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Optional;
 
 public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 {
     private PersonService personService;
     private NodeService nodeService;
+    private TransactionService transactionService;
     private IdentityServiceFacade identityServiceFacade;
     private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
     private ChildApplicationContextFactory childApplicationContextFactory;
-    private final String idsUsername = "johndoe123";
+    private final String IDS_USERNAME = "johndoe123";
+
     @Before
     public void setup()
     {
         personService = (PersonService) applicationContext.getBean("personService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
+        transactionService = (TransactionService) applicationContext.getBean("transactionService");
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
-                    .getBean("Authentication");
-        childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory("identity-service1");
+            .getBean("Authentication");
+        childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory(
+            "identity-service1");
 
-        identityServiceFacade = (IdentityServiceFacade) childApplicationContextFactory.getApplicationContext().getBean("identityServiceFacade");
-        identityServiceJITProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext().getBean("jitProvisioningHandler");
-        IdentityServiceConfig identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext().getBean("identityServiceConfig");
+        identityServiceFacade = (IdentityServiceFacade) childApplicationContextFactory.getApplicationContext()
+            .getBean("identityServiceFacade");
+        identityServiceJITProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext()
+            .getBean("jitProvisioningHandler");
+        IdentityServiceConfig identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext()
+            .getBean("identityServiceConfig");
         identityServiceConfig.setAllowAnyHostname(true);
         identityServiceConfig.setClientKeystore(null);
         identityServiceConfig.setDisableTrustManager(true);
     }
 
     @Test
-    public void shouldCreateUser()
+    public void shouldCreateNonExistingUserInRepo()
     {
-        assertFalse(personService.personExists(idsUsername));
+        assertFalse(personService.personExists(IDS_USERNAME));
 
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-                    identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(idsUsername, "password"));
+            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, "password"));
 
-        Optional<OIDCUserInfo> userInfoOptional = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue());
+        Optional<OIDCUserInfo> userInfoOptional = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            accessTokenAuthorization.getAccessToken().getTokenValue());
 
-        NodeRef person = personService.getPerson(idsUsername);
+        NodeRef person = personService.getPerson(IDS_USERNAME);
 
         assertTrue(userInfoOptional.isPresent());
-        assertEquals(idsUsername, userInfoOptional.get().username());
+        assertEquals(IDS_USERNAME, userInfoOptional.get().username());
         assertEquals("John", userInfoOptional.get().firstName());
         assertEquals("Doe", userInfoOptional.get().lastName());
         assertEquals("johndoe@test.com", userInfoOptional.get().email());
-        assertEquals(idsUsername, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+        assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
         assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
         assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
         assertEquals("johndoe@test.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
     }
 
+    @Test
+    public void shouldCallUserInfoEndpointAndCreateUser() throws IllegalAccessException, NoSuchFieldException
+    {
+        assertFalse(personService.personExists(IDS_USERNAME));
+
+        IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
+            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, "password"));
+
+        String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
+        IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
+        when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(null);
+        when(idsServiceFacadeMock.getUserInfo(accessToken)).thenReturn(identityServiceFacade.getUserInfo(accessToken));
+
+        // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
+        Field declaredField = identityServiceJITProvisioningHandler.getClass()
+            .getDeclaredField("identityServiceFacade");
+        declaredField.setAccessible(true);
+        declaredField.set(identityServiceJITProvisioningHandler, idsServiceFacadeMock);
+
+        Optional<OIDCUserInfo> userInfoOptional = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            accessToken);
+
+        declaredField.set(identityServiceJITProvisioningHandler, identityServiceFacade);
+
+        NodeRef person = personService.getPerson(IDS_USERNAME);
+
+        assertTrue(userInfoOptional.isPresent());
+        assertEquals(IDS_USERNAME, userInfoOptional.get().username());
+        assertEquals("John", userInfoOptional.get().firstName());
+        assertEquals("Doe", userInfoOptional.get().lastName());
+        assertEquals("johndoe@test.com", userInfoOptional.get().email());
+        assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
+        assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
+        assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
+        assertEquals("johndoe@test.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
+        verify(idsServiceFacadeMock).decodeToken(accessToken);
+        verify(idsServiceFacadeMock).getUserInfo(accessToken);
+    }
+
+    @After
+    public void tearDown()
+    {
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                transactionService.getRetryingTransactionHelper()
+                    .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                    {
+                        @Override
+                        public Void execute() throws Throwable
+                        {
+                            personService.deletePerson(IDS_USERNAME);
+                            return null;
+                        }
+                    });
+                return null;
+            }
+        });
+    }
 }

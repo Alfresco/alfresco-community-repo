@@ -397,6 +397,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
                     .issuerUri(issuerUri)
                     .userInfoUri(metadata.getUserInfoEndpointURI().toASCIIString())
+                    .scope("openid", "profile", "email")
                     .authorizationGrantType(AuthorizationGrantType.PASSWORD);
         }
 

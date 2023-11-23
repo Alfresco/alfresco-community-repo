@@ -23,16 +23,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.security.authentication.identityservice;
-
-import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
-import org.alfresco.service.cmr.security.PersonService;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,6 +34,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.util.Optional;
+
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 public class IdentityServiceJITProvisioningHandlerUnitTest
 {
@@ -56,6 +59,9 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     private IdentityServiceFacade.DecodedAccessToken decodedAccessToken;
 
     @Mock
+    private TransactionService transactionService;
+
+    @Mock
     private UserInfo userInfo;
 
     private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
@@ -66,9 +72,12 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     public void setup()
     {
         initMocks(this);
+
+        when(transactionService.isReadOnly()).thenReturn(false);
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
-        identityServiceJITProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade, personService);
+        identityServiceJITProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade,
+            personService, transactionService);
     }
 
     @Test
@@ -77,7 +86,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(personService.personExists("johny123")).thenReturn(true);
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("johny123");
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -95,7 +105,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn("Doe");
         when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn("johny123@email.com");
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -120,7 +131,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("johny123");
         when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -138,7 +150,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
 
         when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            JWT_TOKEN);
 
         assertFalse(result.isPresent());
         verify(personService, times(0)).createPerson(any());
@@ -155,7 +168,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(userInfo.getPreferredUsername()).thenReturn("johny123");
         when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(JWT_TOKEN);
+        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            JWT_TOKEN);
 
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
@@ -166,6 +180,5 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         verify(personService, times(0)).createPerson(any());
         verify(identityServiceFacade).getUserInfo(JWT_TOKEN);
     }
-
 
 }

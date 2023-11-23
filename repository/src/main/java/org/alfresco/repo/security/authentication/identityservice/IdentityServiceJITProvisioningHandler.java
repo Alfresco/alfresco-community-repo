@@ -31,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class IdentityServiceJITProvisioningHandler
 {
     private IdentityServiceFacade identityServiceFacade;
     private PersonService personService;
+    private TransactionService transactionService;
 
     private final Function<IdentityServiceFacade.DecodedAccessToken, Optional<? extends OIDCUserInfo>> mapTokenToUserInfoResponse = token -> {
         Optional<String> firstName = Optional.ofNullable(token.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME)).filter(String.class::isInstance)
@@ -55,10 +57,12 @@ public class IdentityServiceJITProvisioningHandler
                     .map(username -> new OIDCUserInfo(username, firstName.orElse(""), lastName.orElse(""), email.orElse("")));
     };
 
-    public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade, PersonService personService)
+    public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade, PersonService personService,
+                TransactionService transactionService)
     {
         this.identityServiceFacade = identityServiceFacade;
         this.personService = personService;
+        this.transactionService = transactionService;
     }
 
     public Optional<OIDCUserInfo> extractUserInfoAndCreateUserIfNeeded(String bearerToken)
@@ -67,7 +71,10 @@ public class IdentityServiceJITProvisioningHandler
                     response -> response.username() == null || response.username().isEmpty() ?
                                 extractUserInfoResponseFromEndpoint(bearerToken) :
                                 Optional.of(response)).or(() -> extractUserInfoResponseFromEndpoint(bearerToken));
-
+        if(transactionService.isReadOnly())
+        {
+            return userInfoResponse;
+        }
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Optional<OIDCUserInfo>>()
         {
             public Optional<OIDCUserInfo> doWork() throws Exception

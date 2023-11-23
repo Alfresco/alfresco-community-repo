@@ -161,6 +161,7 @@
    <bean id="jitProvisioningHandler" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandler">
       <constructor-arg ref="PersonService"/>
       <constructor-arg ref="identityServiceFacade"/>
+      <constructor-arg ref="transactionService"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

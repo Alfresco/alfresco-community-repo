@@ -46,15 +46,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+@SuppressWarnings("PMD.AvoidAccessibilityAlteration")
 public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 {
     private PersonService personService;
     private NodeService nodeService;
     private TransactionService transactionService;
     private IdentityServiceFacade identityServiceFacade;
-    private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
-    private ChildApplicationContextFactory childApplicationContextFactory;
-    private final String IDS_USERNAME = "johndoe123";
+    private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
+    private static final String IDS_USERNAME = "johndoe123";
 
     @Before
     public void setup()
@@ -64,12 +64,12 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
             .getBean("Authentication");
-        childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory(
+        ChildApplicationContextFactory childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory(
             "identity-service1");
 
         identityServiceFacade = (IdentityServiceFacade) childApplicationContextFactory.getApplicationContext()
             .getBean("identityServiceFacade");
-        identityServiceJITProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext()
+        jitProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext()
             .getBean("jitProvisioningHandler");
         IdentityServiceConfig identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext()
             .getBean("identityServiceConfig");
@@ -86,7 +86,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
             identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, "password"));
 
-        Optional<OIDCUserInfo> userInfoOptional = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+        Optional<OIDCUserInfo> userInfoOptional = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             accessTokenAuthorization.getAccessToken().getTokenValue());
 
         NodeRef person = personService.getPerson(IDS_USERNAME);
@@ -116,15 +116,15 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         when(idsServiceFacadeMock.getUserInfo(accessToken)).thenReturn(identityServiceFacade.getUserInfo(accessToken));
 
         // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
-        Field declaredField = identityServiceJITProvisioningHandler.getClass()
+        Field declaredField = jitProvisioningHandler.getClass()
             .getDeclaredField("identityServiceFacade");
         declaredField.setAccessible(true);
-        declaredField.set(identityServiceJITProvisioningHandler, idsServiceFacadeMock);
+        declaredField.set(jitProvisioningHandler, idsServiceFacadeMock);
 
-        Optional<OIDCUserInfo> userInfoOptional = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+        Optional<OIDCUserInfo> userInfoOptional = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             accessToken);
 
-        declaredField.set(identityServiceJITProvisioningHandler, identityServiceFacade);
+        declaredField.set(jitProvisioningHandler, identityServiceFacade);
 
         NodeRef person = personService.getPerson(IDS_USERNAME);
 

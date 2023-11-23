@@ -28,6 +28,7 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -83,7 +84,7 @@ public class IdentityServiceJITProvisioningHandler
         Optional<OIDCUserInfo> userInfoResponse = Optional.ofNullable(bearerToken)
             .filter(Predicate.not(String::isEmpty))
             .flatMap(token -> extractUserInfoResponseFromAccessToken(token).flatMap(
-                    response -> response.username() == null || response.username().isEmpty() ?
+                response -> response.username() == null || response.username().isEmpty() ?
                     extractUserInfoResponseFromEndpoint(token) :
                     Optional.of(response)).or(() -> extractUserInfoResponseFromEndpoint(token)));
 
@@ -93,31 +94,32 @@ public class IdentityServiceJITProvisioningHandler
         }
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Optional<OIDCUserInfo>>()
         {
+            @Override
             public Optional<OIDCUserInfo> doWork() throws Exception
             {
                 return userInfoResponse.map(userInfo -> {
-                    if (userInfo.username() != null && !personService.personExists(userInfo.username()))
+                    if (userInfo.username() != null && !personService.personExists(userInfo.username())
+                        && personService.createMissingPeople())
                     {
-                        if (personService.createMissingPeople())
+
+                        if (!userInfo.allFieldsNotEmpty())
                         {
-                            if (!userInfo.allFieldsNotEmpty())
-                            {
-                                userInfo = extractUserInfoResponseFromEndpoint(bearerToken).orElse(
-                                    new OIDCUserInfo(userInfo.username(), "", "", ""));
-                            }
-                            HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
-                            properties.put(ContentModel.PROP_USERNAME, userInfo.username());
-                            properties.put(ContentModel.PROP_FIRSTNAME, userInfo.firstName());
-                            properties.put(ContentModel.PROP_LASTNAME, userInfo.lastName());
-                            properties.put(ContentModel.PROP_EMAIL, userInfo.email());
-                            properties.put(ContentModel.PROP_ORGID, "");
-                            properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, null);
-
-                            properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
-                            properties.put(ContentModel.PROP_SIZE_QUOTA, -1L); // no quota
-
-                            personService.createPerson(properties);
+                            userInfo = extractUserInfoResponseFromEndpoint(bearerToken).orElse(
+                                new OIDCUserInfo(userInfo.username(), "", "", ""));
                         }
+                        Map<QName, Serializable> properties = new HashMap<>();
+                        properties.put(ContentModel.PROP_USERNAME, userInfo.username());
+                        properties.put(ContentModel.PROP_FIRSTNAME, userInfo.firstName());
+                        properties.put(ContentModel.PROP_LASTNAME, userInfo.lastName());
+                        properties.put(ContentModel.PROP_EMAIL, userInfo.email());
+                        properties.put(ContentModel.PROP_ORGID, "");
+                        properties.put(ContentModel.PROP_HOME_FOLDER_PROVIDER, null);
+
+                        properties.put(ContentModel.PROP_SIZE_CURRENT, 0L);
+                        properties.put(ContentModel.PROP_SIZE_QUOTA, -1L); // no quota
+
+                        personService.createPerson(properties);
+
                     }
                     return userInfo;
                 });
@@ -156,6 +158,7 @@ public class IdentityServiceJITProvisioningHandler
 
         String normalized = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
         {
+            @Override
             public String doWork() throws Exception
             {
                 return personService.getUserIdentifier(userId);

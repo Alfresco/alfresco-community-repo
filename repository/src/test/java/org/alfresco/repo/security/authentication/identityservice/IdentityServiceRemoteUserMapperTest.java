@@ -103,7 +103,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService, transactionService);
 
         final IdentityServiceRemoteUserMapper mapper = new IdentityServiceRemoteUserMapper();
-        mapper.setIdentityServiceJITProvisioningHandler(jitProvisioning);
+        mapper.setJitProvisioningHandler(jitProvisioning);
         mapper.setActive(true);
         mapper.setBearerTokenResolver(new DefaultBearerTokenResolver());
 

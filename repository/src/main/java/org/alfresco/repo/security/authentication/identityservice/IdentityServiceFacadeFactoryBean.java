@@ -231,9 +231,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 Function<RestOperations, ClientRegistration> clientRegistrationProvider,
                 BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider)
         {
-            this.httpClientProvider = Objects.requireNonNull(httpClientProvider);
-            this.clientRegistrationProvider = Objects.requireNonNull(clientRegistrationProvider);
-            this.jwtDecoderProvider = Objects.requireNonNull(jwtDecoderProvider);
+            this.httpClientProvider = requireNonNull(httpClientProvider);
+            this.clientRegistrationProvider = requireNonNull(clientRegistrationProvider);
+            this.jwtDecoderProvider = requireNonNull(jwtDecoderProvider);
         }
 
         private IdentityServiceFacade createIdentityServiceFacade()
@@ -266,7 +266,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private HttpClientProvider(IdentityServiceConfig config)
         {
-            this.config = Objects.requireNonNull(config);
+            this.config = requireNonNull(config);
         }
 
         private HttpClient createHttpClient()
@@ -361,7 +361,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private ClientRegistrationProvider(IdentityServiceConfig config)
         {
-            this.config = Objects.requireNonNull(config);
+            this.config = requireNonNull(config);
         }
 
         public ClientRegistration createClientRegistration(final RestOperations rest)
@@ -457,7 +457,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         JwtDecoderProvider(IdentityServiceConfig config)
         {
-            this.config = Objects.requireNonNull(config);
+            this.config = requireNonNull(config);
         }
 
         public JwtDecoder createJwtDecoder(RestOperations rest, ProviderDetails providerDetails)

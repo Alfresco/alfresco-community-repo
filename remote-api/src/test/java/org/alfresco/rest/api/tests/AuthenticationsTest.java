@@ -529,7 +529,7 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         {
             InterceptingIdentityRemoteUserMapper interceptingRemoteUserMapper = new InterceptingIdentityRemoteUserMapper();
             interceptingRemoteUserMapper.setActive(true);
-            interceptingRemoteUserMapper.setIdentityServiceJITProvisioningHandler(null);
+            interceptingRemoteUserMapper.setJitProvisioningHandler(null);
             interceptingRemoteUserMapper.setUserIdToReturn(user2);
             remoteUserMapper = interceptingRemoteUserMapper;
         }

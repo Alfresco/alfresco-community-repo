@@ -64,9 +64,9 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Mock
     private UserInfo userInfo;
 
-    private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
+    private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
-    private final String JWT_TOKEN = "myToken";
+    private static final String JWT_TOKEN = "myToken";
 
     @Before
     public void setup()
@@ -76,7 +76,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(transactionService.isReadOnly()).thenReturn(false);
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
-        identityServiceJITProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade,
+        jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade,
             personService, transactionService);
     }
 
@@ -86,7 +86,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(personService.personExists("johny123")).thenReturn(true);
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("johny123");
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
 
         assertTrue(result.isPresent());
@@ -105,7 +105,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME)).thenReturn("Doe");
         when(decodedAccessToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME)).thenReturn("johny123@email.com");
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
 
         assertTrue(result.isPresent());
@@ -131,7 +131,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("johny123");
         when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
 
         assertTrue(result.isPresent());
@@ -150,7 +150,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
 
         when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
 
         assertFalse(result.isPresent());
@@ -168,7 +168,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(userInfo.getPreferredUsername()).thenReturn("johny123");
         when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
-        Optional<OIDCUserInfo> result = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
 
         assertTrue(result.isPresent());
@@ -184,8 +184,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Test
     public void shouldNotCallUserInfoEndpointIfTokenIsNullOrEmpty()
     {
-        identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(null);
-        identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded("");
+        jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(null);
+        jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded("");
 
         verify(personService, never()).createPerson(any());
         verify(identityServiceFacade, never()).decodeToken(null);

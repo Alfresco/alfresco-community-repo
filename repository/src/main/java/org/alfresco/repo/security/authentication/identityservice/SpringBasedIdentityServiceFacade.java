@@ -111,6 +111,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         return new SpringAccessTokenAuthorization(response);
     }
 
+    @Override
     public Optional<UserInfo> getUserInfo(String tokenParameter)
     {
         return Optional.ofNullable(tokenParameter)

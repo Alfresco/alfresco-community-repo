@@ -51,7 +51,7 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
     /** enabled flag for the identity service subsystem**/
     private boolean active;
 
-    private IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler;
+    private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
     private boolean allowGuestLogin;
 
@@ -65,11 +65,12 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         this.allowGuestLogin = allowGuestLogin;
     }
 
-    public void setIdentityServiceJITProvisioningHandler(IdentityServiceJITProvisioningHandler identityServiceJITProvisioningHandler)
+    public void setJitProvisioningHandler(IdentityServiceJITProvisioningHandler jitProvisioningHandler)
     {
-        this.identityServiceJITProvisioningHandler = identityServiceJITProvisioningHandler;
+        this.jitProvisioningHandler = jitProvisioningHandler;
     }
 
+    @Override
     public void authenticateImpl(String userName, char[] password) throws AuthenticationException
     {
         if (identityServiceFacade == null)
@@ -85,9 +86,9 @@ public class IdentityServiceAuthenticationComponent extends AbstractAuthenticati
         try
         {
             // Attempt to verify user credentials
-            IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(AuthorizationGrant.password(userName, new String(password)));
+            IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(AuthorizationGrant.password(userName, String.valueOf(password)));
 
-            String normalizedUsername = identityServiceJITProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
+            String normalizedUsername = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(accessTokenAuthorization.getAccessToken().getTokenValue())
                         .map(OIDCUserInfo::username)
                         .orElseThrow(() -> new AuthenticationException("Failed to extract username from token and user info endpoint."));
             // Verification was successful so treat as authenticated user

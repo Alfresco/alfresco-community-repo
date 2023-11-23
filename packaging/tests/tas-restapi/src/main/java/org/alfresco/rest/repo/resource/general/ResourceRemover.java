@@ -30,7 +30,6 @@ package org.alfresco.rest.repo.resource.general;
  *
  * @param <SPECIFIER> repository resource specifier, see {@link Specifier}
  */
-@SuppressWarnings({"PMD.GenericsNaming"})
 public interface ResourceRemover<SPECIFIER extends Specifier>
 {
     SPECIFIER remove();

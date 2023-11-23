@@ -27,11 +27,11 @@ package org.alfresco.rest.repo.resource.general;
 
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.FileType;
 
 /**
- * Specifies repository resource to perform an operation on like: add, modify, remove.
+ * Specifies repository resource to perform an operation on, like: add, modify, remove.
  */
-@SuppressWarnings({"PMD.GenericsNaming"})
 public interface Specifier
 {
     interface FolderSpecifier extends Specifier
@@ -40,17 +40,17 @@ public interface Specifier
 
         Creator.FolderCreator randomFolder();
 
-        Creator.FolderCreator randomFolder(String nameSuffix);
+        Creator.FolderCreator randomFolder(String prefix);
 
         MultiCreator.FoldersCreator folders(String... names);
 
-        MultiCreator.FoldersCreator randomFolders(String... nameSuffixes);
+        MultiCreator.FoldersCreator randomFolders(String... prefixes);
 
         MultiCreator.FoldersCreator randomFolders(int quantity);
 
         MultiCreator.FoldersCreator nestedFolders(String... names);
 
-        MultiCreator.FoldersCreator nestedRandomFolders(String... nameSuffixes);
+        MultiCreator.FoldersCreator nestedRandomFolders(String... prefixes);
 
         MultiCreator.FoldersCreator nestedRandomFolders(int depth);
     }
@@ -61,11 +61,11 @@ public interface Specifier
 
         Creator.FileCreator randomFile();
 
-        Creator.FileCreator randomFile(String nameSuffix);
+        Creator.FileCreator randomFile(String prefix);
 
         MultiCreator.FilesCreator files(String... names);
 
-        MultiCreator.FilesCreator randomFiles(String... nameSuffixes);
+        MultiCreator.FilesCreator randomFiles(String... prefixes);
 
         MultiCreator.FilesCreator randomFiles(int quantity);
     }
@@ -90,17 +90,17 @@ public interface Specifier
 
         Creator.CategoryCreator randomCategory();
 
-        Creator.CategoryCreator randomCategory(String nameSuffix);
+        Creator.CategoryCreator randomCategory(String prefix);
 
         MultiCreator.CategoriesCreator categories(String... names);
 
-        MultiCreator.CategoriesCreator randomCategories(String... nameSuffixes);
+        MultiCreator.CategoriesCreator randomCategories(String... prefixes);
 
         MultiCreator.CategoriesCreator randomCategories(int quantity);
 
         MultiCreator.CategoriesCreator nestedCategories(String... names);
 
-        MultiCreator.CategoriesCreator nestedRandomCategories(String... nameSuffixes);
+        MultiCreator.CategoriesCreator nestedRandomCategories(String... prefixes);
 
         MultiCreator.CategoriesCreator nestedRandomCategories(int depth);
     }

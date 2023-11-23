@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.repo.resource.general;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +42,6 @@ import org.alfresco.utility.model.UserModel;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
-@SuppressWarnings({"PMD.GenericsNaming"})
 public abstract class MultipleResourcesCreator<RESOURCE extends TestModel, SELF extends MultiCreator<RESOURCE, ?>>
     implements MultiCreator<RESOURCE, SELF>
 {
@@ -98,12 +99,16 @@ public abstract class MultipleResourcesCreator<RESOURCE extends TestModel, SELF 
 
     protected String generateRandomNameWith(String prefix)
     {
-        return prefix + UUID.randomUUID();
+        return generateRandomNameWith(prefix, EMPTY);
+    }
+
+    protected String generateRandomNameWith(String prefix, String suffix)
+    {
+        return prefix + UUID.randomUUID() + suffix;
     }
 
     protected Node buildNodeRestRequest(RestWrapper restClient, RepoTestModel node)
     {
-
         return restClient.authenticateUser(user).withCoreAPI().usingNode(node);
     }
 

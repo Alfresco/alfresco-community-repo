@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestModel;
@@ -44,7 +45,6 @@ import org.apache.commons.lang3.RandomStringUtils;
  * @param <RESOURCE> repository resource, e.g. folder, category, etc.
  * @param <SELF> return type - this interface extension or implementation
  */
-@SuppressWarnings({"PMD.GenericsNaming"})
 public interface Creator<RESOURCE extends TestModel, SELF extends Creator<RESOURCE, ?>>
 {
     SELF withName(String name);
@@ -80,6 +80,8 @@ public interface Creator<RESOURCE extends TestModel, SELF extends Creator<RESOUR
 
     interface FileCreator extends ContentCreator<FileModel, FileCreator>
     {
+        FileCreator ofType(FileType fileType);
+
         FileCreator withContent(String fileContent);
 
         default FileCreator withRandomContent()

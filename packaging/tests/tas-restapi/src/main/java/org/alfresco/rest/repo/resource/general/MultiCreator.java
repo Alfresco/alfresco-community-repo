@@ -31,6 +31,7 @@ import java.util.random.RandomGenerator;
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestModel;
@@ -42,7 +43,6 @@ import org.alfresco.utility.model.UserModel;
  * @param <RESOURCE> repository resource, e.g. folder, category, etc.
  * @param <SELF> return type - this interface extension or implementation
  */
-@SuppressWarnings({"PMD.GenericsNaming"})
 public interface MultiCreator<RESOURCE extends TestModel, SELF extends MultiCreator<RESOURCE, ?>>
 {
     SELF withNames(String... names);
@@ -71,6 +71,8 @@ public interface MultiCreator<RESOURCE extends TestModel, SELF extends MultiCrea
 
     interface FilesCreator extends ContentsCreator<FileModel, FilesCreator>
     {
+        FilesCreator ofTypes(FileType... fileTypes);
+
         FilesCreator withContents(List<String> filesContents);
 
         default FilesCreator withRandomContents()

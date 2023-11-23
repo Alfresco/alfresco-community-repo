@@ -36,7 +36,6 @@ import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
 import org.apache.commons.lang3.RandomStringUtils;
 
-@SuppressWarnings({"PMD.GenericsNaming"})
 public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends Creator<RESOURCE, ?>>
     implements Creator<RESOURCE, SELF>
 {
@@ -67,12 +66,12 @@ public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends C
 
     public SELF withRandomName(String prefix)
     {
-        return withRandomName(prefix, EMPTY);
+        return withName(generateRandomNameWith(prefix));
     }
 
     public SELF withRandomName(String prefix, String suffix)
     {
-        return withName(generateRandomNameWith(prefix) + suffix);
+        return withName(generateRandomNameWith(prefix, suffix));
     }
 
     @Override
@@ -89,7 +88,12 @@ public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends C
 
     protected String generateRandomNameWith(String prefix)
     {
-        return prefix + UUID.randomUUID();
+        return generateRandomNameWith(prefix, EMPTY);
+    }
+
+    protected String generateRandomNameWith(String prefix, String suffix)
+    {
+        return prefix + UUID.randomUUID() + suffix;
     }
 
     protected Node buildNodeRestRequest(RestWrapper restClient, RepoTestModel node)

@@ -36,7 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -49,12 +49,13 @@ import org.junit.Test;
 @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
 public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 {
+    private static final String IDS_USERNAME = "johndoe123";
+
     private PersonService personService;
     private NodeService nodeService;
     private TransactionService transactionService;
     private IdentityServiceFacade identityServiceFacade;
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
-    private static final String IDS_USERNAME = "johndoe123";
 
     @Before
     public void setup()
@@ -150,14 +151,9 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
             public Void doWork() throws Exception
             {
                 transactionService.getRetryingTransactionHelper()
-                    .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-                    {
-                        @Override
-                        public Void execute() throws Throwable
-                        {
-                            personService.deletePerson(IDS_USERNAME);
-                            return null;
-                        }
+                    .doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                        personService.deletePerson(IDS_USERNAME);
+                        return null;
                     });
                 return null;
             }

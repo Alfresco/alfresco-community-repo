@@ -58,7 +58,6 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.oauth2.sdk.id.Issuer;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
@@ -190,7 +189,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
 
         @Override
-        public Optional<UserInfo> getUserInfo(String token)
+        public Optional<OIDCUserInfo> getUserInfo(String token)
         {
             return getTargetFacade().getUserInfo(token);
         }

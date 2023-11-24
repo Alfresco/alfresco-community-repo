@@ -136,11 +136,11 @@ public class IdentityServiceJITProvisioningHandler
     private Optional<OIDCUserInfo> extractUserInfoResponseFromEndpoint(String bearerToken)
     {
         return identityServiceFacade.getUserInfo(bearerToken)
-            .filter(userInfo -> userInfo.getPreferredUsername() != null && !userInfo.getPreferredUsername().isEmpty())
-            .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.getPreferredUsername()),
-                Optional.ofNullable(userInfo.getGivenName()).orElse(""),
-                Optional.ofNullable(userInfo.getFamilyName()).orElse(""),
-                Optional.ofNullable(userInfo.getEmailAddress()).orElse("")));
+            .filter(userInfo -> userInfo.username() != null && !userInfo.username().isEmpty())
+            .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.username()),
+                Optional.ofNullable(userInfo.firstName()).orElse(""),
+                Optional.ofNullable(userInfo.lastName()).orElse(""),
+                Optional.ofNullable(userInfo.email()).orElse("")));
     }
 
     /**

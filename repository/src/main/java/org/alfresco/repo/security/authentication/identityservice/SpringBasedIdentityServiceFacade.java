@@ -26,12 +26,22 @@
 
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static java.util.Objects.requireNonNull;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
+
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import com.nimbusds.openid.connect.sdk.UserInfoSuccessResponse;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.security.oauth2.client.endpoint.AbstractOAuth2AuthorizationGrantRequest;
@@ -56,16 +66,6 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResp
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestOperations;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import static java.util.Objects.requireNonNull;
 
 class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
 {
@@ -112,7 +112,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     @Override
-    public Optional<UserInfo> getUserInfo(String tokenParameter)
+    public Optional<OIDCUserInfo> getUserInfo(String tokenParameter)
     {
         return Optional.ofNullable(tokenParameter)
                     .filter(Predicate.not(String::isEmpty))
@@ -143,7 +143,8 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                             }
                         })
                         .map(UserInfoResponse::toSuccessResponse)
-                        .map(UserInfoSuccessResponse::getUserInfo));
+                        .map(UserInfoSuccessResponse::getUserInfo))
+            .map(userInfo -> new OIDCUserInfo(userInfo.getPreferredUsername(), userInfo.getGivenName(), userInfo.getFamilyName(), userInfo.getEmailAddress()));
     }
 
     @Override

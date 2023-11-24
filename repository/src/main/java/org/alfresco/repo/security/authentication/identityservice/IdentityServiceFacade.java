@@ -25,14 +25,12 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
-
-import static java.util.Objects.nonNull;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Allows to interact with the Identity Service
@@ -59,9 +57,9 @@ public interface IdentityServiceFacade
      * Gets claims about the authenticated user,
      * such as name and email address, are retrieved from the UserInfo endpoint of the OpenID provider.
      * @param token {@link String} with encoded access token value.
-     * @return {@link UserInfo} containing user claims.
+     * @return {@link OIDCUserInfo} containing user claims.
      */
-    Optional<UserInfo> getUserInfo(String token);
+    Optional<OIDCUserInfo> getUserInfo(String token);
 
     class IdentityServiceFacadeException extends RuntimeException
     {

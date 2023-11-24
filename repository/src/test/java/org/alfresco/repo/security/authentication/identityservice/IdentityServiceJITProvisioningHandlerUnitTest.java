@@ -38,7 +38,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Optional;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
@@ -62,7 +61,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     private TransactionService transactionService;
 
     @Mock
-    private UserInfo userInfo;
+    private OIDCUserInfo userInfo;
 
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
@@ -121,10 +120,10 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     @Test
     public void shouldExtractUserInfoFromUserInfoEndpointAndCreateUser()
     {
-        when(userInfo.getPreferredUsername()).thenReturn("johny123");
-        when(userInfo.getGivenName()).thenReturn("John");
-        when(userInfo.getFamilyName()).thenReturn("Doe");
-        when(userInfo.getEmailAddress()).thenReturn("johny123@email.com");
+        when(userInfo.username()).thenReturn("johny123");
+        when(userInfo.firstName()).thenReturn("John");
+        when(userInfo.lastName()).thenReturn("Doe");
+        when(userInfo.email()).thenReturn("johny123@email.com");
 
         when(personService.personExists("johny123")).thenReturn(false);
 
@@ -165,7 +164,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
 
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("");
 
-        when(userInfo.getPreferredUsername()).thenReturn("johny123");
+        when(userInfo.username()).thenReturn("johny123");
         when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(

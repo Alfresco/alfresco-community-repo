@@ -43,7 +43,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 
 /**
- * This class is used to Just in Time user provisioning. It extracts {@link OIDCUserInfo}
+ * This class handles Just in Time user provisioning. It extracts {@link OIDCUserInfo}
  * from {@link IdentityServiceFacade.DecodedAccessToken} or {@link UserInfo}
  * and creates a new user if it does not exist in the repository.
  */
@@ -66,7 +66,8 @@ public class IdentityServiceJITProvisioningHandler
 
         return Optional.ofNullable(token.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
             .filter(String.class::isInstance)
-            .map(String.class::cast).map(this::normalizeUserId)
+            .map(String.class::cast)
+            .map(this::normalizeUserId)
             .map(username -> new OIDCUserInfo(username, firstName.orElse(""), lastName.orElse(""), email.orElse("")));
     };
 
@@ -98,8 +99,8 @@ public class IdentityServiceJITProvisioningHandler
             public Optional<OIDCUserInfo> doWork() throws Exception
             {
                 return userInfoResponse.map(userInfo -> {
-                    if (userInfo.username() != null && !personService.personExists(userInfo.username())
-                        && personService.createMissingPeople())
+                    if (userInfo.username() != null && personService.createMissingPeople()
+                        && !personService.personExists(userInfo.username()))
                     {
 
                         if (!userInfo.allFieldsNotEmpty())
@@ -119,7 +120,6 @@ public class IdentityServiceJITProvisioningHandler
                         properties.put(ContentModel.PROP_SIZE_QUOTA, -1L); // no quota
 
                         personService.createPerson(properties);
-
                     }
                     return userInfo;
                 });
@@ -129,7 +129,8 @@ public class IdentityServiceJITProvisioningHandler
 
     private Optional<OIDCUserInfo> extractUserInfoResponseFromAccessToken(String bearerToken)
     {
-        return Optional.ofNullable(bearerToken).map(identityServiceFacade::decodeToken)
+        return Optional.ofNullable(bearerToken)
+            .map(identityServiceFacade::decodeToken)
             .flatMap(mapTokenToUserInfoResponse);
     }
 

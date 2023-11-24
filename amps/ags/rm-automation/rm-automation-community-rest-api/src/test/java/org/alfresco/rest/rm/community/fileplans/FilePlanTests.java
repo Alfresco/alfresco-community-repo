@@ -142,7 +142,7 @@ public class FilePlanTests extends BaseRMRestTest
      * Then I am given the details of the file plan
      * </pre>
      */
-    @Test(enabled = false)
+    @Test
     public void getFilePlanWhenRMIsCreated()
     {
         // Create RM Site if doesn't exist
@@ -164,7 +164,7 @@ public class FilePlanTests extends BaseRMRestTest
      * Then I am given the allowableOperations property with the update and create operations.
      * </pre>
      */
-    @Test(enabled = false)
+    @Test
     public void includeAllowableOperations()
     {
         // Check the list of allowableOperations returned

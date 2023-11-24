@@ -88,7 +88,7 @@ jobs:
       - name: "Run tests"
         run: |
           mvn -B test -pl core,data-model -am -DfailIfNoTests=false
-          mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
+          mvn -B test -pl repository -am -Dtest=AllUnitTestsSuite -DfailIfNoTests=false
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

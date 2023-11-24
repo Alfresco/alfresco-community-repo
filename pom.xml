@@ -85,7 +85,7 @@
         <dependency.keycloak.version>13.0.1</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.2.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.4</dependency.camel.version>
-        <dependency.activemq.version>5.16.1</dependency.activemq.version>
+        <dependency.activemq.version>5.16.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.21</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.1.0</dependency.awaitility.version>

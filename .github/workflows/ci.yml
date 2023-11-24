@@ -46,20 +46,14 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_tests:
-    name: "Repository - PostgreSQL ${{ matrix.version }} tests"
+  veracode:
+    name: "Source Clear Scan (SCA)"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
+      ((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
-    strategy:
-      fail-fast: false
-      matrix:
-        version: [ '10.9', '11.7', '11.12', '12.4', '12.7', '13.1' ]
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
@@ -68,23 +62,19 @@ jobs:
           java-version: "11"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL ${{ matrix.version }} database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: ${{ matrix.version }}
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.33.0
+        continue-on-error: true
+        with:
+          srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_latest_tests:
-    name: "Repository - PostgreSQL 13.3 tests"
+  all_unit_tests_suite:
+    name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (!contains(github.event.head_commit.message, '[skip db]') ||
-      contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
@@ -95,126 +85,10 @@ jobs:
           java-version: "11"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 13.3 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
-        env:
-          POSTGRES_VERSION: 13.3
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_mariadb_tests:
-    name: Repository - MariaDB ${{ matrix.version }} tests
-    runs-on: ubuntu-latest
-    needs: [ prepare ]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    strategy:
-      fail-fast: false
-      matrix:
-        version: [ '10.2.18', '10.4', '10.5', '10.6' ]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: Run MariaDB ${{ matrix.version }} database
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
-        env:
-          MARIADB_VERSION: ${{ matrix.version }}
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_mariadb_latest_tests:
-    name: Repository - MariaDB 10.6 tests
-    runs-on: ubuntu-latest
-    needs: [ prepare ]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: Run MariaDB 10.6 database
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
-        env:
-          MARIADB_VERSION: 10.6
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_mysql_5_7_28_tests:
-    name: Repository - MySQL 5.7.28 tests
-    runs-on: ubuntu-latest
-    needs: [ prepare ]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run MySQL 5.7.28 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
-        env:
-          MYSQL_VERSION: 5.7.28
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_mysql_8_tests:
-    name: Repository - MySQL 8 tests
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[latest db]') ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run MySQL 8 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
-        env:
-          MYSQL_VERSION: 8
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: |
+          mvn -B test -pl core,data-model -am -DfailIfNoTests=false
+          mvn -B test -pl repository -am -Dtest=AllUnitTestsSuite -DfailIfNoTests=false
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -253,10 +127,210 @@ jobs:
         run: |
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
+      - name: "Set transformers tag"
+        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
         run: mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_mariadb_tests:
+    name: Repository - MariaDB ${{ matrix.version }} tests
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
+      github.event_name != 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['10.2.18', '10.4', '10.5']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: Run MariaDB ${{ matrix.version }} database
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
+        env:
+          MARIADB_VERSION: ${{ matrix.version }}
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_mariadb_10_6_tests:
+    name: "Repository - MariaDB 10.6 tests"
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[latest db]') ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run MariaDB 10.6 database"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mariadb up -d
+        env:
+          MARIADB_VERSION: 10.6
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_mysql_5_7_28_tests:
+    name: Repository - MySQL 5.7.28 tests
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
+      github.event_name != 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run MySQL 5.7.28 database"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
+        env:
+          MYSQL_VERSION: 5.7.28
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_mysql_tests:
+    name: Repository - MySQL 8 tests
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[latest db]') ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run MySQL 8 database"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile mysql up -d
+        env:
+          MYSQL_VERSION: 8
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_postgresql_tests:
+    name: Repository - PostgreSQL ${{ matrix.version }} tests
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) &&
+      github.event_name != 'pull_request' &&
+      !contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['10.9', '11.12', '11.7', '12.4', '12.7', '13.1']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: Run PostgreSQL ${{ matrix.version }} database
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
+        env:
+          POSTGRES_VERSION: ${{ matrix.version }}
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_postgresql_13_3_tests:
+    name: "Repository - PostgreSQL 13.3 tests"
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (!contains(github.event.head_commit.message, '[skip db]') ||
+      contains(github.event.head_commit.message, '[latest db]') ||
+      contains(github.event.head_commit.message, '[db]')) &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run PostgreSQL 13.3 database"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
+        env:
+          POSTGRES_VERSION: 13.3
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  repository_messaging_tests:
+    name: Repository - Messaging tests
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      !contains(github.event.head_commit.message, '[skip repo]') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force]')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: "11"
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
+      - name: "Run ActiveMQ"
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
+      - name: "Run tests"
+        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -300,6 +374,8 @@ jobs:
           java-version: "11"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
+      - name: "Set transformers tag"
+        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
         run: |
           if [ -e ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh ]; then
@@ -311,57 +387,10 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  all_unit_tests_suite:
-    name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run tests"
-        run: |
-          mvn -B test -pl core,data-model -am -DfailIfNoTests=false
-          mvn -B test -pl repository -am -Dtest=AllUnitTestsSuite -DfailIfNoTests=false
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
-  repository_messaging_tests:
-    name: Repository - Messaging tests
-    runs-on: ubuntu-latest
-    needs: [prepare]
-    if: >
-      !contains(github.event.head_commit.message, '[skip repo]') &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force]')
-    steps:
-      - uses: actions/checkout@v3
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
-        with:
-          java-version: "11"
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Run ActiveMQ"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
-      - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
-
   tas_tests:
     name: ${{ matrix.test-name }}
     runs-on: ubuntu-latest
     needs: [prepare]
-    # TAS tests are generally skipped on feature branches as they will be repeated on the enterprise repo or community packaging builds
     if: >
       (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip tas]')) ||
@@ -375,36 +404,27 @@ jobs:
           - test-name: "REST API TAS tests part1"
             pom-dir: tas-restapi
             test-profile: run-restapi-part1
-            docker-compose: docker-compose-minimal+transforms.yml
           - test-name: "REST API TAS tests part2"
             pom-dir: tas-restapi
             test-profile: run-restapi-part2
-            docker-compose: docker-compose-minimal+transforms.yml
           - test-name: "REST API TAS tests part3"
             pom-dir: tas-restapi
             test-profile: run-restapi-part3
-            docker-compose: docker-compose-minimal+transforms.yml
           - test-name: "CMIS TAS tests - BROWSER binding"
             pom-dir: tas-cmis
             test-profile: run-cmis-browser
-            docker-compose: docker-compose-minimal+transforms.yml
           - test-name: "CMIS TAS tests - ATOM binding"
             pom-dir: tas-cmis
             test-profile: run-cmis-atom
-            docker-compose: docker-compose-minimal+transforms.yml
           - test-name: "CMIS TAS tests - WEBSERVICES binding"
             pom-dir: tas-cmis
             test-profile: run-cmis-webservices
-            docker-compose: docker-compose-minimal+transforms.yml
           - test-name: "Email TAS tests"
             pom-dir: tas-email
-            docker-compose: docker-compose-minimal.yml
           - test-name: "WebDAV TAS tests"
             pom-dir: tas-webdav
-            docker-compose: docker-compose-minimal.yml
           - test-name: "Integration TAS tests"
             pom-dir: tas-integration
-            docker-compose: docker-compose-minimal.yml
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
@@ -420,12 +440,21 @@ jobs:
           bash ./scripts/ci/build.sh
       - name: "Set up the environment"
         run: |
-          ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/${{ matrix.docker-compose }}
+          ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      - name: "Build TAS integration tests"
+        if: ${{ matrix.test-name }} == 'Integration TAS tests'
+        run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Run tests"
         id: tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B install -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+      - name: "Print output after success"
+        if: ${{ always() && steps.tests.outcome == 'success' }}
+        run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
+      - name: "Print output after failure"
+        if: ${{ always() && steps.tests.outcome == 'failure' }}
+        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -455,7 +484,7 @@ jobs:
   ags_postgresql_tests:
     name: AGS Integration Tests 0${{ matrix.part }} (PostgreSQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs: [ prepare ]
+    needs: [prepare]
     if: >
       (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]')) ||
@@ -465,7 +494,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [ 1, 2, 3 ]
+        part: [1, 2, 3]
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
@@ -488,7 +517,7 @@ jobs:
   ags_mysql_tests:
     name: AGS Integration Tests 0${{ matrix.part }} (MySQL) ${{ matrix.test-name }}
     runs-on: ubuntu-latest
-    needs: [ prepare ]
+    needs: [prepare]
     if: >
       (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]')) ||
@@ -498,7 +527,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        part: [ 1, 2, 3 ]
+        part: [1, 2, 3]
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
@@ -550,9 +579,19 @@ jobs:
       - name: "Test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
-      - name: "Get logs"
+      - name: "Configure AWS credentials"
+        if: ${{ always() }}
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AGS_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AGS_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: "Upload artifacts to Amazon S3 bucket"
         if: ${{ always() }}
         run: |
           bash amps/ags/ci/scripts/getLogs.sh
+          aws s3 cp --acl private alfresco.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/alfresco.log
+          aws s3 cp --acl private solr.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/solr.log
+          aws s3 cp --acl private ./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports/rm-automation-community-rest-api.log s3://ags-travis-artifacts/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests/rm-automation-community-rest-api.log
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh

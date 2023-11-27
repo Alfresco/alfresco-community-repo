@@ -42,7 +42,11 @@
       <property name="inplaceRecordService" ref="InplaceRecordService" />
       <property name="publicAction" value="true"/>
    </bean>
-
+    <!-- Apply Security Marks action -->
+    <bean id="apply-security-marks" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.ApplySecurityMarksAction">
+        <property name="nodeService" ref="NodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+    </bean>
    <!-- Move DM record action -->
    <bean id="move-dm-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.MoveDmRecordAction">
       <property name="nodeService" ref="NodeService"/>

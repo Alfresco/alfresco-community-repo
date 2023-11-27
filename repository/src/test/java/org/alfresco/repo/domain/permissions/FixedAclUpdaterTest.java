@@ -4,26 +4,31 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.domain.permissions;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,21 +66,24 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.test.junitrules.RetryAtMostRule;
+import org.alfresco.util.test.junitrules.RetryAtMostRule.RetryAtMost;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 
-import junit.framework.TestCase;
-
 /**
  * Test class for {@link FixedAclUpdater}
- * 
+ *
  * @author Andreea Dragoi
  * @author sglover
  * @since 4.2.7
  *
  */
-public class FixedAclUpdaterTest extends TestCase
+public class FixedAclUpdaterTest
 {
     private ApplicationContext ctx;
     private RetryingTransactionHelper txnHelper;
@@ -99,7 +107,10 @@ public class FixedAclUpdaterTest extends TestCase
     private static String TEST_GROUP_NAME_FULL = PermissionService.GROUP_PREFIX + TEST_GROUP_NAME;
     private static String DEFAULT_PERMISSION = PermissionService.CONTRIBUTOR;
 
-    @Override
+    @Rule
+    public RetryAtMostRule retryAtMostRule = new RetryAtMostRule();
+
+    @Before
     public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext();
@@ -122,7 +133,7 @@ public class FixedAclUpdaterTest extends TestCase
         setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception
     {
         AuthenticationUtil.clearCurrentSecurityContext();
@@ -198,6 +209,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Test setting permissions explicitly as async
      */
     @Test
+    @RetryAtMost(3)
     public void testAsync()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncFolder");
@@ -244,6 +256,7 @@ public class FixedAclUpdaterTest extends TestCase
      * MNT-21847 - Create a new content in folder that has the aspect applied
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeCreation()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCreationFolder");
@@ -274,6 +287,7 @@ public class FixedAclUpdaterTest extends TestCase
      * MNT-22009 - Delete node that has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeDeletion()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeDeletionFolder");
@@ -364,6 +378,7 @@ public class FixedAclUpdaterTest extends TestCase
      * MNT-22040 - Copy node that has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeCopy()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyOriginFolder");
@@ -443,6 +458,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Copy node that has the aspect to another folder that also has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeCopyToPendingFolder()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyOriginFolder");
@@ -534,6 +550,7 @@ public class FixedAclUpdaterTest extends TestCase
      * runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeCopyParentToChildPendingFolder()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeCopyOriginFolder");
@@ -645,6 +662,7 @@ public class FixedAclUpdaterTest extends TestCase
      * runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeMoveChildToChildPendingFolder()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveChildToChildPendingFolderOrigin");
@@ -730,6 +748,7 @@ public class FixedAclUpdaterTest extends TestCase
      * ACL
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithErrorsForceSharedACL()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithErrorsForceSharedACL");
@@ -788,6 +807,7 @@ public class FixedAclUpdaterTest extends TestCase
      * MNT-22040 - Move node that has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeMove()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveOriginFolder");
@@ -864,6 +884,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Move node that has the aspect to another folder that also has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeMoveToPendingFolder()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeMoveOriginFolder");
@@ -952,6 +973,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Lock node that has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeLock()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFileTests("testAsyncWithNodeLockFolder");
@@ -981,6 +1003,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Checkout a node for editing that has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeCheckout()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFileTests("testAsyncWithNodeCheckoutFolder");
@@ -1011,6 +1034,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Update the permissions of a node that has the aspect applied (new permissions: fixed)
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeUpdatePermissionsFixed()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeUpdatePermissionsFixedFolder");
@@ -1052,6 +1076,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Update the permissions of a node that has the aspect applied (new permissions: shared)
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeUpdatePermissionsShared()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithNodeUpdatePermissionsSharedFolder");
@@ -1090,6 +1115,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Update the permissions of the parent of a node that has the aspect applied (new permissions: fixed)
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithParentUpdatePermissionsFixed()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithParentUpdatePermissionsFixedFolder");
@@ -1131,6 +1157,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Update the permissions of the parent of a node that has the aspect applied (new permissions: shared)
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithParentUpdatePermissionsShared()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncWithParentUpdatePermissionsSharedFolder");
@@ -1169,6 +1196,7 @@ public class FixedAclUpdaterTest extends TestCase
     }
 
     @Test
+    @RetryAtMost(3)
     public void testAsyncCascadeUpdatePermissions()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncCascadeUpdatePermissionsFolder");
@@ -1221,6 +1249,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Update the content of a node that has the aspect applied before job runs
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncWithNodeContentUpdate()
     {
         NodeRef folderRef = createFolderHierarchyInRootForFileTests("testAsyncWithNodeContentUpdateFolder");
@@ -1253,6 +1282,7 @@ public class FixedAclUpdaterTest extends TestCase
      * Test setting permissions concurrently to actually cause the expected concurrency exception
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncConcurrentPermissionsUpdate() throws Throwable
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncConcurrentPermissionsUpdateFolder");
@@ -1324,6 +1354,7 @@ public class FixedAclUpdaterTest extends TestCase
      * exception but the job should be able to recover
      */
     @Test
+    @RetryAtMost(3)
     public void testAsyncConcurrentUpdateAndJob() throws Throwable
     {
         NodeRef folderRef = createFolderHierarchyInRootForFolderTests("testAsyncConcurrentUpdateAndJobFolder");
@@ -1797,7 +1828,7 @@ public class FixedAclUpdaterTest extends TestCase
 
     /**
      * Creates a level in folder/file hierarchy. Intermediate levels will contain folders and last ones files
-     * 
+     *
      * @param fileFolderService
      * @param parent
      *            - parent node of the of hierarchy level

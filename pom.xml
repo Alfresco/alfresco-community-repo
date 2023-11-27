@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>12.33-SNAPSHOT</version> 
+    <version>12.35-SNAPSHOT</version> 
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -52,6 +52,7 @@
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
         <dependency.alfresco-transform-model.version>1.4.0</dependency.alfresco-transform-model.version>
+        <dependency.alfresco-transform-core.version>2.5.6</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.13</dependency.acs-event-model.version>
 
@@ -65,7 +66,7 @@
         <dependency.bouncycastle.version>1.69</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.11.2</dependency.mockito-core.version>
         <dependency.mockito-all.version>1.10.19</dependency.mockito-all.version>
-        <dependency.org-json.version>20210307</dependency.org-json.version>
+        <dependency.org-json.version>20231013</dependency.org-json.version>
         <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.5</dependency.gson.version>
@@ -84,7 +85,7 @@
         <dependency.keycloak.version>13.0.1</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.2.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.7.4</dependency.camel.version>
-        <dependency.activemq.version>5.16.1</dependency.activemq.version>
+        <dependency.activemq.version>5.16.7</dependency.activemq.version>
         <dependency.apache-compress.version>1.21</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.1.0</dependency.awaitility.version>

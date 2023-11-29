@@ -41,6 +41,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class handles Just in Time user provisioning. It extracts {@link OIDCUserInfo}
@@ -84,10 +85,9 @@ public class IdentityServiceJITProvisioningHandler
     {
         Optional<OIDCUserInfo> userInfoResponse = Optional.ofNullable(bearerToken)
             .filter(Predicate.not(String::isEmpty))
-            .flatMap(token -> extractUserInfoResponseFromAccessToken(token).flatMap(
-                response -> response.username() == null || response.username().isEmpty() ?
-                    extractUserInfoResponseFromEndpoint(token) :
-                    Optional.of(response)).or(() -> extractUserInfoResponseFromEndpoint(token)));
+            .flatMap(token -> extractUserInfoResponseFromAccessToken(token)
+                .filter(userInfo -> StringUtils.isNotEmpty(userInfo.username()))
+                .or(() -> extractUserInfoResponseFromEndpoint(token)));
 
         if (transactionService.isReadOnly() || userInfoResponse.isEmpty())
         {
@@ -105,8 +105,7 @@ public class IdentityServiceJITProvisioningHandler
 
                         if (!userInfo.allFieldsNotEmpty())
                         {
-                            userInfo = extractUserInfoResponseFromEndpoint(bearerToken).orElse(
-                                new OIDCUserInfo(userInfo.username(), "", "", ""));
+                            userInfo = extractUserInfoResponseFromEndpoint(bearerToken).orElse(userInfo);
                         }
                         Map<QName, Serializable> properties = new HashMap<>();
                         properties.put(ContentModel.PROP_USERNAME, userInfo.username());

@@ -30,6 +30,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Allows to interact with the Identity Service
@@ -52,6 +53,14 @@ public interface IdentityServiceFacade
      */
     DecodedAccessToken decodeToken(String token) throws TokenDecodingException;
 
+    /**
+     * Gets claims about the authenticated user,
+     * such as name and email address, via the UserInfo endpoint of the OpenID provider.
+     * @param token {@link String} with encoded access token value.
+     * @return {@link OIDCUserInfo} containing user claims.
+     */
+    Optional<OIDCUserInfo> getUserInfo(String token);
+
     class IdentityServiceFacadeException extends RuntimeException
     {
         public IdentityServiceFacadeException(String message)
@@ -73,6 +82,20 @@ public interface IdentityServiceFacade
         }
 
         AuthorizationException(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
+    }
+
+    class UserInfoException extends IdentityServiceFacadeException
+    {
+
+        UserInfoException(String message)
+        {
+            super(message);
+        }
+
+        UserInfoException(String message, Throwable cause)
         {
             super(message, cause);
         }

@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -73,11 +74,24 @@ public class SpringBasedIdentityServiceFacadeUnitTest
                 .havingCause().withNoCause().withMessage("Expected");
     }
 
+
+    @Test
+    public void shouldReturnEmptyOptionalOnFailure()
+    {
+        final RestOperations restOperations = mock(RestOperations.class);
+        final JwtDecoder jwtDecoder = mock(JwtDecoder.class);
+        final SpringBasedIdentityServiceFacade facade = new SpringBasedIdentityServiceFacade(restOperations, testRegistration(), jwtDecoder);
+
+
+        assertThat(facade.getUserInfo(TOKEN).isEmpty()).isTrue();
+    }
+
     private ClientRegistration testRegistration()
     {
         return ClientRegistration.withRegistrationId("test")
                                  .tokenUri("http://localhost")
                                  .clientId("test")
+                                 .userInfoUri("http://localhost/userinfo")
                                  .authorizationGrantType(AuthorizationGrantType.PASSWORD)
                                  .build();
     }

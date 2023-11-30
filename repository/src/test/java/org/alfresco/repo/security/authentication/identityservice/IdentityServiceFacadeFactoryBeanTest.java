@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper.USERNAME_CLAIM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,6 +32,7 @@ import static org.mockito.Mockito.when;
 import java.util.Map;
 import java.util.UUID;
 
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtDecoderProvider;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtIssuerValidator;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         final Map<String, Object> claims = decodedToken.getClaims();
         assertThat(claims).isNotNull()
                           .isNotEmpty()
-                          .containsEntry(USERNAME_CLAIM, "piotrek");
+                          .containsEntry(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, "piotrek");
     }
 
     @Test

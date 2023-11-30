@@ -1866,6 +1866,46 @@
       ],
       "totp": false,
       "username": "testuser"
+    },
+    {
+      "clientRoles": {
+        "account": [
+          "manage-account",
+          "view-profile"
+        ]
+      },
+      "credentials": [
+        {
+          "algorithm": "pbkdf2",
+          "counter": 0,
+          "digits": 0,
+          "hashIterations": 20000,
+          "hashedSaltedValue": "+A2UrlK6T33IHVutjQj9k8S8kMco1IMnmCTngEg+PE+2vO4jJScux6wcltsRIYILv5ggcS3PI7tbsynq5u39sQ==",
+          "period": 0,
+          "salt": "IyVlItIo27bmACSLi4yQkA==",
+          "type": "password"
+        }
+      ],
+      "disableableCredentialTypes": [
+        "password"
+      ],
+      "email": "johndoe@test.com",
+      "emailVerified": false,
+      "enabled": true,
+      "firstName": "John",
+      "groups": [
+        "/admin",
+        "/testgroup"
+      ],
+      "lastName": "Doe",
+      "realmRoles": [
+        "uma_authorization",
+        "user",
+        "offline_access",
+        "test_role"
+      ],
+      "totp": false,
+      "username": "johndoe123"
     }
   ],
   "keycloakVersion": "8.0.1",

@@ -1712,7 +1712,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         SearchResult result = this.searchResults.next();
                         Attributes attributes = result.getAttributes();
                         Attribute uidAttribute = attributes.get(LDAPUserRegistry.this.userIdAttributeName);
-                        if (uidAttribute == null)
+                        if (uidAttribute != null)
                         {
                             if (LDAPUserRegistry.this.errorOnMissingUID)
                             {

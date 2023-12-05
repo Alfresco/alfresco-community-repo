@@ -1709,15 +1709,15 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     readyForNextPage = this.searchResults == null;
                     while (!readyForNextPage && this.searchResults.hasMore())
                     {
-                        SearchResult result = this.searchResults.next();
+                        SearchResult result = this.searchResults.nextElement();
                         Attributes attributes = result.getAttributes();
                         Attribute uidAttribute = attributes.get(LDAPUserRegistry.this.userIdAttributeName);
-                        Attribute uidAttributes = attributes.get(LDAPUserRegistry.this.userIdAttributeName);
+                        Attribute uidAttributes = result.getAttributes().get(userIdAttributeName);
                         if(uidAttribute== null || uidAttributes!= null)
                         {
                             if (LDAPUserRegistry.this.errorOnMissingUID)
                             {
-                                Object[] params = {result.getNameInNamespace(), LDAPUserRegistry.this.userIdAttributeName};
+                                Object[] params = {result.getName(), LDAPUserRegistry.this.userIdAttributeName};
                                 throw new AlfrescoRuntimeException("synchronization.err.ldap.get.user.id.missing", params);
                             }
                             else

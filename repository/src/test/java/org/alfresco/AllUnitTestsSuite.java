@@ -29,6 +29,9 @@ import org.alfresco.repo.security.authentication.identityservice.IdentityService
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesServiceUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleHttpServletRequestWrapperUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticatorUnitTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -145,6 +148,9 @@ import org.junit.runners.Suite;
     LazyInstantiatingIdentityServiceFacadeUnitTest.class,
     SpringBasedIdentityServiceFacadeUnitTest.class,
     IdentityServiceJITProvisioningHandlerUnitTest.class,
+    AdminConsoleAuthenticationCookiesServiceUnitTest.class,
+    AdminConsoleHttpServletRequestWrapperUnitTest.class,
+    IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
     org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
     org.alfresco.repo.security.authentication.PasswordHashingTest.class,
     org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,

@@ -194,6 +194,12 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             return getTargetFacade().getUserInfo(token);
         }
 
+        @Override
+        public ClientRegistration getClientRegistration()
+        {
+            return getTargetFacade().getClientRegistration();
+        }
+
         private IdentityServiceFacade getTargetFacade()
         {
             return ofNullable(targetFacade.get())

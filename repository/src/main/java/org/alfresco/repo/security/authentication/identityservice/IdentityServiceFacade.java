@@ -32,6 +32,9 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+
 /**
  * Allows to interact with the Identity Service
  */
@@ -60,6 +63,11 @@ public interface IdentityServiceFacade
      * @return {@link OIDCUserInfo} containing user claims.
      */
     Optional<OIDCUserInfo> getUserInfo(String token);
+
+    /**
+     * Gets a client registration
+     */
+    ClientRegistration getClientRegistration();
 
     class IdentityServiceFacadeException extends RuntimeException
     {

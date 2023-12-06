@@ -34,6 +34,7 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
@@ -72,10 +73,12 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
     protected RemoteUserMapper remoteUserMapper;
     protected AuthenticationComponent authenticationComponent;
+    protected AdminConsoleAuthenticator adminConsoleAuthenticator;
 
     private boolean alwaysAllowBasicAuthForAdminConsole = true;
     List<String> adminConsoleScriptFamilies;
     long getRemoteUserTimeoutMilliseconds = GET_REMOTE_USER_TIMEOUT_MILLISECONDS_DEFAULT;
+
 
     public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
     {
@@ -117,6 +120,12 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         this.getRemoteUserTimeoutMilliseconds = getRemoteUserTimeoutMilliseconds;
     }
 
+    public void setAdminConsoleAuthenticator(
+        AdminConsoleAuthenticator adminConsoleAuthenticator)
+    {
+        this.adminConsoleAuthenticator = adminConsoleAuthenticator;
+    }
+
     @Override
     public Authenticator create(WebScriptServletRequest req, WebScriptServletResponse res)
     {
@@ -148,7 +157,13 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             String userId = null;
             if (isRemoteUserMapperActive())
             {
-                if (isAlwaysAllowBasicAuthForAdminConsole())
+
+                if(servletReq.getServiceMatch() != null &&
+                    isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()))
+                {
+                    userId = getAdminConsoleUser();
+                }
+                if (isAlwaysAllowBasicAuthForAdminConsole() && userId == null)
                 {
                     final boolean useTimeoutForAdminAccessingAdminConsole = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
 
@@ -166,7 +181,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                         return false;
                     }
                 }
-                else
+                else if (userId == null)
                 {
                     // retrieve the remote user if configured and available - authenticate that user directly
                     userId = getRemoteUser();
@@ -215,10 +230,6 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                             listener.userAuthenticated(new TicketCredentials(user.getTicket()));
                             authenticated = true;
                         }
-                        else
-                        {
-                            authenticated = super.authenticate(required, isGuest);
-                        }
                     }
                     catch (AuthenticationException authErr)
                     {
@@ -235,6 +246,8 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 {
                     authenticated = super.authenticate(required, isGuest);
                 }
+
+
             }
             return authenticated;
         }
@@ -386,6 +399,20 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     "Extracted external user ID from request: " + AuthenticationUtil.maskUsername(userId);
                 logger.debug(message);
             }
+        }
+
+        protected String getAdminConsoleUser()
+        {
+            String userId = null;
+
+            if (isRemoteUserMapperActive())
+            {
+                userId = adminConsoleAuthenticator.getAdminConsoleUser(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
+            }
+
+            logRemoteUserID(userId);
+
+            return userId;
         }
 
         class GetRemoteUserRunnable implements Runnable

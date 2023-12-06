@@ -21,6 +21,8 @@ public class SNS {
                             new BasicAWSCredentials(AWS_ACCESS_KEY, AWS_SECRET_KEY)))
                     .build();
             PublishRequest request = new PublishRequest(TOPIC_ARN, MESSAGE);
+            request.setMessageGroupId("123");
+            request.setMessageDeduplicationId("321");
             amazonSNSClient.publish(request);
         }
         catch(Exception e)

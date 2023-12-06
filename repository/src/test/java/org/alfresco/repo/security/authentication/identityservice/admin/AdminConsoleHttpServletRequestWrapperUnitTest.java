@@ -54,11 +54,11 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     private static final String DEFAULT_HEADER_VALUE = "default_value";
     private static final String ADDITIONAL_HEADER = "additional_header";
     private static final String ADDITIONAL_HEADER_VALUE = "additional_value";
-    private static final Map<String, String> DEFAULT_HEADERS = new HashMap<>()
+    private static final Map<String, String> DEFAULT_HEADERS = new HashMap<String, String>()
     {{
         put(DEFAULT_HEADER, DEFAULT_HEADER_VALUE);
     }};
-    private static final Map<String, String> ADDITIONAL_HEADERS = new HashMap<>()
+    private static final Map<String, String> ADDITIONAL_HEADERS = new HashMap<String, String>()
     {{
         put(ADDITIONAL_HEADER, ADDITIONAL_HEADER_VALUE);
     }};
@@ -83,7 +83,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     @Test(expected = IllegalArgumentException.class)
     public void wrapperShouldNotBeInstancedWithoutRequestsToWrap()
     {
-        new AdminConsoleHttpServletRequestWrapper(new HashMap<>(), null);
+        new AdminConsoleHttpServletRequestWrapper(new HashMap<String, String>(), null);
     }
 
     @Test
@@ -108,7 +108,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeaderNames()).thenReturn(enumeration(DEFAULT_HEADERS.keySet()));
 
-        ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(new HashMap<>(), request);
+        ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(new HashMap<String, String>(), request);
         Enumeration<String> headerNames = ofbaWrapper.getHeaderNames();
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
@@ -157,7 +157,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         when(request.getHeader(DEFAULT_HEADER)).thenReturn(DEFAULT_HEADER_VALUE);
 
         String overrideHeaderValue = "override";
-        Map<String, String> overrideHeaders = new HashMap<>();
+        Map<String, String> overrideHeaders = new HashMap<String, String>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
         ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
@@ -197,7 +197,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         when(request.getHeader(DEFAULT_HEADER)).thenReturn(DEFAULT_HEADER_VALUE);
 
         String overrideHeaderValue = "override";
-        Map<String, String> overrideHeaders = new HashMap<>();
+        Map<String, String> overrideHeaders = new HashMap<String, String>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
         ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);

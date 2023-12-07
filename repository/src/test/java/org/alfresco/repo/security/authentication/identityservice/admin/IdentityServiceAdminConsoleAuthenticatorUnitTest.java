@@ -92,6 +92,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(providerDetails.getAuthorizationUri()).thenReturn("http://localhost:8999/auth");
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
         when(request.getRequestURL()).thenReturn(adminConsoleURL);
+        when(remoteUserMapper.getRemoteUser(request)).thenReturn(null);
 
         authenticator = new IdentityServiceAdminConsoleAuthenticator();
         authenticator.setActive(true);
@@ -187,6 +188,16 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         verify(cookiesService).addCookie(ALFRESCO_ACCESS_TOKEN, "JWT_TOKEN", response);
         verify(cookiesService).addCookie(ALFRESCO_REFRESH_TOKEN, "REFRESH_TOKEN", response);
         assertEquals("Bearer JWT_TOKEN", requestCaptor.getValue().getHeader("Authorization"));
+        assertEquals("admin", username);
+    }
+
+    @Test
+    public void shouldExtractUsernameFromAuthorizationHeader()
+    {
+        when(remoteUserMapper.getRemoteUser(request)).thenReturn("admin");
+
+        String username = authenticator.getAdminConsoleUser(request, response);
+
         assertEquals("admin", username);
     }
 }

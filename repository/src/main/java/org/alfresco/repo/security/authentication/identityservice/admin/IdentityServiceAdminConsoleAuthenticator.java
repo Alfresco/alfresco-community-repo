@@ -40,10 +40,20 @@ import org.alfresco.repo.security.authentication.external.AdminConsoleAuthentica
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID
+ * or to initiate the OIDC authorization code flow if there is no access token stored in the cookies
+ * and the authorization header.
+ */
 public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAuthenticator, ActivateableBean
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IdentityServiceAdminConsoleAuthenticator.class);
+
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
@@ -55,49 +65,97 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     @Override
     public String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response)
     {
+        // Try to extract username from the authorization header
+        String username = remoteUserMapper.getRemoteUser(request);
+        if (username != null)
+        {
+            return username;
+        }
+
         String bearerToken = cookiesService.getCookie(ALFRESCO_ACCESS_TOKEN, request);
-        String refreshToken = cookiesService.getCookie(ALFRESCO_REFRESH_TOKEN, request);
-        String authTokenExpiration = cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request);
+
         if (bearerToken != null)
         {
-            try
-            {
-                if (isAuthTokenExpired(authTokenExpiration))
-                {
-                    bearerToken = refreshAuthToken(refreshToken, response);
-                }
-            }
-            catch (Exception e)
-            {
-                bearerToken = null;
-                resetCookies(response);
-            }
+            bearerToken = refreshTokenIfNeeded(request, response, bearerToken);
         }
         else
         {
             String code = request.getParameter("code");
             if (code != null)
             {
-                AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
-                    authorizationCode(code, request.getRequestURL().toString()));
-                bearerToken = addCookies(response, accessTokenAuthorization);
+                bearerToken = retrieveTokenUsingAuthCode(request, response, bearerToken, code);
             }
         }
 
         if (bearerToken == null)
         {
-            try
-            {
-                response.sendRedirect(getAuthenticationRequest(request));
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException(e);
-            }
+            respondWithAuthChallenge(request, response);
             return null;
         }
 
         return remoteUserMapper.getRemoteUser(decorateBearerHeader(bearerToken, request));
+    }
+
+    private void respondWithAuthChallenge(HttpServletRequest request, HttpServletResponse response)
+    {
+        try
+        {
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Responding with the authentication challenge");
+            }
+            response.sendRedirect(getAuthenticationRequest(request));
+        }
+        catch (IOException e)
+        {
+
+            LOGGER.error("Error while trying to respond with the authentication challenge: {}", e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String retrieveTokenUsingAuthCode(HttpServletRequest request, HttpServletResponse response,
+        String bearerToken, String code)
+    {
+        if (LOGGER.isDebugEnabled())
+        {
+            LOGGER.debug("Retrieving a response using the Authorization Code at the Token Endpoint");
+        }
+        try
+        {
+            AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
+                authorizationCode(code, request.getRequestURL().toString()));
+            bearerToken = addCookies(response, accessTokenAuthorization);
+        }
+        catch (AuthorizationException exception)
+        {
+            if (LOGGER.isWarnEnabled())
+            {
+                LOGGER.warn(
+                    "Error while trying to retrieve a response using the Authorization Code at the Token Endpoint: {}",
+                    exception.getMessage());
+            }
+        }
+        return bearerToken;
+    }
+
+    private String refreshTokenIfNeeded(HttpServletRequest request, HttpServletResponse response, String bearerToken)
+    {
+        String refreshToken = cookiesService.getCookie(ALFRESCO_REFRESH_TOKEN, request);
+        String authTokenExpiration = cookiesService.getCookie(ALFRESCO_TOKEN_EXPIRATION, request);
+        try
+        {
+            if (isAuthTokenExpired(authTokenExpiration))
+            {
+                bearerToken = refreshAuthToken(refreshToken, response);
+            }
+        }
+        catch (Exception e)
+        {
+            bearerToken = null;
+            resetCookies(response);
+        }
+        return bearerToken;
     }
 
     private String addCookies(HttpServletResponse response, AccessTokenAuthorization accessTokenAuthorization)

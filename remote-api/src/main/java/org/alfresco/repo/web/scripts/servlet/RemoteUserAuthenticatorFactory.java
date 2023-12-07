@@ -230,6 +230,10 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                             listener.userAuthenticated(new TicketCredentials(user.getTicket()));
                             authenticated = true;
                         }
+                        else
+                        {
+                            authenticated = super.authenticate(required, isGuest);
+                        }
                     }
                     catch (AuthenticationException authErr)
                     {
@@ -246,8 +250,6 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 {
                     authenticated = super.authenticate(required, isGuest);
                 }
-
-
             }
             return authenticated;
         }

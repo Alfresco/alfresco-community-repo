@@ -100,6 +100,7 @@ public class AdminConsoleAuthenticationCookiesService
         authCookie.setPath("/");
         authCookie.setMaxAge(maxAge);
         authCookie.setSecure(sysAdminParams.getAlfrescoProtocol().equalsIgnoreCase("https"));
+        authCookie.setHttpOnly(true);
         servletResponse.addCookie(authCookie);
     }
 

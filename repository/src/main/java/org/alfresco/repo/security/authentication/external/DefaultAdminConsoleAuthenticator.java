@@ -28,6 +28,9 @@ package org.alfresco.repo.security.authentication.external;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * A default {@link AdminConsoleAuthenticator} implementation. Returns null to request a basic auth challenge.
+ */
 public class DefaultAdminConsoleAuthenticator implements AdminConsoleAuthenticator
 {
     @Override

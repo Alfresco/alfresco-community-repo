@@ -28,7 +28,19 @@ package org.alfresco.repo.security.authentication.external;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * An interface for objects capable of extracting an externally authenticated user ID from the HTTP Admin Console webscript request.
+ */
 public interface AdminConsoleAuthenticator
 {
+    /**
+     * Gets an externally authenticated user ID from the HTTP Admin Console webscript request.
+     *
+     * @param request
+     *           the request
+     * @param response
+     *           the response
+     * @return the user ID or <code>null</code> if the user is unauthenticated
+     */
     String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response);
 }

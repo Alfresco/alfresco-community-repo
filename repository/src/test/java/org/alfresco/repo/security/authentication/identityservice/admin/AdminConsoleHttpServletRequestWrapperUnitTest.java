@@ -65,13 +65,13 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
 
     @Mock
     private HttpServletRequest request;
-    private AdminConsoleHttpServletRequestWrapper ofbaWrapper;
+    private AdminConsoleHttpServletRequestWrapper requestWrapper;
 
     @Before
     public void setUp()
     {
         initMocks(this);
-        ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(ADDITIONAL_HEADERS, request);
+        requestWrapper = new AdminConsoleHttpServletRequestWrapper(ADDITIONAL_HEADERS, request);
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
@@ -91,7 +91,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeaderNames()).thenReturn(enumeration(DEFAULT_HEADERS.keySet()));
 
-        Enumeration<String> headerNames = ofbaWrapper.getHeaderNames();
+        Enumeration<String> headerNames = requestWrapper.getHeaderNames();
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
 
@@ -108,8 +108,8 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeaderNames()).thenReturn(enumeration(DEFAULT_HEADERS.keySet()));
 
-        ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(new HashMap<String, String>(), request);
-        Enumeration<String> headerNames = ofbaWrapper.getHeaderNames();
+        requestWrapper = new AdminConsoleHttpServletRequestWrapper(new HashMap<String, String>(), request);
+        Enumeration<String> headerNames = requestWrapper.getHeaderNames();
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
         assertEquals("The returned header should be the default header", DEFAULT_HEADER, headerNames.nextElement());
@@ -123,7 +123,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeaderNames()).thenReturn(null);
 
-        Enumeration<String> headerNames = ofbaWrapper.getHeaderNames();
+        Enumeration<String> headerNames = requestWrapper.getHeaderNames();
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
         assertEquals("The returned header should be the additional header", ADDITIONAL_HEADER,
@@ -138,7 +138,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeader(DEFAULT_HEADER)).thenReturn(DEFAULT_HEADER_VALUE);
 
-        String header = ofbaWrapper.getHeader(DEFAULT_HEADER);
+        String header = requestWrapper.getHeader(DEFAULT_HEADER);
         assertEquals("The header should be the default one", DEFAULT_HEADER_VALUE, header);
 
         verify(request).getHeader(DEFAULT_HEADER);
@@ -147,7 +147,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     @Test
     public void wrapperShouldReturnAdditionalHeaderValues()
     {
-        String header = ofbaWrapper.getHeader(ADDITIONAL_HEADER);
+        String header = requestWrapper.getHeader(ADDITIONAL_HEADER);
         assertEquals("The header should be the additional one", ADDITIONAL_HEADER_VALUE, header);
     }
 
@@ -160,8 +160,8 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         Map<String, String> overrideHeaders = new HashMap<String, String>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
-        ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
-        String header = ofbaWrapper.getHeader(DEFAULT_HEADER);
+        requestWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
+        String header = requestWrapper.getHeader(DEFAULT_HEADER);
         assertEquals("The header should have the overridden value", overrideHeaderValue, header);
 
         verify(request).getHeader(DEFAULT_HEADER);
@@ -172,7 +172,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeader(DEFAULT_HEADER)).thenReturn(DEFAULT_HEADER_VALUE);
 
-        Enumeration<String> headers = ofbaWrapper.getHeaders(DEFAULT_HEADER);
+        Enumeration<String> headers = requestWrapper.getHeaders(DEFAULT_HEADER);
         assertNotNull("The headers enumeration should not be null", headers);
         assertTrue("The headers enumeration should not be empty", headers.hasMoreElements());
         assertEquals("The header should be the default one", DEFAULT_HEADER_VALUE, headers.nextElement());
@@ -184,7 +184,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     @Test
     public void wrapperShouldReturnAdditionalHeaderEnumeration()
     {
-        Enumeration<String> headers = ofbaWrapper.getHeaders(ADDITIONAL_HEADER);
+        Enumeration<String> headers = requestWrapper.getHeaders(ADDITIONAL_HEADER);
         assertNotNull("The headers enumeration should not be null", headers);
         assertTrue("The headers enumeration should not be empty", headers.hasMoreElements());
         assertEquals("The header should be the additional one", ADDITIONAL_HEADER_VALUE, headers.nextElement());
@@ -200,8 +200,8 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         Map<String, String> overrideHeaders = new HashMap<String, String>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
-        ofbaWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
-        Enumeration<String> headers = ofbaWrapper.getHeaders(DEFAULT_HEADER);
+        requestWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
+        Enumeration<String> headers = requestWrapper.getHeaders(DEFAULT_HEADER);
         assertNotNull("The headers enumeration should not be null", headers);
         assertTrue("The headers enumeration should not be empty", headers.hasMoreElements());
         assertEquals("The header should be the overridden one", overrideHeaderValue, headers.nextElement());

@@ -159,7 +159,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             {
 
                 if(servletReq.getServiceMatch() != null &&
-                    isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()))
+                    isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
                 {
                     userId = getAdminConsoleUser();
                 }
@@ -252,7 +252,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 }
             }
             if(!authenticated && servletReq.getServiceMatch() != null &&
-                isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()))
+                isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
             {
                 adminConsoleAuthenticator.requestAuthentication(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
             }
@@ -288,6 +288,11 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         private boolean isRemoteUserMapperActive()
         {
             return remoteUserMapper != null && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive());
+        }
+
+        private boolean isAdminConsoleAuthenticatorActive()
+        {
+            return adminConsoleAuthenticator != null && (!(adminConsoleAuthenticator instanceof ActivateableBean) || ((ActivateableBean) adminConsoleAuthenticator).isActive());
         }
 
         protected boolean isAdminConsoleWebScript(WebScript webScript)

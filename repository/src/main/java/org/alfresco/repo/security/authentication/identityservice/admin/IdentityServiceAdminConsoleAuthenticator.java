@@ -114,7 +114,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         catch (IOException e)
         {
             LOGGER.error("Error while trying to respond with the authentication challenge: {}", e.getMessage(), e);
-            throw new AuthenticationException(e.getMessage());
+            throw new AuthenticationException(e.getMessage(), e);
         }
     }
 

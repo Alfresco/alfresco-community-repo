@@ -68,7 +68,7 @@ import java.util.Set;
  */
 public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactory
 {
-    private static final Log logger = LogFactory.getLog(RemoteUserAuthenticatorFactory.class);
+    private static final Log LOGGER = LogFactory.getLog(RemoteUserAuthenticatorFactory.class);
     public static final long GET_REMOTE_USER_TIMEOUT_MILLISECONDS_DEFAULT = 10000L; // 10 sec
 
     protected RemoteUserMapper remoteUserMapper;
@@ -149,9 +149,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         {
             boolean authenticated = false;
 
-            if (logger.isTraceEnabled())
+            if (LOGGER.isTraceEnabled())
             {
-                logger.trace("Authenticate level required: " + required + " is guest: " + isGuest);
+                LOGGER.trace("Authenticate level required: " + required + " is guest: " + isGuest);
             }
 
             String userId = null;
@@ -223,9 +223,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                         {
                             // Validate the ticket for the current SessionUser
                             authenticationService.validate(user.getTicket());
-                            if (logger.isDebugEnabled())
+                            if (LOGGER.isDebugEnabled())
                             {
-                                logger.debug("Ticket is valid. Retaining cached user in session.");
+                                LOGGER.debug("Ticket is valid. Retaining cached user in session.");
                             }
                             listener.userAuthenticated(new TicketCredentials(user.getTicket()));
                             authenticated = true;
@@ -237,9 +237,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     }
                     catch (AuthenticationException authErr)
                     {
-                        if (logger.isDebugEnabled())
+                        if (LOGGER.isDebugEnabled())
                         {
-                            logger.debug("An Authentication error occur. Removing User session.", authErr);
+                            LOGGER.debug("An Authentication error occur. Removing User session.", authErr);
                         }
                         session.removeAttribute(AuthenticationDriver.AUTHENTICATION_USER);
                         session.invalidate();
@@ -262,9 +262,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         private boolean callBasicAuthForAdminConsoleAccess(RequiredAuthentication required, boolean isGuest)
         {
             // return REST call, after a timeout/basic auth challenge
-            if (logger.isTraceEnabled())
+            if (LOGGER.isTraceEnabled())
             {
-                logger.trace("An Admin Console request has come in with Basic Auth headers present for an admin user.");
+                LOGGER.trace("An Admin Console request has come in with Basic Auth headers present for an admin user.");
             }
             // In order to prompt for another password, in case it was not entered correctly,
             // the output of this method should be returned by the calling "authenticate" method;
@@ -278,9 +278,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             boolean useTimeoutForAdminAccessingAdminConsole = RequiredAuthentication.admin.equals(required) && !isGuest &&
                 servletReq.getServiceMatch() != null && isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript());
 
-            if (logger.isTraceEnabled())
+            if (LOGGER.isTraceEnabled())
             {
-                logger.trace("Should ensure that the admins can login with basic auth: " + useTimeoutForAdminAccessingAdminConsole);
+                LOGGER.trace("Should ensure that the admins can login with basic auth: " + useTimeoutForAdminAccessingAdminConsole);
             }
             return useTimeoutForAdminAccessingAdminConsole;
         }
@@ -303,9 +303,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 return false;
             }
 
-            if (logger.isTraceEnabled())
+            if (LOGGER.isTraceEnabled())
             {
-                logger.trace("WebScript: " + webScript + " has these families: " + webScript.getDescription().getFamilys());
+                LOGGER.trace("WebScript: " + webScript + " has these families: " + webScript.getDescription().getFamilys());
             }
 
             // intersect the "family" sets defined
@@ -313,9 +313,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             families.retainAll(adminConsoleScriptFamilies);
             final boolean isAdminConsole = !families.isEmpty();
 
-            if (logger.isTraceEnabled() && isAdminConsole)
+            if (LOGGER.isTraceEnabled() && isAdminConsole)
             {
-                logger.trace("Detected an Admin Console webscript: " + webScript );
+                LOGGER.trace("Detected an Admin Console webscript: " + webScript);
             }
 
             return isAdminConsole;
@@ -341,7 +341,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             }
             catch (Exception e)
             {
-                logger.warn("Exception trying to get the remote user: " + e.getMessage(), e);
+                LOGGER.warn("Exception trying to get the remote user: " + e.getMessage(), e);
             }
 
             returnedRemoteUser = getRemoteUserRunnable.getReturnedRemoteUser();
@@ -355,9 +355,9 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                 final String message = "Could not get the remote user in a reasonable time: " + getRemoteUserTimeoutMilliseconds + " milliseconds. "
                     + "Adjust the timeout property 'authentication.getRemoteUserTimeoutMilliseconds' if required.";
 
-                if (logger.isWarnEnabled())
+                if (LOGGER.isWarnEnabled())
                 {
-                    logger.warn("Returning basic auth challenge for Admin Console. Cause: " + message);
+                    LOGGER.warn("Returning basic auth challenge for Admin Console. Cause: " + message);
                 }
                 HttpServletResponse res = servletRes.getHttpServletResponse();
                 res.setStatus(401);
@@ -404,12 +404,12 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
 
         private void logRemoteUserID(String userId)
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
                 String message = (userId == null) ?
                     "No external user ID in request." :
                     "Extracted external user ID from request: " + AuthenticationUtil.maskUsername(userId);
-                logger.debug(message);
+                LOGGER.debug(message);
             }
         }
 

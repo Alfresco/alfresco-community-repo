@@ -143,10 +143,9 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     {
         String authenticationRequest = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=" + adminConsoleURL
             + "&response_type=code&scope=openid";
-        String username = authenticator.getAdminConsoleUser(request, response);
+        authenticator.requestAuthentication(request, response);
 
         verify(response).sendRedirect(authenticationRequest);
-        assertNull(username);
     }
 
     @Test
@@ -159,11 +158,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
 
         when(identityServiceFacade.authorize(any(AuthorizationGrant.class))).thenThrow(AuthorizationException.class);
 
-        String authenticationRequest = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=" + adminConsoleURL
-            + "&response_type=code&scope=openid";
         String username = authenticator.getAdminConsoleUser(request, response);
 
-        verify(response).sendRedirect(authenticationRequest);
         verify(cookiesService).resetCookie(ALFRESCO_ACCESS_TOKEN, response);
         verify(cookiesService).resetCookie(ALFRESCO_REFRESH_TOKEN, response);
         verify(cookiesService).resetCookie(ALFRESCO_TOKEN_EXPIRATION, response);

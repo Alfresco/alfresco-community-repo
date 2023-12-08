@@ -57,6 +57,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
+
     private IdentityServiceFacade identityServiceFacade;
     private AdminConsoleAuthenticationCookiesService cookiesService;
     private RemoteUserMapper remoteUserMapper;
@@ -89,11 +90,16 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
 
         if (bearerToken == null)
         {
-            respondWithAuthChallenge(request, response);
             return null;
         }
 
         return remoteUserMapper.getRemoteUser(decorateBearerHeader(bearerToken, request));
+    }
+
+    @Override
+    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
+    {
+        respondWithAuthChallenge(request, response);
     }
 
     private void respondWithAuthChallenge(HttpServletRequest request, HttpServletResponse response)
@@ -108,7 +114,6 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         }
         catch (IOException e)
         {
-
             LOGGER.error("Error while trying to respond with the authentication challenge: {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
@@ -152,6 +157,10 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         }
         catch (Exception e)
         {
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Error while trying to refresh Auth Token: {}", e.getMessage());
+            }
             bearerToken = null;
             resetCookies(response);
         }

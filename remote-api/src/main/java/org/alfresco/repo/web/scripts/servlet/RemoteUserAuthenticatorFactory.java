@@ -251,6 +251,11 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                     authenticated = super.authenticate(required, isGuest);
                 }
             }
+            if(!authenticated && servletReq.getServiceMatch() != null &&
+                isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()))
+            {
+                adminConsoleAuthenticator.requestAuthentication(this.servletReq.getHttpServletRequest(), this.servletRes.getHttpServletResponse());
+            }
             return authenticated;
         }
 

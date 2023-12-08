@@ -38,4 +38,10 @@ public class DefaultAdminConsoleAuthenticator implements AdminConsoleAuthenticat
     {
         return null;
     }
+
+    @Override
+    public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
+    {
+        // No implementation
+    }
 }

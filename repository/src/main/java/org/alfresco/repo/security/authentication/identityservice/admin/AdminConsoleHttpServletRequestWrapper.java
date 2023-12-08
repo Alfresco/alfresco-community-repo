@@ -25,9 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice.admin;
 
-import static java.util.Collections.enumeration;
-
 import static java.util.Arrays.asList;
+import static java.util.Collections.enumeration;
 
 import java.util.ArrayList;
 import java.util.Enumeration;

@@ -43,4 +43,14 @@ public interface AdminConsoleAuthenticator
      * @return the user ID or <code>null</code> if the user is unauthenticated
      */
     String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * Requests an authentication.
+     *
+     * @param request
+     *           the request
+     * @param response
+     *           the response
+     */
+    void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
 }

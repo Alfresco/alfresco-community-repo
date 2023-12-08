@@ -27,11 +27,12 @@ package org.alfresco.repo.security.authentication.external;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 
 /**
  * A default {@link AdminConsoleAuthenticator} implementation. Returns null to request a basic auth challenge.
  */
-public class DefaultAdminConsoleAuthenticator implements AdminConsoleAuthenticator
+public class DefaultAdminConsoleAuthenticator implements AdminConsoleAuthenticator, ActivateableBean
 {
     @Override
     public String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response)
@@ -43,5 +44,11 @@ public class DefaultAdminConsoleAuthenticator implements AdminConsoleAuthenticat
     public void requestAuthentication(HttpServletRequest request, HttpServletResponse response)
     {
         // No implementation
+    }
+
+    @Override
+    public boolean isActive()
+    {
+        return false;
     }
 }

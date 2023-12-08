@@ -224,8 +224,14 @@ public interface IdentityServiceFacade
         @Override
         public boolean equals(Object o)
         {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
             AuthorizationGrant that = (AuthorizationGrant) o;
             return Objects.equals(username, that.username) &&
                     Objects.equals(password, that.password) &&

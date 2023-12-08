@@ -353,7 +353,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
         private char[] asCharArray(String value, char[] nullValue)
         {
-            return Optional.ofNullable(value)
+            return ofNullable(value)
                            .filter(not(String::isBlank))
                            .map(String::toCharArray)
                            .orElse(nullValue);

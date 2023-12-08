@@ -53,6 +53,7 @@ import org.mockito.Mock;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
 
+@SuppressWarnings("PMD.AvoidStringBufferField")
 public class IdentityServiceAdminConsoleAuthenticatorUnitTest
 {
 

@@ -36,9 +36,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -83,7 +83,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     @Test(expected = IllegalArgumentException.class)
     public void wrapperShouldNotBeInstancedWithoutRequestsToWrap()
     {
-        new AdminConsoleHttpServletRequestWrapper(new HashMap<String, String>(), null);
+        new AdminConsoleHttpServletRequestWrapper(new HashMap<>(), null);
     }
 
     @Test
@@ -95,7 +95,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
 
-        ArrayList<String> headers = list(headerNames);
+        List<String> headers = list(headerNames);
         assertEquals("There should be 2 headers", 2, headers.size());
         assertTrue("The default header should be included", headers.contains(DEFAULT_HEADER));
         assertTrue("The additional header should be included", headers.contains(ADDITIONAL_HEADER));
@@ -108,7 +108,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
     {
         when(request.getHeaderNames()).thenReturn(enumeration(DEFAULT_HEADERS.keySet()));
 
-        requestWrapper = new AdminConsoleHttpServletRequestWrapper(new HashMap<String, String>(), request);
+        requestWrapper = new AdminConsoleHttpServletRequestWrapper(new HashMap<>(), request);
         Enumeration<String> headerNames = requestWrapper.getHeaderNames();
         assertNotNull("headerNames should not be null", headerNames);
         assertTrue("headerNames should not be empty", headerNames.hasMoreElements());
@@ -157,7 +157,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         when(request.getHeader(DEFAULT_HEADER)).thenReturn(DEFAULT_HEADER_VALUE);
 
         String overrideHeaderValue = "override";
-        Map<String, String> overrideHeaders = new HashMap<String, String>();
+        Map<String, String> overrideHeaders = new HashMap<>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
         requestWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);
@@ -197,7 +197,7 @@ public class AdminConsoleHttpServletRequestWrapperUnitTest
         when(request.getHeader(DEFAULT_HEADER)).thenReturn(DEFAULT_HEADER_VALUE);
 
         String overrideHeaderValue = "override";
-        Map<String, String> overrideHeaders = new HashMap<String, String>();
+        Map<String, String> overrideHeaders = new HashMap<>();
         overrideHeaders.put(DEFAULT_HEADER, overrideHeaderValue);
 
         requestWrapper = new AdminConsoleHttpServletRequestWrapper(overrideHeaders, request);

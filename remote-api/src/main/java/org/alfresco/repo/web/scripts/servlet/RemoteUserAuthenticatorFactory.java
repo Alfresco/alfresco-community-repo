@@ -68,7 +68,7 @@ import java.util.Set;
  */
 public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactory
 {
-    private static Log logger = LogFactory.getLog(RemoteUserAuthenticatorFactory.class);
+    private static final Log logger = LogFactory.getLog(RemoteUserAuthenticatorFactory.class);
     public static final long GET_REMOTE_USER_TIMEOUT_MILLISECONDS_DEFAULT = 10000L; // 10 sec
 
     protected RemoteUserMapper remoteUserMapper;

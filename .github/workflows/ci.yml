@@ -103,15 +103,14 @@ jobs:
           issue_details: true
           veracode_policy_name: Alfresco Default
           summary_output: true
-          summary_output_file: readable_results.txt
+          summary_output_file: results.json
           summary_display: true
           json_output: false
-          filtered_json_output_file: results.json
           baseline_file: baseline.json
           debug: 1
       - name: Upload scan result
         if: success() || failure()
-        run: zip readable_output.zip readable_results.txt
+        run: zip readable_output.zip results.json
       - name: Upload Artifact
         if: success() || failure()
         uses: actions/upload-artifact@v3

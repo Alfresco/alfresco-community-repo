@@ -105,6 +105,7 @@ jobs:
           summary_output: true
           summary_output_file: readable_results.txt
           summary_display: true
+          json_output: false
           baseline_file: baseline.json
       - name: Upload scan result
         if: success() || failure()

@@ -47,8 +47,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID
- * or to initiate the OIDC authorization code flow if there is no access token stored in the cookies
- * and the authorization header.
+ * or to initiate the OIDC authorization code flow.
  */
 public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAuthenticator, ActivateableBean
 {

@@ -120,7 +120,12 @@ jobs:
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force]')
     steps:
-      - uses: Alfresco/ya-pmd-scan@v2.0.5
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.35.2
+      - uses: Alfresco/ya-pmd-scan@v3.0.0
+        with:
+          classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
 
   all_unit_tests_suite:
     name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
@@ -393,8 +398,8 @@ jobs:
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContext05TestSuite
-            compose-profile: default
-            mvn-options: '"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"'
+            compose-profile: with-ids
+            mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite
@@ -418,6 +423,8 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: "Set the host IP"
+        run: echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"
         if: ${{ matrix.mtls }}
         run: |
@@ -430,11 +437,7 @@ jobs:
             echo "HOSTNAME_VERIFICATION_DISABLED=false" >> "$GITHUB_ENV"
           fi
       - name: "Set up the environment"
-        run: |
-          if [ -e ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh ]; then
-            bash ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh
-          fi
-          docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
       - name: "Clean Maven cache"

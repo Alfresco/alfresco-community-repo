@@ -9,13 +9,27 @@ then
   exit 1
 fi
 
+# If MTLS enabled configure keystore/truststore for curl command
+if [[ $ALFRESCO_URL == https* ]]; then
+  KEYSTORE_TRUSTSTORE_PATH="${CI_WORKSPACE}/keystores/testClient"
+  KEYSTORE_PASSWORD="password"
+
+  ADDITIONAL_MTLS_CONFIG="--key $KEYSTORE_TRUSTSTORE_PATH/client-key.pem --cert $KEYSTORE_TRUSTSTORE_PATH/client-cert.pem:$KEYSTORE_PASSWORD --cacert $KEYSTORE_TRUSTSTORE_PATH/testClient_truststore.pem"
+  if [[ ${HOSTNAME_VERIFICATION_DISABLED} == true ]]; then
+    ADDITIONAL_MTLS_CONFIG=$ADDITIONAL_MTLS_CONFIG" -k"
+  fi
+else
+  ADDITIONAL_MTLS_CONFIG=""
+fi
+
 WAIT_INTERVAL=1
 COUNTER=0
 TIMEOUT=300
 t0=$(date +%s)
 
 echo "Waiting for alfresco to start"
-until $(curl --output /dev/null --silent --head --fail ${ALFRESCO_URL}) || [ "$COUNTER" -eq "$TIMEOUT" ]; do
+echo curl --output /dev/null --silent --head --fail ${ADDITIONAL_MTLS_CONFIG} ${ALFRESCO_URL}
+until $(curl --output /dev/null --silent --head --fail ${ADDITIONAL_MTLS_CONFIG} ${ALFRESCO_URL}) || [ "$COUNTER" -eq "$TIMEOUT" ]; do
    printf '.'
    sleep $WAIT_INTERVAL
    COUNTER=$(($COUNTER+$WAIT_INTERVAL))

@@ -23,13 +23,24 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.security.authentication.identityservice;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
+
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.UserInfoRequest;
+import com.nimbusds.openid.connect.sdk.UserInfoResponse;
+import com.nimbusds.openid.connect.sdk.UserInfoSuccessResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -98,6 +109,42 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         }
 
         return new SpringAccessTokenAuthorization(response);
+    }
+
+    @Override
+    public Optional<OIDCUserInfo> getUserInfo(String tokenParameter)
+    {
+        return Optional.ofNullable(tokenParameter)
+                    .filter(Predicate.not(String::isEmpty))
+                    .flatMap(token -> Optional.ofNullable(clientRegistration)
+                        .map(ClientRegistration::getProviderDetails)
+                        .map(ClientRegistration.ProviderDetails::getUserInfoEndpoint)
+                        .map(ClientRegistration.ProviderDetails.UserInfoEndpoint::getUri)
+                        .flatMap(uri -> {
+                            try
+                            {
+                                return Optional.of(new UserInfoRequest(new URI(uri), new BearerAccessToken(token)).toHTTPRequest().send());
+                            }
+                            catch (IOException | URISyntaxException e)
+                            {
+                                LOGGER.warn("Failed to get user information. Reason: " + e.getMessage());
+                                return Optional.empty();
+                            }
+                        })
+                        .flatMap(httpResponse -> {
+                            try
+                            {
+                                return Optional.of(UserInfoResponse.parse(httpResponse));
+                            }
+                            catch (ParseException e)
+                            {
+                                LOGGER.warn("Failed to parse user info response. Reason: " + e.getMessage());
+                                return Optional.empty();
+                            }
+                        })
+                        .map(UserInfoResponse::toSuccessResponse)
+                        .map(UserInfoSuccessResponse::getUserInfo))
+            .map(userInfo -> new OIDCUserInfo(userInfo.getPreferredUsername(), userInfo.getGivenName(), userInfo.getFamilyName(), userInfo.getEmailAddress()));
     }
 
     @Override

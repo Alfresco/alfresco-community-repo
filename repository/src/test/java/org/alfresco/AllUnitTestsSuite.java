@@ -26,6 +26,7 @@
 package org.alfresco;
 
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
 import org.alfresco.util.testing.category.DBTests;
@@ -143,6 +144,7 @@ import org.junit.runners.Suite;
     IdentityServiceFacadeFactoryBeanTest.class,
     LazyInstantiatingIdentityServiceFacadeUnitTest.class,
     SpringBasedIdentityServiceFacadeUnitTest.class,
+    IdentityServiceJITProvisioningHandlerUnitTest.class,
     org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
     org.alfresco.repo.security.authentication.PasswordHashingTest.class,
     org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -60,6 +60,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest.class,
     org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponentTest.class,
     org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapperTest.class,
+    org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerTest.class,
     org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticatorTest.class,
     org.alfresco.repo.security.authentication.external.LocalAuthenticationServiceTest.class,
     org.alfresco.repo.domain.contentdata.ContentDataDAOTest.class,

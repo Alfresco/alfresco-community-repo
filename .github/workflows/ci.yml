@@ -105,7 +105,6 @@ jobs:
           summary_output: true
           summary_output_file: results.json
           summary_display: true
-          json_output: false
           baseline_file: baseline.json
           debug: 1
       - name: Upload scan result

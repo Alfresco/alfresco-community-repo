@@ -95,8 +95,8 @@ jobs:
       - name: "Run SAST Scan"
         uses: veracode/Veracode-pipeline-scan-action@v1.0.10
         with:
-          vid: '${{ secrets.VERACODE_API_ID }}'
-          vkey: '${{ secrets.VERACODE_API_KEY }}'
+          vid: ${{ secrets.VERACODE_API_ID }}
+          vkey: ${{ secrets.VERACODE_API_KEY }}
           file: "packaging/war/target/alfresco.war"
           fail_build: true
           project_name: alfresco-community-repo

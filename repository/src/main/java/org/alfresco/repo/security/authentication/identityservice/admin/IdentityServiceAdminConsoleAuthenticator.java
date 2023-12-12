@@ -83,7 +83,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
             String code = request.getParameter("code");
             if (code != null)
             {
-                bearerToken = retrieveTokenUsingAuthCode(request, response, bearerToken, code);
+                bearerToken = retrieveTokenUsingAuthCode(request, response, code);
             }
         }
 
@@ -118,9 +118,9 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         }
     }
 
-    private String retrieveTokenUsingAuthCode(HttpServletRequest request, HttpServletResponse response,
-        String bearerToken, String code)
+    private String retrieveTokenUsingAuthCode(HttpServletRequest request, HttpServletResponse response, String code)
     {
+        String bearerToken = null;
         if (LOGGER.isDebugEnabled())
         {
             LOGGER.debug("Retrieving a response using the Authorization Code at the Token Endpoint");
@@ -129,7 +129,8 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         {
             AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
                 authorizationCode(code, request.getRequestURL().toString()));
-            bearerToken = addCookies(response, accessTokenAuthorization);
+            addCookies(response, accessTokenAuthorization);
+            bearerToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         }
         catch (AuthorizationException exception)
         {
@@ -166,14 +167,12 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         return bearerToken;
     }
 
-    private String addCookies(HttpServletResponse response, AccessTokenAuthorization accessTokenAuthorization)
+    private void addCookies(HttpServletResponse response, AccessTokenAuthorization accessTokenAuthorization)
     {
-        String bearerToken = accessTokenAuthorization.getAccessToken().getTokenValue();
-        cookiesService.addCookie(ALFRESCO_ACCESS_TOKEN, bearerToken, response);
+        cookiesService.addCookie(ALFRESCO_ACCESS_TOKEN, accessTokenAuthorization.getAccessToken().getTokenValue(), response);
         cookiesService.addCookie(ALFRESCO_TOKEN_EXPIRATION, String.valueOf(
             accessTokenAuthorization.getAccessToken().getExpiresAt().toEpochMilli()), response);
         cookiesService.addCookie(ALFRESCO_REFRESH_TOKEN, accessTokenAuthorization.getRefreshTokenValue(), response);
-        return bearerToken;
     }
 
     private String getAuthenticationRequest(HttpServletRequest request)
@@ -196,7 +195,9 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
 
     private String refreshAuthToken(String refreshToken, HttpServletResponse response)
     {
-        return addCookies(response, doRefreshAuthToken(refreshToken));
+        AccessTokenAuthorization accessTokenAuthorization = doRefreshAuthToken(refreshToken);
+        addCookies(response, accessTokenAuthorization);
+        return accessTokenAuthorization.getAccessToken().getTokenValue();
     }
 
     private AccessTokenAuthorization doRefreshAuthToken(String refreshToken)

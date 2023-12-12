@@ -67,7 +67,7 @@ public class AdminConsoleAuthenticationCookiesServiceUnitTest
     }
 
     @Test
-    public void cookieShouldFoundInRequestThatContainsIt()
+    public void cookieShouldBeFoundInRequestThatContainsIt()
     {
         when(request.getCookies()).thenReturn(new Cookie[] { new Cookie(COOKIE_NAME, COOKIE_VALUE) });
 

@@ -181,7 +181,7 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
                         return false;
                     }
                 }
-                else if (userId == null)
+                if (userId == null)
                 {
                     // retrieve the remote user if configured and available - authenticate that user directly
                     userId = getRemoteUser();

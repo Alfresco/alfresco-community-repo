@@ -158,33 +158,37 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             if (isRemoteUserMapperActive())
             {
 
-                if(servletReq.getServiceMatch() != null &&
+                if (servletReq.getServiceMatch() != null &&
                     isAdminConsoleWebScript(servletReq.getServiceMatch().getWebScript()) && isAdminConsoleAuthenticatorActive())
                 {
                     userId = getAdminConsoleUser();
                 }
-                if (isAlwaysAllowBasicAuthForAdminConsole() && userId == null)
-                {
-                    final boolean useTimeoutForAdminAccessingAdminConsole = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
 
-                    if (useTimeoutForAdminAccessingAdminConsole && isBasicAuthHeaderPresentForAdmin())
-                    {
-                        return callBasicAuthForAdminConsoleAccess(required, isGuest);
-                    }
-                    try
-                    {
-                        userId = getRemoteUserWithTimeout(useTimeoutForAdminAccessingAdminConsole);
-                    }
-                    catch (AuthenticationTimeoutException e)
-                    {
-                        //return basic auth challenge
-                        return false;
-                    }
-                }
                 if (userId == null)
                 {
-                    // retrieve the remote user if configured and available - authenticate that user directly
-                    userId = getRemoteUser();
+                    if (isAlwaysAllowBasicAuthForAdminConsole())
+                    {
+                        final boolean useTimeoutForAdminAccessingAdminConsole = shouldUseTimeoutForAdminAccessingAdminConsole(required, isGuest);
+
+                        if (useTimeoutForAdminAccessingAdminConsole && isBasicAuthHeaderPresentForAdmin())
+                        {
+                            return callBasicAuthForAdminConsoleAccess(required, isGuest);
+                        }
+                        try
+                        {
+                            userId = getRemoteUserWithTimeout(useTimeoutForAdminAccessingAdminConsole);
+                        }
+                        catch (AuthenticationTimeoutException e)
+                        {
+                            //return basic auth challenge
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // retrieve the remote user if configured and available - authenticate that user directly
+                        userId = getRemoteUser();
+                    }
                 }
             }
 

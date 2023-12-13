@@ -57,7 +57,7 @@ services:
       CLIENT_SSL_TRUST_STORE: "file:/tengineAIO.truststore"
       CLIENT_SSL_TRUST_STORE_PASSWORD: "password"
       CLIENT_SSL_TRUST_STORE_TYPE: "JCEKS"
-  alfresco-identity-service:
+  keycloak:
     profiles: ["with-sso"]
     image: quay.io/keycloak/keycloak:21.1.2
     environment:

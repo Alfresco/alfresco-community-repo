@@ -356,7 +356,7 @@ jobs:
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContext05TestSuite
-            compose-profile: with-ids
+            compose-profile: with-sso
             mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio

@@ -10,7 +10,7 @@ services:
       - "8090:8090"
   postgres:
     image: postgres:15.4
-    profiles: ["default", "with-transform-core-aio", "postgres", "with-mtls-transform-core-aio", "with-ids"]
+    profiles: ["default", "with-transform-core-aio", "postgres", "with-mtls-transform-core-aio", "with-sso"]
     environment:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
@@ -19,7 +19,7 @@ services:
     ports:
       - "5433:5432"
   activemq:
-    profiles: ["default", "with-transform-core-aio", "activemq", "with-mtls-transform-core-aio", "with-ids"]
+    profiles: ["default", "with-transform-core-aio", "activemq", "with-mtls-transform-core-aio", "with-sso"]
     image: alfresco/alfresco-activemq:5.18.3-jre17-rockylinux8
     ports:
       - "5672:5672" # AMQP
@@ -58,8 +58,8 @@ services:
       CLIENT_SSL_TRUST_STORE_PASSWORD: "password"
       CLIENT_SSL_TRUST_STORE_TYPE: "JCEKS"
   alfresco-identity-service:
-    profiles: ["with-ids"]
-    image: quay.io/alfresco/alfresco-identity-service:2.0.0
+    profiles: ["with-sso"]
+    image: quay.io/keycloak/keycloak:21.1.2
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin

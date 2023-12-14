@@ -1,0 +1,56 @@
+/*
+ * #%L
+ * Alfresco Repository
+ * %%
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+package org.alfresco.repo.security.authentication.external;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+/**
+ * An interface for objects capable of extracting an externally authenticated user ID from the HTTP Admin Console webscript request.
+ */
+public interface AdminConsoleAuthenticator
+{
+    /**
+     * Gets an externally authenticated user ID from the HTTP Admin Console webscript request.
+     *
+     * @param request
+     *           the request
+     * @param response
+     *           the response
+     * @return the user ID or <code>null</code> if the user is unauthenticated
+     */
+    String getAdminConsoleUser(HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * Requests an authentication.
+     *
+     * @param request
+     *           the request
+     * @param response
+     *           the response
+     */
+    void requestAuthentication(HttpServletRequest request, HttpServletResponse response);
+}

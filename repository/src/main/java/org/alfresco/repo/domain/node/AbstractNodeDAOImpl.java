@@ -2114,11 +2114,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         else
         {
             Map<QName, Serializable> props = getNodePropertiesCached(nodeId);
-            // Wrap to ensure that we only clone values if the client attempts to modify
-            // the map or retrieve values that might, themselves, be mutable
-            props = new ValueProtectingMap<QName, Serializable>(props, NodePropertyValue.IMMUTABLE_CLASSES);
-            // The 'get' here will clone the value if it is mutable
-            value = props.get(propertyQName);
+            value = ValueProtectingMap.protectValue(props.get(propertyQName), NodePropertyValue.IMMUTABLE_CLASSES);
         }
         // Done
         if (isDebugEnabled)

@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Abstract helper to send events to an endpoint. The
@@ -60,6 +61,7 @@ public abstract class AbstractEventProducer
     protected ProducerTemplate producer;
     protected String endpoint;
     protected ObjectMapper objectMapper;
+    protected Properties globalProperties;
 
     public void setProducer(ProducerTemplate producer)
     {
@@ -74,6 +76,10 @@ public abstract class AbstractEventProducer
     public void setObjectMapper(ObjectMapper objectMapper)
     {
         this.objectMapper = objectMapper;
+    }
+    public void setGlobalProperties(Properties globalProperties)
+    {
+        this.globalProperties = globalProperties;
     }
 
     protected Map<String, Object> addHeaders(Map<String, Object> origHeaders)

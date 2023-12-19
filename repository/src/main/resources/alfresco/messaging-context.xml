@@ -57,6 +57,7 @@
     <bean id="event2MessageProducer" class="org.alfresco.repo.event2.Event2MessageProducer">
         <property name="producer" ref="camelProducerTemplate"/>
         <property name="endpoint" value="${repo.event2.topic.endpoint}"/>
+        <property name="globalProperties" ref="global-properties"/>
         <property name="objectMapper" ref="event2ObjectMapper"/>
     </bean>
 </beans>

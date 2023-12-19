@@ -48,6 +48,7 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
         PropertyCheck.mandatory(this, "producer", this.producer);
         PropertyCheck.mandatory(this, "endpoint", this.endpoint);
         PropertyCheck.mandatory(this, "objectMapper", this.objectMapper);
+        PropertyCheck.mandatory(this, "globalProperty", this.globalProperties);
 
         if (StringUtils.isEmpty(this.endpoint))
         {
@@ -73,8 +74,13 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
             {
                 exchangePattern = ExchangePattern.InOnly;
             }
-
+            System.out.println("GBL is :"+this.globalProperties.getProperty("connector.sns.region"));
             this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
+            String endpointUrl = this.globalProperties.getProperty("repo.event2.sns.endpoint")
+                    +"?accessKey=RAW("+this.globalProperties.getProperty("connector.sns.accessKey")
+                    +")&secretKey=RAW("+this.globalProperties.getProperty("connector.sns.secretKey")
+                    +")&region="+this.globalProperties.getProperty("connector.sns.region");
+          //  this.producer.sendBodyAndHeaders(endpointUrl, exchangePattern, event, this.addHeaders(headers));
         }
         catch (Exception e)
         {

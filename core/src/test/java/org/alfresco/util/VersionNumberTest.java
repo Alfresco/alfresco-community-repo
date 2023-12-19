@@ -25,6 +25,7 @@ import junit.framework.TestCase;
  * 
  * @author Roy Wetherall
  */
+@SuppressWarnings({"PMD.DetachedTestCase", "PMD.JUnit4TestShouldUseTestAnnotation"})
 public class VersionNumberTest extends TestCase
 {
     public void testCreate()

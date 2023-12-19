@@ -136,4 +136,36 @@ public class VersionNumberTest extends TestCase
         assertEquals(-1, version8.compareTo(version9));
         assertEquals(-1, version9.compareTo(version10));
     }
+
+    public void testCompareNewSchema() {
+        // module min/max repo version is 23, actual ACS version is 23.1.0 which is greater than module
+        VersionNumber repoVersionMin = new VersionNumber("23");
+        VersionNumber repoVerisionActual = new VersionNumber("23.1.0");
+        assertEquals(1, repoVerisionActual.compareTo(repoVersionMin));
+
+        // module min/max repo version is 23.2, actual ACS version is 23.1.1 which is lower than module
+        repoVersionMin = new VersionNumber("23.2");
+        repoVerisionActual = new VersionNumber("23.1.1");
+        assertEquals(-1, repoVerisionActual.compareTo(repoVersionMin));
+
+        // module min/max repo version is 7.4, actual ACS version is 23.1.0 which is greater than module
+        repoVersionMin = new VersionNumber("7.4");
+        repoVerisionActual = new VersionNumber("23.1.0");
+        assertEquals(1, repoVerisionActual.compareTo(repoVersionMin));
+
+        // module min/max repo version is 24, actual ACS version is 24.1.0 which is greater than module
+        repoVersionMin = new VersionNumber("24");
+        repoVerisionActual = new VersionNumber("24.1.0");
+        assertEquals(1, repoVerisionActual.compareTo(repoVersionMin));
+
+        // module min/max repo version is 24, actual ACS version is 23.2.0 which is lower than module
+        repoVersionMin = new VersionNumber("24");
+        repoVerisionActual = new VersionNumber("23.2.0");
+        assertEquals(-1, repoVerisionActual.compareTo(repoVersionMin));
+
+        // module min/max repo version is 24.2, actual ACS version is 24.2.0 which is equal to module
+        repoVersionMin = new VersionNumber("24.2");
+        repoVerisionActual = new VersionNumber("24.2.0");
+        assertEquals(0, repoVerisionActual.compareTo(repoVersionMin));
+    }
 }

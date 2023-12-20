@@ -58,7 +58,7 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
 
     public void send(Object event)
     {
-        send(this.endpoint, null, event, null);
+        send(isBrokerEnabled()  ? this.endpoint : getEndpointUrl(), null, event, null);
     }
 
     @Override
@@ -75,7 +75,6 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
                 exchangePattern = ExchangePattern.InOnly;
             }
             this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
-            this.producer.sendBodyAndHeaders(getEndpointUrl(), exchangePattern, event, this.addHeaders(headers));
         }
         catch (Exception e)
         {
@@ -89,4 +88,9 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
                 +")&secretKey=RAW("+this.globalProperties.getProperty("connector.sns.secretKey")
                 +")&region="+this.globalProperties.getProperty("connector.sns.region");
     }
+    public Boolean  isBrokerEnabled()
+    {
+        return Boolean.valueOf(this.globalProperties.getProperty("messaging.broker.enabled"));
+    }
+
 }

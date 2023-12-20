@@ -74,17 +74,19 @@ public class Event2MessageProducer extends AbstractEventProducer implements Init
             {
                 exchangePattern = ExchangePattern.InOnly;
             }
-            System.out.println("GBL is :"+this.globalProperties.getProperty("connector.sns.region"));
             this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
-            String endpointUrl = this.globalProperties.getProperty("repo.event2.sns.endpoint")
-                    +"?accessKey=RAW("+this.globalProperties.getProperty("connector.sns.accessKey")
-                    +")&secretKey=RAW("+this.globalProperties.getProperty("connector.sns.secretKey")
-                    +")&region="+this.globalProperties.getProperty("connector.sns.region");
-          //  this.producer.sendBodyAndHeaders(endpointUrl, exchangePattern, event, this.addHeaders(headers));
+            this.producer.sendBodyAndHeaders(getEndpointUrl(), exchangePattern, event, this.addHeaders(headers));
         }
         catch (Exception e)
         {
             throw new AlfrescoRuntimeException(ERROR_SENDING, e);
         }
+    }
+    public String getEndpointUrl()
+    {
+        return this.globalProperties.getProperty("repo.event2.sns.endpoint")
+                +"?accessKey=RAW("+this.globalProperties.getProperty("connector.sns.accessKey")
+                +")&secretKey=RAW("+this.globalProperties.getProperty("connector.sns.secretKey")
+                +")&region="+this.globalProperties.getProperty("connector.sns.region");
     }
 }

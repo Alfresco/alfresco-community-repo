@@ -25,6 +25,7 @@
  */
 package org.alfresco.messaging.camel.routes;
 
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -43,6 +44,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -56,6 +58,9 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder
 {
     private static Log logger = LogFactory.getLog(OnContentUpdateRenditionRoute.class);
 
+    @Autowired
+    @Qualifier("global-properties")
+    Properties globalProperties;
     @Value("${acs.repo.rendition.events.endpoint}")
     public String sourceQueue;
 
@@ -81,7 +86,7 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder
                 Behaviour.NotificationFrequency.EVERY_EVENT);
         policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, RenditionModel.ASPECT_RENDITIONED, eventBehaviour);
 
-        from(sourceQueue).threads().executorService(executorService).process("renditionEventProcessor").end();
+        from(isBrokerEnabled() ? getEndpointUrl() : sourceQueue).threads().executorService(executorService).process("renditionEventProcessor").end();
     }
 
     @SuppressWarnings("unused")
@@ -101,5 +106,16 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder
         event.setNodeRef(sourceNodeRef.toString());
         event.setNewContent(newContent);
         return event;
+    }
+    public Boolean  isBrokerEnabled()
+    {
+        return Boolean.valueOf(this.globalProperties.getProperty("messaging.broker.enabled"));
+    }
+    public String getEndpointUrl()
+    {
+        return this.globalProperties.getProperty("acs.repo.rendition.events.sqs.endpoint")
+                +"?accessKey=RAW("+this.globalProperties.getProperty("connector.sns.accessKey")
+                +")&secretKey=RAW("+this.globalProperties.getProperty("connector.sns.secretKey")
+                +")&region="+this.globalProperties.getProperty("connector.sns.region");
     }
 }

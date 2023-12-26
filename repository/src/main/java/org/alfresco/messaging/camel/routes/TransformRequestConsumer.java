@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -46,6 +47,10 @@ import java.util.concurrent.Executors;
 public class TransformRequestConsumer extends RouteBuilder
 {
     private static Log logger = LogFactory.getLog(TransformRequestConsumer.class);
+
+    @Autowired
+    @Qualifier("global-properties")
+    private Properties globalProperties;
 
     @Value("${acs.repo.transform.request.endpoint}")
     public String sourceQueue;
@@ -80,6 +85,17 @@ public class TransformRequestConsumer extends RouteBuilder
             logger.debug("SourceQueue is " + sourceQueue);
         }
 
-        from(sourceQueue).threads().executorService(executorService).process(processor).end();
+        from(isBrokerEnabled() ? getEndpointUrl() : sourceQueue).threads().executorService(executorService).process(processor).end();
+    }
+    public Boolean isBrokerEnabled()
+    {
+        return Boolean.valueOf(this.globalProperties.getProperty("messaging.broker.enabled"));
+    }
+    public String getEndpointUrl()
+    {
+        return this.globalProperties.getProperty("acs.repo.transform.request.sqs.endpoint")
+                +"?accessKey=RAW("+this.globalProperties.getProperty("connector.sns.accessKey")
+                +")&secretKey=RAW("+this.globalProperties.getProperty("connector.sns.secretKey")
+                +")&region="+this.globalProperties.getProperty("connector.sns.region");
     }
 }

@@ -86,7 +86,7 @@ public class OnContentUpdateRenditionRoute extends RouteBuilder
                 Behaviour.NotificationFrequency.EVERY_EVENT);
         policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, RenditionModel.ASPECT_RENDITIONED, eventBehaviour);
 
-        from(isBrokerEnabled() ? getEndpointUrl() : sourceQueue).threads().executorService(executorService).process("renditionEventProcessor").end();
+        from(isBrokerEnabled() ? sourceQueue : getEndpointUrl()).threads().executorService(executorService).process("renditionEventProcessor").end();
     }
 
     @SuppressWarnings("unused")

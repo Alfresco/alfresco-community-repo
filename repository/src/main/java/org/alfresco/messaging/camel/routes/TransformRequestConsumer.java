@@ -85,7 +85,7 @@ public class TransformRequestConsumer extends RouteBuilder
             logger.debug("SourceQueue is " + sourceQueue);
         }
 
-        from(isBrokerEnabled() ? getEndpointUrl() : sourceQueue).threads().executorService(executorService).process(processor).end();
+        from(isBrokerEnabled() ? sourceQueue : getEndpointUrl()).threads().executorService(executorService).process(processor).end();
     }
     public Boolean isBrokerEnabled()
     {

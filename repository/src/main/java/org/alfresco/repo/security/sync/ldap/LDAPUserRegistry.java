@@ -130,6 +130,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     /** The user id attribute name. */
     private String userIdAttributeName = "uid";
 
+    private String userIdAttributeNames = "uid1";
+
     /** The member attribute name. */
     private String memberAttributeName = "member";
 
@@ -1712,21 +1714,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         SearchResult result = this.searchResults.next();
                         Attributes attributes = result.getAttributes();
                         Attribute uidAttribute = attributes.get(LDAPUserRegistry.this.userIdAttributeName);
-                        Attribute uidAttributes = result.getAttributes().get(LDAPUserRegistry.this.userIdAttributeName);
-                        if(uidAttribute == null || uidAttributes != null)
+                        if(uidAttribute== null)
                         {
-                            if (LDAPUserRegistry.this.errorOnMissingUID)
-                            {
+                            if (LDAPUserRegistry.this.errorOnMissingUID) {
                                 Object[] params = {result.getNameInNamespace(), LDAPUserRegistry.this.userIdAttributeName};
                                 throw new AlfrescoRuntimeException("synchronization.err.ldap.get.user.id.missing", params);
-                            }
-                            else
-                            {
+                            } else {
                                 LDAPUserRegistry.logger
                                         .warn("User returned by user search does not have mandatory user id attribute "
                                                 + attributes);
                                 continue;
                             }
+
                         }
                         String uid = (String) uidAttribute.get(0);
 
@@ -1735,6 +1734,18 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             // MNT-14001 fix, remember last processed person
                             // this will serve as indicator where we should restart sync in case if sync retry occurs
                             this.lastProcessedPerson = uid;
+                        }
+                        Attribute uidAttributes = result.getAttributes().get(LDAPUserRegistry.this.userIdAttributeNames);
+                        if(uidAttributes!=null){
+                            LDAPUserRegistry.logger
+                                    .warn("User returned by user search mandatory user id attribute "
+                                            + uidAttributes);
+                        }
+                        String uid1 = (String) uidAttributes.get(0);
+
+                        if (!this.skipToLastProcessedPerson)
+                        {
+                            this.lastProcessedPerson = uid1;
                         }
 
                         if (this.uids.contains(uid))
@@ -1766,7 +1777,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         {
                             LDAPUserRegistry.logger.debug("Adding user for " + uid);
                         }
-
                         // Apply the mapped properties to the node description
                         NodeDescription nodeDescription = mapToNode(LDAPUserRegistry.this.personAttributeMapping,
                                 LDAPUserRegistry.this.personAttributeDefaults, result);

@@ -130,8 +130,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     /** The user id attribute name. */
     private String userIdAttributeName = "uid";
 
-    private String userIdAttributeNames = "uid1";
-
     /** The member attribute name. */
     private String memberAttributeName = "member";
 
@@ -1735,19 +1733,6 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                             // this will serve as indicator where we should restart sync in case if sync retry occurs
                             this.lastProcessedPerson = uid;
                         }
-                        Attribute uidAttributes = result.getAttributes().get(LDAPUserRegistry.this.userIdAttributeNames);
-                        if(uidAttributes!=null){
-                            LDAPUserRegistry.logger
-                                    .warn("User returned by user search mandatory user id attribute "
-                                            + uidAttributes);
-                        }
-                        String uid1 = (String) uidAttributes.get(0);
-
-                        if (!this.skipToLastProcessedPerson)
-                        {
-                            this.lastProcessedPerson = uid1;
-                        }
-
                         if (this.uids.contains(uid))
                         {
                             if (this.skipToLastProcessedPerson)
@@ -1772,6 +1757,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         }
 
                         this.uids.add(uid);
+                        Attribute uidAttributes = attributes.get(LDAPUserRegistry.this.userIdAttributeName);
+                        System.out.println("#######################################"+uidAttributes);
+                        if(uidAttributes!=null){
+                            LDAPUserRegistry.logger
+                                    .warn("User returned by user search mandatory user id attribute "
+                                            + uidAttributes);
+                        }
 
                         if (LDAPUserRegistry.logger.isDebugEnabled())
                         {
@@ -1824,6 +1816,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         this.searchResults = this.ctx.search(LDAPUserRegistry.this.userSearchBase,
                                 PersonCollection.this.query, this.userSearchCtls);
                     }
+
                 }
                 while (readyForNextPage);
                 this.searchResults.close();

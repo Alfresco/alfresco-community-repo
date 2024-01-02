@@ -1727,7 +1727,25 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                 continue;
                             }
                         }
-                        String uid = (String) uidAttribute.get(0);
+                        result = searchResults.next();
+                        Attributes ldapAttributes = result.getAttributes();
+                        Attribute ldapUidAttributes = ldapAttributes.get(userIdAttributeName);
+                        if (ldapUidAttributes == null)
+                        {
+                            if (!LDAPUserRegistry.this.errorOnMissingUID)
+                            {
+                                Object[] params = {result.getNameInNamespace(),LDAPUserRegistry.this.userIdAttributeName};
+                                throw new AlfrescoRuntimeException("synchronization.err.ldap.get.user.id not.missing", params);
+                            }
+                            else
+                            {
+                                LDAPUserRegistry.logger
+                                        .warn("User returned by user search does not have mandatory user id attribute "
+                                                + ldapUidAttributes);
+                            }
+
+                        }
+                        String uid = (String) ldapUidAttributes.get(0);
 
                         if (!this.skipToLastProcessedPerson)
                         {

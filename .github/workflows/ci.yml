@@ -46,12 +46,12 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  veracode:
+  veracode_sca:
     name: "Source Clear Scan (SCA)"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      ((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request') &&
+      (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
     steps:
@@ -65,6 +65,56 @@ jobs:
         continue-on-error: true
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
+      - name: "Clean Maven cache"
+        run: bash ./scripts/ci/cleanup_cache.sh
+
+  veracode_sast:
+    name: "Pipeline SAST Scan"
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    if: >
+      (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      !contains(github.event.head_commit.message, '[skip tests]') &&
+      !contains(github.event.head_commit.message, '[force')
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v1.35.2
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.35.2
+      - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v5.6.0
+        with:
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+          repository: "Alfresco/veracode-baseline-archive"
+          file-path: "alfresco-community-repo/alfresco-community-repo-baseline.json"
+          target: "baseline.json"
+      - name: "Build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: |
+          bash ./scripts/ci/init.sh
+          bash ./scripts/ci/build.sh
+      - name: "Run SAST Scan"
+        uses: veracode/Veracode-pipeline-scan-action@v1.0.10
+        with:
+          vid: ${{ secrets.VERACODE_API_ID }}
+          vkey: ${{ secrets.VERACODE_API_KEY }}
+          file: "packaging/war/target/alfresco.war"
+          fail_build: true
+          project_name: alfresco-community-repo
+          issue_details: true
+          veracode_policy_name: Alfresco Default
+          summary_output: true
+          summary_output_file: results.json
+          summary_display: true
+          baseline_file: baseline.json
+      - name: Upload scan result
+        if: success() || failure()
+        run: zip readable_output.zip results.json
+      - name: Upload Artifact
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Veracode Pipeline-Scan Results (Human Readable)
+          path: readable_output.zip
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -356,7 +406,7 @@ jobs:
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContext05TestSuite
-            compose-profile: with-ids
+            compose-profile: with-sso
             mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio

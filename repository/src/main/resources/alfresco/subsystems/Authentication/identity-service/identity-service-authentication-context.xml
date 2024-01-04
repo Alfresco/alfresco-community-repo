@@ -141,7 +141,7 @@
          <value>${identity-service.public-client:false}</value>
       </property>
    </bean>
-   
+
    <!-- Enable control over mapping between request and user ID -->
    <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper">
       <property name="active">
@@ -155,6 +155,26 @@
       </property>
       <property name="jitProvisioningHandler">
          <ref bean="jitProvisioningHandler" />
+      </property>
+   </bean>
+
+   <bean id="adminConsoleAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesService">
+      <constructor-arg ref="sysAdminParams" />
+      <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
+   </bean>
+
+   <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticator">
+      <property name="active">
+         <value>${identity-service.authentication.enabled}</value>
+      </property>
+      <property name="identityServiceFacade">
+         <ref bean="identityServiceFacade"/>
+      </property>
+      <property name="cookiesService">
+         <ref bean="adminConsoleAuthenticationCookiesService" />
+      </property>
+      <property name="remoteUserMapper">
+         <ref bean="remoteUserMapper" />
       </property>
    </bean>
 

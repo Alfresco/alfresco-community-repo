@@ -148,6 +148,12 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     @Override
+    public ClientRegistration getClientRegistration()
+    {
+        return clientRegistration;
+    }
+
+    @Override
     public DecodedAccessToken decodeToken(String token)
     {
         final Jwt validToken;

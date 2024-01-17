@@ -181,6 +181,6 @@ public class Group implements Comparable<Group>
     public boolean wasSet(String fieldName)
     {
         Boolean b = setFields.get(fieldName);
-        return b != null ? b : false;
+        return b != null && b;
     }
 }

@@ -244,7 +244,7 @@ public interface AuthorityService
      *         associated with the type appended with the short name)
      */
     @Auditable(parameters = {"type", "shortName"})
-    public String createAuthority(AuthorityType type, String shortName, Map<QName, Serializable> properties);
+    String createAuthority(AuthorityType type, String shortName, Map<QName, Serializable> properties);
 
     /**
      * Create an authority with a display name and zone.
@@ -282,7 +282,7 @@ public interface AuthorityService
      *         the short name)
      */
     @Auditable(parameters = {"type", "shortName", "authorityDisplayName", "authorityZones"})
-    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName, Set<String> authorityZones, Map<QName, Serializable> properties);
+    String createAuthority(AuthorityType type, String shortName, String authorityDisplayName, Set<String> authorityZones, Map<QName, Serializable> properties);
 
     /**
      * Set an authority to include another authority. For example, adding a

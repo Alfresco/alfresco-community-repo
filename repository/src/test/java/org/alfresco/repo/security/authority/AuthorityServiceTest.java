@@ -86,6 +86,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
@@ -582,6 +583,7 @@ public class AuthorityServiceTest extends TestCase
         }
     }
 
+    @Test
     public void testCreateGroupAuthWithProperties()
     {
         String auth;
@@ -589,7 +591,7 @@ public class AuthorityServiceTest extends TestCase
         String prefixedGroupName = "GROUP_TESTGROUP";
         String description = "testDesc";
         String title = "testTitle";
-        HashMap<QName, Serializable> props = new HashMap<>();
+        Map<QName, Serializable> props = new HashMap<>();
         props.put(ContentModel.PROP_DESCRIPTION, description);
         props.put(ContentModel.PROP_TITLE, title);
 
@@ -614,6 +616,7 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.deleteAuthority(auth);
     }
 
+    @Test
     public void testUpdateAuthorityProperties()
     {
         String auth;
@@ -621,7 +624,7 @@ public class AuthorityServiceTest extends TestCase
         String prefixedGroupName = "GROUP_TESTGROUP";
         String description = "testDesc";
         String title = "testTitle";
-        HashMap<QName, Serializable> props = new HashMap<>();
+        Map<QName, Serializable> props = new HashMap<>();
         props.put(ContentModel.PROP_DESCRIPTION, description);
         props.put(ContentModel.PROP_TITLE, title);
 

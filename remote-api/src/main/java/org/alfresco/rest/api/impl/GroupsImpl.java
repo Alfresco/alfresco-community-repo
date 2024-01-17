@@ -160,7 +160,7 @@ public class GroupsImpl implements Groups
             authorityDisplayName = group.getDisplayName();
         }
 
-        HashMap<QName, Serializable> props = new HashMap<>();
+        Map<QName, Serializable> props = new HashMap<>();
         if (StringUtils.isNotEmpty(group.getDescription()))
         {
             props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
@@ -194,7 +194,7 @@ public class GroupsImpl implements Groups
 
         if (StringUtils.isNotEmpty(group.getDescription()))
         {
-            HashMap<QName, Serializable> props = new HashMap<>();
+            Map<QName, Serializable> props = new HashMap<>();
             props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
             authorityDAO.setAuthorityProperties(authorityService.getName(AuthorityType.GROUP, groupId), props);
         }
@@ -617,7 +617,8 @@ public class GroupsImpl implements Groups
         group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
 
         Set<String> containedAuthorities;
-        try {
+        try
+        {
             containedAuthorities = authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true);
         } catch (UnknownAuthorityException e)
         {
@@ -627,8 +628,9 @@ public class GroupsImpl implements Groups
 
         NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityInfo.getAuthorityName());
         String description;
-        try {
-            description = nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION) != null ?
+        try
+        {
+            description = groupNodeRef != null && nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION) != null ?
                     nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION).toString() :
                     null;
         } catch (InvalidNodeRefException e)

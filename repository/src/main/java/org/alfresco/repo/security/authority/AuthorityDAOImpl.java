@@ -379,13 +379,15 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
 
+    @Override
     public void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones) {
         createAuthority(name, authorityDisplayName, authorityZones, null);
     }
 
+    @Override
     public void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones, Map<QName, Serializable> properties)
     {
-        HashMap<QName, Serializable> props = new HashMap<>();
+        Map<QName, Serializable> props = new HashMap<>();
         /* MNT-11749 : Alfresco allows to create authorities with different char cases, but disallow duplicates */
         props.put(ContentModel.PROP_NAME, DigestUtils.md5Hex(name));
         props.put(ContentModel.PROP_AUTHORITY_NAME, name);
@@ -1443,6 +1445,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 
     }
 
+    @Override
     public void setAuthorityProperties(String authorityName, Map<QName, Serializable> properties)
     {
         NodeRef ref = getAuthorityOrNull(authorityName);

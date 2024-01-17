@@ -550,6 +550,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public String createAuthority(AuthorityType type, String shortName, Map<QName, Serializable> properties)
     {
         return createAuthority(type, shortName, shortName, getDefaultZones(), properties);
@@ -661,6 +662,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
                                   Set<String> authorityZones, Map<QName, Serializable> properties)
     {

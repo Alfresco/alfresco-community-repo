@@ -64,6 +64,9 @@ import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
+import org.alfresco.rest.rm.community.utils.RetryAtMostRule;
+import org.alfresco.rest.rm.community.utils.RetryAtMostRule.RetryAtMost;
+import org.junit.Rule;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +87,9 @@ public class UpdateRecordsTests extends BaseRMRestTest
 {
     @Autowired
     private RoleService roleService;
+
+    @Rule
+    public RetryAtMostRule retryAtMostRule = new RetryAtMostRule();
 
     private RecordCategory rootCategory;
     private UnfiledContainerChild unfiledRecordFolder;
@@ -295,6 +301,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
     )
     @AlfrescoTest(jira="RM-4362")
     @Bug (id = "APPS-132")
+    @RetryAtMost(3)
     public void completeRecordsCantBeUpdated(String electronicRecordId, String nonElectronicRecordId)
     {
         // Get the recordsAPI

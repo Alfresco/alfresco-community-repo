@@ -71,6 +71,7 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -79,6 +80,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -613,12 +615,26 @@ public class GroupsImpl implements Groups
         group.setDisplayName(authorityDisplayName);
 
         group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
-        group.setHasSubgroups(!authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true).isEmpty());
+
+        Set<String> containedAuthorities;
+        try {
+            containedAuthorities = authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true);
+        } catch (UnknownAuthorityException e)
+        {
+            containedAuthorities = Collections.emptySet();
+        }
+        group.setHasSubgroups(CollectionUtils.isNotEmpty(containedAuthorities));
 
         NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityInfo.getAuthorityName());
-        String description = nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION) != null ?
-                nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION).toString() :
-                null;
+        String description;
+        try {
+            description = nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION) != null ?
+                    nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION).toString() :
+                    null;
+        } catch (InvalidNodeRefException e)
+        {
+            description = null;
+        }
         group.setDescription(description);
 
         // Optionally include

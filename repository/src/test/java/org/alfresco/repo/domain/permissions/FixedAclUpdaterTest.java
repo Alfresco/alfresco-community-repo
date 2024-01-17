@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,6 +32,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -168,7 +169,7 @@ public class FixedAclUpdaterTest
     }
 
     /*
-     * Test setting permissions explicitly as sync, but the operaration times out
+     * Test setting permissions explicitly as sync, but the operation times out
      */
     @Test
     public void testSyncTimeOut()
@@ -178,6 +179,7 @@ public class FixedAclUpdaterTest
 
         try
         {
+            long timestampBeforePermissions = System.currentTimeMillis();
             setPermissionsOnTree(folderRef, false, true);
 
             // Get current ACLS on non pending nodes and validate
@@ -186,6 +188,13 @@ public class FixedAclUpdaterTest
 
             // Validate values in pending ACL node
             NodeRef folderWithPendingAcl = getFirstNodeWithAclPending(ContentModel.TYPE_FOLDER);
+            
+            // - Validate modification date
+            long folderWithPendingAclNodeId = nodeDAO.getNodePair(folderWithPendingAcl).getFirst();
+            Date modificationDate = (Date) nodeDAO.getNodeProperty(folderWithPendingAclNodeId, ContentModel.PROP_MODIFIED);
+            assertTrue("Changing permissions updated cm:modified",modificationDate.getTime() < timestampBeforePermissions);
+            
+            // - Validate pending values
             ACLComparator aclComparatorForPending = new ACLComparator(folderWithPendingAcl);
             assertEquals("Pending inheritFrom value should be the parent ACL id", aclComparator.getParentAcl(),
                     aclComparatorForPending.getPendingInheritFromAcl());
@@ -202,6 +211,10 @@ public class FixedAclUpdaterTest
             assertEquals("Processed Pending ACL children doesn't have correct ACL", aclComparator.getChildAcl(),
                     aclComparatorForPending.getChildAcl());
             assertTrue("Permissions not applied on pending nodes", aclComparatorForPending.firstChildHasOriginalPermission());
+            
+            //Verify removing the pendingAcl aspect did not change the modification date
+            Date modificationDateAfterJob = (Date) nodeDAO.getNodeProperty(folderWithPendingAclNodeId, ContentModel.PROP_MODIFIED);
+            assertEquals("Running the job updated cm:modified",modificationDate.getTime(),modificationDateAfterJob.getTime());
         }
         finally
         {

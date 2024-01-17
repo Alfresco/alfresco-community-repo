@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -582,37 +582,73 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
 
     private void addFixedAclPendingAspect(Long nodeId, Long sharedAclToReplace, Long inheritFrom, Long mergeFrom)
     {
-        //If the node already has the pending ACL aspect, just update the new inheritFrom value
-        if (nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeId);
+        if (nodePair == null)
         {
-            Map<QName, Serializable> pendingAclProperties = new HashMap<>();
-            pendingAclProperties.put(ContentModel.PROP_INHERIT_FROM_ACL, inheritFrom);
-            nodeDAO.addNodeProperties(nodeId, pendingAclProperties);
             return;
         }
+        NodeRef nodeRef = nodePair.getSecond();
         
-        Set<QName> aspect = new HashSet<>();
-        aspect.add(ContentModel.ASPECT_PENDING_FIX_ACL);
-        nodeDAO.addNodeAspects(nodeId, aspect);
-        Map<QName, Serializable> pendingAclProperties = new HashMap<>();
-        pendingAclProperties.put(ContentModel.PROP_SHARED_ACL_TO_REPLACE, sharedAclToReplace);
-        pendingAclProperties.put(ContentModel.PROP_INHERIT_FROM_ACL, inheritFrom);
-        nodeDAO.addNodeProperties(nodeId, pendingAclProperties);
-        if (log.isDebugEnabled())
+        try
         {
-            log.debug("Set Fixed Acl Pending : " + nodeId + " " + nodeDAO.getNodePair(nodeId).getSecond());
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+            
+            //If the node already has the pending ACL aspect, just update the new inheritFrom value
+            if (nodeDAO.hasNodeAspect(nodeId, ContentModel.ASPECT_PENDING_FIX_ACL))
+            {
+                Map<QName, Serializable> pendingAclProperties = new HashMap<>();
+                pendingAclProperties.put(ContentModel.PROP_INHERIT_FROM_ACL, inheritFrom);
+                nodeDAO.addNodeProperties(nodeId, pendingAclProperties);
+                return;
+            }
+            
+            Set<QName> aspect = new HashSet<>();
+            aspect.add(ContentModel.ASPECT_PENDING_FIX_ACL);
+            nodeDAO.addNodeAspects(nodeId, aspect);
+            Map<QName, Serializable> pendingAclProperties = new HashMap<>();
+            pendingAclProperties.put(ContentModel.PROP_SHARED_ACL_TO_REPLACE, sharedAclToReplace);
+            pendingAclProperties.put(ContentModel.PROP_INHERIT_FROM_ACL, inheritFrom);
+            nodeDAO.addNodeProperties(nodeId, pendingAclProperties);
+            if (log.isDebugEnabled())
+            {
+                log.debug("Set Fixed Acl Pending : nodeId " + nodeId + " nodeUUID " + nodeRef.getId());
+            }
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         }
     }
 
     public void removePendingAclAspect(Long nodeId)
     {
-        Set<QName> aspects = new HashSet<>(1);
-        aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
-        Set<QName> pendingFixAclProperties = new HashSet<>();
-        pendingFixAclProperties.add(ContentModel.PROP_SHARED_ACL_TO_REPLACE);
-        pendingFixAclProperties.add(ContentModel.PROP_INHERIT_FROM_ACL);
-        nodeDAO.removeNodeAspects(nodeId, aspects);
-        nodeDAO.removeNodeProperties(nodeId, pendingFixAclProperties);
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(nodeId);
+        if (nodePair == null)
+        {
+            return;
+        }
+        NodeRef nodeRef = nodePair.getSecond();
+
+        try
+        {
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+            
+            Set<QName> aspects = new HashSet<>(1);
+            aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
+            Set<QName> pendingFixAclProperties = new HashSet<>();
+            pendingFixAclProperties.add(ContentModel.PROP_SHARED_ACL_TO_REPLACE);
+            pendingFixAclProperties.add(ContentModel.PROP_INHERIT_FROM_ACL);
+            nodeDAO.removeNodeAspects(nodeId, aspects);
+            nodeDAO.removeNodeProperties(nodeId, pendingFixAclProperties);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
     }
     
     /**

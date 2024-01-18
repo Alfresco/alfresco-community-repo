@@ -62,11 +62,9 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.rest.rm.community.utils.RetryAnalyzer;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
-import org.alfresco.rest.rm.community.utils.RetryAtMostRule;
-import org.alfresco.rest.rm.community.utils.RetryAtMostRule.RetryAtMost;
-import org.junit.Rule;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,9 +86,6 @@ public class UpdateRecordsTests extends BaseRMRestTest
     @Autowired
     private RoleService roleService;
 
-    @Rule
-    public RetryAtMostRule retryAtMostRule = new RetryAtMostRule();
-
     private RecordCategory rootCategory;
     private UnfiledContainerChild unfiledRecordFolder;
     private final List<UnfiledContainerChild> unfiledRecords = new ArrayList<>();
@@ -101,7 +96,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
     {
         rootCategory = createRootCategory(getRandomName("CATEGORY NAME"));
         unfiledRecordFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
-                getRandomName("UnfiledRecordFolder"), UNFILED_RECORD_FOLDER_TYPE);
+            getRandomName("UnfiledRecordFolder"), UNFILED_RECORD_FOLDER_TYPE);
         // RM Security Officer is the lowest role with Edit Record Metadata capabilities
         // Grant updateUser Filing privileges on root category, this will be inherited to record folders
         updateUser = roleService.createUserWithRMRoleAndCategoryPermission(ROLE_RM_SECURITY_OFFICER.roleId,
@@ -295,13 +290,13 @@ public class UpdateRecordsTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    (
-        dataProvider = "completeRecords",
-        description = "Complete records can't be updated"
-    )
+        (
+            dataProvider = "completeRecords",
+            description = "Complete records can't be updated",
+            retryAnalyzer = RetryAnalyzer.class
+        )
     @AlfrescoTest(jira="RM-4362")
     @Bug (id = "APPS-132")
-    @RetryAtMost(3)
     public void completeRecordsCantBeUpdated(String electronicRecordId, String nonElectronicRecordId)
     {
         // Get the recordsAPI

@@ -33,18 +33,20 @@ import org.testng.ITestResult;
 
 public class RetryAnalyzer implements IRetryAnalyzer
 {
-
-    private static final Logger log = LoggerFactory.getLogger(RetryAnalyzer.class);
-    private int retryCount = 0;
+    private int retryCount;
     private int maxRetryCount = 3;
 
     public String getResultStatusName(int status)
     {
         String resultName = null;
         if (status == 1)
+        {
             resultName = "SUCCESS";
+        }
         if (status == 2)
+        {
             resultName = "FAILURE";
+        }
         return resultName;
     }
 

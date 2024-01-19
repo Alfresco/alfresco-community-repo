@@ -1430,7 +1430,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 {
                     Map.Entry<String, Set<String>> entry = i.next();
                     String child = entry.getKey();
-                    if (!toRetain.contains(child))
+                    if (!toRetain.contains(child) && !childExists(child))
                     {
                         if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
                         {
@@ -1460,6 +1460,24 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         i.remove();
                     }
                 }
+            }
+
+            private boolean childExists(String name)
+            {
+
+                boolean exists = false;
+                AuthorityType authorityType = AuthorityType.getAuthorityType(name);
+
+                if (authorityType == AuthorityType.USER)
+                {
+                    exists = personService.getPersonOrNull(name) != null;
+                }
+                else if (authorityType == AuthorityType.GROUP)
+                {
+                    exists = authorityService.getAuthorityNodeRef(name) != null;
+                }
+
+                return exists;
             }
 
             private void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)

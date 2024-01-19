@@ -1470,11 +1470,11 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
                 if (authorityType == AuthorityType.USER)
                 {
-                    exists = personService.getPersonOrNull(name) != null;
+                    exists = personService.personExists(name);
                 }
                 else if (authorityType == AuthorityType.GROUP)
                 {
-                    exists = authorityService.getAuthorityNodeRef(name) != null;
+                    exists = authorityService.authorityExists(name);
                 }
 
                 return exists;

@@ -62,7 +62,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
-import org.alfresco.rest.rm.community.utils.RetryAnalyzer;
+import org.alfresco.rest.rm.community.utils.AlfrescoRetryAnalyzer;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
@@ -293,7 +293,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
         (
             dataProvider = "completeRecords",
             description = "Complete records can't be updated",
-            retryAnalyzer = RetryAnalyzer.class
+            retryAnalyzer = AlfrescoRetryAnalyzer.class
         )
     @AlfrescoTest(jira="RM-4362")
     @Bug (id = "APPS-132")

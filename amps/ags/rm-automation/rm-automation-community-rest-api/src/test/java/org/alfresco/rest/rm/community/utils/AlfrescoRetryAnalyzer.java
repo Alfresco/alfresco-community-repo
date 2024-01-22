@@ -26,50 +26,27 @@
  */
 package org.alfresco.rest.rm.community.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
+import org.testng.util.RetryAnalyzerCount;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class RetryAnalyzer implements IRetryAnalyzer
+public class AlfrescoRetryAnalyzer extends RetryAnalyzerCount
 {
-    private int retryCount;
-    private int maxRetryCount = 3;
+    private int count = 4;
 
-    public String getResultStatusName(int status)
-    {
-        String resultName = null;
-        if (status == 1)
-        {
-            resultName = "SUCCESS";
-        }
-        if (status == 2)
-        {
-            resultName = "FAILURE";
-        }
-        return resultName;
-    }
-
-    @Override
     public boolean retry(ITestResult result)
     {
-        if (!result.isSuccess())
+        boolean retry = false;
+        if (count > 0)
         {
-            if (retryCount < maxRetryCount)
-            {
-                result.setStatus(ITestResult.SKIP);
-                retryCount++;
-                return true;
-            }
-            else
-            {
-                result.setStatus(ITestResult.FAILURE);
-            }
-        }
-        else
-        {
-            result.setStatus(ITestResult.SUCCESS);
+            count--;
+            return retryMethod(result);
         }
         return false;
+    }
+
+    public boolean retryMethod(ITestResult result)
+    {
+        return result.getStatus() == ITestResult.FAILURE;
     }
 }

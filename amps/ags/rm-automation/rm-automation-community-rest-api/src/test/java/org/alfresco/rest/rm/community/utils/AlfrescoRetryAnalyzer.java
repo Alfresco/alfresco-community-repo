@@ -28,24 +28,16 @@ package org.alfresco.rest.rm.community.utils;
 
 import org.testng.ITestResult;
 import org.testng.util.RetryAnalyzerCount;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AlfrescoRetryAnalyzer extends RetryAnalyzerCount
 {
-    private int count = 4;
-
-    public boolean retry(ITestResult result)
-    {
-        if (count > 0)
-        {
-            count--;
-            return retryMethod(result);
-        }
-        return false;
+    public AlfrescoRetryAnalyzer() {
+        setCount(3);
     }
 
+    @Override
     public boolean retryMethod(ITestResult result)
     {
-        return result.getStatus() == ITestResult.FAILURE;
+        return true;
     }
 }

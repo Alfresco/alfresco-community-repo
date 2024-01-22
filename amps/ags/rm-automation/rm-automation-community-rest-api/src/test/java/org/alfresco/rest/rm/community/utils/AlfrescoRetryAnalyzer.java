@@ -34,7 +34,6 @@ public class AlfrescoRetryAnalyzer extends RetryAnalyzerCount
 {
     private int count = 4;
 
-    public boolean retry(ITestResult result)
     {
         boolean retry = false;
         if (count > 0)

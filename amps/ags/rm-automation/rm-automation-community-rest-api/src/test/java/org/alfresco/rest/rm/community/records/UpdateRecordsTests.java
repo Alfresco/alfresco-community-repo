@@ -96,7 +96,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
     {
         rootCategory = createRootCategory(getRandomName("CATEGORY NAME"));
         unfiledRecordFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
-            getRandomName("UnfiledRecordFolder"), UNFILED_RECORD_FOLDER_TYPE);
+                getRandomName("UnfiledRecordFolder"), UNFILED_RECORD_FOLDER_TYPE);
         // RM Security Officer is the lowest role with Edit Record Metadata capabilities
         // Grant updateUser Filing privileges on root category, this will be inherited to record folders
         updateUser = roleService.createUserWithRMRoleAndCategoryPermission(ROLE_RM_SECURITY_OFFICER.roleId,

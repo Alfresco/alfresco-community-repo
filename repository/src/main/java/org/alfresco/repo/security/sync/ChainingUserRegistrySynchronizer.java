@@ -1001,8 +1001,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             private final Map<String, String> groupsToCreate = new TreeMap<String, String>();
             private final Map<String, Set<String>> personParentAssocsToCreate = newPersonMap();
             private final Map<String, Set<String>> personParentAssocsToDelete = newPersonMap();
+            private final List<String> personParentAssocsCreationToRezone = new LinkedList<String>();
             private Map<String, Set<String>> groupParentAssocsToCreate = new TreeMap<String, Set<String>>();
             private final Map<String, Set<String>> groupParentAssocsToDelete = new TreeMap<String, Set<String>>();
+            private final List<String> groupParentAssocsCreationToRezone = new LinkedList<String>();
             private final Map<String, Set<String>> finalGroupChildAssocs = new TreeMap<String, Set<String>>();
             private List<String> personsProcessed = new LinkedList<String>();
             private Set<String> allZonePersons = Collections.emptySet();
@@ -1268,7 +1270,18 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     parents.add(parent);
                 }
             }
-            
+
+            private void recordParentAssociationAuthoritiesToRezone(String child)
+            {
+                if (child != null)
+                {
+                    List<String> toRezone = AuthorityType.getAuthorityType(child) == AuthorityType.USER
+                            ? this.personParentAssocsCreationToRezone
+                            : this.groupParentAssocsCreationToRezone;
+                    toRezone.add(child);
+                }
+            }
+
             private void validateGroupParentAssocsToCreate()
             {
                 Iterator<Map.Entry<String, Set<String>>> i = this.groupParentAssocsToCreate.entrySet().iterator();
@@ -1430,54 +1443,56 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 {
                     Map.Entry<String, Set<String>> entry = i.next();
                     String child = entry.getKey();
-                    if (!toRetain.contains(child) && !childExists(child))
+                    if (!toRetain.contains(child))
                     {
-                        if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                        if (!shouldRezone(child))
                         {
-                            if (groupList == null)
+                            if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
                             {
-                                groupList = new StringBuilder(1024);
-                            }
-                            else
-                            {
-                                groupList.setLength(0);
-                            }
-                            for (String parent : entry.getValue())
-                            {
-                                if (groupList.length() > 0)
+                                if (groupList == null)
                                 {
-                                    groupList.append(", ");
+                                    groupList = new StringBuilder(1024);
                                 }
-                                groupList.append('\'').append(
-                                        ChainingUserRegistrySynchronizer.this.authorityService.getShortName(parent))
-                                        .append('\'');
+                                else
+                                {
+                                    groupList.setLength(0);
+                                }
+                                for (String parent : entry.getValue())
+                                {
+                                    if (groupList.length() > 0)
+                                    {
+                                        groupList.append(", ");
+                                    }
+                                    groupList.append('\'').append(
+                                            ChainingUserRegistrySynchronizer.this.authorityService.getShortName(parent))
+                                            .append('\'');
 
+                                }
+                                ChainingUserRegistrySynchronizer.logger.debug("Ignoring non-existent member '"
+                                        + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
+                                        + "' in groups {" + groupList.toString() + "}");
                             }
-                            ChainingUserRegistrySynchronizer.logger.debug("Ignoring non-existent member '"
-                                    + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(child)
-                                    + "' in groups {" + groupList.toString() + "}");
+                            i.remove();
                         }
-                        i.remove();
+                        else {
+                            recordParentAssociationAuthoritiesToRezone(child);
+                        }
                     }
                 }
             }
 
-            private boolean childExists(String name)
+            private boolean shouldRezone(String authorityName)
             {
+                Set<String> zones = new HashSet<String>();
+                boolean exists = authorityService.authorityExists(authorityName);
 
-                boolean exists = false;
-                AuthorityType authorityType = AuthorityType.getAuthorityType(name);
-
-                if (authorityType == AuthorityType.USER)
+                if (exists)
                 {
-                    exists = personService.personExists(name);
-                }
-                else if (authorityType == AuthorityType.GROUP)
-                {
-                    exists = authorityService.authorityExists(name);
+                    zones = ChainingUserRegistrySynchronizer.this.authorityService.getAuthorityZones(authorityName);
+                    return isInZone(authorityName, zones, AuthorityService.ZONE_AUTH_ALFRESCO) && !isInZone(authorityName, zones, zoneId);
                 }
 
-                return exists;
+                return false;
             }
 
             private void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)
@@ -1652,6 +1667,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         public void process(Map.Entry<String, Set<String>> entry) throws Throwable
                         {
                             maintainAssociationCreations(entry.getKey());
+                            maintainAssociationCreationsToRezone(entry.getKey());
                         }
                     }, splitTxns);
                 }
@@ -1685,6 +1701,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         {
                             maintainAssociationDeletions(entry.getKey());
                             maintainAssociationCreations(entry.getKey());
+                            maintainAssociationCreationsToRezone(entry.getKey());
                         }
                     }, splitTxns);
                 }
@@ -1758,6 +1775,25 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     {
                         this.personsProcessed.add(authorityName);
                     }
+                }
+            }
+
+            private void maintainAssociationCreationsToRezone(String authorityName)
+            {
+                boolean isPerson = AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER;
+
+                List<String> authorities = isPerson ? this.personParentAssocsCreationToRezone : this.groupParentAssocsCreationToRezone;
+                Map<String, Set<String>> parentAssocsToCreate = isPerson ? this.personParentAssocsToCreate : this.groupParentAssocsToCreate;
+
+                if (authorities != null && !authorities.isEmpty() && parentAssocsToCreate.containsKey(authorityName))
+                {
+                    if (ChainingUserRegistrySynchronizer.logger.isDebugEnabled())
+                    {
+                        ChainingUserRegistrySynchronizer.logger.debug(
+                                "Changing  '" + ChainingUserRegistrySynchronizer.this.authorityService.getShortName(authorityName)
+                                        + "' to zone '" + zoneId + "'");
+                    }
+                    updateAuthorityZones(authorityName, ChainingUserRegistrySynchronizer.this.authorityService.getAuthorityZones(authorityName), zoneSet);
                 }
             }
         } // end of Analyzer class
@@ -1924,6 +1960,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 // create cycles)
                 groupAnalyzer.maintainAssociationDeletions(personName);
                 groupAnalyzer.maintainAssociationCreations(personName);
+                groupAnalyzer.maintainAssociationCreationsToRezone(personName);
 
                 synchronized (this)
                 {
@@ -2139,7 +2176,23 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             this.authorityService.addAuthorityToZones(authorityName, zonesToAdd);
         }
     }
-    
+
+    /**
+     * Checks if the supplied authority is part of a certain zone
+     *
+     * @param authorityName
+     *            the name of authority to check
+     * @param authorityZones
+     *            the zones where authority is
+     * @param zoneToCheck
+     *            the zone to check
+     * @return true in case the authority is in supplied zone
+     */
+    private boolean isInZone(String authorityName, Set<String> authorityZones, String zoneToCheck)
+    {
+        return authorityName != null && authorityZones != null && zoneToCheck != null && authorityZones.contains(zoneToCheck);
+    }
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {

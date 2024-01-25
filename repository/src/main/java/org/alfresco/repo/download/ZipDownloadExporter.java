@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
@@ -135,6 +136,7 @@ public class ZipDownloadExporter extends BaseExporter
         zipStream.setCreateUnicodeExtraFields(UnicodeExtraFieldPolicy.ALWAYS);
         zipStream.setUseLanguageEncodingFlag(true);
         zipStream.setFallbackToUTF8(true);
+        zipStream.setUseZip64(Zip64Mode.Always);
     }
 
     @Override

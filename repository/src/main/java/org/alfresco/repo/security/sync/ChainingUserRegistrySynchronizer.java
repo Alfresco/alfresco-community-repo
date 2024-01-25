@@ -2172,6 +2172,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         zonesToAdd.removeAll(oldZones);
         if (!zonesToAdd.isEmpty())
         {
+            // Prevents the authority from being added to zones where already is
+            Set<String> currentZones = this.authorityService.getAuthorityZones(authorityName);
+            if (currentZones != null && !currentZones.isEmpty())
+            {
+                zonesToAdd.removeAll(currentZones);
+            }
             this.authorityService.addAuthorityToZones(authorityName, zonesToAdd);
         }
     }

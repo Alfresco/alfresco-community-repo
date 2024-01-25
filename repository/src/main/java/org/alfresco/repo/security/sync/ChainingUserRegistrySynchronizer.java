@@ -1001,10 +1001,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             private final Map<String, String> groupsToCreate = new TreeMap<String, String>();
             private final Map<String, Set<String>> personParentAssocsToCreate = newPersonMap();
             private final Map<String, Set<String>> personParentAssocsToDelete = newPersonMap();
-            private final List<String> personParentAssocsCreationToRezone = new LinkedList<String>();
+            private final List<String> personToRezone = new LinkedList<>();
             private Map<String, Set<String>> groupParentAssocsToCreate = new TreeMap<String, Set<String>>();
             private final Map<String, Set<String>> groupParentAssocsToDelete = new TreeMap<String, Set<String>>();
-            private final List<String> groupParentAssocsCreationToRezone = new LinkedList<String>();
+            private final List<String> groupToRezone = new LinkedList<>();
             private final Map<String, Set<String>> finalGroupChildAssocs = new TreeMap<String, Set<String>>();
             private List<String> personsProcessed = new LinkedList<String>();
             private Set<String> allZonePersons = Collections.emptySet();
@@ -1276,8 +1276,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 if (child != null)
                 {
                     List<String> toRezone = AuthorityType.getAuthorityType(child) == AuthorityType.USER
-                            ? this.personParentAssocsCreationToRezone
-                            : this.groupParentAssocsCreationToRezone;
+                            ? this.personToRezone
+                            : this.groupToRezone;
                     toRezone.add(child);
                 }
             }
@@ -1483,12 +1483,11 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
             private boolean shouldRezone(String authorityName)
             {
-                Set<String> zones = new HashSet<String>();
                 boolean exists = authorityService.authorityExists(authorityName);
 
                 if (exists)
                 {
-                    zones = ChainingUserRegistrySynchronizer.this.authorityService.getAuthorityZones(authorityName);
+                    Set<String> zones = ChainingUserRegistrySynchronizer.this.authorityService.getAuthorityZones(authorityName);
                     return isInZone(authorityName, zones, AuthorityService.ZONE_AUTH_ALFRESCO) && !isInZone(authorityName, zones, zoneId);
                 }
 
@@ -1782,7 +1781,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             {
                 boolean isPerson = AuthorityType.getAuthorityType(authorityName) == AuthorityType.USER;
 
-                List<String> authorities = isPerson ? this.personParentAssocsCreationToRezone : this.groupParentAssocsCreationToRezone;
+                List<String> authorities = isPerson ? this.personToRezone : this.groupToRezone;
                 Map<String, Set<String>> parentAssocsToCreate = isPerson ? this.personParentAssocsToCreate : this.groupParentAssocsToCreate;
 
                 if (authorities != null && !authorities.isEmpty() && parentAssocsToCreate.containsKey(authorityName))

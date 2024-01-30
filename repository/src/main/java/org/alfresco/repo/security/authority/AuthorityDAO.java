@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 public interface AuthorityDAO
 {
@@ -152,10 +153,17 @@ public interface AuthorityDAO
     void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
 
     /**
-     * Set the properties for an authority
+     * Get the display name and description for an authority
+     *
+     * @return the display name and description
      */
-    void setAuthorityProperties(String authorityName, Map<QName, Serializable> properties);
-    
+    Pair<String, String> getAuthorityDisplayNameAndDescription(String authorityName);
+
+    /**
+     * Set the display name and description for an authority
+     */
+    void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description);
+
     /**
      * Get root authorities
      */

@@ -83,6 +83,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.FixMethodOrder;
@@ -616,34 +617,6 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.deleteAuthority(auth);
     }
 
-    @Test
-    public void testUpdateAuthorityProperties()
-    {
-        String auth;
-        String groupName = "TESTGROUP";
-        String prefixedGroupName = "GROUP_TESTGROUP";
-        String description = "testDesc";
-        String title = "testTitle";
-        Map<QName, Serializable> props = new HashMap<>();
-        props.put(ContentModel.PROP_DESCRIPTION, description);
-        props.put(ContentModel.PROP_TITLE, title);
-
-        // create authority with properties
-        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, groupName, props);
-        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));
-
-        // update authority properties
-        String newDescription = "newTestDesc";
-        String newTitle = "newTestTitle";
-        props.put(ContentModel.PROP_DESCRIPTION, newDescription);
-        props.put(ContentModel.PROP_TITLE, newTitle);
-        authorityDAO.setAuthorityProperties(auth, props);
-        NodeRef nodeRef = pubAuthorityService.getAuthorityNodeRef(auth);
-        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION), newDescription);
-        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE), newTitle);
-        pubAuthorityService.deleteAuthority(auth);
-    }
-        
     public void testCreateOwnerAuth()
     {
         try
@@ -1458,6 +1431,20 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(pubAuthorityService.getAuthorityDisplayName("GROUP_Loon"), "Loon");
         assertEquals(pubAuthorityService.getAuthorityDisplayName("ROLE_Gibbon"), "Gibbon");
         assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
+    }
+
+    public void testAuthorityDisplayNameAndDescription()
+    {
+        Map<QName, Serializable> props = new HashMap<>();
+        props.put(ContentModel.PROP_DESCRIPTION, "Test auth description");
+        String testAuth = pubAuthorityService.createAuthority(AuthorityType.GROUP, "Test auth", props);
+        Pair<String, String> displayNameAndDescription = pubAuthorityService.getAuthorityDisplayNameAndDescription(testAuth);
+        assertEquals(displayNameAndDescription.getFirst(), "Test auth");
+        assertEquals(displayNameAndDescription.getSecond(), "Test auth description");
+        pubAuthorityService.setAuthorityDisplayNameAndDescription(testAuth, "Modified auth", "Modified description");
+        displayNameAndDescription = pubAuthorityService.getAuthorityDisplayNameAndDescription(testAuth);
+        assertEquals(displayNameAndDescription.getFirst(), "Modified auth");
+        assertEquals(displayNameAndDescription.getSecond(), "Modified description");
     }
     
     public void testGetAuthoritiesFilteringSorting()

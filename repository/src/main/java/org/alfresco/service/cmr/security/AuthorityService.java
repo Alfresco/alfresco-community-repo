@@ -38,6 +38,7 @@ import org.alfresco.service.Auditable;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * The service that encapsulates authorities granted to users.
@@ -441,7 +442,16 @@ public interface AuthorityService
      * @return - the display name
      */
     @Auditable(parameters = {"name"})
-    public String getAuthorityDisplayName(String name);
+    String getAuthorityDisplayName(String name);
+
+    /**
+     * Get the display name and description for the given authority.
+     *
+     * @param name - the full authority string including any prefix (e.g. GROUP_woof)
+     * @return - pair containing display name and description
+     */
+    @Auditable(parameters = {"name"})
+    Pair<String, String> getAuthorityDisplayNameAndDescription(String name);
     
     /**
      * Set the display name for the given authority.
@@ -451,7 +461,18 @@ public interface AuthorityService
      * @param authorityDisplayName String
      */
     @Auditable(parameters = {"authorityName", "authorityDisplayName"})
-    public void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
+    void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
+
+    /**
+     * Set the display name and description for the given authority.
+     * Setting the display name is only supported for authorities of type group
+     *
+     * @param authorityName String
+     * @param authorityDisplayName String
+     * @param description String
+     */
+    @Auditable(parameters = {"authorityName", "authorityDisplayName", "description"})
+    void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description);
 
     /**
      * Gets the authority node for the specified name

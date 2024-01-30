@@ -696,6 +696,29 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         checkTypeIsMutable(type);
         authorityDAO.setAuthorityDisplayName(authorityName, authorityDisplayName);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Pair<String, String> getAuthorityDisplayNameAndDescription(String name)
+    {
+        Pair<String, String> displayNameAndDescription = authorityDAO.getAuthorityDisplayNameAndDescription(name);
+        if(displayNameAndDescription.getFirst() == null)
+        {
+            displayNameAndDescription.setFirst(getShortName(name));
+        }
+        return displayNameAndDescription;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description)
+    {
+        AuthorityType type = AuthorityType.getAuthorityType(authorityName);
+        checkTypeIsMutable(type);
+        authorityDAO.setAuthorityDisplayNameAndDescription(authorityName, authorityDisplayName, description);
+    }
     
     /**
      * {@inheritDoc}

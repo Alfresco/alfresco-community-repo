@@ -1442,18 +1442,29 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             return;
         }
         nodeService.setProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
-
     }
 
-    @Override
-    public void setAuthorityProperties(String authorityName, Map<QName, Serializable> properties)
+    public Pair<String, String> getAuthorityDisplayNameAndDescription(String authorityName)
+    {
+        NodeRef ref = getAuthorityOrNull(authorityName);
+        if (ref == null)
+        {
+            return Pair.nullPair();
+        }
+        Serializable displayName = nodeService.getProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+        Serializable description = nodeService.getProperty(ref, ContentModel.PROP_DESCRIPTION);
+        return new Pair<>(DefaultTypeConverter.INSTANCE.convert(String.class, displayName), DefaultTypeConverter.INSTANCE.convert(String.class, description));
+    }
+
+    public void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description)
     {
         NodeRef ref = getAuthorityOrNull(authorityName);
         if (ref == null)
         {
             return;
         }
-        properties.forEach((key, value) -> nodeService.setProperty(ref, key, value));
+        nodeService.setProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
+        nodeService.setProperty(ref, ContentModel.PROP_DESCRIPTION, description);
     }
 
     public NodeRef getOrCreateZone(String zoneName)

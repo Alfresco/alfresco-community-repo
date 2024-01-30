@@ -53,7 +53,6 @@ import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Groups;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.api.model.GroupMember;
@@ -71,9 +70,6 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -114,11 +110,9 @@ public class GroupsImpl implements Groups
     private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_MEMBER_TYPE));
 
     protected AuthorityService authorityService;
-    protected NodeService nodeService;
     private AuthorityDAO authorityDAO;
 
     protected People people;
-    protected Nodes nodes;
 
     public AuthorityService getAuthorityService()
     {
@@ -130,10 +124,6 @@ public class GroupsImpl implements Groups
         this.authorityService = authorityService;
     }
 
-    public void setNodeService(NodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
@@ -142,10 +132,6 @@ public class GroupsImpl implements Groups
     public void setPeople(People people)
     {
         this.people = people;
-    }
-
-    public void setNodes(Nodes nodes) {
-        this.nodes = nodes;
     }
 
     public Group create(Group group, Parameters parameters)
@@ -185,18 +171,18 @@ public class GroupsImpl implements Groups
 
         try
         {
-            authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
+            if (StringUtils.isNotEmpty(group.getDescription()))
+            {
+                authorityService.setAuthorityDisplayNameAndDescription(groupId, group.getDisplayName(), group.getDescription());
+            }
+            else
+            {
+                authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
+            }
         }
         catch (AuthorityException ae)
         {
             handleAuthorityException(ae);
-        }
-
-        if (StringUtils.isNotEmpty(group.getDescription()))
-        {
-            Map<QName, Serializable> props = new HashMap<>();
-            props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
-            authorityDAO.setAuthorityProperties(authorityService.getName(AuthorityType.GROUP, groupId), props);
         }
 
         return getGroup(groupId, parameters);
@@ -204,10 +190,10 @@ public class GroupsImpl implements Groups
 
     public Group getGroup(String groupId, Parameters parameters) throws EntityNotFoundException
     {
-        AuthorityInfo authorityInfo = getAuthorityInfo(groupId);
+        final List<String> includeParam = parameters.getInclude();
+        AuthorityInfo authorityInfo = getAuthorityInfo(groupId, includeParam.contains(PARAM_INCLUDE_DESCRIPTION));
 
         final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
-        final List<String> includeParam = parameters.getInclude();
 
         return getGroup(authorityInfo, includeParam, rootAuthorities);
     }
@@ -227,7 +213,7 @@ public class GroupsImpl implements Groups
         PagingResults<AuthorityInfo> pagingResult;
         try
         {
-            pagingResult = getAuthoritiesInfo(authorityType, groupsFilters, rootAuthorities, sortProp, paging);
+            pagingResult = getAuthoritiesInfo(authorityType, groupsFilters, rootAuthorities, sortProp, paging, parameters.getInclude().contains(PARAM_INCLUDE_DESCRIPTION));
         }
         catch (UnknownAuthorityException e)
         {
@@ -367,7 +353,7 @@ public class GroupsImpl implements Groups
                 filter(a -> a.startsWith(AuthorityType.GROUP.getPrefixString())).
                 filter(a -> isRootPredicate(finalIsRootParam, rootAuthorities, a)).
                 filter(a -> zonePredicate(a, finalZoneFilter)).
-                map(this::getAuthorityInfo).
+                map(a -> getAuthorityInfo(a, includeParam.contains(PARAM_INCLUDE_DESCRIPTION))).
                 sorted(new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond())).
                 collect(Collectors.toList());
 
@@ -386,7 +372,7 @@ public class GroupsImpl implements Groups
     }
 
     private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, GroupsFilter groupsFilter, Set<String> rootAuthorities, 
-                                                            Pair<String, Boolean> sortProp, Paging paging)
+                                                            Pair<String, Boolean> sortProp, Paging paging, boolean includeDescription)
     {
         Boolean isRootParam = groupsFilter.getIsRoot();
         String zoneFilter = groupsFilter.getZoneFilter();
@@ -402,7 +388,7 @@ public class GroupsImpl implements Groups
                 // Limit the post processing work by using the already loaded
                 // list of root authorities.
                 List<AuthorityInfo> authorities = rootAuthorities.stream().
-                        map(this::getAuthorityInfo).
+                        map(auth -> getAuthorityInfo(auth, includeDescription)).
                         filter(auth -> zonePredicate(auth.getAuthorityName(), zoneFilter)).
                         filter(auth -> displayNamePredicate(auth.getAuthorityDisplayName(), displayNameFilter)).
                         collect(Collectors.toList());
@@ -557,9 +543,9 @@ public class GroupsImpl implements Groups
      *            The authority name.
      * @return The authority info.
      */
-    private AuthorityInfo getAuthorityInfo(String id)
+    private AuthorityInfo getAuthorityInfo(String id, boolean includeDescription)
     {
-        return getAuthorityInfo(id, false);
+        return getAuthorityInfo(id, includeDescription, false);
     }
 
     /**
@@ -568,11 +554,13 @@ public class GroupsImpl implements Groups
      *
      * @param id
      *            The authority name.
+     * @param includeDescription
+     *            True if description should be loaded
      * @param defaultDisplayNameIfNull
      *            True if we would like to get a default value (e.g. shortName of the authority) if the authority display name is null.
      * @return The authority info.
      */
-    private AuthorityInfo getAuthorityInfo(String id, boolean defaultDisplayNameIfNull)
+    private AuthorityInfo getAuthorityInfo(String id, boolean includeDescription, boolean defaultDisplayNameIfNull)
     {
         if (id == null || id.isEmpty())
         {
@@ -585,14 +573,30 @@ public class GroupsImpl implements Groups
             throw new EntityNotFoundException(id);
         }
 
-        String authorityDisplayName = getAuthorityDisplayName(id, defaultDisplayNameIfNull);
+        String authorityDisplayName;
+        String description = null;
 
-        return new AuthorityInfo(null, authorityDisplayName, id);
+        if (includeDescription)
+        {
+            Pair<String, String> displayNameAndDescription = getAuthorityDisplayNameAndDescription(id, defaultDisplayNameIfNull);
+            authorityDisplayName = displayNameAndDescription.getFirst();
+            description = displayNameAndDescription.getSecond();
+        }
+        else
+        {
+            authorityDisplayName = getAuthorityDisplayName(id, defaultDisplayNameIfNull);
+        }
+        return new AuthorityInfo(null, authorityDisplayName, id, description);
     }
 
     private String getAuthorityDisplayName(String id, boolean defaultDisplayNameIfNull)
     {
         return defaultDisplayNameIfNull ? authorityService.getAuthorityDisplayName(id) : authorityDAO.getAuthorityDisplayName(id);
+    }
+
+    private Pair<String, String> getAuthorityDisplayNameAndDescription(String id, boolean defaultDisplayNameIfNull)
+    {
+        return defaultDisplayNameIfNull ? authorityService.getAuthorityDisplayNameAndDescription(id) : authorityDAO.getAuthorityDisplayNameAndDescription(id);
     }
 
     private Group getGroup(AuthorityInfo authorityInfo, List<String> includeParam, Set<String> rootAuthorities)
@@ -607,37 +611,24 @@ public class GroupsImpl implements Groups
 
         // REPO-1743
         String authorityDisplayName = authorityInfo.getAuthorityDisplayName();
+        String description = authorityInfo.getDescription();
         if (authorityDisplayName == null || authorityDisplayName.isEmpty())
         {
-            authorityDisplayName = authorityService.getAuthorityDisplayName(authorityInfo.getAuthorityName());
+            if (includeParam != null && includeParam.contains(PARAM_INCLUDE_DESCRIPTION))
+            {
+                Pair<String, String> displayNameAndDescription = authorityService.getAuthorityDisplayNameAndDescription(authorityInfo.getAuthorityName());
+                authorityDisplayName = displayNameAndDescription.getFirst();
+                description = displayNameAndDescription.getSecond();
+            }
+            else
+            {
+                authorityDisplayName = authorityService.getAuthorityDisplayName(authorityInfo.getAuthorityName());
+            }
         }
 
         group.setDisplayName(authorityDisplayName);
-
-        group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
-
-        Set<String> containedAuthorities;
-        try
-        {
-            containedAuthorities = authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true);
-        } catch (UnknownAuthorityException e)
-        {
-            containedAuthorities = Collections.emptySet();
-        }
-        group.setHasSubgroups(CollectionUtils.isNotEmpty(containedAuthorities));
-
-        NodeRef groupNodeRef = authorityService.getAuthorityNodeRef(authorityInfo.getAuthorityName());
-        String description;
-        try
-        {
-            description = groupNodeRef != null && nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION) != null ?
-                    nodeService.getProperty(groupNodeRef, ContentModel.PROP_DESCRIPTION).toString() :
-                    null;
-        } catch (InvalidNodeRefException e)
-        {
-            description = null;
-        }
         group.setDescription(description);
+        group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
 
         // Optionally include
         if (includeParam != null)
@@ -659,6 +650,19 @@ public class GroupsImpl implements Groups
             {
                 Set<String> authorityZones = authorityService.getAuthorityZones(authorityInfo.getAuthorityName());
                 group.setZones(authorityZones);
+            }
+
+            if (includeParam.contains(PARAM_INCLUDE_HAS_SUBGROUPS))
+            {
+                Set<String> containedAuthorities;
+                try
+                {
+                    containedAuthorities = authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true);
+                } catch (UnknownAuthorityException e)
+                {
+                    containedAuthorities = Collections.emptySet();
+                }
+                group.setHasSubgroups(CollectionUtils.isNotEmpty(containedAuthorities));
             }
         }
 
@@ -947,7 +951,7 @@ public class GroupsImpl implements Groups
         }
 
         List<AuthorityInfo> authorityInfoList = new ArrayList<>(authorities.size());
-        authorityInfoList.addAll(authorities.stream().map(this::getAuthorityInfo).collect(Collectors.toList()));
+        authorityInfoList.addAll(authorities.stream().map(auth -> getAuthorityInfo(auth, false)).collect(Collectors.toList()));
 
         // Post process sorting - this should be moved to service
         // layer. It is done here because sorting is not supported at
@@ -996,7 +1000,7 @@ public class GroupsImpl implements Groups
 
     private GroupMember getGroupMember(String authorityId)
     {
-        AuthorityInfo authorityInfo = getAuthorityInfo(authorityId);
+        AuthorityInfo authorityInfo = getAuthorityInfo(authorityId, false);
 
         return getGroupMember(authorityInfo);
     }

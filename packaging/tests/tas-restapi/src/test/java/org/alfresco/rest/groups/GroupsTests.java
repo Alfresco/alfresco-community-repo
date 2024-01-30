@@ -45,7 +45,7 @@ public class GroupsTests extends RestTest
         restClient.authenticateUser(userModel).withCoreAPI().usingGroups().createGroup(groupBodyCreate);
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
         //+ve
-        restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones").usingGroups().createGroup(groupBodyCreate)
+        restClient.authenticateUser(adminUser).withCoreAPI().usingParams("include=zones,hasSubgroups,description").usingGroups().createGroup(groupBodyCreate)
                                               .assertThat().field("zones").contains("APP.DEFAULT")
                                               .and().field("isRoot").is(true)
                                               .and().field("displayName").is(groupName)
@@ -82,7 +82,7 @@ public class GroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         //GetGroupDetails:
-        restClient.withCoreAPI().usingParams("include=zones").usingGroups().getGroupDetail("GROUP_"+groupName)
+        restClient.withCoreAPI().usingParams("include=zones,hasSubgroups,description").usingGroups().getGroupDetail("GROUP_"+groupName)
                   .assertThat().field("id").is("GROUP_"+groupName)
                   .and().field("zones").contains("APP.DEFAULT")
                   .and().field("isRoot").is(true)
@@ -94,7 +94,7 @@ public class GroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
 
         //VerifyIfParentHasNoSubgroups:
-        restClient.withCoreAPI().usingParams("include=zones").usingGroups().getGroupDetail("GROUP_"+groupName)
+        restClient.withCoreAPI().usingParams("include=zones,hasSubgroups").usingGroups().getGroupDetail("GROUP_"+groupName)
                 .assertThat().field("id").is("GROUP_"+groupName)
                 .and().field("hasSubgroups").is(false);
         restClient.assertStatusCodeIs(HttpStatus.OK);

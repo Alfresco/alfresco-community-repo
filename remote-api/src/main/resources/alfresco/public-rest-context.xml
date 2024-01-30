@@ -1693,8 +1693,6 @@
         <property name="authorityService" ref="AuthorityService" />
         <property name="authorityDAO" ref="authorityDAO" />
         <property name="people" ref="people"/>
-        <property name="nodes" ref="Nodes"/>
-        <property name="nodeService" ref="NodeService" />
     </bean>
 
     <bean id="Groups" class="org.springframework.aop.framework.ProxyFactoryBean">

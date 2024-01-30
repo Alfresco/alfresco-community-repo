@@ -821,6 +821,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>com.epam.reportportal</groupId>
+                <artifactId>agent-java-junit5</artifactId>
+                <version>5.1.11</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>gunit</artifactId>
                 <version>${dependency.antlr.version}</version>
@@ -986,6 +992,13 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.22.2</version>
+                    <configuration>
+                        <properties>
+                            <configurationParameters>
+                                junit.jupiter.extensions.autodetection.enabled = true
+                            </configurationParameters>
+                        </properties>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>

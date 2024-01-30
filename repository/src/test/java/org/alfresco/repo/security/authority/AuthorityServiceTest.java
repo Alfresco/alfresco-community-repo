@@ -1433,6 +1433,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
     }
 
+    @Test
     public void testAuthorityDisplayNameAndDescription()
     {
         Map<QName, Serializable> props = new HashMap<>();

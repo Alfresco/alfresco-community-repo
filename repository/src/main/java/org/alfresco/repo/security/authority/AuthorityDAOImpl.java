@@ -1444,6 +1444,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         nodeService.setProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
     }
 
+    @Override
     public Pair<String, String> getAuthorityDisplayNameAndDescription(String authorityName)
     {
         NodeRef ref = getAuthorityOrNull(authorityName);
@@ -1456,6 +1457,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         return new Pair<>(DefaultTypeConverter.INSTANCE.convert(String.class, displayName), DefaultTypeConverter.INSTANCE.convert(String.class, description));
     }
 
+    @Override
     public void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description)
     {
         NodeRef ref = getAuthorityOrNull(authorityName);

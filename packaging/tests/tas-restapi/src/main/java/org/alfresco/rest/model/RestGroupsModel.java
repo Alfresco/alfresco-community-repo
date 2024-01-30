@@ -42,7 +42,7 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
     private String description;
     @JsonProperty(required = true)
     private Boolean isRoot;
-    @JsonProperty(required = true)
+    @JsonProperty()
     private Boolean hasSubgroups;
 
     @JsonProperty("parentIds")

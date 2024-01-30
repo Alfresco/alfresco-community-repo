@@ -700,6 +700,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public Pair<String, String> getAuthorityDisplayNameAndDescription(String name)
     {
         Pair<String, String> displayNameAndDescription = authorityDAO.getAuthorityDisplayNameAndDescription(name);
@@ -713,6 +714,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description)
     {
         AuthorityType type = AuthorityType.getAuthorityType(authorityName);

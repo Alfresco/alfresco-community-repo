@@ -108,7 +108,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             renderJsonResponse(webScriptResponse, toRender, assistant.getJsonHelper());
 
         } catch (Exception exception) {
-            renderException(exception,webScriptResponse,assistant);
+            renderException(exception,webScriptResponse,webScriptRequest,assistant);
         }
     }
 

@@ -64,7 +64,7 @@
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>9.0</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.76</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.77</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.4.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>
         <dependency.org-json.version>20231013</dependency.org-json.version>
@@ -649,7 +649,7 @@
             <!-- Enforce newer version -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15to18</artifactId>
+                <artifactId>bcprov-jdk18on</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
@@ -1110,10 +1110,10 @@
                                             <exclude>com.sun.xml.bind</exclude>
                                         </excludes>
                                         <includes>
-                                            <include>org.bouncycastle:bcprov-jdk15to18:[1.74,)</include>
-                                            <include>org.bouncycastle:bcmail-jdk15to18:[1.74,)</include>
-                                            <include>org.bouncycastle:bcpkix-jdk15to18:[1.74,)</include>
-                                            <include>org.bouncycastle:bcutil-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcprov-jdk18on:[1.77,)</include>
+                                            <include>org.bouncycastle:bcmail-jdk18on:[1.77,)</include>
+                                            <include>org.bouncycastle:bcpkix-jdk18on:[1.77,)</include>
+                                            <include>org.bouncycastle:bcutil-jdk18on:[1.77,)</include>
                                         </includes>
                                     </bannedDependencies>
                                 </rules>

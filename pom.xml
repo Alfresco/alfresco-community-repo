@@ -654,12 +654,12 @@
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcmail-jdk15to18</artifactId>
+                <artifactId>bcmail-jdk18on</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15to18</artifactId>
+                <artifactId>bcpkix-jdk18on</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>

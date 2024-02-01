@@ -89,6 +89,12 @@
    </bean>
 
    <bean name="identityServiceConfig" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig">
+      <property name="issuerUrl">
+         <value>${identity-service.issuer-url:#{null}}</value>
+      </property>
+      <property name="audience">
+         <value>${identity-service.audience:#{null}}</value>
+      </property>
       <property name="realm">
          <value>${identity-service.realm}</value>
       </property>
@@ -139,6 +145,12 @@
       </property>
       <property name="publicClient">
          <value>${identity-service.public-client:false}</value>
+      </property>
+      <property name="principalAttribute">
+         <value>${identity-service.principal-attribute:preferred_username}</value>
+      </property>
+      <property name="clientIDValidationDisabled">
+         <value>${identity-service.client-id.validation.disabled:true}</value>
       </property>
    </bean>
 

@@ -60,7 +60,7 @@ public class IdentityServiceConfig
     private int publicKeyCacheTtl;
     private boolean publicClient;
     private String principalAttribute;
-    private boolean clientIDValidationDisabled;
+    private boolean clientIdValidationDisabled;
 
     /**
      *
@@ -289,13 +289,13 @@ public class IdentityServiceConfig
         this.principalAttribute = principalAttribute;
     }
 
-    public boolean isClientIDValidationDisabled()
+    public boolean isClientIdValidationDisabled()
     {
-        return clientIDValidationDisabled;
+        return clientIdValidationDisabled;
     }
 
-    public void setClientIDValidationDisabled(boolean clientIDValidationDisabled)
+    public void setClientIdValidationDisabled(boolean clientIdValidationDisabled)
     {
-        this.clientIDValidationDisabled = clientIDValidationDisabled;
+        this.clientIdValidationDisabled = clientIdValidationDisabled;
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -50,7 +50,7 @@ public class IdentityServiceFacadeFactoryBeanTest
     {
         final IdentityServiceConfig config = mock(IdentityServiceConfig.class);
         when(config.getRealmKey()).thenReturn("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAve3MabX/rp3LbE7/zNqKxuid8WT7y4qSXsNaiPvl/OVbNWW/cu5td1VndItYhH6/gL7Z5W/r4MOeTlz/fOdXfjrRJou2f3UiPQwLV9RdOH3oS4/BUe+sviD8Q3eRfWBWWz3yw8f2YNtD4bMztIMMjqthvwdEEb9S9jbxxD0o71Bsrz/FwPi7HhSDA+Z/p01Hct8m4wx13ZlKRd4YjyC12FBmi9MSgsrFuWzyQHhHTeBDoALpfuiut3rhVxUtFmVTpy6p9vil7C5J5pok4MXPH0dJCyDNQz05ww5+fD+tfksIEpFeokRpN226F+P21oQVFUWwYIaXaFlG/hfvwmnlfQIDAQAB");
-        when(config.isClientIDValidationDisabled()).thenReturn(true);
+        when(config.isClientIdValidationDisabled()).thenReturn(true);
 
         final ProviderDetails providerDetails = mock(ProviderDetails.class);
         when(providerDetails.getIssuerUri()).thenReturn("https://my.issuer");

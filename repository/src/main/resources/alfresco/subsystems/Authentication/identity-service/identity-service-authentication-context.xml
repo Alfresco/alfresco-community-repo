@@ -149,7 +149,7 @@
       <property name="principalAttribute">
          <value>${identity-service.principal-attribute:preferred_username}</value>
       </property>
-      <property name="clientIDValidationDisabled">
+      <property name="clientIdValidationDisabled">
          <value>${identity-service.client-id.validation.disabled:true}</value>
       </property>
    </bean>

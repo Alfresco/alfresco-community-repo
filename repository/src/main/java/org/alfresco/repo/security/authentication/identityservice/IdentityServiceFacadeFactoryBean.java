@@ -613,7 +613,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
             validators.add(new JwtTimestampValidator(Duration.of(0, ChronoUnit.MILLIS)));
             validators.add(new JwtIssuerValidator(providerDetails.getIssuerUri()));
-            if (!config.isClientIDValidationDisabled())
+            if (!config.isClientIdValidationDisabled())
             {
                 new JwtClaimValidator<String>("azp", config.getResource()::equals);
             }

@@ -820,18 +820,6 @@
                 <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
-            <!--<dependency>
-                <groupId>com.epam.reportportal</groupId>
-                <artifactId>agent-java-junit5</artifactId>
-                <version>5.1.11</version>
-                <scope>test</scope>
-            </dependency> -->
-            <dependency>
-                <groupId>com.epam.reportportal</groupId>
-                <artifactId>agent-java-junit</artifactId>
-                <version>5.2.0</version>
-                <scope>test</scope>
-            </dependency>
             <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>gunit</artifactId>

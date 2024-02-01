@@ -820,12 +820,12 @@
                 <version>4.13.2</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
+            <!--<dependency>
                 <groupId>com.epam.reportportal</groupId>
                 <artifactId>agent-java-junit5</artifactId>
                 <version>5.1.11</version>
                 <scope>test</scope>
-            </dependency>
+            </dependency> -->
             <dependency>
                 <groupId>com.epam.reportportal</groupId>
                 <artifactId>agent-java-junit</artifactId>
@@ -999,11 +999,7 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.22.2</version>
                     <configuration>
-                        <properties>
-                            <configurationParameters>
-                                junit.jupiter.extensions.autodetection.enabled = true
-                            </configurationParameters>
-                        </properties>
+                        <argLine>-javaagent:${com.nordstrom.tools:junit-foundation:jar}</argLine>
                     </configuration>
                 </plugin>
                 <plugin>

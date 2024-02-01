@@ -359,7 +359,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             connectionManagerBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
         }
 
-        private char[] asCharArray(String value, char[] nullValue)
+        private char[] asCharArray(String value, char... nullValue)
         {
             return ofNullable(value)
                 .filter(not(String::isBlank))
@@ -404,14 +404,14 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             Optional.ofNullable(metadata.getIssuer()).ifPresentOrElse(issuer -> {
                 try
                 {
-                    URI metadataIssuerURI = new URI(metadata.getIssuer().getValue());
+                    URI metadataIssuerURI = new URI(issuer.getValue());
                     validateOIDCEndpoint(metadataIssuerURI, "Issuer");
                     if (StringUtils.isNotBlank(config.getIssuerUrl()) &&
                         !metadataIssuerURI.equals(URI.create(config.getIssuerUrl())))
                     {
                         throw new IdentityServiceException("Failed to create ClientRegistration. "
                             + "The Issuer value from the OIDC Discovery does not align with the provided Issuer. Expected `%s` but found `%s`"
-                            .formatted(config.getIssuerUrl(), metadata.getIssuer().getValue()));
+                            .formatted(config.getIssuerUrl(), issuer.getValue()));
                     }
                 }
                 catch (URISyntaxException e)
@@ -513,9 +513,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     "Failed to create ClientRegistration. The values of issuer url and auth server url cannot be empty.");
             }
 
-            String baseUrl = Optional.ofNullable(config.getAuthServerUrl())
-                .filter(StringUtils::isNotBlank)
-                .orElse(config.getIssuerUrl());
+            String baseUrl = StringUtils.isNotBlank(config.getAuthServerUrl()) ? config.getAuthServerUrl() : config.getIssuerUrl();
 
             return List.of(UriComponentsBuilder.fromUriString(baseUrl)
                 .pathSegment(".well-known", "openid-configuration")

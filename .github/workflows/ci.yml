@@ -456,8 +456,44 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
+      - name: "Prepare Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
+        id: rp-prepare
+        with:
+          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-use-static-launch-name: true
+      - name: "Add GitHub Step Summary"
+        env:
+          RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
+          RP_KEY: ${{ steps.rp-prepare.outputs.key }}
+          RP_URL: ${{ steps.rp-prepare.outputs.url }}
+        run: bash scripts/ci/add_step_summary.sh
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false
+        id: run-tests
+        env:
+          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+        run: |
+          eval "args=($RP_OPTS)"
+          mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false "${args[@]}"
+        continue-on-error: true
+      - name: "Update GitHub Step Summary"
+        run: |
+          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+      - name: "Summarize Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+        id: rp-summarize
+        with:
+          tests-outcome: ${{ steps.run-tests.outcome }}
+          rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+      - name: "Exit on failure"
+        if: steps.run-tests.outcome != 'success'
+        run: |
+          echo "::error title=run-tests::Tests failed: re-throwing on error."
+          exit 1
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -522,8 +558,44 @@ jobs:
           fi
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
+      - name: "Prepare Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
+        id: rp-prepare
+        with:
+          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testSuite }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-use-static-launch-name: true
+      - name: "Add GitHub Step Summary"
+        env:
+          RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
+          RP_KEY: ${{ steps.rp-prepare.outputs.key }}
+          RP_URL: ${{ steps.rp-prepare.outputs.url }}
+        run: bash scripts/ci/add_step_summary.sh
       - name: "Run tests"
-        run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
+        id: run-tests
+        env:
+          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+        run: |
+          eval "args=($RP_OPTS)"
+          mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }} "${args[@]}"
+        continue-on-error: true
+      - name: "Update GitHub Step Summary"
+        run: |
+          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+      - name: "Summarize Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+        id: rp-summarize
+        with:
+          tests-outcome: ${{ steps.run-tests.outcome }}
+          rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+      - name: "Exit on failure"
+        if: steps.run-tests.outcome != 'success'
+        run: |
+          echo "::error title=run-tests::Tests failed: re-throwing on error."
+          exit 1
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

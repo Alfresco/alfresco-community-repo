@@ -251,7 +251,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             // * Client is authenticating itself using basic auth
             // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
 
-            final ClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClientProvider.get());
+            final ClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+                httpClientProvider.get());
             final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
             final ClientRegistration clientRegistration = clientRegistrationProvider.apply(restTemplate);
             final JwtDecoder jwtDecoder = jwtDecoderProvider.apply(restTemplate,
@@ -401,26 +402,29 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             validateOIDCEndpoint(metadata.getUserInfoEndpointURI(), "User Info");
             validateOIDCEndpoint(metadata.getJWKSetURI(), "JWK Set");
 
-            Optional.ofNullable(metadata.getIssuer()).ifPresentOrElse(issuer -> {
+            if (metadata.getIssuer() != null)
+            {
                 try
                 {
-                    URI metadataIssuerURI = new URI(issuer.getValue());
+                    URI metadataIssuerURI = new URI(metadata.getIssuer().getValue());
                     validateOIDCEndpoint(metadataIssuerURI, "Issuer");
                     if (StringUtils.isNotBlank(config.getIssuerUrl()) &&
                         !metadataIssuerURI.equals(URI.create(config.getIssuerUrl())))
                     {
                         throw new IdentityServiceException("Failed to create ClientRegistration. "
                             + "The Issuer value from the OIDC Discovery does not align with the provided Issuer. Expected `%s` but found `%s`"
-                            .formatted(config.getIssuerUrl(), issuer.getValue()));
+                            .formatted(config.getIssuerUrl(), metadata.getIssuer().getValue()));
                     }
                 }
                 catch (URISyntaxException e)
                 {
                     throw new IdentityServiceException("The Issuer value could not be parsed as a URI reference.", e);
                 }
-            }, () -> {
+            }
+            else
+            {
                 throw new IdentityServiceException("The Issuer cannot be null.");
-            });
+            }
 
             return metadata;
         }
@@ -513,7 +517,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                     "Failed to create ClientRegistration. The values of issuer url and auth server url cannot be empty.");
             }
 
-            String baseUrl = StringUtils.isNotBlank(config.getAuthServerUrl()) ? config.getAuthServerUrl() : config.getIssuerUrl();
+            String baseUrl = StringUtils.isNotBlank(config.getAuthServerUrl()) ?
+                config.getAuthServerUrl() :
+                config.getIssuerUrl();
 
             return List.of(UriComponentsBuilder.fromUriString(baseUrl)
                 .pathSegment(".well-known", "openid-configuration")

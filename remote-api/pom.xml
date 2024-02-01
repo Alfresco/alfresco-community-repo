@@ -12,13 +12,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>3.1.1</version>
-            <type>maven-plugin</type>
-        </dependency>
-
-        <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
             <version>${project.version}</version>
@@ -193,7 +186,6 @@
                     <execution>
                         <id>default-test</id>
                         <configuration>
-                            <argLine>-javaagent:${com.nordstrom.tools:junit-foundation:jar}</argLine>
                             <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <systemPropertyVariables>

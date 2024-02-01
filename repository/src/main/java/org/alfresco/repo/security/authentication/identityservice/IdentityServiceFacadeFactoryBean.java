@@ -31,7 +31,6 @@ import static java.util.function.Predicate.not;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,11 +81,9 @@ import org.apache.hc.client5.http.ssl.TrustAllStrategy;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -254,8 +251,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             // * Client is authenticating itself using basic auth
             // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
 
-            final ClientHttpRequestFactory httpRequestFactory = new CustomClientHttpRequestFactory(
-                httpClientProvider.get());
+            final ClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(httpClientProvider.get());
             final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
             final ClientRegistration clientRegistration = clientRegistrationProvider.apply(restTemplate);
             final JwtDecoder jwtDecoder = jwtDecoderProvider.apply(restTemplate,
@@ -705,20 +701,4 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         return value != null && !value.isBlank();
     }
 
-    static class CustomClientHttpRequestFactory extends HttpComponentsClientHttpRequestFactory
-    {
-        CustomClientHttpRequestFactory(HttpClient httpClient)
-        {
-            super(httpClient);
-        }
-
-        @Override
-        public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) throws IOException
-        {
-            ClientHttpRequest request = super.createRequest(uri, httpMethod);
-            request.getHeaders()
-                .add("Accept-Encoding", "gzip, deflate");
-            return request;
-        }
-    }
 }

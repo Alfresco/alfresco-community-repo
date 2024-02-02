@@ -672,7 +672,7 @@ jobs:
       - name: "Run ActiveMQ"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
       - name: "Prepare Report Portal"
-        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.13.1
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
@@ -697,7 +697,7 @@ jobs:
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
       - name: "Summarize Report Portal"
-        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.13.1
         id: rp-summarize
         with:
           tests-outcome: ${{ steps.run-tests.outcome }}

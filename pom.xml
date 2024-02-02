@@ -54,7 +54,7 @@
         <dependency.alfresco-transform-core.version>5.0.1</dependency.alfresco-transform-core.version>
         <dependency.alfresco-transform-service.version>4.0.1</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.0</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.24</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.26</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.20.1</dependency.aspectj.version>
         <dependency.spring.version>6.0.14</dependency.spring.version>

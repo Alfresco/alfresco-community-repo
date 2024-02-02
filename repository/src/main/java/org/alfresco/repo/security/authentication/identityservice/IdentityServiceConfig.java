@@ -108,6 +108,11 @@ public class IdentityServiceConfig
         return connectionPoolSize;
     }
 
+    public String getIssuerUrl()
+    {
+        return issuerUrl;
+    }
+
     public void setIssuerUrl(String issuerUrl)
     {
         this.issuerUrl = issuerUrl;
@@ -125,17 +130,14 @@ public class IdentityServiceConfig
 
     public String getAuthServerUrl()
     {
-        if(StringUtils.isNotBlank(realm) && StringUtils.isNotBlank(authServerUrl))
-        {
-            return UriComponentsBuilder.fromUriString(authServerUrl)
-                .pathSegment(REALMS, getRealm())
+        return Optional.ofNullable(realm)
+            .filter(StringUtils::isNotBlank)
+            .filter(realm -> StringUtils.isNotBlank(authServerUrl))
+            .map(realm -> UriComponentsBuilder.fromUriString(authServerUrl)
+                .pathSegment(REALMS, realm)
                 .build()
-                .toString();
-        }
-        else
-        {
-            return authServerUrl;
-        }
+                .toString())
+            .orElse(authServerUrl);
     }
 
     public void setAuthServerUrl(String authServerUrl)
@@ -171,12 +173,7 @@ public class IdentityServiceConfig
     public String getClientSecret()
     {
         return Optional.ofNullable(clientSecret)
-                       .orElse("");
-    }
-
-    public String getIssuerUrl()
-    {
-        return issuerUrl;
+            .orElse("");
     }
 
     public void setAllowAnyHostname(boolean allowAnyHostname)

@@ -373,7 +373,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         private final IdentityServiceConfig config;
 
-        public static final Set<String> SUPPORTED_SCOPES = Set.of("openid", "profile", "email", "offline_access");
+        private static final Set<String> SUPPORTED_SCOPES = Set.of("openid", "profile", "email", "offline_access");
 
         ClientRegistrationProvider(IdentityServiceConfig config)
         {
@@ -447,7 +447,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             final String issuerUri = Optional.of(metadata)
                 .map(OIDCProviderMetadata::getIssuer)
                 .map(Issuer::getValue)
-                .orElse(null);
+                .orElseGet(config::getIssuerUrl);
 
             return ClientRegistration
                 .withRegistrationId("ids")
@@ -514,7 +514,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             if (StringUtils.isBlank(config.getAuthServerUrl()) && StringUtils.isBlank(config.getIssuerUrl()))
             {
                 throw new IdentityServiceException(
-                    "Failed to create ClientRegistration. The values of issuer url and auth server url cannot be empty.");
+                    "Failed to create ClientRegistration. The values of issuer url and auth server url cannot both be empty.");
             }
 
             String baseUrl = StringUtils.isNotBlank(config.getAuthServerUrl()) ?

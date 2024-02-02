@@ -836,16 +836,50 @@ jobs:
       - name: "Build TAS integration tests"
         if: ${{ matrix.test-name }} == 'Integration TAS tests'
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
+      - name: "Prepare Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
+        id: rp-prepare
+        with:
+          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.test-name }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-use-static-launch-name: true
+      - name: "Add GitHub Step Summary"
+        env:
+          RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
+          RP_KEY: ${{ steps.rp-prepare.outputs.key }}
+          RP_URL: ${{ steps.rp-prepare.outputs.url }}
+        run: bash scripts/ci/add_step_summary.sh
       - name: "Run tests"
         id: tests
+        env:
+          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false
+        run: |
+          eval "args=($RP_OPTS)"
+          mvn -B verify -f packaging/tests/${{ matrix.pom-dir }}/pom.xml -Pall-tas-tests,${{ matrix.test-profile }} -Denvironment=default -DrunBugs=false "${args[@]}"
+        continue-on-error: true
       - name: "Print output after success"
         if: ${{ always() && steps.tests.outcome == 'success' }}
         run: ${TAS_SCRIPTS}/output_tests_run.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Print output after failure"
         if: ${{ always() && steps.tests.outcome == 'failure' }}
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
+      - name: "Update GitHub Step Summary"
+        run: |
+          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+      - name: "Summarize Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+        id: rp-summarize
+        with:
+          tests-outcome: ${{ steps.tests.outcome }}
+          rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+      - name: "Exit on failure"
+        if: steps.tests.outcome != 'success'
+        run: |
+          echo "::error title=
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
@@ -866,8 +900,44 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 15.4 database"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
+      - name: "Prepare Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
+        id: rp-prepare
+        with:
+          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testSuite }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-use-static-launch-name: true
+      - name: "Add GitHub Step Summary"
+        env:
+          RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
+          RP_KEY: ${{ steps.rp-prepare.outputs.key }}
+          RP_URL: ${{ steps.rp-prepare.outputs.url }}
+        run: bash scripts/ci/add_step_summary.sh
       - name: "Run tests"
-        run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        id: run-tests
+        env:
+          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+        run: |
+          eval "args=($RP_OPTS)"
+          mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
+        continue-on-error: true
+      - name: "Update GitHub Step Summary"
+        run: |
+          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+      - name: "Summarize Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+        id: rp-summarize
+        with:
+          tests-outcome: ${{ steps.run-tests.outcome }}
+          rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+      - name: "Exit on failure"
+        if: steps.run-tests.outcome != 'success'
+        run: |
+          echo "::error title=run-tests::Tests failed: re-throwing on error."
+          exit 1
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

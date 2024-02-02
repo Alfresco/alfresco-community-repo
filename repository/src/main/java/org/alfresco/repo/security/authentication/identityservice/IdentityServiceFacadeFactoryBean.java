@@ -447,7 +447,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             final String issuerUri = Optional.of(metadata)
                 .map(OIDCProviderMetadata::getIssuer)
                 .map(Issuer::getValue)
-                .orElseGet(config::getIssuerUrl);
+                .orElseGet(() -> (StringUtils.isNotBlank(config.getRealm()) && StringUtils.isBlank(config.getIssuerUrl())) ?
+                    config.getAuthServerUrl() :
+                    config.getIssuerUrl());
 
             return ClientRegistration
                 .withRegistrationId("ids")

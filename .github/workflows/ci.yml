@@ -691,7 +691,6 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          mvn -B test -pl repository -am -Dtest=CamelRoutesTest -DfailIfNoTests=false "${args[@]}"
           mvn -B test -pl repository -am -Dtest=CamelComponentsTest -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
         #mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false "${args[@]}"

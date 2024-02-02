@@ -31,7 +31,8 @@ public class GroupsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.GROUPS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify creation, listing, updating and deletion of groups.")
-    public void createListUpdateAndDeleteGroup() {
+    public void createListUpdateAndDeleteGroup()
+    {
         String groupName = "ZtestGroup" + UUID.randomUUID();
         String subGroupName = "ZtestSubgroup" + UUID.randomUUID();
         String groupDescription = "ZtestGroup description" + UUID.randomUUID();
@@ -111,7 +112,8 @@ public class GroupsTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.GROUPS, TestGroup.SANITY })
     @TestRail(section = { TestGroup.REST_API, TestGroup.NODES }, executionType = ExecutionType.SANITY,
             description = "Verify creation, listing(only for person) and deletion of group memberships. ")
-    public void createListDeleteGroupMembership() {
+    public void createListDeleteGroupMembership()
+    {
         String groupName = "ZtestGroup" + UUID.randomUUID();
         JsonObject groupBody = Json.createObjectBuilder().add("id", groupName).add("displayName", groupName).build();
         String groupBodyCreate = groupBody.toString();

@@ -379,11 +379,13 @@ public class GroupsImpl implements Groups
         String displayNameFilter = groupsFilter.getDisplayNameFilter();
         PagingResults<AuthorityInfo> pagingResult;
 
-        if (isRootParam != null || displayNameFilter != null)
+        // Don't use canned queries when fetching authorities with description
+        // if better performance is requested for loading descriptions we can add canned queries in the future
+        if (isRootParam != null || displayNameFilter != null || includeDescription)
         {
             List<AuthorityInfo> groupList;
 
-            if (isRootParam != null && isRootParam)
+            if ((isRootParam != null && isRootParam) || includeDescription)
             {
                 // Limit the post processing work by using the already loaded
                 // list of root authorities.

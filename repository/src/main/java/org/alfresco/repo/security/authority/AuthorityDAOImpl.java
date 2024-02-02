@@ -392,7 +392,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         props.put(ContentModel.PROP_NAME, DigestUtils.md5Hex(name));
         props.put(ContentModel.PROP_AUTHORITY_NAME, name);
         props.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
-        if (MapUtils.isNotEmpty(properties))
+        if (properties != null)
         {
             props.putAll(properties);
         }
@@ -1452,9 +1452,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             return Pair.nullPair();
         }
-        Serializable displayName = nodeService.getProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
+        String displayName = getAuthorityDisplayName(authorityName);
         Serializable description = nodeService.getProperty(ref, ContentModel.PROP_DESCRIPTION);
-        return new Pair<>(DefaultTypeConverter.INSTANCE.convert(String.class, displayName), DefaultTypeConverter.INSTANCE.convert(String.class, description));
+        return new Pair<>(displayName, DefaultTypeConverter.INSTANCE.convert(String.class, description));
     }
 
     @Override
@@ -1465,8 +1465,10 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             return;
         }
-        nodeService.setProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
-        nodeService.setProperty(ref, ContentModel.PROP_DESCRIPTION, description);
+        Map<QName, Serializable> properties = new HashMap<>();
+        properties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
+        properties.put(ContentModel.PROP_DESCRIPTION, description);
+        nodeService.setProperties(ref, properties);
     }
 
     public NodeRef getOrCreateZone(String zoneName)

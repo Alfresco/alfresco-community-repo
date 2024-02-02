@@ -704,6 +704,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-filter: "statistics.executions is not empty"
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |

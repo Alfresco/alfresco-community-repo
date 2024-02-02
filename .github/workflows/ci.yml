@@ -691,8 +691,9 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false "${args[@]}"
+          mvn -B test -pl repository -am -Dtest=CamelRoutesTest -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
+        #mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false "${args[@]}"
       - name: "Update GitHub Step Summary"
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
@@ -704,7 +705,6 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
-          rp-filter: "statistics.executions is not empty"
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |

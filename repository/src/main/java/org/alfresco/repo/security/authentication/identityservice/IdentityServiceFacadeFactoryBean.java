@@ -412,18 +412,18 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                         !metadataIssuerURI.equals(URI.create(config.getIssuerUrl())))
                     {
                         throw new IdentityServiceException("Failed to create ClientRegistration. "
-                            + "The Issuer value from the OIDC Discovery does not align with the provided Issuer. Expected `%s` but found `%s`"
+                            + "The Issuer value from the OIDC Discovery Endpoint does not align with the provided Issuer. Expected `%s` but found `%s`"
                             .formatted(config.getIssuerUrl(), metadata.getIssuer().getValue()));
                     }
                 }
                 catch (URISyntaxException e)
                 {
-                    throw new IdentityServiceException("The Issuer value could not be parsed as a URI reference.", e);
+                    throw new IdentityServiceException("The provided Issuer value could not be parsed as a URI reference.", e);
                 }
             }
             else
             {
-                throw new IdentityServiceException("The Issuer cannot be null.");
+                throw new IdentityServiceException("The Issuer retrieved from the OIDC Discovery Endpoint cannot be null.");
             }
 
             return metadata;
@@ -433,7 +433,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         {
             if (value == null || value.toASCIIString().isBlank())
             {
-                throw new IdentityServiceException("The `%s` Endpoint cannot be empty.".formatted(endpointName));
+                throw new IdentityServiceException("The `%s` Endpoint retrieved from the OIDC Discovery Endpoint cannot be empty.".formatted(endpointName));
             }
         }
 
@@ -621,11 +621,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             validators.add(new JwtIssuerValidator(providerDetails.getIssuerUri()));
             if (!config.isClientIdValidationDisabled())
             {
-                new JwtClaimValidator<String>("azp", config.getResource()::equals);
+                validators.add(new JwtClaimValidator<String>("azp", config.getResource()::equals));
             }
             if (StringUtils.isNotBlank(config.getAudience()))
             {
-                new JwtClaimValidator<String>(JwtClaimNames.AUD, config.getAudience()::equals);
+                validators.add(new JwtAudienceValidator(config.getAudience()));
             }
             return new DelegatingOAuth2TokenValidator<>(validators);
         }
@@ -700,6 +700,40 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             return OAuth2TokenValidatorResult.failure(error);
         }
 
+    }
+
+    static class JwtAudienceValidator implements OAuth2TokenValidator<Jwt>
+    {
+        private final String configuredAudience;
+
+        public JwtAudienceValidator(String configuredAudience)
+        {
+            this.configuredAudience = configuredAudience;
+        }
+
+        @Override
+        public OAuth2TokenValidatorResult validate(Jwt token)
+        {
+            requireNonNull(token, "token cannot be null");
+            final Object audience = token.getClaim(JwtClaimNames.AUD);
+            if (audience != null)
+            {
+                if(audience instanceof List && ((List<String>) audience).contains(configuredAudience))
+                {
+                    return OAuth2TokenValidatorResult.success();
+                }
+                if(audience instanceof String && audience.equals(configuredAudience))
+                {
+                    return OAuth2TokenValidatorResult.success();
+                }
+            }
+
+            final OAuth2Error error = new OAuth2Error(
+                OAuth2ErrorCodes.INVALID_TOKEN,
+                "The aud claim is not valid. Expected configured audience `%s` not found.".formatted(configuredAudience),
+                "https://tools.ietf.org/html/rfc6750#section-3.1");
+            return OAuth2TokenValidatorResult.failure(error);
+        }
     }
 
     private static boolean isDefined(String value)

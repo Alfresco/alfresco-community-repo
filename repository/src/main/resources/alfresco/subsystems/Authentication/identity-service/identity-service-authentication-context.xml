@@ -90,10 +90,10 @@
 
    <bean name="identityServiceConfig" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig">
       <property name="issuerUrl">
-         <value>${identity-service.issuer-url}</value>
+         <value>${identity-service.issuer-url:#{null}}</value>
       </property>
       <property name="audience">
-         <value>${identity-service.audience}</value>
+         <value>${identity-service.audience:#{null}}</value>
       </property>
       <property name="realm">
          <value>${identity-service.realm}</value>

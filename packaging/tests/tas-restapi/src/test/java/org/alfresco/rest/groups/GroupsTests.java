@@ -75,7 +75,7 @@ public class GroupsTests extends RestTest
         groupBody = Json.createObjectBuilder().add("displayName", "Z"+groupName).add("description", "Z"+groupDescription).build();
         String groupBodyUpdate = groupBody.toString();
         //UpdateGroup:
-        restClient.withCoreAPI().usingGroups().updateGroupDetails("GROUP_"+groupName, groupBodyUpdate)
+        restClient.withCoreAPI().usingParams("include=description").usingGroups().updateGroupDetails("GROUP_"+groupName, groupBodyUpdate)
                   .assertThat().field("displayName").is("Z"+groupName)
                   .and().field("description").is("Z"+groupDescription)
                   .and().field("id").is("GROUP_"+groupName)
@@ -83,7 +83,7 @@ public class GroupsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         //GetGroupDetails:
-        restClient.withCoreAPI().usingParams("include=zones,hasSubgroups,description").usingGroups().getGroupDetail("GROUP_"+groupName)
+        restClient.withCoreAPI().usingParams("include=zones,hasSubgroups").usingGroups().getGroupDetail("GROUP_"+groupName)
                   .assertThat().field("id").is("GROUP_"+groupName)
                   .and().field("zones").contains("APP.DEFAULT")
                   .and().field("isRoot").is(true)

@@ -673,7 +673,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Optionally included.
             assertNull(group.getParentIds());
             assertNull(group.getZones());
-            assertNotNull(group.getHasSubgroups());
+            assertNull(group.getHasSubgroups());
         }
     }
 

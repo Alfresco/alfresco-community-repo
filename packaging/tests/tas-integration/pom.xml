@@ -49,12 +49,6 @@
             <artifactId>agent-java-testng</artifactId>
             <version>5.4.0</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.squareup.okhttp3</groupId>
-                    <artifactId>okhttp</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>

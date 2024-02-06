@@ -1465,7 +1465,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             return;
         }
-        Map<QName, Serializable> properties = new HashMap<>();
+        Map<QName, Serializable> properties = nodeService.getProperties(ref);
         properties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
         properties.put(ContentModel.PROP_DESCRIPTION, description);
         nodeService.setProperties(ref, properties);

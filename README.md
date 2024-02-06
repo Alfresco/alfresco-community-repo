@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml/badge.svg?branch=master)](https://github.com/Alfresco/alfresco-community-repo/actions/workflows/master_release.yml)
 
-#### Alfresco Core
+#### Alfresco Core 
 
 Alfresco Core is a library packaged as a jar file which contains the following:
 * Various helpers and utils

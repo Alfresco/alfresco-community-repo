@@ -49,6 +49,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -69,6 +72,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     private static final String MEMBER_TYPE_PERSON = "PERSON";
     private static final String GROUP_EVERYONE = "GROUP_EVERYONE";
     private static final String INCLUDE_DESCRIPTION_HAS_SUBGROUPS = "description,hasSubgroups";
+
+    protected static final Logger logger = LoggerFactory.getLogger(GroupsTest.class);
 
     protected AuthorityService authorityService;
 
@@ -1426,7 +1431,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Group group = generateGroup();
             group.setDescription("testDesc");
 
-            System.out.println("" + otherParams);
+            logger.info("" + otherParams);
             Group createdGroup01 = groupsProxy.createGroup(group, otherParams, HttpServletResponse.SC_CREATED);
 
             assertNotNull(createdGroup01);

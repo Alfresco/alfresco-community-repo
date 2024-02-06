@@ -398,6 +398,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         NodeRef childRef;
         NodeRef authorityContainerRef = getAuthorityContainer();
+        logger.info("AuthorityDAO before create node");
         childRef = nodeService.createNode(authorityContainerRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver),
                 ContentModel.TYPE_AUTHORITY_CONTAINER, props).getChildRef();
         if (authorityZones != null)

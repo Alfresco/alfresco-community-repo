@@ -112,7 +112,7 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
         Boolean hasSubgroups = (Boolean) jsonObject.get("hasSubgroups");
         List<String> parentIds = (List<String>) jsonObject.get("parentIds");
         List<String> zones = (List<String>) jsonObject.get("zones");
-
+        System.out.println("Parse group: " + description + " " + displayName);
         Group group = new Group();
         group.setId(id);
         group.setDisplayName(displayName);

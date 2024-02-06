@@ -1426,6 +1426,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Group group = generateGroup();
             group.setDescription("testDesc");
 
+            System.out.println("" + otherParams);
             Group createdGroup01 = groupsProxy.createGroup(group, otherParams, HttpServletResponse.SC_CREATED);
 
             assertNotNull(createdGroup01);

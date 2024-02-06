@@ -136,6 +136,7 @@ public class GroupsImpl implements Groups
 
     public Group create(Group group, Parameters parameters)
     {
+        System.out.println("Create from impl called");
         validateGroup(group, false);
 
         // Create authority with default zones.
@@ -151,7 +152,7 @@ public class GroupsImpl implements Groups
         {
             props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
         }
-
+        System.out.println("Before authority created");
         String authority = authorityService.createAuthority(AuthorityType.GROUP, group.getId(), authorityDisplayName, authorityZones, props);
 
         // Set a given child authority to be included by the given parent

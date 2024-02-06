@@ -668,7 +668,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
-
+        System.out.println("Before authority DAO created");
         authorityDAO.createAuthority(name, authorityDisplayName, authorityZones, properties);
 
         return name;

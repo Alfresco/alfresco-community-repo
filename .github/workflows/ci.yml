@@ -968,7 +968,7 @@ jobs:
           mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Print output after failure"
-        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "amps/share-services"
+        run: ${TAS_SCRIPTS}/output_logs_for_share.sh "amps/share-services"
       - name: "Update GitHub Step Summary"
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY

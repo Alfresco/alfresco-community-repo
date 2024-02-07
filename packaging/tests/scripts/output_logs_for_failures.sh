@@ -28,6 +28,11 @@ ls -l "target/surefire-reports/testng-junit-results/Surefire suite"
 
 echo "" # This adds an empty line for clarity
 
+echo "Print : Surefire test.xml"
+cat "target/surefire-reports/testng-junit-results/Surefire suite/Surefire test.xml"
+
+echo "" # This adds an empty line for clarity
+
 # Add command to list all files in /target/surefire-reports/testng-native-results directory
 echo "Listing all files in /target/surefire-reports/testng-native-results directory:"
 ls -l target/surefire-reports/testng-native-results
@@ -37,6 +42,11 @@ echo "" # This adds an empty line for clarity
 # Add command to list all files in /target/surefire-reports/testng-native-results/Surefire suite directory
 echo "Listing all files in /target/surefire-reports/testng-native-results/Surefire suite directory:"
 ls -l "target/surefire-reports/testng-native-results/Surefire suite"
+
+echo "" # This adds an empty line for clarity
+
+echo "Print : Surefire test.xml"
+cat "target/surefire-reports/testng-native-results/Surefire suite/Surefire test.xml"
 
 echo "" # This adds an empty line for clarity
 

@@ -26,6 +26,7 @@ env:
   CI_WORKSPACE: ${{ github.workspace }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
+  TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
   # Report Portal settings
   RP_LAUNCH_PREFIX: "${{ github.workflow }} - ${{ github.job }}"
   RP_PROJECT: alfresco-backend
@@ -185,7 +186,7 @@ jobs:
         continue-on-error: true
       # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
       - name: "Print output after failure"
-        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
+        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "core"
       - name: "Update GitHub Step Summary"
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY

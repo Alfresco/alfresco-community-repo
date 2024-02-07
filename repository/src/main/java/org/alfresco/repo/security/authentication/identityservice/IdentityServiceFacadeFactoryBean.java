@@ -29,8 +29,12 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKeys.AUDIENCE_METADATA;
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKeys.SCOPES_SUPPORTED_METADATA;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,7 +46,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -81,9 +87,11 @@ import org.apache.hc.client5.http.ssl.TrustAllStrategy;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequest;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -193,9 +201,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
 
         @Override
-        public Optional<OIDCUserInfo> getUserInfo(String token)
+        public Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute)
         {
-            return getTargetFacade().getUserInfo(token);
+            return getTargetFacade().getUserInfo(token, principalAttribute);
         }
 
         @Override
@@ -251,7 +259,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             // * Client is authenticating itself using basic auth
             // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
 
-            final ClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+            final ClientHttpRequestFactory httpRequestFactory = new CustomClientHttpRequestFactory(
                 httpClientProvider.get());
             final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
             final ClientRegistration clientRegistration = clientRegistrationProvider.apply(restTemplate);
@@ -373,7 +381,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         private final IdentityServiceConfig config;
 
-        private static final Set<String> SUPPORTED_SCOPES = Set.of("openid", "profile", "email", "offline_access");
+        private static final Set<String> SCOPES = Set.of("openid", "profile", "email");
 
         ClientRegistrationProvider(IdentityServiceConfig config)
         {
@@ -458,8 +466,23 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
                 .issuerUri(issuerUri)
                 .userInfoUri(metadata.getUserInfoEndpointURI().toASCIIString())
-                .scope(scopes(metadata.getScopes()))
+                .scope(getSupportedScopes(metadata.getScopes()))
+                .providerConfigurationMetadata(createMetadata(metadata))
                 .authorizationGrantType(AuthorizationGrantType.PASSWORD);
+        }
+
+        private Map<String, Object> createMetadata(OIDCProviderMetadata metadata)
+        {
+            Map<String, Object> configurationMetadata = new LinkedHashMap<>();
+            if(metadata.getScopes() != null)
+            {
+                configurationMetadata.put(SCOPES_SUPPORTED_METADATA, metadata.getScopes());
+            }
+            if(StringUtils.isNotBlank(config.getAudience()))
+            {
+                configurationMetadata.put(AUDIENCE_METADATA, config.getAudience());
+            }
+            return configurationMetadata;
         }
 
         private Builder configureClientAuthentication(Builder builder)
@@ -474,9 +497,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
         }
 
-        private Set<String> scopes(Scope scopes)
+        private Set<String> getSupportedScopes(Scope scopes)
         {
-            return scopes.stream().filter(scope -> SUPPORTED_SCOPES.contains(scope.getValue()))
+            return scopes.stream().filter(scope -> SCOPES.contains(scope.getValue()))
                 .map(Identifier::getValue)
                 .collect(Collectors.toSet());
         }
@@ -733,6 +756,25 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 "The aud claim is not valid. Expected configured audience `%s` not found.".formatted(configuredAudience),
                 "https://tools.ietf.org/html/rfc6750#section-3.1");
             return OAuth2TokenValidatorResult.failure(error);
+        }
+    }
+
+
+    static class CustomClientHttpRequestFactory extends HttpComponentsClientHttpRequestFactory
+    {
+        CustomClientHttpRequestFactory(HttpClient httpClient)
+        {
+            super(httpClient);
+        }
+
+        @Override
+        public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) throws IOException
+        {
+            // This is to indicate the gzip and deflate content encoding
+            ClientHttpRequest request = super.createRequest(uri, httpMethod);
+            request.getHeaders()
+                .add("Accept-Encoding", "gzip, deflate");
+            return request;
         }
     }
 

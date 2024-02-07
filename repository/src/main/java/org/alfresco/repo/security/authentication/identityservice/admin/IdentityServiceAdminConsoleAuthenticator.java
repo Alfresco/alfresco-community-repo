@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,11 +26,20 @@
 package org.alfresco.repo.security.authentication.identityservice.admin;
 
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKeys.SCOPES_SUPPORTED_METADATA;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.nimbusds.oauth2.sdk.Scope;
+import com.nimbusds.oauth2.sdk.id.Identifier;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,12 +47,17 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.AdminConsoleAuthenticator;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * An {@link AdminConsoleAuthenticator} implementation to extract an externally authenticated user ID
@@ -56,7 +70,9 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
+    private static final Set<String> SCOPES = Set.of("openid", "profile", "email", "offline_access");
 
+    private IdentityServiceConfig identityServiceConfig;
     private IdentityServiceFacade identityServiceFacade;
     private AdminConsoleAuthenticationCookiesService cookiesService;
     private RemoteUserMapper remoteUserMapper;
@@ -177,13 +193,54 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
 
     private String getAuthenticationRequest(HttpServletRequest request)
     {
-        return identityServiceFacade.getClientRegistration().getProviderDetails().getAuthorizationUri()
-            + "?client_id="
-            + identityServiceFacade.getClientRegistration().getClientId()
-            + "&redirect_uri="
-            + request.getRequestURL()
-            + "&response_type=code"
-            + "&scope=openid";
+
+        ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
+
+        UriComponentsBuilder authRequestBuilder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getAuthorizationUri())
+            .queryParam("client_id", clientRegistration.getClientId())
+            .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
+            .queryParam("response_type", "code")
+            .queryParam("scope", String.join("+", getScopes(clientRegistration)));
+
+        if(StringUtils.isNotBlank(identityServiceConfig.getAudience()))
+        {
+            authRequestBuilder.queryParam("audience", identityServiceConfig.getAudience());
+        }
+
+        return authRequestBuilder.build().toUriString();
+    }
+
+    private Set<String> getScopes(ClientRegistration clientRegistration)
+    {
+        return Optional.ofNullable(clientRegistration.getProviderDetails())
+            .map(ProviderDetails::getConfigurationMetadata)
+            .map(metadata -> metadata.get(SCOPES_SUPPORTED_METADATA))
+            .filter(scope -> scope instanceof Scope)
+            .map(scope -> (Scope) scope)
+            .map(this::getSupportedScopes)
+            .orElse(clientRegistration.getScopes());
+    }
+
+    private Set<String> getSupportedScopes(Scope scopes)
+    {
+        return scopes.stream().filter(scope -> SCOPES.contains(scope.getValue()))
+            .map(Identifier::getValue)
+            .collect(Collectors.toSet());
+    }
+
+    private String getRedirectUri(String requestURL)
+    {
+        try
+        {
+            URI originalUri = new URI(requestURL);
+            URI redirectUri = new URI(originalUri.getScheme(), originalUri.getAuthority(), identityServiceConfig.getAdminConsoleRedirectPath(), originalUri.getQuery(), originalUri.getFragment());
+            return redirectUri.toASCIIString();
+        }
+        catch (URISyntaxException e)
+        {
+            LOGGER.error("Error while trying to get the redirect URI and respond with the authentication challenge: {}", e.getMessage(), e);
+            throw new AuthenticationException(e.getMessage(), e);
+        }
     }
 
     private void resetCookies(HttpServletResponse response)
@@ -238,6 +295,12 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         AdminConsoleAuthenticationCookiesService cookiesService)
     {
         this.cookiesService = cookiesService;
+    }
+
+    public void setIdentityServiceConfig(
+        IdentityServiceConfig identityServiceConfig)
+    {
+        this.identityServiceConfig = identityServiceConfig;
     }
 
     @Override

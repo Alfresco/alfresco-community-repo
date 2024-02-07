@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,6 +31,8 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
+
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -114,7 +116,8 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
         when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(null);
-        when(idsServiceFacadeMock.getUserInfo(accessToken)).thenReturn(identityServiceFacade.getUserInfo(accessToken));
+        when(idsServiceFacadeMock.getUserInfo(accessToken,
+            PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(identityServiceFacade.getUserInfo(accessToken, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME));
 
         // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
         Field declaredField = jitProvisioningHandler.getClass()
@@ -139,7 +142,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
         assertEquals("johndoe@test.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
         verify(idsServiceFacadeMock).decodeToken(accessToken);
-        verify(idsServiceFacadeMock).getUserInfo(accessToken);
+        verify(idsServiceFacadeMock).getUserInfo(accessToken, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
     }
 
     @After

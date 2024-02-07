@@ -230,7 +230,7 @@ public class ClientRegistrationProviderUnitTest
                 restTemplate);
             assertThat(
                 clientRegistration.getScopes().containsAll(
-                    Set.of("openid", "profile", "email", "offline_access"))).isTrue();
+                    Set.of("openid", "profile", "email"))).isTrue();
         }
     }
 

@@ -72,6 +72,10 @@ echo "" # This adds an empty line for clarity
 echo "Listing all files in /target/surefire-reports directory:"
 ls -l target/surefire-reports
 
+echo "" # This adds an empty line for clarity
+
+rm -rf target/surefire-reports/testng-native-results
+
 failures=$(grep 'status="FAIL"' target/surefire-reports/testng-results.xml | sed 's|^.*[ ]name="\([^"]*\)".*$|\1|g')
 
 for failure in ${failures}

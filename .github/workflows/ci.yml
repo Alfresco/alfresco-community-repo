@@ -147,12 +147,12 @@ jobs:
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - testModule: core
-          - testModule: data-model
+    #strategy:
+    #  fail-fast: false
+    #  matrix:
+    #    include:
+    #      - testModule: core
+    #      - testModule: data-model
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2

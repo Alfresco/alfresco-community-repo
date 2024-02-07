@@ -184,6 +184,8 @@ jobs:
           mvn -B test -pl core -am -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
+      - name: "Print output after failure"
+        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Update GitHub Step Summary"
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY

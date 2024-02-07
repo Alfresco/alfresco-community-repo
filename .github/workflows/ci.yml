@@ -26,7 +26,6 @@ env:
   CI_WORKSPACE: ${{ github.workspace }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
-  TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
   # Report Portal settings
   RP_LAUNCH_PREFIX: "${{ github.workflow }} - ${{ github.job }}"
   RP_PROJECT: alfresco-backend

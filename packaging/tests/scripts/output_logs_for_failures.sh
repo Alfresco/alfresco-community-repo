@@ -8,21 +8,17 @@ cd ${TAS_DIRECTORY}
 echo "Listing all files in /target directory:"
 ls -l target/
 
-# Add command to list all files in /target/reports directory
-echo "Listing all files in /target/reports directory:"
-ls -l target/reports/
-
 # Add command to list all files in /target/surefire-reports directory
 echo "Listing all files in /target/surefire-reports directory:"
 ls -l target/surefire-reports/
 
-# Print the contents of files with a pattern in /target/surefire-reports directory
-echo "Printing contents of files in /target/surefire-reports directory:"
-for file in target/surefire-reports/*-jvmRun1.dump; do
-    echo "Contents of $file:"
-    cat "$file"
-    echo "" # Add an empty line for better readability
-done
+# Add command to list all files in /target/surefire-reports/testng-junit-results directory
+echo "Listing all files in /target/surefire-reports/testng-junit-results directory:"
+ls -l target/surefire-reports/testng-junit-results
+
+# Add command to list all files in /target/surefire-reports/testng-native-results directory
+echo "Listing all files in /target/surefire-reports/testng-native-results directory:"
+ls -l target/surefire-reports/testng-native-results
 
 failures=$(grep 'status="FAIL"' target/surefire-reports/testng-results.xml | sed 's|^.*[ ]name="\([^"]*\)".*$|\1|g')
 

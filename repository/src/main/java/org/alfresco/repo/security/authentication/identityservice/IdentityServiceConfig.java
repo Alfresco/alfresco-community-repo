@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,7 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -40,6 +41,8 @@ public class IdentityServiceConfig
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
+    private String issuerUrl;
+    private String audience;
     // client id
     private String resource;
     private String clientSecret;
@@ -56,6 +59,8 @@ public class IdentityServiceConfig
     private String realmKey;
     private int publicKeyCacheTtl;
     private boolean publicClient;
+    private String principalAttribute;
+    private boolean clientIdValidationDisabled;
 
     /**
      *
@@ -103,9 +108,36 @@ public class IdentityServiceConfig
         return connectionPoolSize;
     }
 
+    public String getIssuerUrl()
+    {
+        return issuerUrl;
+    }
+
+    public void setIssuerUrl(String issuerUrl)
+    {
+        this.issuerUrl = issuerUrl;
+    }
+
+    public String getAudience()
+    {
+        return audience;
+    }
+
+    public void setAudience(String audience)
+    {
+        this.audience = audience;
+    }
+
     public String getAuthServerUrl()
     {
-        return authServerUrl;
+        return Optional.ofNullable(realm)
+            .filter(StringUtils::isNotBlank)
+            .filter(realm -> StringUtils.isNotBlank(authServerUrl))
+            .map(realm -> UriComponentsBuilder.fromUriString(authServerUrl)
+                .pathSegment(REALMS, realm)
+                .build()
+                .toString())
+            .orElse(authServerUrl);
     }
 
     public void setAuthServerUrl(String authServerUrl)
@@ -141,15 +173,7 @@ public class IdentityServiceConfig
     public String getClientSecret()
     {
         return Optional.ofNullable(clientSecret)
-                       .orElse("");
-    }
-
-    public String getIssuerUrl()
-    {
-        return UriComponentsBuilder.fromUriString(getAuthServerUrl())
-                                   .pathSegment(REALMS, getRealm())
-                                   .build()
-                                   .toString();
+            .orElse("");
     }
 
     public void setAllowAnyHostname(boolean allowAnyHostname)
@@ -250,5 +274,25 @@ public class IdentityServiceConfig
     public boolean isPublicClient()
     {
         return publicClient;
+    }
+
+    public String getPrincipalAttribute()
+    {
+        return principalAttribute;
+    }
+
+    public void setPrincipalAttribute(String principalAttribute)
+    {
+        this.principalAttribute = principalAttribute;
+    }
+
+    public boolean isClientIdValidationDisabled()
+    {
+        return clientIdValidationDisabled;
+    }
+
+    public void setClientIdValidationDisabled(boolean clientIdValidationDisabled)
+    {
+        this.clientIdValidationDisabled = clientIdValidationDisabled;
     }
 }

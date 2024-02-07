@@ -8,17 +8,37 @@ cd ${TAS_DIRECTORY}
 echo "Listing all files in /target directory:"
 ls -l target/
 
+echo "" # This adds an empty line for clarity
+
 # Add command to list all files in /target/surefire-reports directory
 echo "Listing all files in /target/surefire-reports directory:"
 ls -l target/surefire-reports/
+
+echo "" # This adds an empty line for clarity
 
 # Add command to list all files in /target/surefire-reports/testng-junit-results directory
 echo "Listing all files in /target/surefire-reports/testng-junit-results directory:"
 ls -l target/surefire-reports/testng-junit-results
 
+echo "" # This adds an empty line for clarity
+
+# Add command to list all files in /target/surefire-reports/testng-junit-results/Surefire suite directory
+echo "Listing all files in /target/surefire-reports/testng-junit-results/Surefire suite directory:"
+ls -l target/surefire-reports/testng-junit-results/Surefire suite
+
+echo "" # This adds an empty line for clarity
+
 # Add command to list all files in /target/surefire-reports/testng-native-results directory
 echo "Listing all files in /target/surefire-reports/testng-native-results directory:"
 ls -l target/surefire-reports/testng-native-results
+
+echo "" # This adds an empty line for clarity
+
+# Add command to list all files in /target/surefire-reports/testng-native-results/Surefire suite directory
+echo "Listing all files in /target/surefire-reports/testng-native-results/Surefire suite directory:"
+ls -l target/surefire-reports/testng-native-results/Surefire suite
+
+echo "" # This adds an empty line for clarity
 
 failures=$(grep 'status="FAIL"' target/surefire-reports/testng-results.xml | sed 's|^.*[ ]name="\([^"]*\)".*$|\1|g')
 

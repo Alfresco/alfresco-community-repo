@@ -164,6 +164,14 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <!-- Exclude the testng-native-results file -->
+               <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+            </configuration>
+         </plugin>
       </plugins>
    </build>
 

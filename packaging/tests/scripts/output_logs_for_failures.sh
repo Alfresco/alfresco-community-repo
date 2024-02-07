@@ -16,6 +16,14 @@ ls -l target/surefire-reports/
 
 echo "" # This adds an empty line for clarity
 
+echo "Print TestSuite-output.txt"
+cat "target/surefire-reports/TestSuite-output.txt"
+
+echo "" # This adds an empty line for clarity
+
+echo "Print TestSuite.txt"
+cat "target/surefire-reports/TestSuite.txt"
+
 # Add command to list all files in /target/surefire-reports/testng-junit-results directory
 echo "Listing all files in /target/surefire-reports/testng-junit-results directory:"
 ls -l target/surefire-reports/testng-junit-results

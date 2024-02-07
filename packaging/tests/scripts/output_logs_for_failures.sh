@@ -24,7 +24,7 @@ echo "" # This adds an empty line for clarity
 
 # Add command to list all files in /target/surefire-reports/testng-junit-results/Surefire suite directory
 echo "Listing all files in /target/surefire-reports/testng-junit-results/Surefire suite directory:"
-ls -l target/surefire-reports/testng-junit-results/Surefire suite
+ls -l "target/surefire-reports/testng-junit-results/Surefire suite"
 
 echo "" # This adds an empty line for clarity
 
@@ -36,7 +36,7 @@ echo "" # This adds an empty line for clarity
 
 # Add command to list all files in /target/surefire-reports/testng-native-results/Surefire suite directory
 echo "Listing all files in /target/surefire-reports/testng-native-results/Surefire suite directory:"
-ls -l target/surefire-reports/testng-native-results/Surefire suite
+ls -l "target/surefire-reports/testng-native-results/Surefire suite"
 
 echo "" # This adds an empty line for clarity
 

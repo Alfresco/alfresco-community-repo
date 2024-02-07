@@ -953,7 +953,47 @@
             ca.child_node_id
         ]]>
     </sql>
-    
+
+    <select id="select_allChildAssocsOfParent" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
+        <include refid="alfresco.node.select_ChildAssocsOfParentWithRecursive"></include>
+        <include refid="alfresco.node.select_ChildAssocsOfParent_Snippet"></include>
+        <include refid="alfresco.node.select_ChildAssocsOfParentRecursiveQuery"></include>
+    </select>
+    <sql id="select_ChildAssocsOfParentWithRecursive">
+        WITH RECURSIVE childAssosList AS (
+    </sql>
+    <sql id="select_ChildAssocsOfParentRecursiveQuery">
+        UNION ALL
+
+        select assoc.id                  as id,
+               parentNode.id             as parentNodeId,
+               parentNode.version        as parentNodeVersion,
+               parentStore.protocol      as parentNodeProtocol,
+               parentStore.identifier    as parentNodeIdentifier,
+               parentNode.uuid           as parentNodeUuid,
+               childNode.id              as childNodeId,
+               childNode.version         as childNodeVersion,
+               childStore.protocol       as childNodeProtocol,
+               childStore.identifier     as childNodeIdentifier,
+               childNode.uuid            as childNodeUuid,
+               assoc.type_qname_id       as type_qname_id,
+               assoc.child_node_name_crc as child_node_name_crc,
+               assoc.child_node_name     as child_node_name,
+               assoc.qname_ns_id         as qname_ns_id,
+               assoc.qname_localname     as qname_localname,
+               assoc.is_primary          as is_primary,
+               assoc.assoc_index         as assoc_index
+        from alf_child_assoc assoc
+                 join childAssosList on (assoc.parent_node_id = childAssosList.childNodeId)
+                 join alf_node parentNode on (parentNode.id = assoc.parent_node_id)
+                 join alf_store parentStore on (parentStore.id = parentNode.store_id)
+                 join alf_node childNode on (childNode.id = assoc.child_node_id)
+                 left join alf_store childStore on (childStore.id = childNode.store_id)
+            )
+        select *
+        from childAssosList
+    </sql>
+
     <select id="select_ChildAssocById" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssoc_Results"/>
         <include refid="alfresco.node.select_ChildAssoc_FromSimple"/>

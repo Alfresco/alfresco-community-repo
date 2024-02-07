@@ -174,7 +174,8 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          mvn -B test -pl core,data-model -am -DfailIfNoTests=false "${args[@]}"
+          mvn -B test -pl core -am -DfailIfNoTests=false "${args[@]}"
+          mvn -B test -pl data-model -am -DfailIfNoTests=false "${args[@]}"
           mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"

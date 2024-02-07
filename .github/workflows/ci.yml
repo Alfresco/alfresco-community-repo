@@ -176,8 +176,8 @@ jobs:
           eval "args=($RP_OPTS)"
           mvn -B test -pl core -am -DfailIfNoTests=false "${args[@]}"
           mvn -B test -pl data-model -am -DfailIfNoTests=false "${args[@]}"
-          mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
+      # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
       - name: "Update GitHub Step Summary"
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY

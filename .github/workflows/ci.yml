@@ -174,7 +174,7 @@ jobs:
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
-          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
+          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testModule }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
@@ -190,7 +190,7 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          mvn -B test -pl ${{matrix.testModule}} -am ${{matrix.testAttributes}} -DfailIfNoTests=false "${args[@]}"
+          mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       - name: "Print output after failure"
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "core"

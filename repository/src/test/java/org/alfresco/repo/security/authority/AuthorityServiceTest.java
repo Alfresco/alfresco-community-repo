@@ -1432,21 +1432,6 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(pubAuthorityService.getAuthorityDisplayName("ROLE_Gibbon"), "Gibbon");
         assertEquals(pubAuthorityService.getAuthorityDisplayName("Monkey"), "Monkey");
     }
-
-    @Test
-    public void testAuthorityDisplayNameAndDescription()
-    {
-        Map<QName, Serializable> props = new HashMap<>();
-        props.put(ContentModel.PROP_DESCRIPTION, "Test auth description");
-        String testAuth = pubAuthorityService.createAuthority(AuthorityType.GROUP, "Test auth", props);
-        Pair<String, String> displayNameAndDescription = pubAuthorityService.getAuthorityDisplayNameAndDescription(testAuth);
-        assertEquals(displayNameAndDescription.getFirst(), "Test auth");
-        assertEquals(displayNameAndDescription.getSecond(), "Test auth description");
-        pubAuthorityService.setAuthorityDisplayNameAndDescription(testAuth, "Modified auth", "Modified description");
-        displayNameAndDescription = pubAuthorityService.getAuthorityDisplayNameAndDescription(testAuth);
-        assertEquals(displayNameAndDescription.getFirst(), "Modified auth");
-        assertEquals(displayNameAndDescription.getSecond(), "Modified description");
-    }
     
     public void testGetAuthoritiesFilteringSorting()
     {

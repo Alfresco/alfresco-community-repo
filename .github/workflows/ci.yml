@@ -140,7 +140,7 @@ jobs:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
 
   all_unit_tests_suite:
-    name: ${{ matrix.testName }}
+    name: ${{ matrix.testName }} - AllUnitTestsSuite - Build and test
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -151,16 +151,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - testName: Core - Build and Test
+          - testName: Core
             testModule: core
             testAttributes:
-          - testName: Data-Model - Build and Test
+          - testName: Data-Model
             testModule: data-model
             testAttributes: "-DskipCoreTests=true"
-          - testName: Repository - AllUnitTestsSuite - Build and test
+          - testName: Repository
             testModule: repository
             testAttributes: "-Dtest=AllUnitTestsSuite"
-          - testName: Mmt - AllMmtUnitTestSuite - Build and Test
+          - testName: Mmt
             testModule: mmt
             testAttributes: "-Dtest=AllMmtUnitTestSuite"
     steps:
@@ -192,8 +192,6 @@ jobs:
           eval "args=($RP_OPTS)"
           mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
-      - name: "Print output after failure"
-        run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "core"
       - name: "Update GitHub Step Summary"
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY

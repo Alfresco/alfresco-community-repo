@@ -154,7 +154,7 @@ jobs:
           - testModule: core
             testSuite:
           - testModule: data-model
-            testSuite:
+            testSuite:  "-DexcludePackageNames=org.alfresco.core.*"
           - testModule: repository
             testSuite: "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite"
           - testModule: mmt
@@ -189,7 +189,6 @@ jobs:
           echo "Running mvn -B test -pl ${{matrix.testModule}} -am ${{matrix.testSuite}} -DfailIfNoTests=false "${args[@]}""
           mvn -B test -pl ${{matrix.testModule}} -am ${{matrix.testSuite}} -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
-      # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
       - name: "Print output after failure"
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "core"
       - name: "Update GitHub Step Summary"

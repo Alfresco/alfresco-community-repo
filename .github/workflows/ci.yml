@@ -187,7 +187,7 @@ jobs:
         run: |
           eval "args=($RP_OPTS)"
           echo "Running mvn -B test -pl ${{ matrix.testModule }} -am "-Dtest= {{ matrix.testSuite }}" -DfailIfNoTests=false ${args[@]}"
-          mvn -B test -pl ${{ matrix.testModule }} -am "-Dtest= {{ matrix.testSuite }}" -DfailIfNoTests=false ${args[@]}
+          mvn -B test -pl ${{ matrix.testModule }} -am "-Dtest= ${{ matrix.testSuite }}" -DfailIfNoTests=false ${args[@]}
         continue-on-error: true
       # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
       - name: "Print output after failure"
@@ -973,8 +973,6 @@ jobs:
           eval "args=($RP_OPTS)"
           mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
-      - name: "Print output after failure"
-        run: ${TAS_SCRIPTS}/output_logs_for_share.sh "amps/share-services"
       - name: "Update GitHub Step Summary"
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY

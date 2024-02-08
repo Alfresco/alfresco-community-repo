@@ -39,15 +39,24 @@ import org.alfresco.service.cmr.security.AuthorityType;
 public class AuthorityInfo
 {
     private Long nodeId;
-    
     private String authorityDisplayName; // eg. My Group, My Role
     private String authorityName;        // eg. GROUP_my1, ROLE_myA
+    private String description;
     
+    public AuthorityInfo(Long nodeId, String authorityDisplayName, String authorityName, String description)
+    {
+        this.nodeId = nodeId;
+        this.authorityDisplayName = authorityDisplayName;
+        this.authorityName = authorityName;
+        this.description = description;
+    }
+
     public AuthorityInfo(Long nodeId, String authorityDisplayName, String authorityName)
     {
         this.nodeId = nodeId;
         this.authorityDisplayName = authorityDisplayName;
         this.authorityName = authorityName;
+        this.description = null;
     }
     
     public Long getNodeId()
@@ -63,6 +72,10 @@ public class AuthorityInfo
     public String getAuthorityName()
     {
         return authorityName;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public String getShortName()

@@ -27,6 +27,7 @@ package org.alfresco.rest.api.impl;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
 
+import java.io.Serializable;
 import java.text.Collator;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
@@ -71,8 +73,10 @@ import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -101,9 +105,9 @@ public class GroupsImpl implements Groups
     }
 
     // List groups filtering (via where clause)
-    private final static Set<String> LIST_GROUPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_IS_ROOT }));
+    private final static Set<String> LIST_GROUPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_IS_ROOT));
 
-    private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_MEMBER_TYPE }));
+    private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(List.of(PARAM_MEMBER_TYPE));
 
     protected AuthorityService authorityService;
     private AuthorityDAO authorityDAO;
@@ -142,7 +146,12 @@ public class GroupsImpl implements Groups
             authorityDisplayName = group.getDisplayName();
         }
 
-        String authority = authorityService.createAuthority(AuthorityType.GROUP, group.getId(), authorityDisplayName, authorityZones);
+        Map<QName, Serializable> props = new HashMap<>();
+        if (StringUtils.isNotEmpty(group.getDescription()))
+        {
+            props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
+        }
+        String authority = authorityService.createAuthority(AuthorityType.GROUP, group.getId(), authorityDisplayName, authorityZones, props);
 
         // Set a given child authority to be included by the given parent
         // authorities.
@@ -161,7 +170,14 @@ public class GroupsImpl implements Groups
 
         try
         {
-            authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
+            if (StringUtils.isNotEmpty(group.getDescription()))
+            {
+                authorityService.setAuthorityDisplayNameAndDescription(groupId, group.getDisplayName(), group.getDescription());
+            }
+            else
+            {
+                authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
+            }
         }
         catch (AuthorityException ae)
         {
@@ -173,10 +189,10 @@ public class GroupsImpl implements Groups
 
     public Group getGroup(String groupId, Parameters parameters) throws EntityNotFoundException
     {
-        AuthorityInfo authorityInfo = getAuthorityInfo(groupId);
+        final List<String> includeParam = parameters.getInclude();
+        AuthorityInfo authorityInfo = getAuthorityInfo(groupId, includeParam.contains(PARAM_INCLUDE_DESCRIPTION));
 
         final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
-        final List<String> includeParam = parameters.getInclude();
 
         return getGroup(authorityInfo, includeParam, rootAuthorities);
     }
@@ -196,7 +212,7 @@ public class GroupsImpl implements Groups
         PagingResults<AuthorityInfo> pagingResult;
         try
         {
-            pagingResult = getAuthoritiesInfo(authorityType, groupsFilters, rootAuthorities, sortProp, paging);
+            pagingResult = getAuthoritiesInfo(authorityType, groupsFilters, rootAuthorities, sortProp, paging, parameters.getInclude().contains(PARAM_INCLUDE_DESCRIPTION));
         }
         catch (UnknownAuthorityException e)
         {
@@ -213,7 +229,7 @@ public class GroupsImpl implements Groups
     
     private List<Group> createGroupsResponse(final List<AuthorityInfo> page, final List<String> includeParam, final Set<String> rootAuthorities)
     {
-        List<Group> groups = new AbstractList<Group>()
+        List<Group> groups = new AbstractList<>()
         {
             @Override
             public Group get(int index)
@@ -336,7 +352,7 @@ public class GroupsImpl implements Groups
                 filter(a -> a.startsWith(AuthorityType.GROUP.getPrefixString())).
                 filter(a -> isRootPredicate(finalIsRootParam, rootAuthorities, a)).
                 filter(a -> zonePredicate(a, finalZoneFilter)).
-                map(this::getAuthorityInfo).
+                map(a -> getAuthorityInfo(a, includeParam.contains(PARAM_INCLUDE_DESCRIPTION))).
                 sorted(new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond())).
                 collect(Collectors.toList());
 
@@ -355,23 +371,25 @@ public class GroupsImpl implements Groups
     }
 
     private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, GroupsFilter groupsFilter, Set<String> rootAuthorities, 
-                                                            Pair<String, Boolean> sortProp, Paging paging)
+                                                            Pair<String, Boolean> sortProp, Paging paging, boolean includeDescription)
     {
         Boolean isRootParam = groupsFilter.getIsRoot();
         String zoneFilter = groupsFilter.getZoneFilter();
         String displayNameFilter = groupsFilter.getDisplayNameFilter();
         PagingResults<AuthorityInfo> pagingResult;
 
-        if (isRootParam != null || displayNameFilter != null)
+        // Don't use canned queries when fetching authorities with description
+        // if better performance is requested for loading descriptions we can add canned queries in the future
+        if (isRootParam != null || displayNameFilter != null || includeDescription)
         {
             List<AuthorityInfo> groupList;
 
-            if (isRootParam != null && isRootParam)
+            if ((isRootParam != null && isRootParam) || includeDescription)
             {
                 // Limit the post processing work by using the already loaded
                 // list of root authorities.
                 List<AuthorityInfo> authorities = rootAuthorities.stream().
-                        map(this::getAuthorityInfo).
+                        map(auth -> getAuthorityInfo(auth, includeDescription)).
                         filter(auth -> zonePredicate(auth.getAuthorityName(), zoneFilter)).
                         filter(auth -> displayNamePredicate(auth.getAuthorityDisplayName(), displayNameFilter)).
                         collect(Collectors.toList());
@@ -526,9 +544,9 @@ public class GroupsImpl implements Groups
      *            The authority name.
      * @return The authority info.
      */
-    private AuthorityInfo getAuthorityInfo(String id)
+    private AuthorityInfo getAuthorityInfo(String id, boolean includeDescription)
     {
-        return getAuthorityInfo(id, false);
+        return getAuthorityInfo(id, includeDescription, false);
     }
 
     /**
@@ -537,11 +555,13 @@ public class GroupsImpl implements Groups
      *
      * @param id
      *            The authority name.
+     * @param includeDescription
+     *            True if description should be loaded
      * @param defaultDisplayNameIfNull
      *            True if we would like to get a default value (e.g. shortName of the authority) if the authority display name is null.
      * @return The authority info.
      */
-    private AuthorityInfo getAuthorityInfo(String id, boolean defaultDisplayNameIfNull)
+    private AuthorityInfo getAuthorityInfo(String id, boolean includeDescription, boolean defaultDisplayNameIfNull)
     {
         if (id == null || id.isEmpty())
         {
@@ -554,14 +574,30 @@ public class GroupsImpl implements Groups
             throw new EntityNotFoundException(id);
         }
 
-        String authorityDisplayName = getAuthorityDisplayName(id, defaultDisplayNameIfNull);
+        String authorityDisplayName;
+        String description = null;
 
-        return new AuthorityInfo(null, authorityDisplayName, id);
+        if (includeDescription)
+        {
+            Pair<String, String> displayNameAndDescription = getAuthorityDisplayNameAndDescription(id, defaultDisplayNameIfNull);
+            authorityDisplayName = displayNameAndDescription.getFirst();
+            description = displayNameAndDescription.getSecond();
+        }
+        else
+        {
+            authorityDisplayName = getAuthorityDisplayName(id, defaultDisplayNameIfNull);
+        }
+        return new AuthorityInfo(null, authorityDisplayName, id, description);
     }
 
     private String getAuthorityDisplayName(String id, boolean defaultDisplayNameIfNull)
     {
         return defaultDisplayNameIfNull ? authorityService.getAuthorityDisplayName(id) : authorityDAO.getAuthorityDisplayName(id);
+    }
+
+    private Pair<String, String> getAuthorityDisplayNameAndDescription(String id, boolean defaultDisplayNameIfNull)
+    {
+        return defaultDisplayNameIfNull ? authorityService.getAuthorityDisplayNameAndDescription(id) : authorityDAO.getAuthorityDisplayNameAndDescription(id);
     }
 
     private Group getGroup(AuthorityInfo authorityInfo, List<String> includeParam, Set<String> rootAuthorities)
@@ -576,13 +612,23 @@ public class GroupsImpl implements Groups
 
         // REPO-1743
         String authorityDisplayName = authorityInfo.getAuthorityDisplayName();
+        String description = authorityInfo.getDescription();
         if (authorityDisplayName == null || authorityDisplayName.isEmpty())
         {
-            authorityDisplayName = authorityService.getAuthorityDisplayName(authorityInfo.getAuthorityName());
+            if (includeParam != null && includeParam.contains(PARAM_INCLUDE_DESCRIPTION))
+            {
+                Pair<String, String> displayNameAndDescription = authorityService.getAuthorityDisplayNameAndDescription(authorityInfo.getAuthorityName());
+                authorityDisplayName = displayNameAndDescription.getFirst();
+                description = displayNameAndDescription.getSecond();
+            }
+            else
+            {
+                authorityDisplayName = authorityService.getAuthorityDisplayName(authorityInfo.getAuthorityName());
+            }
         }
 
         group.setDisplayName(authorityDisplayName);
-
+        group.setDescription(description);
         group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
 
         // Optionally include
@@ -606,6 +652,19 @@ public class GroupsImpl implements Groups
                 Set<String> authorityZones = authorityService.getAuthorityZones(authorityInfo.getAuthorityName());
                 group.setZones(authorityZones);
             }
+
+            if (includeParam.contains(PARAM_INCLUDE_HAS_SUBGROUPS))
+            {
+                Set<String> containedAuthorities;
+                try
+                {
+                    containedAuthorities = authorityService.getContainedAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true);
+                } catch (UnknownAuthorityException e)
+                {
+                    containedAuthorities = Collections.emptySet();
+                }
+                group.setHasSubgroups(CollectionUtils.isNotEmpty(containedAuthorities));
+            }
         }
 
         return group;
@@ -621,7 +680,7 @@ public class GroupsImpl implements Groups
         Pair<String, Boolean> sortProp;
         List<SortColumn> sortCols = parameters.getSorting();
 
-        if ((sortCols != null) && (sortCols.size() > 0))
+        if (sortCols != null && !sortCols.isEmpty())
         {
             if (sortCols.size() > 1)
             {
@@ -636,7 +695,7 @@ public class GroupsImpl implements Groups
                 throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
             }
 
-            sortProp = new Pair<>(sortPropName, (sortCol.asc ? Boolean.TRUE : Boolean.FALSE));
+            sortProp = new Pair<>(sortPropName, sortCol.asc ? Boolean.TRUE : Boolean.FALSE);
         }
         else
         {
@@ -851,7 +910,6 @@ public class GroupsImpl implements Groups
         validateGroupMemberId(groupMemberId);
 
         // Verify if groupMemberId is member of groupId
-        AuthorityType authorityType = AuthorityType.getAuthorityType(groupMemberId);
         Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, groupMemberId, true);
         if (!parents.contains(groupId))
         {
@@ -894,7 +952,7 @@ public class GroupsImpl implements Groups
         }
 
         List<AuthorityInfo> authorityInfoList = new ArrayList<>(authorities.size());
-        authorityInfoList.addAll(authorities.stream().map(this::getAuthorityInfo).collect(Collectors.toList()));
+        authorityInfoList.addAll(authorities.stream().map(auth -> getAuthorityInfo(auth, false)).collect(Collectors.toList()));
 
         // Post process sorting - this should be moved to service
         // layer. It is done here because sorting is not supported at
@@ -943,7 +1001,7 @@ public class GroupsImpl implements Groups
 
     private GroupMember getGroupMember(String authorityId)
     {
-        AuthorityInfo authorityInfo = getAuthorityInfo(authorityId);
+        AuthorityInfo authorityInfo = getAuthorityInfo(authorityId, false);
 
         return getGroupMember(authorityInfo);
     }
@@ -1014,6 +1072,10 @@ public class GroupsImpl implements Groups
             {
                 throw new InvalidArgumentException("Group update does not support field: zones");
             }
+            if (group.wasSet(Group.HAS_SUBGROUPS))
+            {
+                throw new InvalidArgumentException("Group update does not support field: hasSubgroups");
+            }
         }
     }
 
@@ -1054,7 +1116,7 @@ public class GroupsImpl implements Groups
     {
         String name = inferPrefix ? authorityService.getName(authorityType, authorityName) : authorityName;
 
-        return (name != null && authorityService.authorityExists(name));
+        return name != null && authorityService.authorityExists(name);
     }
 
     private boolean isGroupAuthority(String authorityName)

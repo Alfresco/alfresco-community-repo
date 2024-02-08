@@ -42,7 +42,9 @@ public class Group implements Comparable<Group>
 
     protected String id; // group id (aka authority name)
     protected String displayName;
+    protected String description;
     protected Boolean isRoot;
+    protected Boolean hasSubgroups;
     protected Set<String> parentIds;
     protected Set<String> zones;
 
@@ -50,7 +52,9 @@ public class Group implements Comparable<Group>
 
     public static final String ID = "id";
     public static final String DISPLAY_NAME = "displayName";
+    public static final String DESCRIPTION = "description";
     public static final String IS_ROOT = "isRoot";
+    public static final String HAS_SUBGROUPS = "hasSubgroups";
     public static final String PARENT_IDS = "parentIds";
     public static final String ZONES = "zones";
 
@@ -81,6 +85,14 @@ public class Group implements Comparable<Group>
         setFields.put(DISPLAY_NAME, true);
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public Boolean getIsRoot()
     {
         return isRoot;
@@ -90,6 +102,14 @@ public class Group implements Comparable<Group>
     {
         this.isRoot = isRoot;
         setFields.put(IS_ROOT, true);
+    }
+
+    public Boolean getHasSubgroups() {
+        return hasSubgroups;
+    }
+
+    public void setHasSubgroups(Boolean hasSubgroups) {
+        this.hasSubgroups = hasSubgroups;
     }
 
     public Set<String> getParentIds()
@@ -154,12 +174,13 @@ public class Group implements Comparable<Group>
     @Override
     public String toString()
     {
-        return "Group [id=" + id + ", displayName=" + displayName + ", isRoot=" + isRoot + "]";
+        return "Group [id=" + id + ", displayName=" + displayName + ", description=" + description
+                + ", isRoot=" + isRoot + ", hasSubgroups=" + hasSubgroups + "]";
     }
 
     public boolean wasSet(String fieldName)
     {
         Boolean b = setFields.get(fieldName);
-        return (b != null ? b : false);
+        return b != null && b;
     }
 }

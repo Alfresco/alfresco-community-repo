@@ -37,8 +37,6 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Represents a group.
@@ -50,7 +48,6 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
 {
 
     private static final long serialVersionUID = -3580248429177260831L;
-    protected static final Logger logger = LoggerFactory.getLogger(Group.class);
 
     @Override
     public void expected(Object o)
@@ -115,7 +112,6 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
         Boolean hasSubgroups = (Boolean) jsonObject.get("hasSubgroups");
         List<String> parentIds = (List<String>) jsonObject.get("parentIds");
         List<String> zones = (List<String>) jsonObject.get("zones");
-        logger.info("Parse group: " + description + " " + displayName);
         Group group = new Group();
         group.setId(id);
         group.setDisplayName(displayName);

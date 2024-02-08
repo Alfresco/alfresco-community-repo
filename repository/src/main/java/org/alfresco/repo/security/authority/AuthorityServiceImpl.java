@@ -57,8 +57,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
@@ -70,8 +68,6 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
     public static final String GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX + "ALFRESCO_SYSTEM_ADMINISTRATORS";
-    protected static final Logger logger = LoggerFactory.getLogger(AuthorityServiceImpl.class);
-
     private static Set<String> DEFAULT_ZONES = new HashSet<String>();
     
     static
@@ -671,7 +667,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
-        logger.info("Before authority DAO created");
         authorityDAO.createAuthority(name, authorityDisplayName, authorityZones, properties);
 
         return name;

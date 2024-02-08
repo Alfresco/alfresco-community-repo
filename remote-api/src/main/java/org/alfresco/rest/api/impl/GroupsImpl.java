@@ -78,8 +78,6 @@ import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -95,8 +93,6 @@ public class GroupsImpl implements Groups
     private static final String ZONE = "zone";
     private static final String AUTHORITY_NAME = "authorityName";
     private static final String ERR_MSG_MODIFY_FIXED_AUTHORITY = "Trying to modify a fixed authority";
-
-    protected static final Logger logger = LoggerFactory.getLogger(GroupsImpl.class);
 
     private final static Map<String, String> SORT_PARAMS_TO_NAMES;
     static
@@ -140,7 +136,6 @@ public class GroupsImpl implements Groups
 
     public Group create(Group group, Parameters parameters)
     {
-        logger.info("Create from impl called");
         validateGroup(group, false);
 
         // Create authority with default zones.
@@ -156,7 +151,6 @@ public class GroupsImpl implements Groups
         {
             props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
         }
-        logger.info("Before authority created");
         String authority = authorityService.createAuthority(AuthorityType.GROUP, group.getId(), authorityDisplayName, authorityZones, props);
 
         // Set a given child authority to be included by the given parent

@@ -49,8 +49,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -71,9 +69,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     private static final String MEMBER_TYPE_GROUP = "GROUP";
     private static final String MEMBER_TYPE_PERSON = "PERSON";
     private static final String GROUP_EVERYONE = "GROUP_EVERYONE";
-    private static final String INCLUDE_DESCRIPTION_HAS_SUBGROUPS = "description,hasSubgroups";
-
-    protected static final Logger logger = LoggerFactory.getLogger(GroupsTest.class);
 
     protected AuthorityService authorityService;
 
@@ -1426,17 +1421,14 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
             Map<String, String> otherParams = new HashMap<>();
-            otherParams.put("include", INCLUDE_DESCRIPTION_HAS_SUBGROUPS);
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_HAS_SUBGROUPS);
 
             Group group = generateGroup();
-            group.setDescription("testDesc");
 
-            logger.info("" + otherParams);
             Group createdGroup01 = groupsProxy.createGroup(group, otherParams, HttpServletResponse.SC_CREATED);
 
             assertNotNull(createdGroup01);
             assertNotNull(createdGroup01.getId());
-            assertEquals(createdGroup01.getDescription(), "testDesc");
             assertTrue(createdGroup01.getIsRoot());
             assertNull(createdGroup01.getParentIds());
             assertFalse(createdGroup01.getHasSubgroups());
@@ -1447,7 +1439,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Group subGroup01 = generateGroup();
             subGroup01.setParentIds(subGroup01Parents);
 
-            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS + "," + INCLUDE_DESCRIPTION_HAS_SUBGROUPS);
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS + "," + org.alfresco.rest.api.Groups.PARAM_INCLUDE_HAS_SUBGROUPS);
             Group createdSubGroup01 = groupsProxy.createGroup(subGroup01, otherParams, HttpServletResponse.SC_CREATED);
             assertNotNull(createdSubGroup01);
             assertNotNull(createdSubGroup01.getId());
@@ -1631,7 +1623,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         final Groups groupsProxy = publicApiClient.groups();
 
         Map<String, String> otherParams = new HashMap<>();
-        otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS + "," + org.alfresco.rest.api.Groups.PARAM_INCLUDE_DESCRIPTION);
+        otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
 
         setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
@@ -1641,7 +1633,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         subGroupParents.add(group.getId());
 
         Group generatedSubGroup = generateGroup();
-        generatedSubGroup.setDescription("initialDesc");
         generatedSubGroup.setParentIds(subGroupParents);
 
         Group subGroup = groupsProxy.createGroup(generatedSubGroup, otherParams, HttpServletResponse.SC_CREATED);
@@ -1664,11 +1655,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
 
             String displayName = "newDisplayName";
-            String description = "newDesc";
 
             Group mySubGroup = new Group();
             mySubGroup.setDisplayName(displayName);
-            mySubGroup.setDescription(description);
 
             Group updateGroup = groupsProxy.updateGroup(subGroup.getId(), mySubGroup, otherParams, HttpServletResponse.SC_OK);
 
@@ -1678,9 +1667,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertFalse(updateGroup.getIsRoot());
             assertNotNull(updateGroup.getParentIds());
 
-            // Check that only display name and description changed.
+            // Check that only display name changed.
             assertEquals(displayName, updateGroup.getDisplayName());
-            assertEquals(description, updateGroup.getDescription());
 
             // Check that nothing else changed.
             assertEquals(subGroup.getId(), updateGroup.getId());

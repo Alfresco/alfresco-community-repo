@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.2.0.38-SNAPSHOT</version>
+    <version>23.2.0.45-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -54,7 +54,7 @@
         <dependency.alfresco-transform-core.version>5.0.1</dependency.alfresco-transform-core.version>
         <dependency.alfresco-transform-service.version>4.0.1</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.0</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.24</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.26</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.20.1</dependency.aspectj.version>
         <dependency.spring.version>6.0.14</dependency.spring.version>
@@ -64,7 +64,7 @@
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>9.0</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.76</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.77</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.4.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>
         <dependency.org-json.version>20231013</dependency.org-json.version>
@@ -81,17 +81,16 @@
         <dependency.slf4j.version>2.0.9</dependency.slf4j.version>
         <dependency.log4j.version>2.20.0</dependency.log4j.version>
         <dependency.groovy.version>3.0.19</dependency.groovy.version>
-        <dependency.tika.version>2.4.1</dependency.tika.version>
+        <dependency.tika.version>2.9.1</dependency.tika.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>5.2.2</dependency.poi.version>
-        <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
+        <dependency.poi.version>5.2.5</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.0.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.96.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.3</dependency.activemq.version>
-        <dependency.apache-compress.version>1.24.0</dependency.apache-compress.version>
+        <dependency.apache-compress.version>1.25.0</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
-        <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
+        <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.67</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
         <dependency.maven-artifact.version>3.8.6</dependency.maven-artifact.version>
@@ -462,7 +461,7 @@
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>5.1.1</version>
+                <version>5.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>
@@ -650,17 +649,17 @@
             <!-- Enforce newer version -->
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk15to18</artifactId>
+                <artifactId>bcprov-jdk18on</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcmail-jdk15to18</artifactId>
+                <artifactId>bcmail-jdk18on</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk15to18</artifactId>
+                <artifactId>bcpkix-jdk18on</artifactId>
                 <version>${dependency.bouncycastle.version}</version>
             </dependency>
             <dependency>
@@ -1111,10 +1110,10 @@
                                             <exclude>com.sun.xml.bind</exclude>
                                         </excludes>
                                         <includes>
-                                            <include>org.bouncycastle:bcprov-jdk15to18:[1.74,)</include>
-                                            <include>org.bouncycastle:bcmail-jdk15to18:[1.74,)</include>
-                                            <include>org.bouncycastle:bcpkix-jdk15to18:[1.74,)</include>
-                                            <include>org.bouncycastle:bcutil-jdk15to18:[1.74,)</include>
+                                            <include>org.bouncycastle:bcprov-jdk18on:[1.77,)</include>
+                                            <include>org.bouncycastle:bcmail-jdk18on:[1.77,)</include>
+                                            <include>org.bouncycastle:bcpkix-jdk18on:[1.77,)</include>
+                                            <include>org.bouncycastle:bcutil-jdk18on:[1.77,)</include>
                                         </includes>
                                     </bannedDependencies>
                                 </rules>

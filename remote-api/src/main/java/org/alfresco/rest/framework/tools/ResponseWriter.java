@@ -26,37 +26,34 @@
 
 package org.alfresco.rest.framework.tools;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.alfresco.rest.framework.Api;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
-import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
-import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.rest.framework.resource.SerializablePagedCollection;
-import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
-import org.springframework.beans.BeanUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.webscripts.*;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Description;
+import org.springframework.extensions.webscripts.Format;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * Writes to the response
@@ -193,24 +190,52 @@ public interface ResponseWriter
     default void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res, final JacksonHelper jsonHelper)
                 throws IOException
     {
+        renderErrorResponse(errorResponse, res, null, jsonHelper);
+    }
 
-        String logId = "";
-
-        if (Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode() || resWriterLogger().isDebugEnabled())
-        {
-            logId = org.alfresco.util.GUID.generate();
-            resWriterLogger().error(logId + " : " + errorResponse.getStackTrace());
-        }
-
+    /**
+     * Renders a JSON error response
+     *
+     * @param errorResponse The error
+     * @param res           web script response
+     * @param req           web script request
+     * @throws IOException
+     */
+    default void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res, final WebScriptRequest req,
+            final JacksonHelper jsonHelper) throws IOException
+    {
         String stackMessage = I18NUtil.getMessage(DefaultExceptionResolver.STACK_MESSAGE_ID);
+        String logId = org.alfresco.util.GUID.generate();
 
         final ErrorResponse errorToWrite = new ErrorResponse(errorResponse.getErrorKey(), errorResponse.getStatusCode(),
-                    errorResponse.getBriefSummary(), stackMessage, logId, errorResponse.getAdditionalState(), DefaultExceptionResolver.ERROR_URL);
+                errorResponse.getBriefSummary(), stackMessage, logId, errorResponse.getAdditionalState(),
+                DefaultExceptionResolver.ERROR_URL);
+
+        String reqUrl = (req != null) ? req.getURL() : "unknown";
+        String userName = AuthenticationUtil.getFullyAuthenticatedUser() != null ? AuthenticationUtil.getFullyAuthenticatedUser()
+                : "unauthenticated user";
+
+        // If internal server error or class in debug then print the stack trace
+        if (Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode() || resWriterLogger().isDebugEnabled())
+        {
+            resWriterLogger().error("Exception " + errorToWrite.getLogId() + ". Request " + reqUrl + " executed by " + userName
+                    + " returned status code " + errorResponse.getStatusCode() + " with message: "
+                    + errorResponse.getBriefSummary() + " - Stack Trace: " + errorResponse.getStackTrace());
+        }
+        else
+        {
+            resWriterLogger().error("Exception " + errorToWrite.getLogId() + ". Request " + reqUrl + " executed by user "
+                    + userName + " returned status code " + errorResponse.getStatusCode() + " with message: "
+                    + errorResponse.getBriefSummary() + " - Increase logging on " + this.getClass().getName()
+                    + " for stack trace.");
+        }
 
         setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);
 
-        // Status must be set before the response is written by Jackson (which will by default close and commit the response).
-        // In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
+        // Status must be set before the response is written by Jackson (which will by default close and commit the
+        // response).
+        // In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is
+        // important.
         res.setStatus(errorToWrite.getStatusCode());
 
         jsonHelper.withWriter(res.getOutputStream(), new JacksonHelper.Writer()
@@ -218,7 +243,7 @@ public interface ResponseWriter
             @SuppressWarnings("unchecked")
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
+                    throws JsonGenerationException, JsonMappingException, IOException
             {
                 JSONObject obj = new JSONObject();
                 obj.put("error", errorToWrite);
@@ -236,7 +261,21 @@ public interface ResponseWriter
      */
     default void renderException(final Exception exception, final WebScriptResponse response, final ApiAssistant assistant) throws IOException
     {
-        renderErrorResponse(assistant.resolveException(exception), response, assistant.getJsonHelper());
+        renderException(exception, response, null, assistant);
+    }
+
+    /**
+     * Renders an exception to the output stream as Json.
+     *
+     * @param exception
+     * @param response
+     * @param request
+     * @throws IOException
+     */
+    default void renderException(final Exception exception, final WebScriptResponse response, final WebScriptRequest request,
+            final ApiAssistant assistant) throws IOException
+    {
+        renderErrorResponse(assistant.resolveException(exception), response, request, assistant.getJsonHelper());
     }
 
     /**

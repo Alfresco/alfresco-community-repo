@@ -143,7 +143,7 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
         else
         {
             try {
-                renderException((Exception)exception, response, apiAssistant);
+                renderException((Exception)exception, response, request, apiAssistant);
             } catch (IOException e) {
                 logger.error("Internal error", e);
                 throw new WebScriptException("Internal error", e);

@@ -9,7 +9,11 @@
 
 	<test name="CORE Tests">
 		<packages>
-            <package name="org.alfresco.core"/>
+            <package name="org.alfresco.config"/>
+            <package name="org.alfresco.encryption"/>
+            <package name="org.alfresco.error"/>
+            <package name="org.alfresco.query"/>
+            <package name="org.alfresco.util"/>
 		</packages>
 	</test>
 </suite>

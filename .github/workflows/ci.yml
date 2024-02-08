@@ -187,7 +187,7 @@ jobs:
         run: |
           eval "args=($RP_OPTS)"
           echo "Running mvn -B test -pl ${{matrix.testModule}} -am ${{matrix.testSuite}} -DfailIfNoTests=false ${args[@]}"
-          mvn -B test -pl ${{matrix.testModule}} -am ${{matrix.testSuite}} -DfailIfNoTests=false ${args[@]}
+          mvn -B test -pl ${{matrix.testModule}} -am ${{matrix.testSuite}} -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
       - name: "Print output after failure"

@@ -156,9 +156,9 @@ jobs:
           - testModule: data-model
             testSuite:
           - testModule: repository
-            testSuite: AllUnitTestsSuite,AllMmtUnitTestSuite
+            testSuite: "AllUnitTestsSuite,AllMmtUnitTestSuite"
           - testModule: mmt
-            testSuite: AllUnitTestsSuite,AllMmtUnitTestSuite
+            testSuite: "AllUnitTestsSuite,AllMmtUnitTestSuite"
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
@@ -186,8 +186,8 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          echo "Running mvn -B test -pl ${{ matrix.testModule }} -am "-Dtest= {{ matrix.testSuite }}" -DfailIfNoTests=false ${args[@]}"
-          mvn -B test -pl ${{ matrix.testModule }} -am "-Dtest= ${{ matrix.testSuite }}" -DfailIfNoTests=false ${args[@]}
+          echo "Running mvn -B test -pl ${{ matrix.testModule }} -am "-Dtest= ${{ matrix.testSuite }}" -DfailIfNoTests=false ${args[@]}"
+          mvn -B test -pl ${{ matrix.testModule }} -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false ${args[@]}
         continue-on-error: true
       # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"
       - name: "Print output after failure"

@@ -168,7 +168,10 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-
+               <!-- Specify the TestNG suite XML file -->
+               <suiteXmlFiles>
+                  <suiteXmlFile>core-suite.xml</suiteXmlFile>
+               </suiteXmlFiles>
             </configuration>
          </plugin>
       </plugins>

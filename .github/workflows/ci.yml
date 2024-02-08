@@ -147,12 +147,12 @@ jobs:
       !contains(github.event.head_commit.message, '[skip repo]') &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
-    #strategy:
-    #  fail-fast: false
-    #  matrix:
-    #    include:
-    #      - testModule: core
-    #      - testModule: data-model
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - testModule: core
+          - testModule: data-model
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2
@@ -164,7 +164,7 @@ jobs:
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
-          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
+          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testModule }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
@@ -180,7 +180,7 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          echo "Running mvn -B test -pl core -am -DfailIfNoTests=false ${args[@]}"
+          echo "Running mvn -B test -pl ${{ matrix.testModule }} -am -DfailIfNoTests=false ${args[@]}"
           mvn -B test -pl core -am -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       # mvn -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false "${args[@]}"

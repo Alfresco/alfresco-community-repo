@@ -170,7 +170,7 @@
             <configuration>
                <!-- Specify the TestNG suite XML file -->
                <suiteXmlFiles>
-                  <suiteXmlFile>src/resources/core-suite.xml</suiteXmlFile>
+                  <suiteXmlFile>src/test/resources/core-suite.xml</suiteXmlFile>
                </suiteXmlFiles>
             </configuration>
          </plugin>

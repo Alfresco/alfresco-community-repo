@@ -154,7 +154,7 @@ jobs:
           - testModule: core
             testSuite:
           - testModule: data-model
-            testSuite:  "-DexcludePackageNames=org.alfresco.core.*"
+            testSuite:  "-DexcludePackageNames=core"
           - testModule: repository
             testSuite: "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite"
           - testModule: mmt

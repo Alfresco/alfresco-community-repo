@@ -16,18 +16,6 @@ ls -l target/surefire-reports/
 
 echo "" # This adds an empty line for clarity
 
-echo "Print TestSuite-output.txt"
-cat "target/surefire-reports/TestSuite-output.txt"
-
-echo "" # This adds an empty line for clarity
-
-echo "Print TestSuite.txt"
-cat "target/surefire-reports/TestSuite.txt"
-
-echo "" # This adds an empty line for clarity
-
-echo "Print TestSuite.xml"
-cat "target/surefire-reports/TEST-TestSuite.xml"
 
 echo "" # This adds an empty line for clarity
 
@@ -54,27 +42,6 @@ ls -l target/surefire-reports/testng-native-results
 
 echo "" # This adds an empty line for clarity
 
-# Add command to list all files in /target/surefire-reports/testng-native-results/Surefire suite directory
-echo "Listing all files in /target/surefire-reports/testng-native-results/Surefire suite directory:"
-ls -l "target/surefire-reports/testng-native-results/Surefire suite"
-
-echo "" # This adds an empty line for clarity
-
-echo "Print : Surefire test.xml"
-cat "target/surefire-reports/testng-native-results/Surefire suite/Surefire test.xml"
-
-echo "" # This adds an empty line for clarity
-
-rm -rf target/surefire-reports/testng-native-results
-
-echo "" # This adds an empty line for clarity
-
-echo "Listing all files in /target/surefire-reports directory:"
-ls -l target/surefire-reports
-
-echo "" # This adds an empty line for clarity
-
-rm -rf target/surefire-reports/testng-native-results
 
 failures=$(grep 'status="FAIL"' target/surefire-reports/testng-results.xml | sed 's|^.*[ ]name="\([^"]*\)".*$|\1|g')
 

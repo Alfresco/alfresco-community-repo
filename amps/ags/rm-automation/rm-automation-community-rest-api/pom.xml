@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>23.2.0.38-SNAPSHOT</version>
+      <version>23.2.0.45-SNAPSHOT</version>
    </parent>
 
    <build>
@@ -96,11 +96,11 @@
       </dependency>
       <dependency>
          <groupId>org.bouncycastle</groupId>
-         <artifactId>bcprov-jdk15to18</artifactId>
+         <artifactId>bcprov-jdk18on</artifactId>
       </dependency>
       <dependency>
          <groupId>org.bouncycastle</groupId>
-         <artifactId>bcpkix-jdk15to18</artifactId>
+         <artifactId>bcpkix-jdk18on</artifactId>
       </dependency>
    </dependencies>
 </project>

@@ -59,6 +59,14 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     private IdentityServiceFacade identityServiceFacade;
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
+    private final boolean isAuth0Enabled = Optional.ofNullable(System.getProperty("auth0.enabled"))
+        .map(Boolean::valueOf)
+        .orElse(false);
+
+    private final String userPassword = Optional.ofNullable(System.getProperty("admin.password"))
+        .filter(password -> isAuth0Enabled)
+        .orElse("password");
+
     @Before
     public void setup()
     {
@@ -87,7 +95,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertFalse(personService.personExists(IDS_USERNAME));
 
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, "password"));
+            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
 
         Optional<OIDCUserInfo> userInfoOptional = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             accessTokenAuthorization.getAccessToken().getTokenValue());
@@ -96,18 +104,26 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 
         assertTrue(userInfoOptional.isPresent());
         assertEquals(IDS_USERNAME, userInfoOptional.get().username());
-        assertEquals("John", userInfoOptional.get().firstName());
-        assertEquals("Doe", userInfoOptional.get().lastName());
-        assertEquals("johndoe@test.com", userInfoOptional.get().email());
+        assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
-        assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
-        assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
-        assertEquals("johndoe@test.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
+        assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
+
+        if(!isAuth0Enabled)
+        {
+            assertEquals("John", userInfoOptional.get().firstName());
+            assertEquals("Doe", userInfoOptional.get().lastName());
+            assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
+            assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
+        }
     }
 
     @Test
     public void shouldCallUserInfoEndpointAndCreateUser() throws IllegalAccessException, NoSuchFieldException
     {
+        if(isAuth0Enabled)
+        {
+            return;
+        }
         assertFalse(personService.personExists(IDS_USERNAME));
 
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
@@ -136,11 +152,11 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertEquals(IDS_USERNAME, userInfoOptional.get().username());
         assertEquals("John", userInfoOptional.get().firstName());
         assertEquals("Doe", userInfoOptional.get().lastName());
-        assertEquals("johndoe@test.com", userInfoOptional.get().email());
+        assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
         assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
         assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
-        assertEquals("johndoe@test.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
+        assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
         verify(idsServiceFacadeMock).decodeToken(accessToken);
         verify(idsServiceFacadeMock).getUserInfo(accessToken, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
     }

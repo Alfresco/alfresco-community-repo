@@ -154,7 +154,7 @@ jobs:
           - testModule: core
             testSuite:
           - testModule: data-model
-            testSuite:  "-DexcludePackageNames=core"
+            testSuite:  "-DskipCoreTests=true"
           - testModule: repository
             testSuite: "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite"
           - testModule: mmt

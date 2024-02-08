@@ -156,9 +156,9 @@ jobs:
           - testModule: data-model
             testSuite:  "-DskipCoreTests=true"
           - testModule: repository
-            testSuite: "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite"
+            testSuite: "-Dtest=AllUnitTestsSuite"
           - testModule: mmt
-            testSuite: "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite"
+            testSuite: "-Dtest=AllMmtUnitTestSuite"
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.35.2

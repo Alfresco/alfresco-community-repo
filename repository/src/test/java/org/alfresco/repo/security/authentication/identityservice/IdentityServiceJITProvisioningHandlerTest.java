@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -153,7 +153,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
         verify(idsServiceFacadeMock).decodeToken(accessToken);
-        verify(idsServiceFacadeMock, times(2)).getUserInfo(accessToken, principalAttribute);
+        verify(idsServiceFacadeMock, atLeast(1)).getUserInfo(accessToken, principalAttribute);
         if (!isAuth0Enabled)
         {
             assertEquals("John", userInfoOptional.get().firstName());

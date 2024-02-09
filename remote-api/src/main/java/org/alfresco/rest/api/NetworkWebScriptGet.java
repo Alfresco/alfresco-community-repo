@@ -109,11 +109,11 @@ public class NetworkWebScriptGet extends ApiWebScript implements ResponseWriter
         }
         catch (ApiException | WebScriptException apiException)
         {
-            renderException(apiException, res, assistant);
+            renderException(apiException, res, req, assistant);
         }
         catch (RuntimeException runtimeException)
         {
-            renderException(runtimeException, res, assistant);
+            renderException(runtimeException, res, req, assistant);
         }
     }
 }

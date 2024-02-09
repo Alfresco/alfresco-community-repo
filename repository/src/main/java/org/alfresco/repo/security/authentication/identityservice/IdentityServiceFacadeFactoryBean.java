@@ -770,7 +770,10 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         @Override
         public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) throws IOException
         {
-            // This is to indicate the gzip and deflate content encoding
+            /*
+             * This is to avoid the Brotli content encoding that is not well-supported by the combination of
+             * the Apache Http Client and the Spring RestTemplate
+             */
             ClientHttpRequest request = super.createRequest(uri, httpMethod);
             request.getHeaders()
                 .add("Accept-Encoding", "gzip, deflate");

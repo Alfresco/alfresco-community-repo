@@ -56,18 +56,23 @@ public class IdentityServiceJITProvisioningHandler
     private final PersonService personService;
     private final TransactionService transactionService;
 
-    private final BiFunction<DecodedAccessToken, Optional<String>, Optional<? extends OIDCUserInfo>> mapTokenToUserInfoResponse = (token, usernameMappingClaim) -> {
-        Optional<String> firstName = Optional.ofNullable(token.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME))
+    private final BiFunction<DecodedAccessToken, String, Optional<? extends OIDCUserInfo>> mapTokenToUserInfoResponse = (token, usernameMappingClaim) -> {
+        Optional<String> firstName = Optional.ofNullable(token)
+            .map(jwtToken -> jwtToken.getClaim(PersonClaims.GIVEN_NAME_CLAIM_NAME))
             .filter(String.class::isInstance)
             .map(String.class::cast);
-        Optional<String> lastName = Optional.ofNullable(token.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME))
+        Optional<String> lastName = Optional.ofNullable(token)
+            .map(jwtToken -> jwtToken.getClaim(PersonClaims.FAMILY_NAME_CLAIM_NAME))
             .filter(String.class::isInstance)
             .map(String.class::cast);
-        Optional<String> email = Optional.ofNullable(token.getClaim(PersonClaims.EMAIL_CLAIM_NAME))
+        Optional<String> email = Optional.ofNullable(token)
+            .map(jwtToken -> jwtToken.getClaim(PersonClaims.EMAIL_CLAIM_NAME))
             .filter(String.class::isInstance)
             .map(String.class::cast);
 
-        return Optional.ofNullable(token.getClaim(usernameMappingClaim.orElse(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)))
+        return Optional.ofNullable(token.getClaim(Optional.ofNullable(usernameMappingClaim)
+                .filter(StringUtils::isNotBlank)
+                .orElse(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)))
             .filter(String.class::isInstance)
             .map(String.class::cast)
             .map(this::normalizeUserId)
@@ -134,13 +139,15 @@ public class IdentityServiceJITProvisioningHandler
     {
         return Optional.ofNullable(bearerToken)
             .map(identityServiceFacade::decodeToken)
-            .flatMap(decodedToken -> mapTokenToUserInfoResponse.apply(decodedToken, Optional.ofNullable(identityServiceConfig.getPrincipalAttribute())
-                .filter(StringUtils::isNotBlank)));
+            .flatMap(decodedToken -> mapTokenToUserInfoResponse.apply(decodedToken,
+                identityServiceConfig.getPrincipalAttribute()));
     }
 
     private Optional<OIDCUserInfo> extractUserInfoResponseFromEndpoint(String bearerToken)
     {
-        return identityServiceFacade.getUserInfo(bearerToken, Optional.ofNullable(identityServiceConfig.getPrincipalAttribute()).orElse(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
+        return identityServiceFacade.getUserInfo(bearerToken,
+                StringUtils.isNotBlank(identityServiceConfig.getPrincipalAttribute()) ?
+                    identityServiceConfig.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)
             .filter(userInfo -> userInfo.username() != null && !userInfo.username().isEmpty())
             .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.username()),
                 Optional.ofNullable(userInfo.firstName()).orElse(""),

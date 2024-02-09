@@ -415,7 +415,7 @@ jobs:
             idp: Keycloak
           - testSuite: AppContext05TestSuite
             compose-profile: default
-            mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.enabled=true -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD}'
+            mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.enabled=true -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD} -Didentity-service.principal-attribute=nickname'
             idp: Auth0
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio

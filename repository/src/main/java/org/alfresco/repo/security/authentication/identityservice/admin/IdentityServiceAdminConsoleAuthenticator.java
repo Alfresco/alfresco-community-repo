@@ -215,7 +215,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
         return Optional.ofNullable(clientRegistration.getProviderDetails())
             .map(ProviderDetails::getConfigurationMetadata)
             .map(metadata -> metadata.get(SCOPES_SUPPORTED_METADATA))
-            .filter(scope -> scope instanceof Scope)
+            .filter(Scope.class::isInstance)
             .map(scope -> (Scope) scope)
             .map(this::getSupportedScopes)
             .orElse(clientRegistration.getScopes());
@@ -223,7 +223,8 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
 
     private Set<String> getSupportedScopes(Scope scopes)
     {
-        return scopes.stream().filter(scope -> SCOPES.contains(scope.getValue()))
+        return scopes.stream()
+            .filter(scope -> SCOPES.contains(scope.getValue()))
             .map(Identifier::getValue)
             .collect(Collectors.toSet());
     }

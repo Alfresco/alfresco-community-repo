@@ -253,10 +253,11 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     {
         final DefaultPasswordTokenResponseClient client = new DefaultPasswordTokenResponseClient();
         client.setRestOperations(rest);
-        Optional.of(clientRegistration).map(ClientRegistration::getProviderDetails)
+        Optional.of(clientRegistration)
+            .map(ClientRegistration::getProviderDetails)
             .map(ProviderDetails::getConfigurationMetadata)
             .map(metadata -> metadata.get(AUDIENCE_METADATA))
-            .filter(audienceValue -> audienceValue instanceof String)
+            .filter(String.class::isInstance)
             .map(audienceValue -> (String) audienceValue)
             .ifPresent(audienceValue -> {
                 final OAuth2PasswordGrantRequestEntityConverter requestEntityConverter = new OAuth2PasswordGrantRequestEntityConverter();

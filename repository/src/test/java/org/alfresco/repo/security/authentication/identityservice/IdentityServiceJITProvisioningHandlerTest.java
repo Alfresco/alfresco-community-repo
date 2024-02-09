@@ -26,6 +26,7 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,7 +96,8 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertFalse(personService.personExists(IDS_USERNAME));
 
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
+            identityServiceFacade.authorize(
+                IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
 
         Optional<OIDCUserInfo> userInfoOptional = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             accessTokenAuthorization.getAccessToken().getTokenValue());
@@ -108,7 +110,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
         assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
 
-        if(!isAuth0Enabled)
+        if (!isAuth0Enabled)
         {
             assertEquals("John", userInfoOptional.get().firstName());
             assertEquals("Doe", userInfoOptional.get().lastName());
@@ -120,20 +122,17 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     @Test
     public void shouldCallUserInfoEndpointAndCreateUser() throws IllegalAccessException, NoSuchFieldException
     {
-        if(isAuth0Enabled)
-        {
-            return;
-        }
         assertFalse(personService.personExists(IDS_USERNAME));
 
+        String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, "password"));
+            identityServiceFacade.authorize(
+                IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
 
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
         when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(null);
-        when(idsServiceFacadeMock.getUserInfo(accessToken,
-            PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(identityServiceFacade.getUserInfo(accessToken, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME));
+        when(idsServiceFacadeMock.getUserInfo(accessToken, principalAttribute)).thenReturn(identityServiceFacade.getUserInfo(accessToken, principalAttribute));
 
         // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
         Field declaredField = jitProvisioningHandler.getClass()
@@ -150,15 +149,18 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 
         assertTrue(userInfoOptional.isPresent());
         assertEquals(IDS_USERNAME, userInfoOptional.get().username());
-        assertEquals("John", userInfoOptional.get().firstName());
-        assertEquals("Doe", userInfoOptional.get().lastName());
-        assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
-        assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
-        assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
+        assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
         verify(idsServiceFacadeMock).decodeToken(accessToken);
-        verify(idsServiceFacadeMock).getUserInfo(accessToken, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
+        verify(idsServiceFacadeMock, times(2)).getUserInfo(accessToken, principalAttribute);
+        if (!isAuth0Enabled)
+        {
+            assertEquals("John", userInfoOptional.get().firstName());
+            assertEquals("Doe", userInfoOptional.get().lastName());
+            assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
+            assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
+        }
     }
 
     @After

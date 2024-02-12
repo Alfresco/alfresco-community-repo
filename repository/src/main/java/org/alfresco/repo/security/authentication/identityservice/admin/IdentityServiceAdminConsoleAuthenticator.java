@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.Identifier;
+import com.nimbusds.oauth2.sdk.id.State;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -193,14 +194,15 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
 
     private String getAuthenticationRequest(HttpServletRequest request)
     {
-
         ClientRegistration clientRegistration = identityServiceFacade.getClientRegistration();
+        State state = new State();
 
         UriComponentsBuilder authRequestBuilder = UriComponentsBuilder.fromUriString(clientRegistration.getProviderDetails().getAuthorizationUri())
             .queryParam("client_id", clientRegistration.getClientId())
             .queryParam("redirect_uri", getRedirectUri(request.getRequestURL().toString()))
             .queryParam("response_type", "code")
-            .queryParam("scope", String.join("+", getScopes(clientRegistration)));
+            .queryParam("scope", String.join("+", getScopes(clientRegistration)))
+            .queryParam("state", state.toString());
 
         if(StringUtils.isNotBlank(identityServiceConfig.getAudience()))
         {
@@ -216,7 +218,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
             .map(ProviderDetails::getConfigurationMetadata)
             .map(metadata -> metadata.get(SCOPES_SUPPORTED_METADATA))
             .filter(Scope.class::isInstance)
-            .map(scope -> (Scope) scope)
+            .map(Scope.class::cast)
             .map(this::getSupportedScopes)
             .orElse(clientRegistration.getScopes());
     }

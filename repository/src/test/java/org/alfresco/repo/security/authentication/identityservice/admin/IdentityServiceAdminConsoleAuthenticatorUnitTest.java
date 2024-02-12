@@ -168,6 +168,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         assertTrue(authenticationRequest.getValue().contains("profile"));
         assertTrue(authenticationRequest.getValue().contains("email"));
         assertTrue(authenticationRequest.getValue().contains("offline_access"));
+        assertTrue(authenticationRequest.getValue().contains("state"));
     }
 
     @Test
@@ -190,7 +191,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         assertTrue(authenticationRequest.getValue().contains("email"));
         assertTrue(authenticationRequest.getValue().contains("offline_access"));
         assertTrue(authenticationRequest.getValue().contains("audience=%s".formatted(audience)));
-
+        assertTrue(authenticationRequest.getValue().contains("state"));
     }
 
     @Test

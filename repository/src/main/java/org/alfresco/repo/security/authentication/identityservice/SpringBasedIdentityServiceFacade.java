@@ -258,7 +258,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
             .map(ProviderDetails::getConfigurationMetadata)
             .map(metadata -> metadata.get(AUDIENCE_METADATA))
             .filter(String.class::isInstance)
-            .map(audienceValue -> (String) audienceValue)
+            .map(String.class::cast)
             .ifPresent(audienceValue -> {
                 final OAuth2PasswordGrantRequestEntityConverter requestEntityConverter = new OAuth2PasswordGrantRequestEntityConverter();
                 requestEntityConverter.addParametersConverter(audienceParameterConverter(audienceValue));

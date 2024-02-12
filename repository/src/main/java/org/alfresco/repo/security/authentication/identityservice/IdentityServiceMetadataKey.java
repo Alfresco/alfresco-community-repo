@@ -25,8 +25,20 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-public class IdentityServiceMetadataKeys
+public enum IdentityServiceMetadataKey
 {
-    public static final String AUDIENCE_METADATA = "audience";
-    public static final String SCOPES_SUPPORTED_METADATA = "scopes_supported";
+    AUDIENCE("audience"),
+    SCOPES_SUPPORTED("scopes_supported");
+
+    private String value;
+
+    IdentityServiceMetadataKey(String value)
+    {
+        this.value = value;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
 }

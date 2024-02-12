@@ -28,7 +28,7 @@ package org.alfresco.repo.security.authentication.identityservice;
 
 import static java.util.Objects.requireNonNull;
 
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKeys.AUDIENCE_METADATA;
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.AUDIENCE;
 
 import java.io.IOException;
 import java.net.URI;
@@ -256,7 +256,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         Optional.of(clientRegistration)
             .map(ClientRegistration::getProviderDetails)
             .map(ProviderDetails::getConfigurationMetadata)
-            .map(metadata -> metadata.get(AUDIENCE_METADATA))
+            .map(metadata -> metadata.get(AUDIENCE.getValue()))
             .filter(String.class::isInstance)
             .map(String.class::cast)
             .ifPresent(audienceValue -> {

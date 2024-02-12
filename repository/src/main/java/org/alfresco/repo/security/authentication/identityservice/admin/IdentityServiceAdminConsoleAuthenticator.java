@@ -26,7 +26,7 @@
 package org.alfresco.repo.security.authentication.identityservice.admin;
 
 import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant.authorizationCode;
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKeys.SCOPES_SUPPORTED_METADATA;
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
 
 import java.io.IOException;
 import java.net.URI;
@@ -216,7 +216,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     {
         return Optional.ofNullable(clientRegistration.getProviderDetails())
             .map(ProviderDetails::getConfigurationMetadata)
-            .map(metadata -> metadata.get(SCOPES_SUPPORTED_METADATA))
+            .map(metadata -> metadata.get(SCOPES_SUPPORTED.getValue()))
             .filter(Scope.class::isInstance)
             .map(Scope.class::cast)
             .map(this::getSupportedScopes)

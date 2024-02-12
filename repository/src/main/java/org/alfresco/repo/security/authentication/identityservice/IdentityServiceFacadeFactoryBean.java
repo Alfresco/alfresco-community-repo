@@ -29,8 +29,8 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKeys.AUDIENCE_METADATA;
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKeys.SCOPES_SUPPORTED_METADATA;
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.AUDIENCE;
+import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -476,11 +476,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             Map<String, Object> configurationMetadata = new LinkedHashMap<>();
             if(metadata.getScopes() != null)
             {
-                configurationMetadata.put(SCOPES_SUPPORTED_METADATA, metadata.getScopes());
+                configurationMetadata.put(SCOPES_SUPPORTED.getValue(), metadata.getScopes());
             }
             if(StringUtils.isNotBlank(config.getAudience()))
             {
-                configurationMetadata.put(AUDIENCE_METADATA, config.getAudience());
+                configurationMetadata.put(AUDIENCE.getValue(), config.getAudience());
             }
             return configurationMetadata;
         }

@@ -269,18 +269,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             else if (Pair.class.isAssignableFrom(returnedObject.getClass()))
             {
-                Pair<?, ?> pair = (Pair<?, ?>) returnedObject;
-                if (pair.getSecond() != null && NodeRef.class.isAssignableFrom(pair.getSecond().getClass()))
-                {
-                    return decide(authentication, object, config, pair);
-                } else
-                {
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("Uncontrolled object - access allowed for " + object.getClass().getName());
-                    }
-                    return returnedObject;
-                }
+                return decide(authentication, object, config, (Pair) returnedObject);
             }
             else if (ChildAssociationRef.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -435,6 +424,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     @SuppressWarnings("rawtypes")
     private Pair decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Pair returnedObject) throws AccessDeniedException
     {
+        if (returnedObject.getSecond() != null && !NodeRef.class.isAssignableFrom(returnedObject.getSecond().getClass()))
+        {
+            return returnedObject;
+        }
+
         NodeRef nodeRef = (NodeRef) returnedObject.getSecond();
         decide(authentication, object, config, nodeRef);
         // the noderef was allowed

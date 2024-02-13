@@ -31,14 +31,11 @@
             <artifactId>webdav</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--
         <dependency>
             <groupId>com.epam.reportportal</groupId>
             <artifactId>agent-java-testng</artifactId>
-            <version>5.4.0</version>
             <scope>test</scope>
         </dependency>
-        -->
     </dependencies>
 
     <build>

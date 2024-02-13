@@ -61,6 +61,7 @@ public class IdentityServiceConfig
     private boolean publicClient;
     private String principalAttribute;
     private boolean clientIdValidationDisabled;
+    private String adminConsoleRedirectPath;
 
     /**
      *
@@ -294,5 +295,15 @@ public class IdentityServiceConfig
     public void setClientIdValidationDisabled(boolean clientIdValidationDisabled)
     {
         this.clientIdValidationDisabled = clientIdValidationDisabled;
+    }
+
+    public String getAdminConsoleRedirectPath()
+    {
+        return adminConsoleRedirectPath;
+    }
+
+    public void setAdminConsoleRedirectPath(String adminConsoleRedirectPath)
+    {
+        this.adminConsoleRedirectPath = adminConsoleRedirectPath;
     }
 }

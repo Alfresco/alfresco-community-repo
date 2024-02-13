@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,12 +25,15 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.util.Optional;
+
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -56,6 +59,14 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     private TransactionService transactionService;
     private IdentityServiceFacade identityServiceFacade;
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
+
+    private final boolean isAuth0Enabled = Optional.ofNullable(System.getProperty("auth0.enabled"))
+        .map(Boolean::valueOf)
+        .orElse(false);
+
+    private final String userPassword = Optional.ofNullable(System.getProperty("admin.password"))
+        .filter(password -> isAuth0Enabled)
+        .orElse("password");
 
     @Before
     public void setup()
@@ -85,7 +96,8 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertFalse(personService.personExists(IDS_USERNAME));
 
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, "password"));
+            identityServiceFacade.authorize(
+                IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
 
         Optional<OIDCUserInfo> userInfoOptional = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             accessTokenAuthorization.getAccessToken().getTokenValue());
@@ -94,13 +106,17 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 
         assertTrue(userInfoOptional.isPresent());
         assertEquals(IDS_USERNAME, userInfoOptional.get().username());
-        assertEquals("John", userInfoOptional.get().firstName());
-        assertEquals("Doe", userInfoOptional.get().lastName());
-        assertEquals("johndoe@test.com", userInfoOptional.get().email());
+        assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
-        assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
-        assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
-        assertEquals("johndoe@test.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
+        assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
+
+        if (!isAuth0Enabled)
+        {
+            assertEquals("John", userInfoOptional.get().firstName());
+            assertEquals("Doe", userInfoOptional.get().lastName());
+            assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
+            assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
+        }
     }
 
     @Test
@@ -108,13 +124,15 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     {
         assertFalse(personService.personExists(IDS_USERNAME));
 
+        String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-            identityServiceFacade.authorize(IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, "password"));
+            identityServiceFacade.authorize(
+                IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
 
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
         when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(null);
-        when(idsServiceFacadeMock.getUserInfo(accessToken)).thenReturn(identityServiceFacade.getUserInfo(accessToken));
+        when(idsServiceFacadeMock.getUserInfo(accessToken, principalAttribute)).thenReturn(identityServiceFacade.getUserInfo(accessToken, principalAttribute));
 
         // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
         Field declaredField = jitProvisioningHandler.getClass()
@@ -131,15 +149,18 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 
         assertTrue(userInfoOptional.isPresent());
         assertEquals(IDS_USERNAME, userInfoOptional.get().username());
-        assertEquals("John", userInfoOptional.get().firstName());
-        assertEquals("Doe", userInfoOptional.get().lastName());
-        assertEquals("johndoe@test.com", userInfoOptional.get().email());
         assertEquals(IDS_USERNAME, nodeService.getProperty(person, ContentModel.PROP_USERNAME));
-        assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
-        assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
-        assertEquals("johndoe@test.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
+        assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
+        assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
         verify(idsServiceFacadeMock).decodeToken(accessToken);
-        verify(idsServiceFacadeMock).getUserInfo(accessToken);
+        verify(idsServiceFacadeMock, atLeast(1)).getUserInfo(accessToken, principalAttribute);
+        if (!isAuth0Enabled)
+        {
+            assertEquals("John", userInfoOptional.get().firstName());
+            assertEquals("Doe", userInfoOptional.get().lastName());
+            assertEquals("John", nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME));
+            assertEquals("Doe", nodeService.getProperty(person, ContentModel.PROP_LASTNAME));
+        }
     }
 
     @After

@@ -152,6 +152,9 @@
       <property name="clientIdValidationDisabled">
          <value>${identity-service.client-id.validation.disabled:true}</value>
       </property>
+      <property name="adminConsoleRedirectPath">
+         <value>${identity-service.admin-console.redirect-path}</value>
+      </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->
@@ -188,12 +191,16 @@
       <property name="remoteUserMapper">
          <ref bean="remoteUserMapper" />
       </property>
+      <property name="identityServiceConfig">
+         <ref bean="identityServiceConfig" />
+      </property>
    </bean>
 
    <bean id="jitProvisioningHandler" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandler">
       <constructor-arg ref="PersonService"/>
       <constructor-arg ref="identityServiceFacade"/>
       <constructor-arg ref="transactionService"/>
+      <constructor-arg ref="identityServiceConfig"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

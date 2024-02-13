@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -94,13 +94,14 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         final TransactionService transactionService = mock(TransactionService.class);
         final IdentityServiceFacade facade = mock(IdentityServiceFacade.class);
         final PersonService personService = mock(PersonService.class);
+        final IdentityServiceConfig identityServiceConfig = mock(IdentityServiceConfig.class);
         when(transactionService.isReadOnly()).thenReturn(true);
         when(facade.decodeToken(anyString()))
                 .thenAnswer(i -> new TestDecodedToken(tokenToUser.get(i.getArgument(0, String.class))));
 
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
 
-        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService, transactionService);
+        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService, transactionService, identityServiceConfig);
 
         final IdentityServiceRemoteUserMapper mapper = new IdentityServiceRemoteUserMapper();
         mapper.setJitProvisioningHandler(jitProvisioning);

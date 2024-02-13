@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,10 +36,15 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Map;
+
+import com.nimbusds.oauth2.sdk.Scope;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessToken;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
@@ -68,6 +73,8 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Mock
     IdentityServiceFacade identityServiceFacade;
     @Mock
+    IdentityServiceConfig identityServiceConfig;
+    @Mock
     AdminConsoleAuthenticationCookiesService cookiesService;
     @Mock
     RemoteUserMapper remoteUserMapper;
@@ -88,9 +95,12 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         initMocks(this);
         ClientRegistration clientRegistration = mock(ClientRegistration.class);
         ProviderDetails providerDetails = mock(ProviderDetails.class);
+        Scope scope = Scope.parse(Arrays.asList("openid", "profile", "email", "offline_access"));
+
         when(clientRegistration.getProviderDetails()).thenReturn(providerDetails);
         when(clientRegistration.getClientId()).thenReturn("alfresco");
         when(providerDetails.getAuthorizationUri()).thenReturn("http://localhost:8999/auth");
+        when(providerDetails.getConfigurationMetadata()).thenReturn(Map.of("scopes_supported", scope));
         when(identityServiceFacade.getClientRegistration()).thenReturn(clientRegistration);
         when(request.getRequestURL()).thenReturn(adminConsoleURL);
         when(remoteUserMapper.getRemoteUser(request)).thenReturn(null);
@@ -100,6 +110,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         authenticator.setIdentityServiceFacade(identityServiceFacade);
         authenticator.setCookiesService(cookiesService);
         authenticator.setRemoteUserMapper(remoteUserMapper);
+        authenticator.setIdentityServiceConfig(identityServiceConfig);
     }
 
     @Test
@@ -142,11 +153,45 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
     @Test
     public void shouldCallAuthChallenge() throws IOException
     {
-        String authenticationRequest = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=" + adminConsoleURL
-            + "&response_type=code&scope=openid";
+        String redirectPath = "/alfresco/s/admin/admin-communitysummary";
+
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+        String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
+            .formatted("http://localhost:8080", redirectPath);
+
         authenticator.requestAuthentication(request, response);
 
-        verify(response).sendRedirect(authenticationRequest);
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertTrue(authenticationRequest.getValue().contains(expectedUri));
+        assertTrue(authenticationRequest.getValue().contains("openid"));
+        assertTrue(authenticationRequest.getValue().contains("profile"));
+        assertTrue(authenticationRequest.getValue().contains("email"));
+        assertTrue(authenticationRequest.getValue().contains("offline_access"));
+        assertTrue(authenticationRequest.getValue().contains("state"));
+    }
+
+    @Test
+    public void shouldCallAuthChallengeWithAudience() throws IOException
+    {
+        String audience = "http://localhost:8082";
+        String redirectPath = "/alfresco/s/admin/admin-communitysummary";
+        when(identityServiceConfig.getAudience()).thenReturn(audience);
+        when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
+        ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
+        String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
+            .formatted("http://localhost:8080", redirectPath);
+
+        authenticator.requestAuthentication(request, response);
+
+        verify(response).sendRedirect(authenticationRequest.capture());
+        assertTrue(authenticationRequest.getValue().contains(expectedUri));
+        assertTrue(authenticationRequest.getValue().contains("openid"));
+        assertTrue(authenticationRequest.getValue().contains("profile"));
+        assertTrue(authenticationRequest.getValue().contains("email"));
+        assertTrue(authenticationRequest.getValue().contains("offline_access"));
+        assertTrue(authenticationRequest.getValue().contains("audience=%s".formatted(audience)));
+        assertTrue(authenticationRequest.getValue().contains("state"));
     }
 
     @Test

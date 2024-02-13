@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -33,7 +33,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
 
 /**
  * Allows to interact with the Identity Service
@@ -60,9 +59,10 @@ public interface IdentityServiceFacade
      * Gets claims about the authenticated user,
      * such as name and email address, via the UserInfo endpoint of the OpenID provider.
      * @param token {@link String} with encoded access token value.
+     * @param principalAttribute {@link String} the attribute name used to access the user's name from the user info response.
      * @return {@link OIDCUserInfo} containing user claims.
      */
-    Optional<OIDCUserInfo> getUserInfo(String token);
+    Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute);
 
     /**
      * Gets a client registration

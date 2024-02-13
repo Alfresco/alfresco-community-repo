@@ -424,6 +424,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     @SuppressWarnings("rawtypes")
     private Pair decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Pair returnedObject) throws AccessDeniedException
     {
+        if (returnedObject.getSecond() != null && !NodeRef.class.isAssignableFrom(returnedObject.getSecond().getClass()))
+        {
+            return returnedObject;
+        }
+
         NodeRef nodeRef = (NodeRef) returnedObject.getSecond();
         decide(authentication, object, config, nodeRef);
         // the noderef was allowed

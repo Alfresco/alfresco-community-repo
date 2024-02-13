@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -61,6 +61,9 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
     private TransactionService transactionService;
 
     @Mock
+    private IdentityServiceConfig identityServiceConfig;
+
+    @Mock
     private OIDCUserInfo userInfo;
 
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
@@ -76,7 +79,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
         jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade,
-            personService, transactionService);
+            personService, transactionService, identityServiceConfig);
     }
 
     @Test
@@ -91,7 +94,23 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertTrue(result.isPresent());
         assertEquals("johny123", result.get().username());
         assertFalse(result.get().allFieldsNotEmpty());
-        verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN);
+        verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
+    }
+
+    @Test
+    public void shouldExtractUserInfoForExistingUserWithProviderPrincipalAttribute()
+    {
+        when(identityServiceConfig.getPrincipalAttribute()).thenReturn("nickname");
+        when(personService.personExists("johny123")).thenReturn(true);
+        when(decodedAccessToken.getClaim("nickname")).thenReturn("johny123");
+
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            JWT_TOKEN);
+
+        assertTrue(result.isPresent());
+        assertEquals("johny123", result.get().username());
+        assertFalse(result.get().allFieldsNotEmpty());
+        verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN, "nickname");
     }
 
     @Test
@@ -114,7 +133,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals("johny123@email.com", result.get().email());
         assertTrue(result.get().allFieldsNotEmpty());
         verify(personService).createPerson(any());
-        verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN);
+        verify(identityServiceFacade, never()).getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
     }
 
     @Test
@@ -128,7 +147,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(personService.personExists("johny123")).thenReturn(false);
 
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("johny123");
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(Optional.of(userInfo));
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
@@ -140,21 +159,21 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals("johny123@email.com", result.get().email());
         assertTrue(result.get().allFieldsNotEmpty());
         verify(personService).createPerson(any());
-        verify(identityServiceFacade).getUserInfo(JWT_TOKEN);
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
     }
 
     @Test
     public void shouldReturnEmptyOptionalIfUsernameNotExtracted()
     {
 
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(Optional.of(userInfo));
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
 
         assertFalse(result.isPresent());
         verify(personService, never()).createPerson(any());
-        verify(identityServiceFacade).getUserInfo(JWT_TOKEN);
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
     }
 
     @Test
@@ -165,7 +184,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(decodedAccessToken.getClaim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn("");
 
         when(userInfo.username()).thenReturn("johny123");
-        when(identityServiceFacade.getUserInfo(JWT_TOKEN)).thenReturn(Optional.of(userInfo));
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)).thenReturn(Optional.of(userInfo));
 
         Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
             JWT_TOKEN);
@@ -177,7 +196,31 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         assertEquals("", result.get().email());
         assertFalse(result.get().allFieldsNotEmpty());
         verify(personService, never()).createPerson(any());
-        verify(identityServiceFacade).getUserInfo(JWT_TOKEN);
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
+    }
+
+    @Test
+    public void shouldCallUserInfoEndpointToGetUsernameWithProvidedPrincipalAttribute()
+    {
+        when(identityServiceConfig.getPrincipalAttribute()).thenReturn("nickname");
+        when(personService.personExists("johny123")).thenReturn(true);
+
+        when(decodedAccessToken.getClaim("nickname")).thenReturn("");
+
+        when(userInfo.username()).thenReturn("johny123");
+        when(identityServiceFacade.getUserInfo(JWT_TOKEN, "nickname")).thenReturn(Optional.of(userInfo));
+
+        Optional<OIDCUserInfo> result = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
+            JWT_TOKEN);
+
+        assertTrue(result.isPresent());
+        assertEquals("johny123", result.get().username());
+        assertEquals("", result.get().firstName());
+        assertEquals("", result.get().lastName());
+        assertEquals("", result.get().email());
+        assertFalse(result.get().allFieldsNotEmpty());
+        verify(personService, never()).createPerson(any());
+        verify(identityServiceFacade).getUserInfo(JWT_TOKEN, "nickname");
     }
 
     @Test
@@ -189,8 +232,8 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         verify(personService, never()).createPerson(any());
         verify(identityServiceFacade, never()).decodeToken(null);
         verify(identityServiceFacade, never()).decodeToken("");
-        verify(identityServiceFacade, never()).getUserInfo(null);
-        verify(identityServiceFacade, never()).getUserInfo("");
+        verify(identityServiceFacade, never()).getUserInfo(null, PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
+        verify(identityServiceFacade, never()).getUserInfo("", PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
     }
 
 }

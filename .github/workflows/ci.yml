@@ -26,6 +26,9 @@ env:
   CI_WORKSPACE: ${{ github.workspace }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
+  AUTH0_CLIENT_ID: ${{ secrets.AUTH0_OIDC_ADMIN_CLIENT_ID }}
+  AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_OIDC_CLIENT_SECRET }}
+  AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
   # Report Portal settings
   RP_LAUNCH_PREFIX: "${{ github.workflow }} - ${{ github.job }}"
   RP_PROJECT: alfresco-backend
@@ -729,7 +732,7 @@ jobs:
         run: bash ./scripts/ci/cleanup_cache.sh
 
   repository_app_context_test_suites:
-    name: Repository - ${{ matrix.testSuite }}
+    name: Repository - ${{ matrix.testSuite }} ${{ matrix.idp }}
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -751,6 +754,11 @@ jobs:
           - testSuite: AppContext05TestSuite
             compose-profile: with-sso
             mvn-options: '-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm'
+            idp: Keycloak
+          - testSuite: AppContext05TestSuite
+            compose-profile: default
+            mvn-options: '-Didentity-service.auth-server-url=https://dev-ps-alfresco.auth0.com/ -Dauthentication.chain=identity-service1:identity-service,alfrescoNtlm1:alfrescoNtlm -Didentity-service.audience=http://localhost:3000 -Didentity-service.resource=${AUTH0_CLIENT_ID} -Didentity-service.credentials.secret=${AUTH0_CLIENT_SECRET} -Didentity-service.public-client=false -Didentity-service.realm= -Didentity-service.client-id.validation.disabled=false -Dadmin.user=admin@alfresco.com -Dadmin.password=${AUTH0_ADMIN_PASSWORD} -Dauth0.enabled=true -Dauth0.admin.password=${AUTH0_ADMIN_PASSWORD} -Didentity-service.principal-attribute=nickname'
+            idp: Auth0
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite
@@ -779,7 +787,7 @@ jobs:
       - name: "Generate Keystores and Truststores for Mutual TLS configuration"
         if: ${{ matrix.mtls }}
         run: |
-          git clone -b "feature/ACS-6309_integration_with_ReportPortal" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
+          git clone -b "master" --depth=1 "https://${{ secrets.BOT_GITHUB_USERNAME }}:${{ secrets.BOT_GITHUB_TOKEN }}@github.com/Alfresco/alfresco-ssl-generator.git"
           if ${{ matrix.disabledHostnameVerification }} ; then
             bash ${{ env.CI_WORKSPACE }}/alfresco-ssl-generator/scripts/ci/generate_keystores_wrong_hostnames.sh
             echo "HOSTNAME_VERIFICATION_DISABLED=true" >> "$GITHUB_ENV"

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,10 +29,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
+
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtAudienceValidator;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtDecoderProvider;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtIssuerValidator;
 import org.junit.Test;
@@ -45,11 +49,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 public class IdentityServiceFacadeFactoryBeanTest
 {
     private static final String EXPECTED_ISSUER = "expected-issuer";
+    private static final String EXPECTED_AUDIENCE = "expected-audience";
+
     @Test
     public void shouldCreateJwtDecoderWithoutIDSWhenPublicKeyIsProvided()
     {
         final IdentityServiceConfig config = mock(IdentityServiceConfig.class);
         when(config.getRealmKey()).thenReturn("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAve3MabX/rp3LbE7/zNqKxuid8WT7y4qSXsNaiPvl/OVbNWW/cu5td1VndItYhH6/gL7Z5W/r4MOeTlz/fOdXfjrRJou2f3UiPQwLV9RdOH3oS4/BUe+sviD8Q3eRfWBWWz3yw8f2YNtD4bMztIMMjqthvwdEEb9S9jbxxD0o71Bsrz/FwPi7HhSDA+Z/p01Hct8m4wx13ZlKRd4YjyC12FBmi9MSgsrFuWzyQHhHTeBDoALpfuiut3rhVxUtFmVTpy6p9vil7C5J5pok4MXPH0dJCyDNQz05ww5+fD+tfksIEpFeokRpN226F+P21oQVFUWwYIaXaFlG/hfvwmnlfQIDAQAB");
+        when(config.isClientIdValidationDisabled()).thenReturn(true);
 
         final ProviderDetails providerDetails = mock(ProviderDetails.class);
         when(providerDetails.getIssuerUri()).thenReturn("https://my.issuer");
@@ -108,12 +115,78 @@ public class IdentityServiceFacadeFactoryBeanTest
         assertThat(validationResult.getErrors()).isEmpty();
     }
 
+    @Test
+    public void shouldFailWithNotMatchingAudienceList()
+    {
+        final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
+
+        final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(
+            tokenWithAudience(List.of("different-audience")));
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult.hasErrors()).isTrue();
+        assertThat(validationResult.getErrors()).hasSize(1);
+
+        final OAuth2Error error = validationResult.getErrors().iterator().next();
+        assertThat(error).isNotNull();
+        assertThat(error.getDescription()).contains(EXPECTED_AUDIENCE);
+    }
+
+    @Test
+    public void shouldFailWithNullAudience()
+    {
+        final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
+
+        final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(tokenWithAudience(null));
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult.hasErrors()).isTrue();
+        assertThat(validationResult.getErrors()).hasSize(1);
+
+        final OAuth2Error error = validationResult.getErrors().iterator().next();
+        assertThat(error).isNotNull();
+        assertThat(error.getDescription()).contains(EXPECTED_AUDIENCE);
+    }
+
+    @Test
+    public void shouldSucceedWithMatchingAudienceList()
+    {
+        final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
+
+        final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(
+            tokenWithAudience(List.of(EXPECTED_AUDIENCE)));
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult.hasErrors()).isFalse();
+        assertThat(validationResult.getErrors()).isEmpty();
+    }
+
+    @Test
+    public void shouldSucceedWithMatchingSingleAudience()
+    {
+        final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
+
+        final Jwt token = Jwt.withTokenValue(UUID.randomUUID().toString())
+                            .claim("aud", EXPECTED_AUDIENCE)
+                            .header("JUST", "FOR TESTING")
+                            .build();
+        final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(token);
+        assertThat(validationResult).isNotNull();
+        assertThat(validationResult.hasErrors()).isFalse();
+        assertThat(validationResult.getErrors()).isEmpty();
+    }
+
     private Jwt tokenWithIssuer(String issuer)
     {
         return Jwt.withTokenValue(UUID.randomUUID().toString())
-                  .issuer(issuer)
-                  .header("JUST", "FOR TESTING")
-                  .build();
+            .issuer(issuer)
+            .header("JUST", "FOR TESTING")
+            .build();
+    }
+
+    private Jwt tokenWithAudience(Collection<String> audience)
+    {
+        return Jwt.withTokenValue(UUID.randomUUID().toString())
+            .audience(audience)
+            .header("JUST", "FOR TESTING")
+            .build();
     }
 
 }

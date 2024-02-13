@@ -269,7 +269,18 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             }
             else if (Pair.class.isAssignableFrom(returnedObject.getClass()))
             {
-                return decide(authentication, object, config, (Pair) returnedObject);
+                Pair<?, ?> pair = (Pair<?, ?>) returnedObject;
+                if (pair.getSecond() != null && NodeRef.class.isAssignableFrom(pair.getSecond().getClass()))
+                {
+                    return decide(authentication, object, config, pair);
+                } else
+                {
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Uncontrolled object - access allowed for " + object.getClass().getName());
+                    }
+                    return returnedObject;
+                }
             }
             else if (ChildAssociationRef.class.isAssignableFrom(returnedObject.getClass()))
             {

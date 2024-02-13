@@ -147,7 +147,7 @@ public class GroupsImpl implements Groups
         }
 
         Map<QName, Serializable> props = new HashMap<>();
-        if (StringUtils.isNotEmpty(group.getDescription()))
+        if (group.getDescription() != null)
         {
             props.put(ContentModel.PROP_DESCRIPTION, group.getDescription());
         }
@@ -170,7 +170,7 @@ public class GroupsImpl implements Groups
 
         try
         {
-            if (StringUtils.isNotEmpty(group.getDescription()))
+            if (group.getDescription() != null)
             {
                 authorityService.setAuthorityDisplayNameAndDescription(groupId, group.getDisplayName(), group.getDescription());
             }

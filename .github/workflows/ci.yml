@@ -1141,7 +1141,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
+      (((github.ref_name == 'feature/ACS-6309_integration_with_ReportPortal' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request' ) &&
       !contains(github.event.head_commit.message, '[skip ags]') && !contains(github.event.head_commit.message, '[skip tas]')) ||
       (contains(github.event.head_commit.message, '[ags]') && contains(github.event.head_commit.message, '[tas]'))) &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
@@ -1164,9 +1164,45 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
           mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
+      - name: "Prepare Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
+        id: rp-prepare
+        with:
+          rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} 0${{ matrix.part }} - (MySQL) ${{ matrix.test-name }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-use-static-launch-name: true
+      - name: "Add GitHub Step Summary"
+        env:
+          RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
+          RP_KEY: ${{ steps.rp-prepare.outputs.key }}
+          RP_URL: ${{ steps.rp-prepare.outputs.url }}
+        run: bash scripts/ci/add_step_summary.sh
       - name: "Test"
+        id: run-tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests
+        env:
+          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+        run: |
+          eval "args=($RP_OPTS)"
+          mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests "${args[@]}"
+        continue-on-error: true
+      - name: "Update GitHub Step Summary"
+        run: |
+          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+      - name: "Summarize Report Portal"
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+        id: rp-summarize
+        with:
+          tests-outcome: ${{ steps.run-tests.outcome }}
+          rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+      - name: "Exit on failure"
+        if: steps.run-tests.outcome != 'success'
+        run: |
+          echo "::error title=run-tests::Tests failed: re-throwing on error."
+          exit 1
       - name: "Configure AWS credentials"
         if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@v1

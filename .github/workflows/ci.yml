@@ -938,7 +938,8 @@ jobs:
       - name: "Exit on failure"
         if: steps.tests.outcome != 'success'
         run: |
-          echo "::error title=
+          echo "::error title=tests::Tests failed: re-throwing on error."
+          exit 1
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

@@ -112,6 +112,7 @@
         <property name="keyResourceLoader" ref="springKeyResourceLoader" />
         <property name="properties" ref="global-properties" />
         <property name="serviceName" value="transform" />
+        <property name="subServiceName" value="engine" />
     </bean>
 
     <bean id="localTransformServiceRegistry" class="org.alfresco.repo.content.transform.LocalTransformServiceRegistry" >

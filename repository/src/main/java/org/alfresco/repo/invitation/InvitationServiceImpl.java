@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1875,7 +1875,6 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @param siteName
      * @param role
      * @param runAsUser
-     * @param siteService
      * @param overrideExisting
      */
     public void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser, final boolean overrideExisting)
@@ -2111,11 +2110,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_RESOURCE_TYPE, resourceType.toString());
 
         workflowProps.put(WorkflowModelModeratedInvitation.WF_PROP_CLIENT_NAME, clientName);
-        if(clientName != null && clientAppConfig.getClient(clientName) != null)
+        if(clientName != null && clientAppConfig.exists(clientName))
         {
             ClientAppConfig.ClientApp client = clientAppConfig.getClient(clientName);
-            workflowProps.put(WorkflowModelModeratedInvitation.WF_TEMPLATE_ASSETS_URL, client.getTemplateAssetsUrl());
-            workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL,  client.getProperty("workspaceUrl"));
+            workflowProps.put(WorkflowModelModeratedInvitation.WF_TEMPLATE_ASSETS_URL, client.getResolvedTemplateAssetsUrl(sysAdminParams));
+            workflowProps.put(WorkflowModelModeratedInvitation.WF_WORKSPACE_URL,  client.getResolvedClientUrl(sysAdminParams));
         }
 
         // get the moderated workflow

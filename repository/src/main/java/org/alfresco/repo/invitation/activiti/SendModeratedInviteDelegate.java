@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -72,7 +72,7 @@ public class SendModeratedInviteDelegate extends AbstractInvitationDelegate
         Map<String, Object> variables = execution.getVariables();
         String clientName = (String) variables.get(WorkflowModelModeratedInvitation.wfVarClientName);
 
-        if(clientName != null && clientAppConfig.getClient(clientName) != null)
+        if(clientName != null && clientAppConfig.exists(clientName))
         {
             ClientAppConfig.ClientApp clientApp = clientAppConfig.getClient(clientName);
             final String path = clientApp.getProperty("inviteModeratedTemplatePath");

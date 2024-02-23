@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -61,8 +61,8 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.UrlUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.WebScriptException;
 
@@ -74,17 +74,15 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * @deprecated from 7.1.0
- * *
+ *
  * Reset password implementation based on workflow.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */
-@Deprecated
 public class ResetPasswordServiceImpl implements ResetPasswordService
 {
-    private static final Log LOGGER = LogFactory.getLog(ResetPasswordServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResetPasswordServiceImpl.class);
 
     private static final String TIMER_END = "PT1H";
     private static final String WORKFLOW_DESCRIPTION_KEY = "resetpasswordwf_resetpassword.resetpassword.workflow.description";
@@ -196,6 +194,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         ParameterCheck.mandatoryString("clientName", clientName);
 
         String userEmail = validateUserAndGetEmail(userId);
+        validateClient(clientName);
 
         // Get the (latest) workflow definition for reset-password.
         WorkflowDefinition wfDefinition = workflowService.getDefinitionByName(WorkflowModelResetPassword.WORKFLOW_DEFINITION_NAME);
@@ -342,8 +341,9 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         }
         else if (!username.equals(userId))
         {
-            throw new InvalidResetPasswordWorkflowException("The given user id [" + userId + "] does not match the person's user id [" + username
-                        + "] who requested the password reset.");
+            throw new InvalidResetPasswordWorkflowException(
+                        "The given user id [" + userId + "] does not match the person's user id [" + username
+                                    + "] who requested the password reset.");
         }
     }
 
@@ -352,12 +352,16 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     {
         ParameterCheck.mandatoryString("clientName", clientName);
 
-        ClientApp clientApp = clientAppConfig.getClient(clientName);
-        if (clientApp == null)
+        validateClient(clientName);
+        return clientAppConfig.getClient(clientName);
+    }
+
+    private void validateClient(String clientName)
+    {
+        if (!clientAppConfig.exists(clientName))
         {
             throw new ClientAppNotFoundException("Client was not found [" + clientName + "]");
         }
-        return clientApp;
     }
 
 
@@ -383,9 +387,9 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
                     .setUserName(userName)
                     .setUserEmail(toEmail)
                     .setTemplatePath(templatePath)
-                    .setTemplateAssetsUrl(clientApp.getTemplateAssetsUrl())
                     .setEmailSubject(emailSubject)
-                    .setTemplateModel(emailTemplateModel);
+                    .setTemplateModel(emailTemplateModel)
+                    .setClientApp(clientApp);
 
         sendEmail(emailRequest);
     }
@@ -400,7 +404,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         final String userName = (String) execution.getVariable(WorkflowModelResetPassword.WF_PROP_USERNAME_ACTIVITI);
 
         // But we cannot get the password from the execution as we have intentionally not stored the password there.
-        // Instead we recover the password from the specific task in which it was set.
+        // Instead, we recover the password from the specific task in which it was set.
         List<Task> activitiTasks = activitiTaskService.createTaskQuery().taskDefinitionKey(WorkflowModelResetPassword.TASK_RESET_PASSWORD)
                     .processInstanceId(execution.getProcessInstanceId()).list();
         if (activitiTasks.size() != 1)
@@ -448,9 +452,9 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
                     .setUserName(userName)
                     .setUserEmail(userEmail)
                     .setTemplatePath(templatePath)
-                    .setTemplateAssetsUrl(clientApp.getTemplateAssetsUrl())
                     .setEmailSubject(emailSubject)
-                    .setTemplateModel(emailTemplateModel);
+                    .setTemplateModel(emailTemplateModel)
+                    .setClientApp(clientApp);
 
         sendEmail(emailRequest);
     }
@@ -460,7 +464,9 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         // Prepare the email
         Map<String, Serializable> templateModel = new HashMap<>();
         // Replace '${shareUrl}' placeholder if it does exist.
-        final String templateAssetsUrl = getUrl(emailRequest.getTemplateAssetsUrl(), ClientAppConfig.PROP_TEMPLATE_ASSETS_URL);
+        ClientApp clientApp = emailRequest.getClientApp();
+        final String templateAssetsUrl = getUrl(clientApp.getResolvedTemplateAssetsUrl(sysAdminParams),
+                                                ClientAppConfig.PROP_TEMPLATE_ASSETS_URL, clientApp.getName());
         templateModel.put(FTL_TEMPLATE_ASSETS_URL, templateAssetsUrl);
         if (emailRequest.getTemplateModel() != null)
         {
@@ -489,11 +495,11 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         actionService.executeAction(mailAction, null, false, sendEmailAsynchronously);
     }
 
-    private String getUrl(String url, String propName)
+    private String getUrl(String url, String propName, String clientName)
     {
-        if (url == null)
+        if (StringUtils.isEmpty(url))
         {
-            LOGGER.warn("The url for the property [" + propName + "] is not configured.");
+            LOGGER.warn("The url for the property [" + propName + "] is not configured for the client: " + clientName);
             return "";
         }
 
@@ -501,7 +507,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         {
             url = url.substring(0, url.length() - 1);
         }
-        return UrlUtil.replaceShareUrlPlaceholder(url, sysAdminParams);
+        return url;
     }
 
     protected String getResetPasswordEmailTemplate(ClientApp clientApp)
@@ -521,22 +527,23 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     {
         StringBuilder sb = new StringBuilder(100);
 
-        String pageUrl = clientApp.getProperty("resetPasswordPageUrl");
+        String pageUrl = clientApp.getResolvedProperty("resetPasswordPageUrl", sysAdminParams);
         if (StringUtils.isEmpty(pageUrl))
         {
             sb.append(UrlUtil.getShareUrl(sysAdminParams));
+            LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName() + "]. The default base url of Share will be used [" + sb + "]");
 
-            LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
-                        + "]. The default base url of Share will be used [" + sb.toString() + "]");
         }
         else
         {
             // We pass an empty string as we know that the pageUrl is not null
-            sb.append(getUrl(pageUrl, ""));
+            sb.append(getUrl(pageUrl, "resetPasswordPageUrl", clientApp.getName()));
         }
 
-        sb.append("?key=").append(key)
-                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
+        sb.append("?key=")
+                    .append(key)
+                    .append("&id=")
+                    .append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
 
         return sb.toString();
     }
@@ -616,10 +623,10 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         private String userEmail;
         private String fromEmail;
         private String templatePath;
-        private String templateAssetsUrl;
         private Map<String, Serializable> templateModel;
         private String emailSubject;
         private boolean ignoreSendFailure = true;
+        private ClientApp clientApp;
 
         public String getUserName()
         {
@@ -665,17 +672,6 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
             return this;
         }
 
-        public String getTemplateAssetsUrl()
-        {
-            return templateAssetsUrl;
-        }
-
-        public ResetPasswordEmailDetails setTemplateAssetsUrl(String templateAssetsUrl)
-        {
-            this.templateAssetsUrl = templateAssetsUrl;
-            return this;
-        }
-
         public Map<String, Serializable> getTemplateModel()
         {
             return templateModel;
@@ -709,18 +705,29 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
             return this;
         }
 
+        public ClientApp getClientApp()
+        {
+            return clientApp;
+        }
+
+        public ResetPasswordEmailDetails setClientApp(ClientApp clientApp)
+        {
+            this.clientApp = clientApp;
+            return this;
+        }
+
         @Override
         public String toString()
         {
-            final StringBuilder sb = new StringBuilder(250);
+            final StringBuilder sb = new StringBuilder(300);
             sb.append("ResetPasswordEmailDetails [userName=").append(userName)
                         .append(", userEmail=").append(userEmail)
                         .append(", fromEmail=").append(fromEmail)
                         .append(", templatePath=").append(templatePath)
-                        .append(", templateAssetsUrl=").append(templateAssetsUrl)
                         .append(", templateModel=").append(templateModel)
                         .append(", emailSubject=").append(emailSubject)
                         .append(", ignoreSendFailure=").append(ignoreSendFailure)
+                        .append(", clientApp=").append(clientApp)
                         .append(']');
             return sb.toString();
         }

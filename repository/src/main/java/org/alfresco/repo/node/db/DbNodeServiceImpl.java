@@ -101,7 +101,9 @@ import org.alfresco.util.PropertyMap;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Node service using database persistence layer to fulfill functionality
@@ -1068,11 +1070,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
      * @param allowArchival     <tt>true</tt> if normal archival may occur or
      *                          <tt>false</tt> if the node must be forcibly deleted
      */
+    @Transactional
     private void deleteNode(NodeRef nodeRef, boolean allowArchival)
     {
+
         // The node(s) involved may not be pending deletion
         checkPendingDelete(nodeRef);
-        
+
         // Pair contains NodeId, NodeRef
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();
@@ -1100,7 +1104,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // Gather information about the hierarchy
         NodeHierarchyWalker walker = new NodeHierarchyWalker(nodeDAO);
         walker.walkHierarchy(nodePair, childAssocPair);
-        
+
         // Protect the nodes from being link/unlinked for the remainder of the process
         Set<NodeRef> nodesPendingDelete = new HashSet<NodeRef>(walker.getNodes(false).size());
         for (VisitedNode visitedNode : walker.getNodes(true))
@@ -1109,7 +1113,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
         Set<NodeRef> nodesPendingDeleteTxn = TransactionalResourceHelper.getSet(KEY_PENDING_DELETE_NODES);
         nodesPendingDeleteTxn.addAll(nodesPendingDelete);           // We need to remove these later, again
-        
+
         // Work out whether we need to archive or delete the node.
         if (!allowArchival)
         {
@@ -1150,7 +1154,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 }
             }
         }
-        
+
         // Propagate timestamps
         propagateTimeStamps(childAssocRef);
 
@@ -1199,7 +1203,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 }
                 invokeBeforeDeleteChildAssociation(secondaryParentAssocPair.getSecond());
             }
-            
+
             // Primary child associations
             if (archive)
             {
@@ -1207,7 +1211,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             }
             invokeBeforeDeleteNode(nodeToDelete.nodeRef);
         }
-        
+
         // Archive, if necessary
         if (archive)
         {
@@ -1263,8 +1267,18 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
             QName childNodeTypeQName = nodeDAO.getNodeType(nodeToDelete.id);
             Set<QName> childAspectQnames = nodeDAO.getNodeAspects(nodeToDelete.id);
             // Delete the node
+
             nodeDAO.deleteChildAssoc(nodeToDelete.primaryParentAssocPair.getFirst());
-            nodeDAO.deleteNode(nodeToDelete.id);
+            for (VisitedNode assocRefRemoved : nodesToDelete)
+            {
+                if (!nodeDAO.exists(assocRefRemoved.id))
+                {
+                    throw new ConcurrencyFailureException("Child association not found : " + assocRefRemoved.id);
+                }
+                nodeDAO.deleteChildAssoc(assocRefRemoved.id);
+                invokeOnDeleteNode(assocRefRemoved.primaryParentAssocPair.getSecond(),
+                        childNodeTypeQName, childAspectQnames, archive);
+            }
             invokeOnDeleteNode(
                     nodeToDelete.primaryParentAssocPair.getSecond(),
                     childNodeTypeQName, childAspectQnames, archive);

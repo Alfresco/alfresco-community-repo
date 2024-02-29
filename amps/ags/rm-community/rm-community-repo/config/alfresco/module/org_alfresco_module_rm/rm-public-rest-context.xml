@@ -112,6 +112,7 @@
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
        <property name="transactionService" ref="transactionService" />
+       <property name="extendedPermissionService" ref="ExtendedPermissionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderEntityResource">

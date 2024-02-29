@@ -46,6 +46,8 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.Util;
@@ -66,9 +68,12 @@ import org.alfresco.rm.rest.api.model.RecordCategoryChild;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
@@ -92,6 +97,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
+    private ExtendedPermissionService extendedPermissionService;
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -116,6 +122,11 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setExtendedPermissionService(ExtendedPermissionService extendedPermissionService)
+    {
+        this.extendedPermissionService = extendedPermissionService;
     }
 
     @Override
@@ -178,6 +189,11 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
         mandatory("parameters", parameters);
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
+
+        if (extendedPermissionService.hasPermission(parentNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED)
+        {
+            throw new AccessDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+        }
 
         List<RecordCategoryChild> result = new ArrayList<>(nodeInfos.size());
         Map<String, UserInfo> mapUserInfo = new HashMap<>();

@@ -47,6 +47,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
@@ -83,18 +87,8 @@ import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.ClassDefinitionMapper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
-import org.alfresco.rest.api.model.AssocChild;
-import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.ClassDefinition;
-import org.alfresco.rest.api.model.Document;
-import org.alfresco.rest.api.model.Folder;
-import org.alfresco.rest.api.model.LockInfo;
-import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.NodePermissions;
-import org.alfresco.rest.api.model.PathInfo;
+import org.alfresco.rest.api.model.*;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
-import org.alfresco.rest.api.model.QuickShareLink;
-import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -169,6 +163,7 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONObject;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
@@ -3555,6 +3550,38 @@ public class NodesImpl implements Nodes
             });
         }
     }
+    public Map<String, Object> getFolderSize(String FolderNodeId){
+
+        NodeRef nodeRef = this.validateNode(FolderNodeId);
+        long size=this.getNodeSize(nodeRef);
+        int k = 1024;
+        String[] sizes = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
+        int i = (int) Math.floor(Math.log(size) / Math.log(k));
+        float finalSize=Float.parseFloat(String.valueOf((size / Math.pow(k, i))));
+        Map<String, Object> response = new HashMap<>();
+        response.put("id",FolderNodeId);
+        response.put("size",String.valueOf(finalSize + " " + sizes[i]));
+        return response;
+    }
+
+    protected long getNodeSize(NodeRef nodeRef){
+        long size=0;
+
+        // Collecting current node size
+        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        try {
+            size = contentData.getSize();
+        } catch (Exception e) {
+            size = 0;
+        }
+        List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(nodeRef);
+        for (ChildAssociationRef childAssociationRef : chilAssocsList) {
+            NodeRef childNodeRef = childAssociationRef.getChildRef();
+            size = size + getNodeSize(childNodeRef);
+        }
+        return size;
+    }
+
 
     /**
      * @author Jamal Kaabi-Mofrad

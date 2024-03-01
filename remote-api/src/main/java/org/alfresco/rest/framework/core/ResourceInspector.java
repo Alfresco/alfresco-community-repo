@@ -125,6 +125,7 @@ public class ResourceInspector
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.DeleteSetWithResponse.class);
 
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(MultiPartRelationshipResourceAction.Create.class);
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.FolderSize.class);
 
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Read.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Delete.class);
@@ -291,6 +292,7 @@ public class ResourceInspector
         findOperation(RelationshipResourceAction.DeleteSetWithResponse.class,   DELETE, helper);
 
         findOperation(MultiPartRelationshipResourceAction.Create.class, POST, helper);
+        findOperation(RelationshipResourceAction.FolderSize.class, GET, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)

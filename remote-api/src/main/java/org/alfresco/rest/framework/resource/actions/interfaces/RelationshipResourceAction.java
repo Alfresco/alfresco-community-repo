@@ -163,4 +163,13 @@ public interface RelationshipResourceAction
          */
         public void deleteSet(String entityResourceId, Parameters params, WithResponse withResponse);
     }
+    public static interface FolderSize<E> extends ResourceAction
+    {
+        /**
+         * Return the size of Folder.
+         *
+         * @param NodeId Entity resource context for this relationship.
+         */
+        public E readAll(String NodeId);
+    }
 }

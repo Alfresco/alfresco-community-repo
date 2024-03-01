@@ -31,14 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.rest.api.model.AssocChild;
-import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.Document;
-import org.alfresco.rest.api.model.Folder;
-import org.alfresco.rest.api.model.LockInfo;
-import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.PathInfo;
-import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.model.*;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -419,6 +412,13 @@ public interface Nodes
 
     void validateProperties(Map<String, Object> properties, List<String> excludedNS, List<QName> excludedProperties);
 
+    /**
+     * Get the size of Folder.
+     *
+     * @param nodeId String
+     * @return Map Object.
+     */
+    Map<String, Object> getFolderSize(String nodeId);
     
     /**
      * API Constants - query parameters, etc

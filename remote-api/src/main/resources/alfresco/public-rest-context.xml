@@ -1768,4 +1768,8 @@
             </list>
         </property>
     </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeFolderSizeRelation">
+        <property name="nodes" ref="Nodes" />
+    </bean>
 </beans>

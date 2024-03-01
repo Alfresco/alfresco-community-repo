@@ -238,6 +238,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params);
                         return relations;
                     }
+                    else if (RelationshipResourceAction.FolderSize.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.FolderSize.class))
+                        {
+                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.FolderSize<Map<String, Object>> relationGetter = (RelationshipResourceAction.FolderSize<Map<String, Object>>) resource.getResource();
+                        Object result = relationGetter.readAll(params.getEntityId());
+                        return result;
+                    }
                     else
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadWithResponse.class))

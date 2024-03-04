@@ -168,8 +168,8 @@ public interface RelationshipResourceAction
         /**
          * Return the size of Folder.
          *
-         * @param NodeId Entity resource context for this relationship.
+         * @param nodeId Entity resource context for this relationship.
          */
-        public E readAll(String NodeId);
+        public E readAll(String nodeId);
     }
 }

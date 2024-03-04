@@ -61,7 +61,7 @@ public class NodeFolderSizeRelation implements
     /**
      * Folder Size - returns a size of folder.
      *
-     * @param NodeId String id of folder - will also accept well-known alias, eg. -root- or -my- or -shared-
+     * @param nodeId String id of folder - will also accept well-known alias, eg. -root- or -my- or -shared-
      * Please refer to OpenAPI spec for more details !
      *
      * If NodeId does not exist, EntityNotFoundException (status 404).
@@ -69,9 +69,9 @@ public class NodeFolderSizeRelation implements
      */
     @Override
     @WebApiDescription(title = "Size of folder",description = "Return a size of folder")
-    public Map<String, Object> readAll(String NodeId)
+    public Map<String, Object> readAll(String nodeId)
     {
-        return nodes.getFolderSize(NodeId);
+        return nodes.getFolderSize(nodeId);
     }
 
 }

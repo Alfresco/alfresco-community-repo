@@ -3555,7 +3555,11 @@ public class NodesImpl implements Nodes
             });
         }
     }
-
+    /**
+     *
+     * @param folderNodeId
+     */
+    @Override
     public Map<String, Object> getFolderSize(String folderNodeId){
 
         NodeRef nodeRef = this.validateNode(folderNodeId);

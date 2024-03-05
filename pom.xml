@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.3.0.3-SNAPSHOT</version>
+    <version>23.2.0.48-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -24,7 +24,7 @@
 
     <properties>
         <acs.version.major>23</acs.version.major>
-        <acs.version.minor>3</acs.version.minor>
+        <acs.version.minor>2</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
         <acs.version.label />
         <amp.min.version>${acs.version.major}.0.0</amp.min.version>
@@ -51,10 +51,10 @@
         <dependency.alfresco-server-root.version>7.0.1</dependency.alfresco-server-root.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-core.version>5.1.0</dependency.alfresco-transform-core.version>
-        <dependency.alfresco-transform-service.version>4.1.0</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.0.1</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.0.1</dependency.alfresco-transform-service.version>
         <dependency.alfresco-greenmail.version>7.0</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.27</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.26</dependency.acs-event-model.version>
 
         <dependency.aspectj.version>1.9.20.1</dependency.aspectj.version>
         <dependency.spring.version>6.0.14</dependency.spring.version>
@@ -88,7 +88,7 @@
         <dependency.camel.version>4.0.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.96.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.3</dependency.activemq.version>
-        <dependency.apache-compress.version>1.26.0</dependency.apache-compress.version>
+        <dependency.apache-compress.version>1.25.0</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>4.1.3</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.67</dependency.swagger-parser.version>
@@ -112,8 +112,8 @@
         <dependency.jakarta-ee-json-impl.version>1.1.4</dependency.jakarta-ee-json-impl.version>
         <dependency.jakarta-json-path.version>2.9.0</dependency.jakarta-json-path.version>
         <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
-        <alfresco.googledrive.version>4.1.0-A1</alfresco.googledrive.version>
-        <alfresco.aos-module.version>3.0.0-A1</alfresco.aos-module.version>
+        <alfresco.googledrive.version>4.0.0</alfresco.googledrive.version>
+        <alfresco.aos-module.version>2.0.0</alfresco.aos-module.version>
         <alfresco.api-explorer.version>23.1.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>

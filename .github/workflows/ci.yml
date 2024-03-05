@@ -101,7 +101,7 @@ jobs:
         with:
           vid: ${{ secrets.VERACODE_API_ID }}
           vkey: ${{ secrets.VERACODE_API_KEY }}
-          file: "packaging/war/target/alfresco.war"
+          file: "/packaging/war/target/alfresco.war"
           fail_build: true
           project_name: alfresco-community-repo
           issue_details: true

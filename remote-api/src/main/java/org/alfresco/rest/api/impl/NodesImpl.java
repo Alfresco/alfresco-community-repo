@@ -3557,7 +3557,7 @@ public class NodesImpl implements Nodes
     }
     /**
      *
-     * @param folderNodeId
+     * @param folderNodeId nodeId value.
      */
     @Override
     public Map<String, Object> getFolderSize(String folderNodeId){

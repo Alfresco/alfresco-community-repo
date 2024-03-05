@@ -3567,7 +3567,7 @@ public class NodesImpl implements Nodes
         int k = 1024;
         String[] sizes = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
         int i = (int) Math.floor(Math.log(size) / Math.log(k));
-        float finalSize = Float.parseFloat(String.valueOf(size / Math.pow(k, i)));
+        float finalSize = Float.parseFloat(String.valueOf((size / Math.pow(k, i))));
         Map<String, Object> response = new HashMap<>();
         response.put("id", folderNodeId);
         response.put("size", String.valueOf(finalSize + " " + sizes[i]));
@@ -3579,7 +3579,11 @@ public class NodesImpl implements Nodes
         long size=0;
         // Collecting current node size.
         ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        size = contentData.getSize();
+        try {
+            size = contentData.getSize();
+        } catch (Exception e) {
+            size = 0;
+        }
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(nodeRef);
         for (ChildAssociationRef childAssociationRef : chilAssocsList) {
             NodeRef childNodeRef = childAssociationRef.getChildRef();

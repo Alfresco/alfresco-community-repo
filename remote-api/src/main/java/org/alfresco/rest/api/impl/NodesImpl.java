@@ -3576,10 +3576,14 @@ public class NodesImpl implements Nodes
 
     protected long getNodeSize(NodeRef nodeRef){
 
-        long size=0;
+        long size;
         // Collecting current node size.
         ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        size = contentData.getSize();
+        try {
+            size = contentData.getSize();
+        } catch (Exception e) {
+            size = 0;
+        }
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(nodeRef);
         for (ChildAssociationRef childAssociationRef : chilAssocsList) {
             NodeRef childNodeRef = childAssociationRef.getChildRef();

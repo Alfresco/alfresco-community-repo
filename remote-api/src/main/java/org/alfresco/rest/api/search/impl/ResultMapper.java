@@ -333,10 +333,10 @@ public class ResultMapper
             throw new IllegalArgumentException("searchQuery can't be null");
         }
 
-        if(!disableFaceting)
+        if (!disableFaceting)
         {
-            //Facet queries
-            if(facetQueries!= null && !facetQueries.isEmpty())
+            // Facet queries
+            if (facetQueries != null && !facetQueries.isEmpty())
             {
                 // If group by field populated in query facet return bucketing into facet field.
                 List<GenericFacetResponse> facetQueryForFields = getFacetBucketsFromFacetQueries(facetQueries, searchQuery);

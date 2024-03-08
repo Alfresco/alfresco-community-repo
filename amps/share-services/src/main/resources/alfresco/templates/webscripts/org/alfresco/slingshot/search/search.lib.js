@@ -674,6 +674,11 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
       }
    }
 
+   if (failed != 0 && logger.isWarnLoggingEnabled() == true)
+   {
+      logger.warn("Faceting disabled as hits are innacurate due to unknown nodeRefs returned");
+   }
+
    if (logger.isLoggingEnabled())
       logger.log("Filtered resultset to length: " + results.length + ". Discarded item count: " + failed);
 
@@ -684,9 +689,9 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
          totalRecords: results.length,
          totalRecordsUpper: nodes.length - failed,
          startIndex: startIndex,
-         numberFound: meta ? meta.numberFound : -1
+         numberFound: meta ? meta.numberFound - failed : -1
       },
-      facets: meta ? meta.facets : null,
+      facets: (meta && failed == 0) ? meta.facets : null,
       highlighting: meta ? meta.highlighting : null,
       items: results,
       spellcheck: meta ? meta.spellcheck : null
@@ -741,6 +746,11 @@ function processResultsSinglePage(nodes, startIndex, rootNode, meta)
       }
    }
 
+   if (failed != 0 && logger.isWarnLoggingEnabled() == true)
+   {
+      logger.warn("Faceting disabled as hits are innacurate due to unknown nodeRefs returned");
+   }
+
    if (logger.isLoggingEnabled())
       logger.log("Filtered resultset to length: " + results.length + ". Discarded item count: " + failed);
 
@@ -751,9 +761,9 @@ function processResultsSinglePage(nodes, startIndex, rootNode, meta)
          totalRecords: results.length,
          totalRecordsUpper: -1,
          startIndex: startIndex,
-         numberFound: meta ? meta.numberFound : -1
+         numberFound: meta ? meta.numberFound - failed : -1
       },
-      facets: meta ? meta.facets : null,
+      facets: (meta && failed == 0) ? meta.facets : null,
       highlighting: meta ? meta.highlighting : null,
       items: results,
       spellcheck: meta ? meta.spellcheck : null

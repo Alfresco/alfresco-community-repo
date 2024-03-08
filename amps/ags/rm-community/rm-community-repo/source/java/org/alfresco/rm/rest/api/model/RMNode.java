@@ -50,6 +50,7 @@ public abstract class RMNode
     public static final String PARAM_ID = "id";
     public static final String PARAM_PARENT_ID = "parentId";
     public static final String PARAM_NAME = "name";
+    public static final String PARAM_DESCRIPTION = "description";
     public static final String PARAM_NODE_TYPE = "nodeType";
     public static final String PARAM_CREATED_AT = "createdAt";
     public static final String PARAM_MODIFIED_AT = "modifiedAt";
@@ -81,6 +82,7 @@ public abstract class RMNode
     public static final String FOLDER_TYPE = "cm:folder";
     public static final String CONTENT_TYPE = "cm:content";
     public static final String NON_ELECTRONIC_RECORD_TYPE = "rma:nonElectronicDocument";
+    public static final String HOLD_REASON = "rma:holdReason";
 
     // required properties
     protected NodeRef nodeRef;

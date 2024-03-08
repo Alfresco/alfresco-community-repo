@@ -200,6 +200,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Hold type
     QName TYPE_HOLD = QName.createQName(RM_URI, "hold");
     QName PROP_HOLD_REASON = QName.createQName(RM_URI, "holdReason");
+    QName PROP_DELETE_HOLD_REASON = QName.createQName(RM_URI, "deleteHoldReason");
     //since 3.2
     @Deprecated
     QName ASSOC_FROZEN_RECORDS = QName.createQName(RM_URI, "frozenRecords");

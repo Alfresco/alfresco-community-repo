@@ -47,6 +47,8 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.FilePlan;
+import org.alfresco.rm.rest.api.model.Hold;
+import org.alfresco.rm.rest.api.model.HoldContainer;
 import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordCategory;
@@ -635,6 +637,22 @@ public class ApiNodesModelFactory
                 }
             }
         }
+    }
+
+    public Hold createHold(FileInfo info, Parameters parameters, Map<String, UserInfo> mapUserInfo, boolean isMinimalInfo)
+    {
+        Hold hold = new Hold();
+        mapBasicInfo(hold, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
+        mapOptionalInfo(hold, info, parameters.getInclude(), isMinimalInfo);
+        return hold;
+    }
+
+    public HoldContainer createHoldContainer(FileInfo info, Parameters parameters, Map<String, UserInfo> mapUserInfo, boolean isMinimalInfo)
+    {
+        HoldContainer holdContainer = new HoldContainer();
+        mapBasicInfo(holdContainer, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
+        mapOptionalInfo(holdContainer, info, parameters.getInclude(), isMinimalInfo);
+        return holdContainer;
     }
 
     /**

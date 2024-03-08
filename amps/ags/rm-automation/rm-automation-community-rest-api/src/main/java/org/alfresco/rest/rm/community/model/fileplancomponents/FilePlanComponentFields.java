@@ -61,7 +61,7 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS = "rma:recordSearchDispositionEvents";
     public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_BY = "rma:declassificationReviewCompletedBy";
     public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_AT = "rma:declassificationReviewCompletedAt";
-    
+
 
     /** File plan properties */
     public static final String PROPERTIES_COMPONENT_ID = "st:componentId";
@@ -136,4 +136,6 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_STORE = "cm:storeName";
     /** WORM Unlock Date */
     public static final String PROPERTIES_WORM_UNLOCK_DATE = "rme:wormUnlockDate";
+
+    public static final String PROPERTIES_HOLD_REASON = "rma:holdReason";
 }

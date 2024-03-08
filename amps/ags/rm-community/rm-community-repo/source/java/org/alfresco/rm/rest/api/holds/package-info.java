@@ -24,26 +24,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
 
 /**
- * File plan component type
+ * Package info that defines the Information Governance Holds REST API
  *
- * @author Tuna Aksoy
+ * @author Ana Bozianu
  * @since 2.6
  */
-public class FilePlanComponentType
-{
-    public static final String FILE_PLAN_TYPE = "rma:filePlan";
-    public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
-    public static final String RECORD_HOLD_TYPE = "rma:hold";
-    public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
-    public static final String RECORD_TYPE = "rma:record"; // generic record type
-    public static final String UNFILED_RECORD_FOLDER_TYPE = "rma:unfiledRecordFolder";
-    public static final String TRANSFER_TYPE = "rma:transfer";
-    public static final String TRANSFER_CONTAINER_TYPE = "rma:transferContainer";
-    public static final String UNFILED_CONTAINER_TYPE = "rma:unfiledRecordContainer";
-    public static final String FOLDER_TYPE = "cm:folder";
-    public static final String CONTENT_TYPE = "cm:content";
-    public static final String NON_ELECTRONIC_RECORD_TYPE = "rma:nonElectronicDocument";
-}
+@WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
+package org.alfresco.rm.rest.api.holds;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.WebApi;

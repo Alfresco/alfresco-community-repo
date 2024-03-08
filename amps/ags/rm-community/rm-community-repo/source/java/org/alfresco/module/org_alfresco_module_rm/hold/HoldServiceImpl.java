@@ -512,6 +512,18 @@ public class HoldServiceImpl extends ServiceBaseImpl
         }
     }
 
+    @Override
+    public void setDeleteHoldReason(NodeRef hold, String reason)
+    {
+        ParameterCheck.mandatory("hold", hold);
+        ParameterCheck.mandatory("reason", reason);
+
+        if (nodeService.exists(hold) && isHold(hold))
+        {
+            nodeService.setProperty(hold, PROP_DELETE_HOLD_REASON, reason);
+        }
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#deleteHold(org.alfresco.service.cmr.repository.NodeRef)
      */

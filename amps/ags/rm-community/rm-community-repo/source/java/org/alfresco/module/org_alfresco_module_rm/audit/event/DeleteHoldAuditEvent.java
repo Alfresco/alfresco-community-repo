@@ -77,6 +77,8 @@ public class DeleteHoldAuditEvent extends AuditEvent implements NodeServicePolic
     public void beforeDeleteNode(NodeRef holdNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
+        auditProperties.put(PROP_DELETE_HOLD_REASON, nodeService.getProperty(holdNodeRef, PROP_DELETE_HOLD_REASON));
+
         recordsManagementAuditService.auditEvent(holdNodeRef, getName(), auditProperties, null, true, false);
     }
 }

@@ -13,7 +13,6 @@
 
     <properties>
         <scm-path>${project.parent.scm.url}</scm-path>
-        <!--suppress UnresolvedMavenProperty -->
         <scm-revision>${buildNumber}</scm-revision>
     </properties>
 

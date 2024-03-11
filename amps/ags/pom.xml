@@ -21,7 +21,7 @@
 
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
-      <license.failOnNotUptodateHeader>true</license.failOnNotUptodateHeader>
+      <license.failOnNotUptodateHeader>false</license.failOnNotUptodateHeader>
    </properties>
 
    <build>

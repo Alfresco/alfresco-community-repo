@@ -1045,7 +1045,7 @@
                                     https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt
                                 </licenseMergesUrl>
                                 <overrideUrl>
-                                    https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties
+                                    https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/feature/MNT-24250-override-xalan-license/override-THIRD-PARTY.properties
                                 </overrideUrl>
                             </configuration>
                         </execution>

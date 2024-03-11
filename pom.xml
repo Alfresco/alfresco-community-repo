@@ -328,7 +328,7 @@
             <dependency>
                 <groupId>xalan</groupId>
                 <artifactId>xalan</artifactId>
-                <version>2.7.3-alfresco.6</version>
+                <version>2.7.3-alfresco</version>
                 <exclusions>
                     <!-- [ACS-544] Excluded to avoid conflict in JDK9+ as it includes javax.xml and w3c.org -->
                     <exclusion>
@@ -1045,8 +1045,7 @@
                                     https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt
                                 </licenseMergesUrl>
                                 <overrideUrl>
-                                    https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties
-                                </overrideUrl>
+                                    https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/feature/MNT-24250-override-xalan-license/override-THIRD-PARTY.properties                                </overrideUrl>
                             </configuration>
                         </execution>
                     </executions>

@@ -8,11 +8,12 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-amps</artifactId>
-        <version>23.3.0.7-SNAPSHOT</version>
+        <version>23.3.0.9-SNAPSHOT</version>
     </parent>
 
     <properties>
         <scm-path>${project.parent.scm.url}</scm-path>
+        <!--suppress UnresolvedMavenProperty -->
         <scm-revision>${buildNumber}</scm-revision>
     </properties>
 

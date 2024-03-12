@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3568,9 +3569,10 @@ public class NodesImpl implements Nodes
         String[] sizes = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
         int i = (int) Math.floor(Math.log(size) / Math.log(k));
         float finalSize = Float.parseFloat(String.valueOf(size / Math.pow(k, i)));
+        DecimalFormat form = new DecimalFormat("0.00");
         Map<String, Object> response = new HashMap<>();
         response.put("id", folderNodeId);
-        response.put("size", String.valueOf(finalSize + " " + sizes[i]));
+        response.put("size", String.valueOf(form.format(finalSize) + " " + sizes[i]));
         return response;
     }
 

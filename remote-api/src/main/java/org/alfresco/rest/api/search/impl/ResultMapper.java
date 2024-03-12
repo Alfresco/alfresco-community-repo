@@ -357,7 +357,7 @@ public class ResultMapper
                                     .filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
                             filterQuery = found.isPresent() ? found.get().getQuery() : fq.getKey();
                         }
-                        facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, disableFaceting ? 0 : fq.getValue()));
+                        facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, fq.getValue()));
                     }
                 }
             }
@@ -385,16 +385,16 @@ public class ResultMapper
             facets.addAll(stats);
         }
 
-        //Spelling
+        // Spelling
         SpellCheckResult spell = resultSet.getSpellCheckResult();
         if (spell != null && spell.getResultName() != null && !spell.getResults().isEmpty())
         {
-            spellCheckContext = new SpellCheckContext(spell.getResultName(),spell.getResults());
+            spellCheckContext = new SpellCheckContext(spell.getResultName(), spell.getResults());
         }
 
-        //Put it all together
-        context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest()?searchQuery:null);
-        return isNullContext(context)?null:context;
+        // Put it all together
+        context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest() ? searchQuery : null);
+        return isNullContext(context) ? null : context;
     }
 
     public static boolean hasGroup(SearchQuery searchQuery)

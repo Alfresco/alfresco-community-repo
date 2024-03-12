@@ -260,7 +260,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
         catch (Exception ex)
         {
             log.error("Error!", ex);
-            fail();
+            fail(ex.getMessage());
         }
     }
 

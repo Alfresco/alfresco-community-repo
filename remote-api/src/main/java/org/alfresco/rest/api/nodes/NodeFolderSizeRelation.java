@@ -69,7 +69,7 @@ public class NodeFolderSizeRelation implements
      */
     @Override
     @WebApiDescription(title = "Size of folder",description = "Return a size of folder")
-    public Map<String, Object> readAll(String nodeId)
+    public Map<String, Object> readById(String nodeId)
     {
         return nodes.getFolderSize(nodeId);
     }

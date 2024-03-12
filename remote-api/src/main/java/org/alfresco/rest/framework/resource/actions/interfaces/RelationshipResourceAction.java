@@ -170,6 +170,6 @@ public interface RelationshipResourceAction
          *
          * @param nodeId Entity resource context for this relationship.
          */
-        E readAll(String nodeId);
+        E readById(String nodeId);
     }
 }

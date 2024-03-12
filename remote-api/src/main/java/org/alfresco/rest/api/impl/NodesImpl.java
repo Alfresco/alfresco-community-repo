@@ -3556,38 +3556,42 @@ public class NodesImpl implements Nodes
             });
         }
     }
+
     /**
      *
-     * @param folderNodeId nodeId value.
+     * @param nodeId nodeId value.
      */
     @Override
-    public Map<String, Object> getFolderSize(String folderNodeId){
-
-        NodeRef nodeRef = this.validateNode(folderNodeId);
-        long size=this.getNodeSize(nodeRef);
+    public Map<String, Object> getFolderSize(String nodeId)
+    {
+        NodeRef nodeRef = validateNode(nodeId);
+        long size = getNodeSize(nodeRef);
         int k = 1024;
         String[] sizes = {"Bytes", "KB", "MB", "GB", "TB", "PB"};
         int i = (int) Math.floor(Math.log(size) / Math.log(k));
         float finalSize = Float.parseFloat(String.valueOf(size / Math.pow(k, i)));
         DecimalFormat form = new DecimalFormat("0.00");
         Map<String, Object> response = new HashMap<>();
-        response.put("id", folderNodeId);
+        response.put("id", nodeId);
         response.put("size", String.valueOf(form.format(finalSize) + " " + sizes[i]));
         return response;
     }
 
-    protected long getNodeSize(NodeRef nodeRef){
-
+    private long getNodeSize(NodeRef nodeRef)
+    {
         long size;
-        // Collecting current node size.
+        //Collecting current node size.
         ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        try {
+        try
+        {
             size = contentData.getSize();
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             size = 0;
         }
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(nodeRef);
-        for (ChildAssociationRef childAssociationRef : chilAssocsList) {
+        for (ChildAssociationRef childAssociationRef : chilAssocsList)
+        {
             NodeRef childNodeRef = childAssociationRef.getChildRef();
             size = size + getNodeSize(childNodeRef);
         }

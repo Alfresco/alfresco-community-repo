@@ -3559,7 +3559,7 @@ public class NodesImpl implements Nodes
 
     /**
      *
-     * @param nodeId nodeId value.
+     * @param nodeId value.
      */
     @Override
     public Map<String, Object> getFolderSize(String nodeId)
@@ -3585,7 +3585,8 @@ public class NodesImpl implements Nodes
         try
         {
             size = contentData.getSize();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             size = 0;
         }

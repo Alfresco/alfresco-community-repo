@@ -35,11 +35,10 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.Map;
 
 /**
- * Node
+ * Node Size
  *
- * - folder size
+ * - get folder size
  *
- * @author Mohit Singh
  */
 @RelationshipResource(name = "size",  entityResource = NodesEntityResource.class, title = "Folder size")
 public class NodeFolderSizeRelation implements
@@ -59,7 +58,7 @@ public class NodeFolderSizeRelation implements
     }
 
     /**
-     * Folder Size - returns a size of folder.
+     * Folder Size - returns size of a folder.
      *
      * @param nodeId String id of folder - will also accept well-known alias, eg. -root- or -my- or -shared-
      * Please refer to OpenAPI spec for more details !

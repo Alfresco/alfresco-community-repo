@@ -242,7 +242,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceAction.FolderSize.class))
                         {
-                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
+                            throw new DeletedResourceException("(GET by id) " + resource.getMetaData().getUniqueId());
                         }
                         RelationshipResourceAction.FolderSize<?> relationGetter = (RelationshipResourceAction.FolderSize<?>) resource.getResource();
                         Object result = relationGetter.readById(params.getEntityId());

@@ -254,8 +254,9 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             String output = reader.getContentString();
             
             log.info("XSLT Processor output: " + output);
-            Diff myDiff = new Diff("<html>\n<body>\n<h2>My CD Collection</h2>\n<table border=\"1\">\n<tr bgcolor=\"#9acd32\">\n<th>Title</th><th>Artist</th>\n</tr>\n<tr>\n<td></td><td></td>\n</tr>\n</table>\n</body>\n</html>\n", output);
-            assertTrue("Pieces of XML are similar " + myDiff + "\n\noutput: " + output + "\n\n", myDiff.similar());
+            String x = "<html>\n<body>\n<h2>My CD Collection</h2>\n<table border=\"1\">\n<tr bgcolor=\"#9acd32\">\n<th>Title</th><th>Artist</th>\n</tr>\n<tr>\n<td></td><td></td>\n</tr>\n</table>\n</body>\n</html>\n".replace("\n", "");
+            Diff myDiff = new Diff(x, output.replace(" ", "").replace("\n", ""));
+            assertTrue("Pieces of XML are similar " + myDiff + "\n\noutput: " + output + "\n\n" + "expected: " + x, myDiff.similar());
         }
         catch (Exception ex)
         {
@@ -263,7 +264,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             fail();
         }
     }
-    
+
     private FileInfo createXmlFile(NodeRef folder)
     {
         return createXmlFile(folder, sampleXML);

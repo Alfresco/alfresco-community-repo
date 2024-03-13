@@ -654,7 +654,7 @@ public class ResultMapper
         }
 
         return new GenericBucket(buck.getFirst(), filterQuery, null,
-                new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count, String.valueOf(buck.getSecond())))), null,
+                new HashSet<>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count, String.valueOf(buck.getSecond())))), null,
                 bucketInfo);
     }
 
@@ -676,7 +676,7 @@ public class ResultMapper
 
             if (foundSet.isPresent())
             {
-                return new Pair<String, IntervalSet>(found.get().getField(), foundSet.get());
+                return new Pair<>(found.get().getField(), foundSet.get());
             }
         }
 

@@ -253,14 +253,14 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             assertNotNull(reader);
             String output = reader.getContentString();
             
-            log.info("XSLT Processor output: " + output);
+            log.debug("XSLT Processor output: " + output);
             Diff myDiff = new Diff("<html>\n<body>\n<h2>My CD Collection</h2>\n<table border=\"1\">\n<tr bgcolor=\"#9acd32\">\n<th>Title</th><th>Artist</th>\n</tr>\n<tr>\n<td></td><td></td>\n</tr>\n</table>\n</body>\n</html>\n", output);
             assertTrue("Pieces of XML are similar " + myDiff, myDiff.similar());
         }
         catch (Exception ex)
         {
             log.error("Error!", ex);
-            fail(ex.getMessage());
+            fail();
         }
     }
 

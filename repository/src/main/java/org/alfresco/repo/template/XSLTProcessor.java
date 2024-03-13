@@ -59,6 +59,7 @@ import org.apache.bsf.BSFManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.apache.xml.utils.Constants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -142,6 +143,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
 
         XSLTemplateModel xsltModel = (XSLTemplateModel) model;
         System.setProperty("org.apache.xalan.extensions.bsf.BSFManager", BSFManager.class.getName());
+        System.setProperty("javax.xml.transform.TransformerFactory", TransformerFactoryImpl.class.getName());
 
         Document xslTemplate;
         try

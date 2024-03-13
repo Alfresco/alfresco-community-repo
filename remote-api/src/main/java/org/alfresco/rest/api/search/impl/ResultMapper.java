@@ -204,7 +204,7 @@ public class ResultMapper
                     .map(resultSet -> toSearchContext(resultSet, searchRequestContext, searchQuery, disableFaceting))
                     .orElse(null);
 
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), setTotal(results, unknownNodeRefsCount.get()), null, context);
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), getTotalAvailableResults(results, unknownNodeRefsCount.get()), null, context);
     }
 
     /**
@@ -301,7 +301,7 @@ public class ResultMapper
      * @param results
      * @return An integer total
      */
-    public Integer setTotal(ResultSet results, int unavailableResultsCount)
+    public Integer getTotalAvailableResults(ResultSet results, int unavailableResultsCount)
     {
         Long totalItems = results.getNumberFound();
         Integer total = totalItems.intValue() - unavailableResultsCount;
@@ -314,18 +314,19 @@ public class ResultMapper
      * @param searchQuery
      * @return SearchContext
      */
-    public SearchContext toSearchContext(SearchEngineResultSet resultSet, SearchRequestContext searchRequestContext, SearchQuery searchQuery)
+    public SearchContext toSearchContext(SearchEngineResultSet resultSet, SearchRequestContext searchRequestContext,
+            SearchQuery searchQuery)
     {
         return toSearchContext(resultSet, searchRequestContext, searchQuery, false);
     }
 
-    public SearchContext toSearchContext(SearchEngineResultSet resultSet, SearchRequestContext searchRequestContext, SearchQuery searchQuery, boolean disableFaceting)
+    public SearchContext toSearchContext(SearchEngineResultSet resultSet, SearchRequestContext searchRequestContext,
+            SearchQuery searchQuery, boolean disableFaceting)
     {
         SearchContext context = null;
-        Map<String, Integer> facetQueries = resultSet.getFacetQueries();
+
         List<GenericFacetResponse> facets = new ArrayList<>();
         List<FacetQueryContext> facetResults = null;
-        SpellCheckContext spellCheckContext = null;
         List<FacetFieldContext> ffcs = new ArrayList<FacetFieldContext>();
 
         if (searchQuery == null)
@@ -333,50 +334,29 @@ public class ResultMapper
             throw new IllegalArgumentException("searchQuery can't be null");
         }
 
+        // Spellcheck
+        SpellCheckContext spellCheckContext = getSpellCheckContext(resultSet);
+
         if (!disableFaceting)
         {
-            // Facet queries
-            if (facetQueries != null && !facetQueries.isEmpty())
-            {
-                // If group by field populated in query facet return bucketing into facet field.
-                List<GenericFacetResponse> facetQueryForFields = getFacetBucketsFromFacetQueries(facetQueries, searchQuery);
-                if (hasGroup(searchQuery) || FacetFormat.V2 == searchQuery.getFacetFormat())
-                {
-                    facets.addAll(facetQueryForFields);
-                }
-                else
-                {
-                    // Return the old way facet query with no bucketing.
-                    facetResults = new ArrayList<>(facetQueries.size());
-                    for (Entry<String, Integer> fq : facetQueries.entrySet())
-                    {
-                        String filterQuery = null;
-                        if (searchQuery.getFacetQueries() != null)
-                        {
-                            Optional<FacetQuery> found = searchQuery.getFacetQueries().stream()
-                                    .filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
-                            filterQuery = found.isPresent() ? found.get().getQuery() : fq.getKey();
-                        }
-                        facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, fq.getValue()));
-                    }
-                }
-            }
 
-            // Field Facets
+            Map<String, Integer> facetQueries = resultSet.getFacetQueries();
             Map<String, List<Pair<String, Integer>>> facetFields = resultSet.getFieldFacets();
-            if (FacetFormat.V2 == searchQuery.getFacetFormat())
+            Map<String, List<Pair<String, Integer>>> facetInterval = resultSet.getFacetIntervals();
+            Map<String, List<Map<String, String>>> facetRanges = resultSet.getFacetRanges();
+
+            if (useBuckets(searchQuery))
             {
+                facets.addAll(getFacetQueriesForFields(facetQueries, searchQuery));
                 facets.addAll(getFacetBucketsForFacetFieldsAsFacets(facetFields, searchQuery));
             }
             else
             {
+                facetResults = getFacetResults(facetQueries, searchQuery);
                 ffcs.addAll(getFacetBucketsForFacetFields(facetFields, searchQuery));
             }
 
-            Map<String, List<Pair<String, Integer>>> facetInterval = resultSet.getFacetIntervals();
             facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
-
-            Map<String, List<Map<String, String>>> facetRanges = resultSet.getFacetRanges();
             facets.addAll(RangeResultMapper.getGenericFacetsForRanges(facetRanges, searchQuery.getFacetRanges()));
 
             List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, resultSet.getStats());
@@ -385,16 +365,60 @@ public class ResultMapper
             facets.addAll(stats);
         }
 
-        // Spelling
+        // Put it all together
+        context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext,
+                searchRequestContext.includeRequest() ? searchQuery : null);
+        return isNullContext(context) ? null : context;
+    }
+
+    private boolean useBuckets(SearchQuery searchQuery)
+    {
+        return hasGroup(searchQuery) || FacetFormat.V2 == searchQuery.getFacetFormat();
+    }
+
+    private SpellCheckContext getSpellCheckContext(SearchEngineResultSet resultSet)
+    {
+        SpellCheckContext spellCheckContext = null;
         SpellCheckResult spell = resultSet.getSpellCheckResult();
         if (spell != null && spell.getResultName() != null && !spell.getResults().isEmpty())
         {
             spellCheckContext = new SpellCheckContext(spell.getResultName(), spell.getResults());
         }
 
-        // Put it all together
-        context = new SearchContext(resultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest() ? searchQuery : null);
-        return isNullContext(context) ? null : context;
+        return spellCheckContext;
+    }
+
+    private List<GenericFacetResponse> getFacetQueriesForFields(Map<String, Integer> facetQueries, SearchQuery searchQuery)
+    {
+        List<GenericFacetResponse> facetQueryForFields = new ArrayList<GenericFacetResponse>();
+        if (facetQueries != null && !facetQueries.isEmpty())
+        {
+            facetQueryForFields = getFacetBucketsFromFacetQueries(facetQueries, searchQuery);
+        }
+
+        return facetQueryForFields;
+    }
+
+    private List<FacetQueryContext> getFacetResults(Map<String, Integer> facetQueries, SearchQuery searchQuery)
+    {
+        List<FacetQueryContext> facetResults = null;
+        if (facetQueries != null && !facetQueries.isEmpty())
+        {
+            facetResults = new ArrayList<>(facetQueries.size());
+            for (Entry<String, Integer> fq : facetQueries.entrySet())
+            {
+                String filterQuery = null;
+                if (searchQuery.getFacetQueries() != null)
+                {
+                    Optional<FacetQuery> found = searchQuery.getFacetQueries().stream()
+                            .filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
+                    filterQuery = found.isPresent() ? found.get().getQuery() : fq.getKey();
+                }
+                facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, fq.getValue()));
+            }
+        }
+
+        return facetResults;
     }
 
     public static boolean hasGroup(SearchQuery searchQuery)

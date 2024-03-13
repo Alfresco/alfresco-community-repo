@@ -674,7 +674,7 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
       }
    }
 
-   if (failed != 0 && logger.isWarnLoggingEnabled() == true)
+   if (failed !== 0 && logger.isWarnLoggingEnabled() === true)
    {
       logger.warn("Faceting disabled as hits are innacurate due to unknown nodeRefs returned");
    }
@@ -691,7 +691,7 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
          startIndex: startIndex,
          numberFound: meta ? meta.numberFound - failed : -1
       },
-      facets: (meta && failed == 0) ? meta.facets : null,
+      facets: (meta && failed === 0) ? meta.facets : null,
       highlighting: meta ? meta.highlighting : null,
       items: results,
       spellcheck: meta ? meta.spellcheck : null
@@ -746,7 +746,7 @@ function processResultsSinglePage(nodes, startIndex, rootNode, meta)
       }
    }
 
-   if (failed != 0 && logger.isWarnLoggingEnabled() == true)
+   if (failed !== 0 && logger.isWarnLoggingEnabled() === true)
    {
       logger.warn("Faceting disabled as hits are innacurate due to unknown nodeRefs returned");
    }
@@ -763,7 +763,7 @@ function processResultsSinglePage(nodes, startIndex, rootNode, meta)
          startIndex: startIndex,
          numberFound: meta ? meta.numberFound - failed : -1
       },
-      facets: (meta && failed == 0) ? meta.facets : null,
+      facets: (meta && failed === 0) ? meta.facets : null,
       highlighting: meta ? meta.highlighting : null,
       items: results,
       spellcheck: meta ? meta.spellcheck : null

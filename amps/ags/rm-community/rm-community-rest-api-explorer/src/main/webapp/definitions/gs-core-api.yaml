@@ -2366,8 +2366,6 @@ paths:
       description: |
         Add an item to hold as a child of **holdId**.
 
-        This API method also supports hold creation using application/json.
-
         You must specify the item **id**.
 
         You can create a hold like this:

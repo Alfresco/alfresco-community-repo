@@ -2143,8 +2143,6 @@ paths:
       description: |
         Creates a hold as a child of **holdContainerId**.
 
-        This API method also supports hold creation using application/json.
-
         You must specify at least a **name** and the **"rma:holdReason"** property.
 
         You can create a hold like this:
@@ -2223,7 +2221,7 @@ paths:
         '401':
           description: Authentication failed
         '403':
-          description: Current user does not have permission to declare a record
+          description: Current user does not have permission to create a hold
         '404':
           description: |
             **holdContainerId** does not exist or **parentId** does not exist
@@ -2241,7 +2239,7 @@ paths:
         - holds
       summary: Get a hold
       description: |
-        Gets information for hold **holdId**
+        Gets information for hold **holdId**.
 
         Mandatory fields and the hold's aspects and properties are returned by default.
         
@@ -2433,7 +2431,7 @@ paths:
         '401':
           description: Authentication failed
         '403':
-          description: Current user does not have permission to declare a record
+          description: Current user does not have permission to add items to the hold
         '404':
           description: |
             **holdId** does not exist or **parentId** does not exist
@@ -2923,7 +2921,7 @@ parameters:
   reasonParam:
     name: reason
     in: query
-    description: A reason to delete.
+    description: Reason for deletion.
     required: false
     type: string
   itemIdParam:

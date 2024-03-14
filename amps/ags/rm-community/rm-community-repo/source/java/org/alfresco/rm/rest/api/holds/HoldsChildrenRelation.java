@@ -39,8 +39,10 @@ import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
@@ -49,9 +51,15 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ParameterCheck;
+import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name="items", entityResource = HoldsEntityResource.class, title = "Children of a hold")
-public class HoldsChildrenRelation implements RelationshipResourceAction.Create<Record>, RelationshipResourceAction.Delete
+public class HoldsChildrenRelation implements
+    RelationshipResourceAction.Create<Record>,
+    RelationshipResourceAction.Read<Record>,
+    RelationshipResourceAction.Delete,
+    InitializingBean
 {
     private HoldService holdService;
     private FilePlanComponentsApiUtils apiUtils;
@@ -59,8 +67,18 @@ public class HoldsChildrenRelation implements RelationshipResourceAction.Create<
     private TransactionService transactionService;
     private FileFolderService fileFolderService;
 
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        ParameterCheck.mandatory("holdService", holdService);
+        ParameterCheck.mandatory("apiUtils", apiUtils);
+        ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
+        ParameterCheck.mandatory("transactionService", transactionService);
+        ParameterCheck.mandatory("fileFolderService", fileFolderService);
+    }
 
     @Override
+    @WebApiDescription(title="Add one (or more) items as children of a hold identified by 'holdId'")
     public List<Record> create(String holdId, List<Record> items, Parameters parameters)
     {
         // validate parameters
@@ -91,6 +109,13 @@ public class HoldsChildrenRelation implements RelationshipResourceAction.Create<
         }
 
         return result;
+    }
+
+    @Override
+    @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
+    public CollectionWithPagingInfo<Record> readAll(String entityResourceId, Parameters params)
+    {
+        return null;
     }
 
     @Override

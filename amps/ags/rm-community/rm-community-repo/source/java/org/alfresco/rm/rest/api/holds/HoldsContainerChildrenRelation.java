@@ -45,6 +45,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.Util;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -89,6 +90,7 @@ public class HoldsContainerChildrenRelation implements RelationshipResourceActio
     }
 
     @Override
+    @WebApiDescription(title="Create one (or more) holds as children of a hold container identified by 'holdContainerId'")
     public List<Hold> create(String holdContainerId, List<Hold> nodeInfos, Parameters parameters)
     {
         // validate parameters
@@ -129,27 +131,8 @@ public class HoldsContainerChildrenRelation implements RelationshipResourceActio
         return result;
     }
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
-    }
-
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
-
     @Override
+    @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
     public CollectionWithPagingInfo<Hold> readAll(String holdContainerId, Parameters parameters)
     {
         checkNotBlank("unfileRecordFolderId", holdContainerId);
@@ -194,6 +177,26 @@ public class HoldsContainerChildrenRelation implements RelationshipResourceActio
         }
 
         return CollectionWithPagingInfo.asPaged(parameters.getPaging(), nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
+    }
+
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
+    {
+        this.apiUtils = apiUtils;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
+    {
+        this.nodesModelFactory = nodesModelFactory;
     }
 
     public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory)

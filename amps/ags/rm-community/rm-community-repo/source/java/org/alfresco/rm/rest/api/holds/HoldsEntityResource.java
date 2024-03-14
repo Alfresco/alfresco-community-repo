@@ -33,6 +33,7 @@ import java.util.HashMap;
 
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -43,12 +44,14 @@ import org.alfresco.rm.rest.api.model.Hold;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 @EntityResource(name = "holds", title = "Holds")
 public class HoldsEntityResource implements
     EntityResourceAction.ReadById<Hold>,
+    EntityResourceAction.Update<Hold>,
     EntityResourceAction.Delete,
     InitializingBean
 {
@@ -56,6 +59,7 @@ public class HoldsEntityResource implements
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private HoldService holdService;
+    private TransactionService transactionService;
 
 
     @Override
@@ -65,6 +69,7 @@ public class HoldsEntityResource implements
         ParameterCheck.mandatory("apiUtils", apiUtils);
         ParameterCheck.mandatory("fileFolderService", fileFolderService);
         ParameterCheck.mandatory("holdService", holdService);
+        ParameterCheck.mandatory("transactionService", transactionService);
     }
 
     @Override
@@ -79,13 +84,44 @@ public class HoldsEntityResource implements
     }
 
     @Override
+    public Hold update(String holdId, Hold holdInfo, Parameters parameters)
+    {
+        checkNotBlank("recordFolderId", holdId);
+        mandatory("recordFolderInfo", holdInfo);
+        mandatory("parameters", parameters);
+
+        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
+
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                apiUtils.updateNode(nodeRef, holdInfo, parameters);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(nodeRef);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+
+        return nodesModelFactory.createHold(info, parameters, null, false);
+    }
+
+    @Override
     public void delete(String holdId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);
         mandatory("parameters", parameters);
 
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        String deleteReason = parameters.getParameter("deleteReason");
+        String deleteReason = parameters.getParameter("reason");
         if(deleteReason != null && !deleteReason.isEmpty())
         {
             holdService.setDeleteHoldReason(hold, deleteReason);
@@ -111,5 +147,10 @@ public class HoldsEntityResource implements
     public void setHoldService(HoldService holdService)
     {
         this.holdService = holdService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 }

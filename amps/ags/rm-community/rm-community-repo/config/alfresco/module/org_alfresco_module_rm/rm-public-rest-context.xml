@@ -86,6 +86,7 @@
       <property name="apiUtils" ref="apiUtils" />
       <property name="nodesModelFactory" ref="nodesModelFactory" />
       <property name="fileFolderService" ref="FileFolderService" />
+      <property name="transactionService" ref="transactionService" />
    </bean>
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsChildrenRelation">

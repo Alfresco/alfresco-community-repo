@@ -27,14 +27,8 @@
 package org.alfresco.rm.rest.api.holds;
 
 import org.alfresco.rest.framework.resource.EntityResource;
-import org.springframework.beans.factory.InitializingBean;
 
 @EntityResource(name = "holds-containers", title = "Holds containers")
-public class HoldsContainerEntityResource implements InitializingBean
+public class HoldsContainerEntityResource
 {
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-
-    }
 }

@@ -38,6 +38,11 @@ tags:
     description: Retrieve and manage unfiled records containers
   - name: unfiled-record-folders
     description: Retrieve and manage unfiled record folders
+  - name: hold-containers
+    description: Retrieve and manage hold containers
+  - name: holds
+    description: Retrieve and manage holds
+
 
 paths:
   ## GS sites
@@ -2092,6 +2097,421 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  ## Hold containers
+  '/hold-containers/{holdContainerId}/holds':
+    get:
+      tags:
+        - hold-containers
+      summary: Get holds
+      description: |
+        Returns a list of holds.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getHolds
+      parameters:
+        - $ref: '#/parameters/holdContainerIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/holdContainerEntryIncludeParam'
+        - $ref: '#/parameters/holdContainerIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/TransferContainerAssociationPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdContainerId**
+        '404':
+          description: "**holdContainerId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - hold-containers
+      summary: Create holds
+      description: |
+        Creates a hold as a child of **holdContainerId**.
+
+        This API method also supports hold creation using application/json.
+
+        You must specify at least a **name** and the **"rma:holdReason"** property.
+
+        You can create a hold like this:
+        ```JSON
+        {
+          "name":"My Hold"
+          "properties":
+          {
+            "rma:holdReason":"My reason"
+          }
+        }
+        ```
+        You can set properties when creating a hold:
+        ```JSON
+        {
+          "name":"My Hold"
+          "properties":
+          {
+            "rma:holdReason":"My reason"
+            "cm:description":"Example description"
+          }
+        }
+        ```
+
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: addHold
+      parameters:
+        - $ref: '#/parameters/holdContainerIdParam'
+        - $ref: '#/parameters/holdContainerEntryIncludeParam'
+        - $ref: '#/parameters/holdContainerIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/RMNodeBodyCreate'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdContainerId** is not a valid format or **parentId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to declare a record
+        '404':
+          description: |
+            **holdContainerId** does not exist or **parentId** does not exist
+        '422':
+          description: |
+            Model integrity exception: the action breaks system's integrity restrictions
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  ## Holds
+  '/holds/{holdId}':
+    get:
+      tags:
+        - holds
+      summary: Get a hold
+      description: |
+        Gets information for hold **holdId**
+
+        Mandatory fields and the hold's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/holdEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - holds
+      summary: Update a hold
+      description: |
+        Updates the record **holdId**. For example, you can rename a hold:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update one or more properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "rma:holdReason":"New reason",
+               "cm:description":"New description"
+            }
+        }
+        ```
+        **Note:** if you want to add or remove aspects, then you must use **GET /holds/{holdId}** first to get the complete set of *aspectNames*.
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/holdEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: holdBodyUpdate
+          description: The record information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/FilePlanComponentBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldEntry'
+        '400':
+          description: |
+            Invalid parameter: the update request is invalid or **holdId** is not a valid format or **holdBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        '409':
+          description: Updated name clashes with an existing node in the current parent folder
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - holds
+      summary: Delete a hold
+      description: |
+        Deletes the hold **holdId**. Deleted file plan components cannot be recovered, they are deleted permanently.
+      operationId: deleteHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/reasonParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        '409':
+          description: "**holdId** is locked and cannot be deleted"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/items':
+    post:
+      tags:
+        - holds
+      summary: Add items to a hold
+      description: |
+        Add an item to hold as a child of **holdId**.
+
+        This API method also supports hold creation using application/json.
+
+        You must specify the item **id**.
+
+        You can create a hold like this:
+        ```JSON
+        {
+          "id":"a7c10f46-b85b-4de5-af1c-930056b736a7"
+        }
+        ```
+
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: addItemsToHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/holdEntryIncludeParam'
+        - $ref: '#/parameters/holdIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeId
+          description: The node id.
+          required: true
+          schema:
+            $ref: '#/definitions/RMNodeId'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/ItemEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format or **parentId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to declare a record
+        '404':
+          description: |
+            **holdId** does not exist or **parentId** does not exist
+        '422':
+          description: |
+            Model integrity exception: the action breaks system's integrity restrictions
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - holds
+      summary: Get items from a hold
+      description: |
+        Returns a list of items.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getItems
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/holdEntryIncludeParam'
+        - $ref: '#/parameters/holdIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/TransferContainerAssociationPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/items/{itemId}':
+    delete:
+      tags:
+        - holds
+      summary: Remove an item from a hold
+      description: |
+        Delete item **itemId** from hold **holdId**.
+      operationId: removeItemFromHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/itemIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdId** or **itemId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **itemId**
+        '404':
+          description: " **holdId** or **itemId** does not exist"
+        '409':
+          description: "**itemId** is locked and cannot be deleted"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
 parameters:
   ## File plans
@@ -2446,6 +2866,72 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  ## Hold containers
+  holdContainerIdParam:
+    name: holdContainerId
+    in: path
+    description: The identifier of a hold container.
+    required: true
+    type: string
+  holdContainerIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **holdContainerId**
+    required: false
+    type: boolean
+  holdContainerEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  # Holds
+  holdIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **holdId**
+    required: false
+    type: boolean
+  holdIdParam:
+    name: holdId
+    in: path
+    description: The identifier of a hold.
+    required: true
+    type: string
+  holdEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the hold. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  reasonParam:
+    name: reason
+    in: query
+    description: A reason to delete.
+    required: false
+    type: string
+  itemIdParam:
+    name: itemId
+    in: path
+    description: The identifier of an item.
+    required: true
+    type: string
   ## Record
   recordIdParam:
     name: recordId
@@ -3519,6 +4005,152 @@ definitions:
         properties:
           association:
             $ref: '#/definitions/ChildAssociationInfo'
+  ## Holds
+  Hold:
+    type: object
+    required:
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isClosed:
+        type: boolean
+        default: false
+        description: Indicates if the record folder is closed
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  HoldEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/Hold'
+  HoldChildPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldChildAssociationEntry'
+          source:
+            $ref: '#/definitions/Hold'
+  HoldChildAssociationEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RecordFolderChildAssociation'
+  HoldChildAssociation:
+    allOf:
+      - $ref: '#/definitions/Record'
+      - type: object
+        properties:
+          association:
+            $ref: '#/definitions/ChildAssociationInfo'
+  ## Items
+  Item:
+    type: object
+    required:
+      - id
+      - name
+      - nodeType
+      - createdAt
+      - createdByUser
+      - modifiedAt
+      - modifiedByUser
+      - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isCompleted:
+        type: boolean
+        default: false
+        description: Present only for record nodes. Indicates if the record is completed
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      content:
+        $ref: '#/definitions/ContentInfo'
+      path:
+        $ref: '#/definitions/PathInfo'
+  ItemEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/Item'
   ##
   RequestBodyFile:
     type: object
@@ -3652,6 +4284,13 @@ definitions:
         type: string
       isCompleted:
         type: boolean
+  RMNodeId:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
   RMNodeBodyCreate:
     type: object
     required:

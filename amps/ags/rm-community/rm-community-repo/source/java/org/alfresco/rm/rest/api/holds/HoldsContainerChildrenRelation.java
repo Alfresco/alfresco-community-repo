@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -71,7 +73,9 @@ public class HoldsContainerChildrenRelation implements RelationshipResourceActio
     private TransactionService transactionService;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
+    private FilePlanService filePlanService;
     private SearchTypesFactory searchTypesFactory;
+    private HoldService holdService;
 
     @Override
     public void afterPropertiesSet() throws Exception
@@ -81,6 +85,7 @@ public class HoldsContainerChildrenRelation implements RelationshipResourceActio
         ParameterCheck.mandatory("fileFolderService", fileFolderService);
         ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
         ParameterCheck.mandatory("searchTypesFactory", searchTypesFactory);
+        ParameterCheck.mandatory("holdService", holdService);
     }
 
     @Override
@@ -100,8 +105,10 @@ public class HoldsContainerChildrenRelation implements RelationshipResourceActio
                 for (Hold nodeInfo : nodeInfos)
                 {
                     // Create the node
+                    String description = (String) nodeInfo.getProperties().get("cm:description");
+                    String holdReason = (String) nodeInfo.getProperties().get("rma:holdReason");
                     nodeInfo.setNodeType(RECORD_HOLD_TYPE);
-                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
+                    NodeRef newNodeRef = holdService.createHold(filePlanService.getFilePlan(parentNodeRef), nodeInfo.getName(), holdReason,description);
                     createdNodes.add(newNodeRef);
                 }
                 return createdNodes;
@@ -192,5 +199,15 @@ public class HoldsContainerChildrenRelation implements RelationshipResourceActio
     public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory)
     {
         this.searchTypesFactory = searchTypesFactory;
+    }
+
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
+
+    public void setHoldService(HoldService holdService)
+    {
+        this.holdService = holdService;
     }
 }

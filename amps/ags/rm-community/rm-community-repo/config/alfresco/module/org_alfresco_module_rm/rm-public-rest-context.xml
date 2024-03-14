@@ -75,8 +75,10 @@
       <property name="apiUtils" ref="apiUtils" />
       <property name="nodesModelFactory" ref="nodesModelFactory" />
       <property name="fileFolderService" ref="FileFolderService" />
+      <property name="filePlanService" ref="FilePlanService" />
       <property name="transactionService" ref="transactionService" />
       <property name="searchTypesFactory" ref="searchTypesFactory" />
+      <property name="holdService" ref="holdService" />
    </bean>
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsEntityResource" >

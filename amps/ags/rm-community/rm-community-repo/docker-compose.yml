@@ -5,7 +5,7 @@ version: "3"
 services:
     alfresco:
     # acs repo community image with ags repo community amp applied
-        image: alfresco/alfresco-governance-repository-community-base:latest
+        image: alfresco/alfresco-governance-repository-enterprise-base:latest
         environment:
             CATALINA_OPTS : "
                 -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
@@ -59,7 +59,7 @@ services:
             - 5432:5432
 
     search:
-        image: alfresco/alfresco-search-services:${SOLR6_TAG}
+        image: quay.io/alfresco/search-services:2.0.8.2
         environment:
             #Solr needs to know how to register itself with Alfresco
             SOLR_ALFRESCO_HOST: "alfresco"

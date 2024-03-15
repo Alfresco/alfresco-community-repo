@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,10 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
-
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+package org.alfresco.rest.rm.community.model.hold.v0;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,16 +35,22 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.alfresco.utility.model.TestModel;
 
+/**
+ * POJO for hold entry
+ *
+ * @author Rodica Sutu
+ * @since 3.2
+ */
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties (ignoreUnknown = true)
-public class HoldProperties extends TestModel
+public class HoldEntry extends TestModel
 {
-    @JsonProperty (PROPERTIES_DESCRIPTION)
-    private String description;
+    @JsonProperty (required = true)
+    private String name;
 
-    @JsonProperty (required = true, value = PROPERTIES_HOLD_REASON)
-    private String holdReason;
+    @JsonProperty (required = true)
+    private String nodeRef;
 }

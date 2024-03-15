@@ -34,7 +34,8 @@ import java.util.HashMap;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -73,7 +74,8 @@ public class HoldsEntityResource implements
     }
 
     @Override
-    public Hold readById(String holdId, Parameters parameters) throws EntityNotFoundException
+    @WebApiParam(name = "holdId", title = "The hold id")
+    public Hold readById(String holdId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);
         mandatory("parameters", parameters);
@@ -84,6 +86,7 @@ public class HoldsEntityResource implements
     }
 
     @Override
+    @WebApiDescription(title="Update hold", description = "Updates a hold with id 'holdId'")
     public Hold update(String holdId, Hold holdInfo, Parameters parameters)
     {
         checkNotBlank("recordFolderId", holdId);
@@ -115,6 +118,7 @@ public class HoldsEntityResource implements
     }
 
     @Override
+    @WebApiDescription(title = "Delete hold", description="Deletes a hold with id 'holdId'")
     public void delete(String holdId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);

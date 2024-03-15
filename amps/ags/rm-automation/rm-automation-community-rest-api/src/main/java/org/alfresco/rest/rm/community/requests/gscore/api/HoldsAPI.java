@@ -27,13 +27,20 @@
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.model.hold.HoldEntry;
+import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.item.Item;
+import org.alfresco.rest.rm.community.model.item.ItemCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 public class HoldsAPI extends RMModelRequest
@@ -47,15 +54,92 @@ public class HoldsAPI extends RMModelRequest
         super(rmRestWrapper);
     }
 
-    public HoldEntry createHold(HoldEntry holdEntry, String parentNodeId)
-    {
-        mandatoryObject("parentNodeId", parentNodeId);
 
-        return getRmRestWrapper().processModel(HoldEntry.class, requestWithBody(
+    public Hold getHold(String holdId)
+    {
+        mandatoryString("holdId", holdId);
+
+        return getHold(holdId, EMPTY);
+    }
+
+    public Hold getHold(String holdId, String parameters)
+    {
+        mandatoryString("holdId", holdId);
+
+        return getRmRestWrapper().processModel(Hold.class, simpleRequest(
+            GET,
+            "holds/{holdId}?{parameters}",
+            holdId,
+            parameters
+                                                                        ));
+    }
+
+    public Hold updateRecord(Hold holdModel, String holdId)
+    {
+        mandatoryObject("holdModel", holdModel);
+        mandatoryString("holdId", holdId);
+
+        return updateRecord(holdModel, holdId, EMPTY);
+    }
+
+    public Hold updateRecord(Hold holdModel, String holdId, String parameters)
+    {
+        mandatoryObject("holdModel", holdModel);
+        mandatoryString("holdId", holdId);
+
+        return getRmRestWrapper().processModel(Hold.class, requestWithBody(
+            PUT,
+            toJson(holdModel),
+            "holds/{holdId}?{parameters}",
+            holdId,
+            parameters
+                                                                            ));
+    }
+
+    public void deleteHold(String holdId, String reason)
+    {
+        mandatoryString("holdId", holdId);
+
+        getRmRestWrapper().processEmptyModel(simpleRequest(
+            DELETE,
+            "holds/{holdId}?reason={reason}",
+            holdId,
+            reason
+                                                          ));
+    }
+
+    public void deleteHold(String holdId)
+    {
+        mandatoryString("holdId", holdId);
+
+        getRmRestWrapper().processEmptyModel(simpleRequest(
+            DELETE,
+            "holds/{holdId}",
+            holdId
+                                                          ));
+    }
+
+    public Hold addItemToHold(Item item, String holdId)
+    {
+        mandatoryObject("holdId", holdId);
+
+        return getRmRestWrapper().processModel(Hold.class, requestWithBody(
             POST,
-            toJson(holdEntry),
-            "holds/{parentNodeId}",
-            parentNodeId
-                                                                                           ));
+            toJson(item),
+            "holds/{holdId}/items",
+            holdId
+                                                                          ));
+    }
+
+    public ItemCollection getItems(String holdId, String parameters)
+    {
+        mandatoryString("holdId", holdId);
+
+        return getRmRestWrapper().processModels(ItemCollection.class, simpleRequest(
+            GET,
+            "holds/{holdId}/items",
+            holdId,
+            parameters
+                                                                                   ));
     }
 }

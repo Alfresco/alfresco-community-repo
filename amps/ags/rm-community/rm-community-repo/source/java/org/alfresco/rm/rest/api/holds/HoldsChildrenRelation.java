@@ -46,7 +46,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
-import org.alfresco.rm.rest.api.model.Record;
+import org.alfresco.rm.rest.api.model.Item;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,8 +56,8 @@ import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name="items", entityResource = HoldsEntityResource.class, title = "Children of a hold")
 public class HoldsChildrenRelation implements
-    RelationshipResourceAction.Create<Record>,
-    RelationshipResourceAction.Read<Record>,
+    RelationshipResourceAction.Create<Item>,
+    RelationshipResourceAction.Read<Item>,
     RelationshipResourceAction.Delete,
     InitializingBean
 {
@@ -79,7 +79,7 @@ public class HoldsChildrenRelation implements
 
     @Override
     @WebApiDescription(title="Add one (or more) items as children of a hold identified by 'holdId'")
-    public List<Record> create(String holdId, List<Record> items, Parameters parameters)
+    public List<Item> create(String holdId, List<Item> items, Parameters parameters)
     {
         // validate parameters
         checkNotBlank("holdId", holdId);
@@ -91,7 +91,7 @@ public class HoldsChildrenRelation implements
         {
             public List<NodeRef> execute()
             {
-                List<NodeRef> createdNodes = items.stream().map(Record::getNodeRef).collect(Collectors.toList());
+                List<NodeRef> createdNodes = items.stream().map(Item::getNodeRef).collect(Collectors.toList());
                 holdService.addToHold(parentNodeRef, createdNodes);
                 return createdNodes;
             }
@@ -100,12 +100,12 @@ public class HoldsChildrenRelation implements
         List<NodeRef> nodeInfos = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Get the nodes info
-        List<Record> result = new ArrayList<>(nodeInfos.size());
+        List<Item> result = new ArrayList<>(nodeInfos.size());
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
         for (NodeRef newNodeRef : nodeInfos)
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
-            result.add(nodesModelFactory.createRecord(info, parameters, mapUserInfo, false));
+            result.add(nodesModelFactory.createItem(info, parameters, mapUserInfo, false));
         }
 
         return result;
@@ -113,12 +113,13 @@ public class HoldsChildrenRelation implements
 
     @Override
     @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
-    public CollectionWithPagingInfo<Record> readAll(String entityResourceId, Parameters params)
+    public CollectionWithPagingInfo<Item> readAll(String entityResourceId, Parameters params)
     {
         return null;
     }
 
     @Override
+    @WebApiDescription(title = "Remove an item from a hold", description="Remove an item with id 'itemId' from a hold with id 'holdId'")
     public void delete(String holdId, String itemId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);

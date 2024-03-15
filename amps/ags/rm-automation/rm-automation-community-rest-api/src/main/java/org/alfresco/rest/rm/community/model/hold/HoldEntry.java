@@ -26,31 +26,23 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.utility.model.TestModel;
+import org.alfresco.rest.core.RestModels;
+import org.alfresco.rest.rm.community.model.holdcontainer.HoldContainer;
 
-/**
- * POJO for hold entry
- *
- * @author Rodica Sutu
- * @since 3.2
- */
 @Builder
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
-public class HoldEntry extends TestModel
+public class HoldEntry extends RestModels<HoldContainer, HoldEntry>
 {
-    @JsonProperty (required = true)
-    private String name;
-
-    @JsonProperty (required = true)
-    private String nodeRef;
+    @JsonProperty
+    private Hold entry;
 }

@@ -49,6 +49,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.FilePlan;
 import org.alfresco.rm.rest.api.model.Hold;
 import org.alfresco.rm.rest.api.model.HoldContainer;
+import org.alfresco.rm.rest.api.model.Item;
 import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordCategory;
@@ -637,6 +638,14 @@ public class ApiNodesModelFactory
                 }
             }
         }
+    }
+
+    public Item createItem(FileInfo info, Parameters parameters, Map<String, UserInfo> mapUserInfo, boolean isMinimalInfo)
+    {
+        Item item = new Item();
+        mapBasicInfo(item, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
+        mapOptionalInfo(item, info, parameters.getInclude(), isMinimalInfo);
+        return item;
     }
 
     public Hold createHold(FileInfo info, Parameters parameters, Map<String, UserInfo> mapUserInfo, boolean isMinimalInfo)

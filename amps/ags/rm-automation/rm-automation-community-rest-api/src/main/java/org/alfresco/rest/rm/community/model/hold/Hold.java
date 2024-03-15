@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -26,28 +26,65 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.rest.model.RestByUserModel;
+import org.alfresco.rest.rm.community.model.common.Path;
 import org.alfresco.utility.model.TestModel;
 
 @Builder
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
-public class HoldProperties extends TestModel
+public class Hold extends TestModel
 {
-    @JsonProperty (PROPERTIES_DESCRIPTION)
-    private String description;
+    /*************************/
+    /** Mandatory parameters */
+    /*************************/
+    @JsonProperty(required = true)
+    private String createdAt;
 
-    @JsonProperty (required = true, value = PROPERTIES_HOLD_REASON)
-    private String holdReason;
+    @JsonProperty (required = true)
+    private RestByUserModel createdByUser;
+
+    @JsonProperty (required = true)
+    private String modifiedAt;
+
+    @JsonProperty (required = true)
+    private RestByUserModel modifiedByUser;
+
+    @JsonProperty (required = true)
+    private String name;
+
+    @JsonProperty (required = true)
+    private String id;
+
+    @JsonProperty (required = true)
+    private String nodeType;
+
+    @JsonProperty (required = true)
+    private String parentId;
+
+    @JsonProperty (required = true)
+    private HoldProperties properties;
+
+    @JsonProperty
+    private List<String> aspectNames;
+
+    /************************/
+    /** Optional parameters */
+    /************************/
+    @JsonProperty
+    private List<String> allowableOperations;
+
+    @JsonProperty
+    private Path path;
 }

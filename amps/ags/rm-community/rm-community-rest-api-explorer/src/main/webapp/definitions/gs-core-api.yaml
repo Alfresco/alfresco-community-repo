@@ -2445,7 +2445,7 @@ paths:
         - holds
       summary: Get items from a hold
       description: |
-        Returns a list of items.
+        Returns a list of items from **holdId**.
 
         Minimal information for each child is returned by default.
 

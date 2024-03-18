@@ -41,7 +41,6 @@ tags:
   - name: holds
     description: Retrieve and manage holds
 
-
 paths:
   ## GS sites
   '/gs-sites':
@@ -4112,13 +4111,6 @@ definitions:
         type: string
       isCompleted:
         type: boolean
-  RMNodeId:
-    type: object
-    required:
-      - id
-    properties:
-      id:
-        type: string
   RMNodeBodyCreate:
     type: object
     required:

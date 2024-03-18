@@ -533,7 +533,7 @@ paths:
           description: |
             **filePlanId** does not exist
         '409':
-          description: New name clashes with an existing node in the current parent container
+          description: A hold with the name **name** already exists
         default:
           description: Unexpected error
           schema:

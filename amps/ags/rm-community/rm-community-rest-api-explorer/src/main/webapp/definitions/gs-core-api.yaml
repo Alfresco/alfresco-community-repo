@@ -2262,7 +2262,7 @@ paths:
           description: The hold information to update.
           required: true
           schema:
-            $ref: '#/definitions/HoldUpdateBodyModel'
+            $ref: '#/definitions/HoldCreateBodyModel'
       produces:
         - application/json
       responses:
@@ -2322,6 +2322,8 @@ paths:
         Add a child of a hold with id **holdId**.
 
         You must specify the child **id**.
+        
+        The API returns a 201 Created if the child is already a child of the hold. 
 
         **Note:** You can add more than one child by specifying a list of children in the JSON body.
         For example, the following JSON body adds two children:
@@ -2425,13 +2427,13 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/holds/{holdId}/items/{holdChildId}':
+  '/holds/{holdId}/children/{holdChildId}':
     delete:
       tags:
         - holds
       summary: Delete a child of a hold
       description: |
-        Deletes a child with id **holdChildId** of a hold with id **holdId**.
+        Deletes the relationship between a child with id **holdChildId** and a parent hold with id **holdId**.
       operationId: removeHoldChild
       parameters:
         - $ref: '#/parameters/holdIdParam'
@@ -3924,15 +3926,6 @@ definitions:
     required:
       - name
       - reason
-    properties:
-      name:
-        type: string
-      description:
-        type: string
-      reason:
-        type: string
-  HoldUpdateBodyModel:
-    type: object
     properties:
       name:
         type: string

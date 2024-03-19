@@ -2251,7 +2251,9 @@ paths:
         Updates the hold with id **holdId**. For example, you can rename a hold:
         ```JSON
         {
-          "name":"My new name"
+          "name":"My new name",
+          "description":"My new description",
+          "reason":"My new reason"
         }
         ```
       operationId: updateHold

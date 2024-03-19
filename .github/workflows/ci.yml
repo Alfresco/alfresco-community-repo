@@ -180,7 +180,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testModule }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"

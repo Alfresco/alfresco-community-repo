@@ -263,7 +263,7 @@ public class XSLTRenderingEngineTest extends BaseAlfrescoSpringTest
             fail();
         }
     }
-    
+
     private FileInfo createXmlFile(NodeRef folder)
     {
         return createXmlFile(folder, sampleXML);

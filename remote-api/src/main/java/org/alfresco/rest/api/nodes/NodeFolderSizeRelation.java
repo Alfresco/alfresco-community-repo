@@ -64,10 +64,9 @@ public class NodeFolderSizeRelation implements
      * Please refer to OpenAPI spec for more details !
      *
      * If NodeId does not exist, EntityNotFoundException (status 404).
-     * If NodeId does not represent a folder, InvalidArgumentException (status 400).
      */
     @Override
-    @WebApiDescription(title = "Size of folder",description = "Return a size of folder")
+    @WebApiDescription(title = "Size of folder",description = "Return size of a folder")
     public Map<String, Object> readById(String nodeId)
     {
         return nodes.getFolderSize(nodeId);

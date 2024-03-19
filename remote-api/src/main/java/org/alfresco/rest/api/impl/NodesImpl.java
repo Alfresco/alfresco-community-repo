@@ -244,7 +244,7 @@ public class NodesImpl implements Nodes
     private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
 
     // pre-configured allow list of media/mime types, eg. specific types of images & also pdf
-    private Set<String> nonAttachContentTypes = Collections.emptySet(); 
+    private Set<String> nonAttachContentTypes = Collections.emptySet();
 
     public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
@@ -3565,6 +3565,15 @@ public class NodesImpl implements Nodes
     public Map<String, Object> getFolderSize(String nodeId)
     {
         NodeRef nodeRef = validateNode(nodeId);
+        Node nodeInfo = getNode(nodeRef);
+        NodePermissions nodePerms = nodeInfo.getPermissions();
+        if (nodePerms != null)
+        {
+            if(permissionService.hasPermission(nodeRef,PermissionService.READ) == AccessStatus.DENIED)
+            {
+                throw new AccessDeniedException("permissions.err_access_denied");
+            }
+        }
         long size = getNodeSize(nodeRef);
         int k = 1024;
         String[] sizes = {"Bytes", "KB", "MB", "GB", "TB", "PB"};

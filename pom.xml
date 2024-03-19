@@ -57,7 +57,7 @@
         <dependency.alfresco-greenmail.version>6.5</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.18</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.3.27</dependency.spring.version>
+        <dependency.spring.version>5.3.33</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.15.0-rc1</dependency.jackson.version>
         <dependency.cxf.version>3.5.5</dependency.cxf.version>
@@ -79,7 +79,7 @@
         <dependency.gytheio.version>0.18</dependency.gytheio.version>
         <dependency.groovy.version>3.0.16</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>5.8.3</dependency.spring-security.version>
+        <dependency.spring-security.version>5.8.11</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>

@@ -161,7 +161,7 @@ jobs:
             testAttributes:
           - testName: Data-Model
             testModule: data-model
-            testAttributes: "-DskipCoreTests=true"
+            testAttributes: "-DskipCoreTests=true -Dtest=AllDataModelTestSuite"
           - testName: Repository
             testModule: repository
             testAttributes: "-Dtest=AllUnitTestsSuite"

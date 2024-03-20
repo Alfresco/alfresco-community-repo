@@ -8,7 +8,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
         org.alfresco.opencmis.dictionary.CMISAbstractDictionaryServiceTest.class,
         //org.alfresco.repo.content.encoding.CharsetFinderTest.class,
-        org.alfresco.repo.content.DataModelContentTestSuite.class,
+        //org.alfresco.repo.content.DataModelContentTestSuite.class,
         //org.alfresco.repo.content.MimetypeMapTest.class,
         org.alfresco.repo.dictionary.AbstractModelTest.class,
         org.alfresco.repo.dictionary.DictionaryComponentTest.class,

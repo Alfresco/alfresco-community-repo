@@ -6,7 +6,9 @@ import org.junit.runners.Suite;
 
 @RunWith(Categories.class)
 @Suite.SuiteClasses({
-        org.alfresco.opencmis.dictionary.CMISAbstractDictionaryServiceTest.class
+        org.alfresco.opencmis.dictionary.CMISAbstractDictionaryServiceTest.class,
+        org.alfresco.repo.content.encoding.CharsetFinderTest.class,
+        org.alfresco.repo.content.DataModelContentTestSuite.class
 })
 public class AllDataModelTestSuite {
 }

@@ -42,6 +42,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
+import org.alfresco.rm.rest.api.model.HoldDeleteReason;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -136,26 +137,39 @@ public class HoldsEntityResource implements
         mandatory("parameters", parameters);
 
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        String deleteReason = parameters.getParameter("reason");
-        if(deleteReason != null && !deleteReason.isEmpty())
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
         {
-            holdService.setDeleteHoldReason(hold, deleteReason);
-        }
-        holdService.deleteHold(hold);
+            public Void execute()
+            {
+                holdService.deleteHold(hold);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
     }
 
     @Operation("delete")
     @WebApiDescription(title = "Delete a hold with a reason",
         successStatus = HttpServletResponse.SC_OK)
-    public void deleteHoldWithReason(String holdId, String reason, Parameters parameters, WithResponse withResponse)
+    public HoldDeleteReason deleteHoldWithReason(String holdId, HoldDeleteReason reason, Parameters parameters, WithResponse withResponse)
     {
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        String deleteReason = parameters.getParameter("reason");
-        if(deleteReason != null && !deleteReason.isEmpty())
+        String deleteReason = reason.getReason();
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
         {
-            holdService.setDeleteHoldReason(hold, deleteReason);
-        }
-        holdService.deleteHold(hold);
+            public Void execute()
+            {
+                if (deleteReason != null && !deleteReason.isEmpty())
+                {
+                    holdService.setDeleteHoldReason(hold, deleteReason);
+                }
+                holdService.deleteHold(hold);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+
+        return reason;
     }
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)

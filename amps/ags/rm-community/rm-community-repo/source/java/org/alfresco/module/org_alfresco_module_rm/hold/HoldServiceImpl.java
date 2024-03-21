@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.hold;
 
 import static org.alfresco.model.ContentModel.ASPECT_LOCKABLE;
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.model.ContentModel.PROP_DESCRIPTION;
 import static org.alfresco.model.ContentModel.PROP_NAME;
 
 import java.io.Serializable;
@@ -521,6 +522,30 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (nodeService.exists(hold) && isHold(hold))
         {
             nodeService.setProperty(hold, PROP_DELETE_HOLD_REASON, reason);
+        }
+    }
+
+    @Override
+    public void setHoldName(NodeRef hold, String name)
+    {
+        ParameterCheck.mandatory("hold", hold);
+        ParameterCheck.mandatory("name", name);
+
+        if (nodeService.exists(hold) && isHold(hold))
+        {
+            nodeService.setProperty(hold, PROP_NAME, name);
+        }
+    }
+
+    @Override
+    public void setHoldDescription(NodeRef hold, String description)
+    {
+        ParameterCheck.mandatory("hold", hold);
+        ParameterCheck.mandatory("description", description);
+
+        if (nodeService.exists(hold) && isHold(hold))
+        {
+            nodeService.setProperty(hold, PROP_DESCRIPTION, description);
         }
     }
 

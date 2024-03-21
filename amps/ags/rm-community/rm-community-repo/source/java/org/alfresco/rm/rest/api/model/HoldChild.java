@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,11 +24,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rm.rest.api.holds;
+package org.alfresco.rm.rest.api.model;
 
-import org.alfresco.rest.framework.resource.EntityResource;
-
-@EntityResource(name = "holds-containers", title = "Holds containers")
-public class HoldsContainerEntityResource
+/**
+ * Hold Child for use in the v1 REST API.
+ *
+ * @author Damian Ujma
+ */
+public class HoldChild
 {
+    private String id;
+
+    public HoldChild()
+    {
+    }
+
+    public HoldChild(String id)
+    {
+        this.id = id;
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
 }

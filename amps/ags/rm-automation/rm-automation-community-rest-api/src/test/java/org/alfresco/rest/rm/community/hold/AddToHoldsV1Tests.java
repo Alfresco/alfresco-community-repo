@@ -27,27 +27,34 @@
 package org.alfresco.rest.rm.community.hold;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.ContentActions;
+import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.hold.Hold;
-import org.alfresco.rest.rm.community.model.hold.HoldProperties;
-import org.alfresco.rest.rm.community.requests.gscore.api.HoldContainerAPI;
+import org.alfresco.rest.rm.community.model.hold.HoldChild;
+import org.alfresco.rest.rm.community.model.user.UserRoles;
+import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -77,27 +84,64 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     @Autowired
     private ContentActions contentActions;
 
-    @Test
+    @BeforeClass (alwaysRun = true)
     public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
-        FilePlan filePlan = getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS);
-        String holdContainerId = getRestAPIFactory().getNodeAPI(toContentModel(filePlan.getId())).listChildren().getEntries().stream()
-            .map(RestNodeModel::onModel)
-            .filter(model -> model.getName().equals("Holds"))
-            .findFirst()
-            .get()
-            .getId();
-        Hold hold = createHold(holdContainerId, "Hold", "Description", "No reason", getAdminUser());
+        Hold hold = createHold(FILE_PLAN_ALIAS, HOLD, "Description", "No reason", getAdminUser());
+        holdNodeRef = hold.getId();
+        STEP("Create test files.");
+        testSite = dataSite.usingAdmin().createPublicRandomSite();
+        documentHeld = dataContent.usingAdmin().usingSite(testSite)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        contentToAddToHold = dataContent.usingAdmin().usingSite(testSite)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        contentAddToHoldNoPermission = dataContent.usingAdmin().usingSite(testSite)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
+        STEP("Add the content to the hold.");
+        getRestAPIFactory()
+            .getHoldsAPI(getAdminUser())
+            .addChildToHold(HoldChild.builder().id(documentHeld.getNodeRefWithoutVersion()).build(), hold.getId());
 
+        STEP("Create users");
+        userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+            UserRole.SiteCollaborator, holdNodeRef, UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
+        users.add(userAddHoldPermission);
+    }
+
+    @Test
+    public void retrieveTheContentOfTheHoldUsingV1API() throws Exception
+    {
+        STEP("Retrieve the list of children from the hold and collect the entries that have the name of the active " +
+            "content held");
+        List<RestNodeModel> documentsHeld = restClient.authenticateUser(getAdminUser()).withCoreAPI()
+            .usingNode(toContentModel(holdNodeRef))
+            .listChildren().getEntries().stream()
+            .filter(child -> child.onModel().getName().contains(documentHeld
+                .getName()))
+            .collect(Collectors.toList());
+        STEP("Check the list of active content");
+        assertEquals(documentsHeld.size(), 1, "The active content is not retrieve when getting the children from the " +
+            "hold folder");
+        assertEquals(documentsHeld.get(0).onModel().getName(), documentHeld.getName());
+    }
+
+    @Test
+    public void retrieveTheHoldWhereTheContentIsAdded()
+    {
+        RestNodeAssociationModelCollection holdsEntries = getRestAPIFactory()
+            .getNodeAPI(documentHeld).usingParams("where=(assocType='rma:frozenContent')").getParents();
+        Hold hold = getRestAPIFactory().getHoldsAPI(getAdminUser()).getHold(holdsEntries.getEntries().get(0).getModel().getId());
+        assertTrue(hold.getName().contains(HOLD), "Could not find " + "hold with name " + HOLD);
     }
 
     public Hold createHold(String parentId, String name, String description, String reason, UserModel user)
     {
-        HoldContainerAPI holdContainerAPI = getRestAPIFactory().getHoldContainerAPI(user);
-        HoldProperties holdProperties = HoldProperties.builder().holdReason(reason).description(description).build();
-        Hold holdModel = Hold.builder().name(name).properties(holdProperties).build();
-        return holdContainerAPI.createHold(holdModel, parentId);
+        FilePlanAPI filePlanAPI = getRestAPIFactory().getFilePlansAPI(user);
+        Hold holdModel = Hold.builder().name(name).description(description).reason(reason).build();
+        return filePlanAPI.createHold(holdModel, parentId);
+
+
     }
 }

@@ -34,14 +34,14 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.rest.core.RestModels;
-import org.alfresco.rest.rm.community.model.holdcontainer.HoldContainer;
+import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 
 @Builder
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldEntry extends RestModels<HoldContainer, HoldEntry>
+public class HoldEntry extends RestModels<FilePlan, HoldEntry>
 {
     @JsonProperty
     private Hold entry;

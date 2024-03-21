@@ -119,6 +119,10 @@ public interface HoldService
      */
     void setDeleteHoldReason(NodeRef hold, String reason);
 
+    void setHoldName(NodeRef hold, String name);
+
+    void setHoldDescription(NodeRef hold, String description);
+
     /**
      * Deletes the hold
      *

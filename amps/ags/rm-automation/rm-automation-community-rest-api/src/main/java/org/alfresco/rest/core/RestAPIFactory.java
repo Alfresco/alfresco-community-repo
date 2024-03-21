@@ -39,7 +39,6 @@ import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.HoldContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.HoldsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
@@ -244,16 +243,6 @@ public class RestAPIFactory
     public ActionsExecutionAPI getActionsAPI()
     {
         return getGSCoreAPI(null).usingActionsExecutionsAPI();
-    }
-
-    public HoldContainerAPI getHoldContainerAPI()
-    {
-        return getGSCoreAPI(null).usingHoldContainerAPI();
-    }
-
-    public HoldContainerAPI getHoldContainerAPI(UserModel userModel)
-    {
-        return getGSCoreAPI(userModel).usingHoldContainerAPI();
     }
 
     public HoldsAPI getHoldsAPI()

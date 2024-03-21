@@ -24,10 +24,24 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.item;
+package org.alfresco.rest.rm.community.model.hold;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import org.alfresco.rest.core.RestModels;
 
-public class ItemCollection extends RestModels<ItemEntry, ItemCollection>
+@Builder
+@Data
+@EqualsAndHashCode(callSuper = true)
+@NoArgsConstructor
+@AllArgsConstructor
+public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
 {
+    @JsonProperty
+    private HoldChildEntry entry;
 }

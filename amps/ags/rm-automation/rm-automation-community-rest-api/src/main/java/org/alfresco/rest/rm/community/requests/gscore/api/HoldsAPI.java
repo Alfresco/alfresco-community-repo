@@ -39,8 +39,8 @@ import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.hold.Hold;
-import org.alfresco.rest.rm.community.model.item.Item;
-import org.alfresco.rest.rm.community.model.item.ItemCollection;
+import org.alfresco.rest.rm.community.model.hold.HoldChild;
+import org.alfresco.rest.rm.community.model.hold.HoldChildCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 public class HoldsAPI extends RMModelRequest
@@ -74,15 +74,15 @@ public class HoldsAPI extends RMModelRequest
                                                                         ));
     }
 
-    public Hold updateRecord(Hold holdModel, String holdId)
+    public Hold updateHold(Hold holdModel, String holdId)
     {
         mandatoryObject("holdModel", holdModel);
         mandatoryString("holdId", holdId);
 
-        return updateRecord(holdModel, holdId, EMPTY);
+        return updateHold(holdModel, holdId, EMPTY);
     }
 
-    public Hold updateRecord(Hold holdModel, String holdId, String parameters)
+    public Hold updateHold(Hold holdModel, String holdId, String parameters)
     {
         mandatoryObject("holdModel", holdModel);
         mandatoryString("holdId", holdId);
@@ -96,18 +96,6 @@ public class HoldsAPI extends RMModelRequest
                                                                             ));
     }
 
-    public void deleteHold(String holdId, String reason)
-    {
-        mandatoryString("holdId", holdId);
-
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-            DELETE,
-            "holds/{holdId}?reason={reason}",
-            holdId,
-            reason
-                                                          ));
-    }
-
     public void deleteHold(String holdId)
     {
         mandatoryString("holdId", holdId);
@@ -119,25 +107,25 @@ public class HoldsAPI extends RMModelRequest
                                                           ));
     }
 
-    public Hold addItemToHold(Item item, String holdId)
+    public HoldChild addChildToHold(HoldChild holdChild, String holdId)
     {
         mandatoryObject("holdId", holdId);
 
-        return getRmRestWrapper().processModel(Hold.class, requestWithBody(
+        return getRmRestWrapper().processModel(HoldChild.class, requestWithBody(
             POST,
-            toJson(item),
-            "holds/{holdId}/items",
+            toJson(holdChild),
+            "holds/{holdId}/children",
             holdId
                                                                           ));
     }
 
-    public ItemCollection getItems(String holdId, String parameters)
+    public HoldChildCollection getChildren(String holdId, String parameters)
     {
         mandatoryString("holdId", holdId);
 
-        return getRmRestWrapper().processModels(ItemCollection.class, simpleRequest(
+        return getRmRestWrapper().processModels(HoldChildCollection.class, simpleRequest(
             GET,
-            "holds/{holdId}/items",
+            "holds/{holdId}/children",
             holdId,
             parameters
                                                                                    ));

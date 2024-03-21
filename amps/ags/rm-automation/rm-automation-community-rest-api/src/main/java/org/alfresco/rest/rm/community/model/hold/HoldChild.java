@@ -24,9 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.item;
-
-import java.util.List;
+package org.alfresco.rest.rm.community.model.hold;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -35,51 +33,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.model.RestByUserModel;
-import org.alfresco.rest.rm.community.model.common.Path;
 import org.alfresco.utility.model.TestModel;
 
-
 @Builder
-@Data
 @EqualsAndHashCode(callSuper = true)
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Item extends TestModel
+public class HoldChild extends TestModel
 {
-    /*************************/
-    /** Mandatory parameters */
-    /*************************/
     @JsonProperty(required = true)
-    private String createdAt;
-
-    @JsonProperty (required = true)
-    private RestByUserModel createdByUser;
-
-    @JsonProperty (required = true)
-    private String modifiedAt;
-
-    @JsonProperty (required = true)
-    private RestByUserModel modifiedByUser;
-
-    @JsonProperty (required = true)
-    private String name;
-
-    @JsonProperty (required = true)
     private String id;
-
-    @JsonProperty (required = true)
-    private String nodeType;
-
-    @JsonProperty (required = true)
-    private String parentId;
-
-    /************************/
-    /** Optional parameters */
-    /************************/
-    @JsonProperty
-    private List<String> allowableOperations;
-
-    @JsonProperty
-    private Path path;
 }

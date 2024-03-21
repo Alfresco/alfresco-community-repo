@@ -1,4 +1,4 @@
-/*
+/*-
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -26,10 +26,59 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-public class HoldContainer extends RMNode
+/**
+ * Hold POJO for use in the v1 REST API.
+ *
+ * @author Damian Ujma
+ */
+public class HoldModel
 {
-    public HoldContainer()
+    private String id;
+    private String name;
+    private String description;
+    private String reason;
+
+    public HoldModel()
     {
-        super();
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    public String getReason()
+    {
+        return reason;
+    }
+
+    public void setReason(String reason)
+    {
+        this.reason = reason;
     }
 }

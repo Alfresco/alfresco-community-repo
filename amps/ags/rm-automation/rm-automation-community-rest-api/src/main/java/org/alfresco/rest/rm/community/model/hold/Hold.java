@@ -26,8 +26,6 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -35,8 +33,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.model.RestByUserModel;
-import org.alfresco.rest.rm.community.model.common.Path;
 import org.alfresco.utility.model.TestModel;
 
 @Builder
@@ -46,45 +42,16 @@ import org.alfresco.utility.model.TestModel;
 @AllArgsConstructor
 public class Hold extends TestModel
 {
-    /*************************/
-    /** Mandatory parameters */
-    /*************************/
-    @JsonProperty(required = true)
-    private String createdAt;
-
     @JsonProperty (required = true)
-    private RestByUserModel createdByUser;
-
-    @JsonProperty (required = true)
-    private String modifiedAt;
-
-    @JsonProperty (required = true)
-    private RestByUserModel modifiedByUser;
+    private String id;
 
     @JsonProperty (required = true)
     private String name;
 
     @JsonProperty (required = true)
-    private String id;
+    private String description;
 
     @JsonProperty (required = true)
-    private String nodeType;
+    private String reason;
 
-    @JsonProperty (required = true)
-    private String parentId;
-
-    @JsonProperty (required = true)
-    private HoldProperties properties;
-
-    @JsonProperty
-    private List<String> aspectNames;
-
-    /************************/
-    /** Optional parameters */
-    /************************/
-    @JsonProperty
-    private List<String> allowableOperations;
-
-    @JsonProperty
-    private Path path;
 }

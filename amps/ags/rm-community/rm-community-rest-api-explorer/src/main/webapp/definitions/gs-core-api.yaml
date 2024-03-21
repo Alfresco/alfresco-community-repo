@@ -2252,8 +2252,8 @@ paths:
         ```JSON
         {
           "name":"My new name",
-          "description":"My new description",
-          "reason":"My new reason"
+          "description":"Existing description",
+          "reason":"Existing reason"
         }
         ```
       operationId: updateHold

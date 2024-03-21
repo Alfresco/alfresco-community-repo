@@ -53,6 +53,11 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * Hold children relation
+ *
+ * @author Damian Ujma
+ */
 @RelationshipResource(name="children", entityResource = HoldsEntityResource.class, title = "Children of a hold")
 public class HoldsChildrenRelation implements
     RelationshipResourceAction.Create<HoldChild>,
@@ -77,8 +82,8 @@ public class HoldsChildrenRelation implements
     }
 
     @Override
-    @WebApiDescription(title="Add one (or more) items as children of a hold identified by 'holdId'")
-    public List<HoldChild> create(String holdId, List<HoldChild> items, Parameters parameters)
+    @WebApiDescription(title="Add one (or more) children as children of a hold identified by 'holdId'")
+    public List<HoldChild> create(String holdId, List<HoldChild> children, Parameters parameters)
     {
         // validate parameters
         checkNotBlank("holdId", holdId);
@@ -90,7 +95,7 @@ public class HoldsChildrenRelation implements
         {
             public List<NodeRef> execute()
             {
-                List<NodeRef> createdNodes = items.stream().map(holdChild -> new NodeRef(
+                List<NodeRef> createdNodes = children.stream().map(holdChild -> new NodeRef(
                     StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.getId())).collect(Collectors.toList());
                 holdService.addToHold(parentNodeRef, createdNodes);
                 return createdNodes;
@@ -129,7 +134,7 @@ public class HoldsChildrenRelation implements
     }
 
     @Override
-    @WebApiDescription(title = "Remove an item from a hold", description="Remove an item with id 'itemId' from a hold with id 'holdId'")
+    @WebApiDescription(title = "Remove a child from a hold", description="Remove a child with id 'childId' from a hold with id 'holdId'")
     public void delete(String holdId, String childId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);
@@ -137,9 +142,18 @@ public class HoldsChildrenRelation implements
         mandatory("parameters", parameters);
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        NodeRef itemRef = apiUtils.lookupByPlaceholder(holdId);
+        NodeRef childRef = apiUtils.lookupByPlaceholder(childId);
 
-        holdService.removeFromHold(nodeRef, itemRef);
+        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
+        {
+            public List<NodeRef> execute()
+            {
+                holdService.removeFromHold(nodeRef, childRef);
+                return null;
+            }
+        };
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
     }
 
     public void setHoldService(HoldService holdService)

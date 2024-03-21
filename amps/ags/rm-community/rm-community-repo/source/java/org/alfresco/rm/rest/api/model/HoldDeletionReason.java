@@ -26,9 +26,18 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-public class HoldDeleteReason
+/**
+ * Hold Deletion Reason POJO for use in the v1 REST API.
+ *
+ * @author Damian Ujma
+ */
+public class HoldDeletionReason
 {
     private String reason;
+
+    public HoldDeletionReason()
+    {
+    }
 
     public String getReason()
     {

@@ -27,7 +27,7 @@
 package org.alfresco.rm.rest.api.model;
 
 /**
- * Hold Child for use in the v1 REST API.
+ * Hold Child POJO for use in the v1 REST API.
  *
  * @author Damian Ujma
  */

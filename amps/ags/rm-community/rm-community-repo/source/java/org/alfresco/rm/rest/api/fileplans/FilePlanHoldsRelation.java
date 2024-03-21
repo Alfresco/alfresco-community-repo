@@ -48,15 +48,35 @@ import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ParameterCheck;
+import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * File plan holds relation
+ *
+ * @author Damian Ujma
+ */
 @RelationshipResource(name="holds", entityResource = FilePlanEntityResource.class, title = "Holds in a file plan")
-public class FilePlanHoldsRelation implements RelationshipResourceAction.Create<HoldModel>, RelationshipResourceAction.Read<HoldModel>
+public class FilePlanHoldsRelation implements
+    RelationshipResourceAction.Create<HoldModel>,
+    RelationshipResourceAction.Read<HoldModel>,
+    InitializingBean
 {
     private FilePlanComponentsApiUtils apiUtils;
     private ApiNodesModelFactory nodesModelFactory;
     private HoldService holdService;
     private FileFolderService fileFolderService;
     private TransactionService transactionService;
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        ParameterCheck.mandatory("apiUtils", this.apiUtils);
+        ParameterCheck.mandatory("nodesModelFactory", this.nodesModelFactory);
+        ParameterCheck.mandatory("holdService", this.holdService);
+        ParameterCheck.mandatory("fileFolderService", this.fileFolderService);
+        ParameterCheck.mandatory("transactionService", this.transactionService);
+    }
 
     @Override
     @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
@@ -107,7 +127,8 @@ public class FilePlanHoldsRelation implements RelationshipResourceAction.Create<
 
         List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        return createdNodes.stream().map(hold -> fileFolderService.getFileInfo(hold))
+        return createdNodes.stream()
+            .map(hold -> fileFolderService.getFileInfo(hold))
             .map(nodesModelFactory::createHoldModel)
             .collect(Collectors.toCollection(LinkedList::new));
     }
@@ -136,5 +157,4 @@ public class FilePlanHoldsRelation implements RelationshipResourceAction.Create<
     {
         this.transactionService = transactionService;
     }
-
 }

@@ -72,13 +72,13 @@
    <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanHoldsRelation">
       <property name="apiUtils" ref="apiUtils" />
       <property name="nodesModelFactory" ref="nodesModelFactory" />
-      <property name="holdService" ref="holdService" />
+      <property name="holdService" ref="HoldService" />
       <property name="fileFolderService" ref="FileFolderService" />
       <property name="transactionService" ref="transactionService" />
    </bean>
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsEntityResource" >
-      <property name="holdService" ref="holdService" />
+      <property name="holdService" ref="HoldService" />
       <property name="apiUtils" ref="apiUtils" />
       <property name="nodesModelFactory" ref="nodesModelFactory" />
       <property name="fileFolderService" ref="FileFolderService" />
@@ -86,7 +86,7 @@
    </bean>
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsChildrenRelation">
-      <property name="holdService" ref="holdService" />
+      <property name="holdService" ref="HoldService" />
       <property name="apiUtils" ref="apiUtils" />
       <property name="nodesModelFactory" ref="nodesModelFactory" />
       <property name="fileFolderService" ref="FileFolderService" />

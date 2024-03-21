@@ -639,13 +639,20 @@ public class ApiNodesModelFactory
         }
     }
 
+
+    /**
+     * Creates an object of type HoldModel
+     *
+     * @param info info of the hold
+     * @return HoldModel object
+     */
     public HoldModel createHoldModel(FileInfo info)
     {
         HoldModel hold = new HoldModel();
         hold.setId(info.getNodeRef().getId());
-        hold.setDescription(info.getProperties().get(ContentModel.PROP_DESCRIPTION).toString());
-        hold.setName(info.getProperties().get(ContentModel.PROP_NAME).toString());
-        hold.setReason(info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON).toString());
+        hold.setDescription((String) info.getProperties().get(ContentModel.PROP_DESCRIPTION));
+        hold.setName((String) info.getProperties().get(ContentModel.PROP_NAME));
+        hold.setReason((String)  info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON));
         return hold;
     }
 

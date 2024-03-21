@@ -42,7 +42,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
-import org.alfresco.rm.rest.api.model.HoldDeleteReason;
+import org.alfresco.rm.rest.api.model.HoldDeletionReason;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -51,6 +51,11 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * Hold entity resource
+ *
+ * @author Damian Ujma
+ */
 @EntityResource(name = "holds", title = "Holds")
 public class HoldsEntityResource implements
     EntityResourceAction.ReadById<HoldModel>,
@@ -75,6 +80,7 @@ public class HoldsEntityResource implements
     }
 
     @Override
+    @WebApiDescription(title = "Get hold information", description = "Get information for a hold with id 'holdId'")
     @WebApiParam(name = "holdId", title = "The hold id")
     public HoldModel readById(String holdId, Parameters parameters)
     {
@@ -87,7 +93,7 @@ public class HoldsEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title="Update hold", description = "Updates a hold with id 'holdId'")
+    @WebApiDescription(title="Update a hold", description = "Updates a hold with id 'holdId'")
     public HoldModel update(String holdId, HoldModel holdInfo, Parameters parameters)
     {
         checkNotBlank("recordFolderId", holdId);
@@ -149,19 +155,23 @@ public class HoldsEntityResource implements
     }
 
     @Operation("delete")
-    @WebApiDescription(title = "Delete a hold with a reason",
+    @WebApiDescription(title = "Delete hold with a reason",
         successStatus = HttpServletResponse.SC_OK)
-    public HoldDeleteReason deleteHoldWithReason(String holdId, HoldDeleteReason reason, Parameters parameters, WithResponse withResponse)
+    public HoldDeletionReason deleteHoldWithReason(String holdId, HoldDeletionReason reason, Parameters parameters, WithResponse withResponse)
     {
+        checkNotBlank("holdId", holdId);
+        mandatory("parameters", parameters);
+
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        String deleteReason = reason.getReason();
+        String deletionReason = reason.getReason();
+
         RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
         {
             public Void execute()
             {
-                if (deleteReason != null && !deleteReason.isEmpty())
+                if (deletionReason != null && !deletionReason.isEmpty())
                 {
-                    holdService.setDeleteHoldReason(hold, deleteReason);
+                    holdService.setHoldDeletionReason(hold, deletionReason);
                 }
                 holdService.deleteHold(hold);
                 return null;

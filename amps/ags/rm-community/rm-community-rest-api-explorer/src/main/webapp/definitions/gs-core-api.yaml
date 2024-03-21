@@ -38,6 +38,8 @@ tags:
     description: Retrieve and manage unfiled records containers
   - name: unfiled-record-folders
     description: Retrieve and manage unfiled record folders
+  - name: holds
+    description: Retrieve and manage holds
 
 paths:
   ## GS sites
@@ -418,6 +420,124 @@ paths:
           description: New name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
+  '/file-plans/{filePlanId}/holds':
+    get:
+      tags:
+        - file-plans
+      summary: Get all holds in a file plan
+      description: |
+        Returns a list of holds.
+      operationId: getHolds
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **filePlanId**
+        '404':
+          description: "**filePlanId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - file-plans
+      summary: Create holds for a file plan
+      description: |
+        Creates a new hold.
+
+        You must specify at least a **name** and a **reason** property.
+
+        **Note:** You can create more than one hold by specifying a list of holds in the JSON body.
+        For example, the following JSON body creates two holds:
+        ```JSON
+        [
+        {
+          "name":"Hold1",
+          "description": "Description1",
+          "reason": "Reason1"
+        },
+        {
+          "name":"Hold2",
+          "description": "Description2",
+          "reason": "Reason2"
+        }
+        ]
+        ```
+
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: addHold
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - in: body
+          name: nodeBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldCreateBodyModel'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldModelEntry'
+        '400':
+          description: |
+            Invalid parameter: **filePlanId** is not a valid format or **HoldCreateBodyModel** is not valid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to create a hold
+        '404':
+          description: |
+            **filePlanId** does not exist
+        '409':
+          description: A hold with the name **name** already exists
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   ## Unfiled records containers
   '/unfiled-containers/{unfiledContainerId}':
     get:
@@ -2092,6 +2212,289 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  ## Holds
+  '/holds/{holdId}':
+    get:
+      tags:
+        - holds
+      summary: Get a hold
+      description: |
+        Gets information for hold with id **holdId**.
+      operationId: getHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldModelEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - holds
+      summary: Update a hold
+      description: |
+        Updates the hold with id **holdId**. For example, you can rename a hold:
+        ```JSON
+        {
+          "name":"My new name",
+          "description":"Existing description",
+          "reason":"Existing reason"
+        }
+        ```
+      operationId: updateHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdBodyUpdate
+          description: The hold information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldCreateBodyModel'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldModelEntry'
+        '400':
+          description: |
+            Invalid parameter: the update request is invalid or **holdId** is not a valid format or **holdBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        '409':
+          description: Updated name clashes with an existing node in the current parent folder
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - holds
+      summary: Delete a hold
+      description: |
+        Deletes the hold with id **holdId**.
+      operationId: deleteHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/delete':
+    post:
+      tags:
+        - holds
+      summary: Delete a hold with a reason
+      description: |
+        Deletes the hold with id **holdId** and stores a reason for deletion in the audit log.
+        
+        A **reason** must be specified in the request body.
+      operationId: deleteHoldWithReason
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdDeletionReason
+          description: Reason for deletion.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldDeletionReason'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldDeletionReasonEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update or delete **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/children':
+    post:
+      tags:
+        - holds
+      summary: Add children to a hold
+      description: |
+        Add a child of a hold with id **holdId**.
+
+        You must specify the child **id**.
+        
+        The API returns a 201 Created if the child is already a child of the hold. 
+
+        **Note:** You can add more than one child by specifying a list of children in the JSON body.
+        For example, the following JSON body adds two children:
+        ```JSON
+        [
+          {
+            "id":"a7c10f46-b85b-4de5-af1c-930056b736a7"
+          },
+          {
+            "id":"e0d79b71-be2b-4ce7-a846-a7c50cba20fb"
+          }
+        ]
+        ```
+
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: addChildToHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: nodeId
+          description: The node id.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldChild'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldChildEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format or **HoldChild** is not valid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to add items to the hold
+        '404':
+          description: |
+            **holdId** does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - holds
+      summary: Get children of a hold
+      description: |
+        Returns a list of children of a hold with id **holdId**.
+      operationId: getHoldChildren
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldChildPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/children/{holdChildId}':
+    delete:
+      tags:
+        - holds
+      summary: Delete a child of a hold
+      description: |
+        Deletes the relationship between a child with id **holdChildId** and a parent hold with id **holdId**.
+      operationId: removeHoldChild
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/holdChildIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdChildId** or **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **holdChildId**
+        '404':
+          description: " **holdChildId** or **holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 
 parameters:
   ## File plans
@@ -2175,7 +2578,7 @@ parameters:
     description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **unfiledContainerId**
     required: false
     type: boolean
-## Unfiled record folders
+  ## Unfiled record folders
   unfiledRecordFolderIdParam:
     name: unfiledRecordFolderId
     in: path
@@ -2446,6 +2849,19 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  # Holds
+  holdIdParam:
+    name: holdId
+    in: path
+    description: The identifier of a hold.
+    required: true
+    type: string
+  holdChildIdParam:
+    name: holdChildId
+    in: path
+    description: The identifier of a child of a hold.
+    required: true
+    type: string
   ## Record
   recordIdParam:
     name: recordId
@@ -3519,6 +3935,89 @@ definitions:
         properties:
           association:
             $ref: '#/definitions/ChildAssociationInfo'
+  ## Holds
+  HoldModelEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldModel'
+  HoldModel:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      reason:
+        type: string
+  HoldCreateBodyModel:
+    type: object
+    required:
+      - name
+      - reason
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      reason:
+        type: string
+  HoldPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldModelEntry'
+  HoldChild:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+  HoldChildEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldChild'
+  HoldChildPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldChildEntry'
+  HoldDeletionReasonEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldDeletionReason'
+  HoldDeletionReason:
+    type: object
+    required:
+      - reason
+    properties:
+      reason:
+        type: string
   ##
   RequestBodyFile:
     type: object

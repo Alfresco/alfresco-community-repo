@@ -136,6 +136,4 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_STORE = "cm:storeName";
     /** WORM Unlock Date */
     public static final String PROPERTIES_WORM_UNLOCK_DATE = "rme:wormUnlockDate";
-
-    public static final String PROPERTIES_HOLD_REASON = "rma:holdReason";
 }

@@ -21,12 +21,6 @@
             <module>rm-automation</module>
          </modules>
       </profile>
-      <profile>
-         <id>run-restapi-part1</id>
-         <properties>
-            <suiteXmlFile>${project.basedir}/src/test/resources/part1-suite.xml</suiteXmlFile>
-         </properties>
-      </profile>
    </profiles>
 
    <properties>

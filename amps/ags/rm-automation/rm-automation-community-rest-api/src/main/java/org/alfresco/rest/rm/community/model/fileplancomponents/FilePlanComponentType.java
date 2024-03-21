@@ -36,7 +36,6 @@ public class FilePlanComponentType
 {
     public static final String FILE_PLAN_TYPE = "rma:filePlan";
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
-    public static final String RECORD_HOLD_TYPE = "rma:hold";
     public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
     public static final String RECORD_TYPE = "rma:record"; // generic record type
     public static final String UNFILED_RECORD_FOLDER_TYPE = "rma:unfiledRecordFolder";

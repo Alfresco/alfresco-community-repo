@@ -47,7 +47,6 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.FilePlan;
-import org.alfresco.rm.rest.api.model.HoldChild;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.Record;

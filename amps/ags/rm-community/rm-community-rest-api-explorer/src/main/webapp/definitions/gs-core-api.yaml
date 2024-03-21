@@ -2296,7 +2296,6 @@ paths:
       operationId: deleteHold
       parameters:
         - $ref: '#/parameters/holdIdParam'
-        - $ref: '#/parameters/reasonParam'
       produces:
         - application/json
       responses:
@@ -2309,6 +2308,44 @@ paths:
           description: Authentication failed
         '403':
           description: Current user does not have permission to delete **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/delete':
+    post:
+      tags:
+        - holds
+      summary: Delete a hold with a reason
+      description: |
+        Deletes the hold with id **holdId** and stores a reason for deletion in the audit log.
+        
+        A **reason** must be specified in the request body.
+      operationId: deleteHoldWithReason
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdDeletionReason
+          description: Reason for deletion.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldDeletionReason'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldDeletionReasonEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update or delete **holdId**
         '404':
           description: "**holdId** does not exist"
         default:
@@ -2818,12 +2855,6 @@ parameters:
     in: path
     description: The identifier of a hold.
     required: true
-    type: string
-  reasonParam:
-    name: reason
-    in: query
-    description: Reason for deletion.
-    required: false
     type: string
   holdChildIdParam:
     name: holdChildId
@@ -3973,6 +4004,20 @@ definitions:
             type: array
             items:
               $ref: '#/definitions/HoldChildEntry'
+  HoldDeletionReasonEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldDeletionReason'
+  HoldDeletionReason:
+    type: object
+    required:
+      - reason
+    properties:
+      reason:
+        type: string
   ##
   RequestBodyFile:
     type: object

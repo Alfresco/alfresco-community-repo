@@ -7,9 +7,9 @@ import org.junit.runners.Suite;
 @RunWith(Categories.class)
 @Suite.SuiteClasses({
         org.alfresco.config.SystemPropertiesSetterBeanTest.class,
-        //org.alfresco.encryption.AlfrescoKeyStoreTest.class,
-        //org.alfresco.encryption.EncryptingOutputStream.class,
-        //org.alfresco.error.AlfrescoRuntimeExceptionTest.class,
+        org.alfresco.encryption.AlfrescoKeyStoreTest.class,
+        org.alfresco.encryption.EncryptingOutputStreamTest.class,
+        org.alfresco.error.AlfrescoRuntimeExceptionTest.class,
         //org.alfresco.query.CannedQueryTest.class,
         //org.alfresco.util.collections.CollectionUtilsTest.class,
         //org.alfresco.util.exec.ExecParameterTokenizerTest.class,

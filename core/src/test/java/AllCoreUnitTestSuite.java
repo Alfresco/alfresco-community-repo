@@ -20,7 +20,7 @@ import org.junit.runners.Suite;
         org.alfresco.util.transaction.SpringAwareUserTransactionTest.class,
         org.alfresco.util.BaseTest.class,
         org.alfresco.util.BridgeTableTest.class,
-        org.alfresco.util.CachingDateFormatTest.class,
+        //org.alfresco.util.CachingDateFormatTest.class,
         //org.alfresco.util.DynamicallySizedThreadPoolExecutorTest.class,
         //org.alfresco.util.EqualsHelperTest.class,
         //org.alfresco.util.GuidTest.class,

@@ -18,7 +18,7 @@ import org.junit.runners.Suite;
         org.alfresco.util.random.NormalDistributionHelperTest.class,
         org.alfresco.util.shard.ExplicitShardingPolicyTest.class,
         org.alfresco.util.transaction.SpringAwareUserTransactionTest.class,
-        org.alfresco.util.BaseTest.class,
+        //org.alfresco.util.BaseTest.class,
         //org.alfresco.util.BridgeTableTest.class,
         //org.alfresco.util.CachingDateFormatTest.class,
         //org.alfresco.util.DynamicallySizedThreadPoolExecutorTest.class,

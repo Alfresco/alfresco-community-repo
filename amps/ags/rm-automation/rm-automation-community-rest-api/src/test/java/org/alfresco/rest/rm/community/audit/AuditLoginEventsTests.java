@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -73,7 +73,7 @@ public class AuditLoginEventsTests extends BaseRMRestTest
         assertTrue("The list of events is not filtered by " + LOGIN_UNSUCCESSFUL.event,
                 auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_UNSUCCESSFUL.eventDisplayName)));
     }
-    
+
     /**
      * Given I have tried to login using valid credentials
      * When I view the RM audit filtered by Login successful event

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -124,7 +124,7 @@ public abstract class BaseAPI
 
     /**
      * Helper method to extract the property value for the given nodeRef and property name
-     * 
+     *
      * @param result
      * @param nodeRef
      * @param propertyName
@@ -152,7 +152,7 @@ public abstract class BaseAPI
 
         return propertyValue;
     }
-    
+
     /**
      * Helper method to extract property values from request result and put them in map as a list that corresponds to a unique property value.
      *

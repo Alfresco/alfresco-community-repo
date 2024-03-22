@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,7 +40,7 @@ function main()
       status.setCode(status.STATUS_BAD_REQUEST, "nodeRef: '" + nodeRef + "' is not of type 'rma:transfer'");
       return null;
    }
-   
+
    model.transfer = transfer;
 }
 

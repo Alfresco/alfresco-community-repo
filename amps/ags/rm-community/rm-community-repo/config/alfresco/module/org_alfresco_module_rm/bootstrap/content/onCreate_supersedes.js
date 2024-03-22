@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,7 +33,7 @@ function main()
 {
    // Log debug message
    logger.log("Record " + node.name + " has been superseded.  Sending notification");
-   
+
    // Send notification
    rmService.sendSupersededNotification(node);
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,13 +26,13 @@
  */
 /**
  * Delete the rm constraint list
- */ 
+ */
 function main()
 {
    var urlElements = url.extension.split("/");
    var shortName = urlElements[0];
    var authorityName = urlElements[1];
-   
+
    if (shortName == null)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "shortName missing");
@@ -43,16 +43,16 @@ function main()
       status.setCode(status.STATUS_BAD_REQUEST, "value missing");
       return;
    }
-   
+
    // Get the constraint
    var constraint = caveatConfig.getConstraint(shortName);
-   
+
    if (constraint != null)
    {
       caveatConfig.deleteRMConstraintListValue(shortName, valueName);
-      
+
       var constraint = caveatConfig.getConstraint(shortName);
-      
+
       // Pass the constraint name to the template
       model.constraint = constraint;
    }

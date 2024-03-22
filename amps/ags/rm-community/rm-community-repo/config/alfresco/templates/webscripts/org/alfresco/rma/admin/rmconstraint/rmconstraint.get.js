@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,15 +26,15 @@
  */
 /**
  * Get the detail of the rm constraint
- */ 
+ */
 function main()
 {
    // Get the shortname
    var shortName = url.extension;
-   
+
    // Get the constraint
    var constraint = caveatConfig.getConstraint(shortName);
-   
+
    if (constraint != null)
    {
       // Pass the constraint detail to the template

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -112,10 +112,10 @@ public class RecordCategoryChildProperties extends TestModel
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
     private Boolean recordSearchHasDispositionSchedule;
-    
+
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION)
     private String recordSearchDispositionPeriodExpression;
-    
+
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY)
     private String recordSearchDispositionAuthority;
 
@@ -136,7 +136,7 @@ public class RecordCategoryChildProperties extends TestModel
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS)
     private List<String> recordSearchDispositionEvents;
-    
+
     @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;
 

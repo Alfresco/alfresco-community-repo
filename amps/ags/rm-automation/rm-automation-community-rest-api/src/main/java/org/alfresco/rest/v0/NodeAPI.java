@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * The v0 REST API for nodes
- * 
+ *
  * @author jcule
  * @since 2.7EA1
  */
@@ -56,7 +56,7 @@ public class NodeAPI extends BaseAPI
 
     /**
      * Get the node metadata using the using the node data webscript:  Document List v2 Component
-     * 
+     *
      * @param username
      * @param password
      * @param nodeId
@@ -70,5 +70,5 @@ public class NodeAPI extends BaseAPI
         client.close();
         return doGetRequest(username, password, requestURL);
     }
-    
+
 }

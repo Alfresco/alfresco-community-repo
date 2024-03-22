@@ -385,18 +385,24 @@ jobs:
             pom-dir: tas-email
           - test-name: "WebDAV TAS tests"
             pom-dir: tas-webdav
-          - test-name: "Integration TAS tests"
+          - test-name: "Integration TAS tests (Java 17)"
             pom-dir: tas-integration
+          - test-name: "Integration TAS tests (Java 11)"
+            pom-dir: tas-integration
+            jre-version: 11
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+        with:
+          java-version: ${{ matrix.jre-version || '17' }}
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           bash ./scripts/ci/init.sh
+          export BUILD_OPTIONS="-Ddocker.buildArg.JRE_VERSION=${{ matrix.jre-version }} ${BUILD_OPTIONS}"
           bash ./scripts/ci/build.sh
       - name: "Set up the environment"
         run: |

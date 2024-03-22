@@ -62,11 +62,11 @@
         <dependency.jackson.version>2.15.0-rc1</dependency.jackson.version>
         <dependency.cxf.version>3.5.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.44</dependency.webscripts.version>
+        <dependency.webscripts.version>8.47</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.9.0</dependency.mockito-core.version>
         <dependency.assertj.version>3.24.2</dependency.assertj.version>
-        <dependency.org-json.version>20230227</dependency.org-json.version>
+        <dependency.org-json.version>20231013</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.9</dependency.gson.version>
@@ -88,7 +88,7 @@
         <dependency.netty.version>4.1.87.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
         <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
-        <dependency.activemq.version>5.17.4</dependency.activemq.version>
+        <dependency.activemq.version>5.17.6</dependency.activemq.version>
         <dependency.apache-compress.version>1.22</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
@@ -111,8 +111,8 @@
         <dependency.json-smart.version>2.5.0</dependency.json-smart.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.4.0</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.6.0</alfresco.aos-module.version>
+        <alfresco.googledrive.version>3.4.2</alfresco.googledrive.version>
+        <alfresco.aos-module.version>1.6.2</alfresco.aos-module.version>
         <alfresco.api-explorer.version>7.4.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>

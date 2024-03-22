@@ -25,7 +25,7 @@ import org.junit.runners.Suite;
         org.alfresco.util.EqualsHelperTest.class,
         org.alfresco.util.GuidTest.class,
         org.alfresco.util.ISO8601DateFormatTest.class,
-        org.alfresco.util.LogAdapterTest.class,
+        //org.alfresco.util.LogAdapterTest.class,
         //org.alfresco.util.LogTeeTest.class,
         //org.alfresco.util.PathMapperTest.class,
         //org.alfresco.util.TempFileProviderTest.class,

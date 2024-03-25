@@ -1062,7 +1062,7 @@ jobs:
         run: |
           eval "args=($RP_OPTS)"
           echo "mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres ${{ matrix.testAttributes }} ${{ env.LOG_WARN }} "${args[@]}""
-          mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -Dtest=!AllUnitTestSuite ${{ matrix.testAttributes }} ${{ env.LOG_WARN }} "${args[@]}"
+          mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -Dtest=!AllUnitTestSuite ${{ matrix.testAttributes }} -DfailIfNoTests=false ${{ env.LOG_WARN }} "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
         run: |

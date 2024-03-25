@@ -1,4 +1,4 @@
-package org.alfresco.messaging.camel;
+package org.alfresco;
 
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;

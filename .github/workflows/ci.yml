@@ -711,8 +711,7 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          echo "Running command: mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false "${args[@]}" "
-          mvn -B test -pl repository -am -Dtest=CamelRoutesTest,CamelComponentsTest -DfailIfNoTests=false "${args[@]}"
+          mvn -B test -pl repository -am -Dtest=MessagingUnitTestSuite -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
         run: |

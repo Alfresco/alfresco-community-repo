@@ -94,10 +94,10 @@ public class HoldsEntityResource implements
 
     @Override
     @WebApiDescription(title = "Update a hold", description = "Updates a hold with id 'holdId'")
-    public HoldModel update(String holdId, HoldModel holdInfo, Parameters parameters)
+    public HoldModel update(String holdId, HoldModel holdModel, Parameters parameters)
     {
-        checkNotBlank("recordFolderId", holdId);
-        mandatory("recordFolderInfo", holdInfo);
+        checkNotBlank("holdId", holdId);
+        mandatory("holdModel", holdModel);
         mandatory("parameters", parameters);
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
@@ -106,17 +106,17 @@ public class HoldsEntityResource implements
         {
             public Void execute()
             {
-                if(holdInfo.getName() != null)
+                if(holdModel.getName() != null)
                 {
-                    holdService.setHoldName(nodeRef, holdInfo.getName());
+                    holdService.setHoldName(nodeRef, holdModel.getName());
                 }
-                if(holdInfo.getDescription() != null)
+                if(holdModel.getDescription() != null)
                 {
-                    holdService.setHoldDescription(nodeRef, holdInfo.getDescription());
+                    holdService.setHoldDescription(nodeRef, holdModel.getDescription());
                 }
-                if(holdInfo.getReason() != null)
+                if(holdModel.getReason() != null)
                 {
-                    holdService.setHoldReason(nodeRef, holdInfo.getReason());
+                    holdService.setHoldReason(nodeRef, holdModel.getReason());
                 }
                 return null;
             }
@@ -161,6 +161,7 @@ public class HoldsEntityResource implements
         WithResponse withResponse)
     {
         checkNotBlank("holdId", holdId);
+        mandatory("reason", reason);
         mandatory("parameters", parameters);
 
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);

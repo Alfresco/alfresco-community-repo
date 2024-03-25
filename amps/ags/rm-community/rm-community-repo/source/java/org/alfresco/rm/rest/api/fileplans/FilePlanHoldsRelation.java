@@ -27,6 +27,7 @@
 package org.alfresco.rm.rest.api.fileplans;
 
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
+import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -71,17 +72,20 @@ public class FilePlanHoldsRelation implements
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        ParameterCheck.mandatory("apiUtils", this.apiUtils);
-        ParameterCheck.mandatory("nodesModelFactory", this.nodesModelFactory);
-        ParameterCheck.mandatory("holdService", this.holdService);
-        ParameterCheck.mandatory("fileFolderService", this.fileFolderService);
-        ParameterCheck.mandatory("transactionService", this.transactionService);
+        mandatory("apiUtils", this.apiUtils);
+        mandatory("nodesModelFactory", this.nodesModelFactory);
+        mandatory("holdService", this.holdService);
+        mandatory("fileFolderService", this.fileFolderService);
+        mandatory("transactionService", this.transactionService);
     }
 
     @Override
     @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
     public CollectionWithPagingInfo<HoldModel> readAll(String filePlanId, Parameters parameters)
     {
+        checkNotBlank("filePlanId", filePlanId);
+        mandatory("parameters", parameters);
+
         Paging paging = parameters.getPaging();
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
         List<NodeRef> holds = holdService.getHolds(parentNodeRef);
@@ -109,6 +113,8 @@ public class FilePlanHoldsRelation implements
     public List<HoldModel> create(String filePlanId, List<HoldModel> holds, Parameters parameters)
     {
         checkNotBlank("filePlanId", filePlanId);
+        mandatory("holds", holds);
+        mandatory("parameters", parameters);
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
 

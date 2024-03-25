@@ -87,6 +87,7 @@ public class HoldsChildrenRelation implements
     {
         // validate parameters
         checkNotBlank("holdId", holdId);
+        mandatory("children", children);
         mandatory("parameters", parameters);
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
@@ -115,6 +116,9 @@ public class HoldsChildrenRelation implements
     @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
     public CollectionWithPagingInfo<HoldChild> readAll(String holdId, Parameters parameters)
     {
+        checkNotBlank("holdId", holdId);
+        mandatory("parameters", parameters);
+
         Paging paging = parameters.getPaging();
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
         List<NodeRef> holds = holdService.getHeld(parentNodeRef);

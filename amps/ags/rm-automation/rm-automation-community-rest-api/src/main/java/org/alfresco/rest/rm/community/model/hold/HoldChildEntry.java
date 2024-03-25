@@ -35,6 +35,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.rest.core.RestModels;
 
+/**
+ * POJO for hold child entry
+ *
+ * @author Damian Ujma
+ */
 @Builder
 @Data
 @EqualsAndHashCode(callSuper = true)

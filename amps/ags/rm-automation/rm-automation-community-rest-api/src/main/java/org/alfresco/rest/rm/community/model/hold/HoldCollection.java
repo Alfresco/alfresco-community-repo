@@ -28,6 +28,11 @@ package org.alfresco.rest.rm.community.model.hold;
 
 import org.alfresco.rest.core.RestModels;
 
+/**
+ * Handle collection of {@link HoldEntry}
+ *
+ * @author Damian Ujma
+ */
 public class HoldCollection extends RestModels<HoldEntry, HoldCollection>
 {
 }

@@ -56,7 +56,7 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * @author Damian Ujma
  */
-@RelationshipResource(name="holds", entityResource = FilePlanEntityResource.class, title = "Holds in a file plan")
+@RelationshipResource(name = "holds", entityResource = FilePlanEntityResource.class, title = "Holds in a file plan")
 public class FilePlanHoldsRelation implements
     RelationshipResourceAction.Create<HoldModel>,
     RelationshipResourceAction.Read<HoldModel>,
@@ -85,13 +85,14 @@ public class FilePlanHoldsRelation implements
         Paging paging = parameters.getPaging();
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
         List<NodeRef> holds = holdService.getHolds(parentNodeRef);
-        if(holds.isEmpty())
+        if (holds.isEmpty())
         {
-            return CollectionWithPagingInfo.asPaged(paging,  Collections.emptyList());
+            return CollectionWithPagingInfo.asPaged(paging, Collections.emptyList());
         }
         else
         {
-            List<HoldModel> page = holds.stream().map(hold -> fileFolderService.getFileInfo(hold))
+            List<HoldModel> page = holds.stream()
+                .map(hold -> fileFolderService.getFileInfo(hold))
                 .map(nodesModelFactory::createHoldModel)
                 .skip(parameters.getPaging().getSkipCount())
                 .limit(parameters.getPaging().getMaxItems())
@@ -104,7 +105,7 @@ public class FilePlanHoldsRelation implements
     }
 
     @Override
-    @WebApiDescription(title="Create one (or more) holds in a file plan identified by 'filePlanId'")
+    @WebApiDescription(title = "Create one (or more) holds in a file plan identified by 'filePlanId'")
     public List<HoldModel> create(String filePlanId, List<HoldModel> holds, Parameters parameters)
     {
         checkNotBlank("filePlanId", filePlanId);
@@ -118,14 +119,16 @@ public class FilePlanHoldsRelation implements
                 List<NodeRef> createdNodes = new LinkedList<>();
                 for (HoldModel nodeInfo : holds)
                 {
-                    NodeRef newNodeRef = holdService.createHold(parentNodeRef, nodeInfo.getName(), nodeInfo.getReason(), nodeInfo.getDescription());
+                    NodeRef newNodeRef = holdService.createHold(parentNodeRef, nodeInfo.getName(), nodeInfo.getReason(),
+                        nodeInfo.getDescription());
                     createdNodes.add(newNodeRef);
                 }
                 return createdNodes;
             }
         };
 
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper()
+            .doInTransaction(callback, false, true);
 
         return createdNodes.stream()
             .map(hold -> fileFolderService.getFileInfo(hold))

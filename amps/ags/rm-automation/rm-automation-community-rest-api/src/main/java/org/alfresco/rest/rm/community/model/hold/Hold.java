@@ -35,6 +35,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.utility.model.TestModel;
 
+/**
+ * POJO for hold
+ *
+ * @author Damian Ujma
+ */
 @Builder
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -42,16 +47,16 @@ import org.alfresco.utility.model.TestModel;
 @AllArgsConstructor
 public class Hold extends TestModel
 {
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String id;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String description;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String reason;
 
 }

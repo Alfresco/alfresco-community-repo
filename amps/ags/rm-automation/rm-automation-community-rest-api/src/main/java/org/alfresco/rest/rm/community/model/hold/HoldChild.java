@@ -35,6 +35,11 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.utility.model.TestModel;
 
+/**
+ * POJO for hold child
+ *
+ * @author Damian Ujma
+ */
 @Builder
 @EqualsAndHashCode(callSuper = true)
 @Data

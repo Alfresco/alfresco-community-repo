@@ -41,6 +41,8 @@ import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.hold.HoldChildCollection;
+import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
+import org.alfresco.rest.rm.community.model.hold.HoldDeletionReasonEntry;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 public class HoldsAPI extends RMModelRequest
@@ -107,6 +109,19 @@ public class HoldsAPI extends RMModelRequest
                                                           ));
     }
 
+    public HoldDeletionReasonEntry deleteHoldWithReason(HoldDeletionReason reason, String holdId)
+    {
+        mandatoryObject("reason", reason);
+        mandatoryString("holdId", holdId);
+
+        return getRmRestWrapper().processModel(HoldDeletionReasonEntry.class, requestWithBody(
+            PUT,
+            toJson(reason),
+            "holds/{holdId}/delete",
+            holdId
+                                                          ));
+    }
+
     public HoldChild addChildToHold(HoldChild holdChild, String holdId)
     {
         mandatoryObject("holdId", holdId);
@@ -129,5 +144,17 @@ public class HoldsAPI extends RMModelRequest
             holdId,
             parameters
                                                                                    ));
+    }
+
+    public void deleteHoldChild(String holdId, String holdChildId)
+    {
+        mandatoryString("holdId", holdId);
+        mandatoryString("holdChildId", holdChildId);
+
+        getRmRestWrapper().processEmptyModel(simpleRequest(
+            DELETE,
+            "holds/{holdId}/{holdChildId}",
+            holdId
+                                                          ));
     }
 }

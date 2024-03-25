@@ -58,7 +58,7 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * @author Damian Ujma
  */
-@RelationshipResource(name="children", entityResource = HoldsEntityResource.class, title = "Children of a hold")
+@RelationshipResource(name = "children", entityResource = HoldsEntityResource.class, title = "Children of a hold")
 public class HoldsChildrenRelation implements
     RelationshipResourceAction.Create<HoldChild>,
     RelationshipResourceAction.Read<HoldChild>,
@@ -82,7 +82,7 @@ public class HoldsChildrenRelation implements
     }
 
     @Override
-    @WebApiDescription(title="Add one (or more) children as children of a hold identified by 'holdId'")
+    @WebApiDescription(title = "Add one (or more) children as children of a hold identified by 'holdId'")
     public List<HoldChild> create(String holdId, List<HoldChild> children, Parameters parameters)
     {
         // validate parameters
@@ -95,16 +95,20 @@ public class HoldsChildrenRelation implements
         {
             public List<NodeRef> execute()
             {
-                List<NodeRef> createdNodes = children.stream().map(holdChild -> new NodeRef(
-                    StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.getId())).collect(Collectors.toList());
+                List<NodeRef> createdNodes = children.stream()
+                    .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.getId()))
+                    .collect(Collectors.toList());
                 holdService.addToHold(parentNodeRef, createdNodes);
                 return createdNodes;
             }
         };
 
-        List<NodeRef> nodeInfos = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        List<NodeRef> nodeInfos = transactionService.getRetryingTransactionHelper()
+            .doInTransaction(callback, false, true);
 
-        return nodeInfos.stream().map(nodeRef -> new HoldChild(nodeRef.getId())).collect(Collectors.toCollection(LinkedList::new));
+        return nodeInfos.stream()
+            .map(nodeRef -> new HoldChild(nodeRef.getId()))
+            .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -114,9 +118,9 @@ public class HoldsChildrenRelation implements
         Paging paging = parameters.getPaging();
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
         List<NodeRef> holds = holdService.getHeld(parentNodeRef);
-        if(holds.isEmpty())
+        if (holds.isEmpty())
         {
-            return CollectionWithPagingInfo.asPaged(paging,  Collections.emptyList());
+            return CollectionWithPagingInfo.asPaged(paging, Collections.emptyList());
         }
         else
         {
@@ -134,7 +138,7 @@ public class HoldsChildrenRelation implements
     }
 
     @Override
-    @WebApiDescription(title = "Remove a child from a hold", description="Remove a child with id 'childId' from a hold with id 'holdId'")
+    @WebApiDescription(title = "Remove a child from a hold", description = "Remove a child with id 'childId' from a hold with id 'holdId'")
     public void delete(String holdId, String childId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);

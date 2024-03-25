@@ -48,7 +48,6 @@ import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.v0.service.RoleService;
-import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -58,33 +57,25 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * API tests for adding content/record folder/records to holds
+ * V1 API tests for adding content/record folder/records to holds
  *
- * @author Rodica Sutu
- * @since 3.2
+ * @author Damian Ujma
  */
-@AlfrescoTest (jira = "RM-6874")
 public class AddToHoldsV1Tests extends BaseRMRestTest
 {
     private static final String HOLD = "HOLD" + generateTestPrefix(AddToHoldsV1Tests.class);
-    private static final String ACCESS_DENIED_ERROR_MESSAGE = "Access Denied.  You do not have the appropriate " +
-            "permissions to perform this operation.";
-    private static final String INVALID_TYPE_ERROR_MESSAGE = "Items added to a hold must be either a record, a " +
-            "record folder or active content.";
-    private static final String LOCKED_FILE_ERROR_MESSAGE = "Locked content can't be added to a hold.";
     private SiteModel testSite;
     private String holdNodeRef;
     private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;
     private UserModel userAddHoldPermission;
     private final List<UserModel> users = new ArrayList<>();
-    private final List<String> nodesToBeClean = new ArrayList<>();
 
     @Autowired
     private RoleService roleService;
     @Autowired
     private ContentActions contentActions;
 
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
@@ -132,7 +123,8 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     {
         RestNodeAssociationModelCollection holdsEntries = getRestAPIFactory()
             .getNodeAPI(documentHeld).usingParams("where=(assocType='rma:frozenContent')").getParents();
-        Hold hold = getRestAPIFactory().getHoldsAPI(getAdminUser()).getHold(holdsEntries.getEntries().get(0).getModel().getId());
+        Hold hold = getRestAPIFactory().getHoldsAPI(getAdminUser())
+            .getHold(holdsEntries.getEntries().get(0).getModel().getId());
         assertTrue(hold.getName().contains(HOLD), "Could not find " + "hold with name " + HOLD);
     }
 
@@ -141,7 +133,6 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         FilePlanAPI filePlanAPI = getRestAPIFactory().getFilePlansAPI(user);
         Hold holdModel = Hold.builder().name(name).description(description).reason(reason).build();
         return filePlanAPI.createHold(holdModel, parentId);
-
 
     }
 }

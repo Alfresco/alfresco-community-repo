@@ -29,6 +29,7 @@ package org.alfresco.rm.rest.api.recordcategories;
 
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
+import static org.springframework.extensions.surf.util.I18NUtil.getMessage;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -42,10 +43,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.Util;
@@ -65,10 +68,16 @@ import org.alfresco.rm.rest.api.model.RecordCategory;
 import org.alfresco.rm.rest.api.model.RecordCategoryChild;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
@@ -92,6 +101,8 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
+    private PermissionService permissionService;
+    private NodeService nodeService;
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -116,6 +127,14 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setPermissionService(PermissionService permissionService) {
+        this.permissionService = permissionService;
+    }
+
+    public void setNodeService(NodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     @Override
@@ -176,6 +195,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
         checkNotBlank("recordCategoryId", recordCategoryId);
         mandatory("nodeInfos", nodeInfos);
         mandatory("parameters", parameters);
+        validateCategoryNode(recordCategoryId);
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
 
@@ -218,5 +238,23 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
     public RecordCategoryChild create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
         throw new IntegrityException("Uploading records into record categories is not allowed.", null);
+    }
+
+    private void validateCategoryNode(String recordCategoryId)
+    {
+        checkNotBlank("recordCategoryId", recordCategoryId);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, recordCategoryId);
+
+        if (nodeService.exists(nodeRef))
+        {
+            if (permissionService.hasPermission(nodeRef, RMPermissionModel.ROLE_ADMINISTRATOR) == AccessStatus.DENIED)
+            {
+                throw new AccessDeniedException(getMessage("permissions.err_access_denied"));
+            }
+        }
+        else
+        {
+            throw new InvalidNodeRefException(getMessage("node does not exist"), nodeRef);
+        }
     }
 }

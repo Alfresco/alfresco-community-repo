@@ -36,7 +36,7 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertTrue;
 
-import java.util.Collections;
+import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -109,7 +109,9 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
 
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD2,
-                Collections.singletonList(ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name")));
+                List.of(ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name"),
+                    ImmutableMap.of("new", "", "previous", "", "name", "Hold deletion reason")));
+
     }
 
     /**

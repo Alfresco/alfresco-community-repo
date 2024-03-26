@@ -174,7 +174,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test (expected=AlfrescoRuntimeException.class)
-    public void getHold()
+    public void testGetHold()
     {
         // setup node service interactions
         when(mockedNodeService.getChildByName(eq(holdContainer), eq(ContentModel.ASSOC_CONTAINS), anyString())).thenReturn(null)
@@ -195,19 +195,19 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test (expected=RuntimeException.class)
-    public void getHeldNotAHold()
+    public void testGetHeldNotAHold()
     {
         holdService.getHeld(recordFolder);
     }
 
     @Test
-    public void getHeldNoResults()
+    public void testGetHeldNoResults()
     {
         assertTrue(holdService.getHeld(hold).isEmpty());
     }
 
     @Test
-    public void getHeldWithResults()
+    public void testGetHeldWithResults()
     {
         // setup record folder in hold
         List<ChildAssociationRef> holds = new ArrayList<>(2);
@@ -260,7 +260,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void getHoldReason()
+    public void testGetHoldReason()
     {
         // setup node service interactions
         when(mockedNodeService.exists(hold))
@@ -308,7 +308,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void setHoldDeletionReason()
+    public void setHoldDeletionReasonForNodeDoesNotExist()
     {
         // setup node service interactions
         when(mockedNodeService.exists(hold))
@@ -319,10 +319,27 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         // node does not exist
         holdService.setHoldDeletionReason(hold, HOLD_DELETION_REASON);
         verify(mockedNodeService, never()).setProperty(hold, PROP_HOLD_DELETION_REASON, HOLD_DELETION_REASON);
+    }
+
+    @Test
+    public void setHoldDeletionReasonForNodeIsNotAHold()
+    {
+        // setup node service interactions
+        when(mockedNodeService.exists(hold))
+            .thenReturn(true)
+            .thenReturn(true);
 
         // node isn't a hold
         holdService.setHoldDeletionReason(recordFolder, HOLD_DELETION_REASON);
         verify(mockedNodeService, never()).setProperty(hold, PROP_HOLD_DELETION_REASON, HOLD_DELETION_REASON);
+    }
+
+    @Test
+    public void setHoldDeletionReason()
+    {
+        // setup node service interactions
+        when(mockedNodeService.exists(hold))
+            .thenReturn(true);
 
         // set hold deletion reason
         holdService.setHoldDeletionReason(hold, HOLD_DELETION_REASON);
@@ -330,47 +347,46 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void setHoldName()
+    public void updateHoldThatDoesNotExist()
     {
         // setup node service interactions
         when(mockedNodeService.exists(hold))
-            .thenReturn(false)
-            .thenReturn(true)
-            .thenReturn(true);
+            .thenReturn(false);
 
         // node does not exist
-        holdService.setHoldName(hold, HOLD_NAME);
-        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_NAME, HOLD_NAME);
+        holdService.updateHold(hold, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
 
-        // node isn't a hold
-        holdService.setHoldName(recordFolder, HOLD_NAME);
         verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_NAME, HOLD_NAME);
-
-        // set hold name
-        holdService.setHoldName(hold, HOLD_NAME);
-        verify(mockedNodeService).setProperty(hold, ContentModel.PROP_NAME, HOLD_NAME);
+        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_DESCRIPTION, HOLD_DESCRIPTION);
+        verify(mockedNodeService, never()).setProperty(hold, PROP_HOLD_REASON, HOLD_DESCRIPTION);
     }
 
     @Test
-    public void setHoldDescription()
+    public void updateHoldThatIsNotAHold()
     {
         // setup node service interactions
         when(mockedNodeService.exists(hold))
-            .thenReturn(false)
-            .thenReturn(true)
             .thenReturn(true);
 
-        // node does not exist
-        holdService.setHoldDescription(hold, HOLD_DESCRIPTION);
+        // node does is not a hold
+        holdService.updateHold(recordFolder, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
+        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_NAME, HOLD_NAME);
         verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_DESCRIPTION, HOLD_DESCRIPTION);
+        verify(mockedNodeService, never()).setProperty(hold, PROP_HOLD_REASON, HOLD_DESCRIPTION);
+    }
 
-        // node isn't a hold
-        holdService.setHoldDescription(recordFolder, HOLD_DESCRIPTION);
-        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_DESCRIPTION, HOLD_DESCRIPTION);
+    @Test
+    public void updateHold()
+    {
+        // setup node service interactions
+        when(mockedNodeService.exists(hold))
+            .thenReturn(true);
 
-        // set hold description
-        holdService.setHoldDescription(hold, HOLD_DESCRIPTION);
+        // update hold
+        holdService.updateHold(hold, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
+        verify(mockedNodeService).setProperty(hold, ContentModel.PROP_NAME, HOLD_NAME);
         verify(mockedNodeService).setProperty(hold, ContentModel.PROP_DESCRIPTION, HOLD_DESCRIPTION);
+        verify(mockedNodeService).setProperty(hold, PROP_HOLD_REASON, HOLD_REASON);
     }
 
     @Test (expected=AlfrescoRuntimeException.class)

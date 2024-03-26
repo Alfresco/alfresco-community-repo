@@ -459,11 +459,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         // create map of properties
         Map<QName, Serializable> properties = new HashMap<>(3);
-        properties.put(ContentModel.PROP_NAME, name);
+        properties.put(PROP_NAME, name);
         properties.put(PROP_HOLD_REASON, reason);
         if (description != null && !description.isEmpty())
         {
-            properties.put(ContentModel.PROP_DESCRIPTION, description);
+            properties.put(PROP_DESCRIPTION, description);
         }
 
         // create assoc name
@@ -529,31 +529,20 @@ public class HoldServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#setHoldName(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#updateHold(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.lang.String) (org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public void setHoldName(NodeRef hold, String name)
+    public void updateHold(NodeRef hold, String name, String reason, String description)
     {
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("name", name);
-
-        if (nodeService.exists(hold) && isHold(hold))
-        {
-            nodeService.setProperty(hold, PROP_NAME, name);
-        }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#setHoldDescription(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
-     */
-    @Override
-    public void setHoldDescription(NodeRef hold, String description)
-    {
-        ParameterCheck.mandatory("hold", hold);
+        ParameterCheck.mandatory("reason", reason);
         ParameterCheck.mandatory("description", description);
 
         if (nodeService.exists(hold) && isHold(hold))
         {
+            nodeService.setProperty(hold, PROP_NAME, name);
+            nodeService.setProperty(hold, PROP_HOLD_REASON, reason);
             nodeService.setProperty(hold, PROP_DESCRIPTION, description);
         }
     }
@@ -609,7 +598,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
                 if (permissionService.hasPermission(nodeRef, permission) == AccessStatus.DENIED)
                 {
-                    heldNames.add((String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+                    heldNames.add((String) nodeService.getProperty(nodeRef, PROP_NAME));
                 }
             }
             catch (AccessDeniedException ade)
@@ -676,7 +665,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         {
             if (!isHold(hold))
             {
-                final String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                final String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
                 throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
             }
 
@@ -734,7 +723,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         if (!isRecordFolder(nodeRef) && !instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
         {
-            final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            final String nodeName = (String) nodeService.getProperty(nodeRef, PROP_NAME);
             throw new IntegrityException(I18NUtil.getMessage("rm.hold.add-to-hold-invalid-type", nodeName), null);
         }
 
@@ -841,7 +830,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             {
                 if (!isHold(hold))
                 {
-                    final String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                    final String holdName = (String) nodeService.getProperty(hold, PROP_NAME);
                     throw new IntegrityException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
                 }
 

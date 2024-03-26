@@ -64,10 +64,8 @@ import org.testng.annotations.Test;
 public class AddToHoldsV1Tests extends BaseRMRestTest
 {
     private static final String HOLD = "HOLD" + generateTestPrefix(AddToHoldsV1Tests.class);
-    private SiteModel testSite;
     private String holdNodeRef;
-    private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;
-    private UserModel userAddHoldPermission;
+    private FileModel documentHeld;
     private final List<UserModel> users = new ArrayList<>();
 
     @Autowired
@@ -79,15 +77,15 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
-        Hold hold = createHold(FILE_PLAN_ALIAS, HOLD, "Description", "No reason", getAdminUser());
+        Hold hold = createHold(FILE_PLAN_ALIAS, Hold.builder().name(HOLD).description("Description").reason("No reason").build(), getAdminUser());
         holdNodeRef = hold.getId();
         STEP("Create test files.");
-        testSite = dataSite.usingAdmin().createPublicRandomSite();
+        SiteModel testSite = dataSite.usingAdmin().createPublicRandomSite();
         documentHeld = dataContent.usingAdmin().usingSite(testSite)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        contentToAddToHold = dataContent.usingAdmin().usingSite(testSite)
+        dataContent.usingAdmin().usingSite(testSite)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        contentAddToHoldNoPermission = dataContent.usingAdmin().usingSite(testSite)
+        dataContent.usingAdmin().usingSite(testSite)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Add the content to the hold.");
@@ -96,7 +94,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
             .addChildToHold(HoldChild.builder().id(documentHeld.getNodeRefWithoutVersion()).build(), hold.getId());
 
         STEP("Create users");
-        userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+        UserModel userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
             UserRole.SiteCollaborator, holdNodeRef, UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userAddHoldPermission);
     }
@@ -128,11 +126,10 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         assertTrue(hold.getName().contains(HOLD), "Could not find " + "hold with name " + HOLD);
     }
 
-    public Hold createHold(String parentId, String name, String description, String reason, UserModel user)
+    public Hold createHold(String parentId, Hold hold, UserModel user)
     {
         FilePlanAPI filePlanAPI = getRestAPIFactory().getFilePlansAPI(user);
-        Hold holdModel = Hold.builder().name(name).description(description).reason(reason).build();
-        return filePlanAPI.createHold(holdModel, parentId);
+        return filePlanAPI.createHold(hold, parentId);
 
     }
 }

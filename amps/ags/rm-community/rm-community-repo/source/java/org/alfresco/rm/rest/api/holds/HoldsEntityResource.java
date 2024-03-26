@@ -48,7 +48,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -72,11 +71,11 @@ public class HoldsEntityResource implements
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
-        ParameterCheck.mandatory("apiUtils", apiUtils);
-        ParameterCheck.mandatory("fileFolderService", fileFolderService);
-        ParameterCheck.mandatory("holdService", holdService);
-        ParameterCheck.mandatory("transactionService", transactionService);
+        mandatory("nodesModelFactory", nodesModelFactory);
+        mandatory("apiUtils", apiUtils);
+        mandatory("fileFolderService", fileFolderService);
+        mandatory("holdService", holdService);
+        mandatory("transactionService", transactionService);
     }
 
     @Override
@@ -98,38 +97,20 @@ public class HoldsEntityResource implements
     {
         checkNotBlank("holdId", holdId);
         mandatory("holdModel", holdModel);
+        mandatory("holdModel.name", holdModel.getName());
+        mandatory("holdModel.description", holdModel.getDescription());
+        mandatory("holdModel.reason", holdModel.getReason());
         mandatory("parameters", parameters);
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                if(holdModel.getName() != null)
-                {
-                    holdService.setHoldName(nodeRef, holdModel.getName());
-                }
-                if(holdModel.getDescription() != null)
-                {
-                    holdService.setHoldDescription(nodeRef, holdModel.getDescription());
-                }
-                if(holdModel.getReason() != null)
-                {
-                    holdService.setHoldReason(nodeRef, holdModel.getReason());
-                }
-                return null;
-            }
+        RetryingTransactionCallback<Void> callback = () -> {
+            holdService.updateHold(nodeRef, holdModel.getName(), holdModel.getReason(), holdModel.getDescription());
+            return null;
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
+        RetryingTransactionCallback<FileInfo> readCallback = () -> fileFolderService.getFileInfo(nodeRef);
         FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
 
         return nodesModelFactory.createHoldModel(info);
@@ -143,13 +124,9 @@ public class HoldsEntityResource implements
         mandatory("parameters", parameters);
 
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                holdService.deleteHold(hold);
-                return null;
-            }
+        RetryingTransactionCallback<Void> callback = () -> {
+            holdService.deleteHold(hold);
+            return null;
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
     }
@@ -167,17 +144,13 @@ public class HoldsEntityResource implements
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
         String deletionReason = reason.getReason();
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
+        RetryingTransactionCallback<Void> callback = () -> {
+            if (deletionReason != null && !deletionReason.isEmpty())
             {
-                if (deletionReason != null && !deletionReason.isEmpty())
-                {
-                    holdService.setHoldDeletionReason(hold, deletionReason);
-                }
-                holdService.deleteHold(hold);
-                return null;
+                holdService.setHoldDeletionReason(hold, deletionReason);
             }
+            holdService.deleteHold(hold);
+            return null;
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 

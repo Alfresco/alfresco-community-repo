@@ -120,20 +120,14 @@ public interface HoldService
     void setHoldDeletionReason(NodeRef hold, String reason);
 
     /**
-     * Sets the hold name
+     * Updates a hold with the given name, reason and description
      *
      * @param hold The {@link NodeRef} of the hold
-     * @param name {@link String} The hold name
+     * @param name {@link String} The name of the hold
+     * @param reason {@link String} The reason of the hold
+     * @param description {@link String} The description of the hold
      */
-    void setHoldName(NodeRef hold, String name);
-
-    /**
-     * Sets the hold description
-     *
-     * @param hold The {@link NodeRef} of the hold
-     * @param description {@link String} The hold description
-     */
-    void setHoldDescription(NodeRef hold, String description);
+    void updateHold(NodeRef hold, String name, String reason, String description);
 
     /**
      * Deletes the hold

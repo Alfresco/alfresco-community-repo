@@ -49,7 +49,6 @@ import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 /**

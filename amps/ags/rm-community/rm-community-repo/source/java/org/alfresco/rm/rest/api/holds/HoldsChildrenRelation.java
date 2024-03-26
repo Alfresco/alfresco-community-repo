@@ -50,7 +50,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -74,11 +73,11 @@ public class HoldsChildrenRelation implements
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        ParameterCheck.mandatory("holdService", holdService);
-        ParameterCheck.mandatory("apiUtils", apiUtils);
-        ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
-        ParameterCheck.mandatory("transactionService", transactionService);
-        ParameterCheck.mandatory("fileFolderService", fileFolderService);
+        mandatory("holdService", holdService);
+        mandatory("apiUtils", apiUtils);
+        mandatory("nodesModelFactory", nodesModelFactory);
+        mandatory("transactionService", transactionService);
+        mandatory("fileFolderService", fileFolderService);
     }
 
     @Override
@@ -92,16 +91,12 @@ public class HoldsChildrenRelation implements
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
 
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
-            public List<NodeRef> execute()
-            {
-                List<NodeRef> createdNodes = children.stream()
-                    .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.getId()))
-                    .collect(Collectors.toList());
-                holdService.addToHold(parentNodeRef, createdNodes);
-                return createdNodes;
-            }
+        RetryingTransactionCallback<List<NodeRef>> callback = () -> {
+            List<NodeRef> createdNodes = children.stream()
+                .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.getId()))
+                .collect(Collectors.toList());
+            holdService.addToHold(parentNodeRef, createdNodes);
+            return createdNodes;
         };
 
         List<NodeRef> nodeInfos = transactionService.getRetryingTransactionHelper()
@@ -152,13 +147,9 @@ public class HoldsChildrenRelation implements
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
         NodeRef childRef = apiUtils.lookupByPlaceholder(childId);
 
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
-            public List<NodeRef> execute()
-            {
-                holdService.removeFromHold(nodeRef, childRef);
-                return null;
-            }
+        RetryingTransactionCallback<List<NodeRef>> callback = () -> {
+            holdService.removeFromHold(nodeRef, childRef);
+            return null;
         };
 
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);

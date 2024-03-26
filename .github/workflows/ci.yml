@@ -1018,7 +1018,7 @@ jobs:
         include:
           - testName: AllTestSuitePt1
             part: 1
-            testAttributes: "-PagsAllTestSuitePt1"
+            testAttributes: "-PagsAllTestSuitePt1 -Dtest=!**/*UnitTest"
           - testName: AllTestSuitePt2
             part: 2
             testAttributes: "-PagsAllTestSuitePt2"

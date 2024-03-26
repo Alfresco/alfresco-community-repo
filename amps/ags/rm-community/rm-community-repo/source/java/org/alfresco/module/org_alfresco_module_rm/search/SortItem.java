@@ -31,7 +31,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 @AlfrescoPublicApi
-/*package*/ class SortItem
+public class SortItem
 {
     public QName property = null;
     public boolean assc = true;

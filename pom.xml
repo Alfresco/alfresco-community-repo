@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>22.8-SNAPSHOT</version>
+    <version>22.11-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -59,7 +59,7 @@
 
         <dependency.spring.version>5.3.33</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.15.0-rc1</dependency.jackson.version>
+        <dependency.jackson.version>2.15.4</dependency.jackson.version>
         <dependency.cxf.version>3.5.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.47</dependency.webscripts.version>
@@ -79,7 +79,7 @@
         <dependency.gytheio.version>0.18</dependency.gytheio.version>
         <dependency.groovy.version>3.0.16</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>5.8.3</dependency.spring-security.version>
+        <dependency.spring-security.version>5.8.11</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>

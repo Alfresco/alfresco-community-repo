@@ -1061,7 +1061,6 @@ jobs:
           RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
         run: |
           eval "args=($RP_OPTS)"
-          echo "mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres ${{ matrix.testAttributes }} ${{ env.LOG_WARN }} "${args[@]}""
           mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres ${{ matrix.testAttributes }} -DfailIfNoTests=false -Dtest=!org.alfresco.module.org_alfresco_module_rm.test.AllUnitTestSuite ${{ env.LOG_WARN }} "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"

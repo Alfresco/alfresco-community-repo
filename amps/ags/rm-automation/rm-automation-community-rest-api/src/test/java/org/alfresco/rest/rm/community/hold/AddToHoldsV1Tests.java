@@ -27,32 +27,25 @@
 package org.alfresco.rest.rm.community.hold;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.dataprep.ContentActions;
 import org.alfresco.rest.model.RestNodeAssociationModelCollection;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldChild;
-import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
-import org.alfresco.rest.v0.service.RoleService;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -65,38 +58,26 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
 {
     private static final String HOLD = "HOLD" + generateTestPrefix(AddToHoldsV1Tests.class);
     private String holdNodeRef;
+    private SiteModel testSite;
     private FileModel documentHeld;
-    private final List<UserModel> users = new ArrayList<>();
-
-    @Autowired
-    private RoleService roleService;
-    @Autowired
-    private ContentActions contentActions;
+    private Hold hold;
 
     @BeforeClass(alwaysRun = true)
     public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
-        Hold hold = createHold(FILE_PLAN_ALIAS, Hold.builder().name(HOLD).description("Description").reason("No reason").build(), getAdminUser());
+        hold = createHold(FILE_PLAN_ALIAS,
+            Hold.builder().name(HOLD).description("Description").reason("No reason").build(), getAdminUser());
         holdNodeRef = hold.getId();
         STEP("Create test files.");
-        SiteModel testSite = dataSite.usingAdmin().createPublicRandomSite();
+        testSite = dataSite.usingAdmin().createPublicRandomSite();
         documentHeld = dataContent.usingAdmin().usingSite(testSite)
-            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        dataContent.usingAdmin().usingSite(testSite)
-            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        dataContent.usingAdmin().usingSite(testSite)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Add the content to the hold.");
         getRestAPIFactory()
             .getHoldsAPI(getAdminUser())
             .addChildToHold(HoldChild.builder().id(documentHeld.getNodeRefWithoutVersion()).build(), hold.getId());
-
-        STEP("Create users");
-        UserModel userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
-            UserRole.SiteCollaborator, holdNodeRef, UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
-        users.add(userAddHoldPermission);
     }
 
     @Test
@@ -104,16 +85,17 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     {
         STEP("Retrieve the list of children from the hold and collect the entries that have the name of the active " +
             "content held");
-        List<RestNodeModel> documentsHeld = restClient.authenticateUser(getAdminUser()).withCoreAPI()
+        List<String> documentNames = restClient.authenticateUser(getAdminUser()).withCoreAPI()
             .usingNode(toContentModel(holdNodeRef))
             .listChildren().getEntries().stream()
-            .filter(child -> child.onModel().getName().contains(documentHeld
-                .getName()))
-            .collect(Collectors.toList());
+            .map(RestNodeModel::onModel)
+            .map(RestNodeModel::getName)
+            .toList();
+
         STEP("Check the list of active content");
-        assertEquals(documentsHeld.size(), 1, "The active content is not retrieve when getting the children from the " +
+        assertEquals(documentNames, Set.of(documentHeld.getName()));
+        assertEquals(documentNames.size(), 1, "The active content is not retrieve when getting the children from the " +
             "hold folder");
-        assertEquals(documentsHeld.get(0).onModel().getName(), documentHeld.getName());
     }
 
     @Test
@@ -121,15 +103,23 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     {
         RestNodeAssociationModelCollection holdsEntries = getRestAPIFactory()
             .getNodeAPI(documentHeld).usingParams("where=(assocType='rma:frozenContent')").getParents();
-        Hold hold = getRestAPIFactory().getHoldsAPI(getAdminUser())
+        Hold retrievedHold = getRestAPIFactory().getHoldsAPI(getAdminUser())
             .getHold(holdsEntries.getEntries().get(0).getModel().getId());
-        assertTrue(hold.getName().contains(HOLD), "Could not find " + "hold with name " + HOLD);
+        assertEquals(retrievedHold, hold,
+            "Holds are not equal. Expected:<" + hold.toString() + "> but was:<" + retrievedHold.toString());
     }
 
     public Hold createHold(String parentId, Hold hold, UserModel user)
     {
         FilePlanAPI filePlanAPI = getRestAPIFactory().getFilePlansAPI(user);
         return filePlanAPI.createHold(hold, parentId);
+    }
 
+
+    @AfterClass(alwaysRun = true)
+    public void cleanUpAddContentToHold()
+    {
+        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdNodeRef);
+        dataSite.usingAdmin().deleteSite(testSite);
     }
 }

@@ -29,7 +29,6 @@ package org.alfresco.rm.rest.api.holds;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +40,6 @@ import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
@@ -93,7 +91,7 @@ public class HoldsChildrenRelation implements
 
         RetryingTransactionCallback<List<NodeRef>> callback = () -> {
             List<NodeRef> createdNodes = children.stream()
-                .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.getId()))
+                .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.id()))
                 .collect(Collectors.toList());
             holdService.addToHold(parentNodeRef, createdNodes);
             return createdNodes;
@@ -108,32 +106,26 @@ public class HoldsChildrenRelation implements
     }
 
     @Override
-    @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
+    @WebApiDescription(title = "Return a paged list of hold children for the hold identified by 'holdId'")
     public CollectionWithPagingInfo<HoldChild> readAll(String holdId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);
         mandatory("parameters", parameters);
 
-        Paging paging = parameters.getPaging();
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        List<NodeRef> holds = holdService.getHeld(parentNodeRef);
-        if (holds.isEmpty())
-        {
-            return CollectionWithPagingInfo.asPaged(paging, Collections.emptyList());
-        }
-        else
-        {
-            List<HoldChild> page = holds.stream()
-                .map(NodeRef::getId)
-                .map(HoldChild::new)
-                .skip(parameters.getPaging().getSkipCount())
-                .limit(parameters.getPaging().getMaxItems())
-                .collect(Collectors.toCollection(LinkedList::new));
+        List<NodeRef> children = holdService.getHeld(parentNodeRef);
 
-            int totalItems = holds.size();
-            boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
-            return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
-        }
+        List<HoldChild> page = children.stream()
+            .map(NodeRef::getId)
+            .map(HoldChild::new)
+            .skip(parameters.getPaging().getSkipCount())
+            .limit(parameters.getPaging().getMaxItems())
+            .collect(Collectors.toCollection(LinkedList::new));
+
+        int totalItems = children.size();
+        boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
+        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
+
     }
 
     @Override

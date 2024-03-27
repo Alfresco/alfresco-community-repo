@@ -217,7 +217,7 @@ public class FilePlanAPI extends RMModelRequest
 
     public Hold createHold(Hold hold, String filePlanId)
     {
-        mandatoryObject("holdContainerId", filePlanId);
+        mandatoryObject("filePlanId", filePlanId);
 
         return getRmRestWrapper().processModel(Hold.class, requestWithBody(
             POST,
@@ -229,7 +229,7 @@ public class FilePlanAPI extends RMModelRequest
 
     public HoldCollection getHolds(String filePlanId, String parameters)
     {
-        mandatoryString("holdContainerId", filePlanId);
+        mandatoryString("filePlanId", filePlanId);
 
         return getRmRestWrapper().processModels(HoldCollection.class, simpleRequest(
             GET,

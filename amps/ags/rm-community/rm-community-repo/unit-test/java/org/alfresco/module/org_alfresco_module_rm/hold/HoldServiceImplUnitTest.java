@@ -312,9 +312,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     {
         // setup node service interactions
         when(mockedNodeService.exists(hold))
-            .thenReturn(false)
-            .thenReturn(true)
-            .thenReturn(true);
+            .thenReturn(false);
 
         // node does not exist
         holdService.setHoldDeletionReason(hold, HOLD_DELETION_REASON);
@@ -326,7 +324,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     {
         // setup node service interactions
         when(mockedNodeService.exists(hold))
-            .thenReturn(true)
             .thenReturn(true);
 
         // node isn't a hold
@@ -355,10 +352,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         // node does not exist
         holdService.updateHold(hold, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
-
-        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_NAME, HOLD_NAME);
-        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_DESCRIPTION, HOLD_DESCRIPTION);
-        verify(mockedNodeService, never()).setProperty(hold, PROP_HOLD_REASON, HOLD_DESCRIPTION);
+        verify(mockedNodeService, never()).setProperty(any(NodeRef.class), any(QName.class), any(String.class));
     }
 
     @Test
@@ -370,9 +364,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         // node does is not a hold
         holdService.updateHold(recordFolder, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
-        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_NAME, HOLD_NAME);
-        verify(mockedNodeService, never()).setProperty(hold, ContentModel.PROP_DESCRIPTION, HOLD_DESCRIPTION);
-        verify(mockedNodeService, never()).setProperty(hold, PROP_HOLD_REASON, HOLD_DESCRIPTION);
+        verify(mockedNodeService, never()).setProperty(any(NodeRef.class), any(QName.class), any(String.class));
     }
 
     @Test

@@ -29,7 +29,6 @@ package org.alfresco.rm.rest.api.fileplans;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +40,6 @@ import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
@@ -79,32 +77,25 @@ public class FilePlanHoldsRelation implements
     }
 
     @Override
-    @WebApiDescription(title = "Return a paged list of hold container children for the container identified by 'holdContainerId'")
+    @WebApiDescription(title = "Return a paged list of holds for the file plan identified by 'filePlanId'")
     public CollectionWithPagingInfo<HoldModel> readAll(String filePlanId, Parameters parameters)
     {
         checkNotBlank("filePlanId", filePlanId);
         mandatory("parameters", parameters);
 
-        Paging paging = parameters.getPaging();
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
         List<NodeRef> holds = holdService.getHolds(parentNodeRef);
-        if (holds.isEmpty())
-        {
-            return CollectionWithPagingInfo.asPaged(paging, Collections.emptyList());
-        }
-        else
-        {
-            List<HoldModel> page = holds.stream()
-                .map(hold -> fileFolderService.getFileInfo(hold))
-                .map(nodesModelFactory::createHoldModel)
-                .skip(parameters.getPaging().getSkipCount())
-                .limit(parameters.getPaging().getMaxItems())
-                .collect(Collectors.toCollection(LinkedList::new));
 
-            int totalItems = holds.size();
-            boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
-            return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
-        }
+        List<HoldModel> page = holds.stream()
+            .map(hold -> fileFolderService.getFileInfo(hold))
+            .map(nodesModelFactory::createHoldModel)
+            .skip(parameters.getPaging().getSkipCount())
+            .limit(parameters.getPaging().getMaxItems())
+            .collect(Collectors.toCollection(LinkedList::new));
+
+        int totalItems = holds.size();
+        boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
+        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
     }
 
     @Override
@@ -117,19 +108,15 @@ public class FilePlanHoldsRelation implements
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, RecordsManagementModel.TYPE_FILE_PLAN);
 
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
-            public List<NodeRef> execute()
+        RetryingTransactionCallback<List<NodeRef>> callback = () -> {
+            List<NodeRef> createdNodes = new LinkedList<>();
+            for (HoldModel nodeInfo : holds)
             {
-                List<NodeRef> createdNodes = new LinkedList<>();
-                for (HoldModel nodeInfo : holds)
-                {
-                    NodeRef newNodeRef = holdService.createHold(parentNodeRef, nodeInfo.getName(), nodeInfo.getReason(),
-                        nodeInfo.getDescription());
-                    createdNodes.add(newNodeRef);
-                }
-                return createdNodes;
+                NodeRef newNodeRef = holdService.createHold(parentNodeRef, nodeInfo.name(), nodeInfo.reason(),
+                    nodeInfo.description());
+                createdNodes.add(newNodeRef);
             }
+            return createdNodes;
         };
 
         List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper()

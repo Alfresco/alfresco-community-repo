@@ -26,12 +26,13 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.utility.model.TestModel;
 
@@ -42,7 +43,6 @@ import org.alfresco.utility.model.TestModel;
  */
 @Builder
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Hold extends TestModel
@@ -59,4 +59,21 @@ public class Hold extends TestModel
     @JsonProperty(required = true)
     private String reason;
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Hold hold = (Hold) o;
+        return Objects.equals(id, hold.id) && Objects.equals(name, hold.name)
+            && Objects.equals(description, hold.description) && Objects.equals(reason, hold.reason);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, name, description, reason);
+    }
 }

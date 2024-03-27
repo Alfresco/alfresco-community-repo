@@ -31,26 +31,6 @@ package org.alfresco.rm.rest.api.model;
  *
  * @author Damian Ujma
  */
-public class HoldChild
+public record HoldChild(String id)
 {
-    private String id;
-
-    public HoldChild()
-    {
-    }
-
-    public HoldChild(String id)
-    {
-        this.id = id;
-    }
-
-    public String getId()
-    {
-        return id;
-    }
-
-    public void setId(String id)
-    {
-        this.id = id;
-    }
 }

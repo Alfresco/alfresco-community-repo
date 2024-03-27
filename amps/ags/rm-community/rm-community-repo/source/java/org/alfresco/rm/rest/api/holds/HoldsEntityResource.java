@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -97,15 +98,14 @@ public class HoldsEntityResource implements
     {
         checkNotBlank("holdId", holdId);
         mandatory("holdModel", holdModel);
-        mandatory("holdModel.name", holdModel.getName());
-        mandatory("holdModel.description", holdModel.getDescription());
-        mandatory("holdModel.reason", holdModel.getReason());
+        mandatory("holdModel.name", holdModel.name());
+        mandatory("holdModel.reason", holdModel.reason());
         mandatory("parameters", parameters);
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
 
         RetryingTransactionCallback<Void> callback = () -> {
-            holdService.updateHold(nodeRef, holdModel.getName(), holdModel.getReason(), holdModel.getDescription());
+            holdService.updateHold(nodeRef, holdModel.name(), holdModel.reason(), holdModel.description());
             return null;
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
@@ -142,10 +142,10 @@ public class HoldsEntityResource implements
         mandatory("parameters", parameters);
 
         NodeRef hold = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
-        String deletionReason = reason.getReason();
+        String deletionReason = reason.reason();
 
         RetryingTransactionCallback<Void> callback = () -> {
-            if (deletionReason != null && !deletionReason.isEmpty())
+            if (StringUtils.isNotBlank(deletionReason))
             {
                 holdService.setHoldDeletionReason(hold, deletionReason);
             }

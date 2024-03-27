@@ -35,6 +35,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Roy Wetherall
  */
+@SuppressWarnings("PMD.ConstantsInInterface")
 @AlfrescoPublicApi
 public interface RecordsManagementModel extends RecordsManagementCustomModel
 {

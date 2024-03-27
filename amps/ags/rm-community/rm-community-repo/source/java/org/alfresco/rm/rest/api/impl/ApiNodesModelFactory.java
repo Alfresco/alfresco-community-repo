@@ -647,12 +647,10 @@ public class ApiNodesModelFactory
      */
     public HoldModel createHoldModel(FileInfo info)
     {
-        HoldModel hold = new HoldModel();
-        hold.setId(info.getNodeRef().getId());
-        hold.setDescription((String) info.getProperties().get(ContentModel.PROP_DESCRIPTION));
-        hold.setName((String) info.getProperties().get(ContentModel.PROP_NAME));
-        hold.setReason((String)  info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON));
-        return hold;
+        return new HoldModel(info.getNodeRef().getId(),
+            (String) info.getProperties().get(ContentModel.PROP_NAME),
+            (String) info.getProperties().get(ContentModel.PROP_DESCRIPTION),
+            (String)  info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON));
     }
 
     /**

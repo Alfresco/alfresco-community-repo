@@ -31,21 +31,6 @@ package org.alfresco.rm.rest.api.model;
  *
  * @author Damian Ujma
  */
-public class HoldDeletionReason
+public record HoldDeletionReason(String reason)
 {
-    private String reason;
-
-    public HoldDeletionReason()
-    {
-    }
-
-    public String getReason()
-    {
-        return reason;
-    }
-
-    public void setReason(String reason)
-    {
-        this.reason = reason;
-    }
 }

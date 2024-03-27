@@ -537,7 +537,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("reason", reason);
-        ParameterCheck.mandatory("description", description);
 
         if (nodeService.exists(hold) && isHold(hold))
         {

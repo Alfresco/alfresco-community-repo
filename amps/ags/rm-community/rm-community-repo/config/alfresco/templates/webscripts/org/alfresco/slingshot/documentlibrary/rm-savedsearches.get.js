@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,12 +36,12 @@ function main()
       status.setCode(status.STATUS_NOT_FOUND, "Site not found: '" + siteId + "'");
       return null;
    }
-   
+
    var searchNode = siteNode.getContainer("Saved Searches");
    if (searchNode != null)
    {
       var kids, ssNode;
-      
+
       if (bPublic == null || bPublic == "true")
       {
          // public searches are in the root of the folder
@@ -56,7 +56,7 @@ function main()
             kids = userNode.children;
          }
       }
-      
+
       if (kids)
       {
          for (var i = 0, ii = kids.length; i < ii; i++)
@@ -73,7 +73,7 @@ function main()
          }
       }
    }
-   
+
    model.savedSearches = savedSearches;
 }
 

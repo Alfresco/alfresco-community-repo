@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -114,7 +114,7 @@ function getRecordSeries(seriesNode)
 	// Create Record Series object
 	var recordSerie = {
       parentPath: "/",
-      name: seriesNode.name,      
+      name: seriesNode.name,
       identifier: seriesNode.properties["rma:identifier"],
       description: seriesNode.properties["description"]
    };
@@ -154,7 +154,7 @@ function getRecordCategory(categoryNode, parentPath)
       name: categoryNode.name,
       identifier: categoryNode.properties["rma:identifier"],
       vitalRecordIndicator: categoryNode.properties["vitalRecordIndicator"],
-      dispositionAuthority: categoryNode.properties["dispositionAuthority"], 
+      dispositionAuthority: categoryNode.properties["dispositionAuthority"],
       recordFolders: [],
       dispositionActions: []
    };

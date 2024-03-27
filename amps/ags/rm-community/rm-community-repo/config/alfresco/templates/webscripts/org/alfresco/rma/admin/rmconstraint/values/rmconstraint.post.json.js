@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,33 +26,33 @@
  */
 /**
  * Update the details of a value in an rm constraint
- */ 
+ */
 function main()
 {
    var urlElements = url.extension.split("/");
    var shortName = urlElements[0];
-   
+
    var values = null;
-   
+
    if (json.has("values"))
    {
       values = json.getJSONArray("values");
    }
-   
+
    if (values == null)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "Values missing");
       return;
    }
-  
+
    // Get the constraint
    var constraint = caveatConfig.getConstraint(shortName);
-   
+
    if (constraint != null)
    {
-      constraint.updateValues(values); 
+      constraint.updateValues(values);
       model.constraint = caveatConfig.getConstraint(shortName);
-      model.constraintName = shortName; 
+      model.constraintName = shortName;
    }
    else
    {

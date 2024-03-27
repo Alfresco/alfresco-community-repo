@@ -61,6 +61,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -158,12 +159,13 @@ public class AuditDAOTest extends TestCase
         doAuditEntryImpl(1000);
     }
 
+    @Test
     public void testAuditMinMaxByApp() throws Exception
     {
-        final String[] expectedExtremes = new String[] {"min", "max"};
+        final String[] expectedExtremes = {"min", "max"};
         final AuditApplicationInfo appInfo = doAuditEntryImpl(12);
 
-        final HashMap<String, Long> minMax = auditDAO.getAuditMinMaxByApp(appInfo.getId(), List.of(expectedExtremes));
+        final Map<String, Long> minMax = auditDAO.getAuditMinMaxByApp(appInfo.getId(), List.of(expectedExtremes));
 
         assertEquals(Set.of(expectedExtremes), minMax.keySet());
     }

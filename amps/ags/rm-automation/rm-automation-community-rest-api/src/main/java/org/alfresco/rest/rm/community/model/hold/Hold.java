@@ -63,9 +63,13 @@ public class Hold extends TestModel
     public boolean equals(Object o)
     {
         if (this == o)
+        {
             return true;
+        }
         if (o == null || getClass() != o.getClass())
+        {
             return false;
+        }
         Hold hold = (Hold) o;
         return Objects.equals(id, hold.id) && Objects.equals(name, hold.name)
             && Objects.equals(description, hold.description) && Objects.equals(reason, hold.reason);

@@ -219,7 +219,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
         else
         {
-            return rmContainerCacheManager.get(storeRef);
+            return new HashSet<>(rmContainerCacheManager.get(storeRef));
         }
 
         return results;

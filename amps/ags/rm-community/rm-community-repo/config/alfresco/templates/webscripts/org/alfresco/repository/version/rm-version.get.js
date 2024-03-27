@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -99,10 +99,10 @@ function main()
             {
                version = versionHistory[i];
                p = getPerson(version.creator);
-               
+
                recordNodeRef = version.getVersionProperty("recordNodeRef");
                isRecordedVersionDestroyed = version.getVersionProperty("RecordedVersionDestroyed");
-               
+
                versions[versions.length] =
                {
                   nodeRef: version.node.nodeRef.toString(),

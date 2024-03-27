@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,14 +26,14 @@
  */
 /**
  * List the names of the rm constraints
- */ 
+ */
 function main()
 {
    var wel = true;
    var withEmptyLists = args["withEmptyLists"];
    // Pass the information to the template
    if (withEmptyLists != null && withEmptyLists === 'false')
-   {		
+   {
 	  model.constraints = caveatConfig.constraintsWithoutEmptyList;
    }
    else

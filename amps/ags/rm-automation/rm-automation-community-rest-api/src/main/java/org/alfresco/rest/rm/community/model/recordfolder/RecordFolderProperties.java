@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -112,13 +112,13 @@ public class RecordFolderProperties extends TestModel
 
     @JsonProperty (PROPERTIES_CLASSIFICATION)
     private List<String> classification;
-    
+
     @JsonProperty (PROPERTIES_DESCRIPTION)
     private String description;
 
     @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;
- 
+
     @JsonProperty (PROPERTIES_RECORD_SEARCH_VITAL_RECORD_REVIEW_PERIOD)
     private String recordSearchVitalRecordReviewPeriod;
 

@@ -160,11 +160,12 @@ public class AuditDAOTest extends TestCase
 
     public void testAuditMinMaxByApp() throws Exception
     {
+        final String[] expectedExtremes = new String[] {"min", "max"};
         final AuditApplicationInfo appInfo = doAuditEntryImpl(12);
 
-        final HashMap<String, Long> minMax = auditDAO.getAuditMinMaxByApp(appInfo.getId(), List.of("min", "max"));
+        final HashMap<String, Long> minMax = auditDAO.getAuditMinMaxByApp(appInfo.getId(), List.of(expectedExtremes));
 
-        assertEquals(minMax.keySet(), Set.of("min", "max"));
+        assertEquals(Set.of(expectedExtremes), minMax.keySet());
     }
 
     /**

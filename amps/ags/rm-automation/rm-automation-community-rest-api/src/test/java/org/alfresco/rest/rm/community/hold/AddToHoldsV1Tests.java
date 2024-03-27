@@ -42,9 +42,9 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.create
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.commons.httpclient.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.commons.httpclient.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.assertFalse;
@@ -72,6 +72,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -86,8 +87,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
 {
     private static final String ACCESS_DENIED_ERROR_MESSAGE = "Access Denied.  You do not have the appropriate " +
         "permissions to perform this operation.";
-    private static final String INVALID_TYPE_ERROR_MESSAGE = "Items added to a hold must be either a record, a " +
-        "record folder or active content.";
+    private static final String INVALID_TYPE_ERROR_MESSAGE = "Only records, record folders or content can be added to a hold.";
     private static final String LOCKED_FILE_ERROR_MESSAGE = "Locked content can't be added to a hold.";
 
     private static final String HOLD = "HOLD" + generateTestPrefix(AddToHoldsV1Tests.class);
@@ -142,6 +142,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
             .listChildren().getEntries().stream()
             .map(RestNodeModel::onModel)
             .map(RestNodeModel::getName)
+            .filter(documentName -> documentName.equals(documentHeld.getName()))
             .toList();
 
         STEP("Check the list of active content");
@@ -248,10 +249,13 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         users.add(userModel);
         STEP("Add the node to the hold with user without permission.");
 
-        HoldChild response =
-            getRestAPIFactory().getHoldsAPI(userAddHoldPermission).addChildToHold(HoldChild.builder().id(nodeToBeAddedToHold).build(), holdNodeRef);
+        getRestAPIFactory()
+            .getHoldsAPI(userModel)
+            .addChildToHold(HoldChild.builder().id(nodeToBeAddedToHold).build(), holdNodeRef);
 
-//        assertTrue(response == "");
+        assertStatusCode(FORBIDDEN);
+        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary(ACCESS_DENIED_ERROR_MESSAGE);
+
 
         STEP("Check the node is not frozen.");
         assertFalse(hasAspect(nodeToBeAddedToHold,FROZEN_ASPECT));
@@ -269,23 +273,23 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         nodesToBeClean.add(category.getId());
         return new Object[][]
             {       // file plan node id
-                { getFilePlan(FILE_PLAN_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                { getFilePlan(FILE_PLAN_ALIAS).getId(), SC_UNPROCESSABLE_ENTITY, INVALID_TYPE_ERROR_MESSAGE },
                 //transfer container
-                { getTransferContainer(TRANSFERS_ALIAS).getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                { getTransferContainer(TRANSFERS_ALIAS).getId(), SC_UNPROCESSABLE_ENTITY, INVALID_TYPE_ERROR_MESSAGE },
                 // a record category
-                { category.getId(), SC_BAD_REQUEST, INVALID_TYPE_ERROR_MESSAGE },
+                { category.getId(), SC_UNPROCESSABLE_ENTITY, INVALID_TYPE_ERROR_MESSAGE },
                 // unfiled records root
-                { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_BAD_REQUEST,
+                { getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId(), SC_UNPROCESSABLE_ENTITY,
                     INVALID_TYPE_ERROR_MESSAGE },
                 // an arbitrary unfiled records folder
                 { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " +
-                    getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), SC_BAD_REQUEST,
+                    getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), SC_UNPROCESSABLE_ENTITY,
                     INVALID_TYPE_ERROR_MESSAGE },
                 //folder,
-                { dataContent.usingAdmin().usingSite(testSite).createFolder().getNodeRef(), SC_BAD_REQUEST,
+                { dataContent.usingAdmin().usingSite(testSite).createFolder().getNodeRef(), SC_UNPROCESSABLE_ENTITY,
                     INVALID_TYPE_ERROR_MESSAGE },
                 //document locked
-                { contentLocked.getNodeRefWithoutVersion(), SC_INTERNAL_SERVER_ERROR, LOCKED_FILE_ERROR_MESSAGE }
+                { contentLocked.getNodeRefWithoutVersion(), SC_UNPROCESSABLE_ENTITY, LOCKED_FILE_ERROR_MESSAGE }
             };
     }
 
@@ -293,12 +297,13 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     public void addInvalidNodesToHold(String itemNodeRef, int responseCode, String errorMessage) throws Exception
     {
         STEP("Add the node to the hold ");
-//        String responseErrorMessage = holdsAPI.addToHoldAndGetMessage(getAdminUser().getUsername(),
-//            getAdminUser().getPassword(), responseCode, itemNodeRef, holdNodeRef);
-        HoldChild response =
-            getRestAPIFactory().getHoldsAPI(userAddHoldPermission).addChildToHold(HoldChild.builder().id(itemNodeRef).build(), holdNodeRef);
-//        assertTrue(responseErrorMessage.contains(errorMessage),
-//            "Actual error message " + responseErrorMessage + " expected " + errorMessage);
+
+        getRestAPIFactory()
+            .getHoldsAPI(getAdminUser())
+            .addChildToHold(HoldChild.builder().id(itemNodeRef).build(), holdNodeRef);
+
+        assertStatusCode(HttpStatus.valueOf(responseCode));
+        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary(errorMessage);
 
         STEP("Check node is not frozen.");
         assertFalse(hasAspect(itemNodeRef, FROZEN_ASPECT));
@@ -316,5 +321,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     {
         getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdNodeRef);
         dataSite.usingAdmin().deleteSite(testSite);
+        users.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
+        nodesToBeClean.forEach( category -> deleteRecordCategory(category));
     }
 }

@@ -153,8 +153,9 @@ public class HoldsAPI extends RMModelRequest
 
         getRmRestWrapper().processEmptyModel(simpleRequest(
             DELETE,
-            "holds/{holdId}/{holdChildId}",
-            holdId
+            "holds/{holdId}/children/{holdChildId}",
+            holdId,
+            holdChildId
                                                           ));
     }
 }

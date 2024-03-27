@@ -29,6 +29,7 @@ import static java.util.Arrays.asList;
 import static org.alfresco.rest.rm.community.base.TestData.*;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_HOLD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -45,6 +46,8 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.audit.AuditEvents;
+import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
@@ -69,8 +72,6 @@ public class AuditHoldsTest extends BaseRMRestTest {
     @Autowired
     private RMAuditService rmAuditService;
     @Autowired
-    private HoldsAPI holdsAPI;
-    @Autowired
     private RoleService roleService;
     private UserModel rmAdmin;
     private RecordCategory recordCategory;
@@ -85,8 +86,12 @@ public class AuditHoldsTest extends BaseRMRestTest {
         rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
 
         STEP("Create a hold");
-        hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD1, HOLD_REASON,
-            HOLD_DESCRIPTION);
+
+        hold1NodeRef = getRestAPIFactory()
+                .getFilePlansAPI(rmAdmin)
+                .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+                .getId();
+
 
         STEP("Create a collaboration site with a test file.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
@@ -101,9 +106,11 @@ public class AuditHoldsTest extends BaseRMRestTest {
 
         STEP("Add some items to the hold, then remove them from the hold");
         final List<String> itemsList = asList(testFile.getNodeRefWithoutVersion(), recordToBeAdded.getId(), recordFolder2.getId());
-        final List<String> holdsList = Collections.singletonList(HOLD1);
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), recordToBeAdded.getId(), HOLD1);
-        holdsAPI.removeItemsFromHolds(rmAdmin.getUsername(), rmAdmin.getPassword(), itemsList, holdsList);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold1NodeRef);
+        for(String childId : itemsList)
+        {
+            getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHoldChild(hold1NodeRef, childId);
+        }
 
         STEP("Delete the record folder that was held");
         getRestAPIFactory().getRecordFolderAPI().deleteRecordFolder(recordFolder2.getId());

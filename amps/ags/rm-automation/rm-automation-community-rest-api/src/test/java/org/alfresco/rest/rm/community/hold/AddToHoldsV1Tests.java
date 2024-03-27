@@ -81,7 +81,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     }
 
     @Test
-    public void retrieveTheContentOfTheHoldUsingV1API() throws Exception
+    public void retrieveTheContentOfTheHoldUsingV1API()
     {
         STEP("Retrieve the list of children from the hold and collect the entries that have the name of the active " +
             "content held");
@@ -94,8 +94,6 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
 
         STEP("Check the list of active content");
         assertEquals(documentNames, Set.of(documentHeld.getName()));
-        assertEquals(documentNames.size(), 1, "The active content is not retrieve when getting the children from the " +
-            "hold folder");
     }
 
     @Test
@@ -105,8 +103,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
             .getNodeAPI(documentHeld).usingParams("where=(assocType='rma:frozenContent')").getParents();
         Hold retrievedHold = getRestAPIFactory().getHoldsAPI(getAdminUser())
             .getHold(holdsEntries.getEntries().get(0).getModel().getId());
-        assertEquals(retrievedHold, hold,
-            "Holds are not equal. Expected:<" + hold.toString() + "> but was:<" + retrievedHold.toString());
+        assertEquals(retrievedHold, hold, "Holds are not equal");
     }
 
     public Hold createHold(String parentId, Hold hold, UserModel user)

@@ -158,9 +158,11 @@ public class AuditDAOTest extends TestCase
         doAuditEntryImpl(1000);
     }
 
-    public void testAuditMinMaxByApp()
+    public void testAuditMinMaxByApp() throws Exception
     {
-        final HashMap<String, Long> minMax = auditDAO.getAuditMinMaxByApp(123L, List.of("min", "max"));
+        final AuditApplicationInfo appInfo = doAuditEntryImpl(12);
+
+        final HashMap<String, Long> minMax = auditDAO.getAuditMinMaxByApp(appInfo.getId(), List.of("min", "max"));
 
         assertEquals(minMax.keySet(), Set.of("min", "max"));
     }
@@ -168,27 +170,25 @@ public class AuditDAOTest extends TestCase
     /**
      * @return              Returns the name of the application
      */
-    private String doAuditEntryImpl(final int count) throws Exception
+    private AuditApplicationInfo doAuditEntryImpl(final int count) throws Exception
     {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
         final URL url = new URL("file:" + file.getAbsolutePath());
         final String appName = getName() + "." + System.currentTimeMillis();
 
-        RetryingTransactionCallback<Long> createAppCallback = new RetryingTransactionCallback<Long>()
+        RetryingTransactionCallback<AuditApplicationInfo> createAppCallback = () ->
         {
-            public Long execute() throws Throwable
+            AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
+            if (appInfo == null)
             {
-                AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
-                if (appInfo == null)
-                {
-                    Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
-                    appInfo = auditDAO.createAuditApplication(appName, modelId);
-                }
-                return appInfo.getId();
+                Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
+                appInfo = auditDAO.createAuditApplication(appName, modelId);
             }
+            return appInfo;
         };
-        final Long sessionId = txnHelper.doInTransaction(createAppCallback);
+        final AuditApplicationInfo appInfo = txnHelper.doInTransaction(createAppCallback);
+        final Long sessionId = appInfo.getId();
         
         final String username = "alexi";
         RetryingTransactionCallback<Void> createEntryCallback = new RetryingTransactionCallback<Void>()
@@ -211,7 +211,7 @@ public class AuditDAOTest extends TestCase
                 "Time for " + count + " entry creations was " +
                 ((double)(after - before)/(10E6)) + "ms");
         // Done
-        return appName;
+        return appInfo;
     }
 
     public synchronized void testAuditQuery() throws Exception
@@ -484,7 +484,7 @@ public class AuditDAOTest extends TestCase
         };
 
         // Some entries
-        final String appName = doAuditEntryImpl(1);
+        final String appName = doAuditEntryImpl(1).getName();
 
         final AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(appName);
@@ -509,8 +509,8 @@ public class AuditDAOTest extends TestCase
      */
     public void testAuditDeleteEntriesForApplication() throws Exception
     {
-        final String app1 = doAuditEntryImpl(6);
-        final String app2 = doAuditEntryImpl(18);
+        final String app1 = doAuditEntryImpl(6).getName();
+        final String app2 = doAuditEntryImpl(18).getName();
         
         final AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
         

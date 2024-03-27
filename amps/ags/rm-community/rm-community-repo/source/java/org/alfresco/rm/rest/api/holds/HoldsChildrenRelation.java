@@ -35,8 +35,10 @@ import java.util.stream.Collectors;
 
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -93,7 +95,14 @@ public class HoldsChildrenRelation implements
             List<NodeRef> createdNodes = children.stream()
                 .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.id()))
                 .collect(Collectors.toList());
-            holdService.addToHold(parentNodeRef, createdNodes);
+            try
+            {
+                holdService.addToHold(parentNodeRef, createdNodes);
+            }
+            catch (IntegrityException exception)
+            {
+                throw new InvalidArgumentException(exception.getMsgId());
+            }
             return createdNodes;
         };
 
@@ -140,7 +149,15 @@ public class HoldsChildrenRelation implements
         NodeRef childRef = apiUtils.lookupByPlaceholder(childId);
 
         RetryingTransactionCallback<List<NodeRef>> callback = () -> {
-            holdService.removeFromHold(nodeRef, childRef);
+            try
+            {
+                holdService.removeFromHold(nodeRef, childRef);
+            }
+            catch (IntegrityException exception)
+            {
+                throw new InvalidArgumentException(exception.getMsgId());
+            }
+
             return null;
         };
 

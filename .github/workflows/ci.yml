@@ -1048,12 +1048,12 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
-      - name: "Add GitHub Step Summary"
-        env:
-          RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
-          RP_KEY: ${{ steps.rp-prepare.outputs.key }}
-          RP_URL: ${{ steps.rp-prepare.outputs.url }}
-        run: bash scripts/ci/add_step_summary.sh
+      #- name: "Add GitHub Step Summary"
+      #  env:
+      #    RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
+      #    RP_KEY: ${{ steps.rp-prepare.outputs.key }}
+      #    RP_URL: ${{ steps.rp-prepare.outputs.url }}
+      #  run: bash scripts/ci/add_step_summary.sh
       - name: "Verify"
         id: run-tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -1062,22 +1062,23 @@ jobs:
         run: |
           eval "args=($RP_OPTS)"
           mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres ${{ matrix.testAttributes }} -DfailIfNoTests=false ${{ env.LOG_WARN }} "${args[@]}"
-        continue-on-error: true
-      - name: "Update GitHub Step Summary"
-        run: |
-          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
-      - name: "Summarize Report Portal"
-        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
-        id: rp-summarize
-        with:
-          rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
-          rp-project: ${{ env.RP_PROJECT }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
-      - name: "Exit on failure"
-        if: steps.run-tests.outcome != 'success'
-        run: |
-          echo "::error title=run-tests::Tests failed: re-throwing on error."
-          exit 1
+      #  continue-on-error: true
+      #- name: "Update GitHub Step Summary"
+      #  run: |
+      #    echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+      #- name: "Summarize Report Portal"
+      #  uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+      #  id: rp-summarize
+      #  with:
+      #    tests-outcome: ${{ steps.run-tests.outcome }}
+      #    rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
+      #    rp-project: ${{ env.RP_PROJECT }}
+      #    rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+      #- name: "Exit on failure"
+      #  if: steps.run-tests.outcome != 'success'
+      #  run: |
+      #    echo "::error title=run-tests::Tests failed: re-throwing on error."
+      #    exit 1
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

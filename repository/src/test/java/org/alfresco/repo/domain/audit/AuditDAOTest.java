@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.transaction.UserTransaction;
 
@@ -155,6 +156,13 @@ public class AuditDAOTest extends TestCase
     public void testAuditEntry() throws Exception
     {
         doAuditEntryImpl(1000);
+    }
+
+    public void testAuditMinMaxByApp()
+    {
+        final HashMap<String, Long> minMax = auditDAO.getAuditMinMaxByApp(123L, List.of("min", "max"));
+
+        assertEquals(minMax.keySet(), Set.of("min", "max"));
     }
 
     /**

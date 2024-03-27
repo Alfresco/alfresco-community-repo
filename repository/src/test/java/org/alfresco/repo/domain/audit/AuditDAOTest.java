@@ -168,6 +168,8 @@ public class AuditDAOTest extends TestCase
         final Map<String, Long> minMax = auditDAO.getAuditMinMaxByApp(appInfo.getId(), List.of(expectedExtremes));
 
         assertEquals(Set.of(expectedExtremes), minMax.keySet());
+        assertNotNull(minMax.get(expectedExtremes[0]));
+        assertNotNull(minMax.get(expectedExtremes[1]));
     }
 
     /**

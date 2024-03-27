@@ -180,7 +180,8 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testModule }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          #rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -259,7 +260,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testSuite }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -326,7 +327,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.version }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -389,7 +390,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -452,7 +453,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -514,7 +515,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -576,7 +577,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -638,7 +639,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -696,7 +697,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -803,7 +804,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.testSuite }} ${{ matrix.idp }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -901,7 +902,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} - ${{ matrix.test-name }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -966,7 +967,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -1033,7 +1034,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} 0${{ matrix.part }} - (PostgreSQL) ${{ matrix.test-name }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Verify"
@@ -1078,7 +1079,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }} 0${{ matrix.part }} - (MySQL) ${{ matrix.test-name }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
@@ -1148,7 +1149,7 @@ jobs:
         id: rp-prepare
         with:
           rp-launch-prefix: ${{ env.RP_LAUNCH_PREFIX }}
-          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+          rp-token: ${{ secrets.SECRET_THAT_DOES_NOT_EXIST }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"

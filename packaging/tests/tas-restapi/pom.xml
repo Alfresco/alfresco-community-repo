@@ -166,7 +166,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-json</artifactId>
-            <version>3.0.19</version>
+            <version>3.0.21</version>
         </dependency>
 
        <dependency>

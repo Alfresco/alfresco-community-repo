@@ -63,7 +63,6 @@ import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
-import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
@@ -160,7 +159,6 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
      * Then I am not successful
      */
     @Test
-    @AlfrescoTest(jira = "RM-6925")
     public void updateContentForFrozenFile() throws Exception
     {
         STEP("Update content of the held file");
@@ -194,7 +192,6 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
      * Then I am not successful
      */
     @Test
-    @AlfrescoTest(jira = "RM-6924")
     public void copyFrozenFile()
     {
         STEP("Copy frozen file");
@@ -229,7 +226,6 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
      * And the frozen nodes have the vital record search properties updated
      */
     @Test
-    @AlfrescoTest(jira = "RM-6929")
     public void updateRecordFolderVitalProperties()
     {
         STEP("Update the vital record properties for the record folder");
@@ -269,7 +265,6 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
      * And the record search disposition schedule properties are updated
      */
     @Test
-    @AlfrescoTest(jira = "RM-6929")
     public void createDispositionScheduleOnCategoryWithHeldChildren()
     {
         STEP("Create a retention schedule on the category with frozen children");
@@ -295,7 +290,6 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
      * And the record search disposition schedule properties are updated
      */
     @Test
-    @AlfrescoTest(jira = "RM-6931")
     public void retainActionOnFrozenHeldRecords()
     {
         STEP("Add a category with a disposition schedule.");

@@ -31,18 +31,16 @@ import static java.util.Arrays.asList;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.FILE_PLAN_PATH;
 import static org.alfresco.utility.Utility.buildPath;
 import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
@@ -50,12 +48,13 @@ import com.google.common.collect.ImmutableMap;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
+import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.v0.HoldsAPI;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
@@ -85,8 +84,6 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     @Autowired
     private RMAuditService rmAuditService;
     @Autowired
-    private HoldsAPI holdsAPI;
-    @Autowired
     private RoleService roleService;
 
     private UserModel rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode;
@@ -94,18 +91,20 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder;
     private List<AuditEntry> auditEntries;
-    private final List<String> holdsList = asList(HOLD1, HOLD2);
-    private List<String> holdsListRef = new ArrayList<>();
-    private String hold1NodeRef;
+    private String hold1NodeRef, hold2NodeRef;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAuditAddToHoldTests()
     {
         STEP("Create 2 holds.");
-        hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
-        String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
-        holdsListRef = asList(hold1NodeRef, hold2NodeRef);
+        hold1NodeRef = getRestAPIFactory()
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
+        hold2NodeRef = getRestAPIFactory()
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
 
         STEP("Create a new record category with a record folder.");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
@@ -169,7 +168,8 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Add node to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD1);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(nodeId).build(), hold1NodeRef);
+
 
         STEP("Check the audit log contains the entry for the add to hold event.");
         rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, nodeName, nodePath,
@@ -191,9 +191,8 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Try to add the record to a hold by an user with no rights.");
-        holdsAPI.addItemsToHolds(rmManagerNoReadOnHold.getUsername(), rmManagerNoReadOnHold.getPassword(),
-                SC_INTERNAL_SERVER_ERROR, Collections.singletonList(recordToBeAdded.getId()),
-                Collections.singletonList(hold1NodeRef));
+        getRestAPIFactory().getHoldsAPI(rmManagerNoReadOnHold).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold1NodeRef);
+
 
         STEP("Check the audit log doesn't contain the entry for the unsuccessful add to hold.");
         assertTrue("The list of events should not contain Add to Hold entry ",
@@ -215,7 +214,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Add record folder to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), notEmptyRecFolder.getId(), HOLD1);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(notEmptyRecFolder.getId()).build(), hold1NodeRef);
 
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
 
@@ -239,8 +238,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Add record to multiple holds.");
-        holdsAPI.addItemsToHolds(rmAdmin.getUsername(), rmAdmin.getPassword(),
-                Collections.singletonList(recordToBeAdded.getId()), holdsList);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold1NodeRef);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold2NodeRef);
+
 
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
 
@@ -268,7 +268,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Add file to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), contentToBeAdded.getNodeRefWithoutVersion(), HOLD1);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(contentToBeAdded.getNodeRefWithoutVersion()).build(), hold1NodeRef);
 
         STEP("Check that an user with no Read permissions can't see the entry for the add to hold event.");
         assertTrue("The list of events should not contain Add to Hold entry ",
@@ -289,7 +289,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Add file to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), contentToBeAdded.getNodeRefWithoutVersion(), HOLD1);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).addChildToHold(HoldChild.builder().id(contentToBeAdded.getNodeRefWithoutVersion()).build(), hold1NodeRef);
 
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnHold, ADD_TO_HOLD);
 
@@ -304,7 +304,9 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpAuditAddToHoldTests()
     {
-        holdsListRef.forEach(holdRef -> holdsAPI.deleteHold(getAdminUser(), holdRef));
+        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(hold1NodeRef);
+        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(hold2NodeRef);
+
         dataSite.usingAdmin().deleteSite(privateSite);
         asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
         deleteRecordCategory(recordCategory.getId());

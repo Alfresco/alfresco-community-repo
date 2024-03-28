@@ -42,7 +42,6 @@ import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.hold.HoldChildCollection;
 import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
-import org.alfresco.rest.rm.community.model.hold.HoldDeletionReasonEntry;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 public class HoldsAPI extends RMModelRequest
@@ -109,13 +108,13 @@ public class HoldsAPI extends RMModelRequest
                                                           ));
     }
 
-    public HoldDeletionReasonEntry deleteHoldWithReason(HoldDeletionReason reason, String holdId)
+    public HoldDeletionReason deleteHoldWithReason(HoldDeletionReason reason, String holdId)
     {
         mandatoryObject("reason", reason);
         mandatoryString("holdId", holdId);
 
-        return getRmRestWrapper().processModel(HoldDeletionReasonEntry.class, requestWithBody(
-            PUT,
+        return getRmRestWrapper().processModel(HoldDeletionReason.class, requestWithBody(
+            POST,
             toJson(reason),
             "holds/{holdId}/delete",
             holdId

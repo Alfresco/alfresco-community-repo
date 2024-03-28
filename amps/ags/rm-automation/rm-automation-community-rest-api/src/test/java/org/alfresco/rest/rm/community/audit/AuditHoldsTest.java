@@ -25,8 +25,11 @@
  * #L%
  */
 package org.alfresco.rest.rm.community.audit;
+
 import static java.util.Arrays.asList;
-import static org.alfresco.rest.rm.community.base.TestData.*;
+
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM_HOLD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -38,10 +41,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.core.IsNot.not;
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.testng.AssertJUnit.*;
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertTrue;
 
-import java.util.Collections;
 import java.util.List;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
@@ -53,7 +57,6 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.v0.HoldsAPI;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.utility.model.FileModel;

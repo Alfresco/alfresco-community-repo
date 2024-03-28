@@ -26,27 +26,58 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.utility.model.TestModel;
 
 /**
- * POJO for hold entry
+ * POJO for hold
  *
  * @author Damian Ujma
  */
 @Builder
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldEntry extends RestModels<Hold, HoldEntry>
+public class Hold extends TestModel
 {
-    @JsonProperty
-    private Hold entry;
+    @JsonProperty(required = true)
+    private String id;
+
+    @JsonProperty(required = true)
+    private String name;
+
+    @JsonProperty(required = true)
+    private String description;
+
+    @JsonProperty(required = true)
+    private String reason;
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        Hold hold = (Hold) o;
+        return Objects.equals(id, hold.id) && Objects.equals(name, hold.name)
+            && Objects.equals(description, hold.description) && Objects.equals(reason, hold.reason);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, name, description, reason);
+    }
 }

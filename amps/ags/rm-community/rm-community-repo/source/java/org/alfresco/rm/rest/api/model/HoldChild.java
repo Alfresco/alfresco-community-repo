@@ -24,29 +24,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+package org.alfresco.rm.rest.api.model;
 
 /**
- * POJO for hold entry
+ * Hold Child POJO for use in the v1 REST API.
  *
  * @author Damian Ujma
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldEntry extends RestModels<Hold, HoldEntry>
+public record HoldChild(String id)
 {
-    @JsonProperty
-    private Hold entry;
 }

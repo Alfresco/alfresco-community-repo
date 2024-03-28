@@ -33,20 +33,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.utility.model.TestModel;
 
 /**
- * POJO for hold entry
+ * POJO for hold child
  *
  * @author Damian Ujma
  */
 @Builder
-@Data
 @EqualsAndHashCode(callSuper = true)
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldEntry extends RestModels<Hold, HoldEntry>
+public class HoldChild extends TestModel
 {
-    @JsonProperty
-    private Hold entry;
+    @JsonProperty(required = true)
+    private String id;
 }

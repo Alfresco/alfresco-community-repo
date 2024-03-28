@@ -35,6 +35,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Roy Wetherall
  */
+@SuppressWarnings("PMD.ConstantsInInterface")
 @AlfrescoPublicApi
 public interface RecordsManagementModel extends RecordsManagementCustomModel
 {
@@ -200,6 +201,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Hold type
     QName TYPE_HOLD = QName.createQName(RM_URI, "hold");
     QName PROP_HOLD_REASON = QName.createQName(RM_URI, "holdReason");
+    QName PROP_HOLD_DELETION_REASON = QName.createQName(RM_URI, "holdDeletionReason");
     //since 3.2
     @Deprecated
     QName ASSOC_FROZEN_RECORDS = QName.createQName(RM_URI, "frozenRecords");

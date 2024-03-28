@@ -36,7 +36,7 @@ import lombok.NoArgsConstructor;
 import org.alfresco.rest.core.RestModels;
 
 /**
- * POJO for hold entry
+ * POJO for hold child entry
  *
  * @author Damian Ujma
  */
@@ -45,8 +45,8 @@ import org.alfresco.rest.core.RestModels;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldEntry extends RestModels<Hold, HoldEntry>
+public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
 {
     @JsonProperty
-    private Hold entry;
+    private HoldChildEntry entry;
 }

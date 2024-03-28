@@ -38,6 +38,8 @@ import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
+import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
@@ -213,4 +215,27 @@ public class FilePlanAPI extends RMModelRequest
                 parameters));
     }
 
+    public Hold createHold(Hold hold, String filePlanId)
+    {
+        mandatoryObject("filePlanId", filePlanId);
+
+        return getRmRestWrapper().processModel(Hold.class, requestWithBody(
+            POST,
+            toJson(hold),
+            "file-plans/{filePlanId}/holds",
+            filePlanId
+                                                                          ));
+    }
+
+    public HoldCollection getHolds(String filePlanId, String parameters)
+    {
+        mandatoryString("filePlanId", filePlanId);
+
+        return getRmRestWrapper().processModels(HoldCollection.class, simpleRequest(
+            GET,
+            "file-plans/{filePlanId}/holds?{parameters}",
+            filePlanId,
+            parameters
+                                                                                   ));
+    }
 }

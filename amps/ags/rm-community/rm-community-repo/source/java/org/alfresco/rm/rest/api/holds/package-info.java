@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,29 +24,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
 
 /**
- * POJO for hold entry
+ * Package info that defines the Information Governance Holds REST API
  *
  * @author Damian Ujma
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldEntry extends RestModels<Hold, HoldEntry>
-{
-    @JsonProperty
-    private Hold entry;
-}
+@WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
+package org.alfresco.rm.rest.api.holds;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.WebApi;

@@ -362,7 +362,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         when(mockedNodeService.exists(hold))
             .thenReturn(true);
 
-        // node does is not a hold
+        // node isn't a hold
         holdService.updateHold(recordFolder, HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
         verify(mockedNodeService, never()).setProperty(any(NodeRef.class), any(QName.class), any(String.class));
     }

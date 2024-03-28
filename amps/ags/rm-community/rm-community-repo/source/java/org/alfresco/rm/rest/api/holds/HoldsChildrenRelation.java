@@ -101,7 +101,8 @@ public class HoldsChildrenRelation implements
             }
             catch (IntegrityException exception)
             {
-                throw new InvalidArgumentException(exception.getMsgId());
+                // Throw 400 Bad Request when a node with id 'holdId' is not a hold or a child cannot be added to a hold
+                throw new InvalidArgumentException(exception.getMsgId()).initCause(exception);
             }
             return createdNodes;
         };
@@ -155,7 +156,8 @@ public class HoldsChildrenRelation implements
             }
             catch (IntegrityException exception)
             {
-                throw new InvalidArgumentException(exception.getMsgId());
+                // Throw 400 Bad Request when a node with id 'holdId' is not a hold
+                throw new InvalidArgumentException(exception.getMsgId()).initCause(exception);
             }
 
             return null;

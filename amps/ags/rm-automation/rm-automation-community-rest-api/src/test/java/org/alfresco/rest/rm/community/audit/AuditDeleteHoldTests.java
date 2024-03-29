@@ -138,7 +138,7 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
 
         rmAuditService.clearAuditLog();
 
-        STEP("Delete the created hold.");
+        STEP("Delete the created hold with a reason.");
         getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHoldWithReason(HoldDeletionReason.builder().reason(deletionReason).build(), holdRef);
 
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");

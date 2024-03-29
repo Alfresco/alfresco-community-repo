@@ -261,6 +261,14 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
                             .SiteCollaborator,
                         holdNodeRefOne, UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING),
                     contentNoHoldCap.getNodeRefWithoutVersion()
+                },
+                //user without read permission on RM  record folder
+                {
+                    user, recordFolder.getId()
+                },
+                //user without read permission over the content from the private site
+                {
+                    user, privateFile.getNodeRefWithoutVersion()
                 }
             };
     }
@@ -358,6 +366,5 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
         dataSite.usingAdmin().deleteSite(privateSite);
         usersToBeClean.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
         nodesToBeClean.forEach(category -> deleteRecordCategory(category));
-
     }
 }

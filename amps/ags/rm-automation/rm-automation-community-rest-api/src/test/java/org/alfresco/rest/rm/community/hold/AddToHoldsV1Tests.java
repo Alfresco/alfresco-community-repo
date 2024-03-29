@@ -132,6 +132,11 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         users.add(userAddHoldPermission);
     }
 
+    /**
+     * Given a hold that contains at least one active content
+     * When I use the existing REST API to retrieve the contents of the hold
+     * Then I should see all the active content on hold
+     */
     @Test
     public void retrieveTheContentOfTheHoldUsingV1API()
     {
@@ -149,6 +154,11 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         assertEquals(documentNames, Set.of(documentHeld.getName()));
     }
 
+    /**
+     * Given a hold that contains at least one active content
+     * When I use the existing REST API to retrieve the holds the content is added
+     * Then the hold where the content held is returned
+     */
     @Test
     public void retrieveTheHoldWhereTheContentIsAdded()
     {
@@ -159,6 +169,9 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         assertEquals(retrievedHold, hold, "Holds are not equal");
     }
 
+    /**
+     * Valid nodes to be added to hold
+     */
     @DataProvider(name = "validNodesForAddToHold")
     public Object[][] getValidNodesForAddToHold()
     {
@@ -194,6 +207,17 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
             };
     }
 
+    /**
+     * Given record folder/record/document not on hold
+     * And a hold
+     * And file permission on the hold
+     * And the appropriate capability to add to hold
+     * When I use the existing REST API to add the node to the hold
+     * Then the record folder/record/document is added to the hold
+     * And the item is frozen
+     *
+     * @throws Exception
+     */
     @Test(dataProvider = "validNodesForAddToHold")
     public void addValidNodesToHoldWithAllowedUser(String nodeId) throws Exception
     {
@@ -205,6 +229,11 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         assertTrue(hasAspect(nodeId, FROZEN_ASPECT));
     }
 
+    /**
+     * Data provider with user without correct permission to add to hold and the node ref to be added to hold
+     *
+     * @return object with user model and the node ref to be added to hold
+     */
     @DataProvider(name = "userWithoutPermissionForAddToHold")
     public Object[][] getUserWithoutPermissionForAddToHold()
     {
@@ -246,6 +275,16 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
             };
     }
 
+    /**
+     * Given a node not on hold
+     * And a hold
+     * And user without right permission to add to hold
+     * When I use the existing REST API to add the node to the hold
+     * Then the node is not added to the hold
+     * And the node is not frozen
+     *
+     * @throws Exception
+     */
     @Test(dataProvider = "userWithoutPermissionForAddToHold")
     public void addContentToHoldWithUserWithoutHoldPermission(UserModel userModel, String nodeToBeAddedToHold)
         throws Exception
@@ -264,6 +303,9 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         assertFalse(hasAspect(nodeToBeAddedToHold, FROZEN_ASPECT));
     }
 
+    /**
+     * Data provider with invalid node types that can be added to a hold
+     */
     @DataProvider(name = "invalidNodesForAddToHold")
     public Object[][] getInvalidNodesForAddToHold()
     {
@@ -297,6 +339,16 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
             };
     }
 
+    /**
+     * Given a node that is not a document/record/ record folder ( a valid node type to be added to hold)
+     * And a hold
+     * And user without right permission to add to hold
+     * When I use the existing REST API to add the node to the hold
+     * Then the node is not added to the hold
+     * And the node is not frozen
+     *
+     * @throws Exception
+     */
     @Test(dataProvider = "invalidNodesForAddToHold")
     public void addInvalidNodesToHold(String itemNodeRef, int responseCode, String errorMessage) throws Exception
     {

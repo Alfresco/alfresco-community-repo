@@ -169,7 +169,6 @@ public class HoldsChildrenRelation implements
                 // Throw 400 Bad Request when a node with id 'holdId' is not a hold
                 throw new InvalidArgumentException(exception.getMsgId()).initCause(exception);
             }
-
             return null;
         };
 

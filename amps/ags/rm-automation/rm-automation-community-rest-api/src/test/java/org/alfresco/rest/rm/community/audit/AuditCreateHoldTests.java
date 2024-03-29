@@ -34,6 +34,7 @@ import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_HOLD
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -131,6 +132,7 @@ public class AuditCreateHoldTests extends BaseRMRestTest
         getRestAPIFactory()
             .getFilePlansAPI(rmAdmin)
             .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        assertStatusCode(CONFLICT);
 
         STEP("Check the audit log doesn't contain the entry for the second create hold event.");
         assertTrue("The list of events should not contain Create Hold entry ",

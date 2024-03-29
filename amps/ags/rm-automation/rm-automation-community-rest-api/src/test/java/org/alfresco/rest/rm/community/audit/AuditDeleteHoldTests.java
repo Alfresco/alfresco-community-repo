@@ -34,6 +34,7 @@ import static org.alfresco.rest.rm.community.model.audit.AuditEvents.DELETE_HOLD
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.List;
@@ -160,6 +161,7 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
 
         STEP("Try to delete a hold by an user with no Read permissions over the hold.");
         getRestAPIFactory().getHoldsAPI(rmManager).deleteHold(holdNodeRef);
+        assertStatusCode(FORBIDDEN);
 
         STEP("Check the audit log doesn't contain the entry for the unsuccessful delete hold.");
         assertTrue("The list of events should not contain Delete Hold entry ",

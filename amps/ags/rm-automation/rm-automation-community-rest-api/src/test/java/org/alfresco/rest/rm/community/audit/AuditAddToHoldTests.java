@@ -38,6 +38,7 @@ import static org.alfresco.utility.Utility.buildPath;
 import static org.alfresco.utility.Utility.removeLastSlash;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -192,7 +193,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
 
         STEP("Try to add the record to a hold by an user with no rights.");
         getRestAPIFactory().getHoldsAPI(rmManagerNoReadOnHold).addChildToHold(HoldChild.builder().id(recordToBeAdded.getId()).build(), hold1NodeRef);
-
+        assertStatusCode(FORBIDDEN);
 
         STEP("Check the audit log doesn't contain the entry for the unsuccessful add to hold.");
         assertTrue("The list of events should not contain Add to Hold entry ",

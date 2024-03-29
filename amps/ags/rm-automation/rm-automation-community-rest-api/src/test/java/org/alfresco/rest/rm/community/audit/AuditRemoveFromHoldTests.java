@@ -95,7 +95,6 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private RecordCategoryChild recordFolder, heldRecordFolder;
     private Record heldRecord;
     private List<AuditEntry> auditEntries;
-    private final List<String> holdsList = asList(HOLD1, HOLD2, HOLD3);
     private List<String> holdsListRef = new ArrayList<>();
     private FileModel heldContent;
     private String hold1NodeRef, hold2NodeRef, hold3NodeRef;

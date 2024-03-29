@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.rm.community.hold;
 
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
+import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
@@ -110,7 +112,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     {
         STEP("Create a hold.");
         hold = createHold(FILE_PLAN_ALIAS,
-            Hold.builder().name(HOLD).description("Description").reason("No reason").build(), getAdminUser());
+            Hold.builder().name(HOLD).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), getAdminUser());
         holdNodeRef = hold.getId();
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();

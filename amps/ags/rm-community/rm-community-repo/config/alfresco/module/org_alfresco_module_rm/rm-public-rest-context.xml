@@ -136,6 +136,8 @@
        <property name="recordService" ref="RecordService"/>
        <property name="nodeService" ref="NodeService"/>
        <property name="transactionService" ref="transactionService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="permissionService" ref="permissionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.files.FilesEntityResource">

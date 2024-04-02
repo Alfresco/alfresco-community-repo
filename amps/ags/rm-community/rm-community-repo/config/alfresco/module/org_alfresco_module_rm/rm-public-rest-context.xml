@@ -135,7 +135,7 @@
        <property name="nodesModelFactory" ref="nodesModelFactory" />
        <property name="recordService" ref="RecordService"/>
        <property name="transactionService" ref="transactionService" />
-        <property name="nodeService" ref="nodeService" />
+        <property name="nodeService" ref="NodeService" />
         <property name="permissionService" ref="permissionService" />
     </bean>
 

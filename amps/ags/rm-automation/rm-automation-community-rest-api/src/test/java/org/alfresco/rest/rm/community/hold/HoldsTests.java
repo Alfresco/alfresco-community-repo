@@ -34,8 +34,13 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /**
@@ -45,6 +50,8 @@ import org.testng.annotations.Test;
  */
 public class HoldsTests extends BaseRMRestTest
 {
+
+    private final List<String> nodeRefs = new ArrayList<>();
 
     @Test
     public void testGetHold()
@@ -64,6 +71,7 @@ public class HoldsTests extends BaseRMRestTest
 
         // Get the hold
         Hold receivedHold = getRestAPIFactory().getHoldsAPI().getHold(createdHold.getId());
+        nodeRefs.add(receivedHold.getId());
 
         // Verify the status code
         assertStatusCode(OK);
@@ -89,6 +97,7 @@ public class HoldsTests extends BaseRMRestTest
             .build();
         Hold createdHold = getRestAPIFactory().getFilePlansAPI()
             .createHold(hold, FILE_PLAN_ALIAS);
+        nodeRefs.add(createdHold.getId());
 
         Hold holdModel = Hold.builder()
             .name("Updated" + holdName)
@@ -123,6 +132,7 @@ public class HoldsTests extends BaseRMRestTest
             .build();
         Hold createdHold = getRestAPIFactory().getFilePlansAPI()
             .createHold(hold, FILE_PLAN_ALIAS);
+        nodeRefs.add(createdHold.getId());
 
         // Delete the hold
         getRestAPIFactory().getHoldsAPI().deleteHold(createdHold.getId());
@@ -135,6 +145,42 @@ public class HoldsTests extends BaseRMRestTest
 
         // Verify the status code
         assertStatusCode(NOT_FOUND);
+    }
 
+    @Test
+    public void testDeleteHoldWithReason()
+    {
+        String holdName = "Hold" + getRandomAlphanumeric();
+        String holdDescription = "Description" + getRandomAlphanumeric();
+        String holdReason = "Reason" + getRandomAlphanumeric();
+
+        // Create the hold
+        Hold hold = Hold.builder()
+            .name(holdName)
+            .description(holdDescription)
+            .reason(holdReason)
+            .build();
+        Hold createdHold = getRestAPIFactory().getFilePlansAPI()
+            .createHold(hold, FILE_PLAN_ALIAS);
+        nodeRefs.add(createdHold.getId());
+
+        // Delete the hold with the reason
+        getRestAPIFactory().getHoldsAPI()
+            .deleteHoldWithReason(HoldDeletionReason.builder().reason("Example reason").build(), createdHold.getId());
+
+        // Verify the status code
+        assertStatusCode(OK);
+
+        // Try to get the hold
+        getRestAPIFactory().getHoldsAPI().getHold(createdHold.getId());
+
+        // Verify the status code
+        assertStatusCode(NOT_FOUND);
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void cleanUpHoldsTests()
+    {
+        nodeRefs.forEach(nodeRef -> getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(nodeRef));
     }
 }

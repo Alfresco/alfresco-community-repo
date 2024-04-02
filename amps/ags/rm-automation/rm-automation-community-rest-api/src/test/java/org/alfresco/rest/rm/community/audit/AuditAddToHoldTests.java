@@ -92,7 +92,8 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder;
     private List<AuditEntry> auditEntries;
-    private String hold1NodeRef, hold2NodeRef;
+    private String hold1NodeRef;
+    private String hold2NodeRef;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAuditAddToHoldTests()

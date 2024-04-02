@@ -62,9 +62,9 @@ import org.testng.annotations.Test;
 public class AuditDeleteHoldTests extends BaseRMRestTest
 {
     private final String PREFIX = generateTestPrefix(AuditDeleteHoldTests.class);
-    private final String HOLD = PREFIX + "holdToBeDeleted";
-    private final String HOLD2 = PREFIX + "deleteHold";
-    private final String HOLD3 = PREFIX + "deleteHoldWithReason";
+    private final String hold = PREFIX + "holdToBeDeleted";
+    private final String hold2 = PREFIX + "deleteHold";
+    private final String hold3 = PREFIX + "deleteHoldWithReason";
 
     @Autowired
     private RMAuditService rmAuditService;
@@ -80,7 +80,7 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         STEP("Create a new hold.");
         holdNodeRef = getRestAPIFactory()
             .getFilePlansAPI(rmAdmin)
-            .createHold(Hold.builder().name(HOLD).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .createHold(Hold.builder().name(hold).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
             .getId();
 
         STEP("Create 2 users with different permissions for the created hold.");
@@ -102,7 +102,7 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         STEP("Create a new hold.");
         String holdRef = getRestAPIFactory()
             .getFilePlansAPI(rmAdmin)
-            .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .createHold(Hold.builder().name(hold2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
             .getId();
 
         rmAuditService.clearAuditLog();
@@ -111,8 +111,8 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHold(holdRef);
 
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD2,
-                List.of(ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name"),
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, hold2,
+                List.of(ImmutableMap.of("new", "", "previous", hold2, "name", "Hold Name"),
                     ImmutableMap.of("new", "", "previous", "", "name", "Hold deletion reason")));
 
     }
@@ -132,7 +132,7 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         STEP("Create a new hold.");
         String holdRef = getRestAPIFactory()
             .getFilePlansAPI(rmAdmin)
-            .createHold(Hold.builder().name(HOLD3).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .createHold(Hold.builder().name(hold3).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
             .getId();
 
         String deletionReason = "Test reason";
@@ -143,8 +143,8 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHoldWithReason(HoldDeletionReason.builder().reason(deletionReason).build(), holdRef);
 
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD3,
-            List.of(ImmutableMap.of("new", "", "previous", HOLD3, "name", "Hold Name"),
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, hold3,
+            List.of(ImmutableMap.of("new", "", "previous", hold3, "name", "Hold Name"),
                 ImmutableMap.of("new", "", "previous", deletionReason, "name", "Hold deletion reason")));
 
     }

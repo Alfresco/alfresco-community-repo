@@ -95,7 +95,9 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
     private static final String HOLD = "HOLD" + generateTestPrefix(AddToHoldsV1Tests.class);
     private String holdNodeRef;
     private SiteModel testSite;
-    private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;
+    private FileModel documentHeld;
+    private FileModel contentToAddToHold;
+    private FileModel contentAddToHoldNoPermission;
     private Hold hold;
 
     private UserModel userAddHoldPermission;

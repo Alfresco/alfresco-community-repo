@@ -84,7 +84,8 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
     private static File updatedFile;
     private static FolderModel folderModel;
     private static RecordCategoryChild recordFolder;
-    private static Record recordFrozen, recordNotHeld;
+    private static Record recordFrozen;
+    private static Record recordNotHeld;
     private static RecordCategory categoryWithRS;
 
     private Hold hold;
@@ -98,11 +99,11 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
     @BeforeClass(alwaysRun = true)
     public void preconditionForPreventActionsOnFrozenContent()
     {
-        String HOLD_ONE = "HOLD" + generateTestPrefix(PreventActionsOnFrozenContentV1Tests.class);
+        String holdOne = "HOLD" + generateTestPrefix(PreventActionsOnFrozenContentV1Tests.class);
 
         STEP("Create a hold.");
         hold = createHold(FILE_PLAN_ALIAS,
-            Hold.builder().name(HOLD_ONE).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), getAdminUser());
+            Hold.builder().name(holdOne).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), getAdminUser());
         holdNodeRef = hold.getId();
 
         STEP("Create a test file.");

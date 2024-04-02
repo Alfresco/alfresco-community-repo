@@ -84,10 +84,12 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     private static final String ACCESS_DENIED_ERROR_MESSAGE = "Access Denied.  You do not have the appropriate " +
         "permissions to perform this operation.";
 
-    private SiteModel testSite, privateSite;
+    private SiteModel testSite;
+    private SiteModel privateSite;
     private String holdNodeRefOne;
     private String holdNodeRefTwo;
-    private FileModel contentHeld, contentAddToManyHolds;
+    private FileModel contentHeld;
+    private FileModel contentAddToManyHolds;
     private final Set<UserModel> usersToBeClean = new HashSet<>();
     private final Set<String> nodesToBeClean = new HashSet<>();
 

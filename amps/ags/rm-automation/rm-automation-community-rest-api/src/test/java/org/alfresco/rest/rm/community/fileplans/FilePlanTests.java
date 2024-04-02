@@ -60,6 +60,7 @@ import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -557,7 +558,7 @@ public class FilePlanTests extends BaseRMRestTest
             getRestAPIFactory().getHoldsAPI().deleteHold(holdEntry.getEntry().getId()));
 
         // Add holds
-        ArrayList<Hold> filePlanHolds = new ArrayList<>();
+        List<Hold> filePlanHolds = new ArrayList<>();
         for (int i = 0; i < NUMBER_OF_CHILDREN; i++)
         {
             String holdName = "Hold name " + getRandomAlphanumeric();

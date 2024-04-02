@@ -97,7 +97,9 @@ public class AuditRemoveFromHoldTests extends BaseRMRestTest
     private List<AuditEntry> auditEntries;
     private List<String> holdsListRef = new ArrayList<>();
     private FileModel heldContent;
-    private String hold1NodeRef, hold2NodeRef, hold3NodeRef;
+    private String hold1NodeRef;
+    private String hold2NodeRef;
+    private String hold3NodeRef;
 
     @BeforeClass (alwaysRun = true)
     public void preconditionForAuditRemoveFromHoldTests()

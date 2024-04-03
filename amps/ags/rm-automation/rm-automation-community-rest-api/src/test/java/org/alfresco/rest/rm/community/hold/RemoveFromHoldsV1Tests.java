@@ -89,7 +89,6 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     private SiteModel testSite;
     private SiteModel privateSite;
     private String holdNodeRefOne;
-    private String holdNodeRefTwo;
     private FileModel contentHeld;
     private FileModel contentAddToManyHolds;
     private List<String> holdsListRef = new ArrayList<>();
@@ -107,7 +106,7 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
         holdNodeRefOne = createHold(FILE_PLAN_ALIAS,
             Hold.builder().name(HOLD_ONE).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(),
             getAdminUser()).getId();
-        holdNodeRefTwo = createHold(FILE_PLAN_ALIAS,
+        String holdNodeRefTwo = createHold(FILE_PLAN_ALIAS,
             Hold.builder().name(HOLD_TWO).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(),
             getAdminUser()).getId();
         holdsListRef = asList(holdNodeRefOne, holdNodeRefTwo);

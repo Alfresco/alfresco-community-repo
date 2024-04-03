@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>23.3.0.14-SNAPSHOT</version>
+      <version>23.3.0.18-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -82,6 +82,11 @@
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.epam.reportportal</groupId>
+         <artifactId>agent-java-testng</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>

@@ -369,7 +369,7 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         assertFalse(hasAspect(itemNodeRef, FROZEN_ASPECT));
     }
 
-    public Hold createHold(String parentId, Hold hold, UserModel user)
+    private Hold createHold(String parentId, Hold hold, UserModel user)
     {
         FilePlanAPI filePlanAPI = getRestAPIFactory().getFilePlansAPI(user);
         return filePlanAPI.createHold(hold, parentId);
@@ -381,6 +381,6 @@ public class AddToHoldsV1Tests extends BaseRMRestTest
         getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdNodeRef);
         dataSite.usingAdmin().deleteSite(testSite);
         users.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
-        nodesToBeClean.forEach(category -> deleteRecordCategory(category));
+        nodesToBeClean.forEach(this::deleteRecordCategory);
     }
 }

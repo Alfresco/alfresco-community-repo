@@ -47,6 +47,7 @@ import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
+import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
@@ -59,6 +60,7 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 3.3
  */
+@AlfrescoTest (jira = "RM-6859")
 public class AuditDeleteHoldTests extends BaseRMRestTest
 {
     private final String PREFIX = generateTestPrefix(AuditDeleteHoldTests.class);

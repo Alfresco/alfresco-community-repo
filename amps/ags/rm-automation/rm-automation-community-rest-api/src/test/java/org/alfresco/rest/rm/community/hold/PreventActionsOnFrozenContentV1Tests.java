@@ -320,7 +320,7 @@ public class PreventActionsOnFrozenContentV1Tests extends BaseRMRestTest
         assertTrue(recordUpdated.getProperties().getRecordSearchDispositionPeriod().contains("immediately"));
     }
 
-    public Hold createHold(String parentId, Hold hold, UserModel user)
+    private Hold createHold(String parentId, Hold hold, UserModel user)
     {
         FilePlanAPI filePlanAPI = getRestAPIFactory().getFilePlansAPI(user);
         return filePlanAPI.createHold(hold, parentId);

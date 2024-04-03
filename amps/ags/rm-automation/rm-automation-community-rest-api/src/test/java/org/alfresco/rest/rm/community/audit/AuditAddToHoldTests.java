@@ -42,6 +42,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
@@ -92,6 +93,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder;
     private List<AuditEntry> auditEntries;
+    private List<String> holdsListRef = new ArrayList<>();
     private String hold1NodeRef;
     private String hold2NodeRef;
 
@@ -107,6 +109,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
             .getFilePlansAPI(rmAdmin)
             .createHold(Hold.builder().name(HOLD2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
             .getId();
+        holdsListRef = asList(hold1NodeRef, hold2NodeRef);
 
         STEP("Create a new record category with a record folder.");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
@@ -306,8 +309,7 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpAuditAddToHoldTests()
     {
-        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(hold1NodeRef);
-        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(hold2NodeRef);
+        holdsListRef.forEach(holdRef -> getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdRef));
 
         dataSite.usingAdmin().deleteSite(privateSite);
         asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));

@@ -127,6 +127,11 @@
          <scope>test</scope>
       </dependency>
       <dependency>
+         <groupId>com.epam.reportportal</groupId>
+         <artifactId>agent-java-testng</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.mockito</groupId>
          <artifactId>mockito-core</artifactId>
          <scope>test</scope>
@@ -157,6 +162,13 @@
                   </goals>
                </execution>
             </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <skipTests>${skipCoreTests}</skipTests>
+            </configuration>
          </plugin>
       </plugins>
    </build>

@@ -90,37 +90,41 @@ public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONOb
             {
                 errorClass = Exception.class;
             }
-            Constructor<?> constructor = null;
-            try
+
+            if (Throwable.class.isAssignableFrom(errorClass))
             {
+                Constructor<?> constructor = null;
                 try
-                {
-                    constructor = errorClass.getConstructor(String.class, Object[].class);
-                    createdObject = constructor.newInstance(errorId, errorParams);
-                }
-                catch (NoSuchMethodException e)
                 {
                     try
                     {
-                        constructor = errorClass.getConstructor(String.class);
-                        createdObject = constructor.newInstance(errorId == null ? errorMessage : errorId);
+                        constructor = errorClass.getConstructor(String.class, Object[].class);
+                        createdObject = constructor.newInstance(errorId, errorParams);
                     }
-                    catch (NoSuchMethodException e1)
+                    catch (NoSuchMethodException e)
                     {
                         try
                         {
-                            constructor = errorClass.getConstructor();
-                            createdObject = constructor.newInstance();
+                            constructor = errorClass.getConstructor(String.class);
+                            createdObject = constructor.newInstance(errorId == null ? errorMessage : errorId);
                         }
-                        catch (NoSuchMethodException e2)
+                        catch (NoSuchMethodException e1)
                         {
+                            try
+                            {
+                                constructor = errorClass.getConstructor();
+                                createdObject = constructor.newInstance();
+                            }
+                            catch (NoSuchMethodException e2)
+                            {
+                            }
                         }
                     }
                 }
-            }
-            catch(Exception ex)
-            {
-                //We don't need to do anything here. Code below will fix things up
+                catch (Exception ex)
+                {
+                    // We don't need to do anything here. Code below will fix things up
+                }
             }
             if (createdObject == null || !Throwable.class.isAssignableFrom(createdObject.getClass()))
             {

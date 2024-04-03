@@ -95,7 +95,6 @@ public class AuditHoldsTest extends BaseRMRestTest {
                 .createHold(Hold.builder().name(HOLD1).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
                 .getId();
 
-
         STEP("Create a collaboration site with a test file.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
         testFile = dataContent.usingAdmin().usingSite(publicSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);

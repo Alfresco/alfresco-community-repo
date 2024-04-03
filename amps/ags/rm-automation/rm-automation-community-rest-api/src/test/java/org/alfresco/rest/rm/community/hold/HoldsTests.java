@@ -79,7 +79,7 @@ public class HoldsTests extends BaseRMRestTest
         assertEquals(receivedHold.getName(), holdName);
         assertEquals(receivedHold.getDescription(), holdDescription);
         assertEquals(receivedHold.getReason(), holdReason);
-        assertNotNull(receivedHold.getId(), createdHold.getId());
+        assertNotNull(receivedHold.getId());
     }
 
     @Test
@@ -114,7 +114,7 @@ public class HoldsTests extends BaseRMRestTest
         assertEquals(updatedHold.getName(), "Updated" + holdName);
         assertEquals(updatedHold.getDescription(), "Updated" + holdDescription);
         assertEquals(updatedHold.getReason(), "Updated" + holdReason);
-        assertNotNull(updatedHold.getId(), createdHold.getId());
+        assertNotNull(updatedHold.getId());
     }
 
     @Test

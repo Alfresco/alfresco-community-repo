@@ -602,7 +602,6 @@ public class FilePlanTests extends BaseRMRestTest
                     assertEquals(createdHold.getName(), hold.getName());
                     assertEquals(createdHold.getDescription(), hold.getDescription());
                     assertEquals(createdHold.getReason(), hold.getReason());
-
                 }
                 catch (NoSuchElementException e)
                 {

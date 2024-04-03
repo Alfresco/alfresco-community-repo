@@ -62,7 +62,7 @@
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.15.2</dependency.jackson.version>
         <dependency.cxf.version>4.0.2</dependency.cxf.version>
-        <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
+        <dependency.opencmis.version>1.0.0-jakarta-3</dependency.opencmis.version>
         <dependency.webscripts.version>9.0</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.77</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.4.0</dependency.mockito-core.version>

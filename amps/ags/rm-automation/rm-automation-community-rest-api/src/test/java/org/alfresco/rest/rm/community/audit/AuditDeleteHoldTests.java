@@ -116,7 +116,6 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, hold2,
                 List.of(ImmutableMap.of("new", "", "previous", hold2, "name", "Hold Name"),
                     ImmutableMap.of("new", "", "previous", "", "name", "Hold deletion reason")));
-
     }
 
     /**
@@ -148,7 +147,6 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, hold3,
             List.of(ImmutableMap.of("new", "", "previous", hold3, "name", "Hold Name"),
                 ImmutableMap.of("new", "", "previous", deletionReason, "name", "Hold deletion reason")));
-
     }
 
     /**

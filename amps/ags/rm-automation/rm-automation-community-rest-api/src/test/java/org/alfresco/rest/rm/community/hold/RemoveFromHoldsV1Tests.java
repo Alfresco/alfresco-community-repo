@@ -46,7 +46,9 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -90,6 +92,7 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     private String holdNodeRefTwo;
     private FileModel contentHeld;
     private FileModel contentAddToManyHolds;
+    private List<String> holdsListRef = new ArrayList<>();
     private final Set<UserModel> usersToBeClean = new HashSet<>();
     private final Set<String> nodesToBeClean = new HashSet<>();
 
@@ -107,6 +110,7 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
         holdNodeRefTwo = createHold(FILE_PLAN_ALIAS,
             Hold.builder().name(HOLD_TWO).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(),
             getAdminUser()).getId();
+        holdsListRef = asList(holdNodeRefOne, holdNodeRefTwo);
 
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
@@ -362,8 +366,7 @@ public class RemoveFromHoldsV1Tests extends BaseRMRestTest
     @AfterClass(alwaysRun = true)
     public void cleanUpRemoveContentFromHold()
     {
-        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdNodeRefOne);
-        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdNodeRefTwo);
+        holdsListRef.forEach(holdRef -> getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(holdRef));
         dataSite.usingAdmin().deleteSite(testSite);
         dataSite.usingAdmin().deleteSite(privateSite);
         usersToBeClean.forEach(user -> getDataUser().usingAdmin().deleteUser(user));

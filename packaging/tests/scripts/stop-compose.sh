@@ -10,8 +10,8 @@ fi
 
 echo "Killing ACS stack in ${DOCKER_COMPOSE_PATH}"
 
-docker-compose --file ${DOCKER_COMPOSE_PATH} ps
+docker compose --file ${DOCKER_COMPOSE_PATH} ps
 # logs for debug
-docker-compose --file ${DOCKER_COMPOSE_PATH} logs --no-color -t alfresco
-docker-compose --file ${DOCKER_COMPOSE_PATH} kill
-docker-compose --file ${DOCKER_COMPOSE_PATH} rm -fv
+docker compose --file ${DOCKER_COMPOSE_PATH} logs --no-color -t alfresco
+docker compose --file ${DOCKER_COMPOSE_PATH} kill
+docker compose --file ${DOCKER_COMPOSE_PATH} rm -fv

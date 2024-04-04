@@ -39,6 +39,7 @@ import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -49,8 +50,11 @@ import org.alfresco.rm.rest.api.model.HoldChild;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Hold children relation
@@ -69,6 +73,7 @@ public class HoldsChildrenRelation implements
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
     private FileFolderService fileFolderService;
+    private PermissionService permissionService;
 
     @Override
     public void afterPropertiesSet() throws Exception
@@ -149,6 +154,11 @@ public class HoldsChildrenRelation implements
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
         NodeRef childRef = apiUtils.lookupByPlaceholder(childId);
 
+        if (permissionService.hasReadPermission(childRef) == AccessStatus.DENIED)
+        {
+            throw new PermissionDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+        }
+
         RetryingTransactionCallback<List<NodeRef>> callback = () -> {
             try
             {
@@ -159,7 +169,6 @@ public class HoldsChildrenRelation implements
                 // Throw 400 Bad Request when a node with id 'holdId' is not a hold
                 throw new InvalidArgumentException(exception.getMsgId()).initCause(exception);
             }
-
             return null;
         };
 
@@ -189,5 +198,10 @@ public class HoldsChildrenRelation implements
     public void setFileFolderService(FileFolderService fileFolderService)
     {
         this.fileFolderService = fileFolderService;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 }

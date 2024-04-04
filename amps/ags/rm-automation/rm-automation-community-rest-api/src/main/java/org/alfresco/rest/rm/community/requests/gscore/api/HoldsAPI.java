@@ -42,9 +42,13 @@ import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.hold.HoldChildCollection;
 import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
-import org.alfresco.rest.rm.community.model.hold.HoldDeletionReasonEntry;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
+/**
+ * Holds REST API Wrapper
+ *
+ * @author Damian Ujma
+ */
 public class HoldsAPI extends RMModelRequest
 {
 
@@ -56,14 +60,20 @@ public class HoldsAPI extends RMModelRequest
         super(rmRestWrapper);
     }
 
-
-    public Hold getHold(String holdId)
-    {
-        mandatoryString("holdId", holdId);
-
-        return getHold(holdId, EMPTY);
-    }
-
+    /**
+     * Gets a hold.
+     *
+     * @param holdId The identifier of a hold
+     * @param parameters The URL parameters to add
+     * @return The {@link Hold} for the given {@code holdId}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code holdId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code holdId}</li>
+     *  <li>{@code holdId} does not exist</li>
+     * </ul>
+     */
     public Hold getHold(String holdId, String parameters)
     {
         mandatoryString("holdId", holdId);
@@ -76,14 +86,30 @@ public class HoldsAPI extends RMModelRequest
                                                                         ));
     }
 
-    public Hold updateHold(Hold holdModel, String holdId)
+    /**
+     * See {@link #getHold(String, String)}
+     */
+    public Hold getHold(String holdId)
     {
-        mandatoryObject("holdModel", holdModel);
         mandatoryString("holdId", holdId);
 
-        return updateHold(holdModel, holdId, EMPTY);
+        return getHold(holdId, EMPTY);
     }
 
+    /**
+     * Updates a hold.
+     *
+     * @param holdModel     The hold model which holds the information
+     * @param holdId        The identifier of the hold
+     * @param parameters          The URL parameters to add
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>the update request is invalid or {@code holdId} is not a valid format or {@code holdModel} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to update {@code holdId}</li>
+     *  <li>{@code holdId} does not exist</li>
+     * </ul>
+     */
     public Hold updateHold(Hold holdModel, String holdId, String parameters)
     {
         mandatoryObject("holdModel", holdModel);
@@ -98,6 +124,29 @@ public class HoldsAPI extends RMModelRequest
                                                                             ));
     }
 
+    /**
+     * See {@link #updateHold(Hold, String, String)}
+     */
+    public Hold updateHold(Hold holdModel, String holdId)
+    {
+        mandatoryObject("holdModel", holdModel);
+        mandatoryString("holdId", holdId);
+
+        return updateHold(holdModel, holdId, EMPTY);
+    }
+
+    /**
+     * Deletes a hold.
+     *
+     * @param holdId The identifier of a hold
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code holdId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to delete {@code holdId}</li>
+     *  <li>{@code holdId} does not exist</li>
+     * </ul>
+     */
     public void deleteHold(String holdId)
     {
         mandatoryString("holdId", holdId);
@@ -109,20 +158,48 @@ public class HoldsAPI extends RMModelRequest
                                                           ));
     }
 
-    public HoldDeletionReasonEntry deleteHoldWithReason(HoldDeletionReason reason, String holdId)
+    /**
+     * Deletes a hold and stores a reason for deletion in the audit log.
+     *
+     * @param reason        The reason for hold deletion
+     * @param holdId        The identifier of a hold
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code holdId} is not a valid format or {@code reason} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to delete {@code holdId}</li>
+     *  <li>{@code holdId} does not exist</li>
+     * </ul>
+     */
+    public HoldDeletionReason deleteHoldWithReason(HoldDeletionReason reason, String holdId)
     {
         mandatoryObject("reason", reason);
         mandatoryString("holdId", holdId);
 
-        return getRmRestWrapper().processModel(HoldDeletionReasonEntry.class, requestWithBody(
-            PUT,
+        return getRmRestWrapper().processModel(HoldDeletionReason.class, requestWithBody(
+            POST,
             toJson(reason),
             "holds/{holdId}/delete",
             holdId
                                                           ));
     }
 
-    public HoldChild addChildToHold(HoldChild holdChild, String holdId)
+    /**
+     * Adds the relationship between a child and a parent hold.
+     *
+     * @param holdChild The hold child model
+     * @param holdId The identifier of a hold
+     * @param parameters The URL parameters to add
+     * @return The created {@link Hold}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code holdId} is not a valid format or {@code holdId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code holdId}</li>
+     *  <li>{@code holdId} does not exist</li>
+     * </ul>
+     */
+    public HoldChild addChildToHold(HoldChild holdChild, String holdId, String parameters)
     {
         mandatoryObject("holdId", holdId);
 
@@ -130,10 +207,31 @@ public class HoldsAPI extends RMModelRequest
             POST,
             toJson(holdChild),
             "holds/{holdId}/children",
-            holdId
-                                                                          ));
+            holdId,
+            parameters));
     }
 
+    /**
+     * See {@link #addChildToHold(HoldChild, String, String)}
+     */
+    public HoldChild addChildToHold(HoldChild holdChild, String holdId)
+    {
+        return addChildToHold(holdChild, holdId, EMPTY);
+    }
+
+    /**
+     * Gets the children of a hold.
+     *
+     * @param holdId The identifier of a hold
+     * @param parameters The URL parameters to add
+     * @return The {@link HoldChildCollection} for the given {@code holdId}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code holdId}</li>
+     *  <li>{@code holdId} does not exist</li>
+     *</ul>
+     */
     public HoldChildCollection getChildren(String holdId, String parameters)
     {
         mandatoryString("holdId", holdId);
@@ -146,15 +244,47 @@ public class HoldsAPI extends RMModelRequest
                                                                                    ));
     }
 
-    public void deleteHoldChild(String holdId, String holdChildId)
+    /**
+     * See {@link #getChildren(String, String)}
+     */
+    public HoldChildCollection getChildren(String holdId)
+    {
+        return getChildren(holdId, EMPTY);
+    }
+
+    /**
+     * Deletes the relationship between a child and a parent hold.
+     *
+     * @param holdChildId The identifier of hold child
+     * @param holdId The identifier of a hold
+     * @param parameters The URL parameters to add
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code holdId} or {@code holdChildId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to delete children from {@code holdId}</li>
+     *  <li>{@code holdId} does not exist</li>
+     * </ul>
+     */
+    public void deleteHoldChild(String holdId, String holdChildId, String parameters)
     {
         mandatoryString("holdId", holdId);
         mandatoryString("holdChildId", holdChildId);
 
         getRmRestWrapper().processEmptyModel(simpleRequest(
             DELETE,
-            "holds/{holdId}/{holdChildId}",
-            holdId
+            "holds/{holdId}/children/{holdChildId}",
+            holdId,
+            holdChildId,
+            parameters
                                                           ));
+    }
+
+    /**
+     * See {@link #deleteHoldChild(String, String, String)}
+     */
+    public void deleteHoldChild(String holdId, String holdChildId)
+    {
+        deleteHoldChild(holdId, holdChildId, EMPTY);
     }
 }

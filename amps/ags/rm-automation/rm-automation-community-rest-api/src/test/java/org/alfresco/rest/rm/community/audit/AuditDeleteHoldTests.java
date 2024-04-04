@@ -31,18 +31,20 @@ import static java.util.Arrays.asList;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.DELETE_HOLD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.AssertJUnit.assertTrue;
 
-import java.util.Collections;
+import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.v0.HoldsAPI;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
@@ -62,13 +64,12 @@ import org.testng.annotations.Test;
 public class AuditDeleteHoldTests extends BaseRMRestTest
 {
     private final String PREFIX = generateTestPrefix(AuditDeleteHoldTests.class);
-    private final String HOLD = PREFIX + "holdToBeDeleted";
-    private final String HOLD2 = PREFIX + "deleteHold";
+    private final String hold = PREFIX + "holdToBeDeleted";
+    private final String hold2 = PREFIX + "deleteHold";
+    private final String hold3 = PREFIX + "deleteHoldWithReason";
 
     @Autowired
     private RMAuditService rmAuditService;
-    @Autowired
-    private HoldsAPI holdsAPI;
     @Autowired
     private RoleService roleService;
 
@@ -79,8 +80,10 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
     public void preconditionForAuditDeleteHoldTests()
     {
         STEP("Create a new hold.");
-        holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD,
-                HOLD_REASON, HOLD_DESCRIPTION);
+        holdNodeRef = getRestAPIFactory()
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(hold).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
 
         STEP("Create 2 users with different permissions for the created hold.");
         rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
@@ -99,17 +102,51 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
     public void deleteHoldEventIsAudited()
     {
         STEP("Create a new hold.");
-        String holdRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2,
-                HOLD_REASON, HOLD_DESCRIPTION);
+        String holdRef = getRestAPIFactory()
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(hold2).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
 
         rmAuditService.clearAuditLog();
 
         STEP("Delete the created hold.");
-        holdsAPI.deleteHold(rmAdmin, holdRef);
+        getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHold(holdRef);
 
         STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, HOLD2,
-                Collections.singletonList(ImmutableMap.of("new", "", "previous", HOLD2, "name", "Hold Name")));
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, hold2,
+                List.of(ImmutableMap.of("new", "", "previous", hold2, "name", "Hold Name"),
+                    ImmutableMap.of("new", "", "previous", "", "name", "Hold deletion reason")));
+    }
+
+    /**
+     * Given a hold is deleted with a reason
+     * When I view the audit log
+     * Then an entry has been created in the audit log which contains the following:
+     *      name of the hold
+     *      hold deletion reason
+     *      user who deleted the hold
+     *      date the delete occurred
+     */
+    @Test
+    public void deleteHoldWithReasonEventIsAudited()
+    {
+        STEP("Create a new hold.");
+        String holdRef = getRestAPIFactory()
+            .getFilePlansAPI(rmAdmin)
+            .createHold(Hold.builder().name(hold3).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS)
+            .getId();
+
+        String deletionReason = "Test reason";
+
+        rmAuditService.clearAuditLog();
+
+        STEP("Delete the created hold with a reason.");
+        getRestAPIFactory().getHoldsAPI(rmAdmin).deleteHoldWithReason(HoldDeletionReason.builder().reason(deletionReason).build(), holdRef);
+
+        STEP("Check the audit log contains the entry for the deleted hold with the hold details.");
+        rmAuditService.checkAuditLogForEvent(getAdminUser(), DELETE_HOLD, rmAdmin, hold3,
+            List.of(ImmutableMap.of("new", "", "previous", hold3, "name", "Hold Name"),
+                ImmutableMap.of("new", "", "previous", deletionReason, "name", "Hold deletion reason")));
     }
 
     /**
@@ -123,7 +160,8 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
         rmAuditService.clearAuditLog();
 
         STEP("Try to delete a hold by an user with no Read permissions over the hold.");
-        holdsAPI.deleteHold(rmManager.getUsername(), rmManager.getPassword(), holdNodeRef, SC_INTERNAL_SERVER_ERROR);
+        getRestAPIFactory().getHoldsAPI(rmManager).deleteHold(holdNodeRef);
+        assertStatusCode(FORBIDDEN);
 
         STEP("Check the audit log doesn't contain the entry for the unsuccessful delete hold.");
         assertTrue("The list of events should not contain Delete Hold entry ",
@@ -133,7 +171,7 @@ public class AuditDeleteHoldTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void cleanUpAuditDeleteHoldTests()
     {
-        holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
+        getRestAPIFactory().getHoldsAPI(rmManager).deleteHold(holdNodeRef);
         asList(rmAdmin, rmManager).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
     }
 }

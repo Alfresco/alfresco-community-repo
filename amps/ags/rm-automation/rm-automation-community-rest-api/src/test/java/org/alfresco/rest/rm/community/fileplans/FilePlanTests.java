@@ -60,12 +60,15 @@ import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.DataProviderClass;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlanProperties;
+import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryProperties;
@@ -514,5 +517,97 @@ public class FilePlanTests extends BaseRMRestTest
         );
     }
 
+    /**
+     * <pre>
+     * Given that a file plan exists
+     * When I ask the API to create a hold
+     * Then it is created
+     * </pre>
+     */
+    @Test
+    public void createHolds()
+    {
+        String holdName = "Hold" + getRandomAlphanumeric();
+        String holdDescription = "Description" + getRandomAlphanumeric();
+        String holdReason = "Reason" + getRandomAlphanumeric();
 
+        // Create the hold
+        Hold hold = Hold.builder()
+            .name(holdName)
+            .description(holdDescription)
+            .reason(holdReason)
+            .build();
+        Hold createdHold = getRestAPIFactory().getFilePlansAPI()
+            .createHold(hold, FILE_PLAN_ALIAS);
+
+        // Verify the status code
+        assertStatusCode(CREATED);
+
+        assertEquals(createdHold.getName(), holdName);
+        assertEquals(createdHold.getDescription(), holdDescription);
+        assertEquals(createdHold.getReason(), holdReason);
+        assertNotNull(createdHold.getId());
+    }
+
+
+    @Test
+    public void listHolds()
+    {
+        // Delete all holds
+        getRestAPIFactory().getFilePlansAPI().getHolds(FILE_PLAN_ALIAS).getEntries().forEach(holdEntry ->
+            getRestAPIFactory().getHoldsAPI().deleteHold(holdEntry.getEntry().getId()));
+
+        // Add holds
+        List<Hold> filePlanHolds = new ArrayList<>();
+        for (int i = 0; i < NUMBER_OF_CHILDREN; i++)
+        {
+            String holdName = "Hold name " + getRandomAlphanumeric();
+            String holdDescription = "Hold Description " + getRandomAlphanumeric();
+            String holdReason = "Reason " + getRandomAlphanumeric();
+            // Create a hold
+            Hold hold = Hold.builder()
+                .name(holdName)
+                .description(holdDescription)
+                .reason(holdReason)
+                .build();
+            Hold createdHold = getRestAPIFactory().getFilePlansAPI()
+                .createHold(hold, FILE_PLAN_ALIAS);
+            assertNotNull(createdHold.getId());
+            filePlanHolds.add(createdHold);
+        }
+
+        // Get holds of a file plan
+        HoldCollection holdCollection = getRestAPIFactory().getFilePlansAPI()
+            .getHolds(FILE_PLAN_ALIAS);
+
+        // Check status code
+        assertStatusCode(OK);
+
+        // Check holds against created list
+        holdCollection.getEntries().forEach(c ->
+            {
+                Hold hold = c.getEntry();
+                String holdId = hold.getId();
+                assertNotNull(holdId);
+                logger.info("Checking hold " + holdId);
+
+                try
+                {
+                    // Find this hold in created holds list
+                    Hold createdHold = filePlanHolds.stream()
+                        .filter(child -> child.getId().equals(holdId))
+                        .findFirst()
+                        .orElseThrow();
+
+                    assertEquals(createdHold.getName(), hold.getName());
+                    assertEquals(createdHold.getDescription(), hold.getDescription());
+                    assertEquals(createdHold.getReason(), hold.getReason());
+                }
+                catch (NoSuchElementException e)
+                {
+                    fail("No child element for " + hold);
+                }
+            }
+                                                   );
+    }
 }

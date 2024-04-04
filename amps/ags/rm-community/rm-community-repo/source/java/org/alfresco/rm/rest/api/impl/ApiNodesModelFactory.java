@@ -47,6 +47,7 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.FilePlan;
+import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordCategory;
@@ -635,6 +636,21 @@ public class ApiNodesModelFactory
                 }
             }
         }
+    }
+
+
+    /**
+     * Creates an object of type HoldModel
+     *
+     * @param info info of the hold
+     * @return HoldModel object
+     */
+    public HoldModel createHoldModel(FileInfo info)
+    {
+        return new HoldModel(info.getNodeRef().getId(),
+            (String) info.getProperties().get(ContentModel.PROP_NAME),
+            (String) info.getProperties().get(ContentModel.PROP_DESCRIPTION),
+            (String)  info.getProperties().get(RecordsManagementModel.PROP_HOLD_REASON));
     }
 
     /**

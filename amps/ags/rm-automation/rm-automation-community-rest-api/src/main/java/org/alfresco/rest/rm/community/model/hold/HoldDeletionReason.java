@@ -33,10 +33,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.utility.model.TestModel;
 
 /**
- * POJO for hold entry
+ * POJO for hold deletion reason
  *
  * @author Damian Ujma
  */
@@ -45,8 +45,8 @@ import org.alfresco.rest.core.RestModels;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldEntry extends RestModels<Hold, HoldEntry>
+public class HoldDeletionReason extends TestModel
 {
     @JsonProperty
-    private Hold entry;
+    private String reason;
 }

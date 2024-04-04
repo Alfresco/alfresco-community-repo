@@ -24,29 +24,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
+package org.alfresco.rest.rm.community.model.hold.v0;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for hold entry
  *
- * @author Damian Ujma
+ * @author Rodica Sutu
+ * @since 3.2
  */
 @Builder
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldEntry extends RestModels<Hold, HoldEntry>
+@JsonIgnoreProperties (ignoreUnknown = true)
+public class HoldEntry extends TestModel
 {
-    @JsonProperty
-    private Hold entry;
+    @JsonProperty (required = true)
+    private String name;
+
+    @JsonProperty (required = true)
+    private String nodeRef;
 }

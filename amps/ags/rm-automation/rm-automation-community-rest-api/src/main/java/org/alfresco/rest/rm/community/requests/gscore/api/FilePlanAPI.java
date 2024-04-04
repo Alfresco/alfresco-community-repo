@@ -38,6 +38,8 @@ import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
+import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldCollection;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
@@ -213,4 +215,74 @@ public class FilePlanAPI extends RMModelRequest
                 parameters));
     }
 
+    /**
+     * Creates a hold.
+     *
+     * @param holdModel The hold model
+     * @param filePlanId The identifier of a file plan
+     * @param parameters The URL parameters to add
+     * @return The created {@link Hold}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code filePlanId} is not a valid format or {@code filePlanId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code filePlanId}</li>
+     *  <li>{@code filePlanIds} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     * </ul>
+     */
+    public Hold createHold(Hold holdModel, String filePlanId, String parameters)
+    {
+        mandatoryString("filePlanId", filePlanId);
+        mandatoryObject("holdModel", holdModel);
+
+        return getRmRestWrapper().processModel(Hold.class, requestWithBody(
+            POST,
+            toJson(holdModel),
+            "file-plans/{filePlanId}/holds",
+            filePlanId,
+            parameters
+                                                                          ));
+    }
+
+    /**
+     * See {@link #createHold(Hold, String, String)}
+     */
+    public Hold createHold(Hold holdModel, String filePlanId)
+    {
+        return createHold(holdModel, filePlanId, EMPTY);
+    }
+
+    /**
+     * Gets the holds of a file plan.
+     *
+     * @param filePlanId The identifier of a file plan
+     * @param parameters The URL parameters to add
+     * @return The {@link HoldCollection} for the given {@code filePlanId}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code filePlanId}</li>
+     *  <li>{@code filePlanId} does not exist</li>
+     *</ul>
+     */
+    public HoldCollection getHolds(String filePlanId, String parameters)
+    {
+        mandatoryString("filePlanId", filePlanId);
+
+        return getRmRestWrapper().processModels(HoldCollection.class, simpleRequest(
+            GET,
+            "file-plans/{filePlanId}/holds?{parameters}",
+            filePlanId,
+            parameters
+                                                                                   ));
+    }
+
+    /**
+     * See {@link #getHolds(String, String)}
+     */
+    public HoldCollection getHolds(String filePlanId)
+    {
+        return getHolds(filePlanId, EMPTY);
+    }
 }

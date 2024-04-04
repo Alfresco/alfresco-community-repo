@@ -47,6 +47,7 @@ class HoldUtils
 {
     /** A QName to display for the hold name. */
     public static final QName HOLD_NAME = QName.createQName(RecordsManagementModel.RM_URI, "Hold Name");
+    public static final QName HOLD_DELETION_REASON = QName.createQName(RecordsManagementModel.RM_URI, "Hold deletion reason");
     /** A QName to display for the hold node ref. */
     public static final QName HOLD_NODEREF = QName.createQName(RecordsManagementModel.RM_URI, "Hold NodeRef");
 

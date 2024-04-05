@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>23.3.0.16-SNAPSHOT</version>
+        <version>23.3.0.20-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -34,6 +34,11 @@
         <dependency>
             <groupId>jakarta.mail</groupId>
             <artifactId>jakarta.mail-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.epam.reportportal</groupId>
+            <artifactId>agent-java-testng</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

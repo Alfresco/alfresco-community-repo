@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.alfresco.module.org_alfresco_module_rm.audit.event.HoldUtils.HOLD_DELETION_REASON;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
 
 import java.io.Serializable;
@@ -77,6 +78,8 @@ public class DeleteHoldAuditEvent extends AuditEvent implements NodeServicePolic
     public void beforeDeleteNode(NodeRef holdNodeRef)
     {
         Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
+        auditProperties.put(HOLD_DELETION_REASON, nodeService.getProperty(holdNodeRef, PROP_HOLD_DELETION_REASON));
+
         recordsManagementAuditService.auditEvent(holdNodeRef, getName(), auditProperties, null, true, false);
     }
 }

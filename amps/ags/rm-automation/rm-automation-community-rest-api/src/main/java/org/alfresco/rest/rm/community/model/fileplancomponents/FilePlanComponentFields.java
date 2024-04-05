@@ -61,7 +61,6 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS = "rma:recordSearchDispositionEvents";
     public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_BY = "rma:declassificationReviewCompletedBy";
     public static final String PROPERTIES_DECLASSIFICATION_REVIEW_COMPLETED_AT = "rma:declassificationReviewCompletedAt";
-    
 
     /** File plan properties */
     public static final String PROPERTIES_COMPONENT_ID = "st:componentId";

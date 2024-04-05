@@ -60,7 +60,7 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.ContentActions;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.hold.HoldEntry;
+import org.alfresco.rest.rm.community.model.hold.v0.HoldEntry;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;

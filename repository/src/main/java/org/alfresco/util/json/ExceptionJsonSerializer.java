@@ -41,7 +41,8 @@ import org.json.JSONObject;
 public class ExceptionJsonSerializer implements JsonSerializer<Throwable, JSONObject>
 {
     private final static Log log = LogFactory.getLog(ExceptionJsonSerializer.class);
-    
+
+    @Deprecated
     @Override
     public Throwable deserialize(JSONObject errorJSON)
     {

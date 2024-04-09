@@ -51,8 +51,8 @@
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>2.0.0</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>3.0.0</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>4.1.1-A2</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>5.1.1-A2</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.4</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.16</dependency.acs-event-model.version>
 

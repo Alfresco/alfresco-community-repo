@@ -81,7 +81,7 @@
         <dependency.slf4j.version>2.0.9</dependency.slf4j.version>
         <dependency.log4j.version>2.20.0</dependency.log4j.version>
         <dependency.groovy.version>3.0.19</dependency.groovy.version>
-        <dependency.tika.version>2.9.1</dependency.tika.version>
+        <dependency.tika.version>2.9.2</dependency.tika.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.5</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>

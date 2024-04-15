@@ -265,6 +265,7 @@
                 <version>${dependency.jakarta-ee-json-impl.version}</version>
             </dependency>
 
+            <!-- This dependency was added to align dependency in the AI Rendition AMP [ACS-4844] -->
             <dependency>
                 <groupId>com.jayway.jsonpath</groupId>
                 <artifactId>json-path</artifactId>

@@ -302,7 +302,7 @@ jobs:
             compose-profile: with-transform-core-aio
           - testSuite: AppContext05TestSuite
             compose-profile: with-sso
-            mvn-options: '"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"'
+            mvn-options: '"-Didentity-service.auth-server-url=http://localhost:8999/auth"'
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite
@@ -320,8 +320,6 @@ jobs:
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
-      - name: "Set the host IP"
-        run: echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
       - name: "Set up the environment"
         run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"

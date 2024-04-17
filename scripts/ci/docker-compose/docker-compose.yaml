@@ -10,7 +10,7 @@ services:
       - "8090:8090"
   postgres:
     image: postgres:14.4
-    profiles: ["default", "with-transform-core-aio", "postgres"]
+    profiles: ["default", "with-transform-core-aio", "postgres", "with-sso"]
     environment:
       - POSTGRES_PASSWORD=alfresco
       - POSTGRES_USER=alfresco
@@ -19,8 +19,20 @@ services:
     ports:
       - "5433:5432"
   activemq:
-    profiles: ["default", "with-transform-core-aio", "activemq"]
+    profiles: ["default", "with-transform-core-aio", "activemq", "with-sso"]
     image: alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
     ports:
       - "5672:5672" # AMQP
       - "61616:61616" # OpenWire
+  keycloak:
+    profiles: ["with-sso"]
+    image: quay.io/keycloak/keycloak:24.0.2
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=dev-mem
+    command: ["start-dev", "--import-realm", "--http-relative-path=/auth", "--hostname=localhost", "--http-enabled=true"]
+    volumes:
+      - ../../../repository/src/test/resources/realms/alfresco-realm.json:/opt/keycloak/data/import/alfresco-realm.json
+    ports:
+      - 8999:8080

@@ -473,8 +473,13 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
 
         if (propertyName != null)
         {
+            logger.debug("Property from TenantDictionaryRegistry -> {}" + getTenantDictionaryRegistry().getProperty(propertyName));
             propertyDef = getTenantDictionaryRegistry().getProperty(
                     propertyName);
+            if (propertyDef == null)
+            {
+                logger.debug("Property definition not available in tenant dictionary registry");
+            }
         }
 
         return propertyDef;

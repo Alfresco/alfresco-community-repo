@@ -182,6 +182,7 @@ public abstract class AbstractDictionaryRegistry implements DictionaryRegistry
     	if(models == null)
     	{
     		models = Collections.emptyList();
+            logger.debug("Models for uri is empty");
     	}
     	// defensive copy
         return new  ArrayList<CompiledModel>(models);
@@ -360,6 +361,14 @@ public abstract class AbstractDictionaryRegistry implements DictionaryRegistry
 	        		break;
 	        	}
 	        }
+            if (propDef == null)
+            {
+                logger.debug("Property definition not available for this property name -> {}" + propertyName);
+            }
+        }
+        else
+        {
+            logger.debug("Compiled Models not available for this namespace uri -> {}" + propertyName.getNamespaceURI());
         }
 
         return propDef;

@@ -357,8 +357,8 @@ jobs:
           - testSuite: AppContext04TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContext05TestSuite
-            compose-profile: default
-            mvn-options: '"-Didentity-service.auth-server-url=http://${HOST_IP}:8999/auth"'
+            compose-profile: with-sso
+            mvn-options: '"-Didentity-service.auth-server-url=http://localhost:8999/auth"'
           - testSuite: AppContext06TestSuite
             compose-profile: with-transform-core-aio
           - testSuite: AppContextExtraTestSuite
@@ -379,11 +379,7 @@ jobs:
       - name: "Set transformers tag"
         run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "Set up the environment"
-        run: |
-          if [ -e ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh ]; then
-            bash ./scripts/ci/tests/${{ matrix.testSuite }}-setup.sh
-          fi
-          docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
+        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Run tests"
         run: mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }}
       - name: "Clean Maven cache"

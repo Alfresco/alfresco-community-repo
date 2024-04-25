@@ -2314,6 +2314,90 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses':
+    get:
+      tags:
+        - holds
+      operationId: bulkStatuses
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      responses:
+        '202':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkStatusPaging'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses/{processId}':
+    get:
+      tags:
+        - holds
+      operationId: bulkStatus
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/processId'
+      responses:
+        '202':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkStatus'
+        '400':
+          description: |
+            Invalid parameter: **holdId** or **processId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** or **processId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk':
+    post:
+      tags:
+        - holds
+      operationId: holdBulk
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdBulkOperation
+          description: Bulk operation.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldBulkOperation'
+      responses:
+        '202':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkStatus'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update or delete **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   '/holds/{holdId}/delete':
     post:
       tags:
@@ -2860,6 +2944,12 @@ parameters:
     name: holdChildId
     in: path
     description: The identifier of a child of a hold.
+    required: true
+    type: string
+  processId:
+    name: processId
+    in: path
+    description: The identifier of a bulk process.
     required: true
     type: string
   ## Record
@@ -4018,6 +4108,84 @@ definitions:
     properties:
       reason:
         type: string
+  RequestQuery:
+    description: Query.
+    type: object
+    required:
+      - query
+    properties:
+      language:
+        description: The query language in which the query is written.
+        type: string
+        default: afts
+        enum:
+          - afts
+          - lucene
+          - cmis
+      userQuery:
+        description: The exact search request typed in by the user
+        type: string
+      query:
+        description: The query which may have been generated in some way from the userQuery
+        type: string
+  HoldBulkOperation:
+    type: object
+    properties:
+      query:
+        $ref: '#/definitions/RequestQuery'
+      op:
+        description: The query language in which the query is written.
+        type: string
+        default: ADD
+        enum:
+          - ADD
+  HoldBulkStatus:
+    type: object
+    properties:
+      processId:
+        type: string
+      startTime:
+        type: string
+        format: date-time
+      endTime:
+        type: string
+        format: date-time
+      itemsProcessed:
+        type: integer
+        format: int64
+      errorsCount:
+        type: integer
+        format: int64
+      totalItems:
+        type: integer
+        format: int64
+      lastError:
+        type: string
+      status:
+        type: string
+        enum:
+          - PENDING
+          - IN PROGRESS
+          - DONE
+  HoldBulkStatusEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldBulkStatus'
+  HoldBulkStatusPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldBulkStatusEntry'
   ##
   RequestBodyFile:
     type: object

@@ -83,6 +83,11 @@
       <property name="nodesModelFactory" ref="nodesModelFactory" />
       <property name="fileFolderService" ref="FileFolderService" />
       <property name="transactionService" ref="transactionService" />
+      <property name="holdBulkService" ref="holdBulkService" />
+   </bean>
+
+   <bean class="org.alfresco.rm.rest.api.holds.HoldsBulkStatusesRelation" >
+      <property name="holdBulkMonitor" ref="holdBulkMonitor" />
    </bean>
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsChildrenRelation">
@@ -256,5 +261,40 @@
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="restJsonModule" />
       <property name="extendingBeanName" value="rm.restJsonModule" />
+   </bean>
+
+   <bean id="holdBulkService"
+         class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="transactionService" ref="transactionService" />
+      <property name="searchMapper" ref="searchapiSearchMapper" />
+      <property name="bulkMonitor" ref="holdBulkMonitor" />
+      <property name="holdService" ref="HoldService" />
+      <property name="threadCount">
+         <value>${rm.hold.bulk.threadCount}</value>
+      </property>
+      <property name="batchSize">
+         <value>${rm.hold.bulk.maxItems}</value>
+      </property>
+      <property name="maxItems">
+         <value>${rm.hold.bulk.batchSize}</value>
+      </property>
+      <property name="loggingIntervalMs">
+         <value>${rm.hold.bulk.logging.interval.ms}</value>
+      </property>
+   </bean>
+
+   <bean id="holdBulkMonitor" class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor">
+      <property name="holdProgressCache" ref="holdProgressCache" />
+      <property name="holdProcessRegistry" ref="holdProcessRegistry" />
+   </bean>
+
+
+   <bean name="holdProgressCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.workerRegistryCache" />
+   </bean>
+
+   <bean name="holdProcessRegistry" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.workerRegistryCache" />
    </bean>
 </beans>

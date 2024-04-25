@@ -27,7 +27,6 @@
 package org.alfresco.rm.rest.api.model;
 
 import java.io.Serializable;
-import java.text.NumberFormat;
 import java.util.Date;
 
 public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
@@ -67,10 +66,4 @@ public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, 
             return Status.DONE.getValue();
         }
     }
-//
-//    public String getPercentageProcessed()
-//    {
-//        return processedItems <= totalItems ? NumberFormat.getPercentInstance().format(
-//            totalItems == 0 ? 1.0F : (float) processedItems / totalItems) : "Unknown";
-//    }
 }

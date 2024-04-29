@@ -85,8 +85,8 @@ public class HoldsEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title = "Get hold information", description = "Get information for a hold with processId 'holdId'")
-    @WebApiParam(name = "holdId", title = "The hold processId")
+    @WebApiDescription(title = "Get hold information", description = "Get information for a hold with id 'holdId'")
+    @WebApiParam(name = "holdId", title = "The hold id")
     public HoldModel readById(String holdId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);
@@ -98,7 +98,7 @@ public class HoldsEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title = "Update a hold", description = "Updates a hold with processId 'holdId'")
+    @WebApiDescription(title = "Update a hold", description = "Updates a hold with id 'holdId'")
     public HoldModel update(String holdId, HoldModel holdModel, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);
@@ -122,7 +122,7 @@ public class HoldsEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title = "Delete hold", description = "Deletes a hold with processId 'holdId'")
+    @WebApiDescription(title = "Delete hold", description = "Deletes a hold with id 'holdId'")
     public void delete(String holdId, Parameters parameters)
     {
         checkNotBlank("holdId", holdId);

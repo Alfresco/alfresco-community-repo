@@ -274,10 +274,10 @@
          <value>${rm.hold.bulk.threadCount}</value>
       </property>
       <property name="batchSize">
-         <value>${rm.hold.bulk.maxItems}</value>
+         <value>${rm.hold.bulk.batchSize}</value>
       </property>
       <property name="maxItems">
-         <value>${rm.hold.bulk.batchSize}</value>
+         <value>${rm.hold.bulk.maxItems}</value>
       </property>
       <property name="loggingIntervalMs">
          <value>${rm.hold.bulk.logging.interval.ms}</value>

@@ -31,21 +31,32 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 @RelationshipResource(name = "bulk-statuses", entityResource = HoldsEntityResource.class, title = "Bulk statuses of a hold")
 public class HoldsBulkStatusesRelation
     implements RelationshipResourceAction.Read<HoldBulkStatus>, RelationshipResourceAction.ReadById<HoldBulkStatus>
 {
     private HoldBulkMonitor holdBulkMonitor;
+    private FilePlanComponentsApiUtils apiUtils;
+    private PermissionService permissionService;
 
     @Override
     public CollectionWithPagingInfo<HoldBulkStatus> readAll(String holdId, Parameters parameters)
@@ -53,6 +64,10 @@ public class HoldsBulkStatusesRelation
         // validate parameters
         checkNotBlank("holdId", holdId);
         mandatory("parameters", parameters);
+
+        NodeRef holdRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
+
+        checkReadPermissions(holdRef);
 
         List<HoldBulkStatus> statuses = holdBulkMonitor.getBatchStatusesForHold(holdId);
         List<HoldBulkStatus> page = statuses.stream()
@@ -71,7 +86,19 @@ public class HoldsBulkStatusesRelation
         checkNotBlank("processId", processId);
         mandatory("parameters", parameters);
 
-        return holdBulkMonitor.getBulkStatus(processId);
+        NodeRef holdRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
+
+        checkReadPermissions(holdRef);
+
+        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(processId)).orElseThrow(() -> new EntityNotFoundException(processId));
+    }
+
+    private void checkReadPermissions(NodeRef holdRef)
+    {
+        if (permissionService.hasReadPermission(holdRef) == AccessStatus.DENIED)
+        {
+            throw new PermissionDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+        }
     }
 
     public void setHoldBulkMonitor(HoldBulkMonitor holdBulkMonitor)
@@ -79,4 +106,13 @@ public class HoldsBulkStatusesRelation
         this.holdBulkMonitor = holdBulkMonitor;
     }
 
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
+    {
+        this.apiUtils = apiUtils;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
 }

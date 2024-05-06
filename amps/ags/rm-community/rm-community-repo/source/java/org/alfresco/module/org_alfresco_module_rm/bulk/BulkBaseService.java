@@ -70,11 +70,14 @@ public abstract class BulkBaseService<T> implements InitializingBean
 
     public T execute(NodeRef holdRef, BulkOperation bulkOperation)
     {
+        checkPermissions(holdRef, bulkOperation);
+
         long totalItems = getTotalItems(bulkOperation.searchQuery());
         if (maxItems < totalItems)
         {
             throw new RuntimeException("Too many items to process. Please refine your query.");
         }
+
         String processId = UUID.randomUUID().toString();
         T initBulkStatus = getInitBulkStatus(processId, totalItems);
         bulkMonitor.updateBulkStatus(initBulkStatus);
@@ -124,6 +127,8 @@ public abstract class BulkBaseService<T> implements InitializingBean
     protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems);
 
     protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation);
+
+    protected abstract void checkPermissions(NodeRef holdRef, BulkOperation bulkOperation);
 
     protected long getTotalItems(Query searchQuery)
     {

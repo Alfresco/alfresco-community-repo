@@ -2319,6 +2319,9 @@ paths:
       tags:
         - holds
       operationId: bulkStatuses
+      summary: Get bulk statuses
+      description: |
+        Gets bulk statuses for hold with id **holdId**.
       parameters:
         - $ref: '#/parameters/holdIdParam'
         - $ref: '#/parameters/skipCountParam'
@@ -2346,6 +2349,9 @@ paths:
       tags:
         - holds
       operationId: bulkStatus
+      summary: Get the bulk status
+      description: |
+        Gets the bulk status specified by **processId** for **holdId**.
       parameters:
         - $ref: '#/parameters/holdIdParam'
         - $ref: '#/parameters/processId'
@@ -2372,6 +2378,22 @@ paths:
       tags:
         - holds
       operationId: holdBulk
+      summary: Start the hold bulk process
+      description: |
+        Start the asynchronous bulk process of a hold with id **holdId** based on search query results.
+        
+        ```JSON
+        For example, the following JSON body start the bulk process to add search query results
+        as children of a hold.
+        
+        {
+          "query": {
+            "query": "SITE:swsdp and TYPE:content",
+            "language": "afts"
+          },
+          "op": "ADD"
+        }
+        ```
       parameters:
         - $ref: '#/parameters/holdIdParam'
         - in: body
@@ -2387,11 +2409,11 @@ paths:
             $ref: '#/definitions/HoldBulkStatus'
         '400':
           description: |
-            Invalid parameter: **holdId** is not a valid format
+            Invalid parameter: **holdId** is not a valid format or **HoldBulkOperation** is not valid
         '401':
           description: Authentication failed
         '403':
-          description: Current user does not have permission to update or delete **holdId**
+          description: Current user does not have permission to start the bulk process of **holdId**
         '404':
           description: "**holdId** does not exist"
         default:

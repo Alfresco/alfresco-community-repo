@@ -27,11 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -39,7 +36,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Create group capability implementation

@@ -2318,7 +2318,7 @@ paths:
     get:
       tags:
         - holds
-      operationId: bulkStatuses
+      operationId: listBulkStatuses
       summary: Get bulk statuses
       description: |
         Gets bulk statuses for hold with id **holdId**.
@@ -2348,7 +2348,7 @@ paths:
     get:
       tags:
         - holds
-      operationId: bulkStatus
+      operationId: getBulkStatus
       summary: Get a bulk status
       description: |
         Gets a bulk status specified by **processId** for **holdId**.
@@ -2377,13 +2377,13 @@ paths:
     post:
       tags:
         - holds
-      operationId: holdBulk
+      operationId: startHoldBulkProcess
       summary: Start the hold bulk process
       description: |
         Start the asynchronous bulk process of a hold with id **holdId** based on search query results.
         
         ```JSON
-        For example, the following JSON body start the bulk process to add search query results
+        For example, the following JSON body starts the bulk process to add search query results
         as children of a hold.
         
         {
@@ -2406,14 +2406,14 @@ paths:
         '202':
           description: Successful response
           schema:
-            $ref: '#/definitions/HoldBulkStatus'
+            $ref: '#/definitions/HoldBulkOperationEntry'
         '400':
           description: |
             Invalid parameter: **holdId** is not a valid format or **HoldBulkOperation** is not valid
         '401':
           description: Authentication failed
         '403':
-          description: Current user does not have permission to start the bulk process of **holdId**
+          description: Current user does not have permission to start the bulk process for **holdId**
         '404':
           description: "**holdId** does not exist"
         default:
@@ -4130,8 +4130,7 @@ definitions:
     properties:
       reason:
         type: string
-  RequestQuery:
-    description: Query.
+  SearchRequestQuery:
     type: object
     required:
       - query
@@ -4154,13 +4153,21 @@ definitions:
     type: object
     properties:
       query:
-        $ref: '#/definitions/RequestQuery'
+        $ref: '#/definitions/SearchRequestQuery'
       op:
         description: The operation type.
         type: string
         default: ADD
         enum:
           - ADD
+  HoldBulkOperationEntry:
+    type: object
+    properties:
+      processId:
+        type: string
+      totalItems:
+        type: integer
+        format: int64
   HoldBulkStatus:
     type: object
     properties:
@@ -4172,7 +4179,7 @@ definitions:
       endTime:
         type: string
         format: date-time
-      itemsProcessed:
+      processedItems:
         type: integer
         format: int64
       errorsCount:

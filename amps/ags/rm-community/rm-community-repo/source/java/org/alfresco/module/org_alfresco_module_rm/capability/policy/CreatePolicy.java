@@ -28,9 +28,12 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInvocation;
+
+import java.util.Arrays;
 
 public class CreatePolicy extends AbstractBasePolicy
 {
@@ -46,6 +49,7 @@ public class CreatePolicy extends AbstractBasePolicy
         // get the destination node
         NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
 
+        assocType = (QName) Arrays.stream(invocation.getArguments()).filter(RecordsManagementModel.TYPE_RECORD_FOLDER::equals).findAny().orElse(null);
         if (cad.getParameters().size() > 1)
         {
             // get the linkee when present

@@ -33,6 +33,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -132,7 +133,8 @@ public class CreateCapability extends DeclarativeCapability
 
             // if the destination folder is not a record folder and the user has filling capability on it, grant access to create the record
             if (checkConditions(destination, conditions) &&
-                   !recordFolderService.isRecordFolder(destination) )
+                   !recordFolderService.isRecordFolder(destination) &&
+                        (capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED))
             {
                 return AccessDecisionVoter.ACCESS_GRANTED;
             }
@@ -161,7 +163,7 @@ public class CreateCapability extends DeclarativeCapability
                 return AccessDecisionVoter.ACCESS_GRANTED;
             }
         }
-        if (capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
+        if (assocType != null && assocType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) && capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             return AccessDecisionVoter.ACCESS_GRANTED;
         }

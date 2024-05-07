@@ -38,18 +38,18 @@ import java.util.Arrays;
 public class CreatePolicy extends AbstractBasePolicy
 {
     @SuppressWarnings("rawtypes")
+    @Override
 	public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef linkee = null;
-        QName assocType = null;
 
         // get the destination node
         NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
 
-        assocType = (QName) Arrays.stream(invocation.getArguments()).filter(RecordsManagementModel.TYPE_RECORD_FOLDER::equals).findAny().orElse(null);
+        QName assocType = (QName) Arrays.stream(invocation.getArguments()).filter(RecordsManagementModel.TYPE_RECORD_FOLDER::equals).findAny().orElse(null);
         if (cad.getParameters().size() > 1)
         {
             // get the linkee when present

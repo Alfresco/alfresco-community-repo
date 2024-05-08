@@ -2344,17 +2344,17 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/holds/{holdId}/bulk-statuses/{processId}':
+  '/holds/{holdId}/bulk-statuses/{bulkStatusId}':
     get:
       tags:
         - holds
       operationId: getBulkStatus
       summary: Get a bulk status
       description: |
-        Gets a bulk status specified by **processId** for **holdId**.
+        Gets a bulk status specified by **bulkStatusId** for **holdId**.
       parameters:
         - $ref: '#/parameters/holdIdParam'
-        - $ref: '#/parameters/processId'
+        - $ref: '#/parameters/bulkStatusId'
       responses:
         '200':
           description: Successful response
@@ -2362,13 +2362,13 @@ paths:
             $ref: '#/definitions/HoldBulkStatus'
         '400':
           description: |
-            Invalid parameter: **holdId** or **processId** is not a valid format
+            Invalid parameter: **holdId** or **bulkStatusId** is not a valid format
         '401':
           description: Authentication failed
         '403':
           description: Current user does not have permission to read **holdId**
         '404':
-          description: "**holdId** or **processId** does not exist"
+          description: "**holdId** or **bulkStatusId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -2380,7 +2380,7 @@ paths:
       operationId: startHoldBulkProcess
       summary: Start the hold bulk process
       description: |
-        Start the asynchronous bulk process of a hold with id **holdId** based on search query results.
+        Start the asynchronous bulk process for a hold with id **holdId** based on search query results.
         
         ```JSON
         For example, the following JSON body starts the bulk process to add search query results
@@ -2968,8 +2968,8 @@ parameters:
     description: The identifier of a child of a hold.
     required: true
     type: string
-  processId:
-    name: processId
+  bulkStatusId:
+    name: bulkStatusId
     in: path
     description: The identifier of a bulk process.
     required: true
@@ -4144,7 +4144,7 @@ definitions:
           - lucene
           - cmis
       userQuery:
-        description: The exact search request typed in by the user
+        description: The search request typed in by the user
         type: string
       query:
         description: The query which may have been generated in some way from the userQuery
@@ -4163,7 +4163,7 @@ definitions:
   HoldBulkOperationEntry:
     type: object
     properties:
-      processId:
+      bulkStatusId:
         type: string
       totalItems:
         type: integer
@@ -4171,7 +4171,7 @@ definitions:
   HoldBulkStatus:
     type: object
     properties:
-      processId:
+      bulkStatusId:
         type: string
       startTime:
         type: string

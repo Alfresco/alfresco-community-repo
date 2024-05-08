@@ -27,8 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -36,8 +39,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 
-import java.util.HashMap;
-import java.util.Map;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Create group capability implementation
@@ -99,16 +101,26 @@ public class CreateCapability extends DeclarativeCapability
         {
             if ((assocType == null) || !assocType.equals(ContentModel.ASSOC_CONTAINS))
             {
-                if (linkee == null && recordService.isRecord(destination) &&
+                if (linkee == null)
+                {
+                    if (recordService.isRecord(destination) &&
                         !recordService.isDeclared(destination) &&
-                        permissionService.hasPermission(destination, FILE_RECORDS) == AccessStatus.ALLOWED) {
-                    return AccessDecisionVoter.ACCESS_GRANTED;
-                } else if (recordService.isRecord(linkee) &&
-                        recordService.isRecord(destination) &&
-                        !recordService.isDeclared(destination) &&
-                        permissionService.hasPermission(destination, FILE_RECORDS) == AccessStatus.ALLOWED) {
-                    return AccessDecisionVoter.ACCESS_GRANTED;
+                        permissionService.hasPermission(destination, FILE_RECORDS) == AccessStatus.ALLOWED)
+                    {
+                        return AccessDecisionVoter.ACCESS_GRANTED;
+                    }
                 }
+                else
+                {
+                    if (recordService.isRecord(linkee) &&
+                            recordService.isRecord(destination) &&
+                            !recordService.isDeclared(destination) &&
+                            permissionService.hasPermission(destination, FILE_RECORDS) == AccessStatus.ALLOWED)
+                    {
+                        return AccessDecisionVoter.ACCESS_GRANTED;
+                    }
+                }
+
             }
 
             // Build the conditions map

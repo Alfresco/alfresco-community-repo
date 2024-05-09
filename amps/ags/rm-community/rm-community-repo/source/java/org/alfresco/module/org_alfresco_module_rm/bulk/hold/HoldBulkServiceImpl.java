@@ -46,7 +46,6 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
@@ -198,7 +197,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
             SearchParameters searchParams = getNextPageParameters();
-            ResultSet result = getSearchService().query(searchParams);
+            ResultSet result = searchService.query(searchParams);
             if (result.getNodeRefs().isEmpty())
             {
                 return Collections.emptyList();
@@ -209,18 +208,17 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
                 LOGGER.debug("Processing the next work for the batch processor, skipCount={}, size={}",
                     searchParams.getSkipCount(), result.getNumberFound());
             }
-            currentNodeNumber.addAndGet(getBatchSize());
+            currentNodeNumber.addAndGet(batchSize);
             return result.getNodeRefs();
         }
 
         private SearchParameters getNextPageParameters()
         {
             SearchParameters searchParams = new SearchParameters();
-            SearchMapper searchMapper = getSearchMapper();
             searchMapper.setDefaults(searchParams);
             searchMapper.fromQuery(searchParams, searchQuery);
             searchParams.setSkipCount(currentNodeNumber.get());
-            searchParams.setMaxItems(getBatchSize());
+            searchParams.setMaxItems(batchSize);
             searchParams.addSort("@" + ContentModel.PROP_CREATED, true);
             return searchParams;
         }

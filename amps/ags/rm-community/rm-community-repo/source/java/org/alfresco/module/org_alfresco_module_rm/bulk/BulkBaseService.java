@@ -54,17 +54,17 @@ public abstract class BulkBaseService<T> implements InitializingBean
 {
     private static final Log logger = LogFactory.getLog(BulkBaseService.class);
 
-    private ServiceRegistry serviceRegistry;
-    private SearchService searchService;
-    private TransactionService transactionService;
-    private SearchMapper searchMapper;
-    private BulkMonitor<T> bulkMonitor;
-    private ApplicationEventPublisher applicationEventPublisher;
+    protected ServiceRegistry serviceRegistry;
+    protected SearchService searchService;
+    protected TransactionService transactionService;
+    protected SearchMapper searchMapper;
+    protected BulkMonitor<T> bulkMonitor;
+    protected ApplicationEventPublisher applicationEventPublisher;
 
-    private int threadCount;
-    private int batchSize;
-    private long maxItems;
-    private int loggingIntervalMs;
+    protected int threadCount;
+    protected int batchSize;
+    protected long maxItems;
+    protected int loggingIntervalMs;
 
     @Override
     public void afterPropertiesSet() throws Exception
@@ -246,20 +246,5 @@ public abstract class BulkBaseService<T> implements InitializingBean
     public void setLoggingIntervalMs(int loggingIntervalMs)
     {
         this.loggingIntervalMs = loggingIntervalMs;
-    }
-
-    public SearchMapper getSearchMapper()
-    {
-        return searchMapper;
-    }
-
-    public int getBatchSize()
-    {
-        return batchSize;
-    }
-
-    public SearchService getSearchService()
-    {
-        return searchService;
     }
 }

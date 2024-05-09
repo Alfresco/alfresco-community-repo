@@ -1456,5 +1456,26 @@
             </bean>
         </property>
     </bean>
- 
+
+    <bean id="patch.addUndeletableAspect" class="org.alfresco.repo.admin.patch.impl.AddUndeletableAspectToDataDictionaryPatch"
+          parent="basePatch">
+        <property name="id" value="patch.addUndeletableAspect" />
+        <property name="description" value="patch.addUndeletableAspectToDataDictionaryPatch.description" />
+        <property name="fixesFromSchema">
+            <value>0</value>
+        </property>
+        <property name="fixesToSchema">
+            <value>19300</value>
+        </property>
+        <property name="targetSchema">
+            <value>19301</value>
+        </property>
+        <property name="behaviourFilter" >
+            <ref bean="policyBehaviourFilter"/>
+        </property>
+        <property name="nodeService" >
+            <ref bean="nodeService" />
+        </property>
+    </bean>
+
  </beans>

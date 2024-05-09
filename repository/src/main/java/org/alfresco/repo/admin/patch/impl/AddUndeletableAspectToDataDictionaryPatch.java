@@ -26,27 +26,12 @@
 package org.alfresco.repo.admin.patch.impl;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.admin.patch.AsynchronousPatch;
-import org.alfresco.repo.batch.BatchProcessWorkProvider;
-import org.alfresco.repo.batch.BatchProcessor;
-import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.site.SiteService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.util.*;
 
 /**
  *  Add sys:undeletable aspect to DataDictionary and prevent it to be deleted
@@ -63,6 +48,7 @@ public class AddUndeletableAspectToDataDictionaryPatch extends AbstractPatch
         this.behaviourFilter = behaviourFilter;
     }
 
+    @Override
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;

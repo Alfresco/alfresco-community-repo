@@ -54,7 +54,7 @@ public class HoldTaskScheduler implements TaskScheduler
         task.run();
     }
 
-    public void stopListening()
+    public void unschedule()
     {
         scheduledTask.cancel(false);
         executor.shutdown();

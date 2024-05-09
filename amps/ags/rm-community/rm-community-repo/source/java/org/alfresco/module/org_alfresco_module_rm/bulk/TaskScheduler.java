@@ -32,6 +32,6 @@ public interface TaskScheduler
 
     void runTask();
 
-    void stopListening();
+    void unschedule();
 
 }

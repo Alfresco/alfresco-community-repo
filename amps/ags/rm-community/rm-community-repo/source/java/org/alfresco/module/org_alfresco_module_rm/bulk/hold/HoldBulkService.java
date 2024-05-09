@@ -30,7 +30,16 @@ import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * Interface defining a hold bulk service.
+ */
 public interface HoldBulkService
 {
+    /**
+     * Initiates a bulk operation on a hold.
+     *
+     * @param holdRef       The hold reference
+     * @param bulkOperation The bulk operation
+     */
     HoldBulkStatus execute(NodeRef holdRef, BulkOperation bulkOperation);
 }

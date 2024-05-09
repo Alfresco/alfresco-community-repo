@@ -36,6 +36,7 @@ import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Query;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -46,6 +47,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 
+/**
+ * A base class for executing bulk operations on nodes based on search query results
+ */
 public abstract class BulkBaseService<T> implements InitializingBean
 {
     private static final Log logger = LogFactory.getLog(BulkBaseService.class);
@@ -68,21 +72,29 @@ public abstract class BulkBaseService<T> implements InitializingBean
         this.searchService = serviceRegistry.getSearchService();
     }
 
-    public T execute(NodeRef holdRef, BulkOperation bulkOperation)
+    /**
+     * Execute bulk operation on node based on the search query results
+     *
+     * @param nodeRef       node reference
+     * @param bulkOperation bulk operation
+     * @return bulk status
+     */
+    public T execute(NodeRef nodeRef, BulkOperation bulkOperation)
     {
-        checkPermissions(holdRef, bulkOperation);
+        checkPermissions(nodeRef, bulkOperation);
 
         long totalItems = getTotalItems(bulkOperation.searchQuery());
         if (maxItems < totalItems)
         {
-            throw new RuntimeException("Too many items to process. Please refine your query.");
+            throw new InvalidArgumentException("Too many items to process. Please refine your query.");
         }
-
+        // Generate a random process id
         String processId = UUID.randomUUID().toString();
+
         T initBulkStatus = getInitBulkStatus(processId, totalItems);
         bulkMonitor.updateBulkStatus(initBulkStatus);
-        bulkMonitor.registerProcess(holdRef, processId);
-        BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(holdRef, bulkOperation);
+        bulkMonitor.registerProcess(nodeRef, processId);
+        BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation);
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>(
             processId,
             transactionService.getRetryingTransactionHelper(),
@@ -92,11 +104,15 @@ public abstract class BulkBaseService<T> implements InitializingBean
             applicationEventPublisher,
             logger,
             loggingIntervalMs);
+
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(runBatchProcessor(batchProcessor, batchProcessWorker));
         return initBulkStatus;
     }
 
+    /**
+     * Run batch processor and schedule a task during processing
+     */
     protected Callable<Void> runBatchProcessor(BatchProcessor<NodeRef> batchProcessor,
         BatchProcessWorker<NodeRef> batchProcessWorker)
     {
@@ -105,30 +121,72 @@ public abstract class BulkBaseService<T> implements InitializingBean
             taskScheduler.schedule(loggingIntervalMs);
             try
             {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Started processing batch with name: " + batchProcessor.getProcessName());
+                }
                 batchProcessor.processLong(batchProcessWorker, true);
-                taskScheduler.runTask();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Processing batch with name: " + batchProcessor.getProcessName() + " completed");
+                }
             }
             catch (Throwable t)
             {
-                //TODO: handle exception
+                logger.error("Error processing batch with name: " + batchProcessor.getProcessName(), t);
             }
             finally
             {
-                taskScheduler.stopListening();
+                taskScheduler.runTask();
+                taskScheduler.unschedule();
             }
             return null;
         };
     }
 
+    /**
+     * Get initial bulk status
+     *
+     * @param processId  process id
+     * @param totalItems total items
+     * @return bulk status
+     */
     protected abstract T getInitBulkStatus(String processId, long totalItems);
 
+    /**
+     * Get task scheduler
+     *
+     * @param batchProcessor batch processor
+     * @param monitor        bulk monitor
+     * @return task scheduler
+     */
     protected abstract TaskScheduler getTaskScheduler(BatchProcessor<NodeRef> batchProcessor, BulkMonitor<T> monitor);
 
+    /**
+     * Get work provider
+     *
+     * @param bulkOperation bulk operation
+     * @param totalItems    total items
+     * @return work provider
+     */
     protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems);
 
+    /**
+     * Get worker provider
+     *
+     * @param nodeRef       node reference
+     * @param bulkOperation bulk operation
+     * @return worker provider
+     */
     protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation);
 
-    protected abstract void checkPermissions(NodeRef holdRef, BulkOperation bulkOperation);
+    /**
+     * Check permissions
+     *
+     * @param nodeRef       node reference
+     * @param bulkOperation bulk operation
+     */
+    protected abstract void checkPermissions(NodeRef nodeRef, BulkOperation bulkOperation);
 
     protected long getTotalItems(Query searchQuery)
     {

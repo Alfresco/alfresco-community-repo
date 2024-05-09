@@ -56,10 +56,17 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+/**
+ * Implementation of the {@link HoldBulkService} interface.
+ */
 public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> implements HoldBulkService
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HoldBulkServiceImpl.class);
+
     private HoldService holdService;
     private static final String MSG_ERR_ACCESS_DENIED = "permissions.err_access_denied";
 
@@ -79,7 +86,8 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     {
         return new HoldTaskScheduler(() -> monitor.updateBulkStatus(
             new HoldBulkStatus(batchProcessor.getProcessName(), batchProcessor.getStartTime(),
-                batchProcessor.getEndTime(), batchProcessor.getSuccessfullyProcessedEntriesLong() + batchProcessor.getTotalErrorsLong(),
+                batchProcessor.getEndTime(),
+                batchProcessor.getSuccessfullyProcessedEntriesLong() + batchProcessor.getTotalErrorsLong(),
                 batchProcessor.getTotalErrorsLong(), batchProcessor.getTotalResultsLong(),
                 batchProcessor.getLastError())));
     }
@@ -97,7 +105,8 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         {
             return new AddToHoldWorkerBatch(nodeRef);
         }
-        throw new IllegalArgumentException("Unsupported action type when starting the bulk process: " + bulkOperation.operationType());
+        throw new InvalidArgumentException(
+            "Unsupported action type when starting the bulk process: " + bulkOperation.operationType());
     }
 
     @Override
@@ -195,6 +204,11 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
                 return Collections.emptyList();
             }
             AuthenticationUtil.popAuthentication();
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Processing the next work for the batch processor, skipCount={}, size={}",
+                    searchParams.getSkipCount(), result.getNumberFound());
+            }
             currentNodeNumber.addAndGet(getBatchSize());
             return result.getNodeRefs();
         }

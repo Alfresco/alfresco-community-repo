@@ -39,6 +39,10 @@ import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.hold.Hold;
+import org.alfresco.rest.rm.community.model.hold.HoldBulkOperation;
+import org.alfresco.rest.rm.community.model.hold.HoldBulkOperationEntry;
+import org.alfresco.rest.rm.community.model.hold.HoldBulkStatus;
+import org.alfresco.rest.rm.community.model.hold.HoldBulkStatusCollection;
 import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.hold.HoldChildCollection;
 import org.alfresco.rest.rm.community.model.hold.HoldDeletionReason;
@@ -287,4 +291,113 @@ public class HoldsAPI extends RMModelRequest
     {
         deleteHoldChild(holdId, holdChildId, EMPTY);
     }
+
+    /**
+     * Starts a bulk process for a hold.
+     *
+     * @param holdBulkOperation The bulk operation details
+     * @param hold The identifier of a hold
+     * @param parameters The URL parameters to add
+     * @return The {@link HoldBulkOperationEntry} for the started bulk process
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code hold} or {@code holdBulkOperation} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to start a bulk process for {@code hold}</li>
+     *  <li>{@code hold} does not exist</li>
+     * </ul>
+     */
+    public HoldBulkOperationEntry startBulkProcess(HoldBulkOperation holdBulkOperation, String hold, String parameters)
+    {
+        mandatoryObject("holdBulkOperation", holdBulkOperation);
+        mandatoryString("hold", hold);
+
+        return getRmRestWrapper().processModel(HoldBulkOperationEntry.class, requestWithBody(
+            POST,
+            toJson(holdBulkOperation),
+            "holds/{hold}/bulk",
+            hold,
+            parameters
+                                                                                          ));
+    }
+
+    /**
+     * See {@link #startBulkProcess(HoldBulkOperation, String, String)}
+     */
+    public HoldBulkOperationEntry startBulkProcess(HoldBulkOperation holdBulkOperation, String hold)
+    {
+        return startBulkProcess(holdBulkOperation, hold, EMPTY);
+    }
+
+    /**
+     * Gets the status of a bulk process for a hold.
+     *
+     * @param holdId The identifier of a hold
+     * @param holdBulkStatusId The identifier of a bulk status operation
+     * @param parameters The URL parameters to add
+     * @return The {@link HoldBulkStatus} for the given {@code holdId} and {@code holdBulkStatusId}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code holdId} or {@code holdBulkStatusId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to get the bulk status for {@code holdId}</li>
+     *  <li>{@code holdId} or {@code holdBulkStatusId} does not exist</li>
+     * </ul>
+     */
+    public HoldBulkStatus getBulkStatus(String holdId, String holdBulkStatusId, String parameters)
+    {
+        mandatoryString("holdId", holdId);
+        mandatoryString("holdBulkStatusId", holdBulkStatusId);
+
+        return getRmRestWrapper().processModel(HoldBulkStatus.class, simpleRequest(
+            GET,
+            "holds/{holdId}/bulk-statuses/{holdBulkStatusId}",
+            holdId,
+            holdBulkStatusId,
+            parameters
+                                                                                   ));
+    }
+
+    /**
+     * See {@link #getBulkStatus(String, String, String)}
+     */
+    public HoldBulkStatus getBulkStatus(String holdId, String holdBulkStatusId)
+    {
+        return getBulkStatus(holdId, holdBulkStatusId, EMPTY);
+    }
+
+    /**
+     * Gets the statuses of all bulk processes for a hold.
+     *
+     * @param holdId The identifier of a hold
+     * @param parameters The URL parameters to add
+     * @return The {@link HoldBulkStatusCollection} for the given {@code holdId}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *     <li>{@code holdId} is invalid</li>
+     *     <li>authentication fails</li>
+     *     <li>current user does not have permission to get the bulk statuses for {@code holdId}</li>
+     *     <li>{@code holdId} does not exist</li>
+     * </ul>
+     */
+    public HoldBulkStatusCollection getBulkStatuses(String holdId, String parameters)
+    {
+        mandatoryString("holdId", holdId);
+
+        return getRmRestWrapper().processModels(HoldBulkStatusCollection.class, simpleRequest(
+            GET,
+            "holds/{holdId}/bulk-statuses",
+            holdId,
+            parameters
+                                                                                             ));
+    }
+
+    /**
+     * See {@link #getBulkStatuses(String, String)}
+     */
+    public HoldBulkStatusCollection getBulkStatuses(String holdId)
+    {
+        return getBulkStatuses(holdId, EMPTY);
+    }
+
 }

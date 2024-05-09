@@ -79,7 +79,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     {
         return new HoldTaskScheduler(() -> monitor.updateBulkStatus(
             new HoldBulkStatus(batchProcessor.getProcessName(), batchProcessor.getStartTime(),
-                batchProcessor.getEndTime(), batchProcessor.getSuccessfullyProcessedEntriesLong(),
+                batchProcessor.getEndTime(), batchProcessor.getSuccessfullyProcessedEntriesLong() + batchProcessor.getTotalErrorsLong(),
                 batchProcessor.getTotalErrorsLong(), batchProcessor.getTotalResultsLong(),
                 batchProcessor.getLastError())));
     }

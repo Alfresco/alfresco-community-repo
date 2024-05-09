@@ -88,7 +88,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
             transactionService.getRetryingTransactionHelper(),
             getWorkProvider(bulkOperation, totalItems),
             threadCount,
-            batchSize,
+            1,
             applicationEventPublisher,
             logger,
             loggingIntervalMs);

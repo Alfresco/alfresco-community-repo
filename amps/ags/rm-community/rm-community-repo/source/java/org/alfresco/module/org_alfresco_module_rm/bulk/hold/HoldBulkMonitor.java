@@ -45,7 +45,7 @@ public class HoldBulkMonitor implements BulkMonitor<HoldBulkStatus>
 
     public void updateBulkStatus(HoldBulkStatus holdBulkStatus)
     {
-        holdProgressCache.put(holdBulkStatus.processId(), holdBulkStatus);
+        holdProgressCache.put(holdBulkStatus.bulkStatusId(), holdBulkStatus);
     }
 
     public void registerProcess(NodeRef holdRef, String processId)

@@ -30,7 +30,7 @@ import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.Date;
 
-public record HoldBulkStatus(String processId, Date startTime, Date endTime, long itemsProcessed, long errorsCount,
+public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
                              long totalItems, String lastError) implements Serializable
 {
     public enum Status
@@ -67,10 +67,10 @@ public record HoldBulkStatus(String processId, Date startTime, Date endTime, lon
             return Status.DONE.getValue();
         }
     }
-
-    public String getPercentageProcessed()
-    {
-        return itemsProcessed <= totalItems ? NumberFormat.getPercentInstance().format(
-            totalItems == 0 ? 1.0F : (float) itemsProcessed / totalItems) : "Unknown";
-    }
+//
+//    public String getPercentageProcessed()
+//    {
+//        return processedItems <= totalItems ? NumberFormat.getPercentInstance().format(
+//            totalItems == 0 ? 1.0F : (float) processedItems / totalItems) : "Unknown";
+//    }
 }

@@ -45,6 +45,7 @@ import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.HoldBulkOperation;
+import org.alfresco.rm.rest.api.model.HoldBulkOperationEntry;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.rm.rest.api.model.HoldDeletionReason;
 import org.alfresco.rm.rest.api.model.HoldModel;
@@ -165,7 +166,7 @@ public class HoldsEntityResource implements
     @Operation("bulk")
     @WebApiDescription(title = "Start the hold bulk operation",
         successStatus = HttpServletResponse.SC_ACCEPTED)
-    public HoldBulkStatus bulk(String holdId, HoldBulkOperation holdBulkOperation, Parameters parameters,
+    public HoldBulkOperationEntry bulk(String holdId, HoldBulkOperation holdBulkOperation, Parameters parameters,
         WithResponse withResponse)
     {
         // validate parameters
@@ -174,8 +175,9 @@ public class HoldsEntityResource implements
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
 
-        return holdBulkService.execute(parentNodeRef,
+        HoldBulkStatus holdBulkStatus = holdBulkService.execute(parentNodeRef,
             new BulkOperation(holdBulkOperation.query(), holdBulkOperation.op().name()));
+        return new HoldBulkOperationEntry(holdBulkStatus.bulkStatusId(), holdBulkStatus.totalItems());
     }
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)

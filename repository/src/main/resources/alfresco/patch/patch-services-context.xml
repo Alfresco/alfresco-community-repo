@@ -1463,6 +1463,6 @@
         <property name="fixesFromSchema" value="0"/>
         <property name="fixesToSchema" value="19300"/>
         <property name="targetSchema" value="19301"/>
-        <property name="behaviourFilter" ref="policyBehaviourFilter">
+        <property name="behaviourFilter" ref="policyBehaviourFilter"/>
     </bean>
  </beans>

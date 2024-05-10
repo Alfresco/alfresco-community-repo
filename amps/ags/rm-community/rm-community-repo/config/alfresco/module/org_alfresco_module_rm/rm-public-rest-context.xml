@@ -287,6 +287,9 @@
       <property name="loggingIntervalMs">
          <value>${rm.hold.bulk.logging.interval.ms}</value>
       </property>
+      <property name="itemsPerTransaction">
+         <value>${rm.hold.bulk.itemsPerTransaction}</value>
+      </property>
    </bean>
 
    <bean id="holdBulkMonitor" class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor">

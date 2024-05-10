@@ -38,12 +38,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.dataprep.CMISUtil;
@@ -64,6 +66,7 @@ import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
@@ -82,7 +85,11 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     private static final int NUMBER_OF_FILES = 30;
     private final List<FileModel> addedFiles = new ArrayList<>();
     private List<UserModel> users = new ArrayList<>();
+    private List<Hold> holds = new ArrayList<>();
     private Hold hold;
+    private Hold hold2;
+    private Hold hold3;
+    private FolderModel rootFolder;
     private HoldBulkOperation holdBulkOperation;
     @Autowired
     private RoleService roleService;
@@ -93,14 +100,22 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     public void preconditionForAddContentToHold()
     {
         STEP("Create a hold.");
-        hold = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        hold = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
+            Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
+                .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        holds.add(hold);
 
         STEP("Create test files.");
         testSite = dataSite.usingAdmin().createPublicRandomSite();
 
-        for(int i = 0; i < NUMBER_OF_FILES; i++)
+        rootFolder = dataContent.usingAdmin().usingSite(testSite).createFolder();
+        FolderModel folder1 = dataContent.usingAdmin().usingResource(rootFolder).createFolder();
+        FolderModel folder2 = dataContent.usingAdmin().usingResource(folder1).createFolder();
+        for (int i = 0; i < NUMBER_OF_FILES; i++)
         {
-            FileModel documentHeld = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+            FileModel documentHeld = dataContent.usingAdmin()
+                .usingResource(new Random().nextBoolean() ? folder1 : folder2)
+                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
             addedFiles.add(documentHeld);
         }
 
@@ -109,13 +124,13 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         searchRequest.setQuery(queryReq);
 
         STEP("Wait until all files are searchable.");
-        await().atMost(30, TimeUnit.SECONDS).until(() -> getRestAPIFactory().getSearchAPI(null).search(searchRequest).getPagination()
-            .getTotalItems() == NUMBER_OF_FILES);
+        await().atMost(30, TimeUnit.SECONDS)
+            .until(() -> getRestAPIFactory().getSearchAPI(null).search(searchRequest).getPagination()
+                .getTotalItems() == NUMBER_OF_FILES);
 
         holdBulkOperation = HoldBulkOperation.builder()
             .query(queryReq)
             .op(HoldBulkOperationType.ADD).build();
-
     }
 
     /**
@@ -127,28 +142,85 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     public void addContentFromTestSiteToHoldUsingBulkAPI()
     {
         UserModel userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
-        UserRole.SiteCollaborator, hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
+            UserRole.SiteCollaborator, hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userAddHoldPermission);
 
         STEP("Add content from the site to the hold using the bulk API.");
-        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission).startBulkProcess(holdBulkOperation, hold.getId());
+        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .startBulkProcess(holdBulkOperation, hold.getId());
 
         // Verify the status code
         assertStatusCode(ACCEPTED);
         assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
 
         STEP("Wait until all files are added to the hold.");
-        await().atMost(20, TimeUnit.SECONDS).until(() -> getRestAPIFactory().getHoldsAPI(getAdminUser()).getChildren(hold.getId()).getEntries().size() == NUMBER_OF_FILES);
-        List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(userAddHoldPermission).getChildren(hold.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
-            HoldChild::getId).toList();
-        assertEquals(addedFiles.stream().map(FileModel::getNodeRefWithoutVersion).sorted().toList(), holdChildrenNodeRefs.stream().sorted().toList());
+        await().atMost(20, TimeUnit.SECONDS).until(
+            () -> getRestAPIFactory().getHoldsAPI(getAdminUser()).getChildren(hold.getId()).getEntries().size()
+                == NUMBER_OF_FILES);
+        List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getChildren(hold.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
+                HoldChild::getId).toList();
+        assertEquals(addedFiles.stream().map(FileModel::getNodeRefWithoutVersion).sorted().toList(),
+            holdChildrenNodeRefs.stream().sorted().toList());
 
         STEP("Check the bulk status.");
-        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission).getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
-        assertSuccessfulBulkStatus(holdBulkStatus, bulkOperationEntry, NUMBER_OF_FILES);
+        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 0, null);
 
         STEP("Check the bulk statuses.");
-        HoldBulkStatusCollection holdBulkStatusCollection =  getRestAPIFactory().getHoldsAPI(userAddHoldPermission).getBulkStatuses(hold.getId());
+        HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getBulkStatuses(hold.getId());
+        assertEquals(1, holdBulkStatusCollection.getEntries().size());
+        assertEquals(holdBulkStatus, holdBulkStatusCollection.getEntries().get(0).getEntry());
+    }
+
+    /**
+     * Given a user with the add to hold capability and hold filling permission
+     * When the user adds content from a folder and all subfolders to a hold using the bulk API
+     * Then the content is added to the hold and the status of the bulk operation is DONE
+     */
+    @Test
+    public void addContentFromFolderAndAllSubfoldersToHoldUsingBulkAPI()
+    {
+        hold3 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
+            Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
+                .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        holds.add(hold3);
+
+        UserModel userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+            UserRole.SiteCollaborator, hold3.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
+        users.add(userAddHoldPermission);
+
+        STEP("Add content from the site to the hold using the bulk API.");
+        HoldBulkOperation contentFromFolderAndSubfoldersBulkOp = HoldBulkOperation.builder()
+            .query(getContentFromFolderAndAllSubfoldersQuery(rootFolder.getNodeRefWithoutVersion()))
+            .op(HoldBulkOperationType.ADD).build();
+        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .startBulkProcess(contentFromFolderAndSubfoldersBulkOp, hold3.getId());
+
+        // Verify the status code
+        assertStatusCode(ACCEPTED);
+        assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
+
+        STEP("Wait until all files are added to the hold.");
+        await().atMost(20, TimeUnit.SECONDS).until(
+            () -> getRestAPIFactory().getHoldsAPI(getAdminUser()).getChildren(hold3.getId()).getEntries().size()
+                == NUMBER_OF_FILES);
+        List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getChildren(hold3.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
+                HoldChild::getId).toList();
+        assertEquals(addedFiles.stream().map(FileModel::getNodeRefWithoutVersion).sorted().toList(),
+            holdChildrenNodeRefs.stream().sorted().toList());
+
+        STEP("Check the bulk status.");
+        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getBulkStatus(hold3.getId(), bulkOperationEntry.getBulkStatusId());
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 0, null);
+
+        STEP("Check the bulk statuses.");
+        HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getBulkStatuses(hold3.getId());
         assertEquals(1, holdBulkStatusCollection.getEntries().size());
         assertEquals(holdBulkStatus, holdBulkStatusCollection.getEntries().get(0).getEntry());
     }
@@ -161,12 +233,14 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testBulkProcessWithUserWithoutAddToHoldCapability()
     {
-        UserModel userWithoutAddToHoldCapability = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole
+        UserModel userWithoutAddToHoldCapability = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+            UserRole
                 .SiteCollaborator,
             hold.getId(), UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING);
         users.add(userWithoutAddToHoldCapability);
 
-        getRestAPIFactory().getHoldsAPI(userWithoutAddToHoldCapability).startBulkProcess(holdBulkOperation, hold.getId());
+        getRestAPIFactory().getHoldsAPI(userWithoutAddToHoldCapability)
+            .startBulkProcess(holdBulkOperation, hold.getId());
 
         // Verify the status code
         assertStatusCode(FORBIDDEN);
@@ -185,7 +259,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             UserRole.SiteCollaborator, hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS);
         users.add(userWithoutFillingPermissionOnAHold);
 
-        getRestAPIFactory().getHoldsAPI(userWithoutFillingPermissionOnAHold).startBulkProcess(holdBulkOperation, hold.getId());
+        getRestAPIFactory().getHoldsAPI(userWithoutFillingPermissionOnAHold)
+            .startBulkProcess(holdBulkOperation, hold.getId());
 
         // Verify the status code
         assertStatusCode(FORBIDDEN);
@@ -201,19 +276,24 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testBulkProcessWithUserWithoutWritePermissionOnTheContent()
     {
-        UserModel userWithoutWritePermissionOnTheContent = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite, UserRole.SiteConsumer,
+        UserModel userWithoutWritePermissionOnTheContent = roleService.createUserWithSiteRoleRMRoleAndPermission(
+            testSite, UserRole.SiteConsumer,
             hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userWithoutWritePermissionOnTheContent);
 
-        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userWithoutWritePermissionOnTheContent).startBulkProcess(holdBulkOperation, hold.getId());
+        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(
+            userWithoutWritePermissionOnTheContent).startBulkProcess(holdBulkOperation, hold.getId());
 
         // Verify the status code
         assertStatusCode(ACCEPTED);
 
-        await().atMost(20, TimeUnit.SECONDS).until(() -> getRestAPIFactory().getHoldsAPI(userWithoutWritePermissionOnTheContent).getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId()).getStatus() == Status.DONE);
+        await().atMost(20, TimeUnit.SECONDS).until(() ->
+            getRestAPIFactory().getHoldsAPI(userWithoutWritePermissionOnTheContent)
+                .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId()).getStatus() == Status.DONE);
 
-        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userWithoutWritePermissionOnTheContent).getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
-        assertBulkProcessStatusErrors(holdBulkStatus, NUMBER_OF_FILES, NUMBER_OF_FILES, ACCESS_DENIED_ERROR_MESSAGE);
+        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userWithoutWritePermissionOnTheContent)
+            .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, NUMBER_OF_FILES, ACCESS_DENIED_ERROR_MESSAGE);
     }
 
     /**
@@ -225,39 +305,48 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testBulkProcessWithUserWithoutWritePermissionOnOneFile()
     {
-        Hold hold2 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION).reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        hold2 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
+            Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
+                .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        holds.add(hold2);
 
         UserModel userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
             UserRole.SiteCollaborator, hold2.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userAddHoldPermission);
 
-        contentActions.removePermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(), addedFiles.get(0).getName(), userAddHoldPermission.getUsername(), UserRole.SiteCollaborator.getRoleId(), false);
+        contentActions.removePermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
+            testSite.getId(), addedFiles.get(0).getName(), userAddHoldPermission.getUsername(),
+            UserRole.SiteCollaborator.getRoleId(), false);
 
         STEP("Add content from the site to the hold using the bulk API.");
-        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission).startBulkProcess(holdBulkOperation, hold2.getId());
+        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .startBulkProcess(holdBulkOperation, hold2.getId());
 
         // Verify the status code
         assertStatusCode(ACCEPTED);
         assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
 
         STEP("Wait until all files are added to the hold.");
-        await().atMost(20, TimeUnit.SECONDS).until(() -> getRestAPIFactory().getHoldsAPI(getAdminUser()).getChildren(hold2.getId()).getEntries().size() == NUMBER_OF_FILES - 1);
-        List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(userAddHoldPermission).getChildren(hold2.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
-            HoldChild::getId).toList();
-        assertEquals(addedFiles.stream().skip(1).map(FileModel::getNodeRefWithoutVersion).sorted().toList(), holdChildrenNodeRefs.stream().sorted().toList());
+        await().atMost(20, TimeUnit.SECONDS).until(
+            () -> getRestAPIFactory().getHoldsAPI(getAdminUser()).getChildren(hold2.getId()).getEntries().size()
+                == NUMBER_OF_FILES - 1);
+        List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getChildren(hold2.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
+                HoldChild::getId).toList();
+        assertEquals(addedFiles.stream().skip(1).map(FileModel::getNodeRefWithoutVersion).sorted().toList(),
+            holdChildrenNodeRefs.stream().sorted().toList());
 
         STEP("Check the bulk status.");
-        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission).getBulkStatus(hold2.getId(), bulkOperationEntry.getBulkStatusId());
-        assertBulkProcessStatusErrors(holdBulkStatus, NUMBER_OF_FILES, 1, ACCESS_DENIED_ERROR_MESSAGE);
+        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getBulkStatus(hold2.getId(), bulkOperationEntry.getBulkStatusId());
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 1, ACCESS_DENIED_ERROR_MESSAGE);
 
         STEP("Check the bulk statuses.");
-        HoldBulkStatusCollection holdBulkStatusCollection =  getRestAPIFactory().getHoldsAPI(userAddHoldPermission).getBulkStatuses(hold2.getId());
+        HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .getBulkStatuses(hold2.getId());
         assertEquals(1, holdBulkStatusCollection.getEntries().size());
         assertEquals(holdBulkStatus, holdBulkStatusCollection.getEntries().get(0).getEntry());
-
-        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(hold2.getId());
     }
-
 
     /**
      * Given an unauthenticated user
@@ -268,7 +357,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     public void testBulkProcessAsUnauthenticatedUser()
     {
         STEP("Start bulk process as unauthenticated user");
-        getRestAPIFactory().getHoldsAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).startBulkProcess(holdBulkOperation, hold.getId());
+        getRestAPIFactory().getHoldsAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword"))
+            .startBulkProcess(holdBulkOperation, hold.getId());
 
         assertStatusCode(UNAUTHORIZED);
     }
@@ -286,6 +376,24 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         getRestAPIFactory().getHoldsAPI(getAdminUser()).startBulkProcess(holdBulkOperation, "nonExistentHoldId");
 
         assertStatusCode(NOT_FOUND);
+    }
+
+    /**
+     * Given a user with the add to hold capability and hold filling permission
+     * When the user adds content from a site to a hold using the bulk API
+     * and the bulk operation is invalid
+     * Then the user receives bad request error
+     */
+    @Test
+    public void getBulkStatusesForInvalidOperation()
+    {
+        STEP("Start bulk process for non existent hold");
+
+        HoldBulkOperation invalidHoldBulkOperation = HoldBulkOperation.builder().op(null)
+            .query(holdBulkOperation.getQuery()).build();
+        getRestAPIFactory().getHoldsAPI(getAdminUser()).startBulkProcess(invalidHoldBulkOperation, hold.getId());
+
+        assertStatusCode(BAD_REQUEST);
     }
 
     /**
@@ -333,25 +441,20 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertStatusCode(NOT_FOUND);
     }
 
-    private void assertSuccessfulBulkStatus(HoldBulkStatus holdBulkStatus, HoldBulkOperationEntry bulkOperationEntry, long expectedProcessedItems)
+    private void assertBulkProcessStatus(HoldBulkStatus holdBulkStatus, long expectedProcessedItems,
+        int expectedErrorsCount, String expectedErrorMessage)
     {
-        assertEquals(bulkOperationEntry.getBulkStatusId(), holdBulkStatus.getBulkStatusId());
+        assertEquals(Status.DONE, holdBulkStatus.getStatus());
         assertEquals(expectedProcessedItems, holdBulkStatus.getTotalItems());
         assertEquals(expectedProcessedItems, holdBulkStatus.getProcessedItems());
-        assertEquals(0L, holdBulkStatus.getErrorsCount());
-        assertEquals(Status.DONE, holdBulkStatus.getStatus());
-        assertNotNull(holdBulkStatus.getStartTime());
-        assertNotNull(holdBulkStatus.getEndTime());
-    }
-
-    private void assertBulkProcessStatusErrors(HoldBulkStatus holdBulkStatus, long expectedProcessedItems, int expectedErrorsCount, String expectedErrorMessage) {
-        assertEquals(Status.DONE, holdBulkStatus.getStatus());
         assertEquals(expectedErrorsCount, holdBulkStatus.getErrorsCount());
-        assertEquals(Status.DONE, holdBulkStatus.getStatus());
         assertNotNull(holdBulkStatus.getStartTime());
         assertNotNull(holdBulkStatus.getEndTime());
 
-        assertTrue(holdBulkStatus.getLastError().contains(expectedErrorMessage));
+        if (expectedErrorMessage != null)
+        {
+            assertTrue(holdBulkStatus.getLastError().contains(expectedErrorMessage));
+        }
     }
 
     private RestRequestQueryModel getContentFromSiteQuery(String siteId)
@@ -362,11 +465,19 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         return queryReq;
     }
 
+    private RestRequestQueryModel getContentFromFolderAndAllSubfoldersQuery(String folderId)
+    {
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("ANCESTOR:'workspace://SpacesStore/" + folderId + "' and TYPE:content");
+        queryReq.setLanguage("afts");
+        return queryReq;
+    }
+
     @AfterClass(alwaysRun = true)
     public void cleanupAddToHoldsBulkV1Tests()
     {
-        getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(hold.getId());
         dataSite.usingAdmin().deleteSite(testSite);
         users.forEach(user -> getDataUser().usingAdmin().deleteUser(user));
+        holds.forEach(hold -> getRestAPIFactory().getHoldsAPI(getAdminUser()).deleteHold(hold.getId()));
     }
 }

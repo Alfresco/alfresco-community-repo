@@ -26,38 +26,20 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkTaskContainer;
 
-import org.alfresco.module.org_alfresco_module_rm.bulk.TaskScheduler;
-
-public class HoldTaskScheduler implements TaskScheduler
+public class HoldBulkTaskContainer implements BulkTaskContainer
 {
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    private ScheduledFuture<?> scheduledTask;
     private Runnable task;
-
-    public HoldTaskScheduler(Runnable task)
-    {
-        this.task = task;
-    }
-
-    public void schedule(long loggingInterval)
-    {
-        scheduledTask = executor.scheduleAtFixedRate(task, loggingInterval, loggingInterval, TimeUnit.MILLISECONDS);
-    }
 
     public void runTask()
     {
         task.run();
     }
 
-    public void unschedule()
+    public void setTask(Runnable task)
     {
-        scheduledTask.cancel(false);
-        executor.shutdown();
+        this.task = task;
     }
 
 }

@@ -26,12 +26,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk;
 
-public interface TaskScheduler
+public interface BulkTaskContainer
 {
-    void schedule(long msInterval);
-
     void runTask();
 
-    void unschedule();
-
+    void setTask(Runnable task);
 }

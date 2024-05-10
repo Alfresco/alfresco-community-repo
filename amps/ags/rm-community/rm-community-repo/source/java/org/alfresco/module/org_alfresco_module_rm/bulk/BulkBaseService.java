@@ -63,6 +63,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
 
     protected int threadCount;
     protected int batchSize;
+    protected int itemsPerTransaction;
     protected long maxItems;
     protected int loggingIntervalMs;
 
@@ -94,31 +95,33 @@ public abstract class BulkBaseService<T> implements InitializingBean
         T initBulkStatus = getInitBulkStatus(processId, totalItems);
         bulkMonitor.updateBulkStatus(initBulkStatus);
         bulkMonitor.registerProcess(nodeRef, processId);
+
         BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation);
+        BulkTaskContainer bulkTaskContainer = getBulkTaskContainer();
+
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>(
             processId,
             transactionService.getRetryingTransactionHelper(),
-            getWorkProvider(bulkOperation, totalItems),
+            getWorkProvider(bulkOperation, totalItems, bulkTaskContainer),
             threadCount,
-            1,
+            itemsPerTransaction,
             applicationEventPublisher,
             logger,
             loggingIntervalMs);
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(runBatchProcessor(batchProcessor, batchProcessWorker));
+        executor.submit(runBatchProcessor(batchProcessor, batchProcessWorker, bulkTaskContainer));
         return initBulkStatus;
     }
 
     /**
-     * Run batch processor and schedule a task during processing
+     * Run batch processor and set a bulk task
      */
     protected Callable<Void> runBatchProcessor(BatchProcessor<NodeRef> batchProcessor,
-        BatchProcessWorker<NodeRef> batchProcessWorker)
+        BatchProcessWorker<NodeRef> batchProcessWorker, BulkTaskContainer bulkTaskContainer)
     {
         return () -> {
-            TaskScheduler taskScheduler = getTaskScheduler(batchProcessor, bulkMonitor);
-            taskScheduler.schedule(loggingIntervalMs);
+            bulkTaskContainer.setTask(getTask(batchProcessor, bulkMonitor));
             try
             {
                 if (logger.isDebugEnabled())
@@ -137,8 +140,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
             }
             finally
             {
-                taskScheduler.runTask();
-                taskScheduler.unschedule();
+                bulkTaskContainer.runTask();
             }
             return null;
         };
@@ -154,13 +156,20 @@ public abstract class BulkBaseService<T> implements InitializingBean
     protected abstract T getInitBulkStatus(String processId, long totalItems);
 
     /**
-     * Get task scheduler
+     * Get hold task container
      *
-     * @param batchProcessor batch processor
-     * @param monitor        bulk monitor
-     * @return task scheduler
+     * @return task container
      */
-    protected abstract TaskScheduler getTaskScheduler(BatchProcessor<NodeRef> batchProcessor, BulkMonitor<T> monitor);
+    protected abstract BulkTaskContainer getBulkTaskContainer();
+
+    /**
+     * Get task
+     *
+     * @param batchProcessor
+     * @param monitor
+     * @return
+     */
+    protected abstract Runnable getTask(BatchProcessor<NodeRef> batchProcessor, BulkMonitor<T> monitor);
 
     /**
      * Get work provider
@@ -169,7 +178,8 @@ public abstract class BulkBaseService<T> implements InitializingBean
      * @param totalItems    total items
      * @return work provider
      */
-    protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems);
+    protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems,
+        BulkTaskContainer bulkTaskContainer);
 
     /**
      * Get worker provider
@@ -246,5 +256,10 @@ public abstract class BulkBaseService<T> implements InitializingBean
     public void setLoggingIntervalMs(int loggingIntervalMs)
     {
         this.loggingIntervalMs = loggingIntervalMs;
+    }
+
+    public void setItemsPerTransaction(int itemsPerTransaction)
+    {
+        this.itemsPerTransaction = itemsPerTransaction;
     }
 }

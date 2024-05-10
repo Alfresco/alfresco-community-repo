@@ -40,7 +40,6 @@ public class AddUndeletableAspectToDataDictionaryPatch extends AbstractPatch
 {
     private static final String MSG_DC_PATCHED = "patch.addUndeletableAspectToDataDictionaryPatch.success";
     private static final String MSG_DC_NOT_PATCHED = "patch.addUndeletableAspectToDataDictionaryPatch.skipped";
-    private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
 
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
@@ -49,13 +48,8 @@ public class AddUndeletableAspectToDataDictionaryPatch extends AbstractPatch
     }
 
     @Override
-    public void setNodeService(NodeService nodeService)
+    protected String applyInternal() throws Exception
     {
-        this.nodeService = nodeService;
-    }
-
-    @Override
-    protected String applyInternal() throws Exception {
         NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         String primaryPath = "/app:company_home/app:dictionary";
         NodeRef nodeRef = nodeService.getChildByName(rootNodeRef, ContentModel.ASSOC_CONTAINS, primaryPath);

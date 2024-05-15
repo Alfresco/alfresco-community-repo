@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,29 +24,25 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
+package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkTaskContainer;
 
 /**
- * POJO for hold child entry
- *
- * @author Damian Ujma
+ * An implementation of {@link BulkTaskContainer} for the hold bulk operation
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public class HoldBulkTaskContainer implements BulkTaskContainer
 {
-    @JsonProperty
-    private HoldChild entry;
+    private Runnable task;
+
+    public void runTask()
+    {
+        task.run();
+    }
+
+    public void setTask(Runnable task)
+    {
+        this.task = task;
+    }
+
 }

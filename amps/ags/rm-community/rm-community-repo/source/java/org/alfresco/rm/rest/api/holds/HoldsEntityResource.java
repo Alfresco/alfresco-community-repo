@@ -30,6 +30,8 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -42,6 +44,9 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
+import org.alfresco.rm.rest.api.model.HoldBulkOperation;
+import org.alfresco.rm.rest.api.model.HoldBulkOperationEntry;
+import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.rm.rest.api.model.HoldDeletionReason;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -68,6 +73,7 @@ public class HoldsEntityResource implements
     private ApiNodesModelFactory nodesModelFactory;
     private HoldService holdService;
     private TransactionService transactionService;
+    private HoldBulkService holdBulkService;
 
     @Override
     public void afterPropertiesSet() throws Exception
@@ -157,6 +163,23 @@ public class HoldsEntityResource implements
         return reason;
     }
 
+    @Operation("bulk")
+    @WebApiDescription(title = "Start the hold bulk operation",
+        successStatus = HttpServletResponse.SC_ACCEPTED)
+    public HoldBulkOperationEntry bulk(String holdId, HoldBulkOperation holdBulkOperation, Parameters parameters,
+        WithResponse withResponse)
+    {
+        // validate parameters
+        checkNotBlank("holdId", holdId);
+        mandatory("parameters", parameters);
+
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
+
+        HoldBulkStatus holdBulkStatus = holdBulkService.execute(parentNodeRef,
+            new BulkOperation(holdBulkOperation.query(), holdBulkOperation.op().name()));
+        return new HoldBulkOperationEntry(holdBulkStatus.bulkStatusId(), holdBulkStatus.totalItems());
+    }
+
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
         this.apiUtils = apiUtils;
@@ -180,5 +203,10 @@ public class HoldsEntityResource implements
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setHoldBulkService(HoldBulkService holdBulkService)
+    {
+        this.holdBulkService = holdBulkService;
     }
 }

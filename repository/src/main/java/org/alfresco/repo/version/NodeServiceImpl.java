@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -762,7 +762,15 @@ public class NodeServiceImpl implements NodeService, VersionModel
     public Collection<ChildAssociationRef> getChildAssocsWithoutParentAssocsOfType(NodeRef parent, QName assocTypeQName)
     {
         throw new UnsupportedOperationException(MSG_UNSUPPORTED);
-    }        
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    public List<String> findAssocsNotLinkedByTwoOtherAssocs(NodeRef parent)
+    {
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED);
+    }
 
     /**
      * Gets, converts and adds the intrinsic properties to the current node's properties

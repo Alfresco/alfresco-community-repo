@@ -24,64 +24,96 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
+package org.alfresco.module.org_alfresco_module_rm.bulk;
 
-import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.DefaultHoldBulkMonitor;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkProcessDetails;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.rm.rest.api.model.HoldBulkStatus;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
-public class HoldBulkMonitorTest
+public class DefaultHoldBulkMonitorUnitTest
 {
 
     @Mock
     private SimpleCache<String, HoldBulkStatus> holdProgressCache;
 
     @Mock
-    private SimpleCache<String, List<String>> holdProcessRegistry;
+    private SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
 
-    private HoldBulkMonitor holdBulkMonitor;
+    private DefaultHoldBulkMonitor holdBulkMonitor;
 
     @Before
-    public void setUp() {
+    public void setUp()
+    {
         MockitoAnnotations.openMocks(this);
-        holdBulkMonitor = new HoldBulkMonitor();
+        holdBulkMonitor = new DefaultHoldBulkMonitor();
         holdBulkMonitor.setHoldProgressCache(holdProgressCache);
         holdBulkMonitor.setHoldProcessRegistry(holdProcessRegistry);
     }
 
     @Test
-    public void getBatchStatusesForHoldReturnsEmptyListWhenNoProcesses() {
+    public void testUpdateBulkStatus()
+    {
+        HoldBulkStatus status = new HoldBulkStatus("bulkStatusId", null, null, 0L, 0L, 0L, null);
+
+        holdBulkMonitor.updateBulkStatus(status);
+
+        Mockito.verify(holdProgressCache).put("bulkStatusId", status);
+    }
+
+    @Test
+    public void testRegisterProcess()
+    {
+        NodeRef holdRef = new NodeRef("workspace://SpacesStore/holdId");
+        String processId = "processId";
+        when(holdProcessRegistry.get(holdRef.getId())).thenReturn(null);
+
+        holdBulkMonitor.registerProcess(holdRef, processId);
+
+        Mockito.verify(holdProcessRegistry)
+            .put(holdRef.getId(), Arrays.asList(new HoldBulkProcessDetails(processId, null)));
+    }
+
+    @Test
+    public void getBatchStatusesForHoldReturnsEmptyListWhenNoProcesses()
+    {
         when(holdProcessRegistry.get("holdId")).thenReturn(null);
         assertEquals(Collections.emptyList(), holdBulkMonitor.getBatchStatusesForHold("holdId"));
     }
 
     @Test
-    public void getBatchStatusesForHoldReturnsSortedStatuses() {
+    public void getBatchStatusesForHoldReturnsSortedStatuses()
+    {
         HoldBulkStatus status1 = new HoldBulkStatus(null, new Date(1000), new Date(2000), 0L, 0L, 0L, null);
         HoldBulkStatus status2 = new HoldBulkStatus(null, new Date(3000), null, 0L, 0L, 0L, null);
         HoldBulkStatus status3 = new HoldBulkStatus(null, new Date(4000), null, 0L, 0L, 0L, null);
         HoldBulkStatus status4 = new HoldBulkStatus(null, new Date(500), new Date(800), 0L, 0L, 0L, null);
         HoldBulkStatus status5 = new HoldBulkStatus(null, null, null, 0L, 0L, 0L, null);
 
-
-        when(holdProcessRegistry.get("holdId")).thenReturn(Arrays.asList("process1", "process2", "process3", "process4", "process5"));
+        when(holdProcessRegistry.get("holdId")).thenReturn(
+            Arrays.asList("process1", "process2", "process3", "process4", "process5")
+                .stream().map(bulkStatusId -> new HoldBulkProcessDetails(bulkStatusId, null)).toList());
         when(holdProgressCache.get("process1")).thenReturn(status1);
         when(holdProgressCache.get("process2")).thenReturn(status2);
         when(holdProgressCache.get("process3")).thenReturn(status3);
         when(holdProgressCache.get("process4")).thenReturn(status4);
         when(holdProgressCache.get("process5")).thenReturn(status5);
 
-        assertEquals(Arrays.asList(status5, status3, status2, status1, status4), holdBulkMonitor.getBatchStatusesForHold("holdId"));
+        assertEquals(Arrays.asList(status5, status3, status2, status1, status4),
+            holdBulkMonitor.getBatchStatusesForHold("holdId"));
     }
 }

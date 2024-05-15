@@ -28,11 +28,31 @@ package org.alfresco.module.org_alfresco_module_rm.bulk;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
+/**
+ * An interface for monitoring the progress of a bulk operation
+ */
 public interface BulkMonitor<T>
 {
+    /**
+     * Update the bulk status
+     *
+     * @param bulkStatus the bulk status
+     */
     void updateBulkStatus(T bulkStatus);
 
+    /**
+     * Register a process
+     *
+     * @param nodeRef   the node reference
+     * @param processId the process id
+     */
     void registerProcess(NodeRef nodeRef, String processId);
 
+    /**
+     * Get the bulk status
+     *
+     * @param processName the process name
+     * @return the bulk status
+     */
     T getBulkStatus(String processName);
 }

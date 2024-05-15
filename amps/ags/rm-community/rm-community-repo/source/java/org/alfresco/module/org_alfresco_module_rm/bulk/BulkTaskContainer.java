@@ -26,9 +26,20 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk;
 
+/**
+ * An interface for containing a bulk task
+ */
 public interface BulkTaskContainer
 {
+    /**
+     * Run the task
+     */
     void runTask();
 
+    /**
+     * Set the task
+     *
+     * @param task the task
+     */
     void setTask(Runnable task);
 }

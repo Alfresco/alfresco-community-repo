@@ -441,6 +441,29 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertStatusCode(NOT_FOUND);
     }
 
+    /**
+     * Given a user with the add to hold capability and hold filling permission
+     * When the user adds content from all sites to a hold using the bulk API to exceed the limit (30 items)
+     * Then the user receives bad request error
+     */
+    @Test
+    public void testExceedingBulkOperationLimit()
+    {
+        STEP("Start bulk process to exceed the limit");
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        queryReq.setQuery("TYPE:content");
+        queryReq.setLanguage("afts");
+
+        HoldBulkOperation exceedLimitOp = HoldBulkOperation.builder()
+            .query(queryReq)
+            .op(HoldBulkOperationType.ADD).build();
+
+        getRestAPIFactory().getHoldsAPI(getAdminUser()).startBulkProcess(exceedLimitOp, hold.getId());
+
+        assertStatusCode(BAD_REQUEST);
+    }
+
+
     private void assertBulkProcessStatus(HoldBulkStatus holdBulkStatus, long expectedProcessedItems,
         int expectedErrorsCount, String expectedErrorMessage)
     {

@@ -28,6 +28,9 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkTaskContainer;
 
+/**
+ * An implementation of {@link BulkTaskContainer} for the hold bulk operation
+ */
 public class HoldBulkTaskContainer implements BulkTaskContainer
 {
     private Runnable task;

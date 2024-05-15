@@ -26,63 +26,21 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkMonitor;
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
-import org.alfresco.service.cmr.repository.NodeRef;
 
-public class HoldBulkMonitor implements BulkMonitor<HoldBulkStatus>
+/**
+ * An interface for monitoring the progress of a bulk hold operation
+ */
+public interface HoldBulkMonitor extends BulkMonitor<HoldBulkStatus>
 {
-    private SimpleCache<String, HoldBulkStatus> holdProgressCache;
-    private SimpleCache<String, List<String>> holdProcessRegistry;
-
-    public void updateBulkStatus(HoldBulkStatus holdBulkStatus)
-    {
-        holdProgressCache.put(holdBulkStatus.bulkStatusId(), holdBulkStatus);
-    }
-
-    public void registerProcess(NodeRef holdRef, String processId)
-    {
-        List<String> processIds = Optional.ofNullable(holdProcessRegistry.get(holdRef.getId()))
-            .orElse(new ArrayList<>());
-        processIds.add(processId);
-        holdProcessRegistry.put(holdRef.getId(), processIds);
-    }
-
-    public HoldBulkStatus getBulkStatus(String processName)
-    {
-        return holdProgressCache.get(processName);
-    }
-
-    public List<HoldBulkStatus> getBatchStatusesForHold(String holdId)
-    {
-        return Optional.ofNullable(holdProcessRegistry.get(holdId))
-            .map(list -> list.stream()
-                .map(this::getBulkStatus)
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(HoldBulkStatus::endTime, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(HoldBulkStatus::startTime, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .reversed())
-                .toList())
-            .orElse(Collections.emptyList());
-    }
-
-    public void setHoldProgressCache(
-        SimpleCache<String, HoldBulkStatus> holdProgressCache)
-    {
-        this.holdProgressCache = holdProgressCache;
-    }
-
-    public void setHoldProcessRegistry(
-        SimpleCache<String, List<String>> holdProcessRegistry)
-    {
-        this.holdProcessRegistry = holdProcessRegistry;
-    }
+    /**
+     * Get the batch statuses for a hold
+     *
+     * @param holdId the hold id
+     * @return the batch statuses
+     */
+    List<HoldBulkStatus> getBatchStatusesForHold(String holdId);
 }

@@ -24,21 +24,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.bulk;
+package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import org.alfresco.rest.api.search.model.Query;
+import java.io.Serializable;
 
 /**
- * An immutable POJO to represent a bulk operation
+ * A simple immutable POJO to hold the details of a bulk hold process
  */
-public record BulkOperation(Query searchQuery, String operationType)
-{
-    public BulkOperation
-    {
-        if (operationType == null || searchQuery == null)
-        {
-            throw new IllegalArgumentException("Operation type and search query must not be null");
-        }
-    }
-}
-
+public record HoldBulkProcessDetails(String bulkStatusId, String creatorInstance) implements Serializable {}

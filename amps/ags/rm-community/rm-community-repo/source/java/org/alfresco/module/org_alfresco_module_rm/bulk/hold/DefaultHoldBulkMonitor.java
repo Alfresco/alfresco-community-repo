@@ -44,8 +44,8 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  */
 public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements HoldBulkMonitor
 {
-    private SimpleCache<String, HoldBulkStatus> holdProgressCache;
-    private SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
+    protected SimpleCache<String, HoldBulkStatus> holdProgressCache;
+    protected SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
 
     public void updateBulkStatus(HoldBulkStatus holdBulkStatus)
     {
@@ -89,16 +89,6 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
         SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry)
     {
         this.holdProcessRegistry = holdProcessRegistry;
-    }
-
-    public SimpleCache<String, HoldBulkStatus> getHoldProgressCache()
-    {
-        return holdProgressCache;
-    }
-
-    public SimpleCache<String, List<HoldBulkProcessDetails>> getHoldProcessRegistry()
-    {
-        return holdProcessRegistry;
     }
 
     @Override

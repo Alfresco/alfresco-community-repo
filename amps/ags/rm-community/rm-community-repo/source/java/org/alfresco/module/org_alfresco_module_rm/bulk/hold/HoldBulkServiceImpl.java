@@ -123,15 +123,13 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             final String holdName = (String) nodeService.getProperty(holdRef, PROP_NAME);
             throw new InvalidArgumentException(I18NUtil.getMessage("rm.hold.not-hold", holdName), null);
         }
-        if (ADD.name().equals(bulkOperation.operationType()))
+        if (ADD.name().equals(bulkOperation.operationType()) && (!AccessStatus.ALLOWED.equals(
+            capabilityService.getCapabilityAccessState(holdRef, RMPermissionModel.ADD_TO_HOLD)) ||
+            permissionService.hasPermission(holdRef, RMPermissionModel.FILING) == AccessStatus.DENIED))
         {
-            if (!AccessStatus.ALLOWED.equals(
-                capabilityService.getCapabilityAccessState(holdRef, RMPermissionModel.ADD_TO_HOLD)) ||
-                permissionService.hasPermission(holdRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
-            {
-                throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
-            }
+            throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
         }
+
     }
 
     private class AddToHoldWorkerBatch implements BatchProcessWorker<NodeRef>

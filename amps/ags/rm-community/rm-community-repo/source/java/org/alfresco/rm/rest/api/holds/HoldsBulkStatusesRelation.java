@@ -74,23 +74,25 @@ public class HoldsBulkStatusesRelation
             .skip(parameters.getPaging().getSkipCount())
             .limit(parameters.getPaging().getMaxItems())
             .collect(Collectors.toCollection(LinkedList::new));
+
         int totalItems = statuses.size();
         boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;
         return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, hasMore, totalItems);
     }
 
     @Override
-    public HoldBulkStatus readById(String holdId, String processId, Parameters parameters)
+    public HoldBulkStatus readById(String holdId, String bulkStatusId, Parameters parameters)
         throws RelationshipResourceNotFoundException
     {
-        checkNotBlank("processId", processId);
+        checkNotBlank("holdId", holdId);
+        checkNotBlank("bulkStatusId", bulkStatusId);
         mandatory("parameters", parameters);
 
         NodeRef holdRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
 
         checkReadPermissions(holdRef);
 
-        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(processId)).orElseThrow(() -> new EntityNotFoundException(processId));
+        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(bulkStatusId)).orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
     }
 
     private void checkReadPermissions(NodeRef holdRef)

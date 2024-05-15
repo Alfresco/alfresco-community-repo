@@ -75,8 +75,6 @@ import org.testng.annotations.Test;
 
 /**
  * API tests for adding items to holds via the bulk process
- *
- * @since 3.5
  */
 public class AddToHoldsBulkV1Tests extends BaseRMRestTest
 {
@@ -84,8 +82,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         "permissions to perform this operation.";
     private static final int NUMBER_OF_FILES = 30;
     private final List<FileModel> addedFiles = new ArrayList<>();
-    private List<UserModel> users = new ArrayList<>();
-    private List<Hold> holds = new ArrayList<>();
+    private final List<UserModel> users = new ArrayList<>();
+    private final List<Hold> holds = new ArrayList<>();
     private Hold hold;
     private Hold hold2;
     private Hold hold3;
@@ -111,6 +109,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         rootFolder = dataContent.usingAdmin().usingSite(testSite).createFolder();
         FolderModel folder1 = dataContent.usingAdmin().usingResource(rootFolder).createFolder();
         FolderModel folder2 = dataContent.usingAdmin().usingResource(folder1).createFolder();
+
+        // Add files to subfolders in the site
         for (int i = 0; i < NUMBER_OF_FILES; i++)
         {
             FileModel documentHeld = dataContent.usingAdmin()
@@ -239,10 +239,11 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             hold.getId(), UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING);
         users.add(userWithoutAddToHoldCapability);
 
+        STEP("Add content from the site to the hold using the bulk API.");
         getRestAPIFactory().getHoldsAPI(userWithoutAddToHoldCapability)
             .startBulkProcess(holdBulkOperation, hold.getId());
 
-        // Verify the status code
+        STEP("Verify the response status code and the error message.");
         assertStatusCode(FORBIDDEN);
         getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary(ACCESS_DENIED_ERROR_MESSAGE);
     }
@@ -259,10 +260,11 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             UserRole.SiteCollaborator, hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS);
         users.add(userWithoutFillingPermissionOnAHold);
 
+        STEP("Add content from the site to the hold using the bulk API.");
         getRestAPIFactory().getHoldsAPI(userWithoutFillingPermissionOnAHold)
             .startBulkProcess(holdBulkOperation, hold.getId());
 
-        // Verify the status code
+        STEP("Verify the response status code and the error message.");
         assertStatusCode(FORBIDDEN);
         getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary(ACCESS_DENIED_ERROR_MESSAGE);
 
@@ -281,10 +283,11 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userWithoutWritePermissionOnTheContent);
 
+        STEP("Add content from the site to the hold using the bulk API.");
         HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(
             userWithoutWritePermissionOnTheContent).startBulkProcess(holdBulkOperation, hold.getId());
 
-        // Verify the status code
+        STEP("Verify the response.");
         assertStatusCode(ACCEPTED);
 
         await().atMost(20, TimeUnit.SECONDS).until(() ->
@@ -360,6 +363,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         getRestAPIFactory().getHoldsAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword"))
             .startBulkProcess(holdBulkOperation, hold.getId());
 
+        STEP("Verify the response status code.");
         assertStatusCode(UNAUTHORIZED);
     }
 
@@ -375,6 +379,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Start bulk process for non existent hold");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).startBulkProcess(holdBulkOperation, "nonExistentHoldId");
 
+        STEP("Verify the response status code.");
         assertStatusCode(NOT_FOUND);
     }
 
@@ -393,6 +398,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             .query(holdBulkOperation.getQuery()).build();
         getRestAPIFactory().getHoldsAPI(getAdminUser()).startBulkProcess(invalidHoldBulkOperation, hold.getId());
 
+        STEP("Verify the response status code.");
         assertStatusCode(BAD_REQUEST);
     }
 
@@ -408,6 +414,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Start bulk process for non existent hold");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).getBulkStatus("nonExistentHoldId", "nonExistenBulkStatusId");
 
+        STEP("Verify the response status code.");
         assertStatusCode(NOT_FOUND);
     }
 
@@ -423,6 +430,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Start bulk process for non bulk status");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).getBulkStatus(hold.getId(), "nonExistenBulkStatusId");
 
+        STEP("Verify the response status code.");
         assertStatusCode(NOT_FOUND);
     }
 
@@ -438,6 +446,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Start bulk process for non existent hold");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).getBulkStatuses("nonExistentHoldId");
 
+        STEP("Verify the response status code.");
         assertStatusCode(NOT_FOUND);
     }
 
@@ -449,7 +458,6 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testExceedingBulkOperationLimit()
     {
-        STEP("Start bulk process to exceed the limit");
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery("TYPE:content");
         queryReq.setLanguage("afts");
@@ -458,8 +466,10 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             .query(queryReq)
             .op(HoldBulkOperationType.ADD).build();
 
+        STEP("Start bulk process to exceed the limit");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).startBulkProcess(exceedLimitOp, hold.getId());
 
+        STEP("Verify the response status code.");
         assertStatusCode(BAD_REQUEST);
     }
 

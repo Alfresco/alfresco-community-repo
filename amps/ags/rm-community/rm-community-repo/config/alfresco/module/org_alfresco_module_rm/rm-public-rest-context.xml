@@ -264,5 +264,4 @@
       <property name="beanName" value="restJsonModule" />
       <property name="extendingBeanName" value="rm.restJsonModule" />
    </bean>
-
 </beans>

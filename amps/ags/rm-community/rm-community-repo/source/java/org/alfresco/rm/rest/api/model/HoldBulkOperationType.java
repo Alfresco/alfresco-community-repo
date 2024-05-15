@@ -26,7 +26,13 @@
  */
 package org.alfresco.rm.rest.api.model;
 
+/**
+ * This enum represents the types of bulk operations that can be performed on holds
+ */
 public enum HoldBulkOperationType
 {
+    /**
+     * The ADD operation represents adding items to a hold in bulk.
+     */
     ADD
 }

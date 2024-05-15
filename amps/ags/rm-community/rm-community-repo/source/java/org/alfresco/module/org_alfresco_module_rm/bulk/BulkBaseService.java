@@ -98,7 +98,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
         BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation);
         BulkTaskContainer bulkTaskContainer = getBulkTaskContainer();
 
-        BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<NodeRef>(
+        BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<>(
             processId,
             transactionService.getRetryingTransactionHelper(),
             getWorkProvider(bulkOperation, totalItems, bulkTaskContainer),
@@ -120,31 +120,26 @@ public abstract class BulkBaseService<T> implements InitializingBean
     {
         bulkTaskContainer.setTask(getTask(batchProcessor, bulkMonitor));
 
-        Runnable backgroundLogic = new Runnable()
-        {
-            @Override
-            public void run()
+        Runnable backgroundLogic = () -> {
+            try
             {
-                try
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Started processing batch with name: " + batchProcessor.getProcessName());
-                    }
-                    batchProcessor.processLong(batchProcessWorker, true);
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Processing batch with name: " + batchProcessor.getProcessName() + " completed");
-                    }
+                    logger.debug("Started processing batch with name: " + batchProcessor.getProcessName());
                 }
-                catch (Throwable t)
+                batchProcessor.processLong(batchProcessWorker, true);
+                if (logger.isDebugEnabled())
                 {
-                    logger.error("Error processing batch with name: " + batchProcessor.getProcessName(), t);
+                    logger.debug("Processing batch with name: " + batchProcessor.getProcessName() + " completed");
                 }
-                finally
-                {
-                    bulkTaskContainer.runTask();
-                }
+            }
+            catch (Throwable t)
+            {
+                logger.error("Error processing batch with name: " + batchProcessor.getProcessName(), t);
+            }
+            finally
+            {
+                bulkTaskContainer.runTask();
             }
         };
 

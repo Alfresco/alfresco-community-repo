@@ -60,9 +60,9 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
         holdProcessRegistry.put(holdRef.getId(), processIds);
     }
 
-    public HoldBulkStatus getBulkStatus(String processName)
+    public HoldBulkStatus getBulkStatus(String bulkStatusId)
     {
-        return holdProgressCache.get(processName);
+        return holdProgressCache.get(bulkStatusId);
     }
 
     public List<HoldBulkStatus> getBatchStatusesForHold(String holdId)

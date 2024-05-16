@@ -50,10 +50,11 @@ public class CreatePolicy extends AbstractBasePolicy
 
         //get the recordType
         for (Object qname : invocation.getArguments()) {
-            if (qname!= null && qname.equals(RecordsManagementModel.TYPE_RECORD_FOLDER)) {
+            if (qname!= null && qname.equals(RecordsManagementModel.TYPE_RECORD_FOLDER))
+            {
                 recordType = (QName) qname;
-            }
-            if (qname!= null && qname.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY)) {
+            }else if (qname!= null && qname.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))
+            {
                 recordType = (QName) qname;
             }
         }

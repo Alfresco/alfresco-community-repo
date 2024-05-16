@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -76,7 +75,7 @@ public class CreateCapability extends DeclarativeCapability
     @Override
     public int evaluate(NodeRef nodeRef)
     {
-        return evaluate(nodeRef, null, null);
+        return evaluate(nodeRef, null, null, null);
     }
 
     /**
@@ -85,9 +84,10 @@ public class CreateCapability extends DeclarativeCapability
      * @param destination   destination node reference
      * @param linkee        linkee node reference, can be null
      * @param assocType     association type, can be null
+     * @param recordType    record type, can be null
      * @return
      */
-    public int evaluate(NodeRef destination, NodeRef linkee, QName assocType)
+    public int evaluate(NodeRef destination, NodeRef linkee, QName assocType, QName recordType)
     {
         if (linkee != null)
         {
@@ -133,7 +133,7 @@ public class CreateCapability extends DeclarativeCapability
             // if the destination folder is not a record folder and the user has filling capability on it, grant access to create the record
             if (checkConditions(destination, conditions) &&
                    !recordFolderService.isRecordFolder(destination) &&
-                        (capabilityService.getCapability(CREATE_MODIFY_DESTROY_FILEPLAN_METADATA).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED))
+                    permissionService.hasPermission(destination, CREATE_MODIFY_DESTROY_FILEPLAN_METADATA) == AccessStatus.ALLOWED)
             {
                 return AccessDecisionVoter.ACCESS_GRANTED;
             }
@@ -162,7 +162,7 @@ public class CreateCapability extends DeclarativeCapability
                 return AccessDecisionVoter.ACCESS_GRANTED;
             }
         }
-        if (assocType != null && assocType.equals(TYPE_RECORD_FOLDER) && capabilityService.getCapability(CREATE_MODIFY_DESTROY_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
+        if (null != recordType && recordType.equals(TYPE_RECORD_FOLDER) && capabilityService.getCapability(CREATE_MODIFY_DESTROY_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             return AccessDecisionVoter.ACCESS_GRANTED;
         }

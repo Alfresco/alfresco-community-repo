@@ -33,23 +33,31 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInvocation;
 
-import java.util.Arrays;
-
 public class CreatePolicy extends AbstractBasePolicy
 {
     @SuppressWarnings("rawtypes")
-    @Override
 	public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef linkee = null;
+        QName assocType = null;
+        QName recordType = null;
 
         // get the destination node
         NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
 
-        QName assocType = (QName) Arrays.stream(invocation.getArguments()).filter(RecordsManagementModel.TYPE_RECORD_FOLDER::equals).findAny().orElse(null);
+        //get the recordType
+        for (Object qname : invocation.getArguments()) {
+            if (qname!= null && qname.equals(RecordsManagementModel.TYPE_RECORD_FOLDER)) {
+                recordType = (QName) qname;
+            }
+            if (qname!= null && qname.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY)) {
+                recordType = (QName) qname;
+            }
+        }
+
         if (cad.getParameters().size() > 1)
         {
             // get the linkee when present
@@ -62,7 +70,7 @@ public class CreatePolicy extends AbstractBasePolicy
             }
         }
 
-        return ((CreateCapability) getCapabilityService().getCapability("Create")).evaluate(destination, linkee, assocType);
+        return ((CreateCapability) getCapabilityService().getCapability("Create")).evaluate(destination, linkee, assocType, recordType);
     }
 
 }

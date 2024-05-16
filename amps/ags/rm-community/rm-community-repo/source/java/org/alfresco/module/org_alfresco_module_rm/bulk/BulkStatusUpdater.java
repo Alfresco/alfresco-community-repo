@@ -24,25 +24,17 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
+package org.alfresco.module.org_alfresco_module_rm.bulk;
 
-import org.alfresco.module.org_alfresco_module_rm.bulk.BulkTaskContainer;
+import org.springframework.context.ApplicationEventPublisher;
 
 /**
- * An implementation of {@link BulkTaskContainer} for the hold bulk operation
+ * An interface for updating the status of a bulk operation
  */
-public class HoldBulkTaskContainer implements BulkTaskContainer
+public interface BulkStatusUpdater extends ApplicationEventPublisher
 {
-    private Runnable task;
-
-    public void runTask()
-    {
-        task.run();
-    }
-
-    public void setTask(Runnable task)
-    {
-        this.task = task;
-    }
-
+    /**
+     * Update the bulk status
+     */
+    void update();
 }

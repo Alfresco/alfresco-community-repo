@@ -31,4 +31,6 @@ import java.io.Serializable;
 /**
  * A simple immutable POJO to hold the details of a bulk hold process
  */
-public record HoldBulkProcessDetails(String bulkStatusId, String creatorInstance) implements Serializable {}
+public record HoldBulkProcessDetails(String bulkStatusId, String creatorInstance) implements Serializable
+{
+}

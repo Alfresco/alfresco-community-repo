@@ -35,14 +35,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkBaseService;
-import org.alfresco.module.org_alfresco_module_rm.bulk.BulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
-import org.alfresco.module.org_alfresco_module_rm.bulk.BulkTaskContainer;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkStatusUpdater;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
-import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -80,28 +78,16 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     }
 
     @Override
-    protected BulkTaskContainer getBulkTaskContainer()
+    protected BulkStatusUpdater getBulkStatusUpdater()
     {
-        return new HoldBulkTaskContainer();
-    }
-
-    @Override
-    protected Runnable getTask(BatchProcessor<NodeRef> batchProcessor,
-        BulkMonitor<HoldBulkStatus> monitor)
-    {
-        return () -> monitor.updateBulkStatus(
-            new HoldBulkStatus(batchProcessor.getProcessName(), batchProcessor.getStartTime(),
-                batchProcessor.getEndTime(),
-                batchProcessor.getSuccessfullyProcessedEntriesLong() + batchProcessor.getTotalErrorsLong(),
-                batchProcessor.getTotalErrorsLong(), batchProcessor.getTotalResultsLong(),
-                batchProcessor.getLastError()));
+        return new HoldBulkStatusUpdater((HoldBulkMonitor) bulkMonitor);
     }
 
     @Override
     protected BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems,
-        BulkTaskContainer bulkTaskContainer)
+        BulkStatusUpdater bulkStatusUpdater)
     {
-        return new AddToHoldWorkerProvider(new AtomicInteger(0), bulkOperation, totalItems, bulkTaskContainer);
+        return new AddToHoldWorkerProvider(new AtomicInteger(0), bulkOperation, totalItems, bulkStatusUpdater);
     }
 
     @Override
@@ -175,15 +161,15 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         private final Query searchQuery;
         private final String currentUser;
         private final long totalItems;
-        private final BulkTaskContainer bulkTaskContainer;
+        private final BulkStatusUpdater bulkStatusUpdater;
 
         public AddToHoldWorkerProvider(AtomicInteger currentNodeNumber, BulkOperation bulkOperation, long totalItems,
-            BulkTaskContainer bulkTaskContainer)
+            BulkStatusUpdater bulkStatusUpdater)
         {
             this.currentNodeNumber = currentNodeNumber;
             this.searchQuery = bulkOperation.searchQuery();
             this.totalItems = totalItems;
-            this.bulkTaskContainer = bulkTaskContainer;
+            this.bulkStatusUpdater = bulkStatusUpdater;
             currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
         }
 
@@ -217,7 +203,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
                     searchParams.getSkipCount(), result.getNumberFound());
             }
             currentNodeNumber.addAndGet(batchSize);
-            bulkTaskContainer.runTask();
+            bulkStatusUpdater.update();
             return result.getNodeRefs();
         }
 

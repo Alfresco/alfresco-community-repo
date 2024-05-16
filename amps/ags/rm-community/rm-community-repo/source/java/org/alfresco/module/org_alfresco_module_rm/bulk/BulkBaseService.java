@@ -43,7 +43,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * A base class for executing bulk operations on nodes based on search query results
@@ -57,7 +56,6 @@ public abstract class BulkBaseService<T> implements InitializingBean
     protected TransactionService transactionService;
     protected SearchMapper searchMapper;
     protected BulkMonitor<T> bulkMonitor;
-    protected ApplicationEventPublisher applicationEventPublisher;
 
     protected int threadCount;
     protected int batchSize;
@@ -96,30 +94,28 @@ public abstract class BulkBaseService<T> implements InitializingBean
         bulkMonitor.registerProcess(nodeRef, processId);
 
         BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation);
-        BulkTaskContainer bulkTaskContainer = getBulkTaskContainer();
+        BulkStatusUpdater bulkStatusUpdater = getBulkStatusUpdater();
 
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<>(
             processId,
             transactionService.getRetryingTransactionHelper(),
-            getWorkProvider(bulkOperation, totalItems, bulkTaskContainer),
+            getWorkProvider(bulkOperation, totalItems, bulkStatusUpdater),
             threadCount,
             itemsPerTransaction,
-            applicationEventPublisher,
+            bulkStatusUpdater,
             logger,
             loggingIntervalMs);
 
-        runAsyncBatchProcessor(batchProcessor, batchProcessWorker, bulkTaskContainer);
+        runAsyncBatchProcessor(batchProcessor, batchProcessWorker, bulkStatusUpdater);
         return initBulkStatus;
     }
 
     /**
-     * Run batch processor and set a bulk task
+     * Run batch processor
      */
     protected void runAsyncBatchProcessor(BatchProcessor<NodeRef> batchProcessor,
-        BatchProcessWorker<NodeRef> batchProcessWorker, BulkTaskContainer bulkTaskContainer)
+        BatchProcessWorker<NodeRef> batchProcessWorker, BulkStatusUpdater bulkStatusUpdater)
     {
-        bulkTaskContainer.setTask(getTask(batchProcessor, bulkMonitor));
-
         Runnable backgroundLogic = () -> {
             try
             {
@@ -139,7 +135,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
             }
             finally
             {
-                bulkTaskContainer.runTask();
+                bulkStatusUpdater.update();
             }
         };
 
@@ -157,30 +153,22 @@ public abstract class BulkBaseService<T> implements InitializingBean
     protected abstract T getInitBulkStatus(String processId, long totalItems);
 
     /**
-     * Get bulk task container
+     * Get bulk status updater
      *
      * @return task container
      */
-    protected abstract BulkTaskContainer getBulkTaskContainer();
-
-    /**
-     * Get task
-     *
-     * @param batchProcessor
-     * @param monitor
-     * @return
-     */
-    protected abstract Runnable getTask(BatchProcessor<NodeRef> batchProcessor, BulkMonitor<T> monitor);
+    protected abstract BulkStatusUpdater getBulkStatusUpdater();
 
     /**
      * Get work provider
      *
-     * @param bulkOperation bulk operation
-     * @param totalItems    total items
+     * @param bulkOperation     bulk operation
+     * @param totalItems        total items
+     * @param bulkStatusUpdater bulk status updater
      * @return work provider
      */
     protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems,
-        BulkTaskContainer bulkTaskContainer);
+        BulkStatusUpdater bulkStatusUpdater);
 
     /**
      * Get worker provider
@@ -207,11 +195,6 @@ public abstract class BulkBaseService<T> implements InitializingBean
         searchParams.setSkipCount(skipCount);
         searchParams.setMaxItems(1);
         return searchService.query(searchParams);
-    }
-
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
-    {
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)

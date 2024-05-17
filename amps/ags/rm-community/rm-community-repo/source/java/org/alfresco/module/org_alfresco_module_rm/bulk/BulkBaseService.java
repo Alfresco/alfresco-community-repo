@@ -49,7 +49,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public abstract class BulkBaseService<T> implements InitializingBean
 {
-    private static final Log logger = LogFactory.getLog(BulkBaseService.class);
+    private static final Log LOG = LogFactory.getLog(BulkBaseService.class);
 
     protected ServiceRegistry serviceRegistry;
     protected SearchService searchService;
@@ -103,7 +103,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
             threadCount,
             itemsPerTransaction,
             bulkStatusUpdater,
-            logger,
+            LOG,
             loggingIntervalMs);
 
         runAsyncBatchProcessor(batchProcessor, batchProcessWorker, bulkStatusUpdater);
@@ -119,19 +119,19 @@ public abstract class BulkBaseService<T> implements InitializingBean
         Runnable backgroundLogic = () -> {
             try
             {
-                if (logger.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                 {
-                    logger.debug("Started processing batch with name: " + batchProcessor.getProcessName());
+                    LOG.debug("Started processing batch with name: " + batchProcessor.getProcessName());
                 }
                 batchProcessor.processLong(batchProcessWorker, true);
-                if (logger.isDebugEnabled())
+                if (LOG.isDebugEnabled())
                 {
-                    logger.debug("Processing batch with name: " + batchProcessor.getProcessName() + " completed");
+                    LOG.debug("Processing batch with name: " + batchProcessor.getProcessName() + " completed");
                 }
             }
-            catch (Throwable t)
+            catch (Exception exception)
             {
-                logger.error("Error processing batch with name: " + batchProcessor.getProcessName(), t);
+                LOG.error("Error processing batch with name: " + batchProcessor.getProcessName(), exception);
             }
             finally
             {

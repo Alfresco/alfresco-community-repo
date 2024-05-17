@@ -89,14 +89,14 @@ public class DefaultHoldBulkMonitorUnitTest
     }
 
     @Test
-    public void getBatchStatusesForHoldReturnsEmptyListWhenNoProcesses()
+    public void testGetBatchStatusesForHoldReturnsEmptyListWhenNoProcesses()
     {
         when(holdProcessRegistry.get("holdId")).thenReturn(null);
         assertEquals(Collections.emptyList(), holdBulkMonitor.getBatchStatusesForHold("holdId"));
     }
 
     @Test
-    public void getBatchStatusesForHoldReturnsSortedStatuses()
+    public void testGetBatchStatusesForHoldReturnsSortedStatuses()
     {
         HoldBulkStatus status1 = new HoldBulkStatus(null, new Date(1000), new Date(2000), 0L, 0L, 0L, null);
         HoldBulkStatus status2 = new HoldBulkStatus(null, new Date(3000), null, 0L, 0L, 0L, null);

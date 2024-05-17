@@ -193,11 +193,12 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         users.add(userAddHoldPermission);
 
         STEP("Add content from the site to the hold using the bulk API.");
-        HoldBulkOperation contentFromFolderAndSubfoldersBulkOp = HoldBulkOperation.builder()
+        // Get content from folder and all subfolders of the root folder
+        HoldBulkOperation bulkOperation = HoldBulkOperation.builder()
             .query(getContentFromFolderAndAllSubfoldersQuery(rootFolder.getNodeRefWithoutVersion()))
             .op(HoldBulkOperationType.ADD).build();
         HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
-            .startBulkProcess(contentFromFolderAndSubfoldersBulkOp, hold3.getId());
+            .startBulkProcess(bulkOperation, hold3.getId());
 
         // Verify the status code
         assertStatusCode(ACCEPTED);
@@ -278,23 +279,24 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testBulkProcessWithUserWithoutWritePermissionOnTheContent()
     {
-        UserModel userWithoutWritePermissionOnTheContent = roleService.createUserWithSiteRoleRMRoleAndPermission(
+        // User without write permission on the content
+        UserModel userWithoutPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(
             testSite, UserRole.SiteConsumer,
             hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
-        users.add(userWithoutWritePermissionOnTheContent);
+        users.add(userWithoutPermission);
 
         STEP("Add content from the site to the hold using the bulk API.");
         HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(
-            userWithoutWritePermissionOnTheContent).startBulkProcess(holdBulkOperation, hold.getId());
+            userWithoutPermission).startBulkProcess(holdBulkOperation, hold.getId());
 
         STEP("Verify the response.");
         assertStatusCode(ACCEPTED);
 
         await().atMost(20, TimeUnit.SECONDS).until(() ->
-            getRestAPIFactory().getHoldsAPI(userWithoutWritePermissionOnTheContent)
+            getRestAPIFactory().getHoldsAPI(userWithoutPermission)
                 .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId()).getStatus() == Status.DONE);
 
-        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userWithoutWritePermissionOnTheContent)
+        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userWithoutPermission)
             .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
         assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, NUMBER_OF_FILES, ACCESS_DENIED_ERROR_MESSAGE);
     }
@@ -390,7 +392,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
      * Then the user receives bad request error
      */
     @Test
-    public void getBulkStatusesForInvalidOperation()
+    public void testGetBulkStatusesForInvalidOperation()
     {
         STEP("Start bulk process for non existent hold");
 
@@ -409,7 +411,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
      * Then the user receives not found error
      */
     @Test
-    public void getBulkStatusForNonExistentHold()
+    public void testGetBulkStatusForNonExistentHold()
     {
         STEP("Start bulk process for non existent hold");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).getBulkStatus("nonExistentHoldId", "nonExistenBulkStatusId");
@@ -425,7 +427,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
      * Then the user receives not found error
      */
     @Test
-    public void getBulkStatusForNonExistentBulkStatus()
+    public void testGetBulkStatusForNonExistentBulkStatus()
     {
         STEP("Start bulk process for non bulk status");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).getBulkStatus(hold.getId(), "nonExistenBulkStatusId");
@@ -441,7 +443,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
      * Then the user receives not found error
      */
     @Test
-    public void getBulkStatusesForNonExistentHold()
+    public void testGetBulkStatusesForNonExistentHold()
     {
         STEP("Start bulk process for non existent hold");
         getRestAPIFactory().getHoldsAPI(getAdminUser()).getBulkStatuses("nonExistentHoldId");

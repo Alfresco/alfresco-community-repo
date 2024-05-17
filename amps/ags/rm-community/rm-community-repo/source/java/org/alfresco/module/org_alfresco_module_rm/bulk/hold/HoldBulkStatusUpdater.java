@@ -49,6 +49,7 @@ public class HoldBulkStatusUpdater implements BulkStatusUpdater
                 batchMonitor.getLastError()));
     }
 
+    @Override
     public void update()
     {
         if (task != null)

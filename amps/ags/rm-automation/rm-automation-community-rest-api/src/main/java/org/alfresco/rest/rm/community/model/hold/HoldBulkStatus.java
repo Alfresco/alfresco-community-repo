@@ -33,7 +33,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.utility.model.TestModel;
 
@@ -83,9 +82,13 @@ public class HoldBulkStatus extends TestModel
     public boolean equals(Object o)
     {
         if (this == o)
+        {
             return true;
+        }
         if (o == null || getClass() != o.getClass())
+        {
             return false;
+        }
         HoldBulkStatus that = (HoldBulkStatus) o;
         return processedItems == that.processedItems && errorsCount == that.errorsCount && totalItems == that.totalItems
             && Objects.equals(bulkStatusId, that.bulkStatusId) && Objects.equals(startTime,

@@ -47,11 +47,13 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     protected SimpleCache<String, HoldBulkStatus> holdProgressCache;
     protected SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
 
+    @Override
     public void updateBulkStatus(HoldBulkStatus holdBulkStatus)
     {
         holdProgressCache.put(holdBulkStatus.bulkStatusId(), holdBulkStatus);
     }
 
+    @Override
     public void registerProcess(NodeRef holdRef, String processId)
     {
         List<HoldBulkProcessDetails> processIds = Optional.ofNullable(holdProcessRegistry.get(holdRef.getId()))
@@ -60,11 +62,13 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
         holdProcessRegistry.put(holdRef.getId(), processIds);
     }
 
+    @Override
     public HoldBulkStatus getBulkStatus(String bulkStatusId)
     {
         return holdProgressCache.get(bulkStatusId);
     }
 
+    @Override
     public List<HoldBulkStatus> getBatchStatusesForHold(String holdId)
     {
         return Optional.ofNullable(holdProcessRegistry.get(holdId))

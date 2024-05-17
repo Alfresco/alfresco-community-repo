@@ -180,6 +180,7 @@ public class CreateRecordTest extends BaseRMTestCase
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
+                capabilities.add(capabilityService.getCapability("CreateModifyDestroyFileplanMetadata"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
 
 
@@ -189,6 +190,7 @@ public class CreateRecordTest extends BaseRMTestCase
 
                 //give read and file permission to user on unfiled records container
                 filePlanPermissionService.setPermission(unfiledContainer , user, RMPermissionModel.FILING);
+                filePlanPermissionService.setPermission(unfiledContainer , user, RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA);
             }
 
             public void when()

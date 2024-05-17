@@ -257,12 +257,13 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testBulkProcessWithUserWithoutFillingPermissionOnAHold()
     {
-        UserModel userWithoutFillingPermissionOnAHold = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+        // User without filling permission on a hold
+        UserModel userWithoutPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
             UserRole.SiteCollaborator, hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS);
-        users.add(userWithoutFillingPermissionOnAHold);
+        users.add(userWithoutPermission);
 
         STEP("Add content from the site to the hold using the bulk API.");
-        getRestAPIFactory().getHoldsAPI(userWithoutFillingPermissionOnAHold)
+        getRestAPIFactory().getHoldsAPI(userWithoutPermission)
             .startBulkProcess(holdBulkOperation, hold.getId());
 
         STEP("Verify the response status code and the error message.");

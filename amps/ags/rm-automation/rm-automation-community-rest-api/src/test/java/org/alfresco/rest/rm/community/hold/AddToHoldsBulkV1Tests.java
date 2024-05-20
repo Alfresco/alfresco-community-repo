@@ -46,7 +46,6 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.dataprep.CMISUtil;
@@ -116,7 +115,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         for (int i = 0; i < NUMBER_OF_FILES; i++)
         {
             FileModel documentHeld = dataContent.usingAdmin()
-                .usingResource(new Random().nextBoolean() ? folder1 : folder2)
+                .usingResource(i % 2 == 0 ? folder1 : folder2)
                 .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
             addedFiles.add(documentHeld);
         }

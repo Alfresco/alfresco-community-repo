@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInvocation;
@@ -42,9 +43,17 @@ public class CreatePolicy extends AbstractBasePolicy
     {
         NodeRef linkee = null;
         QName assocType = null;
+        QName recordType = null;
 
         // get the destination node
         NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+
+        //get the recordType
+        for (Object qname : invocation.getArguments()) {
+            if (qname != null && (qname.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) || qname.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))) {
+                recordType = (QName) qname;
+            }
+        }
 
         if (cad.getParameters().size() > 1)
         {
@@ -58,7 +67,7 @@ public class CreatePolicy extends AbstractBasePolicy
             }
         }
 
-        return ((CreateCapability) getCapabilityService().getCapability("Create")).evaluate(destination, linkee, assocType);
+        return ((CreateCapability) getCapabilityService().getCapability("Create")).evaluate(destination, linkee, assocType, recordType);
     }
 
 }

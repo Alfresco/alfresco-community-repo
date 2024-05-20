@@ -42,6 +42,5 @@ import org.alfresco.rest.core.RestModels;
 @AllArgsConstructor
 public class HoldBulkStatusEntry extends RestModels<HoldBulkStatus, HoldBulkStatusEntry>
 {
-    @JsonProperty
     private HoldBulkStatus entry;
 }

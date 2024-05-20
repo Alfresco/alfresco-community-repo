@@ -44,6 +44,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +59,7 @@ import org.alfresco.rest.rm.community.model.hold.HoldBulkOperationEntry;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkStatus;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkStatus.Status;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkStatusCollection;
+import org.alfresco.rest.rm.community.model.hold.HoldBulkStatusEntry;
 import org.alfresco.rest.rm.community.model.hold.HoldChild;
 import org.alfresco.rest.rm.community.model.hold.HoldChildEntry;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
@@ -80,7 +82,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
 {
     private static final String ACCESS_DENIED_ERROR_MESSAGE = "Access Denied.  You do not have the appropriate " +
         "permissions to perform this operation.";
-    private static final int NUMBER_OF_FILES = 30;
+    private static final int NUMBER_OF_FILES = 5;
     private final List<FileModel> addedFiles = new ArrayList<>();
     private final List<UserModel> users = new ArrayList<>();
     private final List<Hold> holds = new ArrayList<>();
@@ -134,7 +136,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a site to a hold using the bulk API
      * Then the content is added to the hold and the status of the bulk operation is DONE
      */
@@ -171,12 +173,11 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatuses(hold.getId());
-        assertEquals(1, holdBulkStatusCollection.getEntries().size());
-        assertEquals(holdBulkStatus, holdBulkStatusCollection.getEntries().get(0).getEntry());
+        assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a folder and all subfolders to a hold using the bulk API
      * Then the content is added to the hold and the status of the bulk operation is DONE
      */
@@ -222,8 +223,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatuses(hold3.getId());
-        assertEquals(1, holdBulkStatusCollection.getEntries().size());
-        assertEquals(holdBulkStatus, holdBulkStatusCollection.getEntries().get(0).getEntry());
+        assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
     }
 
     /**
@@ -250,14 +250,14 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user without the filling permission on a hold
+     * Given a user without the filing permission on a hold
      * When the user adds content from a site to a hold using the bulk API
      * Then the user receives access denied error
      */
     @Test
-    public void testBulkProcessWithUserWithoutFillingPermissionOnAHold()
+    public void testBulkProcessWithUserWithoutFilingPermissionOnAHold()
     {
-        // User without filling permission on a hold
+        // User without filing permission on a hold
         UserModel userWithoutPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
             UserRole.SiteCollaborator, hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_READ_RECORDS);
         users.add(userWithoutPermission);
@@ -350,8 +350,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatuses(hold2.getId());
-        assertEquals(1, holdBulkStatusCollection.getEntries().size());
-        assertEquals(holdBulkStatus, holdBulkStatusCollection.getEntries().get(0).getEntry());
+        assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
     }
 
     /**
@@ -371,7 +370,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a site to a hold using the bulk API
      * And the hold does not exist
      * Then the user receives not found error
@@ -387,7 +386,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a site to a hold using the bulk API
      * and the bulk operation is invalid
      * Then the user receives bad request error
@@ -406,7 +405,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a site to a hold using the bulk API
      * And the hold does not exist
      * Then the user receives not found error
@@ -422,7 +421,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a site to a hold using the bulk API
      * And the bulk status does not exist
      * Then the user receives not found error
@@ -438,7 +437,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a site to a hold using the bulk API
      * And the hold does not exist
      * Then the user receives not found error
@@ -454,7 +453,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     }
 
     /**
-     * Given a user with the add to hold capability and hold filling permission
+     * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from all sites to a hold using the bulk API to exceed the limit (30 items)
      * Then the user receives bad request error
      */

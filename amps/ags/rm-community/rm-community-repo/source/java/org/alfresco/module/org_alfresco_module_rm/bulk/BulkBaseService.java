@@ -61,7 +61,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
     protected int batchSize;
     protected int itemsPerTransaction;
     protected int maxItems;
-    protected int loggingIntervalMs;
+    protected int loggingInterval;
 
     @Override
     public void afterPropertiesSet() throws Exception
@@ -104,7 +104,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
             itemsPerTransaction,
             bulkStatusUpdater,
             LOG,
-            loggingIntervalMs);
+            loggingInterval);
 
         runAsyncBatchProcessor(batchProcessor, batchProcessWorker, bulkStatusUpdater);
         return initBulkStatus;
@@ -237,9 +237,9 @@ public abstract class BulkBaseService<T> implements InitializingBean
         this.maxItems = maxItems;
     }
 
-    public void setLoggingIntervalMs(int loggingIntervalMs)
+    public void setLoggingInterval(int loggingInterval)
     {
-        this.loggingIntervalMs = loggingIntervalMs;
+        this.loggingInterval = loggingInterval;
     }
 
     public void setItemsPerTransaction(int itemsPerTransaction)

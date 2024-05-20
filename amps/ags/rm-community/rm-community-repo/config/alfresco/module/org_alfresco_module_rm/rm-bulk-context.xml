@@ -26,8 +26,8 @@
       <property name="maxItems">
          <value>${rm.hold.bulk.maxItems}</value>
       </property>
-      <property name="loggingIntervalMs">
-         <value>${rm.hold.bulk.logging.interval.ms}</value>
+      <property name="loggingInterval">
+         <value>${rm.hold.bulk.logging.interval}</value>
       </property>
       <property name="itemsPerTransaction">
          <value>${rm.hold.bulk.itemsPerTransaction}</value>

@@ -44,8 +44,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HoldBulkOperationEntry
 {
-    @JsonProperty
     private String bulkStatusId;
-    @JsonProperty
+
     private long totalItems;
 }

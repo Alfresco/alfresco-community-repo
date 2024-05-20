@@ -26,10 +26,6 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
-import java.util.Objects;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,28 +43,20 @@ import org.alfresco.utility.model.TestModel;
 @AllArgsConstructor
 public class HoldBulkStatus extends TestModel
 {
-    @JsonProperty
     private String bulkStatusId;
 
-    @JsonProperty
     private String startTime;
 
-    @JsonProperty
     private String endTime;
 
-    @JsonProperty
     private long processedItems;
 
-    @JsonProperty
     private long errorsCount;
 
-    @JsonProperty
     private long totalItems;
 
-    @JsonProperty
     private String lastError;
 
-    @JsonProperty
     private Status status;
 
     public enum Status
@@ -76,30 +64,5 @@ public class HoldBulkStatus extends TestModel
         PENDING,
         IN_PROGRESS,
         DONE
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass())
-        {
-            return false;
-        }
-        HoldBulkStatus that = (HoldBulkStatus) o;
-        return processedItems == that.processedItems && errorsCount == that.errorsCount && totalItems == that.totalItems
-            && Objects.equals(bulkStatusId, that.bulkStatusId) && Objects.equals(startTime,
-            that.startTime) && Objects.equals(endTime, that.endTime) && Objects.equals(lastError,
-            that.lastError) && status == that.status;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(bulkStatusId, startTime, endTime, processedItems, errorsCount, totalItems, lastError,
-            status);
     }
 }

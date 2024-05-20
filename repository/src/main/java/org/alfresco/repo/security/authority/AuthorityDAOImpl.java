@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -48,7 +48,6 @@ import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.cache.AsynchronouslyRefreshedCache;
 import org.alfresco.util.cache.RefreshableCacheEvent;
 import org.alfresco.util.cache.RefreshableCacheListener;
 import org.alfresco.repo.cache.SimpleCache;
@@ -1566,11 +1565,11 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             return Collections.<String> emptySet();
         }
-        Collection<ChildAssociationRef> childRefs = nodeService.getChildAssocsWithoutParentAssocsOfType(container, ContentModel.ASSOC_MEMBER);
+        List<String> rootGroupsNames = nodeService.findAssocsNotLinkedByTwoOtherAssocs(container);
         Set<String> authorities = new TreeSet<String>();
-        for (ChildAssociationRef childRef : childRefs)
+        for (String rootGroupName : rootGroupsNames)
         {
-            addAuthorityNameIfMatches(authorities, childRef.getQName().getLocalName(), type);
+            addAuthorityNameIfMatches(authorities, rootGroupName, type);
         }
         return authorities;
     }

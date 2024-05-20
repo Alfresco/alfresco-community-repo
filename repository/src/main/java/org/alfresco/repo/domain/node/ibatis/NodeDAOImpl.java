@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -139,6 +139,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME = "alfresco.node.select_ChildAssocOfParentByName";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
+
+    private static final String SELECT_ASSOCS_NOT_LINKED_BY_TWO_OTHER_ASSOCS = "alfresco.node.select_AssocsNotLinkedByTwoOtherAssocs";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_NODE_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutNodeAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
@@ -1415,9 +1417,21 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setOrdered(resultsCallback.orderResults());
 
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
-        
+
         template.select(SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE, assoc, resultHandler);
         resultsCallback.done();
+    }
+
+    public List<String> selectAssocsNotLinkedByTwoOtherAssocs(
+            Long parentNodeId)
+    {
+        ChildAssocEntity assoc = new ChildAssocEntity();
+        // Parent
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(parentNodeId);
+        assoc.setParentNode(parentNode);
+        // Type QName
+        return template.selectList(SELECT_ASSOCS_NOT_LINKED_BY_TWO_OTHER_ASSOCS, assoc);
     }
 
     @Override

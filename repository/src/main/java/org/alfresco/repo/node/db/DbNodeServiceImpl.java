@@ -2133,7 +2133,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         // done
         return results;
     }
-    
+
+    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
+    public List<String> findAssocsNotLinkedByTwoOtherAssocs(NodeRef parent)
+    {
+        // Get the parent node
+        Pair<Long, NodeRef> nodePair = getNodePairNotNull(parent);
+        Long parentNodeId = nodePair.getFirst();
+
+        return nodeDAO.selectAssocsNotLinkedByTwoOtherAssocs(parentNodeId);
+    }
     /**
      * Specific properties <b>not</b> supported by {@link #getChildAssocsByPropertyValue(NodeRef, QName, Serializable)}
      */

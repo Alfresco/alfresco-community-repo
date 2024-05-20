@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,26 +29,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PublicKey;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.Vector;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.AbstractChainedSubsystemTest;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
-import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -128,31 +120,8 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
 
     public void testKeycloakConfig() throws Exception
     {
-        //Get the host of the IDS test server
-        String ip = "localhost";
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                NetworkInterface iface = interfaces.nextElement();
-                // filters out 127.0.0.1 and inactive interfaces
-                if (iface.isLoopback() || !iface.isUp())
-                    continue;
-
-                Enumeration<InetAddress> addresses = iface.getInetAddresses();
-                while(addresses.hasMoreElements()) {
-                    InetAddress addr = addresses.nextElement();
-                    if(Pattern.matches("([0-9]{1,3}\\.){3}[0-9]{1,3}", addr.getHostAddress())){
-                        ip = addr.getHostAddress();
-                        break;
-                    }
-                }
-            }
-        } catch (SocketException e) {
-            throw new RuntimeException(e);
-        }
-
         // check string overrides
-        assertEquals("identity-service.auth-server-url", "http://"+ip+":8999/auth",
+        assertEquals("identity-service.auth-server-url", "http://localhost:8999/auth",
                     this.identityServiceConfig.getAuthServerUrl());
         
         assertEquals("identity-service.realm", "alfresco",

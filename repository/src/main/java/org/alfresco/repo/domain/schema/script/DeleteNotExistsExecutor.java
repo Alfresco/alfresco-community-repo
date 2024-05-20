@@ -220,6 +220,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                 {
                     // Process batch
                     primaryId = processPrimaryTableResultSet(primaryPrepStmt, secondaryPrepStmts, deletePrepStmt, deleteIds, primaryTableName, primaryColumnName, tableColumn);
+                    connection.commit();
 
                     if (primaryId == null)
                     {
@@ -298,7 +299,6 @@ public class DeleteNotExistsExecutor implements StatementExecutor
                     if (deleteIds.size() == deleteBatchSize)
                     {
                         deleteFromPrimaryTable(deletePrepStmt, deleteIds, primaryTableName);
-                        connection.commit();
                     }
 
                     if (!resultSet.next())

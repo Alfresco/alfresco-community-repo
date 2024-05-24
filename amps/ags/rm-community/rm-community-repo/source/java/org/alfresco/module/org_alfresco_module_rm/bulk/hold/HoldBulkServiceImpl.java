@@ -222,6 +222,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             searchMapper.fromQuery(searchParams, searchQuery);
             searchParams.setSkipCount(currentNodeNumber.get());
             searchParams.setMaxItems(batchSize);
+            searchParams.setLimit(batchSize);
             searchParams.addSort("@" + ContentModel.PROP_CREATED, true);
             return searchParams;
         }

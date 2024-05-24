@@ -285,6 +285,13 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             hold.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userWithoutPermission);
 
+        // Wait until permissions are reverted
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setQuery(holdBulkOperation.getQuery());
+        await().atMost(30, TimeUnit.SECONDS)
+            .until(() -> getRestAPIFactory().getSearchAPI(userWithoutPermission).search(searchRequest).getPagination()
+                .getTotalItems() == NUMBER_OF_FILES);
+
         STEP("Add content from the site to the hold using the bulk API.");
         HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(
             userWithoutPermission).startBulkProcess(holdBulkOperation, hold.getId());
@@ -350,6 +357,11 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatuses(hold2.getId());
         assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
+
+        //revert the permissions
+        contentActions.removePermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
+            testSite.getId(), addedFiles.get(0).getName(), userAddHoldPermission.getUsername(),
+            UserRole.SiteCollaborator.getRoleId(), true);
     }
 
     /**
@@ -494,7 +506,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     private RestRequestQueryModel getContentFromSiteQuery(String siteId)
     {
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("SITE:'" + siteId + "' and TYPE:content");
+        queryReq.setQuery("SITE:\"" + siteId + "\" and TYPE:content");
         queryReq.setLanguage("afts");
         return queryReq;
     }
@@ -502,7 +514,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     private RestRequestQueryModel getContentFromFolderAndAllSubfoldersQuery(String folderId)
     {
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
-        queryReq.setQuery("ANCESTOR:'workspace://SpacesStore/" + folderId + "' and TYPE:content");
+        queryReq.setQuery("ANCESTOR:\"workspace://SpacesStore/" + folderId + "\" and TYPE:content");
         queryReq.setLanguage("afts");
         return queryReq;
     }

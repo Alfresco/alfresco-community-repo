@@ -69,7 +69,7 @@ public class HoldsBulkStatusesRelation
 
         checkReadPermissions(holdRef);
 
-        List<HoldBulkStatus> statuses = holdBulkMonitor.getBatchStatusesForHold(holdId);
+        List<HoldBulkStatus> statuses = holdBulkMonitor.getBulkStatusesForHold(holdId);
         List<HoldBulkStatus> page = statuses.stream()
             .skip(parameters.getPaging().getSkipCount())
             .limit(parameters.getPaging().getMaxItems())

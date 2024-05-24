@@ -52,7 +52,7 @@ public class HoldBulkStatusUpdater implements BulkStatusUpdater
     @Override
     public void update()
     {
-        if (task != null)
+        if (task != null && batchMonitor != null)
         {
             task.run();
         }

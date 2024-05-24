@@ -69,10 +69,10 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public List<HoldBulkStatus> getBatchStatusesForHold(String holdId)
+    public List<HoldBulkStatus> getBulkStatusesForHold(String holdId)
     {
         return Optional.ofNullable(holdProcessRegistry.get(holdId))
-            .map(list -> list.stream()
+            .map(bulkProcessDetailsList -> bulkProcessDetailsList.stream()
                 .map(HoldBulkProcessDetails::bulkStatusId)
                 .map(this::getBulkStatus)
                 .filter(Objects::nonNull)

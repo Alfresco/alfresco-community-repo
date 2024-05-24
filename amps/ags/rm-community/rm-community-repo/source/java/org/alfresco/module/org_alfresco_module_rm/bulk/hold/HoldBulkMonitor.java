@@ -37,10 +37,10 @@ import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 public interface HoldBulkMonitor extends BulkMonitor<HoldBulkStatus>
 {
     /**
-     * Get the batch statuses for a hold
+     * Get the bulk statuses for a hold
      *
      * @param holdId the hold id
-     * @return the batch statuses
+     * @return the bulk statuses
      */
-    List<HoldBulkStatus> getBatchStatusesForHold(String holdId);
+    List<HoldBulkStatus> getBulkStatusesForHold(String holdId);
 }

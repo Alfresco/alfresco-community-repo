@@ -46,6 +46,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rm.rest.api.model.HoldBulkOperationType;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -93,12 +94,19 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     @Override
     protected BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation)
     {
-        if (ADD.name().equals(bulkOperation.operationType()))
+        try
         {
-            return new AddToHoldWorkerBatch(nodeRef);
+            HoldBulkOperationType holdBulkOperationType = HoldBulkOperationType.valueOf(bulkOperation.operationType().toUpperCase());
+            return switch (holdBulkOperationType)
+            {
+                case ADD -> new AddToHoldWorkerBatch(nodeRef);
+            };
         }
-        throw new InvalidArgumentException(
-            "Unsupported action type when starting the bulk process: " + bulkOperation.operationType());
+        catch (IllegalArgumentException e)
+        {
+            throw new InvalidArgumentException(
+                "Unsupported action type when starting the bulk process: " + bulkOperation.operationType());
+        }
     }
 
     @Override

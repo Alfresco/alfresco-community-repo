@@ -51,7 +51,7 @@ public interface BulkMonitor<T>
     /**
      * Get the bulk status
      *
-     * @param bulkStatusId the process name
+     * @param bulkStatusId the bulk status id
      * @return the bulk status
      */
     T getBulkStatus(String bulkStatusId);

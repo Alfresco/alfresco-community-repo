@@ -155,7 +155,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
     /**
      * Get bulk status updater
      *
-     * @return task container
+     * @return bulk status updater
      */
     protected abstract BulkStatusUpdater getBulkStatusUpdater();
 

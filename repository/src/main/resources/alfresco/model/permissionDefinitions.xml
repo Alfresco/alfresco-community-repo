@@ -57,7 +57,27 @@
       <!--                                                                                -->
       
       <permissionGroup name="FullControl" expose="true" allowFullControl="true" />
- 
+
+       <permissionGroup name="AdminServiceAccount" expose="false" allowFullControl="false">
+           <includePermissionGroup type="sys:base" permissionGroup="Read"/>
+           <includePermissionGroup type="sys:base" permissionGroup="Write"/>
+           <includePermissionGroup type="sys:base" permissionGroup="AddChildren"/>
+           <includePermissionGroup type="sys:base" permissionGroup="Delete"/>
+           <includePermissionGroup type="sys:base" permissionGroup="ReadAssociations"/>
+           <includePermissionGroup type="sys:base" permissionGroup="CreateAssociations"/>
+           <includePermissionGroup type="sys:base" permissionGroup="DeleteAssociations"/>
+           <includePermissionGroup type="sys:base" permissionGroup="ReadPermissions"/>
+       </permissionGroup>
+       <permissionGroup name="CollaboratorServiceAccount" expose="false" allowFullControl="false">
+           <includePermissionGroup type="sys:base" permissionGroup="Read"/>
+           <includePermissionGroup type="sys:base" permissionGroup="Write"/>
+           <includePermissionGroup type="sys:base" permissionGroup="AddChildren"/>
+       </permissionGroup>
+       <permissionGroup name="EditorServiceAccount" expose="false" allowFullControl="false">
+           <includePermissionGroup type="sys:base" permissionGroup="Read"/>
+           <includePermissionGroup type="sys:base" permissionGroup="Write"/>
+       </permissionGroup>
+
       <!-- ============================================= -->
       <!-- Convenient groupings of low level permissions -->
       <!-- ============================================= -->
@@ -470,5 +490,10 @@
    
    <!-- Cancel check out is granted to the lock owner                                   -->
    <globalPermission permission="CancelCheckOut" authority="ROLE_LOCK_OWNER"/>
-   
+
+    <!-- Service Account roles -->
+    <globalPermission permission="AdminServiceAccount" authority="ROLE_ADMIN_SERVICE_ACCOUNT"/>
+    <globalPermission permission="CollaboratorServiceAccount" authority="ROLE_COLLABORATOR_SERVICE_ACCOUNT"/>
+    <globalPermission permission="EditorServiceAccount" authority="ROLE_EDITOR_SERVICE_ACCOUNT"/>
+
 </permissions>

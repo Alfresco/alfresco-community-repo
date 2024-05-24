@@ -143,4 +143,8 @@
         </property>
     </bean>
 
+    <bean id="serviceAccountRegistry" class="org.alfresco.repo.sa.ServiceAccountRegistryImpl">
+        <property name="globalProperties" ref="global-properties"/>
+    </bean>
+
 </beans>

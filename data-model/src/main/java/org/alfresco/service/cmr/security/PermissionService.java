@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -77,6 +77,29 @@ public interface PermissionService
      * The guest authority
      */
     public static final String GUEST_AUTHORITY = "ROLE_GUEST";
+
+    /**
+     * The dynamic authority for the Admin service account.
+     */
+    String ADMIN_SERVICE_ACCOUNT_AUTHORITY = "ROLE_ADMIN_SERVICE_ACCOUNT";
+
+    /**
+     * The dynamic authority for the Collaborator service account.
+     */
+    String COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY = "ROLE_COLLABORATOR_SERVICE_ACCOUNT";
+
+    /**
+     * The dynamic authority for the Editor service account.
+     */
+    String EDITOR_SERVICE_ACCOUNT_AUTHORITY = "ROLE_EDITOR_SERVICE_ACCOUNT";
+
+    /**
+     * A convenient set of service account authorities to simplify checks
+     * for whether a given authority is a service account authority or not.
+     */
+    Set<String> SERVICE_ACCOUNT_AUTHORITIES_SET = Set.of(ADMIN_SERVICE_ACCOUNT_AUTHORITY,
+                                                         COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY,
+                                                         EDITOR_SERVICE_ACCOUNT_AUTHORITY);
 
     /**
      * The permission for all - not defined in the model. Repsected in the code.

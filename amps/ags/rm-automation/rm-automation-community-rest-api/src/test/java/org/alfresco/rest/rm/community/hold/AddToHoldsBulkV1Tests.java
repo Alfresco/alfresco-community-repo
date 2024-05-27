@@ -342,6 +342,9 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         await().atMost(20, TimeUnit.SECONDS).until(
             () -> getRestAPIFactory().getHoldsAPI(getAdminUser()).getChildren(hold2.getId()).getEntries().size()
                 == NUMBER_OF_FILES - 1);
+        await().atMost(20, TimeUnit.SECONDS).until(
+            () -> getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+                .getBulkStatus(hold2.getId(), bulkOperationEntry.getBulkStatusId()).getStatus() == Status.DONE);
         List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getChildren(hold2.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
                 HoldChild::getId).toList();

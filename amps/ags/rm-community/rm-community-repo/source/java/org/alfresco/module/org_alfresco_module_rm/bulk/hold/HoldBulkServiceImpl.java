@@ -62,6 +62,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 /**
  * Implementation of the {@link HoldBulkService} interface.
  */
+@SuppressWarnings("PMD.PreserveStackTrace")
 public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> implements HoldBulkService
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(HoldBulkServiceImpl.class);

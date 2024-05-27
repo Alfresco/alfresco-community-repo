@@ -31,6 +31,7 @@ import static org.alfresco.rm.rest.api.model.HoldBulkOperationType.ADD;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.model.ContentModel;
@@ -96,7 +97,8 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     {
         try
         {
-            HoldBulkOperationType holdBulkOperationType = HoldBulkOperationType.valueOf(bulkOperation.operationType().toUpperCase());
+            HoldBulkOperationType holdBulkOperationType = HoldBulkOperationType.valueOf(bulkOperation.operationType()
+                .toUpperCase(Locale.ENGLISH));
             return switch (holdBulkOperationType)
             {
                 case ADD -> new AddToHoldWorkerBatch(nodeRef);
@@ -104,8 +106,12 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         }
         catch (IllegalArgumentException e)
         {
-            throw new InvalidArgumentException(
-                "Unsupported action type when starting the bulk process: " + bulkOperation.operationType());
+            String errorMsg = "Unsupported action type when starting the bulk process: ";
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("{} {}", errorMsg, bulkOperation.operationType(), e);
+            }
+            throw new InvalidArgumentException(errorMsg + bulkOperation.operationType());
         }
     }
 

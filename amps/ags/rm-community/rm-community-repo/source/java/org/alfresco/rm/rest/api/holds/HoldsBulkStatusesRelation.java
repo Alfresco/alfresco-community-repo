@@ -92,7 +92,8 @@ public class HoldsBulkStatusesRelation
 
         checkReadPermissions(holdRef);
 
-        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(bulkStatusId)).orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
+        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(bulkStatusId))
+            .orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
     }
 
     private void checkReadPermissions(NodeRef holdRef)

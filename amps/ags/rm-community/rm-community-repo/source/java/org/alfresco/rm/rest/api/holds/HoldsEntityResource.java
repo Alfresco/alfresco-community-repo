@@ -31,6 +31,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -38,12 +39,14 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
+import org.alfresco.rm.rest.api.model.BulkTarget;
 import org.alfresco.rm.rest.api.model.HoldBulkOperation;
 import org.alfresco.rm.rest.api.model.HoldBulkOperationEntry;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
@@ -52,9 +55,12 @@ import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Hold entity resource
@@ -74,6 +80,8 @@ public class HoldsEntityResource implements
     private HoldService holdService;
     private TransactionService transactionService;
     private HoldBulkService holdBulkService;
+    private HoldBulkMonitor holdBulkMonitor;
+    private PermissionService permissionService;
 
     @Override
     public void afterPropertiesSet() throws Exception
@@ -83,6 +91,8 @@ public class HoldsEntityResource implements
         mandatory("fileFolderService", fileFolderService);
         mandatory("holdService", holdService);
         mandatory("transactionService", transactionService);
+        mandatory("holdBulkMonitor", holdBulkMonitor);
+        mandatory("permissionService", permissionService);
     }
 
     @Override
@@ -180,6 +190,23 @@ public class HoldsEntityResource implements
         return new HoldBulkOperationEntry(holdBulkStatus.bulkStatusId(), holdBulkStatus.totalItems());
     }
 
+    @Operation("cancel-bulk")
+    @WebApiDescription(title = "Cancel a bulk operation",
+        successStatus = HttpServletResponse.SC_OK)
+    public void cancelBulkOperation(String holdId, BulkTarget bulkTarget, Parameters parameters,
+        WithResponse withResponse)
+    {
+        checkNotBlank("holdId", holdId);
+        mandatory("bulkTarget", bulkTarget);
+        mandatory("parameters", parameters);
+
+        NodeRef holdRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
+
+        checkReadPermissions(holdRef);
+
+        holdBulkMonitor.cancelBulkOperation(bulkTarget.targetBulkStatusId());
+    }
+
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
         this.apiUtils = apiUtils;
@@ -208,5 +235,23 @@ public class HoldsEntityResource implements
     public void setHoldBulkService(HoldBulkService holdBulkService)
     {
         this.holdBulkService = holdBulkService;
+    }
+
+    public void setHoldBulkMonitor(HoldBulkMonitor holdBulkMonitor)
+    {
+        this.holdBulkMonitor = holdBulkMonitor;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    private void checkReadPermissions(NodeRef holdRef)
+    {
+        if (permissionService.hasReadPermission(holdRef) == AccessStatus.DENIED)
+        {
+            throw new PermissionDeniedException(I18NUtil.getMessage("permissions.err_access_denied"));
+        }
     }
 }

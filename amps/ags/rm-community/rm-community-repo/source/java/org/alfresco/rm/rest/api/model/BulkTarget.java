@@ -24,50 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.bulk;
+package org.alfresco.rm.rest.api.model;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-
-/**
- * An interface for monitoring the progress of a bulk operation
- */
-public interface BulkMonitor<T>
-{
-    /**
-     * Update the bulk status
-     *
-     * @param bulkStatus the bulk status
-     */
-    void updateBulkStatus(T bulkStatus);
-
-    /**
-     * Register a process
-     *
-     * @param nodeRef   the node reference
-     * @param processId the process id
-     */
-    void registerProcess(NodeRef nodeRef, String processId);
-
-    /**
-     * Get the bulk status
-     *
-     * @param bulkStatusId the bulk status id
-     * @return the bulk status
-     */
-    T getBulkStatus(String bulkStatusId);
-
-    /**
-     * Cancel a bulk operation
-     *
-     * @param bulkStatusId
-     */
-    void cancelBulkOperation(String bulkStatusId);
-
-    /**
-     * Check if a bulk operation is cancelled
-     *
-     * @param bulkStatusId
-     * @return true if the bulk operation is cancelled
-     */
-    boolean isCancelled(String bulkStatusId);
-}
+public record BulkTarget(String targetBulkStatusId) {}

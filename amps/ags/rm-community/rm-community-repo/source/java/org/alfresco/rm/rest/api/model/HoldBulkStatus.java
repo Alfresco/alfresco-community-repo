@@ -30,13 +30,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
-                             long totalItems, String lastError) implements Serializable
+                             long totalItems, String lastError, boolean isCancelled) implements Serializable
 {
     public enum Status
     {
         PENDING("PENDING"),
         IN_PROGRESS("IN PROGRESS"),
-        DONE("DONE");
+        DONE("DONE"),
+        CANCELLED("CANCELLED");
 
         private final String value;
 
@@ -53,7 +54,11 @@ public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, 
 
     public String getStatus()
     {
-        if (startTime == null && endTime == null)
+        if (isCancelled)
+        {
+            return Status.CANCELLED.getValue();
+        }
+        else if (startTime == null && endTime == null)
         {
             return Status.PENDING.getValue();
         }

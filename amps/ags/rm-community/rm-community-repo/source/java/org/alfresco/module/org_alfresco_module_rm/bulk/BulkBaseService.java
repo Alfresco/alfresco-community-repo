@@ -27,6 +27,8 @@
 package org.alfresco.module.org_alfresco_module_rm.bulk;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -93,13 +95,14 @@ public abstract class BulkBaseService<T> implements InitializingBean
         bulkMonitor.updateBulkStatus(initBulkStatus);
         bulkMonitor.registerProcess(nodeRef, processId);
 
-        BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation);
+        BulkProgress bulkProgress = new BulkProgress(totalItems, processId);
+        BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation, bulkProgress);
         BulkStatusUpdater bulkStatusUpdater = getBulkStatusUpdater();
 
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<>(
             processId,
             transactionService.getRetryingTransactionHelper(),
-            getWorkProvider(bulkOperation, totalItems, bulkStatusUpdater),
+            getWorkProvider(bulkOperation, bulkStatusUpdater, bulkProgress),
             threadCount,
             itemsPerTransaction,
             bulkStatusUpdater,
@@ -167,8 +170,8 @@ public abstract class BulkBaseService<T> implements InitializingBean
      * @param bulkStatusUpdater bulk status updater
      * @return work provider
      */
-    protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems,
-        BulkStatusUpdater bulkStatusUpdater);
+    protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation,
+        BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress);
 
     /**
      * Get worker provider
@@ -177,7 +180,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
      * @param bulkOperation bulk operation
      * @return worker provider
      */
-    protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation);
+    protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation, BulkProgress bulkProgress);
 
     /**
      * Check permissions
@@ -195,6 +198,45 @@ public abstract class BulkBaseService<T> implements InitializingBean
         searchParams.setSkipCount(skipCount);
         searchParams.setMaxItems(1);
         return searchService.query(searchParams);
+    }
+
+    protected final class BulkProgress
+    {
+        private final long totalItems;
+        private final String processId;
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
+        private final AtomicInteger currentNodeNumber = new AtomicInteger(0);
+
+        public BulkProgress(long totalItems, String processId)
+        {
+            this.totalItems = totalItems;
+            this.processId = processId;
+        }
+
+        public AtomicBoolean isCancelled()
+        {
+            return cancelled;
+        }
+
+        public long getTotalItems()
+        {
+            return totalItems;
+        }
+
+        public String getProcessId()
+        {
+            return processId;
+        }
+
+        public AtomicBoolean getCancelled()
+        {
+            return cancelled;
+        }
+
+        public AtomicInteger getCurrentNodeNumber()
+        {
+            return currentNodeNumber;
+        }
     }
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)

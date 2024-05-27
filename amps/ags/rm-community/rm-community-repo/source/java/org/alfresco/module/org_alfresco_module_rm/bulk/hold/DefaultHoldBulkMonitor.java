@@ -45,6 +45,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements HoldBulkMonitor
 {
     protected SimpleCache<String, HoldBulkStatus> holdProgressCache;
+    protected SimpleCache<String, Boolean> holdCancellationsCache;
     protected SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
 
     @Override
@@ -66,6 +67,18 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     public HoldBulkStatus getBulkStatus(String bulkStatusId)
     {
         return holdProgressCache.get(bulkStatusId);
+    }
+
+    @Override
+    public void cancelBulkOperation(String bulkStatusId)
+    {
+        holdCancellationsCache.put(bulkStatusId, Boolean.TRUE);
+    }
+
+    @Override
+    public boolean isCancelled(String bulkStatusId)
+    {
+        return holdProgressCache.contains(bulkStatusId) && Boolean.TRUE.equals(holdCancellationsCache.get(bulkStatusId));
     }
 
     @Override
@@ -93,6 +106,12 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
         SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry)
     {
         this.holdProcessRegistry = holdProcessRegistry;
+    }
+
+    public void setHoldCancellationsCache(
+        SimpleCache<String, Boolean> holdCancellationsCache)
+    {
+        this.holdCancellationsCache = holdCancellationsCache;
     }
 
     @Override

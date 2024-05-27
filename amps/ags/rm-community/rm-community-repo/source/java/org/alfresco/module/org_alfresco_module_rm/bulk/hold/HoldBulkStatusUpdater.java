@@ -46,7 +46,7 @@ public class HoldBulkStatusUpdater implements BulkStatusUpdater
                 batchMonitor.getEndTime(),
                 batchMonitor.getSuccessfullyProcessedEntriesLong() + batchMonitor.getTotalErrorsLong(),
                 batchMonitor.getTotalErrorsLong(), batchMonitor.getTotalResultsLong(),
-                batchMonitor.getLastError()));
+                batchMonitor.getLastError(), holdBulkMonitor.isCancelled(batchMonitor.getProcessName())));
     }
 
     @Override

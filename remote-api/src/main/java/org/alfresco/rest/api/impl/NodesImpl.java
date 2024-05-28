@@ -2692,13 +2692,34 @@ public class NodesImpl implements Nodes
     @Override
     public BinaryResource getContent(NodeRef nodeRef, Parameters parameters, boolean recordActivity)
     {
+        QName contentPropertyName = ContentModel.PROP_CONTENT;
+
         if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
-            throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
+            boolean containsContentType = false;
+            // Retrieve all properties of the node
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+
+            // Iterate through properties,
+            for (QName propertyName : properties.keySet()) {
+                
+                // Retrieve property definition to get the data type
+                PropertyDefinition propertyDefinition = dictionaryService.getProperty(propertyName);
+                DataTypeDefinition dataTypeDefinition = propertyDefinition.getDataType();
+                if (dataTypeDefinition.getName().equals(DataTypeDefinition.CONTENT)) {
+                    contentPropertyName = propertyName;
+                    containsContentType = true;
+                    break;
+                }
+            } 
+            if  (!containsContentType ){
+
+                throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
+            }
         }
 
         Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
-        ContentData cd = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
+        ContentData cd = (ContentData) nodeProps.get(contentPropertyName);
         String name = (String) nodeProps.get(ContentModel.PROP_NAME);
 
         org.alfresco.rest.framework.resource.content.ContentInfo ci = null;
@@ -2735,7 +2756,7 @@ public class NodesImpl implements Nodes
             postActivity(Activity_Type.DOWNLOADED, activityInfo, true);
         }
 
-        return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT, ci, attachFileName);
+        return new NodeBinaryResource(nodeRef, contentPropertyName, ci, attachFileName);
     }
 
     @Override

@@ -38,6 +38,7 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.rm.community.model.hold.BulkBodyCancel;
 import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkOperation;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkOperationEntry;
@@ -400,4 +401,18 @@ public class HoldsAPI extends RMModelRequest
         return getBulkStatuses(holdId, EMPTY);
     }
 
+    public void cancelBulkOperation(String holdId, String bulkStatusId, BulkBodyCancel bulkBodyCancel, String parameters)
+    {
+        mandatoryString("holdId", holdId);
+        mandatoryObject("bulkBodyCancel", bulkBodyCancel);
+
+        getRmRestWrapper().processEmptyModel(requestWithBody(
+            POST,
+            toJson(bulkBodyCancel),
+            "holds/{holdId}/bulk-statuses/{bulkStatusId}/cancel}",
+            holdId,
+            bulkStatusId,
+            parameters
+                                                          ));
+    }
 }

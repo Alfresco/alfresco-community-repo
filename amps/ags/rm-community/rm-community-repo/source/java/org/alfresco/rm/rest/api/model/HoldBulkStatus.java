@@ -30,7 +30,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
-                             long totalItems, String lastError, boolean isCancelled) implements Serializable
+                             long totalItems, String lastError, boolean isCancelled, String cancellationReason) implements Serializable
 {
     public enum Status
     {

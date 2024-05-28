@@ -61,7 +61,7 @@ public interface BulkMonitor<T>
      *
      * @param bulkStatusId
      */
-    void cancelBulkOperation(String bulkStatusId);
+    void cancelBulkOperation(String bulkStatusId, String reason);
 
     /**
      * Check if a bulk operation is cancelled
@@ -70,4 +70,12 @@ public interface BulkMonitor<T>
      * @return true if the bulk operation is cancelled
      */
     boolean isCancelled(String bulkStatusId);
+
+    /**
+     * Get the cancellation reason
+     *
+     * @param bulkStatusId
+     * @return cancellation reason
+     */
+    String getCancellationReason(String bulkStatusId);
 }

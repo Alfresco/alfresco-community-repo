@@ -84,8 +84,6 @@
       <property name="fileFolderService" ref="FileFolderService" />
       <property name="transactionService" ref="transactionService" />
       <property name="holdBulkService" ref="holdBulkService" />
-      <property name="holdBulkMonitor" ref="holdBulkMonitor" />
-      <property name="permissionService" ref="PermissionService" />
    </bean>
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsBulkStatusesRelation" >

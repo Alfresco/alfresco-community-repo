@@ -78,7 +78,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     @Override
     protected HoldBulkStatus getInitBulkStatus(String processId, long totalItems)
     {
-        return new HoldBulkStatus(processId, null, null, 0, 0, totalItems, null, false);
+        return new HoldBulkStatus(processId, null, null, 0, 0, totalItems, null, false, null);
     }
 
     @Override

@@ -34,16 +34,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.rest.framework.Operation;
+import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
+import org.alfresco.rm.rest.api.model.BulkCancellationReason;
 import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -94,6 +100,28 @@ public class HoldsBulkStatusesRelation
 
         return Optional.ofNullable(holdBulkMonitor.getBulkStatus(bulkStatusId))
             .orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
+    }
+
+    @Operation("cancel")
+    @WebApiDescription(title = "Cancel a bulk operation",
+        successStatus = HttpServletResponse.SC_OK)
+    public void cancelBulkOperation(String holdId, String bulkStatusId, BulkCancellationReason bulkCancellationReason, Parameters parameters,
+        WithResponse withResponse)
+    {
+        checkNotBlank("holdId", holdId);
+        checkNotBlank("bulkStatusId", bulkStatusId);
+        mandatory("parameters", parameters);
+
+        NodeRef holdRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
+
+        checkReadPermissions(holdRef);
+
+        if (holdBulkMonitor.getBulkStatus(bulkStatusId) == null)
+        {
+            throw new NotFoundException("Bulk status not found");
+        }
+
+        holdBulkMonitor.cancelBulkOperation(bulkStatusId, Optional.ofNullable(bulkCancellationReason).map(BulkCancellationReason::reason).orElse(null));
     }
 
     private void checkReadPermissions(NodeRef holdRef)

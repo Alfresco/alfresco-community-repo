@@ -2378,17 +2378,21 @@ paths:
       tags:
         - holds
       operationId: cancelBulkStatus
-      summary: Cancel a bulk operation
+      summary: Cancel the bulk operation
       description: |
-        Cancels a bulk operation specified by **bulkStatusId** for **holdId**.
+        Cancels the bulk operation specified by **bulkStatusId** for **holdId**.
       parameters:
         - $ref: '#/parameters/holdIdParam'
         - $ref: '#/parameters/bulkStatusId'
+        - in: body
+          name: cancelReason
+          description: Cancel reason.
+          required: false
+          schema:
+            $ref: '#/definitions/BulkBodyCancel'
       responses:
         '200':
           description: Successful response
-          schema:
-            $ref: '#/definitions/HoldBulkStatus'
         '400':
           description: |
             Invalid parameter: **holdId** or **bulkStatusId** is not a valid format
@@ -4197,6 +4201,11 @@ definitions:
       totalItems:
         type: integer
         format: int64
+  BulkBodyCancel:
+    type: object
+    properties:
+      reason:
+        type: string
   HoldBulkStatus:
     type: object
     properties:

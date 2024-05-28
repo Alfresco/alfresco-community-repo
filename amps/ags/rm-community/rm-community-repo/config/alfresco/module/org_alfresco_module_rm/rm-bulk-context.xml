@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context.xsd">
+
+   <bean id="holdBulkService"
+         class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkServiceImpl">
+      <property name="serviceRegistry" ref="ServiceRegistry" />
+      <property name="transactionService" ref="transactionService" />
+      <property name="searchMapper" ref="searchapiSearchMapper" />
+      <property name="bulkMonitor" ref="holdBulkMonitor" />
+      <property name="holdService" ref="HoldService" />
+      <property name="capabilityService" ref="CapabilityService" />
+      <property name="permissionService" ref="PermissionService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="threadCount">
+         <value>${rm.hold.bulk.threadCount}</value>
+      </property>
+      <property name="batchSize">
+         <value>${rm.hold.bulk.batchSize}</value>
+      </property>
+      <property name="maxItems">
+         <value>${rm.hold.bulk.maxItems}</value>
+      </property>
+      <property name="loggingInterval">
+         <value>${rm.hold.bulk.logging.interval}</value>
+      </property>
+      <property name="itemsPerTransaction">
+         <value>${rm.hold.bulk.itemsPerTransaction}</value>
+      </property>
+   </bean>
+
+   <bean id="holdBulkMonitor" class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.DefaultHoldBulkMonitor">
+      <property name="holdProgressCache" ref="holdProgressCache" />
+      <property name="holdProcessRegistry" ref="holdProcessRegistry" />
+   </bean>
+
+
+   <bean name="holdProgressCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.bulkHoldStatusCache" />
+   </bean>
+
+   <bean name="holdProcessRegistry" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.bulkHoldRegistryCache" />
+   </bean>
+
+</beans>

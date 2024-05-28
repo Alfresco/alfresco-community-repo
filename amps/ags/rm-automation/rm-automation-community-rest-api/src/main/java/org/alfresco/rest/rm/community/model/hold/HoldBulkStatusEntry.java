@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -35,18 +35,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.rest.core.RestModels;
 
-/**
- * POJO for hold child entry
- *
- * @author Damian Ujma
- */
 @Builder
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public class HoldBulkStatusEntry extends RestModels<HoldBulkStatus, HoldBulkStatusEntry>
 {
-    @JsonProperty
-    private HoldChild entry;
+    private HoldBulkStatus entry;
 }

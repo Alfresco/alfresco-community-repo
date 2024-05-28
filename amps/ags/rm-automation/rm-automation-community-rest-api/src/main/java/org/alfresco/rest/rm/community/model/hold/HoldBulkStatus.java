@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -26,27 +26,43 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.utility.model.TestModel;
 
 /**
- * POJO for hold child entry
+ * POJO for hold bulk request
  *
  * @author Damian Ujma
  */
 @Builder
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public class HoldBulkStatus extends TestModel
 {
-    @JsonProperty
-    private HoldChild entry;
+    private String bulkStatusId;
+
+    private String startTime;
+
+    private String endTime;
+
+    private long processedItems;
+
+    private long errorsCount;
+
+    private long totalItems;
+
+    private String lastError;
+
+    private Status status;
+
+    public enum Status
+    {
+        PENDING,
+        IN_PROGRESS,
+        DONE
+    }
 }

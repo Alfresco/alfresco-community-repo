@@ -326,9 +326,9 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             UserRole.SiteCollaborator, hold2.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
         users.add(userAddHoldPermission);
 
-        contentActions.removePermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
+        contentActions.setPermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
             testSite.getId(), addedFiles.get(0).getName(), userAddHoldPermission.getUsername(),
-            UserRole.SiteCollaborator.getRoleId(), false);
+            UserRole.SiteConsumer.getRoleId(), false);
 
         STEP("Add content from the site to the hold using the bulk API.");
         HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
@@ -361,8 +361,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             .getBulkStatuses(hold2.getId());
         assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
 
-        //revert the permissions
-        contentActions.removePermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
+        // Revert the permissions
+        contentActions.setPermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
             testSite.getId(), addedFiles.get(0).getName(), userAddHoldPermission.getUsername(),
             UserRole.SiteCollaborator.getRoleId(), true);
     }

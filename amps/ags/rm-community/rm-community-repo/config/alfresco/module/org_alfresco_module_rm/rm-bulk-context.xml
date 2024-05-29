@@ -37,7 +37,7 @@
    <bean id="holdBulkMonitor" class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.DefaultHoldBulkMonitor">
       <property name="holdProgressCache" ref="holdProgressCache" />
       <property name="holdProcessRegistry" ref="holdProcessRegistry" />
-      <property name="holdCancellationsCache" ref="holdCancellationsCache" />
+      <property name="bulkCancellationsCache" ref="bulkCancellationsCache" />
    </bean>
 
 
@@ -49,8 +49,8 @@
       <constructor-arg value="cache.bulkHoldRegistryCache" />
    </bean>
 
-   <bean name="holdCancellationsCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.holdCancellationsCache" />
+   <bean name="bulkCancellationsCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.bulkCancellationsCache" />
    </bean>
 
 </beans>

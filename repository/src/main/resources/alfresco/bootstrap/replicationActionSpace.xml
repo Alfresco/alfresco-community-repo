@@ -11,6 +11,10 @@
          <cm:name>${spaces.replication.replication_actions.name}</cm:name>
          <cm:title>${spaces.replication.replication_actions.name}</cm:title>
          <cm:description>${spaces.replication.replication_actions.description}</cm:description>
+         <view:aspects>
+            <sys:undeletable/>
+            <sys:unmovable/>
+         </view:aspects>
       </view:properties>
    </cm:folder>
 

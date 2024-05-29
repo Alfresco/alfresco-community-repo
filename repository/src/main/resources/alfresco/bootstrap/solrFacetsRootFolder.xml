@@ -11,8 +11,11 @@
          <sys:node-uuid>solr_facets_root_space</sys:node-uuid>
          <cm:name>${spaces.solr_facets.root.name}</cm:name>
          <cm:title>${spaces.solr_facets.root.name}</cm:title>
-         <cm:description>${spaces.solr_facets.root.description}
-         </cm:description>
+         <cm:description>${spaces.solr_facets.root.description}</cm:description>
+         <view:aspects>
+            <sys:undeletable/>
+            <sys:unmovable/>
+         </view:aspects>
       </view:properties>
    </srft:facets>
 </view:view>

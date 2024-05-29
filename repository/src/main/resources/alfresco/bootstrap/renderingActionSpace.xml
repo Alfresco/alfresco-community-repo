@@ -11,6 +11,10 @@
          <cm:name>${spaces.rendition.rendering_actions.name}</cm:name>
          <cm:title>${spaces.rendition.rendering_actions.name}</cm:title>
          <cm:description>${spaces.rendition.rendering_actions.description}</cm:description>
+         <view:aspects>
+            <sys:undeletable/>
+            <sys:unmovable/>
+         </view:aspects>
       </view:properties>
    </cm:folder>
 

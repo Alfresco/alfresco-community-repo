@@ -10,6 +10,10 @@
          <cm:name>${spaces.actions.scheduled_actions.name}</cm:name>
          <cm:title>${spaces.actions.scheduled_actions.name}</cm:title>
          <cm:description>${spaces.actions.scheduled_actions.description}</cm:description>
+         <view:aspects>
+            <sys:undeletable/>
+            <sys:unmovable/>
+         </view:aspects>
       </view:properties>
    </cm:folder>
 </view:view>

@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.sa;
+package org.alfresco.repo.serviceaccount;
 
 import static org.alfresco.service.cmr.security.PermissionService.ADMIN_SVC_AUTHORITY;
 import static org.alfresco.service.cmr.security.PermissionService.COLLABORATOR_SVC_AUTHORITY;

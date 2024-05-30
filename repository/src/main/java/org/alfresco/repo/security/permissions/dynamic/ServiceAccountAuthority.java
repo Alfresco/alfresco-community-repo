@@ -28,7 +28,7 @@ package org.alfresco.repo.security.permissions.dynamic;
 import java.util.Optional;
 import java.util.Set;
 
-import org.alfresco.repo.sa.ServiceAccountRegistry;
+import org.alfresco.repo.serviceaccount.ServiceAccountRegistry;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.cmr.repository.NodeRef;

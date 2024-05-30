@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.sa;
+package org.alfresco.repo.serviceaccount;
 
 import java.util.Locale;
 import java.util.Optional;

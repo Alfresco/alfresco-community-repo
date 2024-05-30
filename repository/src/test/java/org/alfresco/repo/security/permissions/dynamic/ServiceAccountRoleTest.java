@@ -286,7 +286,7 @@ public class ServiceAccountRoleTest
     }
 
     @Test
-    public void normalUserCreateAssociationsAccessShouldBeDenied()
+    public void normalUserAssociationAccessShouldBeDenied()
     {
         assertAccessDenied(NORMAL_USER, PermissionService.READ_ASSOCIATIONS);
         assertAccessDenied(NORMAL_USER, PermissionService.CREATE_ASSOCIATIONS);
@@ -294,7 +294,7 @@ public class ServiceAccountRoleTest
     }
 
     @Test
-    public void editorSaCreateAssociationsAccessShouldBeDenied()
+    public void editorSaAssociationAccessShouldBeDenied()
     {
         assertAccessDenied(EDITOR_SA, PermissionService.READ_ASSOCIATIONS);
         assertAccessDenied(EDITOR_SA, PermissionService.CREATE_ASSOCIATIONS);
@@ -302,7 +302,7 @@ public class ServiceAccountRoleTest
     }
 
     @Test
-    public void collaboratorSaCreateAssociationsAccessShouldBeDenied()
+    public void collaboratorSaAssociationAccessShouldBeDenied()
     {
         assertAccessDenied(COLLABORATOR_SA, PermissionService.READ_ASSOCIATIONS);
         assertAccessDenied(COLLABORATOR_SA, PermissionService.CREATE_ASSOCIATIONS);
@@ -310,7 +310,7 @@ public class ServiceAccountRoleTest
     }
 
     @Test
-    public void adminSaCreateAssociationsAccessShouldBeAllowed()
+    public void adminSaAssociationAccessShouldBeAllowed()
     {
         assertAccessAllowed(ADMIN_SA, PermissionService.READ_ASSOCIATIONS);
         assertAccessAllowed(ADMIN_SA, PermissionService.CREATE_ASSOCIATIONS);

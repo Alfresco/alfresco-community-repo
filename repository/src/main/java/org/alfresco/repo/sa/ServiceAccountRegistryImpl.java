@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.sa;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -114,9 +115,9 @@ public class ServiceAccountRegistryImpl implements ServiceAccountRegistry, Initi
                         return;
                     }
                     // Ensure the role is in uppercase and has the prefix
-                    role = role.toUpperCase();
+                    role = role.toUpperCase(Locale.ENGLISH);
                     role = getRoleWithPrefix(role);
-                    if (!PermissionService.SERVICE_ACCOUNT_AUTHORITIES_SET.contains(role))
+                    if (!PermissionService.SVC_AUTHORITIES_SET.contains(role))
                     {
                         LOGGER.warn("Invalid service account role '{}'. The role is not recognized.", role);
                         return;

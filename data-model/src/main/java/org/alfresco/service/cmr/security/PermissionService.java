@@ -81,25 +81,24 @@ public interface PermissionService
     /**
      * The dynamic authority for the Admin service account.
      */
-    String ADMIN_SERVICE_ACCOUNT_AUTHORITY = "ROLE_ADMIN_SERVICE_ACCOUNT";
+    String ADMIN_SVC_AUTHORITY = "ROLE_ADMIN_SERVICE_ACCOUNT";
 
     /**
      * The dynamic authority for the Collaborator service account.
      */
-    String COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY = "ROLE_COLLABORATOR_SERVICE_ACCOUNT";
+    String COLLABORATOR_SVC_AUTHORITY = "ROLE_COLLABORATOR_SERVICE_ACCOUNT";
 
     /**
      * The dynamic authority for the Editor service account.
      */
-    String EDITOR_SERVICE_ACCOUNT_AUTHORITY = "ROLE_EDITOR_SERVICE_ACCOUNT";
+    String EDITOR_SVC_AUTHORITY = "ROLE_EDITOR_SERVICE_ACCOUNT";
 
     /**
      * A convenient set of service account authorities to simplify checks
      * for whether a given authority is a service account authority or not.
      */
-    Set<String> SERVICE_ACCOUNT_AUTHORITIES_SET = Set.of(ADMIN_SERVICE_ACCOUNT_AUTHORITY,
-                                                         COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY,
-                                                         EDITOR_SERVICE_ACCOUNT_AUTHORITY);
+    Set<String> SVC_AUTHORITIES_SET = Set.of(ADMIN_SVC_AUTHORITY, COLLABORATOR_SVC_AUTHORITY,
+                                             EDITOR_SVC_AUTHORITY);
 
     /**
      * The permission for all - not defined in the model. Repsected in the code.

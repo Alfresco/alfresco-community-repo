@@ -66,9 +66,9 @@ import org.springframework.context.ApplicationContext;
  * </pre>
  * The service account roles that currently supported are:
  * <ul>
- *   <li>{@link PermissionService#EDITOR_SERVICE_ACCOUNT_AUTHORITY}</li>
- *   <li>{@link PermissionService#COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY}</li>
- *   <li>{@link PermissionService#ADMIN_SERVICE_ACCOUNT_AUTHORITY}</li>
+ *   <li>{@link PermissionService#EDITOR_SVC_AUTHORITY}</li>
+ *   <li>{@link PermissionService#COLLABORATOR_SVC_AUTHORITY}</li>
+ *   <li>{@link PermissionService#ADMIN_SVC_AUTHORITY}</li>
  * </ul>
  * The test class relies on the following service accounts defined in the <i>alfresco-global.properties</i> file:
  * <ul>
@@ -173,9 +173,9 @@ public class ServiceAccountRoleTest
 
     private static void serviceAccountsShouldExistInGlobalProperties()
     {
-        assertServiceAccountIsDefined(PermissionService.EDITOR_SERVICE_ACCOUNT_AUTHORITY, EDITOR_SA.getUsername());
-        assertServiceAccountIsDefined(PermissionService.COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY, COLLABORATOR_SA.getUsername());
-        assertServiceAccountIsDefined(PermissionService.ADMIN_SERVICE_ACCOUNT_AUTHORITY, ADMIN_SA.getUsername());
+        assertServiceAccountIsDefined(PermissionService.EDITOR_SVC_AUTHORITY, EDITOR_SA.getUsername());
+        assertServiceAccountIsDefined(PermissionService.COLLABORATOR_SVC_AUTHORITY, COLLABORATOR_SA.getUsername());
+        assertServiceAccountIsDefined(PermissionService.ADMIN_SVC_AUTHORITY, ADMIN_SA.getUsername());
     }
 
     private static void assertServiceAccountIsDefined(String expectedRole, String username)

@@ -25,9 +25,9 @@
  */
 package org.alfresco.repo.sa;
 
-import static org.alfresco.service.cmr.security.PermissionService.ADMIN_SERVICE_ACCOUNT_AUTHORITY;
-import static org.alfresco.service.cmr.security.PermissionService.COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY;
-import static org.alfresco.service.cmr.security.PermissionService.EDITOR_SERVICE_ACCOUNT_AUTHORITY;
+import static org.alfresco.service.cmr.security.PermissionService.ADMIN_SVC_AUTHORITY;
+import static org.alfresco.service.cmr.security.PermissionService.COLLABORATOR_SVC_AUTHORITY;
+import static org.alfresco.service.cmr.security.PermissionService.EDITOR_SVC_AUTHORITY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -71,7 +71,7 @@ public class ServiceAccountRegistryImplTest
     @Test
     public void testInvalidServiceAccountName()
     {
-        globalProperties.put("serviceaccount.role. ", ADMIN_SERVICE_ACCOUNT_AUTHORITY);
+        globalProperties.put("serviceaccount.role. ", ADMIN_SVC_AUTHORITY);
         assertTrue("Invalid service account name.", serviceAccountService.getServiceAccountNames().isEmpty());
     }
 
@@ -100,43 +100,43 @@ public class ServiceAccountRegistryImplTest
     @Test
     public void testValidServiceAccount() throws Exception
     {
-        globalProperties.put("serviceaccount.role.testServiceAccount", ADMIN_SERVICE_ACCOUNT_AUTHORITY);
+        globalProperties.put("serviceaccount.role.testServiceAccount", ADMIN_SVC_AUTHORITY);
         serviceAccountService.afterPropertiesSet();
 
         Optional<String> testServiceAccount = serviceAccountService.getServiceAccountRole("testServiceAccount");
         assertFalse("The service account role is not empty.", testServiceAccount.isEmpty());
-        assertEquals(ADMIN_SERVICE_ACCOUNT_AUTHORITY, testServiceAccount.get());
+        assertEquals(ADMIN_SVC_AUTHORITY, testServiceAccount.get());
         assertEquals(1, serviceAccountService.getServiceAccountNames().size());
     }
 
     @Test
     public void testManyServiceAccounts() throws Exception
     {
-        globalProperties.put("serviceaccount.role.testEditorSA", EDITOR_SERVICE_ACCOUNT_AUTHORITY);
-        globalProperties.put("serviceaccount.role.testCollaboratorSA", COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY);
-        globalProperties.put("serviceaccount.role.testAdminSA", ADMIN_SERVICE_ACCOUNT_AUTHORITY);
+        globalProperties.put("serviceaccount.role.testEditorSA", EDITOR_SVC_AUTHORITY);
+        globalProperties.put("serviceaccount.role.testCollaboratorSA", COLLABORATOR_SVC_AUTHORITY);
+        globalProperties.put("serviceaccount.role.testAdminSA", ADMIN_SVC_AUTHORITY);
         serviceAccountService.afterPropertiesSet();
 
         assertEquals(3, serviceAccountService.getServiceAccountNames().size());
 
         Optional<String> editorSA = serviceAccountService.getServiceAccountRole("testEditorSA");
         assertFalse("The service account role is not empty.", editorSA.isEmpty());
-        assertEquals(EDITOR_SERVICE_ACCOUNT_AUTHORITY, editorSA.get());
+        assertEquals(EDITOR_SVC_AUTHORITY, editorSA.get());
 
         Optional<String> collaboratorSA = serviceAccountService.getServiceAccountRole("testCollaboratorSA");
         assertFalse("The service account role is not empty.", collaboratorSA.isEmpty());
-        assertEquals(COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY, collaboratorSA.get());
+        assertEquals(COLLABORATOR_SVC_AUTHORITY, collaboratorSA.get());
 
         Optional<String> adminSA = serviceAccountService.getServiceAccountRole("testAdminSA");
         assertFalse("The service account role is not empty.", adminSA.isEmpty());
-        assertEquals(ADMIN_SERVICE_ACCOUNT_AUTHORITY, adminSA.get());
+        assertEquals(ADMIN_SVC_AUTHORITY, adminSA.get());
     }
 
     @Test
     public void testValidServiceAccountRoleValues() throws Exception
     {
         globalProperties.put("serviceaccount.role.testEditorSA", "EDITOR_SERVICE_ACCOUNT");
-        globalProperties.put("serviceaccount.role.testCollaboratorSA", COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY);
+        globalProperties.put("serviceaccount.role.testCollaboratorSA", COLLABORATOR_SVC_AUTHORITY);
         globalProperties.put("serviceaccount.role.testAdminSA", "ADMIN_SERVICE_ACCOUNT");
         serviceAccountService.afterPropertiesSet();
 
@@ -144,14 +144,14 @@ public class ServiceAccountRegistryImplTest
 
         Optional<String> editorSA = serviceAccountService.getServiceAccountRole("testEditorSA");
         assertFalse("The service account role is not empty.", editorSA.isEmpty());
-        assertEquals(EDITOR_SERVICE_ACCOUNT_AUTHORITY, editorSA.get());
+        assertEquals(EDITOR_SVC_AUTHORITY, editorSA.get());
 
         Optional<String> collaboratorSA = serviceAccountService.getServiceAccountRole("testCollaboratorSA");
         assertFalse("The service account role is not empty.", collaboratorSA.isEmpty());
-        assertEquals(COLLABORATOR_SERVICE_ACCOUNT_AUTHORITY, collaboratorSA.get());
+        assertEquals(COLLABORATOR_SVC_AUTHORITY, collaboratorSA.get());
 
         Optional<String> adminSA = serviceAccountService.getServiceAccountRole("testAdminSA");
         assertFalse("The service account role is not empty.", adminSA.isEmpty());
-        assertEquals(ADMIN_SERVICE_ACCOUNT_AUTHORITY, adminSA.get());
+        assertEquals(ADMIN_SVC_AUTHORITY, adminSA.get());
     }
 }

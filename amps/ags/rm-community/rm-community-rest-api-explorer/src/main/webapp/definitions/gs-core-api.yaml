@@ -40,6 +40,8 @@ tags:
     description: Retrieve and manage unfiled record folders
   - name: holds
     description: Retrieve and manage holds
+  - name: retention-schedule
+    description: Perform Retention Schedule Specific Operations
 
 paths:
   ## GS sites
@@ -2634,7 +2636,193 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  ##retention-schedule
+  '/categories/{categoryId}/retention-schedules':
+    post:
+      tags:
+        - retention-schedule
+      summary: Create a retention schedule
+      description: |
+        Create a retention schedule.        
+        For example, the following JSON body to create a retention schedule:
+        ```JSON
+          {
+              "authority" : "Retention Authority",
+              "instructions" : "Retention Instructions",
+              "isRecordLevelDisposition" :  false
+          }
+        ```
+      operationId: createRetentionSchedule
+      parameters:
+        - $ref: '#/parameters/categoryIdParam'
+        - in: body
+          name: nodeBodyCreate
+          description: |
+            The node information to create.
+          schema:
+            $ref: '#/definitions/RetentionNodeBodyCreate'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionScheduleResponse'
+        '400':
+          description: |
+            Invalid parameter: categoryId is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to create retention schedule
+        '404':
+          description: CategoryId does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - retention-schedule
+      summary: Get a list of retention schedules
+      description: |
+        Get a list of retention schedules.
+        
+        You can use the **include** parameter (include=actions) to return additional information.
 
+      operationId: getRetentionScheduleList
+      parameters:
+        - $ref: '#/parameters/categoryIdParam'
+        - $ref: '#/parameters/retentionScheduleIncludeParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionScheduleResponseList'
+        '400':
+          description: |
+            Invalid parameter: categoryId is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to get retention schedule
+        '404':
+          description: CategoryId does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/retention-schedules/{categoryId}/retention-steps':
+    post:
+      tags:
+        - retention-schedule
+      summary: Create a step in the retention schedule
+      description: |
+        Create a step in the retention schedule.
+        List of Steps:
+          * **retain**
+          * **cutoff**
+          * **accession**
+          * **transfer**
+          * **destroy**
+        
+        Order of steps:
+          * "retain" or "cutoff" should be first
+          * can't use "cutoff" after "transfer" or "accession"
+          * "transfer" action is allowed multiple times
+          * "destroy" must be the last action
+        
+        **combineDispositionStepConditions** property is required only for **Accession** step and its used to specify where to combine the period condition and events for the step execution or only consider one of them.
+        
+        For example, the following JSON body to Create a step in the retention schedule:
+        ```JSON
+          {
+              "name" : "Step Name",
+              "periodAmount" : 2,
+              "period" : "period",
+              "periodProperty" : "Period Property",
+              "combineDispositionStepConditions" :  boolean
+              "events" : ["Event Name"],
+              "eligibleOnFirstCompleteEvent" : boolean,
+              "description" : "Step Description",
+              "destroyWithGhosting" :  boolean
+              "location" : "Location"
+          }
+        ```
+      operationId: createRetentionScheduleAction
+      parameters:
+        - $ref: '#/parameters/categoryIdParam'
+        - in: body
+          name: nodeBodyCreate
+          description: |
+            The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/RetentionStepNodeBodyCreate'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionStepNodeBodyResponse'
+        '400':
+          description: |
+            Invalid parameter: categoryId is not a valid format
+            Invalid parameter: { ex: event,period,periodProperty}
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to create retention schedule
+        '404':
+          description: CategoryId does not exist
+        '409':
+          description: |
+            * Invalid Step - Can't use Cut Off after Transfer or Accession
+            * Invalid Step - Destroy action already completed. Can't do any other Action
+            * Invalid Step - Cut Off or Retain should be the first step
+            * Invalid Step - This step already exists. You can’t create this step [Transfer action is allowed many times]
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - retention-schedule
+      summary: Get the list of steps in the retention schedule
+      description: |
+        Get the list of steps in the retention schedule.
+      operationId: getRetentionScheduleActionList
+      parameters:
+        - $ref: '#/parameters/categoryIdParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionStepsNodeBodyResponse'
+        '400':
+          description: |
+            Invalid parameter: categoryId is not a valid format
+        '401':
+          description: Authentication failed
+        '404':
+          description: CategoryId does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 parameters:
   ## File plans
   filePlanEntryIncludeParam:
@@ -3100,6 +3288,22 @@ parameters:
       If true, then  a name clash will cause an attempt to auto rename by finding a unique name using an integer suffix.
     required: false
     type: boolean
+  ## Category
+  categoryIdParam:
+    name: categoryId
+    in: path
+    description:
+      The identifier of a category.
+    required: true
+    type: string
+  retentionScheduleIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the retention schedule actions. Any optional field from the response model can be requested. For example:
+      * actions
+    required: false
+    type: string
 definitions:
   FilePlanComponentBodyUpdate:
     type: object
@@ -4258,6 +4462,126 @@ definitions:
             type: array
             items:
               $ref: '#/definitions/HoldBulkStatusEntry'
+  RetentionNodeBodyCreate:
+    type: object
+    properties:
+      authority:
+        type: string
+      instructions:
+        type: string
+      isRecordLevelDisposition:
+        type: boolean
+  RetentionScheduleResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      authority:
+        type: string
+      instructions:
+        type: string
+      isRecordLevelDisposition:
+        type: boolean
+      unpublishedUpdates:
+        type: boolean
+  RetentionScheduleResponseList:
+    type: object
+    properties:
+      entries:
+        type: array
+        items:
+          $ref: '#/definitions/FullRetentionScheduleResponse'
+  FullRetentionScheduleResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      authority:
+        type: string
+      instructions:
+        type: string
+      isRecordLevelDisposition:
+        type: boolean
+      unpublishedUpdates:
+        type: boolean
+      actions:
+        type: array
+        items:
+          $ref: '#/definitions/Actions'
+      events:
+        type: array
+        items:
+          type: string
+  Actions:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      periodAmount:
+        type: integer
+      period:
+        type: string
+      periodProperty:
+        type: string
+      combineDispositionStepConditions:
+        type: boolean
+      eligibleOnFirstCompleteEvent:
+        type: boolean
+      description:
+        type: string
+      destroyWithGhosting:
+        type: boolean
+      location:
+        type: string
+      index:
+        type: integer
+  RetentionStepNodeBodyCreate:
+    type: object
+    properties:
+      name:
+        type: string
+      periodAmount:
+        type: integer
+      period:
+        type: string
+      periodProperty:
+        type: string
+      combineDispositionStepConditions:
+        type: boolean
+      events:
+        type: array
+        items:
+          type: string
+      eligibleOnFirstCompleteEvent:
+        type: boolean
+      description:
+        type: string
+      destroyWithGhosting:
+        type: boolean
+      location:
+        type: string
+  RetentionStepNodeBodyResponse:
+    type: object
+    properties:
+      actions:
+        $ref: '#/definitions/Actions'
+      events:
+        type: array
+        items:
+          type: string
+  RetentionStepsNodeBodyResponse:
+    type: object
+    properties:
+      entries:
+        type: array
+        items:
+          $ref: '#/definitions/RetentionStepNodeBodyResponse'
   ##
   RequestBodyFile:
     type: object

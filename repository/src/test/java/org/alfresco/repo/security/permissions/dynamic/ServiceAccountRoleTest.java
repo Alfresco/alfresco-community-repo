@@ -83,6 +83,8 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Jamal Kaabi-Mofrad
  */
+// Ignore the PMD warning about having too many test methods in this class; it makes the tests easier to read and maintain.
+@SuppressWarnings("PMD.TooManyMethods")
 public class ServiceAccountRoleTest
 {
     // Rule to initialise the default Alfresco spring configuration

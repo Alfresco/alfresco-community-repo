@@ -94,7 +94,7 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(SimplePermissionReference.getPermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Coordinator"));
 
-        assertEquals(69, grantees.size());
+        assertEquals(72, grantees.size());
     }
 
     public void testIncludePermissionGroups6()
@@ -109,17 +109,17 @@ public class PermissionModelTest extends AbstractPermissionTest
     {
         Set<PermissionReference> granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "ReadProperties"));
-        assertEquals(14, granters.size());
+        assertEquals(17, granters.size());
 
         granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base", namespacePrefixResolver),
                 "_ReadProperties"));
-        assertEquals(15, granters.size());
+        assertEquals(18, granters.size());
     }
 
     public void testGlobalPermissions()
     {
         Set<? extends PermissionEntry> globalPermissions = permissionModelDAO.getGlobalPermissionEntries();
-        assertEquals(5, globalPermissions.size());
+        assertEquals(NUMBER_OF_GLOBAL_PERMISSIONS, globalPermissions.size());
     }
 
     public void testRequiredPermissions()

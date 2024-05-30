@@ -45,7 +45,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.authority.DuplicateAuthorityTest.class,
     org.alfresco.repo.security.authority.ExtendedPermissionServiceTest.class,
     org.alfresco.repo.security.permissions.dynamic.LockOwnerDynamicAuthorityTest.class,
-    org.alfresco.repo.security.permissions.dynamic.ServiceAccountRoleTest.class,
     org.alfresco.repo.security.permissions.impl.AclDaoComponentTest.class,
     org.alfresco.repo.security.permissions.impl.PermissionServiceTest.class,
     org.alfresco.repo.security.permissions.impl.acegi.ACLEntryAfterInvocationTest.class,
@@ -86,6 +85,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.model.ModelTestSuite.class,
     org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class,
     org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class,
+    org.alfresco.repo.security.permissions.dynamic.ServiceAccountRoleTest.class
 })
 public class AppContext05TestSuite
 {

@@ -66,6 +66,8 @@ import org.springframework.context.ApplicationContext;
 
 public abstract class AbstractPermissionTest extends TestCase
 {
+    public static final int NUMBER_OF_GLOBAL_PERMISSIONS = 8;
+
     protected static final String USER2_LEMUR = "lemur";
 
     protected static final String USER1_ANDY = "andy";

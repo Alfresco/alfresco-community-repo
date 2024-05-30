@@ -2498,19 +2498,19 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   ##retention-schedule
-  '/categories/{categoryId}/retention-schedules':
+  '/record-categories/{categoryId}/retention-schedules':
     post:
       tags:
         - retention-schedule
       summary: Create a retention schedule
       description: |
         Create a retention schedule.        
-        For example, the following JSON body to create a retention schedule:
+        For example, using the following JSON body will create a retention schedule:
         ```JSON
           {
               "authority" : "Retention Authority",
               "instructions" : "Retention Instructions",
-              "isRecordLevelDisposition" :  false
+              "isRecordLevel" :  false
           }
         ```
       operationId: createRetentionSchedule
@@ -4229,7 +4229,7 @@ definitions:
         type: string
       instructions:
         type: string
-      isRecordLevelDisposition:
+      isRecordLevel:
         type: boolean
   RetentionScheduleResponse:
     type: object
@@ -4242,7 +4242,7 @@ definitions:
         type: string
       instructions:
         type: string
-      isRecordLevelDisposition:
+      isRecordLevel:
         type: boolean
       unpublishedUpdates:
         type: boolean
@@ -4264,7 +4264,7 @@ definitions:
         type: string
       instructions:
         type: string
-      isRecordLevelDisposition:
+      isRecordLevel:
         type: boolean
       unpublishedUpdates:
         type: boolean

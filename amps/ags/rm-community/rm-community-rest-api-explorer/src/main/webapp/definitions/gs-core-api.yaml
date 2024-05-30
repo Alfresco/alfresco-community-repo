@@ -2788,8 +2788,9 @@ paths:
           description: |
             * Invalid Step - Can't use Cut Off after Transfer or Accession
             * Invalid Step - Destroy action already completed. Can't do any other Action
-            * Invalid Step - Cut Off or Retain should be the first step
             * Invalid Step - This step already exists. You can’t create this step [Transfer action is allowed many times]
+        '422':
+          description: Invalid Step - Cut Off or Retain should be the first step
         default:
           description: Unexpected error
           schema:

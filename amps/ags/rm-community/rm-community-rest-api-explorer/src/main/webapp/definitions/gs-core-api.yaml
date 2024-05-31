@@ -2718,7 +2718,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/retention-schedules/{categoryId}/retention-steps':
+  '/retention-schedules/{id}/retention-steps':
     post:
       tags:
         - retention-schedule

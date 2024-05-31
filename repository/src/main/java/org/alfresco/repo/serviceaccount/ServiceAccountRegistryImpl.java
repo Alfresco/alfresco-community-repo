@@ -1,6 +1,6 @@
 /*
  * #%L
- * Alfresco Data model classes
+ * Alfresco Repository
  * %%
  * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%

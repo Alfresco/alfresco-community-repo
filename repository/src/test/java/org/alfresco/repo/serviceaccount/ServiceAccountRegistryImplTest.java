@@ -1,6 +1,6 @@
 /*
  * #%L
- * Alfresco Data model classes
+ * Alfresco Repository
  * %%
  * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
@@ -136,7 +136,7 @@ public class ServiceAccountRegistryImplTest
     public void testValidServiceAccountRoleValues() throws Exception
     {
         globalProperties.put("serviceaccount.role.testEditorSA", "EDITOR_SERVICE_ACCOUNT");
-        globalProperties.put("serviceaccount.role.testCollaboratorSA", COLLABORATOR_SVC_AUTHORITY);
+        globalProperties.put("serviceaccount.role.testCollaboratorSA", "COLLABORATOR_SERVICE_ACCOUNT");
         globalProperties.put("serviceaccount.role.testAdminSA", "ADMIN_SERVICE_ACCOUNT");
         serviceAccountService.afterPropertiesSet();
 

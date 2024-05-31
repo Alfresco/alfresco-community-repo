@@ -58,10 +58,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm.Family;
 import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.ResourceRetriever;
@@ -129,6 +132,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentityServiceFacade>
 {
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
+
+    private static final JOSEObjectType AT_JWT = new JOSEObjectType("at+jwt");
+
     private boolean enabled;
     private SpringBasedIdentityServiceFacadeFactory factory;
 
@@ -587,13 +593,12 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
                 return NimbusJwtDecoder.withPublicKey(publicKey)
-                    .signatureAlgorithm(SIGNATURE_ALGORITHM)
+                    .signatureAlgorithm(SIGNATURE_ALGORITHM) //TODO Signature Algorithm should be configurable (i.e. via IdentityServiceConfig)
                     .build();
             }
-
             final String jwkSetUri = requireValidJwkSetUri(providerDetails);
             return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
-                .jwsAlgorithm(SIGNATURE_ALGORITHM)
+                .jwsAlgorithm(SIGNATURE_ALGORITHM) //TODO Signature Algorithm should be configurable, using the same value as above
                 .restOperations(rest)
                 .jwtProcessorCustomizer(this::reconfigureJWKSCache)
                 .build();
@@ -632,9 +637,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             final JWKSource<SecurityContext> cachingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(),
                 resourceRetriever.get(), cache);
 
-            jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
-                JWSAlgorithm.parse(SIGNATURE_ALGORITHM.getName()),
-                cachingJWKSource));
+            jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(Family.SIGNATURE, cachingJWKSource));
+            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)
@@ -781,9 +785,22 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
     }
 
+    static class CustomJOSEObjectTypeVerifier extends DefaultJOSEObjectTypeVerifier<SecurityContext>
+    {
+        public CustomJOSEObjectTypeVerifier(JOSEObjectType... allowedTypes)
+        {
+            super(Set.of(allowedTypes));
+        }
+
+        @Override
+        public void verify(JOSEObjectType type, SecurityContext context) throws BadJOSEException
+        {
+            super.verify(type, context);
+        }
+    }
+
     private static boolean isDefined(String value)
     {
         return value != null && !value.isBlank();
     }
-
 }

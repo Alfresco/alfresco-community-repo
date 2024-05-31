@@ -9,6 +9,10 @@
       <app:icon>space-icon-default</app:icon>
       <cm:title>${webscriptsextentions.url_addressable_web_service_extensions}</cm:title>
       <cm:name>${webscriptsextentions.web_scripts_extensions}</cm:name>
+      <view:aspects>
+        <sys:undeletable/>
+        <sys:unmovable/>
+      </view:aspects>
     </view:properties>
     <view:associations>
       <cm:contains>

@@ -4,16 +4,16 @@
    xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
 
    <cm:folder view:childName="${spaces.scheduled_actions.childname}">
+      <view:aspects>
+         <sys:undeletable/>
+         <sys:unmovable/>
+      </view:aspects>
       <view:properties>
          <sys:store-protocol>workspace</sys:store-protocol>
          <sys:store-identifier>SpacesStore</sys:store-identifier>
          <cm:name>${spaces.actions.scheduled_actions.name}</cm:name>
          <cm:title>${spaces.actions.scheduled_actions.name}</cm:title>
          <cm:description>${spaces.actions.scheduled_actions.description}</cm:description>
-         <view:aspects>
-            <sys:undeletable/>
-            <sys:unmovable/>
-         </view:aspects>
       </view:properties>
    </cm:folder>
 </view:view>

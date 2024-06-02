@@ -29,11 +29,12 @@
          <cm:name>Records Management</cm:name>
          <cm:title>Records Management</cm:title>
          <cm:description>Configuration information for the Records Management application.</cm:description>
-         <view:aspects>
-            <sys:undeletable/>
-            <sys:unmovable/>
-         </view:aspects>
       </view:properties>
+
+      <view:aspects>
+         <sys:undeletable/>
+         <sys:unmovable/>
+      </view:aspects>
 
       <view:associations>
          <cm:contains>

@@ -9,16 +9,14 @@
     
     <cm:folder view:childName="${spaces.transfers.childname}">    
        <view:aspects>
+         <sys:undeletable/>
+         <sys:unmovable/>
        </view:aspects>
        <view:properties>
          <cm:description>${spaces.transfers.description}</cm:description>
          <app:icon>space-icon-default</app:icon>
          <cm:title>${spaces.transfers.title}</cm:title>
          <cm:name>${spaces.transfers.name}</cm:name>
-         <view:aspects>
-             <sys:undeletable/>
-             <sys:unmovable/>
-         </view:aspects>
         </view:properties>
         <cm:contains>
             <cm:folder view:childName="${spaces.transfer_groups.childname}">

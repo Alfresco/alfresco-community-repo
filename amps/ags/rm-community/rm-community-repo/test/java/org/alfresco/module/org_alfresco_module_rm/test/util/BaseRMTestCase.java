@@ -36,6 +36,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
@@ -173,6 +175,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordsManagementAuditService rmAuditService;
     protected IdentifierService identifierService;
     protected HoldService holdService;
+    protected HoldBulkService holdBulkService;
+    protected HoldBulkMonitor holdBulkMonitor;
     protected InplaceRecordService inplaceRecordService;
     protected RelationshipService relationshipService;
 
@@ -429,6 +433,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         rmAuditService = (RecordsManagementAuditService) applicationContext.getBean("RecordsManagementAuditService");
         identifierService = (IdentifierService) applicationContext.getBean("recordsManagementIdentifierService");
         holdService = (HoldService) applicationContext.getBean("HoldService");
+        holdBulkService = (HoldBulkService) applicationContext.getBean("holdBulkService");
+        holdBulkMonitor = (HoldBulkMonitor) applicationContext.getBean("holdBulkMonitor");
         inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
         relationshipService = (RelationshipService) applicationContext.getBean("RelationshipService");
 

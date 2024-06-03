@@ -2654,7 +2654,7 @@ paths:
         ```
       operationId: createRetentionSchedule
       parameters:
-        - $ref: '#/parameters/categoryIdParam'
+        - $ref: '#/parameters/recordCategoryIdParam'
         - in: body
           name: nodeBodyCreate
           description: |
@@ -2672,13 +2672,13 @@ paths:
             $ref: '#/definitions/RetentionScheduleResponse'
         '400':
           description: |
-            Invalid parameter: categoryId is not a valid format
+            Invalid parameter: recordCategoryId is not a valid format
         '401':
           description: Authentication failed
         '403':
           description: Current user does not have permission to create retention schedule
         '404':
-          description: CategoryId does not exist
+          description: recordCategoryId does not exist
         default:
           description: Unexpected error
           schema:
@@ -2694,7 +2694,7 @@ paths:
 
       operationId: getRetentionScheduleList
       parameters:
-        - $ref: '#/parameters/categoryIdParam'
+        - $ref: '#/parameters/recordCategoryIdParam'
         - $ref: '#/parameters/retentionScheduleIncludeParam'
       consumes:
         - application/json
@@ -2707,13 +2707,13 @@ paths:
             $ref: '#/definitions/RetentionScheduleResponseList'
         '400':
           description: |
-            Invalid parameter: categoryId is not a valid format
+            Invalid parameter: recordCategoryId is not a valid format
         '401':
           description: Authentication failed
         '403':
           description: Current user does not have permission to get retention schedule
         '404':
-          description: CategoryId does not exist
+          description: recordCategoryId does not exist
         default:
           description: Unexpected error
           schema:

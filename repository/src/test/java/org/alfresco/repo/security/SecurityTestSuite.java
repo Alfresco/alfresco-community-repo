@@ -45,6 +45,7 @@ import org.alfresco.repo.security.authority.AuthorityServiceTest;
 import org.alfresco.repo.security.authority.DuplicateAuthorityTest;
 import org.alfresco.repo.security.authority.ExtendedPermissionServiceTest;
 import org.alfresco.repo.security.permissions.dynamic.LockOwnerDynamicAuthorityTest;
+import org.alfresco.repo.security.permissions.dynamic.ServiceAccountRoleTest;
 import org.alfresco.repo.security.permissions.impl.AclDaoComponentTest;
 import org.alfresco.repo.security.permissions.impl.PermissionServiceTest;
 import org.alfresco.repo.security.permissions.impl.ReadPermissionTest;
@@ -108,6 +109,7 @@ public class SecurityTestSuite extends TestSuite
 		suite.addTest(new JUnit4TestAdapter(LocalAuthenticationServiceTest.class));
 
         suite.addTest(new JUnit4TestAdapter(ResetPasswordServiceImplTest.class));
+        suite.addTest(new JUnit4TestAdapter(ServiceAccountRoleTest.class));
         return suite;
     }
 }

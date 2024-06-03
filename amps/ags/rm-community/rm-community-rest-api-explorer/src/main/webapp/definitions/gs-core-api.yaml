@@ -2637,7 +2637,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   ##retention-schedule
-  '/record-categories/{categoryId}/retention-schedules':
+  '/record-categories/{recordCategoryId}/retention-schedules':
     post:
       tags:
         - retention-schedule
@@ -2647,9 +2647,9 @@ paths:
         For example, using the following JSON body will create a retention schedule:
         ```JSON
           {
-              "authority" : "Retention Authority",
-              "instructions" : "Retention Instructions",
-              "isRecordLevel" :  false
+              "authority":"Retention Authority",
+              "instructions":"Retention Instructions",
+              "isRecordLevel":false
           }
         ```
       operationId: createRetentionSchedule

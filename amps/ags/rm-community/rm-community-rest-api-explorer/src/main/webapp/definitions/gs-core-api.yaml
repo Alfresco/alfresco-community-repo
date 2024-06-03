@@ -2540,6 +2540,8 @@ paths:
           description: Current user does not have permission to create retention schedule
         '404':
           description: recordCategoryId does not exist
+        '409':
+          description: Retention schedule already exist for the given recordCategory
         default:
           description: Unexpected error
           schema:
@@ -2547,9 +2549,9 @@ paths:
     get:
       tags:
         - retention-schedule
-      summary: Get a list of retention schedules
+      summary: Get the retention schedule for a record category
       description: |
-        Get a list of retention schedules.
+        Get the retention schedule for a record category.
         
         You can use the **include** parameter (include=actions) to return additional information.
 
@@ -2579,14 +2581,14 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/retention-schedules/{id}/retention-steps':
+  '/retention-schedules/{retentionScheduleId}/retention-steps':
     post:
       tags:
         - retention-schedule
       summary: Create a step in the retention schedule
       description: |
         Create a step in the retention schedule.
-        List of Steps:
+        The valid steps types are:
           * **retain**
           * **cutoff**
           * **accession**
@@ -2599,21 +2601,22 @@ paths:
           * "transfer" action is allowed multiple times
           * "destroy" must be the last action
         
-        **combineDispositionStepConditions** property is required only for **Accession** step and its used to specify where to combine the period condition and events for the step execution or only consider one of them.
+        The **combineDispositionStepConditions** property is only valid for **accession** step.
+        This is used to specify whether to combine the period condition and events for the step execution or only consider one of them.
         
-        For example, the following JSON body to Create a step in the retention schedule:
+        For example, the following JSON body to create a step in the retention schedule:
         ```JSON
           {
-              "name" : "Step Name",
+              "name" : "retain",
               "periodAmount" : 2,
-              "period" : "period",
-              "periodProperty" : "Period Property",
-              "combineDispositionStepConditions" :  boolean
-              "events" : ["Event Name"],
-              "eligibleOnFirstCompleteEvent" : boolean,
+              "period" : "month",
+              "periodProperty" : "cm:created",
+              "combineDispositionStepConditions" :  false
+              "events" : ["versioned"],
+              "eligibleOnFirstCompleteEvent" : false,
               "description" : "Step Description",
-              "destroyWithGhosting" :  boolean
-              "location" : "Location"
+              "destroyWithGhosting" :  false
+              "location" : "location"
           }
         ```
       operationId: createRetentionScheduleAction
@@ -2637,14 +2640,14 @@ paths:
             $ref: '#/definitions/RetentionStepNodeBodyResponse'
         '400':
           description: |
-            Invalid parameter: categoryId is not a valid format
+            Invalid parameter: retentionScheduleId is not a valid format
             Invalid parameter: { ex: event,period,periodProperty}
         '401':
           description: Authentication failed
         '403':
           description: Current user does not have permission to create retention schedule
         '404':
-          description: CategoryId does not exist
+          description: retentionScheduleId does not exist
         '409':
           description: |
             * Invalid Step - Can't use Cut Off after Transfer or Accession
@@ -2676,11 +2679,11 @@ paths:
             $ref: '#/definitions/RetentionStepsNodeBodyResponse'
         '400':
           description: |
-            Invalid parameter: categoryId is not a valid format
+            Invalid parameter: retentionScheduleId is not a valid format
         '401':
           description: Authentication failed
         '404':
-          description: CategoryId does not exist
+          description: retentionScheduleId does not exist
         default:
           description: Unexpected error
           schema:
@@ -3146,7 +3149,7 @@ parameters:
     type: boolean
   ## Category
   categoryIdParam:
-    name: categoryId
+    name: retentionScheduleId
     in: path
     description:
       The identifier of a category.
@@ -4292,6 +4295,7 @@ definitions:
         type: string
       combineDispositionStepConditions:
         type: boolean
+        default: false
       eligibleOnFirstCompleteEvent:
         type: boolean
       description:

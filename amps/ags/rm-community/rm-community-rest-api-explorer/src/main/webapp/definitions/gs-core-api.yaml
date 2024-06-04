@@ -2746,16 +2746,16 @@ paths:
         For example, the following JSON body to create a step in the retention schedule:
         ```JSON
           {
-              "name" : "retain",
-              "periodAmount" : 2,
-              "period" : "month",
-              "periodProperty" : "cm:created",
-              "combineDispositionStepConditions" :  false
-              "events" : ["versioned"],
-              "eligibleOnFirstCompleteEvent" : false,
-              "description" : "Step Description",
-              "destroyWithGhosting" :  false
-              "location" : "location"
+              "name":"retain",
+              "periodAmount": 2,
+              "period":"month",
+              "periodProperty":"cm:created",
+              "combineDispositionStepConditions": false,
+              "events":["versioned"],
+              "eligibleOnFirstCompleteEvent": true,
+              "description":"Step Description",
+              "destroyWithGhosting": false,
+              "location":"location"
           }
         ```
       operationId: createRetentionScheduleAction
@@ -4539,6 +4539,7 @@ definitions:
         default: false
       eligibleOnFirstCompleteEvent:
         type: boolean
+        default: true
       description:
         type: string
       destroyWithGhosting:

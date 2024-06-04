@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -66,6 +66,8 @@ import org.springframework.context.ApplicationContext;
 
 public abstract class AbstractPermissionTest extends TestCase
 {
+    public static final int NUMBER_OF_GLOBAL_PERMISSIONS = 8;
+
     protected static final String USER2_LEMUR = "lemur";
 
     protected static final String USER1_ANDY = "andy";

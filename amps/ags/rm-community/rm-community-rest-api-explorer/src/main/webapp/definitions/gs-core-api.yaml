@@ -2527,7 +2527,7 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        '201':
           description: Successful response
           schema:
             $ref: '#/definitions/RetentionScheduleResponse'
@@ -2581,7 +2581,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/retention-schedules/{retentionScheduleId}/retention-steps':
+  '/retention-schedule/{retentionScheduleId}/retention-steps':
     post:
       tags:
         - retention-schedule
@@ -2634,7 +2634,7 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        '201':
           description: Successful response
           schema:
             $ref: '#/definitions/RetentionStepNodeBodyResponse'

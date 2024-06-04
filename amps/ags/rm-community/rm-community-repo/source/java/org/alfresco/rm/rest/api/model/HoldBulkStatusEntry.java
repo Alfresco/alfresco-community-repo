@@ -26,49 +26,8 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-import java.io.Serializable;
 import java.util.Date;
 
-public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
-                             long totalItems, String lastError, boolean isCancelled, String cancellationReason) implements Serializable
-{
-    public enum Status
-    {
-        PENDING("PENDING"),
-        IN_PROGRESS("IN PROGRESS"),
-        DONE("DONE"),
-        CANCELLED("CANCELLED");
-
-        private final String value;
-
-        Status(String value)
-        {
-            this.value = value;
-        }
-
-        public String getValue()
-        {
-            return value;
-        }
-    }
-
-    public String getStatus()
-    {
-        if (isCancelled)
-        {
-            return Status.CANCELLED.getValue();
-        }
-        else if (startTime == null && endTime == null)
-        {
-            return Status.PENDING.getValue();
-        }
-        else if (startTime != null && endTime == null)
-        {
-            return Status.IN_PROGRESS.getValue();
-        }
-        else
-        {
-            return Status.DONE.getValue();
-        }
-    }
+public record HoldBulkStatusEntry(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
+                                  long totalItems, String lastError, String status, String cancellationReason, HoldBulkOperation holdBulkOperation) {
 }

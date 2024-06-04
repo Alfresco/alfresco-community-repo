@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkStatusUpdater;
 import org.alfresco.repo.batch.BatchMonitor;
 import org.alfresco.repo.batch.BatchMonitorEvent;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 
 /**
  * An implementation of {@link BulkStatusUpdater} for the hold bulk operation

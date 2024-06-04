@@ -369,48 +369,6 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             UserRole.SiteCollaborator.getRoleId(), true);
     }
 
-//    @Test
-//    public void testBulkCancellation()
-//    {
-//
-//        hold4 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
-//            Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
-//                .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
-//        holds.add(hold4);
-//        STEP("Add content from the site to the hold using the bulk API.");
-//        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(getAdminUser())
-//            .startBulkProcess(holdBulkOperation, hold4.getId());
-//        await().atMost(20, TimeUnit.SECONDS).until(() ->
-//            Objects.equals(getRestAPIFactory().getHoldsAPI(getAdminUser())
-//                .getBulkStatus(hold4.getId(), bulkOperationEntry.getBulkStatusId()).getStatus(), "IN PROGRESS"));
-//        getRestAPIFactory().getHoldsAPI(getAdminUser()).cancelBulkOperation(hold4.getId(), bulkOperationEntry.getBulkStatusId(),
-//            BulkBodyCancel.builder().reason("no reason").build(), "");
-//
-//        // Verify the status code
-//        assertStatusCode(ACCEPTED);
-//        assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
-//
-//        STEP("Wait until all files are added to the hold.");
-//        await().atMost(20, TimeUnit.SECONDS).until(
-//            () -> getRestAPIFactory().getHoldsAPI(getAdminUser()).getChildren(hold4.getId()).getEntries().size()
-//                == NUMBER_OF_FILES);
-//        List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(getAdminUser())
-//            .getChildren(hold4.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
-//                HoldChild::getId).toList();
-//        assertEquals(addedFiles.stream().map(FileModel::getNodeRefWithoutVersion).sorted().toList(),
-//            holdChildrenNodeRefs.stream().sorted().toList());
-//
-//        STEP("Check the bulk status.");
-//        HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(getAdminUser())
-//            .getBulkStatus(hold4.getId(), bulkOperationEntry.getBulkStatusId());
-//        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 0, null);
-//
-//        STEP("Check the bulk statuses.");
-//        HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(getAdminUser())
-//            .getBulkStatuses(hold4.getId());
-//        assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
-//    }
-
     /**
      * Given an unauthenticated user
      * When the user adds content from a site to a hold using the bulk API

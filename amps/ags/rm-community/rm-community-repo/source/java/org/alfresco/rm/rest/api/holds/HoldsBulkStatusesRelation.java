@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatusAndProcessDetails;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkUtils;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -50,7 +52,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.BulkCancellationReason;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
+import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -58,14 +61,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 @RelationshipResource(name = "bulk-statuses", entityResource = HoldsEntityResource.class, title = "Bulk statuses of a hold")
 public class HoldsBulkStatusesRelation
-    implements RelationshipResourceAction.Read<HoldBulkStatus>, RelationshipResourceAction.ReadById<HoldBulkStatus>
+    implements RelationshipResourceAction.Read<HoldBulkStatusEntry>, RelationshipResourceAction.ReadById<HoldBulkStatusEntry>
 {
     private HoldBulkMonitor holdBulkMonitor;
     private FilePlanComponentsApiUtils apiUtils;
     private PermissionService permissionService;
 
     @Override
-    public CollectionWithPagingInfo<HoldBulkStatus> readAll(String holdId, Parameters parameters)
+    public CollectionWithPagingInfo<HoldBulkStatusEntry> readAll(String holdId, Parameters parameters)
     {
         // validate parameters
         checkNotBlank("holdId", holdId);
@@ -75,8 +78,9 @@ public class HoldsBulkStatusesRelation
 
         checkReadPermissions(holdRef);
 
-        List<HoldBulkStatus> statuses = holdBulkMonitor.getBulkStatusesForHold(holdId);
-        List<HoldBulkStatus> page = statuses.stream()
+        List<HoldBulkStatusAndProcessDetails> statuses = holdBulkMonitor.getBulkStatusesForHold(holdId);
+        List<HoldBulkStatusEntry> page = statuses.stream()
+            .map(HoldBulkUtils::toHoldBulkStatusEntry)
             .skip(parameters.getPaging().getSkipCount())
             .limit(parameters.getPaging().getMaxItems())
             .collect(Collectors.toCollection(LinkedList::new));
@@ -87,7 +91,7 @@ public class HoldsBulkStatusesRelation
     }
 
     @Override
-    public HoldBulkStatus readById(String holdId, String bulkStatusId, Parameters parameters)
+    public HoldBulkStatusEntry readById(String holdId, String bulkStatusId, Parameters parameters)
         throws RelationshipResourceNotFoundException
     {
         checkNotBlank("holdId", holdId);
@@ -98,7 +102,8 @@ public class HoldsBulkStatusesRelation
 
         checkReadPermissions(holdRef);
 
-        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(bulkStatusId))
+        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(holdId, bulkStatusId))
+            .map(HoldBulkUtils::toHoldBulkStatusEntry)
             .orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
     }
 

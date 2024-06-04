@@ -37,7 +37,7 @@ import java.util.List;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.DefaultHoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkProcessDetails;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,10 +82,10 @@ public class DefaultHoldBulkMonitorUnitTest
         String processId = "processId";
         when(holdProcessRegistry.get(holdRef.getId())).thenReturn(null);
 
-        holdBulkMonitor.registerProcess(holdRef, processId);
+        holdBulkMonitor.registerProcess(holdRef, processId, null);
 
         Mockito.verify(holdProcessRegistry)
-            .put(holdRef.getId(), Arrays.asList(new HoldBulkProcessDetails(processId, null)));
+            .put(holdRef.getId(), Arrays.asList(new HoldBulkProcessDetails(processId, null, null)));
     }
 
     @Test
@@ -106,7 +106,7 @@ public class DefaultHoldBulkMonitorUnitTest
 
         when(holdProcessRegistry.get("holdId")).thenReturn(
             Arrays.asList("process1", "process2", "process3", "process4", "process5")
-                .stream().map(bulkStatusId -> new HoldBulkProcessDetails(bulkStatusId, null)).toList());
+                .stream().map(bulkStatusId -> new HoldBulkProcessDetails(bulkStatusId, null, null)).toList());
         when(holdProgressCache.get("process1")).thenReturn(status1);
         when(holdProgressCache.get("process2")).thenReturn(status2);
         when(holdProgressCache.get("process3")).thenReturn(status3);

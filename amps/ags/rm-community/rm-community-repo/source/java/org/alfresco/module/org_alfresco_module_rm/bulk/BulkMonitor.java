@@ -45,8 +45,9 @@ public interface BulkMonitor<T>
      *
      * @param nodeRef   the node reference
      * @param processId the process id
+     * @param bulkOperation the bulk operation
      */
-    void registerProcess(NodeRef nodeRef, String processId);
+    void registerProcess(NodeRef nodeRef, String processId, BulkOperation bulkOperation);
 
     /**
      * Get the bulk status

@@ -29,12 +29,13 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
@@ -55,11 +56,11 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public void registerProcess(NodeRef holdRef, String processId)
+    public void registerProcess(NodeRef holdRef, String processId, BulkOperation bulkOperation)
     {
         List<HoldBulkProcessDetails> processIds = Optional.ofNullable(holdProcessRegistry.get(holdRef.getId()))
             .orElse(new ArrayList<>());
-        processIds.add(new HoldBulkProcessDetails(processId, null));
+        processIds.add(new HoldBulkProcessDetails(processId, null, bulkOperation));
         holdProcessRegistry.put(holdRef.getId(), processIds);
     }
 
@@ -88,18 +89,37 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public List<HoldBulkStatus> getBulkStatusesForHold(String holdId)
+    public List<HoldBulkStatusAndProcessDetails> getBulkStatusesForHold(String holdId)
     {
         return Optional.ofNullable(holdProcessRegistry.get(holdId))
             .map(bulkProcessDetailsList -> bulkProcessDetailsList.stream()
-                .map(HoldBulkProcessDetails::bulkStatusId)
-                .map(this::getBulkStatus)
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(HoldBulkStatus::endTime, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(HoldBulkStatus::startTime, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .reversed())
+                .filter(bulkProcessDetails -> Objects.nonNull(bulkProcessDetails.bulkStatusId()))
+                .map(bulkProcessDetails -> new HoldBulkStatusAndProcessDetails(getBulkStatus(bulkProcessDetails.bulkStatusId()), bulkProcessDetails))
+                .filter(statusAndProcess -> Objects.nonNull(statusAndProcess.holdBulkStatus()))
+                .sorted(sortBulkStatuses())
                 .toList())
             .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public HoldBulkStatusAndProcessDetails getBulkStatus(String holdId, String bulkStatusId)
+    {
+        return Optional.ofNullable(holdProcessRegistry.get(holdId))
+            .map(bulkProcessDetailsList -> bulkProcessDetailsList.stream().filter(bulkProcessDetails -> bulkStatusId.equals(bulkProcessDetails.bulkStatusId()))
+                .findFirst()
+                .map(bulkProcessDetails -> new HoldBulkStatusAndProcessDetails(getBulkStatus(bulkProcessDetails.bulkStatusId()), bulkProcessDetails))
+                .orElse(null))
+            .orElse(null);
+    }
+
+    protected static Comparator<HoldBulkStatusAndProcessDetails> sortBulkStatuses()
+    {
+        return Comparator.<HoldBulkStatusAndProcessDetails, Date>comparing(
+                statusAndProcess -> statusAndProcess.holdBulkStatus().endTime(),
+                Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(statusAndProcess -> statusAndProcess.holdBulkStatus().startTime(),
+                Comparator.nullsLast(Comparator.naturalOrder()))
+            .reversed();
     }
 
     public void setHoldProgressCache(

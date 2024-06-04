@@ -27,12 +27,48 @@
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
 import java.io.Serializable;
+import java.util.Date;
 
-import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
-
-/**
- * A simple immutable POJO to hold the details of a bulk process
- */
-public record HoldBulkProcessDetails(String bulkStatusId, String creatorInstance, BulkOperation bulkOperation) implements Serializable
+public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
+                             long totalItems, String lastError, boolean isCancelled, String cancellationReason) implements Serializable
 {
+    public enum Status
+    {
+        PENDING("PENDING"),
+        IN_PROGRESS("IN PROGRESS"),
+        DONE("DONE"),
+        CANCELLED("CANCELLED");
+
+        private final String value;
+
+        Status(String value)
+        {
+            this.value = value;
+        }
+
+        public String getValue()
+        {
+            return value;
+        }
+    }
+
+    public String getStatus()
+    {
+        if (isCancelled)
+        {
+            return Status.CANCELLED.getValue();
+        }
+        else if (startTime == null && endTime == null)
+        {
+            return Status.PENDING.getValue();
+        }
+        else if (startTime != null && endTime == null)
+        {
+            return Status.IN_PROGRESS.getValue();
+        }
+        else
+        {
+            return Status.DONE.getValue();
+        }
+    }
 }

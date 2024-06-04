@@ -32,8 +32,6 @@ import static org.alfresco.rm.rest.api.model.HoldBulkOperationType.ADD;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkBaseService;
@@ -49,7 +47,6 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rm.rest.api.model.HoldBulkOperationType;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -130,6 +127,21 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             permissionService.hasPermission(holdRef, RMPermissionModel.FILING) == AccessStatus.DENIED))
         {
             throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
+        }
+
+    }
+
+    @Override
+    public void cancelBulkOperation(NodeRef holdRef, String bulkStatusId)
+    {
+        if(bulkMonitor instanceof HoldBulkMonitor holdBulkMonitor)
+        {
+            HoldBulkStatusAndProcessDetails statusAndProcessDetails = holdBulkMonitor.getBulkStatus(holdRef.getId(), bulkStatusId);
+            if(statusAndProcessDetails != null)
+            {
+                checkPermissions(holdRef, statusAndProcessDetails.holdBulkProcessDetails().bulkOperation());
+                holdBulkMonitor.cancelBulkOperation(bulkStatusId, "Cancelled by user");
+            }
         }
 
     }

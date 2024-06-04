@@ -26,28 +26,4 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-/**
- * Interface defining a hold bulk service.
- */
-public interface HoldBulkService
-{
-    /**
-     * Initiates a bulk operation on a hold.
-     *
-     * @param holdRef       The hold reference
-     * @param bulkOperation The bulk operation
-     * @return The initial status of the bulk operation
-     */
-    HoldBulkStatus execute(NodeRef holdRef, BulkOperation bulkOperation);
-
-    /**
-     * Gets the status of a bulk operation.
-     *
-     * @param holdRef       The hold reference
-     * @param bulkStatusId  The bulk status id
-     */
-    void cancelBulkOperation(NodeRef holdRef, String bulkStatusId);
-}
+public record HoldBulkStatusAndProcessDetails(HoldBulkStatus holdBulkStatus, HoldBulkProcessDetails holdBulkProcessDetails) {}

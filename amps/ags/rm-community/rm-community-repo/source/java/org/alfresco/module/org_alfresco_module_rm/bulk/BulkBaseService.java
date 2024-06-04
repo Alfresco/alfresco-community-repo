@@ -93,7 +93,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
 
         T initBulkStatus = getInitBulkStatus(processId, totalItems);
         bulkMonitor.updateBulkStatus(initBulkStatus);
-        bulkMonitor.registerProcess(nodeRef, processId);
+        bulkMonitor.registerProcess(nodeRef, processId, bulkOperation);
 
         BulkProgress bulkProgress = new BulkProgress(totalItems, processId);
         BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation, bulkProgress);

@@ -4235,6 +4235,7 @@ definitions:
         type: string
       isRecordLevel:
         type: boolean
+        default: false
   RetentionScheduleResponse:
     type: object
     properties:

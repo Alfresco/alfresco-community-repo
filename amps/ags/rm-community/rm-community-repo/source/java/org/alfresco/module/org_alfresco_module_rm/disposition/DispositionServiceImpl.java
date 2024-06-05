@@ -59,6 +59,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -662,7 +663,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             else
             {
                 // Error since the node already has a disposition schedule set
-                throw new AlfrescoRuntimeException("Unable to create retention schedule on node that already has a retention schedule.");
+                throw new ConstraintViolatedException("Unable to create retention schedule on node that already has a retention schedule.");
             }
         }
         finally

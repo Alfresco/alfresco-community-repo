@@ -36,8 +36,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
@@ -61,6 +63,8 @@ import org.alfresco.rm.rest.api.model.UnfiledContainer;
 import org.alfresco.rm.rest.api.model.UnfiledContainerChild;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolder;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolderChild;
+import org.alfresco.rm.rest.api.model.RetentionSchedule;
+import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -70,6 +74,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
 
 /**
  * Utility class containing Alfresco and RM java services required by the API
@@ -890,5 +896,87 @@ public class ApiNodesModelFactory
         mapRecordInfo(record, info, parameters.getInclude());
         mapAssociations(record, info, parameters.getInclude());
         return record;
+    }
+
+    public RetentionSchedule createRetentionSchedule(DispositionSchedule dispositionSchedule) {
+        RetentionSchedule retentionSchedule = new RetentionSchedule();
+        retentionSchedule.setId(dispositionSchedule.getNodeRef().getId());
+        NodeRef parent = this.nodeService.getPrimaryParent(dispositionSchedule.getNodeRef()).getParentRef();
+        retentionSchedule.setParentId(parent.getId());
+        retentionSchedule.setInstructions(dispositionSchedule.getDispositionInstructions());
+        retentionSchedule.setAuthority(dispositionSchedule.getDispositionAuthority());
+        retentionSchedule.setIsRecordLevel(dispositionSchedule.isRecordLevelDisposition());
+
+        boolean unpublishedUpdates = false;
+        for (DispositionActionDefinition actionDef : dispositionSchedule.getDispositionActionDefinitions())
+        {
+            NodeRef actionDefNodeRef = actionDef.getNodeRef();
+            if (nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE))
+            {
+                unpublishedUpdates = true;
+            }
+        }
+        retentionSchedule.setIsUnpublishedUpdates(unpublishedUpdates);
+        return retentionSchedule;
+    }
+
+    public RetentionScheduleActionDefinition createActionDefModel(DispositionActionDefinition dispositionActionDefinition) {
+        RetentionScheduleActionDefinition retentionScheduleActionDefinition = new RetentionScheduleActionDefinition();
+        retentionScheduleActionDefinition.setId(dispositionActionDefinition.getId());
+        retentionScheduleActionDefinition.setName(dispositionActionDefinition.getName());
+        retentionScheduleActionDefinition.setDescription(dispositionActionDefinition.getDescription());
+        String period = dispositionActionDefinition.getPeriod().toString();
+        String[] periodArray = period.split("\\|");
+        if(periodArray[0] != null && !periodArray[0].isEmpty())
+        {
+            retentionScheduleActionDefinition.setPeriod(periodArray[0]);
+        }
+        if(periodArray[0] != null && !periodArray[1].isEmpty())
+        {
+            retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
+        }
+        retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
+        retentionScheduleActionDefinition.setEligibleOnFirstCompleteEvent(dispositionActionDefinition.eligibleOnFirstCompleteEvent());
+        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null) {
+            retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+        }
+        retentionScheduleActionDefinition.setLocation(dispositionActionDefinition.getLocation());
+        List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
+        if (events != null && !events.isEmpty()) {
+            List<String> eventNames = new ArrayList<>(events.size());
+            for (RecordsManagementEvent event : events) {
+                eventNames.add(event.getName());
+            }
+            retentionScheduleActionDefinition.setEvents(eventNames);
+        }
+        retentionScheduleActionDefinition.setIndex(dispositionActionDefinition.getIndex());
+        if (dispositionActionDefinition.getGhostOnDestroy() != null)
+        {
+            if (dispositionActionDefinition.getGhostOnDestroy().equals("ghost"))
+            {
+                retentionScheduleActionDefinition.setDestroyWithGhosting(true);
+            }
+            else if (dispositionActionDefinition.getGhostOnDestroy().equals("delete"))
+            {
+                retentionScheduleActionDefinition.setDestroyWithGhosting(false);
+            }
+        }
+        return retentionScheduleActionDefinition;
+    }
+
+    public void mapRetentionScheduleOptionalInfo(RetentionSchedule retentionSchedule, DispositionSchedule schedule, List<String> includeParam) {
+        if (includeParam == null || includeParam.isEmpty())
+        {
+            return;
+        }
+        if (includeParam.contains("actions"))
+        {
+            List<RetentionScheduleActionDefinition> actions = new ArrayList<>();
+            for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions())
+            {
+                actions.add(createActionDefModel(actionDef));
+            }
+            retentionSchedule.setActions(actions);
+        }
     }
 }

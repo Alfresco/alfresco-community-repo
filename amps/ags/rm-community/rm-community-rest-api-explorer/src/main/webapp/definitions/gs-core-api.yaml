@@ -41,7 +41,7 @@ tags:
   - name: holds
     description: Retrieve and manage holds
   - name: retention-schedule
-    description: Perform Retention Schedule Specific Operations
+    description: Perform retention schedule specific operations
 
 paths:
   ## GS sites
@@ -2498,7 +2498,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   ##retention-schedule
-  '/record-categories/{recordCategoryId}/retention-schedules':
+  '/record-categories/{recordCategoryId}/retention-schedule':
     post:
       tags:
         - retention-schedule
@@ -2519,7 +2519,7 @@ paths:
         - in: body
           name: nodeBodyCreate
           description: |
-            The node information to create.
+            The retention schedule information to create.
           schema:
             $ref: '#/definitions/RetentionNodeBodyCreate'
       consumes:
@@ -2541,7 +2541,7 @@ paths:
         '404':
           description: recordCategoryId does not exist
         '409':
-          description: Retention schedule already exist for the given recordCategory
+          description: Retention schedule already exist for the given recordCategoryId
         default:
           description: Unexpected error
           schema:
@@ -2603,6 +2603,10 @@ paths:
         
         The **combineDispositionStepConditions** property is only valid for **accession** step.
         This is used to specify whether to combine the period condition and events for the step execution or only consider one of them.
+        For example:
+          **periodCondition**: After a period of 2 months
+          **eventsCondition**: Case Closed event
+          This flag can be used to consider only (**periodCondition** or **eventsCondition**) or both of them at once.
         
         For example, the following JSON body to create a step in the retention schedule:
         ```JSON
@@ -2625,7 +2629,7 @@ paths:
         - in: body
           name: nodeBodyCreate
           description: |
-            The node information to create.
+            The retention schedule steps information to create.
           required: true
           schema:
             $ref: '#/definitions/RetentionStepNodeBodyCreate'
@@ -4254,10 +4258,15 @@ definitions:
   RetentionScheduleResponseList:
     type: object
     properties:
-      entries:
-        type: array
-        items:
-          $ref: '#/definitions/FullRetentionScheduleResponse'
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/FullRetentionScheduleResponse'
   FullRetentionScheduleResponse:
     type: object
     properties:
@@ -4345,10 +4354,15 @@ definitions:
   RetentionStepsNodeBodyResponse:
     type: object
     properties:
-      entries:
-        type: array
-        items:
-          $ref: '#/definitions/RetentionStepNodeBodyResponse'
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RetentionStepNodeBodyResponse'
   ##
   RequestBodyFile:
     type: object

@@ -520,11 +520,9 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
 
 
-        STEP("Add content from the site to the hold using the bulk API.");
+        STEP("Cancel the bulk operation.");
         getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .cancelBulkOperation(hold4.getId(), bulkOperationEntry.getBulkStatusId(), new BulkBodyCancel());
-
-        STEP("Verify the response status code and the error message.");
 
         // Verify the status code
         assertStatusCode(OK);
@@ -563,7 +561,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
             hold5.getId(), UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING);
         users.add(userWithoutAddToHoldCapability);
 
-        STEP("Add content from the site to the hold using the bulk API.");
+        STEP("Cancel the bulk operation.");
         getRestAPIFactory().getHoldsAPI(userWithoutAddToHoldCapability)
             .cancelBulkOperation(hold5.getId(), bulkOperationEntry.getBulkStatusId(), new BulkBodyCancel());
 

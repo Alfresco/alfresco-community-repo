@@ -28,6 +28,7 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.rest.api.search.model.Query;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rm.rest.api.model.HoldBulkOperation;
 import org.alfresco.rm.rest.api.model.HoldBulkOperationType;
 import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
@@ -37,19 +38,31 @@ import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
  */
 public final class HoldBulkUtils
 {
-    private HoldBulkUtils() {}
+    private HoldBulkUtils()
+    {
+    }
 
     public static HoldBulkStatusEntry toHoldBulkStatusEntry(
         HoldBulkStatusAndProcessDetails holdBulkStatusAndProcessDetails)
     {
         HoldBulkStatus bulkStatus = holdBulkStatusAndProcessDetails.holdBulkStatus();
         BulkOperation bulkOperation = holdBulkStatusAndProcessDetails.holdBulkProcessDetails().bulkOperation();
-        return new HoldBulkStatusEntry(bulkStatus.bulkStatusId(), bulkStatus.startTime(),
-            bulkStatus.endTime(), bulkStatus.processedItems(), bulkStatus.errorsCount(),
-            bulkStatus.totalItems(), bulkStatus.lastError(), bulkStatus.getStatus(),
-            bulkStatus.cancellationReason(),
-            new HoldBulkOperation(new Query(bulkOperation.searchQuery().getLanguage(),
-                bulkOperation.searchQuery().getQuery(), bulkOperation.searchQuery().getUserQuery()),
-                HoldBulkOperationType.valueOf(bulkOperation.operationType())));
+
+        try
+        {
+            HoldBulkOperation holdBulkOperation = new HoldBulkOperation(
+                new Query(bulkOperation.searchQuery().getLanguage(),
+                    bulkOperation.searchQuery().getQuery(), bulkOperation.searchQuery().getUserQuery()),
+                HoldBulkOperationType.valueOf(bulkOperation.operationType()));
+            return new HoldBulkStatusEntry(bulkStatus.bulkStatusId(), bulkStatus.startTime(),
+                bulkStatus.endTime(), bulkStatus.processedItems(), bulkStatus.errorsCount(),
+                bulkStatus.totalItems(), bulkStatus.lastError(), bulkStatus.getStatus(),
+                bulkStatus.cancellationReason(), holdBulkOperation);
+        }
+        catch (IllegalArgumentException e)
+        {
+            String errorMsg = "Unsupported action type in the bulk operation: ";
+            throw new InvalidArgumentException(errorMsg + bulkOperation.operationType());
+        }
     }
 }

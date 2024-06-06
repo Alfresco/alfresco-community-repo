@@ -32,6 +32,7 @@ import static org.alfresco.rm.rest.api.model.HoldBulkOperationType.ADD;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Optional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkBaseService;
@@ -139,13 +140,13 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         {
             HoldBulkStatusAndProcessDetails statusAndProcessDetails = holdBulkMonitor.getBulkStatusWithProcessDetails(
                 holdRef.getId(), bulkStatusId);
-            if (statusAndProcessDetails != null)
-            {
-                checkPermissions(holdRef, statusAndProcessDetails.holdBulkProcessDetails().bulkOperation());
-                holdBulkMonitor.cancelBulkOperation(bulkStatusId, reason);
-            }
-        }
 
+            Optional.ofNullable(statusAndProcessDetails).map(HoldBulkStatusAndProcessDetails::holdBulkProcessDetails)
+                .map(HoldBulkProcessDetails::bulkOperation).ifPresent(bulkOperation -> {
+                    checkPermissions(holdRef, bulkOperation);
+                    holdBulkMonitor.cancelBulkOperation(bulkStatusId, reason);
+                });
+        }
     }
 
     private class AddToHoldWorkerBatch implements BatchProcessWorker<NodeRef>

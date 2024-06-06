@@ -41,11 +41,14 @@ public class HoldBulkStatusUpdater implements BulkStatusUpdater
     public HoldBulkStatusUpdater(HoldBulkMonitor holdBulkMonitor)
     {
         this.task = () -> holdBulkMonitor.updateBulkStatus(
-            new HoldBulkStatus(batchMonitor.getProcessName(), batchMonitor.getStartTime(),
+            new HoldBulkStatus(batchMonitor.getProcessName(),
+                batchMonitor.getStartTime(),
                 batchMonitor.getEndTime(),
                 batchMonitor.getSuccessfullyProcessedEntriesLong() + batchMonitor.getTotalErrorsLong(),
-                batchMonitor.getTotalErrorsLong(), batchMonitor.getTotalResultsLong(),
-                batchMonitor.getLastError(), holdBulkMonitor.isCancelled(batchMonitor.getProcessName()),
+                batchMonitor.getTotalErrorsLong(),
+                batchMonitor.getTotalResultsLong(),
+                batchMonitor.getLastError(),
+                holdBulkMonitor.isCancelled(batchMonitor.getProcessName()),
                 holdBulkMonitor.getCancellationReason(batchMonitor.getProcessName())));
     }
 

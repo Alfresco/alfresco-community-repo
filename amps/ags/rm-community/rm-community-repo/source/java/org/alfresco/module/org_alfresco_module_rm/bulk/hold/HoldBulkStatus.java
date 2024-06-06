@@ -29,8 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * An immutable POJO that contains the status of a hold bulk operation
+ */
 public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
-                             long totalItems, String lastError, boolean isCancelled, String cancellationReason) implements Serializable
+                             long totalItems, String lastError, boolean isCancelled, String cancellationReason)
+    implements Serializable
 {
     public enum Status
     {

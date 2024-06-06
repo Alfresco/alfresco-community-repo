@@ -64,10 +64,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> implements HoldBulkService
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(HoldBulkServiceImpl.class);
-
-    private HoldService holdService;
     private static final String MSG_ERR_ACCESS_DENIED = "permissions.err_access_denied";
 
+    private HoldService holdService;
     private CapabilityService capabilityService;
     private PermissionService permissionService;
     private NodeService nodeService;
@@ -88,11 +87,13 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     protected BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation,
         BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress)
     {
-        return new AddToHoldWorkerProvider(bulkOperation, bulkStatusUpdater, bulkProgress, (HoldBulkMonitor) bulkMonitor);
+        return new AddToHoldWorkerProvider(bulkOperation, bulkStatusUpdater, bulkProgress,
+            (HoldBulkMonitor) bulkMonitor);
     }
 
     @Override
-    protected BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation, BulkProgress bulkProgress)
+    protected BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation,
+        BulkProgress bulkProgress)
     {
         try
         {
@@ -132,15 +133,16 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     }
 
     @Override
-    public void cancelBulkOperation(NodeRef holdRef, String bulkStatusId)
+    public void cancelBulkOperation(NodeRef holdRef, String bulkStatusId, String reason)
     {
-        if(bulkMonitor instanceof HoldBulkMonitor holdBulkMonitor)
+        if (bulkMonitor instanceof HoldBulkMonitor holdBulkMonitor)
         {
-            HoldBulkStatusAndProcessDetails statusAndProcessDetails = holdBulkMonitor.getBulkStatus(holdRef.getId(), bulkStatusId);
-            if(statusAndProcessDetails != null)
+            HoldBulkStatusAndProcessDetails statusAndProcessDetails = holdBulkMonitor.getBulkStatusWithProcessDetails(
+                holdRef.getId(), bulkStatusId);
+            if (statusAndProcessDetails != null)
             {
                 checkPermissions(holdRef, statusAndProcessDetails.holdBulkProcessDetails().bulkOperation());
-                holdBulkMonitor.cancelBulkOperation(bulkStatusId, "Cancelled by user");
+                holdBulkMonitor.cancelBulkOperation(bulkStatusId, reason);
             }
         }
 
@@ -174,7 +176,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         @Override
         public void process(NodeRef entry) throws Throwable
         {
-            if(!bulkProgress.isCancelled().get())
+            if (!bulkProgress.isCancelled().get())
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
                 holdService.addToHold(holdRef, entry);
@@ -223,7 +225,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         {
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
-            if(holdBulkMonitor.isCancelled(bulkProgress.getProcessId()))
+            if (holdBulkMonitor.isCancelled(bulkProgress.getProcessId()))
             {
                 bulkProgress.getCancelled().set(true);
                 return Collections.emptyList();

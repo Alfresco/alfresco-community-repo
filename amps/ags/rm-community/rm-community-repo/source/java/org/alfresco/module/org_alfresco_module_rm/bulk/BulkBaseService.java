@@ -166,8 +166,8 @@ public abstract class BulkBaseService<T> implements InitializingBean
      * Get work provider
      *
      * @param bulkOperation     bulk operation
-     * @param totalItems        total items
      * @param bulkStatusUpdater bulk status updater
+     * @param bulkProgress      bulk progress
      * @return work provider
      */
     protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation,
@@ -178,9 +178,11 @@ public abstract class BulkBaseService<T> implements InitializingBean
      *
      * @param nodeRef       node reference
      * @param bulkOperation bulk operation
+     * @param bulkProgress  bulk progress
      * @return worker provider
      */
-    protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation, BulkProgress bulkProgress);
+    protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation,
+        BulkProgress bulkProgress);
 
     /**
      * Check permissions

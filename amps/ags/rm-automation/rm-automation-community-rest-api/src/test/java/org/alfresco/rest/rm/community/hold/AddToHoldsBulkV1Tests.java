@@ -41,22 +41,24 @@ import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.ContentActions;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.hold.BulkBodyCancel;
 import org.alfresco.rest.rm.community.model.hold.Hold;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkOperation;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkOperation.HoldBulkOperationType;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkOperationEntry;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkStatus;
-import org.alfresco.rest.rm.community.model.hold.HoldBulkStatus.Status;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkStatusCollection;
 import org.alfresco.rest.rm.community.model.hold.HoldBulkStatusEntry;
 import org.alfresco.rest.rm.community.model.hold.HoldChild;
@@ -88,6 +90,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     private Hold hold;
     private Hold hold2;
     private Hold hold3;
+    private Hold hold4;
+    private Hold hold5;
     private FolderModel rootFolder;
     private HoldBulkOperation holdBulkOperation;
     @Autowired
@@ -167,7 +171,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk status.");
         HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
-        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 0, null);
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 0, null, holdBulkOperation);
 
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
@@ -217,7 +221,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk status.");
         HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatus(hold3.getId(), bulkOperationEntry.getBulkStatusId());
-        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 0, null);
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 0, null, bulkOperation);
 
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
@@ -300,12 +304,12 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertStatusCode(ACCEPTED);
 
         await().atMost(20, TimeUnit.SECONDS).until(() ->
-            getRestAPIFactory().getHoldsAPI(userWithoutPermission)
-                .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId()).getStatus() == Status.DONE);
+            Objects.equals(getRestAPIFactory().getHoldsAPI(userWithoutPermission)
+                .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId()).getStatus(), "DONE"));
 
         HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userWithoutPermission)
             .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
-        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, NUMBER_OF_FILES, ACCESS_DENIED_ERROR_MESSAGE);
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, NUMBER_OF_FILES, ACCESS_DENIED_ERROR_MESSAGE, holdBulkOperation);
     }
 
     /**
@@ -354,7 +358,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk status.");
         HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatus(hold2.getId(), bulkOperationEntry.getBulkStatusId());
-        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 1, ACCESS_DENIED_ERROR_MESSAGE);
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, 1, ACCESS_DENIED_ERROR_MESSAGE, holdBulkOperation);
 
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
@@ -489,14 +493,94 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertStatusCode(BAD_REQUEST);
     }
 
+    /**
+     * Given a user with the add to hold capability and hold filing permission
+     * When the user adds content from a site to a hold using the bulk API
+     * And then the user cancels the bulk operation
+     * Then the user receives OK status code
+     */
+    @Test
+    public void testBulkProcessCancellationWithAllowedUser()
+    {
+        hold4 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
+            Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
+                .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        holds.add(hold4);
+
+        UserModel userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+            UserRole.SiteCollaborator, hold4.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
+        users.add(userAddHoldPermission);
+
+        STEP("Add content from the site to the hold using the bulk API.");
+        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .startBulkProcess(holdBulkOperation, hold4.getId());
+
+        // Verify the status code
+        assertStatusCode(ACCEPTED);
+        assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
+
+
+        STEP("Add content from the site to the hold using the bulk API.");
+        getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .cancelBulkOperation(hold4.getId(), bulkOperationEntry.getBulkStatusId(), new BulkBodyCancel());
+
+        STEP("Verify the response status code and the error message.");
+
+        // Verify the status code
+        assertStatusCode(OK);
+    }
+
+
+    /**
+     * Given a user with the add to hold capability and hold filing permission
+     * When the user adds content from a site to a hold using the bulk API
+     * And the user without the add to hold capability cancels the bulk operation
+     * Then the user receives access denied error
+     */
+    @Test
+    public void testBulkProcessCancellationWithUserWithoutAddToHoldCapability()
+    {
+        hold5 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
+            Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
+                .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
+        holds.add(hold5);
+
+        UserModel userAddHoldPermission = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+            UserRole.SiteCollaborator, hold5.getId(), UserRoles.ROLE_RM_MANAGER, PERMISSION_FILING);
+        users.add(userAddHoldPermission);
+
+        STEP("Add content from the site to the hold using the bulk API.");
+        HoldBulkOperationEntry bulkOperationEntry = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
+            .startBulkProcess(holdBulkOperation, hold5.getId());
+
+        // Verify the status code
+        assertStatusCode(ACCEPTED);
+        assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
+
+        UserModel userWithoutAddToHoldCapability = roleService.createUserWithSiteRoleRMRoleAndPermission(testSite,
+            UserRole
+                .SiteCollaborator,
+            hold5.getId(), UserRoles.ROLE_RM_POWER_USER, PERMISSION_FILING);
+        users.add(userWithoutAddToHoldCapability);
+
+        STEP("Add content from the site to the hold using the bulk API.");
+        getRestAPIFactory().getHoldsAPI(userWithoutAddToHoldCapability)
+            .cancelBulkOperation(hold5.getId(), bulkOperationEntry.getBulkStatusId(), new BulkBodyCancel());
+
+        STEP("Verify the response status code and the error message.");
+        assertStatusCode(FORBIDDEN);
+        getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary(ACCESS_DENIED_ERROR_MESSAGE);
+    }
+
 
     private void assertBulkProcessStatus(HoldBulkStatus holdBulkStatus, long expectedProcessedItems,
-        int expectedErrorsCount, String expectedErrorMessage)
+        int expectedErrorsCount, String expectedErrorMessage, HoldBulkOperation holdBulkOperation)
     {
-        assertEquals(Status.DONE, holdBulkStatus.getStatus());
+        assertEquals("DONE", holdBulkStatus.getStatus());
         assertEquals(expectedProcessedItems, holdBulkStatus.getTotalItems());
         assertEquals(expectedProcessedItems, holdBulkStatus.getProcessedItems());
         assertEquals(expectedErrorsCount, holdBulkStatus.getErrorsCount());
+        assertEquals(holdBulkStatus.getHoldBulkOperation(), holdBulkOperation);
         assertNotNull(holdBulkStatus.getStartTime());
         assertNotNull(holdBulkStatus.getEndTime());
 

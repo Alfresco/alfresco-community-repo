@@ -401,18 +401,46 @@ public class HoldsAPI extends RMModelRequest
         return getBulkStatuses(holdId, EMPTY);
     }
 
+    /**
+     * Cancels a bulk operation for a hold.
+     *
+     * @param holdId The identifier of a hold
+     * @param bulkStatusId The identifier of a bulk status operation
+     * @param bulkBodyCancel The bulk body cancel model
+     * @param parameters The URL parameters to add
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *     <li>{@code holdId}, {@code bulkStatusId} or {@code bulkBodyCancel} is invalid</li>
+     *     <li>authentication fails</li>
+     *     <li>current user does not have permission to cancel the bulk operation for {@code bulkStatusId}</li>
+     *     <li>{@code holdId} or {@code bulkStatusId} does not exist</li>
+     * </ul>
+     */
     public void cancelBulkOperation(String holdId, String bulkStatusId, BulkBodyCancel bulkBodyCancel, String parameters)
     {
         mandatoryString("holdId", holdId);
+        mandatoryString("bulkStatusId", bulkStatusId);
         mandatoryObject("bulkBodyCancel", bulkBodyCancel);
 
         getRmRestWrapper().processEmptyModel(requestWithBody(
             POST,
             toJson(bulkBodyCancel),
-            "holds/{holdId}/bulk-statuses/{bulkStatusId}/cancel}",
+            "holds/{holdId}/bulk-statuses/{bulkStatusId}/cancel",
             holdId,
             bulkStatusId,
             parameters
                                                           ));
+    }
+
+    /**
+     * See {@link #cancelBulkOperation(String, String, BulkBodyCancel, String)}
+     */
+    public void cancelBulkOperation(String holdId, String bulkStatusId, BulkBodyCancel bulkBodyCancel)
+    {
+        mandatoryString("holdId", holdId);
+        mandatoryString("bulkStatusId", bulkStatusId);
+        mandatoryObject("bulkBodyCancel", bulkBodyCancel);
+
+        cancelBulkOperation(holdId, bulkStatusId, bulkBodyCancel, EMPTY);
     }
 }

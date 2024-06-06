@@ -155,6 +155,12 @@
            <artifactId>lombok</artifactId>
            <scope>provided</scope>
        </dependency>
+      <dependency>
+         <groupId>org.awaitility</groupId>
+         <artifactId>awaitility</artifactId>
+         <version>${dependency.awaitility.version}</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <build>

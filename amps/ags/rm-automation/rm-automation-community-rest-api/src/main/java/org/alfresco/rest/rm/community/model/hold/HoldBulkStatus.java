@@ -62,4 +62,6 @@ public class HoldBulkStatus extends TestModel
     private String isCancelled;
 
     private String cancellationReason;
+
+    private HoldBulkOperation holdBulkOperation;
 }

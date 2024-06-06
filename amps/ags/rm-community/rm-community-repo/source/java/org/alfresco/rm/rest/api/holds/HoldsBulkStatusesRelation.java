@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatusAndProcessDetails;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkUtils;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -52,7 +53,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.BulkCancellationReason;
-import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
 import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -61,9 +61,11 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 @RelationshipResource(name = "bulk-statuses", entityResource = HoldsEntityResource.class, title = "Bulk statuses of a hold")
 public class HoldsBulkStatusesRelation
-    implements RelationshipResourceAction.Read<HoldBulkStatusEntry>, RelationshipResourceAction.ReadById<HoldBulkStatusEntry>
+    implements RelationshipResourceAction.Read<HoldBulkStatusEntry>,
+    RelationshipResourceAction.ReadById<HoldBulkStatusEntry>
 {
     private HoldBulkMonitor holdBulkMonitor;
+    private HoldBulkService holdBulkService;
     private FilePlanComponentsApiUtils apiUtils;
     private PermissionService permissionService;
 
@@ -78,7 +80,7 @@ public class HoldsBulkStatusesRelation
 
         checkReadPermissions(holdRef);
 
-        List<HoldBulkStatusAndProcessDetails> statuses = holdBulkMonitor.getBulkStatusesForHold(holdId);
+        List<HoldBulkStatusAndProcessDetails> statuses = holdBulkMonitor.getBulkStatusesWithProcessDetails(holdId);
         List<HoldBulkStatusEntry> page = statuses.stream()
             .map(HoldBulkUtils::toHoldBulkStatusEntry)
             .skip(parameters.getPaging().getSkipCount())
@@ -102,7 +104,7 @@ public class HoldsBulkStatusesRelation
 
         checkReadPermissions(holdRef);
 
-        return Optional.ofNullable(holdBulkMonitor.getBulkStatus(holdId, bulkStatusId))
+        return Optional.ofNullable(holdBulkMonitor.getBulkStatusWithProcessDetails(holdId, bulkStatusId))
             .map(HoldBulkUtils::toHoldBulkStatusEntry)
             .orElseThrow(() -> new EntityNotFoundException(bulkStatusId));
     }
@@ -110,7 +112,8 @@ public class HoldsBulkStatusesRelation
     @Operation("cancel")
     @WebApiDescription(title = "Cancel a bulk operation",
         successStatus = HttpServletResponse.SC_OK)
-    public void cancelBulkOperation(String holdId, String bulkStatusId, BulkCancellationReason bulkCancellationReason, Parameters parameters,
+    public void cancelBulkOperation(String holdId, String bulkStatusId, BulkCancellationReason bulkCancellationReason,
+        Parameters parameters,
         WithResponse withResponse)
     {
         checkNotBlank("holdId", holdId);
@@ -126,7 +129,7 @@ public class HoldsBulkStatusesRelation
             throw new NotFoundException("Bulk status not found");
         }
 
-        holdBulkMonitor.cancelBulkOperation(bulkStatusId, Optional.ofNullable(bulkCancellationReason).map(BulkCancellationReason::reason).orElse(null));
+        holdBulkService.cancelBulkOperation(holdRef, bulkStatusId, bulkCancellationReason.reason());
     }
 
     private void checkReadPermissions(NodeRef holdRef)
@@ -150,5 +153,10 @@ public class HoldsBulkStatusesRelation
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    public void setHoldBulkService(HoldBulkService holdBulkService)
+    {
+        this.holdBulkService = holdBulkService;
     }
 }

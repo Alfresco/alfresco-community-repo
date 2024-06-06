@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.repo.cache.SimpleCache;
@@ -89,12 +90,12 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public List<HoldBulkStatusAndProcessDetails> getBulkStatusesForHold(String holdId)
+    public List<HoldBulkStatusAndProcessDetails> getBulkStatusesWithProcessDetails(String holdId)
     {
         return Optional.ofNullable(holdProcessRegistry.get(holdId))
             .map(bulkProcessDetailsList -> bulkProcessDetailsList.stream()
                 .filter(bulkProcessDetails -> Objects.nonNull(bulkProcessDetails.bulkStatusId()))
-                .map(bulkProcessDetails -> new HoldBulkStatusAndProcessDetails(getBulkStatus(bulkProcessDetails.bulkStatusId()), bulkProcessDetails))
+                .map(createHoldBulkStatusAndProcessDetails())
                 .filter(statusAndProcess -> Objects.nonNull(statusAndProcess.holdBulkStatus()))
                 .sorted(sortBulkStatuses())
                 .toList())
@@ -102,14 +103,20 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public HoldBulkStatusAndProcessDetails getBulkStatus(String holdId, String bulkStatusId)
+    public HoldBulkStatusAndProcessDetails getBulkStatusWithProcessDetails(String holdId, String bulkStatusId)
     {
-        return Optional.ofNullable(holdProcessRegistry.get(holdId))
-            .map(bulkProcessDetailsList -> bulkProcessDetailsList.stream().filter(bulkProcessDetails -> bulkStatusId.equals(bulkProcessDetails.bulkStatusId()))
-                .findFirst()
-                .map(bulkProcessDetails -> new HoldBulkStatusAndProcessDetails(getBulkStatus(bulkProcessDetails.bulkStatusId()), bulkProcessDetails))
-                .orElse(null))
+        return Optional.ofNullable(holdProcessRegistry.get(holdId)).flatMap(
+                bulkProcessDetailsList -> bulkProcessDetailsList.stream()
+                    .filter(bulkProcessDetails -> bulkStatusId.equals(bulkProcessDetails.bulkStatusId()))
+                    .findFirst()
+                    .map(createHoldBulkStatusAndProcessDetails()))
             .orElse(null);
+    }
+
+    protected Function<HoldBulkProcessDetails, HoldBulkStatusAndProcessDetails> createHoldBulkStatusAndProcessDetails()
+    {
+        return bulkProcessDetails -> new HoldBulkStatusAndProcessDetails(
+            getBulkStatus(bulkProcessDetails.bulkStatusId()), bulkProcessDetails);
     }
 
     protected static Comparator<HoldBulkStatusAndProcessDetails> sortBulkStatuses()

@@ -46,8 +46,9 @@ public interface HoldBulkService
     /**
      * Gets the status of a bulk operation.
      *
-     * @param holdRef       The hold reference
-     * @param bulkStatusId  The bulk status id
+     * @param holdRef      The hold reference
+     * @param bulkStatusId The bulk status id
+     * @param reason       The bulk cancellation reason
      */
-    void cancelBulkOperation(NodeRef holdRef, String bulkStatusId);
+    void cancelBulkOperation(NodeRef holdRef, String bulkStatusId, String reason);
 }

@@ -2399,7 +2399,7 @@ paths:
         '401':
           description: Authentication failed
         '403':
-          description: Current user does not have permission to read **holdId**
+          description: Current user does not have permission to cancel the bulk process for **holdId** and **bulkStatusId**
         '404':
           description: "**holdId** or **bulkStatusId** does not exist"
         default:
@@ -4235,6 +4235,10 @@ definitions:
           - IN PROGRESS
           - DONE
           - CANCELLED
+      cancellationReason:
+        type: string
+      holdBulkOperation:
+        $ref: '#/definitions/HoldBulkOperation'
   HoldBulkStatusEntry:
     type: object
     required:

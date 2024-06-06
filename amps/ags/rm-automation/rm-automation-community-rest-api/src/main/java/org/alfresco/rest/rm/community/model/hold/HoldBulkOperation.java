@@ -26,12 +26,13 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.utility.model.TestModel;
@@ -41,7 +42,6 @@ import org.alfresco.utility.model.TestModel;
  *
  * @author Damian Ujma
  */
-@EqualsAndHashCode(callSuper = true)
 @Builder
 @Data
 @NoArgsConstructor
@@ -57,4 +57,23 @@ public class HoldBulkOperation extends TestModel
     private RestRequestQueryModel query;
     @JsonProperty(required = true)
     private HoldBulkOperationType op;
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        HoldBulkOperation that = (HoldBulkOperation) o;
+        return Objects.equals(query.getQuery(), that.query.getQuery()) && Objects.equals(query.getUserQuery(),
+            that.query.getUserQuery()) && Objects.equals(query.getLanguage(), that.query.getLanguage())
+            && op == that.op;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(query.getQuery(), query.getUserQuery(), query.getLanguage(), op);
+    }
 }

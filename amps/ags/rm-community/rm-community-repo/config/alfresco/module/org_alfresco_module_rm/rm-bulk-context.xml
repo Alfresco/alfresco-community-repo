@@ -32,6 +32,9 @@
       <property name="itemsPerTransaction">
          <value>${rm.hold.bulk.itemsPerTransaction}</value>
       </property>
+      <property name="maxParallelRequests">
+         <value>${rm.hold.bulk.maxParallelRequests}</value>
+      </property>
    </bean>
 
    <bean id="holdBulkMonitor" class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.DefaultHoldBulkMonitor">

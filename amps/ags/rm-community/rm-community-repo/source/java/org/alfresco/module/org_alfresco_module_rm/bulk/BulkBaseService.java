@@ -26,7 +26,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
+
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,7 +55,7 @@ import org.springframework.beans.factory.InitializingBean;
 public abstract class BulkBaseService<T> implements InitializingBean
 {
     private static final Log LOG = LogFactory.getLog(BulkBaseService.class);
-
+    protected ExecutorService executorService;
     protected ServiceRegistry serviceRegistry;
     protected SearchService searchService;
     protected TransactionService transactionService;
@@ -64,11 +67,13 @@ public abstract class BulkBaseService<T> implements InitializingBean
     protected int itemsPerTransaction;
     protected int maxItems;
     protected int loggingInterval;
+    protected int maxParallelRequests;
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
         this.searchService = serviceRegistry.getSearchService();
+        this.executorService = newFixedThreadPool(maxParallelRequests);
     }
 
     /**
@@ -142,8 +147,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
             }
         };
 
-        Thread backgroundThread = new Thread(backgroundLogic, "BulkBaseService-BackgroundThread");
-        backgroundThread.start();
+        executorService.submit(backgroundLogic);
     }
 
     /**
@@ -289,5 +293,10 @@ public abstract class BulkBaseService<T> implements InitializingBean
     public void setItemsPerTransaction(int itemsPerTransaction)
     {
         this.itemsPerTransaction = itemsPerTransaction;
+    }
+
+    public void setMaxParallelRequests(int maxParallelRequests)
+    {
+        this.maxParallelRequests = maxParallelRequests;
     }
 }

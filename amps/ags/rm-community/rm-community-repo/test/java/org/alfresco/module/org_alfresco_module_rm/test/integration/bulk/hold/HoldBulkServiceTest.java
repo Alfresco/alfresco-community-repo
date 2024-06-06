@@ -89,7 +89,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 Mockito.when(resultSet.hasMore()).thenReturn(false).thenReturn(true).thenReturn(false);
                 Mockito.when(resultSet.getNodeRefs())
                     .thenAnswer((Answer<List<NodeRef>>) invocationOnMock -> {
-                        await().pollDelay(3, SECONDS).until(() -> true);
+                        await().pollDelay(1, SECONDS).until(() -> true);
                         return List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
                             new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
                     });
@@ -104,6 +104,10 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 holdBulkStatus = holdBulkService.execute(hold, bulkOperation);
                 // cancel the bulk operation
                 holdBulkMonitor.cancelBulkOperation(holdBulkStatus.bulkStatusId(), "No reason");
+                await().atMost(10, SECONDS)
+                    .until(() -> Objects.equals(
+                        holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
+                        Status.CANCELLED.getValue()));
             }
 
             public void then()

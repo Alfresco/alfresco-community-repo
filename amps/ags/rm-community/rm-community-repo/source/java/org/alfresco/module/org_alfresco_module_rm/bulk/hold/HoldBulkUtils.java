@@ -37,6 +37,8 @@ import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
  */
 public final class HoldBulkUtils
 {
+    private HoldBulkUtils() {}
+
     public static HoldBulkStatusEntry toHoldBulkStatusEntry(
         HoldBulkStatusAndProcessDetails holdBulkStatusAndProcessDetails)
     {

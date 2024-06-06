@@ -89,7 +89,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 Mockito.when(resultSet.hasMore()).thenReturn(false).thenReturn(true).thenReturn(false);
                 Mockito.when(resultSet.getNodeRefs())
                     .thenAnswer((Answer<List<NodeRef>>) invocationOnMock -> {
-                        await().pollDelay(1, SECONDS).until(() -> true);
+                        await().pollDelay(3, SECONDS).until(() -> true);
                         return List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
                             new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
                     });

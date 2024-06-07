@@ -41,10 +41,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkServiceImpl;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus.Status;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -57,6 +57,7 @@ import org.springframework.extensions.webscripts.GUID;
 /**
  * Hold bulk service integration test.
  */
+@SuppressWarnings({ "PMD.TestClassWithoutTestCases", "PMD.JUnit4TestShouldUseTestAnnotation" })
 public class HoldBulkServiceTest extends BaseRMTestCase
 {
     private static final int RECORD_COUNT = 10;
@@ -81,7 +82,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
         {
             private NodeRef hold;
             private HoldBulkStatus holdBulkStatus;
-            private ResultSet resultSet = mock(ResultSet.class);
+            private final ResultSet resultSet = mock(ResultSet.class);
 
             public void given()
             {
@@ -128,10 +129,9 @@ public class HoldBulkServiceTest extends BaseRMTestCase
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             private NodeRef hold;
-            private NodeRef recordCategory;
             private NodeRef recordFolder;
             private HoldBulkStatus holdBulkStatus;
-            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
+            private final List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
 
             public void given()
             {
@@ -141,7 +141,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
                 // create a record folder that contains records
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                 for (int i = 0; i < RECORD_COUNT; i++)
                 {
@@ -149,7 +149,8 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                         recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT,
                             null, null));
                 }
-                Mockito.when(resultSet.getNodeRefs()).thenReturn(records).thenReturn(records).thenReturn(Collections.emptyList());
+                Mockito.when(resultSet.getNodeRefs()).thenReturn(records).thenReturn(records)
+                    .thenReturn(Collections.emptyList());
 
                 // assert current states
                 assertFalse(freezeService.isFrozen(recordFolder));
@@ -164,7 +165,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 assertEquals(0, nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT));
             }
 
-            public void when() throws Exception
+            public void when()
             {
                 BulkOperation bulkOperation = new BulkOperation(new Query("afts", "*", ""), "ADD");
                 // execute the bulk operation
@@ -219,9 +220,8 @@ public class HoldBulkServiceTest extends BaseRMTestCase
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             private NodeRef hold;
-            private NodeRef recordCategory;
             private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
+            private final List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
             private HoldBulkStatus holdBulkStatus;
 
             public void given()
@@ -232,7 +232,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
                 // create a record folder that contains records
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                 for (int i = 0; i < RECORD_COUNT; i++)
                 {
@@ -256,7 +256,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 assertEquals(0, nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT));
             }
 
-            public void when() throws Exception
+            public void when()
             {
                 BulkOperation bulkOperation = new BulkOperation(new Query("afts", "*", ""), "ADD");
                 // execute the bulk operation

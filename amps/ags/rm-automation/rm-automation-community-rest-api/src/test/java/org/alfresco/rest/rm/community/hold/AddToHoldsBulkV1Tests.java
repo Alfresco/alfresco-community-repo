@@ -90,8 +90,6 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     private Hold hold;
     private Hold hold2;
     private Hold hold3;
-    private Hold hold4;
-    private Hold hold5;
     private FolderModel rootFolder;
     private HoldBulkOperation holdBulkOperation;
     @Autowired
@@ -502,7 +500,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testBulkProcessCancellationWithAllowedUser()
     {
-        hold4 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
+        Hold hold4 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
             Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
                 .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
         holds.add(hold4);
@@ -538,7 +536,7 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
     @Test
     public void testBulkProcessCancellationWithUserWithoutAddToHoldCapability()
     {
-        hold5 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
+        Hold hold5 = getRestAPIFactory().getFilePlansAPI(getAdminUser()).createHold(
             Hold.builder().name("HOLD" + generateTestPrefix(AddToHoldsV1Tests.class)).description(HOLD_DESCRIPTION)
                 .reason(HOLD_REASON).build(), FILE_PLAN_ALIAS);
         holds.add(hold5);

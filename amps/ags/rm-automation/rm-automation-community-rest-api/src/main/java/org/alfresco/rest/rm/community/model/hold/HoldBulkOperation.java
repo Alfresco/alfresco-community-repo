@@ -62,9 +62,13 @@ public class HoldBulkOperation extends TestModel
     public boolean equals(Object o)
     {
         if (this == o)
+        {
             return true;
+        }
         if (o == null || getClass() != o.getClass())
+        {
             return false;
+        }
         HoldBulkOperation that = (HoldBulkOperation) o;
         return Objects.equals(query.getQuery(), that.query.getQuery()) && Objects.equals(query.getUserQuery(),
             that.query.getUserQuery()) && Objects.equals(query.getLanguage(), that.query.getLanguage())

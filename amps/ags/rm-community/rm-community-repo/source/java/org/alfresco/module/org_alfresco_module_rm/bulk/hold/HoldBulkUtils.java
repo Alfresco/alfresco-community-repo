@@ -36,6 +36,7 @@ import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
 /**
  * Utility class for hold bulk operations
  */
+@SuppressWarnings("PMD.PreserveStackTrace")
 public final class HoldBulkUtils
 {
     private HoldBulkUtils()

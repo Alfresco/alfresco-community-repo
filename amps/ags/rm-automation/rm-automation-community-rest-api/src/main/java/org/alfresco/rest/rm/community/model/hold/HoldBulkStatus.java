@@ -59,7 +59,7 @@ public class HoldBulkStatus extends TestModel
 
     private String status;
 
-    private String isCancelled;
+    private boolean isCancelled;
 
     private String cancellationReason;
 

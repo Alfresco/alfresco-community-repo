@@ -2504,7 +2504,7 @@ paths:
         - retention-schedule
       summary: Create a retention schedule
       description: |
-        Create a retention schedule.        
+        Create a retention schedule.
         For example, using the following JSON body will create a retention schedule:
         ```JSON
           {
@@ -2513,6 +2513,11 @@ paths:
               "isRecordLevel": false
           }
         ```
+        **isRecordLevel**
+          This field is used to specify where the retention schedule needs to be applied in the folder level or record level.
+          **True** will cause the the retention schedule to apply to records and **false** will cause the retention schedule to apply to record folders.
+          This cannot be changed once items start being managed by the retention schedule.
+
       operationId: createRetentionSchedule
       parameters:
         - $ref: '#/parameters/recordCategoryIdParam'
@@ -2598,20 +2603,13 @@ paths:
         Order of steps:
           * "retain" or "cutoff" should be first
           * can't use "cutoff" after "transfer" or "accession"
-          * "transfer" action is allowed multiple times
-          * "destroy" must be the last action
+          * only the "transfer" action is allowed multiple times
+          * no steps are allowed after "destroy"    
         
-        The **combineDispositionStepConditions** property is only valid for **accession** step.
-        This is used to specify whether to combine the period condition and events for the step execution or only consider one of them.
-        For example:
-          **periodCondition**: After a period of 2 months
-          **eventsCondition**: Case Closed event
-          This flag can be used to consider only (**periodCondition** or **eventsCondition**) or both of them at once.
-        
-        For example, the following JSON body to create a step in the retention schedule:
+        For example, the following JSON body will create a step in the retention schedule:
         ```JSON
           {
-              "name":"retain",
+              "name":"accession",
               "periodAmount": 2,
               "period":"month",
               "periodProperty":"cm:created",
@@ -2619,10 +2617,69 @@ paths:
               "events":["versioned"],
               "eligibleOnFirstCompleteEvent": true,
               "description":"Step Description",
-              "destroyWithGhosting": false,
+              "destroy-node": true,
+              "destroy-content": true,
               "location":"location"
           }
         ```
+        The **combineDispositionStepConditions** property is only valid for **accession** step.
+        This is used to specify whether to combine the period condition and events for the step execution or only consider one of them.
+        For example:
+          **periodCondition**: After a period of 2 months
+          **eventsCondition**: Case Closed event
+          This flag can be used to consider only (**periodCondition** or **eventsCondition**) or both of them at once.
+        
+        **location** property is only valid for **transfer** step
+        
+        Valid values for the **period** property
+          * **day** = Day
+          * **fmend** = End Of Financial Month
+          * **fqend** = End Of Financial Quarter
+          * **fyend** = End Of Financial Year
+          * **immediately** = Immediately
+          * **monthend** = End Of Month
+          * **quarterend** = End Of Quarter
+          * **yearend** = End Of Year
+          * **month** = Month
+          * **none** = None
+          * **quarter** = Quarter
+          * **week** = Week
+          * **duration** = XML Duration
+          * **year** = Year
+        
+        Valid values for the **periodProperty** property
+          * **cm:created** = Created Date (defult value) 
+          * **rma:cutOffDate** = Cut Off Date
+          * **rma:dispositionAsOf** = Retention Action
+        
+        Valid values for the **events** property
+          * **case_closed** = Case Closed
+          * **abolished** = Abolished
+          * **re_designated** = Redesignated
+          * **no_longer_needed** = No Longer Needed
+          * **superseded** = Superseded
+          * **versioned** = Versioned
+          * **study_complete** = Study Complete
+          * **training_complete** = Training Complete
+          * **related_record_trasfered_inactive_storage** = Related Record Transferred to Inactive Storage
+          * **obsolete** = Obsolete
+          * **all_allowances_granted_are_terminated** = All Allowances Granted are Terminated
+          * **WGI_action_complete** = WGI Action Complete
+          * **separation** = Separation
+          * **case_complete** = Case Complete
+          * **declassification_review** = Declassification Review
+        
+        **periodAmount** only applicable for the below **period** values
+          * day
+          * month
+          * quarter
+          * week
+          * duration
+          * year
+        
+        **eligibleOnFirstCompleteEvent** 
+          * **false** = When all events have happened
+          * **true** = Whichever event is earlier
       operationId: createRetentionScheduleAction
       parameters:
         - $ref: '#/parameters/categoryIdParam'
@@ -4311,7 +4368,9 @@ definitions:
         default: true
       description:
         type: string
-      destroyWithGhosting:
+      destroy-node:
+        type: boolean
+      destroy-content:
         type: boolean
       location:
         type: string
@@ -4338,7 +4397,9 @@ definitions:
         type: boolean
       description:
         type: string
-      destroyWithGhosting:
+      destroy-node:
+        type: boolean
+      destroy-content:
         type: boolean
       location:
         type: string

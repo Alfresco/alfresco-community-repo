@@ -2740,10 +2740,10 @@ paths:
           * **destroy**
         
         Order of steps:
-          * "retain" or "cutoff" should be first
-          * can't use "cutoff" after "transfer" or "accession"
-          * only the "transfer" action is allowed multiple times
-          * no steps are allowed after "destroy"    
+          * "**retain**" or "cutoff" should be first
+          * can't use "**cutoff**" after "**transfer**" or "accession"
+          * only the "**transfer**" action is allowed multiple times
+          * no steps are allowed after "**destroy**"    
         
         For example, the following JSON body will create a step in the retention schedule:
         ```JSON
@@ -2757,8 +2757,7 @@ paths:
               "eligibleOnFirstCompleteEvent": true,
               "description":"Step Description",
               "destroy-node": true,
-              "destroy-content": true,
-              "location":"location"
+              "destroy-content": true
           }
         ```
         The **combineDispositionStepConditions** property is only valid for **accession** step.

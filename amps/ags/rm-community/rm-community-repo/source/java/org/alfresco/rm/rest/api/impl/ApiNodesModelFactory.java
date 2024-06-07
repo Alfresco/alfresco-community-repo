@@ -898,7 +898,13 @@ public class ApiNodesModelFactory
         return record;
     }
 
-    public RetentionSchedule createRetentionSchedule(DispositionSchedule dispositionSchedule) {
+    /**
+     * map retention schedule data
+     * @param dispositionSchedule
+     * @return
+     */
+    public RetentionSchedule mapRetentionScheduleData(DispositionSchedule dispositionSchedule)
+    {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
         retentionSchedule.setId(dispositionSchedule.getNodeRef().getId());
         NodeRef parent = this.nodeService.getPrimaryParent(dispositionSchedule.getNodeRef()).getParentRef();
@@ -920,7 +926,13 @@ public class ApiNodesModelFactory
         return retentionSchedule;
     }
 
-    public RetentionScheduleActionDefinition createActionDefModel(DispositionActionDefinition dispositionActionDefinition) {
+    /**
+     * map retention schedule action definition data
+     * @param dispositionActionDefinition
+     * @return
+     */
+    public RetentionScheduleActionDefinition mapRetentionScheduleActionDefData(DispositionActionDefinition dispositionActionDefinition)
+    {
         RetentionScheduleActionDefinition retentionScheduleActionDefinition = new RetentionScheduleActionDefinition();
         retentionScheduleActionDefinition.setId(dispositionActionDefinition.getId());
         retentionScheduleActionDefinition.setName(dispositionActionDefinition.getName());
@@ -937,14 +949,17 @@ public class ApiNodesModelFactory
         }
         retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
         retentionScheduleActionDefinition.setEligibleOnFirstCompleteEvent(dispositionActionDefinition.eligibleOnFirstCompleteEvent());
-        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null) {
+        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+        {
             retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
         }
         retentionScheduleActionDefinition.setLocation(dispositionActionDefinition.getLocation());
         List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
-        if (events != null && !events.isEmpty()) {
+        if (events != null && !events.isEmpty())
+        {
             List<String> eventNames = new ArrayList<>(events.size());
-            for (RecordsManagementEvent event : events) {
+            for (RecordsManagementEvent event : events)
+            {
                 eventNames.add(event.getName());
             }
             retentionScheduleActionDefinition.setEvents(eventNames);
@@ -964,7 +979,14 @@ public class ApiNodesModelFactory
         return retentionScheduleActionDefinition;
     }
 
-    public void mapRetentionScheduleOptionalInfo(RetentionSchedule retentionSchedule, DispositionSchedule schedule, List<String> includeParam) {
+    /**
+     * map retention schedule optional info
+     * @param retentionSchedule
+     * @param schedule
+     * @param includeParam
+     */
+    public void mapRetentionScheduleOptionalInfo(RetentionSchedule retentionSchedule, DispositionSchedule schedule, List<String> includeParam)
+    {
         if (includeParam == null || includeParam.isEmpty())
         {
             return;
@@ -974,7 +996,7 @@ public class ApiNodesModelFactory
             List<RetentionScheduleActionDefinition> actions = new ArrayList<>();
             for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions())
             {
-                actions.add(createActionDefModel(actionDef));
+                actions.add(mapRetentionScheduleActionDefData(actionDef));
             }
             retentionSchedule.setActions(actions);
         }

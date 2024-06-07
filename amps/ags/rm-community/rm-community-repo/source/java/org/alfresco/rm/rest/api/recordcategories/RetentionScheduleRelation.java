@@ -38,6 +38,7 @@ import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.RetentionSchedule;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,39 +46,45 @@ import java.util.List;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+/**
+ * Retention schedule relation
+ * @author sathishkumar.t
+ */
 @RelationshipResource(name = "retention-schedule", entityResource = RecordCategoriesEntityResource.class, title = "Retention Schedule")
 public class RetentionScheduleRelation implements RelationshipResourceAction.Read<RetentionSchedule>,
-        RelationshipResourceAction.Create<RetentionSchedule>{
+        RelationshipResourceAction.Create<RetentionSchedule>
+{
 
     private FilePlanComponentsApiUtils apiUtils;
-
     private ApiNodesModelFactory nodesModelFactory;
-
     /** Disposition service */
     private DispositionService dispositionService;
-
     /** Node service */
     protected NodeService nodeService;
 
     @Override
-    public List<RetentionSchedule> create(String recordCategoryId, List<RetentionSchedule> nodeInfos, Parameters parameters) {
+    public List<RetentionSchedule> create(String recordCategoryId, List<RetentionSchedule> nodeInfos, Parameters parameters)
+    {
         checkNotBlank("recordCategoryId", recordCategoryId);
         mandatory("entity", nodeInfos);
         mandatory("parameters", parameters);
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
+        NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, recordCategoryId);
+        List<RetentionSchedule> result = new ArrayList<>(nodeInfos.size());
         // Create the disposition schedule
         DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(parentNodeRef, null);
-        RetentionSchedule retentionSchedule = nodesModelFactory.createRetentionSchedule(dispositionSchedule);
-        return List.of(retentionSchedule);
+        RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
+        result.add(retentionSchedule);
+        return result;
     }
 
     @Override
-    public CollectionWithPagingInfo<RetentionSchedule> readAll(String recordCategoryId, Parameters parameters) {
+    public CollectionWithPagingInfo<RetentionSchedule> readAll(String recordCategoryId, Parameters parameters)
+    {
         checkNotBlank("recordCategoryId", recordCategoryId);
         mandatory("parameters", parameters);
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
         DispositionSchedule schedule = dispositionService.getDispositionSchedule(parentNodeRef);
-        RetentionSchedule retentionSchedule = nodesModelFactory.createRetentionSchedule(schedule);
+        RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(schedule);
         List<RetentionSchedule> retentionScheduleList = new ArrayList<>();
         nodesModelFactory.mapRetentionScheduleOptionalInfo(retentionSchedule, schedule, parameters.getInclude());
         retentionScheduleList.add(retentionSchedule);

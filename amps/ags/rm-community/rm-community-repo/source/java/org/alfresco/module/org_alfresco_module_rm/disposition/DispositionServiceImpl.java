@@ -60,6 +60,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -618,7 +619,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Check exists
         if (!nodeService.exists(nodeRef))
         {
-            throw new AlfrescoRuntimeException("Unable to create retention schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
+            throw new EntityNotFoundException(nodeRef.getId());
         }
 
         // Check is sub-type of rm:recordCategory

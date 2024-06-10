@@ -203,6 +203,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
         searchMapper.fromQuery(searchParams, searchQuery);
         searchParams.setSkipCount(skipCount);
         searchParams.setMaxItems(1);
+        searchParams.setLimit(1);
         return searchService.query(searchParams);
     }
 

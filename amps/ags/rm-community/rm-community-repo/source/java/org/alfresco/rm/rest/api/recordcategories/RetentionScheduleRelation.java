@@ -39,10 +39,15 @@ import org.alfresco.rm.rest.api.model.RetentionSchedule;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.*;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
@@ -71,7 +76,11 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
         NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, recordCategoryId);
         List<RetentionSchedule> result = new ArrayList<>(nodeInfos.size());
         // Create the disposition schedule
-        DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(parentNodeRef, null);
+        Map<QName, Serializable> dsProps = new HashMap<>(3);
+        dsProps.put(PROP_DISPOSITION_AUTHORITY, nodeInfos.get(0).getAuthority());
+        dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, nodeInfos.get(0).getInstructions());
+        dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, nodeInfos.get(0).getIsRecordLevel());
+        DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(parentNodeRef, dsProps);
         RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
         result.add(retentionSchedule);
         return result;

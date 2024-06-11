@@ -939,11 +939,11 @@ public class ApiNodesModelFactory
         retentionScheduleActionDefinition.setDescription(dispositionActionDefinition.getDescription());
         String period = dispositionActionDefinition.getPeriod().toString();
         String[] periodArray = period.split("\\|");
-        if(periodArray[0] != null && !periodArray[0].isEmpty())
+        if(periodArray.length == 1)
         {
             retentionScheduleActionDefinition.setPeriod(periodArray[0]);
         }
-        if(periodArray[0] != null && !periodArray[1].isEmpty())
+        if(periodArray.length == 2)
         {
             retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
         }

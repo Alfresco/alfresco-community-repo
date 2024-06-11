@@ -37,6 +37,7 @@ import java.util.Optional;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkBaseService;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkProgress;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkStatusUpdater;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -177,7 +178,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         @Override
         public void process(NodeRef entry) throws Throwable
         {
-            if (!bulkProgress.isCancelled().get())
+            if (!bulkProgress.cancelled().get())
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
                 holdService.addToHold(holdRef, entry);
@@ -212,13 +213,13 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         @Override
         public int getTotalEstimatedWorkSize()
         {
-            return (int) bulkProgress.getTotalItems();
+            return (int) bulkProgress.totalItems();
         }
 
         @Override
         public long getTotalEstimatedWorkSizeLong()
         {
-            return bulkProgress.getTotalItems();
+            return bulkProgress.totalItems();
         }
 
         @Override
@@ -226,9 +227,9 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
         {
             AuthenticationUtil.pushAuthentication();
             AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
-            if (holdBulkMonitor.isCancelled(bulkProgress.getProcessId()))
+            if (holdBulkMonitor.isCancelled(bulkProgress.processId()))
             {
-                bulkProgress.getCancelled().set(true);
+                bulkProgress.cancelled().set(true);
                 return Collections.emptyList();
             }
             SearchParameters searchParams = getNextPageParameters();
@@ -243,7 +244,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
                 LOGGER.debug("Processing the next work for the batch processor, skipCount={}, size={}",
                     searchParams.getSkipCount(), result.getNumberFound());
             }
-            bulkProgress.getCurrentNodeNumber().addAndGet(batchSize);
+            bulkProgress.currentNodeNumber().addAndGet(batchSize);
             bulkStatusUpdater.update();
             return result.getNodeRefs();
         }
@@ -253,7 +254,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             SearchParameters searchParams = new SearchParameters();
             searchMapper.setDefaults(searchParams);
             searchMapper.fromQuery(searchParams, searchQuery);
-            searchParams.setSkipCount(bulkProgress.getCurrentNodeNumber().get());
+            searchParams.setSkipCount(bulkProgress.currentNodeNumber().get());
             searchParams.setMaxItems(batchSize);
             searchParams.setLimit(batchSize);
             searchParams.addSort("@" + ContentModel.PROP_CREATED, true);

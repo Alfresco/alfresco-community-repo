@@ -24,36 +24,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
+package org.alfresco.module.org_alfresco_module_rm.bulk;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.search.RestRequestQueryModel;
-import org.alfresco.utility.model.TestModel;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * POJO for hold bulk request
- *
- * @author Damian Ujma
+ * An immutable POJO to represent the progress of a bulk operation
  */
-@Builder
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldBulkOperation extends TestModel
+public record BulkProgress(long totalItems, String processId, AtomicBoolean cancelled, AtomicInteger currentNodeNumber)
 {
-    public enum HoldBulkOperationType
-    {
-        ADD
-    }
-
-    @JsonProperty(required = true)
-    private RestRequestQueryModel query;
-    @JsonProperty(required = true)
-    private HoldBulkOperationType op;
-
 }

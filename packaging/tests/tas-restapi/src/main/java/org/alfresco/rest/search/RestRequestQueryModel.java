@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,6 +24,8 @@
  * #L%
  */
 package org.alfresco.rest.search;
+
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -93,6 +95,24 @@ public class RestRequestQueryModel extends TestModel implements IRestModel<RestR
     {
         this.query = query;
     }
-    
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RestRequestQueryModel that = (RestRequestQueryModel) o;
+        return Objects.equals(model, that.model) && Objects.equals(getLanguage(), that.getLanguage())
+            && Objects.equals(getUserQuery(), that.getUserQuery()) && Objects.equals(getQuery(),
+            that.getQuery());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(model, getLanguage(), getUserQuery(), getQuery());
+    }
 }
  

@@ -100,7 +100,8 @@ public abstract class BulkBaseService<T> implements InitializingBean
         bulkMonitor.updateBulkStatus(initBulkStatus);
         bulkMonitor.registerProcess(nodeRef, processId, bulkOperation);
 
-        BulkProgress bulkProgress = new BulkProgress(totalItems, processId);
+        BulkProgress bulkProgress = new BulkProgress(totalItems, processId, new AtomicBoolean(false),
+            new AtomicInteger(0));
         BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation, bulkProgress);
         BulkStatusUpdater bulkStatusUpdater = getBulkStatusUpdater();
 
@@ -205,45 +206,6 @@ public abstract class BulkBaseService<T> implements InitializingBean
         searchParams.setMaxItems(1);
         searchParams.setLimit(1);
         return searchService.query(searchParams);
-    }
-
-    protected final class BulkProgress
-    {
-        private final long totalItems;
-        private final String processId;
-        private final AtomicBoolean cancelled = new AtomicBoolean(false);
-        private final AtomicInteger currentNodeNumber = new AtomicInteger(0);
-
-        public BulkProgress(long totalItems, String processId)
-        {
-            this.totalItems = totalItems;
-            this.processId = processId;
-        }
-
-        public AtomicBoolean isCancelled()
-        {
-            return cancelled;
-        }
-
-        public long getTotalItems()
-        {
-            return totalItems;
-        }
-
-        public String getProcessId()
-        {
-            return processId;
-        }
-
-        public AtomicBoolean getCancelled()
-        {
-            return cancelled;
-        }
-
-        public AtomicInteger getCurrentNodeNumber()
-        {
-            return currentNodeNumber;
-        }
     }
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)

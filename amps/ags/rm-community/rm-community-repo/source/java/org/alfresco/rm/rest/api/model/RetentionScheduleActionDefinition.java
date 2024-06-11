@@ -28,8 +28,11 @@ package org.alfresco.rm.rest.api.model;
 
 import java.util.List;
 
-public class RetentionScheduleActionDefinition {
-
+/**
+ * @author sathishkumar.t
+ */
+public class RetentionScheduleActionDefinition
+{
     private String id;
     private String name;
     private int periodAmount;
@@ -39,103 +42,136 @@ public class RetentionScheduleActionDefinition {
     private List<String> events;
     private boolean eligibleOnFirstCompleteEvent;
     private String description;
-    private boolean destroyWithGhosting;
+    private boolean destroyNode;
+    private boolean destroyContent;
     private String location;
     private int index;
 
-    public String getId() {
+    public String getId()
+    {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(String id)
+    {
         this.id = id;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name)
+    {
         this.name = name;
     }
 
-    public int getPeriodAmount() {
+    public int getPeriodAmount()
+    {
         return periodAmount;
     }
 
-    public void setPeriodAmount(int periodAmount) {
+    public void setPeriodAmount(int periodAmount)
+    {
         this.periodAmount = periodAmount;
     }
 
-    public String getPeriod() {
+    public String getPeriod()
+    {
         return period;
     }
 
-    public void setPeriod(String period) {
+    public void setPeriod(String period)
+    {
         this.period = period;
     }
 
-    public String getPeriodProperty() {
+    public String getPeriodProperty()
+    {
         return periodProperty;
     }
 
-    public void setPeriodProperty(String periodProperty) {
+    public void setPeriodProperty(String periodProperty)
+    {
         this.periodProperty = periodProperty;
     }
 
-    public boolean getCombineDispositionStepConditions() {
+    public boolean getCombineDispositionStepConditions()
+    {
         return combineDispositionStepConditions;
     }
 
-    public void setCombineDispositionStepConditions(boolean combineDispositionStepConditions) {
+    public void setCombineDispositionStepConditions(boolean combineDispositionStepConditions)
+    {
         this.combineDispositionStepConditions = combineDispositionStepConditions;
     }
 
-    public List<String> getEvents() {
+    public List<String> getEvents()
+    {
         return events;
     }
 
-    public void setEvents(List<String> events) {
+    public void setEvents(List<String> events)
+    {
         this.events = events;
     }
 
-    public boolean getEligibleOnFirstCompleteEvent() {
+    public boolean getEligibleOnFirstCompleteEvent()
+    {
         return eligibleOnFirstCompleteEvent;
     }
 
-    public void setEligibleOnFirstCompleteEvent(boolean eligibleOnFirstCompleteEvent) {
+    public void setEligibleOnFirstCompleteEvent(boolean eligibleOnFirstCompleteEvent)
+    {
         this.eligibleOnFirstCompleteEvent = eligibleOnFirstCompleteEvent;
     }
 
-    public String getDescription() {
+    public String getDescription()
+    {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(String description)
+    {
         this.description = description;
     }
 
-    public boolean getDestroyWithGhosting() {
-        return destroyWithGhosting;
+    public boolean getDestroyNode()
+    {
+        return destroyNode;
     }
 
-    public void setDestroyWithGhosting(boolean destroyWithGhosting) {
-        this.destroyWithGhosting = destroyWithGhosting;
+    public void setDestroyNode(boolean destroyNode)
+    {
+        this.destroyNode = destroyNode;
     }
 
-    public String getLocation() {
+    public boolean getDestroyContent() {
+        return destroyContent;
+    }
+
+    public void setDestroyContent(boolean destroyContent) {
+        this.destroyContent = destroyContent;
+    }
+
+    public String getLocation()
+    {
         return location;
     }
 
-    public void setLocation(String location) {
+    public void setLocation(String location)
+    {
         this.location = location;
     }
 
-    public int getIndex() {
+    public int getIndex()
+    {
         return index;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(int index)
+    {
         this.index = index;
     }
 }

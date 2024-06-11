@@ -969,11 +969,11 @@ public class ApiNodesModelFactory
         {
             if (dispositionActionDefinition.getGhostOnDestroy().equals("ghost"))
             {
-                retentionScheduleActionDefinition.setDestroyWithGhosting(true);
+                retentionScheduleActionDefinition.setDestroyContent(true);
             }
             else if (dispositionActionDefinition.getGhostOnDestroy().equals("delete"))
             {
-                retentionScheduleActionDefinition.setDestroyWithGhosting(false);
+                retentionScheduleActionDefinition.setDestroyNode(false);
             }
         }
         return retentionScheduleActionDefinition;

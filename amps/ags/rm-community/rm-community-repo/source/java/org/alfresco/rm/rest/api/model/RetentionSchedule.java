@@ -28,7 +28,11 @@ package org.alfresco.rm.rest.api.model;
 
 import java.util.List;
 
-public class RetentionSchedule {
+/**
+ * @author sathishkumar.t
+ */
+public class RetentionSchedule
+{
     private String id ;
     private String parentId;
     private String authority;
@@ -37,59 +41,73 @@ public class RetentionSchedule {
     private boolean isUnpublishedUpdates;
     private List<RetentionScheduleActionDefinition> actions;
 
-    public String getId() {
+    public String getId()
+    {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(String id)
+    {
         this.id = id;
     }
 
-    public String getParentId() {
+    public String getParentId()
+    {
         return parentId;
     }
 
-    public void setParentId(String parentId) {
+    public void setParentId(String parentId)
+    {
         this.parentId = parentId;
     }
 
-    public String getAuthority() {
+    public String getAuthority()
+    {
         return authority;
     }
 
-    public void setAuthority(String authority) {
+    public void setAuthority(String authority)
+    {
         this.authority = authority;
     }
 
-    public String getInstructions() {
+    public String getInstructions()
+    {
         return instructions;
     }
 
-    public void setInstructions(String instructions) {
+    public void setInstructions(String instructions)
+    {
         this.instructions = instructions;
     }
 
-    public boolean getIsRecordLevel() {
+    public boolean getIsRecordLevel()
+    {
         return isRecordLevel;
     }
 
-    public void setIsRecordLevel(boolean isRecordLevel) {
+    public void setIsRecordLevel(boolean isRecordLevel)
+    {
         this.isRecordLevel = isRecordLevel;
     }
 
-    public boolean getIsUnpublishedUpdates() {
+    public boolean getIsUnpublishedUpdates()
+    {
         return isUnpublishedUpdates;
     }
 
-    public void setIsUnpublishedUpdates(boolean unpublishedUpdates) {
+    public void setIsUnpublishedUpdates(boolean unpublishedUpdates)
+    {
         this.isUnpublishedUpdates = unpublishedUpdates;
     }
 
-    public List<RetentionScheduleActionDefinition> getActions() {
+    public List<RetentionScheduleActionDefinition> getActions()
+    {
         return actions;
     }
 
-    public void setActions(List<RetentionScheduleActionDefinition> actions) {
+    public void setActions(List<RetentionScheduleActionDefinition> actions)
+    {
         this.actions = actions;
     }
 }

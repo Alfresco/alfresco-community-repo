@@ -2756,8 +2756,8 @@ paths:
               "events":["versioned"],
               "eligibleOnFirstCompleteEvent": true,
               "description":"Step Description",
-              "destroy-node": true,
-              "destroy-content": true
+              "destroyNode": true,
+              "destroyContent": true
           }
         ```
         The **combineDispositionStepConditions** property is only valid for **accession** step.
@@ -4607,9 +4607,9 @@ definitions:
         default: true
       description:
         type: string
-      destroy-node:
+      destroyNode:
         type: boolean
-      destroy-content:
+      destroyContent:
         type: boolean
       location:
         type: string
@@ -4636,9 +4636,9 @@ definitions:
         type: boolean
       description:
         type: string
-      destroy-node:
+      destroyNode:
         type: boolean
-      destroy-content:
+      destroyContent:
         type: boolean
       location:
         type: string

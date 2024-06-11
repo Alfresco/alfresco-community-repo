@@ -28,8 +28,7 @@
 /**
  * Package info that defines the Information Governance Record Categories REST API
  *
- * @author Ana Bozianu
- * @since 2.6
+ * @author sathishkumar.t
  */
 @WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
 package org.alfresco.rm.rest.api.rententionschedule;

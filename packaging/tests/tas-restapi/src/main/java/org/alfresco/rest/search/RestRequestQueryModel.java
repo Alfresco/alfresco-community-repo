@@ -100,9 +100,13 @@ public class RestRequestQueryModel extends TestModel implements IRestModel<RestR
     public boolean equals(Object o)
     {
         if (this == o)
+        {
             return true;
+        }
         if (o == null || getClass() != o.getClass())
+        {
             return false;
+        }
         RestRequestQueryModel that = (RestRequestQueryModel) o;
         return Objects.equals(model, that.model) && Objects.equals(getLanguage(), that.getLanguage())
             && Objects.equals(getUserQuery(), that.getUserQuery()) && Objects.equals(getQuery(),

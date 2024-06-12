@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
+import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;

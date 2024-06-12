@@ -1,0 +1,96 @@
+package org.alfresco.rest.rm.community.requests.gscore.api;
+
+import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
+
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+
+public class RetentionScheduleAPI extends RMModelRequest
+{
+
+    /**
+     * @param rmRestWrapper
+     */
+    public RetentionScheduleAPI(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
+
+
+    /**
+     * Creates a retention schedule.
+     *
+     * @param retentionScheduleModel The retentionSchedule model
+     * @param recordCategoryId The identifier of a record category
+     * @param parameters The URL parameters to add
+     * @return The created {@link RetentionSchedule}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code recordCategoryId} is not a valid format or {@code recordCategoryId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code recordCategoryId}</li>
+     *  <li>{@code recordCategoryId} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     * </ul>
+     */
+    public RetentionSchedule createRetentionSchedule(RetentionSchedule retentionScheduleModel, String recordCategoryId, String parameters)
+    {
+        mandatoryString("recordCategoryId", recordCategoryId);
+        mandatoryObject("retentionScheduleModel", retentionScheduleModel);
+
+        return getRmRestWrapper().processModel(RetentionSchedule.class, requestWithBody(
+            POST,
+            toJson(retentionScheduleModel),
+            "record-categories/{recordCategoryId}/retention-schedule",
+            recordCategoryId,
+            parameters
+        ));
+    }
+
+    /**
+     * See {@link #createRetentionSchedule(RetentionSchedule, String, String)}
+     */
+    public RetentionSchedule createRetentionSchedule(RetentionSchedule retentionScheduleModel, String recordCategoryId)
+    {
+        return createRetentionSchedule(retentionScheduleModel, recordCategoryId, EMPTY);
+    }
+
+    /**
+     * Gets the retentionSchedule of a record category.
+     *
+     * @param recordCategoryId The identifier of a record category
+     * @param parameters The URL parameters to add
+     * @return The {@link RetentionSchedule} for the given {@code recordCategoryId}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code recordCategoryId}</li>
+     *  <li>{@code recordCategoryId} does not exist</li>
+     *</ul>
+     */
+    public RetentionSchedule getRetentionSchedule(String recordCategoryId, String parameters)
+    {
+        mandatoryString("recordCategoryId", recordCategoryId);
+
+        return getRmRestWrapper().processModels(RetentionSchedule.class, simpleRequest(
+            GET,
+            "record-categories/{recordCategoryId}/retention-schedule?{parameters}",
+            recordCategoryId,
+            parameters
+        ));
+    }
+
+    /**
+     * See {@link #getRetentionSchedule(String, String)}
+     */
+    public RetentionSchedule getRetentionSchedule(String recordCategoryId)
+    {
+        return getRetentionSchedule(recordCategoryId, EMPTY);
+    }
+}

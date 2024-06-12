@@ -33,20 +33,8 @@ import io.restassured.RestAssured;
 
 import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.*;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
-import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.HoldsAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.TransferAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.TransferContainerAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
 
 /**
  * Defines the entire GS Core API
@@ -193,4 +181,6 @@ public class GSCoreAPI extends RMModelRequest
     }
 
     public HoldsAPI usingHoldsAPI() { return new HoldsAPI(getRmRestWrapper()); }
+
+    public RetentionScheduleAPI usingRetentionScheduleAPI() { return new RetentionScheduleAPI(getRmRestWrapper()); }
 }

@@ -27,13 +27,13 @@
 package org.alfresco.module.org_alfresco_module_rm.bulk;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.DefaultHoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkProcessDetails;
@@ -41,6 +41,7 @@ import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatusAndProcessDetails;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -54,7 +55,7 @@ public class DefaultHoldBulkMonitorUnitTest
     private SimpleCache<String, HoldBulkStatus> holdProgressCache;
 
     @Mock
-    private SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
+    private SimpleCache<Pair<String, String>, HoldBulkProcessDetails> holdProcessRegistry;
 
     private DefaultHoldBulkMonitor holdBulkMonitor;
 
@@ -82,19 +83,45 @@ public class DefaultHoldBulkMonitorUnitTest
     {
         NodeRef holdRef = new NodeRef("workspace://SpacesStore/holdId");
         String processId = "processId";
-        when(holdProcessRegistry.get(holdRef.getId())).thenReturn(null);
+        when(holdProcessRegistry.get(new Pair<>(holdRef.getId(), processId))).thenReturn(null);
 
         holdBulkMonitor.registerProcess(holdRef, processId, null);
 
         Mockito.verify(holdProcessRegistry)
-            .put(holdRef.getId(), Arrays.asList(new HoldBulkProcessDetails(processId, null, null)));
+            .put(new Pair<>(holdRef.getId(), processId), new HoldBulkProcessDetails(processId, null, null));
     }
 
     @Test
     public void testGetBulkStatusesWithProcessDetailsReturnsEmptyListWhenNoProcessesWithProcessDetails()
     {
-        when(holdProcessRegistry.get("holdId")).thenReturn(null);
+        when(holdProcessRegistry.getKeys()).thenReturn(Collections.emptyList());
         assertEquals(Collections.emptyList(), holdBulkMonitor.getBulkStatusesWithProcessDetails("holdId"));
+    }
+
+    @Test
+    public void testGetBulkStatus()
+    {
+        BulkOperation bulkOperation = mock(BulkOperation.class);
+        HoldBulkStatus status1 = new HoldBulkStatus("process1", new Date(1000), new Date(2000), 0L, 0L, 0L, null, false,
+            null);
+        when(holdProcessRegistry.get(new Pair<>("holdId", "process1"))).thenReturn(
+            new HoldBulkProcessDetails("process1", null, bulkOperation));
+        when(holdProgressCache.get("process1")).thenReturn(status1);
+
+        assertEquals(new HoldBulkStatusAndProcessDetails(status1,
+                new HoldBulkProcessDetails(status1.bulkStatusId(), null, bulkOperation)),
+            holdBulkMonitor.getBulkStatusWithProcessDetails("holdId", "process1"));
+    }
+
+    @Test
+    public void testGetNonExistingBulkStatus()
+    {
+        BulkOperation bulkOperation = mock(BulkOperation.class);
+        when(holdProcessRegistry.get(new Pair<>("holdId", "process1"))).thenReturn(
+            new HoldBulkProcessDetails("process1", null, bulkOperation));
+        when(holdProgressCache.get("process1")).thenReturn(null);
+
+        assertNull(holdBulkMonitor.getBulkStatusWithProcessDetails("holdId", "process1"));
     }
 
     @Test
@@ -109,9 +136,20 @@ public class DefaultHoldBulkMonitorUnitTest
             null);
         HoldBulkStatus status5 = new HoldBulkStatus("process5", null, null, 0L, 0L, 0L, null, false, null);
 
-        when(holdProcessRegistry.get("holdId")).thenReturn(
-            Arrays.asList("process1", "process2", "process3", "process4", "process5")
-                .stream().map(bulkStatusId -> new HoldBulkProcessDetails(bulkStatusId, null, bulkOperation)).toList());
+        when(holdProcessRegistry.getKeys()).thenReturn(
+            Arrays.asList(new Pair<>("holdId", "process1"), new Pair<>("holdId", "process2"),
+                new Pair<>("holdId", "process3"), new Pair<>("holdId", "process4"), new Pair<>("holdId", "process5"))
+                                                      );
+        when(holdProcessRegistry.get(new Pair<>("holdId", "process1"))).thenReturn(
+            new HoldBulkProcessDetails("process1", null, bulkOperation));
+        when(holdProcessRegistry.get(new Pair<>("holdId", "process2"))).thenReturn(
+            new HoldBulkProcessDetails("process2", null, bulkOperation));
+        when(holdProcessRegistry.get(new Pair<>("holdId", "process3"))).thenReturn(
+            new HoldBulkProcessDetails("process3", null, bulkOperation));
+        when(holdProcessRegistry.get(new Pair<>("holdId", "process4"))).thenReturn(
+            new HoldBulkProcessDetails("process4", null, bulkOperation));
+        when(holdProcessRegistry.get(new Pair<>("holdId", "process5"))).thenReturn(
+            new HoldBulkProcessDetails("process5", null, bulkOperation));
         when(holdProgressCache.get("process1")).thenReturn(status1);
         when(holdProgressCache.get("process2")).thenReturn(status2);
         when(holdProgressCache.get("process3")).thenReturn(status3);

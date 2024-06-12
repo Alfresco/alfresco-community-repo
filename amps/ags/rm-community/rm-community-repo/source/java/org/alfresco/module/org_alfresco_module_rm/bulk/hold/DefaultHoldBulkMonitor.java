@@ -26,8 +26,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +36,7 @@ import java.util.function.Function;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
@@ -48,7 +47,7 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
 {
     protected SimpleCache<String, HoldBulkStatus> holdProgressCache;
     protected SimpleCache<String, String> bulkCancellationsCache;
-    protected SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
+    protected SimpleCache<Pair<String, String>, HoldBulkProcessDetails> holdProcessRegistry;
 
     @Override
     public void updateBulkStatus(HoldBulkStatus holdBulkStatus)
@@ -59,10 +58,11 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     @Override
     public void registerProcess(NodeRef holdRef, String processId, BulkOperation bulkOperation)
     {
-        List<HoldBulkProcessDetails> processIds = Optional.ofNullable(holdProcessRegistry.get(holdRef.getId()))
-            .orElse(new ArrayList<>());
-        processIds.add(new HoldBulkProcessDetails(processId, null, bulkOperation));
-        holdProcessRegistry.put(holdRef.getId(), processIds);
+        if (holdRef != null && processId != null)
+        {
+            holdProcessRegistry.put(new Pair<>(holdRef.getId(), processId),
+                new HoldBulkProcessDetails(processId, getCurrentInstanceDetails(), bulkOperation));
+        }
     }
 
     @Override
@@ -92,25 +92,28 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     @Override
     public List<HoldBulkStatusAndProcessDetails> getBulkStatusesWithProcessDetails(String holdId)
     {
-        return Optional.ofNullable(holdProcessRegistry.get(holdId))
-            .map(bulkProcessDetailsList -> bulkProcessDetailsList.stream()
-                .filter(bulkProcessDetails -> Objects.nonNull(bulkProcessDetails.bulkStatusId()))
-                .map(createHoldBulkStatusAndProcessDetails())
-                .filter(statusAndProcess -> Objects.nonNull(statusAndProcess.holdBulkStatus()))
-                .sorted(sortBulkStatuses())
-                .toList())
-            .orElse(Collections.emptyList());
+        return holdProcessRegistry.getKeys().stream()
+            .filter(holdIdAndBulkStatusId -> holdId.equals(holdIdAndBulkStatusId.getFirst()))
+            .map(holdIdAndBulkStatusId -> holdProcessRegistry.get(holdIdAndBulkStatusId))
+            .filter(Objects::nonNull)
+            .map(createHoldBulkStatusAndProcessDetails())
+            .filter(statusAndProcess -> Objects.nonNull(statusAndProcess.holdBulkStatus()))
+            .sorted(sortBulkStatuses())
+            .toList();
     }
 
     @Override
     public HoldBulkStatusAndProcessDetails getBulkStatusWithProcessDetails(String holdId, String bulkStatusId)
     {
-        return Optional.ofNullable(holdProcessRegistry.get(holdId)).flatMap(
-                bulkProcessDetailsList -> bulkProcessDetailsList.stream()
-                    .filter(bulkProcessDetails -> bulkStatusId.equals(bulkProcessDetails.bulkStatusId()))
-                    .findFirst()
-                    .map(createHoldBulkStatusAndProcessDetails()))
+        return Optional.ofNullable(holdProcessRegistry.get(new Pair<>(holdId, bulkStatusId)))
+            .map(createHoldBulkStatusAndProcessDetails())
+            .filter(statusAndProcess -> Objects.nonNull(statusAndProcess.holdBulkStatus()))
             .orElse(null);
+    }
+
+    protected String getCurrentInstanceDetails()
+    {
+        return null;
     }
 
     protected Function<HoldBulkProcessDetails, HoldBulkStatusAndProcessDetails> createHoldBulkStatusAndProcessDetails()
@@ -136,7 +139,7 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     public void setHoldProcessRegistry(
-        SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry)
+        SimpleCache<Pair<String, String>, HoldBulkProcessDetails> holdProcessRegistry)
     {
         this.holdProcessRegistry = holdProcessRegistry;
     }

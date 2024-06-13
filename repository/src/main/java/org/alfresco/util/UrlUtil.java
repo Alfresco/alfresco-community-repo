@@ -146,4 +146,38 @@ public class UrlUtil
         url.append(context);
         return url.toString();
     }
+
+    /**
+     * Builds up the Url to Adw based on the settings in the
+     *  {@link SysAdminParams}.
+     * @return Adw Url such as https://col.ab.or.ate/#/
+     *  or http://localhost:8081/#/
+     */
+    public static String getAdwUrl(SysAdminParams sysAdminParams)
+    {
+        return buildUrl(
+                sysAdminParams.getAlfrescoProtocol(),
+                sysAdminParams.getAlfrescoHost(),
+                sysAdminParams.getAlfrescoPort(),
+                "#");
+    }
+
+    /**
+     * Replaces the adw url placeholder, namely {@literal ${alfrescoUrl}}, with <b>adw</b> url.
+     *
+     * @param value          the string value which contains the share url placeholder
+     * @param sysAdminParams the {@code SysAdminParams} object
+     * @return if the given {@code value} contains share url placeholder,
+     * the placeholder is replaced with share url; otherwise, the given {@code value} is simply returned
+     */
+
+    public static String replaceAdwUrlPlaceholder(String value, SysAdminParams sysAdminParams)
+    {
+        if (value != null)
+        {
+            return REPO_PATTERN.matcher(value).replaceAll(getAdwUrl(sysAdminParams));
+        }
+        return value;
+    }
+
 }

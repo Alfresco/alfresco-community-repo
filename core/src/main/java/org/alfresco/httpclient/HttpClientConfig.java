@@ -41,6 +41,7 @@ public class HttpClientConfig
 
     private Properties properties;
     private String serviceName;
+    private String subServiceName;
 
     private SSLEncryptionParameters sslEncryptionParameters;
     private KeyResourceLoader keyResourceLoader;
@@ -58,6 +59,11 @@ public class HttpClientConfig
     public void setServiceName(String serviceName)
     {
         this.serviceName = serviceName;
+    }
+
+    public void setSubServiceName(String subServiceName)
+    {
+        this.subServiceName = subServiceName;
     }
 
     public void setSslEncryptionParameters(SSLEncryptionParameters sslEncryptionParameters)
@@ -99,10 +105,18 @@ public class HttpClientConfig
     {
         Map<String, String> resultProperties = getHttpClientPropertiesForService(properties);
         Map<String, String> systemProperties = getHttpClientPropertiesForService(System.getProperties());
-
         systemProperties.forEach((k, v) -> resultProperties.put(k, v)); //Override/Add to Global Properties results with values from System Properties
 
-        return resultProperties;
+        //This here would also have properties set mtlsEnabled or subServiceName.mtlsEnabled If the second one is found it should
+        //replace the basic one, but ignore all the other different subService properties
+        systemProperties.entrySet().stream()
+                .filter(e -> e.getKey().startsWith(subServiceName + "."))
+                .forEach(e -> resultProperties.put(e.getKey().replace(subServiceName + ".", ""), e.getValue()));
+
+        //Return map with other subServices removed
+        return resultProperties.entrySet().stream()
+                    .filter(e -> !e.getKey().contains("."))
+                    .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
     }
 
     private Map<String, String> getHttpClientPropertiesForService(Properties properties) {

@@ -26,12 +26,15 @@
  */
 package org.alfresco.rest.rm.community.model.retentionschedule;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.alfresco.utility.model.TestModel;
+
 import java.util.List;
 
 /**
  * @author sathishkumar.t
  */
-public class RetentionSchedule
+public class RetentionSchedule extends TestModel
 {
     private String id ;
     private String parentId;

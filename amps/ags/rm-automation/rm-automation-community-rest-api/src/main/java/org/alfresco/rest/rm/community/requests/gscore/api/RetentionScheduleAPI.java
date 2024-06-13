@@ -30,6 +30,7 @@ import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
+import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
@@ -102,11 +103,11 @@ public class RetentionScheduleAPI extends RMModelRequest
      *  <li>{@code recordCategoryId} does not exist</li>
      *</ul>
      */
-    public RetentionSchedule getRetentionSchedule(String recordCategoryId, String parameters)
+    public RetentionScheduleCollection getRetentionSchedule(String recordCategoryId, String parameters)
     {
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        return getRmRestWrapper().processModels(RetentionSchedule.class, simpleRequest(
+        return getRmRestWrapper().processModels(RetentionScheduleCollection.class, simpleRequest(
             GET,
             "record-categories/{recordCategoryId}/retention-schedule?{parameters}",
             recordCategoryId,
@@ -117,7 +118,7 @@ public class RetentionScheduleAPI extends RMModelRequest
     /**
      * See {@link #getRetentionSchedule(String, String)}
      */
-    public RetentionSchedule getRetentionSchedule(String recordCategoryId)
+    public RetentionScheduleCollection getRetentionSchedule(String recordCategoryId)
     {
         return getRetentionSchedule(recordCategoryId, EMPTY);
     }

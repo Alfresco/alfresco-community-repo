@@ -52,8 +52,9 @@ public class HoldBulkStatusUpdater implements BulkStatusUpdater
                 batchMonitor.getTotalResultsLong(),
                 batchMonitor.getLastError(),
                 holdBulkMonitor.isCancelled(batchMonitor.getProcessName()),
-                Optional.ofNullable(holdBulkMonitor.getBulkCancellationRequest(batchMonitor.getProcessName())).map(
-                    BulkCancellationRequest::reason).orElse(null)));
+                Optional.ofNullable(holdBulkMonitor.getBulkCancellationRequest(batchMonitor.getProcessName()))
+                    .map(BulkCancellationRequest::reason)
+                    .orElse(null)));
     }
 
     @Override

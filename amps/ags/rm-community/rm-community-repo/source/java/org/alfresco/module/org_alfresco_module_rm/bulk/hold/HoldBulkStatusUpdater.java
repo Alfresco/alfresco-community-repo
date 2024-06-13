@@ -26,6 +26,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
+import java.util.Optional;
+
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkStatusUpdater;
 import org.alfresco.repo.batch.BatchMonitor;
 import org.alfresco.repo.batch.BatchMonitorEvent;
@@ -49,7 +52,8 @@ public class HoldBulkStatusUpdater implements BulkStatusUpdater
                 batchMonitor.getTotalResultsLong(),
                 batchMonitor.getLastError(),
                 holdBulkMonitor.isCancelled(batchMonitor.getProcessName()),
-                holdBulkMonitor.getCancellationReason(batchMonitor.getProcessName())));
+                Optional.ofNullable(holdBulkMonitor.getBulkCancellationRequest(batchMonitor.getProcessName())).map(
+                    BulkCancellationRequest::reason).orElse(null)));
     }
 
     @Override

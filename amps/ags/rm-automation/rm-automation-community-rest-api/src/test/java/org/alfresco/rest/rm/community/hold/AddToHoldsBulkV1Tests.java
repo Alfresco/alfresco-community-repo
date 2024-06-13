@@ -174,7 +174,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatuses(hold.getId());
-        assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
+        assertEquals(Arrays.asList(holdBulkStatus),
+            holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
     }
 
     /**
@@ -224,7 +225,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatuses(hold3.getId());
-        assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
+        assertEquals(List.of(holdBulkStatus),
+            holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
     }
 
     /**
@@ -307,7 +309,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
 
         HoldBulkStatus holdBulkStatus = getRestAPIFactory().getHoldsAPI(userWithoutPermission)
             .getBulkStatus(hold.getId(), bulkOperationEntry.getBulkStatusId());
-        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, NUMBER_OF_FILES, ACCESS_DENIED_ERROR_MESSAGE, holdBulkOperation);
+        assertBulkProcessStatus(holdBulkStatus, NUMBER_OF_FILES, NUMBER_OF_FILES, ACCESS_DENIED_ERROR_MESSAGE,
+            holdBulkOperation);
     }
 
     /**
@@ -346,7 +349,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
                 == NUMBER_OF_FILES - 1);
         await().atMost(30, TimeUnit.SECONDS).until(
             () -> getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
-                .getBulkStatus(hold2.getId(), bulkOperationEntry.getBulkStatusId()).getProcessedItems() == NUMBER_OF_FILES);
+                .getBulkStatus(hold2.getId(), bulkOperationEntry.getBulkStatusId()).getProcessedItems()
+                == NUMBER_OF_FILES);
         List<String> holdChildrenNodeRefs = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getChildren(hold2.getId()).getEntries().stream().map(HoldChildEntry::getEntry).map(
                 HoldChild::getId).toList();
@@ -361,7 +365,8 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         STEP("Check the bulk statuses.");
         HoldBulkStatusCollection holdBulkStatusCollection = getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .getBulkStatuses(hold2.getId());
-        assertEquals(Arrays.asList(holdBulkStatus), holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
+        assertEquals(List.of(holdBulkStatus),
+            holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
 
         // Revert the permissions
         contentActions.setPermissionForUser(getAdminUser().getUsername(), getAdminUser().getPassword(),
@@ -517,7 +522,6 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertStatusCode(ACCEPTED);
         assertEquals(NUMBER_OF_FILES, bulkOperationEntry.getTotalItems());
 
-
         STEP("Cancel the bulk operation.");
         getRestAPIFactory().getHoldsAPI(userAddHoldPermission)
             .cancelBulkOperation(hold4.getId(), bulkOperationEntry.getBulkStatusId(), new BulkBodyCancel());
@@ -526,12 +530,11 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertStatusCode(OK);
     }
 
-
     /**
      * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a site to a hold using the bulk API
-     * And the user without the add to hold capability cancels the bulk operation
-     * Then the user receives access denied error
+     * And a 2nd user without the add to hold capability cancels the bulk operation
+     * Then the 2nd user receives access denied error
      */
     @Test
     public void testBulkProcessCancellationWithUserWithoutAddToHoldCapability()
@@ -567,7 +570,6 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertStatusCode(FORBIDDEN);
         getRestAPIFactory().getRmRestWrapper().assertLastError().containsSummary(ACCESS_DENIED_ERROR_MESSAGE);
     }
-
 
     private void assertBulkProcessStatus(HoldBulkStatus holdBulkStatus, long expectedProcessedItems,
         int expectedErrorsCount, String expectedErrorMessage, HoldBulkOperation holdBulkOperation)

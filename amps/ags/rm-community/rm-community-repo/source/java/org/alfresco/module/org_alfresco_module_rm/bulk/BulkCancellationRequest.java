@@ -24,6 +24,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rm.rest.api.model;
+package org.alfresco.module.org_alfresco_module_rm.bulk;
 
-public record BulkCancellationReason(String reason) {}
+/**
+ * An immutable POJO to represent a bulk cancellation request
+ */
+public record BulkCancellationRequest(String reason)
+{
+}

@@ -36,6 +36,7 @@ import java.util.Optional;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkBaseService;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkProgress;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkStatusUpdater;
@@ -135,7 +136,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
     }
 
     @Override
-    public void cancelBulkOperation(NodeRef holdRef, String bulkStatusId, String reason)
+    public void cancelBulkOperation(NodeRef holdRef, String bulkStatusId, BulkCancellationRequest cancellationRequest)
     {
         if (bulkMonitor instanceof HoldBulkMonitor holdBulkMonitor)
         {
@@ -145,7 +146,7 @@ public class HoldBulkServiceImpl extends BulkBaseService<HoldBulkStatus> impleme
             Optional.ofNullable(statusAndProcessDetails).map(HoldBulkStatusAndProcessDetails::holdBulkProcessDetails)
                 .map(HoldBulkProcessDetails::bulkOperation).ifPresent(bulkOperation -> {
                     checkPermissions(holdRef, bulkOperation);
-                    holdBulkMonitor.cancelBulkOperation(bulkStatusId, reason);
+                    holdBulkMonitor.cancelBulkOperation(bulkStatusId, cancellationRequest);
                 });
         }
     }

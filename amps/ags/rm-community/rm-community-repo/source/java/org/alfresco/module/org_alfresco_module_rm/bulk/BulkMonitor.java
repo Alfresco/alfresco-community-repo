@@ -43,8 +43,8 @@ public interface BulkMonitor<T>
     /**
      * Register a process
      *
-     * @param nodeRef   the node reference
-     * @param processId the process id
+     * @param nodeRef       the node reference
+     * @param processId     the process id
      * @param bulkOperation the bulk operation
      */
     void registerProcess(NodeRef nodeRef, String processId, BulkOperation bulkOperation);
@@ -61,8 +61,9 @@ public interface BulkMonitor<T>
      * Cancel a bulk operation
      *
      * @param bulkStatusId
+     * @param bulkCancellationRequest
      */
-    void cancelBulkOperation(String bulkStatusId, String reason);
+    void cancelBulkOperation(String bulkStatusId, BulkCancellationRequest bulkCancellationRequest);
 
     /**
      * Check if a bulk operation is cancelled
@@ -73,10 +74,10 @@ public interface BulkMonitor<T>
     boolean isCancelled(String bulkStatusId);
 
     /**
-     * Get the cancellation reason
+     * Get the bulk cancellation request
      *
      * @param bulkStatusId
      * @return cancellation reason
      */
-    String getCancellationReason(String bulkStatusId);
+    BulkCancellationRequest getBulkCancellationRequest(String bulkStatusId);
 }

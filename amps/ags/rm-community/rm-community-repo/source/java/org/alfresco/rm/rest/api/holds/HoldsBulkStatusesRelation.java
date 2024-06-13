@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatusAndProcessDetails;
@@ -52,7 +53,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
-import org.alfresco.rm.rest.api.model.BulkCancellationReason;
+import org.alfresco.rm.rest.api.model.BulkCancellationEntry;
 import org.alfresco.rm.rest.api.model.HoldBulkStatusEntry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -112,7 +113,7 @@ public class HoldsBulkStatusesRelation
     @Operation("cancel")
     @WebApiDescription(title = "Cancel a bulk operation",
         successStatus = HttpServletResponse.SC_OK)
-    public void cancelBulkOperation(String holdId, String bulkStatusId, BulkCancellationReason bulkCancellationReason,
+    public void cancelBulkOperation(String holdId, String bulkStatusId, BulkCancellationEntry bulkCancellationEntry,
         Parameters parameters,
         WithResponse withResponse)
     {
@@ -129,7 +130,7 @@ public class HoldsBulkStatusesRelation
             throw new NotFoundException("Bulk status not found");
         }
 
-        holdBulkService.cancelBulkOperation(holdRef, bulkStatusId, bulkCancellationReason.reason());
+        holdBulkService.cancelBulkOperation(holdRef, bulkStatusId, new BulkCancellationRequest(bulkCancellationEntry.reason()));
     }
 
     private void checkReadPermissions(NodeRef holdRef)

@@ -24,32 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
+package org.alfresco.rm.rest.api.model;
 
-import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
-import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-/**
- * Interface defining a hold bulk service.
- */
-public interface HoldBulkService
-{
-    /**
-     * Initiates a bulk operation on a hold.
-     *
-     * @param holdRef       The hold reference
-     * @param bulkOperation The bulk operation
-     * @return The initial status of the bulk operation
-     */
-    HoldBulkStatus execute(NodeRef holdRef, BulkOperation bulkOperation);
-
-    /**
-     * Cancels a bulk operation.
-     *
-     * @param holdRef                 The hold reference
-     * @param bulkStatusId            The bulk status id
-     * @param bulkCancellationRequest The bulk cancellation request
-     */
-    void cancelBulkOperation(NodeRef holdRef, String bulkStatusId, BulkCancellationRequest bulkCancellationRequest);
-}
+public record BulkCancellationEntry(String reason) {}

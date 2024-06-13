@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkMonitor;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkServiceImpl;
@@ -104,7 +105,8 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 // execute the bulk operation
                 holdBulkStatus = holdBulkService.execute(hold, bulkOperation);
                 // cancel the bulk operation
-                holdBulkMonitor.cancelBulkOperation(holdBulkStatus.bulkStatusId(), "No reason");
+                holdBulkMonitor.cancelBulkOperation(holdBulkStatus.bulkStatusId(),
+                    new BulkCancellationRequest("No reason"));
                 await().atMost(10, SECONDS)
                     .until(() -> Objects.equals(
                         holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),

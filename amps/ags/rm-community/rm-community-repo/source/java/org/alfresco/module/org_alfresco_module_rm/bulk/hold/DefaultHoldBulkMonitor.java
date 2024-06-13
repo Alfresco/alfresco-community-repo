@@ -33,6 +33,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -46,7 +47,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements HoldBulkMonitor
 {
     protected SimpleCache<String, HoldBulkStatus> holdProgressCache;
-    protected SimpleCache<String, String> bulkCancellationsCache;
+    protected SimpleCache<String, BulkCancellationRequest> bulkCancellationsCache;
     protected SimpleCache<Pair<String, String>, HoldBulkProcessDetails> holdProcessRegistry;
 
     @Override
@@ -72,9 +73,9 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public void cancelBulkOperation(String bulkStatusId, String reason)
+    public void cancelBulkOperation(String bulkStatusId, BulkCancellationRequest bulkCancellationRequest)
     {
-        bulkCancellationsCache.put(bulkStatusId, reason);
+        bulkCancellationsCache.put(bulkStatusId, bulkCancellationRequest);
     }
 
     @Override
@@ -84,7 +85,7 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public String getCancellationReason(String bulkStatusId)
+    public BulkCancellationRequest getBulkCancellationRequest(String bulkStatusId)
     {
         return bulkCancellationsCache.get(bulkStatusId);
     }
@@ -145,7 +146,7 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     public void setBulkCancellationsCache(
-        SimpleCache<String, String> bulkCancellationsCache)
+        SimpleCache<String, BulkCancellationRequest> bulkCancellationsCache)
     {
         this.bulkCancellationsCache = bulkCancellationsCache;
     }

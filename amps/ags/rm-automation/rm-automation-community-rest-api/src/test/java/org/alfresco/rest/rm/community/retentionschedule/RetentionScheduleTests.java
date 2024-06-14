@@ -31,8 +31,7 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
-import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.v0.service.RoleService;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
@@ -42,7 +41,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 
-
+import static org.alfresco.rest.core.v0.BaseAPI.RM_SITE_ID;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.*;
@@ -58,18 +57,14 @@ public class RetentionScheduleTests extends BaseRMRestTest
 {
     private RecordCategory recordCategory;
     private RetentionSchedule createdRetentionSchedule;
-
-    private UserModel rmAdmin;
     private UserModel nonRMuser;
     @Autowired
-    private RoleService roleService;
+    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     @BeforeClass(alwaysRun = true)
     public void preconditionForRetentionScheduleTests()
     {
         createRMSiteIfNotExists();
-        // create "rm admin" user if it does not exist and assign it to RM Administrator role
-        rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
         // create a non rm user
         nonRMuser = dataUser.createRandomTestUser("testUser");
         //Create record category
@@ -106,7 +101,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
         assertStatusCode(NOT_FOUND);
 
         //Create retention schedule with a valid user
-        createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI(rmAdmin)
+        createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
             .createRetentionSchedule(retentionSchedule, recordCategory.getId());
 
         // Verify the status code
@@ -139,7 +134,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(NOT_FOUND);
 
-        RetentionScheduleCollection receiveRetentionScheduleCollection = getRestAPIFactory().getRetentionScheduleAPI(rmAdmin).getRetentionSchedule(recordCategory.getId());
+        RetentionScheduleCollection receiveRetentionScheduleCollection = getRestAPIFactory().getRetentionScheduleAPI().getRetentionSchedule(recordCategory.getId());
         receiveRetentionScheduleCollection.getEntries().forEach(c ->
             {
                 RetentionSchedule retentionSchedule = c.getEntry();
@@ -160,7 +155,9 @@ public class RetentionScheduleTests extends BaseRMRestTest
     @AfterClass(alwaysRun = true)
     public void cleanUpRetentionScheduleTests()
     {
-        getRestAPIFactory().getRecordCategoryAPI(getAdminUser()).deleteRecordCategory(recordCategory.getId());
+        rmRolesAndActionsAPI.deleteAllItemsInContainer(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), RM_SITE_ID, recordCategory.getName());
+        deleteRecordCategory(recordCategory.getId());
         dataUser.deleteUser(nonRMuser);
     }
 }

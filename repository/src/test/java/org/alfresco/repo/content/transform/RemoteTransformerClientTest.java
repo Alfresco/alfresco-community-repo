@@ -31,12 +31,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.commons.logging.Log;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -77,7 +76,7 @@ public class RemoteTransformerClientTest
     @Mock private HttpEntity mockResponseEntity;
     @Mock private Header mockResponseContentType;
     @Mock private Header mockResponseContentEncoding;
-    @Mock private StatusLine mockStatusLine;
+    @Mock private int mockStatusCode;
     @Mock private HttpEntity mockReqEntity;
 
     @Spy private RemoteTransformerClient remoteTransformerClient = new RemoteTransformerClient("TRANSFORMER", "http://localhost:1234/test", new HttpClientConfig());
@@ -99,9 +98,9 @@ public class RemoteTransformerClientTest
         doReturn(mockRequestEntity).when(remoteTransformerClient).getRequestEntity(any(), any(),
                 any(), any(), anyLong(), any(), any());//,
 
-        when(mockHttpResponse.getStatusLine()).thenReturn(mockStatusLine);
+        when(mockHttpResponse.getCode()).thenReturn(mockStatusCode);
         when(mockHttpResponse.getEntity()).thenReturn(mockResponseEntity);
-        when(mockStatusLine.getStatusCode()).thenReturn(200);
+//        when(mockStatusLine.getStatusCode()).thenReturn(200);
 
 //        when(mockResponseEntity.getContentLength()).thenReturn(1024L);
 //        when(mockResponseEntity.getContentType()).thenReturn(mockResponseContentType);
@@ -167,7 +166,7 @@ public class RemoteTransformerClientTest
     @Test
     public void non200CheckTest() throws Exception
     {
-        when(mockStatusLine.getStatusCode()).thenReturn(1234);
+        when(mockHttpResponse.getCode()).thenReturn(1234);
         doReturn("\"message\":\"AN ERROR MESSAGE\",\"path\":").when(remoteTransformerClient).getContent(any());
 
         Pair<Boolean, String> available = remoteTransformerClient.check(mockLogger);
@@ -179,7 +178,7 @@ public class RemoteTransformerClientTest
     @Test
     public void non200RequestTest() throws Exception
     {
-        when(mockStatusLine.getStatusCode()).thenReturn(1234);
+        when(mockHttpResponse.getCode()).thenReturn(1234);
         doReturn("\"message\":\"AN ERROR MESSAGE\",\"path\":").when(remoteTransformerClient).getContent(any());
 
         assertRequestTransformError("TRANSFORMER returned a 1234 status AN ERROR MESSAGE http://localhost:1234/test/transform");

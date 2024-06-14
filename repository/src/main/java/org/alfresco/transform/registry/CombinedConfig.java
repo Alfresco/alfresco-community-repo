@@ -36,12 +36,12 @@ import org.alfresco.transform.config.TransformConfig;
 import org.alfresco.transform.config.Transformer;
 import org.alfresco.util.ConfigFileFinder;
 import org.apache.commons.logging.Log;
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -113,22 +113,17 @@ public class CombinedConfig extends CombinedTransformConfig
 
     private boolean addRemoteConfig(CloseableHttpClient httpclient, String baseUrl, String remoteType)
     {
-        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
+        String url = (baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl) + ENDPOINT_TRANSFORM_CONFIG_LATEST;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
         try
         {
             try (CloseableHttpResponse response = execute(httpclient, httpGet))
             {
-                StatusLine statusLine = response.getStatusLine();
-                if (statusLine == null)
-                {
-                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned no status ");
-                }
                 HttpEntity resEntity = response.getEntity();
                 if (resEntity != null)
                 {
-                    int statusCode = statusLine.getStatusCode();
+                    int statusCode = response.getCode();
                     if (statusCode == 200)
                     {
                         try
@@ -146,7 +141,7 @@ public class CombinedConfig extends CombinedTransformConfig
 
                             EntityUtils.consume(resEntity);
                         }
-                        catch (IOException e)
+                        catch (IOException | ParseException e)
                         {
                             throw new AlfrescoRuntimeException("Failed to read the returned content from "+
                                     remoteType+" on " + url, e);
@@ -164,7 +159,7 @@ public class CombinedConfig extends CombinedTransformConfig
                     throw new AlfrescoRuntimeException(remoteType+" on " + url+" did not return an entity " + url);
                 }
             }
-            catch (IOException e)
+            catch (IOException | ParseException e)
             {
                 throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
                         " on " + url, e);
@@ -186,13 +181,13 @@ public class CombinedConfig extends CombinedTransformConfig
     }
 
     // Tests mock the return values
-    String getContent(HttpEntity resEntity) throws IOException
+    String getContent(HttpEntity resEntity) throws IOException, ParseException
     {
         return EntityUtils.toString(resEntity);
     }
 
     // Strip out just the error message in the response
-    private String getErrorMessage(HttpEntity resEntity) throws IOException
+    private String getErrorMessage(HttpEntity resEntity) throws IOException, ParseException
     {
         String message = "";
         String content = getContent(resEntity);

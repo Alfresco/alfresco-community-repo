@@ -30,12 +30,10 @@ import org.alfresco.repo.security.authentication.ResetPasswordService;
 import org.alfresco.repo.workflow.activiti.BaseJavaDelegate;
 
 /**
- * @deprecated from 7.1.0
  *  
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */
-@Deprecated
 public abstract class AbstractResetPasswordDelegate extends BaseJavaDelegate
 {
     protected ResetPasswordService resetPasswordService;

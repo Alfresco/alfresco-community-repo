@@ -29,12 +29,10 @@ package org.alfresco.repo.workflow;
 import org.alfresco.service.namespace.QName;
 
 /**
- * @deprecated from 7.1.0
  * 
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */
-@Deprecated
 public interface WorkflowModelResetPassword
 {
     // namespace

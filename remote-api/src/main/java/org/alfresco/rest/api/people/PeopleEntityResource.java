@@ -163,7 +163,6 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
         return people.getPeople(params);
     }
 
-    @Deprecated
     @Operation("request-password-reset")
     @WebApiDescription(title = "Request Password Reset", description = "Request password reset",
                        successStatus = HttpServletResponse.SC_ACCEPTED)
@@ -173,7 +172,6 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
         people.requestPasswordReset(personId, client.getClient());
     }
 
-    @Deprecated
     @Operation("reset-password")
     @WebApiDescription(title = "Reset Password", description = "Performs password reset", successStatus = HttpServletResponse.SC_ACCEPTED)
     @WebApiNoAuth

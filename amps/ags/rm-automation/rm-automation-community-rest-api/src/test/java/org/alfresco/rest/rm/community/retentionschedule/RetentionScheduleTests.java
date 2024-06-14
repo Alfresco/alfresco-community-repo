@@ -32,7 +32,6 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +43,6 @@ import org.testng.annotations.Test;
 
 
 
-import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
-import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.*;

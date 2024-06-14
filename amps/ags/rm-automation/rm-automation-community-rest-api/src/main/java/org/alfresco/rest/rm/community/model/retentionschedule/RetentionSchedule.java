@@ -26,7 +26,6 @@
  */
 package org.alfresco.rest.rm.community.model.retentionschedule;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.alfresco.utility.model.TestModel;
 
 import java.util.List;

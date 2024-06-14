@@ -27,5 +27,6 @@
 package org.alfresco.rest.rm.community.model.retentionschedule;
 
 import org.alfresco.rest.core.RestModels;
-public class RetentionScheduleCollection extends RestModels<RetentionScheduleEntry, RetentionScheduleCollection> {
+public class RetentionScheduleCollection extends RestModels<RetentionScheduleEntry, RetentionScheduleCollection>
+{
 }

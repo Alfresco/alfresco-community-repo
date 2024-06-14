@@ -181,7 +181,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected DictionaryService dictionaryService;
 
     private SqlSessionTemplate template;
-    
+
     public void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
         this.template = sqlSessionTemplate;

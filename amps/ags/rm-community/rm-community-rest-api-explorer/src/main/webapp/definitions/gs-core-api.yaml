@@ -40,7 +40,7 @@ tags:
     description: Retrieve and manage unfiled record folders
   - name: holds
     description: Retrieve and manage holds
-  - name: retention-schedule
+  - name: retention-schedules
     description: Perform retention schedule specific operations
 
 paths:
@@ -2498,10 +2498,10 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   ##retention-schedule
-  '/record-categories/{recordCategoryId}/retention-schedule':
+  '/record-categories/{recordCategoryId}/retention-schedules':
     post:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Create a retention schedule
       description: |
         Create a retention schedule.
@@ -2519,7 +2519,7 @@ paths:
       parameters:
         - $ref: '#/parameters/recordCategoryIdParam'
         - in: body
-          name: nodeBodyCreate
+          name: retentionNodeBodyCreate
           description: |
             The retention schedule information to create.
           schema:
@@ -2550,7 +2550,7 @@ paths:
             $ref: '#/definitions/Error'
     get:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Get the retention schedule for a record category
       description: |
         Get the retention schedule for a record category.
@@ -2583,10 +2583,10 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/retention-schedule/{retentionScheduleId}/retention-steps':
+  '/retention-schedules/{retentionScheduleId}/retention-steps':
     post:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Create a step in the retention schedule
       description: |
         Create a step in the retention schedule.
@@ -2607,9 +2607,7 @@ paths:
               "combineDispositionStepConditions": false,
               "events":["versioned"],
               "eligibleOnFirstCompleteEvent": true,
-              "description":"Step Description",
-              "destroyNode": true,
-              "destroyContent": true
+              "description":"Step Description"
           }
         ```
       operationId: createRetentionScheduleAction
@@ -2634,7 +2632,7 @@ paths:
         '400':
           description: |
             Invalid parameter: retentionScheduleId is not a valid format
-            Invalid parameter: { ex: event,period,periodProperty}
+            Invalid parameter (e.g. event, period, periodProperty)
         '401':
           description: Authentication failed
         '403':
@@ -2654,7 +2652,7 @@ paths:
             $ref: '#/definitions/Error'
     get:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Get the list of steps in the retention schedule
       description: |
         Get the list of steps in the retention schedule.
@@ -4308,9 +4306,7 @@ definitions:
         default: true
       description:
         type: string
-      destroyNode:
-        type: boolean
-      destroyContent:
+      retainRecordMetadataAfterDestruction:
         type: boolean
       location:
         type: string
@@ -4331,7 +4327,7 @@ definitions:
       periodAmount:
         type: integer
         description: |
-          This property only applicable for the below period values.
+          This property is only applicable for the following period values.
           * day
           * month
           * quarter
@@ -4356,6 +4352,18 @@ definitions:
           * week = Week
           * duration = XML Duration
           * year = Year
+          
+          If you provide XML Duration for the period value, you need to specify a time interval using XML syntax.
+          The syntax should take the form of:
+          P = Period (required)
+          nY = Number of years
+          nM = Number of months
+          nD = Number of days
+          T = Start time of a time section (required if specifying hours, minutes, or seconds)
+          nH = Number of hours
+          nM = Number of minutes
+          nS = Number of seconds
+          For example, ‘P2M10D’ represents two months and ten days.
       periodProperty:
         type: string
         default: cm:created
@@ -4403,14 +4411,10 @@ definitions:
         type: string
         description: |
           This property is used to provide the step description.
-      destroyNode:
+      retainRecordMetadataAfterDestruction:
         type: boolean
         description: |
-          This property is used to destroy the node along with metadata.
-      destroyContent:
-        type: boolean
-        description: |
-          This property is used to destroy the content but node metadata will preserved.
+          This property is used to retain the metadata after record destruction.
       location:
         type: string
         description: |

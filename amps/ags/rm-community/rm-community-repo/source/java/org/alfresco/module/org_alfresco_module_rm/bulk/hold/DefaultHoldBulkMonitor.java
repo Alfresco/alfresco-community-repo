@@ -26,16 +26,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
@@ -45,7 +47,8 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements HoldBulkMonitor
 {
     protected SimpleCache<String, HoldBulkStatus> holdProgressCache;
-    protected SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry;
+    protected SimpleCache<String, BulkCancellationRequest> bulkCancellationsCache;
+    protected SimpleCache<Pair<String, String>, HoldBulkProcessDetails> holdProcessRegistry;
 
     @Override
     public void updateBulkStatus(HoldBulkStatus holdBulkStatus)
@@ -54,12 +57,13 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public void registerProcess(NodeRef holdRef, String processId)
+    public void registerProcess(NodeRef holdRef, String processId, BulkOperation bulkOperation)
     {
-        List<HoldBulkProcessDetails> processIds = Optional.ofNullable(holdProcessRegistry.get(holdRef.getId()))
-            .orElse(new ArrayList<>());
-        processIds.add(new HoldBulkProcessDetails(processId, null));
-        holdProcessRegistry.put(holdRef.getId(), processIds);
+        if (holdRef != null && processId != null)
+        {
+            holdProcessRegistry.put(new Pair<>(holdRef.getId(), processId),
+                new HoldBulkProcessDetails(processId, getCurrentInstanceDetails(), bulkOperation));
+        }
     }
 
     @Override
@@ -69,18 +73,64 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     @Override
-    public List<HoldBulkStatus> getBulkStatusesForHold(String holdId)
+    public void cancelBulkOperation(String bulkStatusId, BulkCancellationRequest bulkCancellationRequest)
     {
-        return Optional.ofNullable(holdProcessRegistry.get(holdId))
-            .map(bulkProcessDetailsList -> bulkProcessDetailsList.stream()
-                .map(HoldBulkProcessDetails::bulkStatusId)
-                .map(this::getBulkStatus)
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(HoldBulkStatus::endTime, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(HoldBulkStatus::startTime, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .reversed())
-                .toList())
-            .orElse(Collections.emptyList());
+        bulkCancellationsCache.put(bulkStatusId, bulkCancellationRequest);
+    }
+
+    @Override
+    public boolean isCancelled(String bulkStatusId)
+    {
+        return bulkCancellationsCache.contains(bulkStatusId);
+    }
+
+    @Override
+    public BulkCancellationRequest getBulkCancellationRequest(String bulkStatusId)
+    {
+        return bulkCancellationsCache.get(bulkStatusId);
+    }
+
+    @Override
+    public List<HoldBulkStatusAndProcessDetails> getBulkStatusesWithProcessDetails(String holdId)
+    {
+        return holdProcessRegistry.getKeys().stream()
+            .filter(holdIdAndBulkStatusId -> holdId.equals(holdIdAndBulkStatusId.getFirst()))
+            .map(holdIdAndBulkStatusId -> holdProcessRegistry.get(holdIdAndBulkStatusId))
+            .filter(Objects::nonNull)
+            .map(createHoldBulkStatusAndProcessDetails())
+            .filter(statusAndProcess -> Objects.nonNull(statusAndProcess.holdBulkStatus()))
+            .sorted(sortBulkStatuses())
+            .toList();
+    }
+
+    @Override
+    public HoldBulkStatusAndProcessDetails getBulkStatusWithProcessDetails(String holdId, String bulkStatusId)
+    {
+        return Optional.ofNullable(holdProcessRegistry.get(new Pair<>(holdId, bulkStatusId)))
+            .map(createHoldBulkStatusAndProcessDetails())
+            .filter(statusAndProcess -> Objects.nonNull(statusAndProcess.holdBulkStatus()))
+            .orElse(null);
+    }
+
+    protected String getCurrentInstanceDetails()
+    {
+        return null;
+    }
+
+    protected Function<HoldBulkProcessDetails, HoldBulkStatusAndProcessDetails> createHoldBulkStatusAndProcessDetails()
+    {
+        return bulkProcessDetails -> new HoldBulkStatusAndProcessDetails(
+            getBulkStatus(bulkProcessDetails.bulkStatusId()), bulkProcessDetails);
+    }
+
+    protected static Comparator<HoldBulkStatusAndProcessDetails> sortBulkStatuses()
+    {
+        return Comparator.<HoldBulkStatusAndProcessDetails, Date>comparing(
+                statusAndProcess -> statusAndProcess.holdBulkStatus().endTime(),
+                Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(statusAndProcess -> statusAndProcess.holdBulkStatus().startTime(),
+                Comparator.nullsLast(Comparator.naturalOrder()))
+            .reversed();
     }
 
     public void setHoldProgressCache(
@@ -90,9 +140,15 @@ public class DefaultHoldBulkMonitor extends AbstractLifecycleBean implements Hol
     }
 
     public void setHoldProcessRegistry(
-        SimpleCache<String, List<HoldBulkProcessDetails>> holdProcessRegistry)
+        SimpleCache<Pair<String, String>, HoldBulkProcessDetails> holdProcessRegistry)
     {
         this.holdProcessRegistry = holdProcessRegistry;
+    }
+
+    public void setBulkCancellationsCache(
+        SimpleCache<String, BulkCancellationRequest> bulkCancellationsCache)
+    {
+        this.bulkCancellationsCache = bulkCancellationsCache;
     }
 
     @Override

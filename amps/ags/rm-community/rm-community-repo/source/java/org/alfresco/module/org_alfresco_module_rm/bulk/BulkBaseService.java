@@ -26,7 +26,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk;
 
+import static java.util.concurrent.Executors.newFixedThreadPool;
+
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -50,7 +55,7 @@ import org.springframework.beans.factory.InitializingBean;
 public abstract class BulkBaseService<T> implements InitializingBean
 {
     private static final Log LOG = LogFactory.getLog(BulkBaseService.class);
-
+    protected ExecutorService executorService;
     protected ServiceRegistry serviceRegistry;
     protected SearchService searchService;
     protected TransactionService transactionService;
@@ -62,11 +67,13 @@ public abstract class BulkBaseService<T> implements InitializingBean
     protected int itemsPerTransaction;
     protected int maxItems;
     protected int loggingInterval;
+    protected int maxParallelRequests;
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
         this.searchService = serviceRegistry.getSearchService();
+        this.executorService = newFixedThreadPool(maxParallelRequests);
     }
 
     /**
@@ -91,15 +98,17 @@ public abstract class BulkBaseService<T> implements InitializingBean
 
         T initBulkStatus = getInitBulkStatus(processId, totalItems);
         bulkMonitor.updateBulkStatus(initBulkStatus);
-        bulkMonitor.registerProcess(nodeRef, processId);
+        bulkMonitor.registerProcess(nodeRef, processId, bulkOperation);
 
-        BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation);
+        BulkProgress bulkProgress = new BulkProgress(totalItems, processId, new AtomicBoolean(false),
+            new AtomicInteger(0));
+        BatchProcessWorker<NodeRef> batchProcessWorker = getWorkerProvider(nodeRef, bulkOperation, bulkProgress);
         BulkStatusUpdater bulkStatusUpdater = getBulkStatusUpdater();
 
         BatchProcessor<NodeRef> batchProcessor = new BatchProcessor<>(
             processId,
             transactionService.getRetryingTransactionHelper(),
-            getWorkProvider(bulkOperation, totalItems, bulkStatusUpdater),
+            getWorkProvider(bulkOperation, bulkStatusUpdater, bulkProgress),
             threadCount,
             itemsPerTransaction,
             bulkStatusUpdater,
@@ -139,8 +148,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
             }
         };
 
-        Thread backgroundThread = new Thread(backgroundLogic, "BulkBaseService-BackgroundThread");
-        backgroundThread.start();
+        executorService.submit(backgroundLogic);
     }
 
     /**
@@ -163,21 +171,23 @@ public abstract class BulkBaseService<T> implements InitializingBean
      * Get work provider
      *
      * @param bulkOperation     bulk operation
-     * @param totalItems        total items
      * @param bulkStatusUpdater bulk status updater
+     * @param bulkProgress      bulk progress
      * @return work provider
      */
-    protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation, long totalItems,
-        BulkStatusUpdater bulkStatusUpdater);
+    protected abstract BatchProcessWorkProvider<NodeRef> getWorkProvider(BulkOperation bulkOperation,
+        BulkStatusUpdater bulkStatusUpdater, BulkProgress bulkProgress);
 
     /**
      * Get worker provider
      *
      * @param nodeRef       node reference
      * @param bulkOperation bulk operation
+     * @param bulkProgress  bulk progress
      * @return worker provider
      */
-    protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation);
+    protected abstract BatchProcessWorker<NodeRef> getWorkerProvider(NodeRef nodeRef, BulkOperation bulkOperation,
+        BulkProgress bulkProgress);
 
     /**
      * Check permissions
@@ -194,6 +204,7 @@ public abstract class BulkBaseService<T> implements InitializingBean
         searchMapper.fromQuery(searchParams, searchQuery);
         searchParams.setSkipCount(skipCount);
         searchParams.setMaxItems(1);
+        searchParams.setLimit(1);
         return searchService.query(searchParams);
     }
 
@@ -245,5 +256,10 @@ public abstract class BulkBaseService<T> implements InitializingBean
     public void setItemsPerTransaction(int itemsPerTransaction)
     {
         this.itemsPerTransaction = itemsPerTransaction;
+    }
+
+    public void setMaxParallelRequests(int maxParallelRequests)
+    {
+        this.maxParallelRequests = maxParallelRequests;
     }
 }

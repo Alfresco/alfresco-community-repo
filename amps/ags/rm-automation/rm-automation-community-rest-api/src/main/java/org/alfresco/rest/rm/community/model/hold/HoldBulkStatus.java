@@ -57,12 +57,11 @@ public class HoldBulkStatus extends TestModel
 
     private String lastError;
 
-    private Status status;
+    private String status;
 
-    public enum Status
-    {
-        PENDING,
-        IN_PROGRESS,
-        DONE
-    }
+    private boolean isCancelled;
+
+    private String cancellationReason;
+
+    private HoldBulkOperation holdBulkOperation;
 }

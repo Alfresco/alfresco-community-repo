@@ -46,7 +46,7 @@ import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.HoldBulkOperation;
 import org.alfresco.rm.rest.api.model.HoldBulkOperationEntry;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
 import org.alfresco.rm.rest.api.model.HoldDeletionReason;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;

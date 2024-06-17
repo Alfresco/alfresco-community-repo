@@ -26,8 +26,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -40,6 +40,16 @@ public interface HoldBulkService
      *
      * @param holdRef       The hold reference
      * @param bulkOperation The bulk operation
+     * @return The initial status of the bulk operation
      */
     HoldBulkStatus execute(NodeRef holdRef, BulkOperation bulkOperation);
+
+    /**
+     * Cancels a bulk operation.
+     *
+     * @param holdRef                 The hold reference
+     * @param bulkStatusId            The bulk status id
+     * @param bulkCancellationRequest The bulk cancellation request
+     */
+    void cancelBulkOperation(NodeRef holdRef, String bulkStatusId, BulkCancellationRequest bulkCancellationRequest);
 }

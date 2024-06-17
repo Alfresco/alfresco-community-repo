@@ -28,9 +28,11 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
 import java.io.Serializable;
 
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
+
 /**
- * A simple immutable POJO to hold the details of a bulk hold process
+ * A simple immutable POJO to hold the details of a bulk process
  */
-public record HoldBulkProcessDetails(String bulkStatusId, String creatorInstance) implements Serializable
+public record HoldBulkProcessDetails(String bulkStatusId, String creatorInstance, BulkOperation bulkOperation) implements Serializable
 {
 }

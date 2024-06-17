@@ -26,12 +26,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bulk;
 
+import java.io.Serializable;
+
 import org.alfresco.rest.api.search.model.Query;
 
 /**
  * An immutable POJO to represent a bulk operation
  */
-public record BulkOperation(Query searchQuery, String operationType)
+public record BulkOperation(Query searchQuery, String operationType) implements Serializable
 {
     public BulkOperation
     {

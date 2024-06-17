@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkMonitor;
-import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 
 /**
  * An interface for monitoring the progress of a bulk hold operation
@@ -37,10 +36,19 @@ import org.alfresco.rm.rest.api.model.HoldBulkStatus;
 public interface HoldBulkMonitor extends BulkMonitor<HoldBulkStatus>
 {
     /**
-     * Get the bulk statuses for a hold
+     * Get the bulk statuses with process details for a hold
      *
      * @param holdId the hold id
-     * @return the bulk statuses
+     * @return the bulk statuses with process details
      */
-    List<HoldBulkStatus> getBulkStatusesForHold(String holdId);
+    List<HoldBulkStatusAndProcessDetails> getBulkStatusesWithProcessDetails(String holdId);
+
+    /**
+     * Get the bulk status with process details
+     *
+     * @param holdId       the hold id
+     * @param bulkStatusId the bulk status id
+     * @return the bulk status with process details
+     */
+    HoldBulkStatusAndProcessDetails getBulkStatusWithProcessDetails(String holdId, String bulkStatusId);
 }

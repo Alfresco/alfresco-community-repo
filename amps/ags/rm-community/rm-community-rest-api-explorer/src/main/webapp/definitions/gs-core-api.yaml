@@ -2373,6 +2373,39 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses/{bulkStatusId}/cancel':
+    post:
+      tags:
+        - holds
+      operationId: cancelBulkStatus
+      summary: Cancel the bulk operation
+      description: |
+        Cancels the bulk operation specified by **bulkStatusId** for **holdId**.
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/bulkStatusId'
+        - in: body
+          name: cancelReason
+          description: Cancel reason.
+          required: false
+          schema:
+            $ref: '#/definitions/BulkBodyCancel'
+      responses:
+        '200':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdId** or **bulkStatusId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to cancel the bulk process for **holdId** and **bulkStatusId**
+        '404':
+          description: "**holdId** or **bulkStatusId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   '/holds/{holdId}/bulk':
     post:
       tags:
@@ -4168,6 +4201,11 @@ definitions:
       totalItems:
         type: integer
         format: int64
+  BulkBodyCancel:
+    type: object
+    properties:
+      reason:
+        type: string
   HoldBulkStatus:
     type: object
     properties:
@@ -4196,6 +4234,11 @@ definitions:
           - PENDING
           - IN PROGRESS
           - DONE
+          - CANCELLED
+      cancellationReason:
+        type: string
+      holdBulkOperation:
+        $ref: '#/definitions/HoldBulkOperation'
   HoldBulkStatusEntry:
     type: object
     required:

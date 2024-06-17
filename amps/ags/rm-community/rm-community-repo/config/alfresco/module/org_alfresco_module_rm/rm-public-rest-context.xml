@@ -88,6 +88,7 @@
 
    <bean class="org.alfresco.rm.rest.api.holds.HoldsBulkStatusesRelation" >
       <property name="holdBulkMonitor" ref="holdBulkMonitor" />
+      <property name="holdBulkService" ref="holdBulkService" />
       <property name="apiUtils" ref="apiUtils" />
       <property name="permissionService" ref="PermissionService" />
    </bean>

@@ -32,11 +32,15 @@
       <property name="itemsPerTransaction">
          <value>${rm.hold.bulk.itemsPerTransaction}</value>
       </property>
+      <property name="maxParallelRequests">
+         <value>${rm.hold.bulk.maxParallelRequests}</value>
+      </property>
    </bean>
 
    <bean id="holdBulkMonitor" class="org.alfresco.module.org_alfresco_module_rm.bulk.hold.DefaultHoldBulkMonitor">
       <property name="holdProgressCache" ref="holdProgressCache" />
       <property name="holdProcessRegistry" ref="holdProcessRegistry" />
+      <property name="bulkCancellationsCache" ref="bulkCancellationsCache" />
    </bean>
 
 
@@ -46,6 +50,10 @@
 
    <bean name="holdProcessRegistry" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.bulkHoldRegistryCache" />
+   </bean>
+
+   <bean name="bulkCancellationsCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.bulkCancellationsCache" />
    </bean>
 
 </beans>

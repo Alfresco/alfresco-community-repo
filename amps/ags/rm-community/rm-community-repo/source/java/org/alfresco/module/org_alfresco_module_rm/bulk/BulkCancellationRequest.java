@@ -24,46 +24,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rm.rest.api.model;
+package org.alfresco.module.org_alfresco_module_rm.bulk;
 
-import java.io.Serializable;
-import java.util.Date;
-
-public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
-                             long totalItems, String lastError) implements Serializable
+/**
+ * An immutable POJO to represent a bulk cancellation request
+ */
+public record BulkCancellationRequest(String reason)
 {
-    public enum Status
-    {
-        PENDING("PENDING"),
-        IN_PROGRESS("IN PROGRESS"),
-        DONE("DONE");
-
-        private final String value;
-
-        Status(String value)
-        {
-            this.value = value;
-        }
-
-        public String getValue()
-        {
-            return value;
-        }
-    }
-
-    public String getStatus()
-    {
-        if (startTime == null && endTime == null)
-        {
-            return Status.PENDING.getValue();
-        }
-        else if (startTime != null && endTime == null)
-        {
-            return Status.IN_PROGRESS.getValue();
-        }
-        else
-        {
-            return Status.DONE.getValue();
-        }
-    }
 }

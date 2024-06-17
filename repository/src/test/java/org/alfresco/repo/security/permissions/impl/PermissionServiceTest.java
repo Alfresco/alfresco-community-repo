@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -73,6 +73,10 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PermissionServiceTest extends AbstractPermissionTest
 {
+    // The number of permissions in the system.
+    // See permissionDefinitions.xml and PermissionService interface
+    private static final int NUM_OF_PERMISSIONS = 39;
+
     private SimplePermissionEntry denyAndyAll;
 
     private SimplePermissionEntry allowAndyAll;
@@ -1764,7 +1768,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
     public void testGetSettablePermissionsForType()
     {
         Set<String> answer = permissionService.getSettablePermissions(QName.createQName("sys", "base", namespacePrefixResolver));
-        assertEquals(36, answer.size());
+        assertEquals(NUM_OF_PERMISSIONS, answer.size());
 
         answer = permissionService.getSettablePermissions(QName.createQName("cm", "ownable", namespacePrefixResolver));
         assertEquals(0, answer.size());
@@ -1784,15 +1788,15 @@ public class PermissionServiceTest extends AbstractPermissionTest
         QName ownable = QName.createQName("cm", "ownable", namespacePrefixResolver);
 
         Set<String> answer = permissionService.getSettablePermissions(rootNodeRef);
-        assertEquals(36, answer.size());
+        assertEquals(NUM_OF_PERMISSIONS, answer.size());
 
         nodeService.addAspect(rootNodeRef, ownable, null);
         answer = permissionService.getSettablePermissions(rootNodeRef);
-        assertEquals(36, answer.size());
+        assertEquals(NUM_OF_PERMISSIONS, answer.size());
 
         nodeService.removeAspect(rootNodeRef, ownable);
         answer = permissionService.getSettablePermissions(rootNodeRef);
-        assertEquals(36, answer.size());
+        assertEquals(NUM_OF_PERMISSIONS, answer.size());
     }
 
 
@@ -1816,7 +1820,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
     {
         runAs("andy");
 
-        assertEquals(36, permissionService.getPermissions(rootNodeRef).size());
+        assertEquals(NUM_OF_PERMISSIONS, permissionService.getPermissions(rootNodeRef).size());
         assertEquals(0, countGranted(permissionService.getPermissions(rootNodeRef)));
         assertEquals(0, permissionService.getAllSetPermissions(rootNodeRef).size());
 
@@ -1828,7 +1832,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(1, permissionService.getAllSetPermissions(rootNodeRef).size());
         runAs("andy");
 
-        assertEquals(36, permissionService.getPermissions(rootNodeRef).size());
+        assertEquals(NUM_OF_PERMISSIONS, permissionService.getPermissions(rootNodeRef).size());
         assertEquals(2, countGranted(permissionService.getPermissions(rootNodeRef)));
 
         assertTrue(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ_PROPERTIES)) == AccessStatus.ALLOWED);
@@ -1933,7 +1937,7 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setPermission(allowAndyRead);
         runAs("andy");
 
-        assertEquals(36, permissionService.getPermissions(rootNodeRef).size());
+        assertEquals(NUM_OF_PERMISSIONS, permissionService.getPermissions(rootNodeRef).size());
         assertEquals(7, countGranted(permissionService.getPermissions(rootNodeRef)));
         assertEquals(1, permissionService.getAllSetPermissions(rootNodeRef).size());
 

@@ -25,11 +25,10 @@
  */
 package org.alfresco.repo.bootstrap;
 
-import org.alfresco.filesys.AbstractServerConfigurationBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,8 +37,6 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
 import org.junit.*;
-import org.springframework.context.ApplicationContext;
-
 import java.util.List;
 
 public class DataDictionaryFolderTest extends BaseSpringTest {
@@ -52,17 +49,13 @@ public class DataDictionaryFolderTest extends BaseSpringTest {
     public WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
 
     private NodeService nodeService;
-    private ApplicationContext ctx;
     protected Repository repositoryHelper;
-    //private static RetryingTransactionHelper transactionHelper;
 
     @Before
     public void before() {
 
         ServiceRegistry serviceRegistry = (ServiceRegistry) this.applicationContext.getBean("ServiceRegistry");
         this.nodeService = serviceRegistry.getNodeService();
-//        ctx = ApplicationContextHelper.getApplicationContext();
-//        nodeService = (NodeService) ctx.getBean("dbNodeService");
 
 
     }
@@ -79,12 +72,14 @@ public class DataDictionaryFolderTest extends BaseSpringTest {
                 "Data Dictionary");
 
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(dataDictionaryRef);
+                System.out.println("testUndeletable passed");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         for (ChildAssociationRef childAssociationRef : chilAssocsList) {
             NodeRef childNodeRef = childAssociationRef.getChildRef();
             Assert.assertTrue(nodeService.hasAspect(childNodeRef, ContentModel.ASPECT_UNDELETABLE));
         }
+        System.out.println("testUndeletable passed");
     }
 }
 

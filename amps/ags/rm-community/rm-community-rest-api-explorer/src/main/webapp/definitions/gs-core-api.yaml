@@ -2561,6 +2561,8 @@ paths:
       parameters:
         - $ref: '#/parameters/recordCategoryIdParam'
         - $ref: '#/parameters/retentionScheduleIncludeParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
       consumes:
         - application/json
       produces:
@@ -2612,7 +2614,7 @@ paths:
         ```
       operationId: createRetentionScheduleAction
       parameters:
-        - $ref: '#/parameters/categoryIdParam'
+        - $ref: '#/parameters/retentionScheduleIdParam'
         - in: body
           name: nodeBodyCreate
           description: |
@@ -2645,7 +2647,7 @@ paths:
             * Invalid Step - Destroy action already completed. Can't do any other Action
             * Invalid Step - This step already exists. You can’t create this step [Transfer action is allowed many times]
         '422':
-          description: Invalid Step - Cut Off or Retain should be the first step
+          description: Cut Off or Retain should be the first step
         default:
           description: Unexpected error
           schema:
@@ -2658,7 +2660,9 @@ paths:
         Get the list of steps in the retention schedule.
       operationId: getRetentionScheduleActionList
       parameters:
-        - $ref: '#/parameters/categoryIdParam'
+        - $ref: '#/parameters/retentionScheduleIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
       consumes:
         - application/json
       produces:
@@ -3138,12 +3142,12 @@ parameters:
       If true, then  a name clash will cause an attempt to auto rename by finding a unique name using an integer suffix.
     required: false
     type: boolean
-  ## Category
-  categoryIdParam:
+  ## RetentionSchedule
+  retentionScheduleIdParam:
     name: retentionScheduleId
     in: path
     description:
-      The identifier of a category.
+      The identifier of a retention schedule.
     required: true
     type: string
   retentionScheduleIncludeParam:

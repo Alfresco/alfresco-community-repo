@@ -1768,4 +1768,12 @@
             </list>
         </property>
     </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeFolderSizeRelation">
+        <property name="nodes" ref="Nodes" />
+        <property name="searchService" ref="SearchService" />
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="nodeService" ref="nodeService" />
+        <property name="actionService" ref="ActionService"/>
+    </bean>
 </beans>

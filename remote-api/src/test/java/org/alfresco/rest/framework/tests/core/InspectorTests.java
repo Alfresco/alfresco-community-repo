@@ -41,6 +41,7 @@ import java.util.Map;
 
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.nodes.NodeCommentsRelation;
+import org.alfresco.rest.api.nodes.NodeFolderSizeRelation;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.OperationResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;
@@ -641,5 +642,16 @@ public class InspectorTests
         assertEquals(Status.STATUS_FOUND,ResourceInspector.validSuccessCode(HttpMethod.POST, Status.STATUS_FOUND));
         assertEquals(Status.STATUS_ACCEPTED,ResourceInspector.validSuccessCode(HttpMethod.PUT, Status.STATUS_ACCEPTED));
         assertEquals(Status.STATUS_NOT_MODIFIED,ResourceInspector.validSuccessCode(HttpMethod.DELETE, Status.STATUS_NOT_MODIFIED));
+    }
+
+    @Test
+    public void testCalculateSizeRelation()
+    {
+        List<ResourceMetadata> metainfo = ResourceInspector.inspect(NodeFolderSizeRelation.class);
+        assertTrue("Must be one ResourceMetadata",metainfo.size()>0);
+        ResourceMetadata metaData = metainfo.get(0);
+        assertNotNull(metaData);
+        ResourceOperation op = metaData.getOperation(HttpMethod.POST);
+        assertNotNull("NodeFolderSizeRelation supports POST", op);
     }
 }

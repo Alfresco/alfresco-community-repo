@@ -76,7 +76,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.activities.SiteActivityTestCaseSensitivity.class,
     org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseSensitivity.class,
     org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity.class,
-    org.alfresco.repo.admin.registry.RegistryServiceImplTest.class
+    org.alfresco.repo.admin.registry.RegistryServiceImplTest.class,
+    org.alfresco.repo.action.executer.NodeSizeActionExecuterTest.class
 })
 public class AppContext01TestSuite
 {

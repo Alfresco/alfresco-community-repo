@@ -109,6 +109,10 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 {
                     throw new UnsupportedResourceOperationException("POST is executed against a collection URL");
                 }
+                else if ("calculateSize".equals(operationName))
+                {
+                    return Params.valueOf(entityId, params, "", req);
+                }
                 else
                 {
                     Object postedRel = processRequest(resourceMeta, operation, req);
@@ -365,6 +369,16 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         {
                             return wrapWithCollectionWithPaging(createdRel);
                         }
+                    }
+                    else if (RelationshipResourceAction.CalculateSize.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.CalculateSize.class))
+                        {
+                            throw new DeletedResourceException("(GET by id) " + resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.CalculateSize<?> relationGetter = (RelationshipResourceAction.CalculateSize<?>) resource.getResource();
+                        Object result = relationGetter.createById(params.getEntityId(),params);
+                        return result;
                     }
                 }
             case OPERATION:

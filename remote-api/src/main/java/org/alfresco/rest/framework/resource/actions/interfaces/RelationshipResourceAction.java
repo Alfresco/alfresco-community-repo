@@ -163,4 +163,15 @@ public interface RelationshipResourceAction
          */
         public void deleteSet(String entityResourceId, Parameters params, WithResponse withResponse);
     }
+
+    interface CalculateSize<E> extends ResourceAction
+    {
+        /**
+         * Calculate the size of Folder/File.
+         *
+         * @param nodeId Entity resource context for this relationship.
+         * @param params implementation may choose to restrict the set to be deleted based on params (ie. not necessarily "all")
+         */
+        E createById(String nodeId,Parameters params);
+    }
 }

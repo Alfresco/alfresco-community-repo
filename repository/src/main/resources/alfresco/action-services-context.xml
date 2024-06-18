@@ -788,5 +788,10 @@
             <ref bean="AuthorityService" />
         </property>
     </bean>
+
+    <bean id="folder-size" class="org.alfresco.repo.action.executer.NodeSizeActionExecuter" parent="action-executer">
+        <property name="searchService" ref="searchService"/>
+        <property name="nodeService" ref="nodeService"/>
+    </bean>
     
 </beans>

@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rm.rest.api.rententionschedule;
+package org.alfresco.rm.rest.api.retentionschedule;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -58,7 +58,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
  * Retention schedule relation
  * @author sathishkumar.t
  */
-@RelationshipResource(name = "retention-schedule", entityResource = RecordCategoriesEntityResource.class, title = "Retention Schedule")
+@RelationshipResource(name = "retention-schedules", entityResource = RecordCategoriesEntityResource.class, title = "Retention Schedule")
 public class RetentionScheduleRelation implements RelationshipResourceAction.Read<RetentionSchedule>,
         RelationshipResourceAction.Create<RetentionSchedule>
 {

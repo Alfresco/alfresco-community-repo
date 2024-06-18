@@ -42,8 +42,7 @@ public class RetentionScheduleActionDefinition
     private List<String> events;
     private boolean eligibleOnFirstCompleteEvent;
     private String description;
-    private boolean destroyNode;
-    private boolean destroyContent;
+    private boolean retainRecordMetadataAfterDestruction;
     private String location;
     private int index;
 
@@ -137,22 +136,12 @@ public class RetentionScheduleActionDefinition
         this.description = description;
     }
 
-    public boolean getDestroyNode()
-    {
-        return destroyNode;
+    public boolean getRetainRecordMetadataAfterDestruction() {
+        return retainRecordMetadataAfterDestruction;
     }
 
-    public void setDestroyNode(boolean destroyNode)
-    {
-        this.destroyNode = destroyNode;
-    }
-
-    public boolean getDestroyContent() {
-        return destroyContent;
-    }
-
-    public void setDestroyContent(boolean destroyContent) {
-        this.destroyContent = destroyContent;
+    public void setRetainRecordMetadataAfterDestruction(boolean retainRecordMetadataAfterDestruction) {
+        this.retainRecordMetadataAfterDestruction = retainRecordMetadataAfterDestruction;
     }
 
     public String getLocation()

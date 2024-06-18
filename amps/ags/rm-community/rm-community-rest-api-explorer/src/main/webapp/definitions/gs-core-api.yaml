@@ -40,7 +40,7 @@ tags:
     description: Retrieve and manage unfiled record folders
   - name: holds
     description: Retrieve and manage holds
-  - name: retention-schedule
+  - name: retention-schedules
     description: Perform retention schedule specific operations
 
 paths:
@@ -2498,13 +2498,14 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   ##retention-schedule
-  '/record-categories/{recordCategoryId}/retention-schedule':
+  '/record-categories/{recordCategoryId}/retention-schedules':
     post:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Create a retention schedule
       description: |
         Create a retention schedule.
+        
         For example, using the following JSON body will create a retention schedule:
         ```JSON
           {
@@ -2513,16 +2514,12 @@ paths:
               "isRecordLevel": false
           }
         ```
-        **isRecordLevel**
-          This field is used to specify where the retention schedule needs to be applied in the folder level or record level.
-          **True** will cause the the retention schedule to apply to records and **false** will cause the retention schedule to apply to record folders.
-          This cannot be changed once items start being managed by the retention schedule.
 
       operationId: createRetentionSchedule
       parameters:
         - $ref: '#/parameters/recordCategoryIdParam'
         - in: body
-          name: nodeBodyCreate
+          name: retentionNodeBodyCreate
           description: |
             The retention schedule information to create.
           schema:
@@ -2553,7 +2550,7 @@ paths:
             $ref: '#/definitions/Error'
     get:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Get the retention schedule for a record category
       description: |
         Get the retention schedule for a record category.
@@ -2586,23 +2583,17 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/retention-schedule/{retentionScheduleId}/retention-steps':
+  '/retention-schedules/{retentionScheduleId}/retention-steps':
     post:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Create a step in the retention schedule
       description: |
         Create a step in the retention schedule.
-        The valid steps types are:
-          * **retain**
-          * **cutoff**
-          * **accession**
-          * **transfer**
-          * **destroy**
         
         Order of steps:
-          * "**retain**" or "cutoff" should be first
-          * can't use "**cutoff**" after "**transfer**" or "accession"
+          * "**retain**" or "**cutoff**" should be first
+          * can't use "**cutoff**" after "**transfer**" or "**accession**"
           * only the "**transfer**" action is allowed multiple times
           * no steps are allowed after "**destroy**"    
         
@@ -2616,69 +2607,9 @@ paths:
               "combineDispositionStepConditions": false,
               "events":["versioned"],
               "eligibleOnFirstCompleteEvent": true,
-              "description":"Step Description",
-              "destroyNode": true,
-              "destroyContent": true
+              "description":"Step Description"
           }
         ```
-        The **combineDispositionStepConditions** property is only valid for **accession** step.
-        This is used to specify whether to combine the period condition and events for the step execution or only consider one of them.
-        For example:
-          **periodCondition**: After a period of 2 months
-          **eventsCondition**: Case Closed event
-          This flag can be used to consider only (**periodCondition** or **eventsCondition**) or both of them at once.
-        
-        **location** property is only valid for **transfer** step
-        
-        Valid values for the **period** property
-          * **day** = Day
-          * **fmend** = End Of Financial Month
-          * **fqend** = End Of Financial Quarter
-          * **fyend** = End Of Financial Year
-          * **immediately** = Immediately
-          * **monthend** = End Of Month
-          * **quarterend** = End Of Quarter
-          * **yearend** = End Of Year
-          * **month** = Month
-          * **none** = None
-          * **quarter** = Quarter
-          * **week** = Week
-          * **duration** = XML Duration
-          * **year** = Year
-        
-        Valid values for the **periodProperty** property
-          * **cm:created** = Created Date (defult value) 
-          * **rma:cutOffDate** = Cut Off Date
-          * **rma:dispositionAsOf** = Retention Action
-        
-        Valid values for the **events** property
-          * **case_closed** = Case Closed
-          * **abolished** = Abolished
-          * **re_designated** = Redesignated
-          * **no_longer_needed** = No Longer Needed
-          * **superseded** = Superseded
-          * **versioned** = Versioned
-          * **study_complete** = Study Complete
-          * **training_complete** = Training Complete
-          * **related_record_trasfered_inactive_storage** = Related Record Transferred to Inactive Storage
-          * **obsolete** = Obsolete
-          * **all_allowances_granted_are_terminated** = All Allowances Granted are Terminated
-          * **WGI_action_complete** = WGI Action Complete
-          * **separation** = Separation
-          * **case_complete** = Case Complete
-          * **declassification_review** = Declassification Review
-        
-        **periodAmount** only applicable for the below **period** values
-          * day
-          * month
-          * quarter
-          * week
-          * duration
-          * year
-        
-        **eligibleOnFirstCompleteEvent** 
-          * **false** = When all events have happened
-          * **true** = Whichever event is earlier
       operationId: createRetentionScheduleAction
       parameters:
         - $ref: '#/parameters/categoryIdParam'
@@ -2701,7 +2632,7 @@ paths:
         '400':
           description: |
             Invalid parameter: retentionScheduleId is not a valid format
-            Invalid parameter: { ex: event,period,periodProperty}
+            Invalid parameter (e.g. event, period, periodProperty)
         '401':
           description: Authentication failed
         '403':
@@ -2721,7 +2652,7 @@ paths:
             $ref: '#/definitions/Error'
     get:
       tags:
-        - retention-schedule
+        - retention-schedules
       summary: Get the list of steps in the retention schedule
       description: |
         Get the list of steps in the retention schedule.
@@ -4291,11 +4222,19 @@ definitions:
     properties:
       authority:
         type: string
+        description: |
+          Authority name for the retention schedule.
       instructions:
         type: string
+        description: |
+          Required instructions for the retention schedule.
       isRecordLevel:
         type: boolean
         default: false
+        description: |
+          This field is used to specify whether the retention schedule needs to be applied in the folder level or record level.
+          True will cause the the retention schedule to apply to records and false will cause the retention schedule to apply to record folders.
+          This cannot be changed once items start being managed by the retention schedule.
   RetentionScheduleResponse:
     type: object
     properties:
@@ -4367,7 +4306,7 @@ definitions:
         default: true
       description:
         type: string
-      destroyWithGhosting:
+      retainRecordMetadataAfterDestruction:
         type: boolean
       location:
         type: string
@@ -4378,26 +4317,108 @@ definitions:
     properties:
       name:
         type: string
+        description: |
+          The valid names are:
+          * retain
+          * cutoff
+          * accession
+          * transfer
+          * destroy
       periodAmount:
         type: integer
+        description: |
+          This property is only applicable for the following period values.
+          * day
+          * month
+          * quarter
+          * week
+          * duration
+          * year
       period:
         type: string
+        description: |
+          Valid values for the period.
+          * day = Day
+          * fmend = End Of Financial Month
+          * fqend = End Of Financial Quarter
+          * fyend = End Of Financial Year
+          * immediately = Immediately
+          * monthend = End Of Month
+          * quarterend = End Of Quarter
+          * yearend = End Of Year
+          * month = Month
+          * none = None
+          * quarter = Quarter
+          * week = Week
+          * duration = XML Duration
+          * year = Year
+          
+          If you provide XML Duration for the period value, you need to specify a time interval using XML syntax.
+          The syntax should take the form of:
+          P = Period (required)
+          nY = Number of years
+          nM = Number of months
+          nD = Number of days
+          T = Start time of a time section (required if specifying hours, minutes, or seconds)
+          nH = Number of hours
+          nM = Number of minutes
+          nS = Number of seconds
+          For example, ‘P2M10D’ represents two months and ten days.
       periodProperty:
         type: string
+        default: cm:created
+        description: |
+          Valid values for the periodProperty property
+          * cm:created = Created Date (defult value) 
+          * rma:cutOffDate = Cut Off Date
+          * rma:dispositionAsOf = Retention Action
       combineDispositionStepConditions:
         type: boolean
+        description: |
+          This property is only valid for **accession** step.
+          This is used to specify whether to combine the period condition and events for the step execution or only consider one of them.
+          For example:
+          **periodCondition**: After a period of 2 months
+          **eventsCondition**: Case Closed event
+          This flag can be used to consider only (**periodCondition** or **eventsCondition**) or both of them at once.
       events:
         type: array
         items:
           type: string
+        description: |
+          Valid values for the events property
+          * case_closed = Case Closed
+          * abolished = Abolished
+          * re_designated = Redesignated
+          * no_longer_needed = No Longer Needed
+          * superseded = Superseded
+          * versioned = Versioned
+          * study_complete = Study Complete
+          * training_complete = Training Complete
+          * related_record_trasfered_inactive_storage = Related Record Transferred to Inactive Storage
+          * obsolete = Obsolete
+          * all_allowances_granted_are_terminated = All Allowances Granted are Terminated
+          * WGI_action_complete = WGI Action Complete
+          * separation = Separation
+          * case_complete = Case Complete
+          * declassification_review = Declassification Review
       eligibleOnFirstCompleteEvent:
         type: boolean
+        description: |
+          * false = When all events have happened
+          * true = Whichever event is earlier
       description:
         type: string
-      destroyWithGhosting:
+        description: |
+          This property is used to provide the step description.
+      retainRecordMetadataAfterDestruction:
         type: boolean
+        description: |
+          This property is used to retain the metadata after record destruction.
       location:
         type: string
+        description: |
+          This property is only valid for transfer step
   RetentionStepNodeBodyResponse:
     type: object
     properties:

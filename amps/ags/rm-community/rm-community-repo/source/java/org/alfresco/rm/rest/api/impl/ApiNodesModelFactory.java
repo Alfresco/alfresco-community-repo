@@ -36,7 +36,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinitionImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
@@ -64,6 +66,7 @@ import org.alfresco.rm.rest.api.model.UnfiledContainerChild;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolder;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolderChild;
 import org.alfresco.rm.rest.api.model.RetentionSchedule;
+import org.alfresco.rm.rest.api.model.RetentionSteps;
 import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -74,6 +77,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
 
@@ -108,6 +112,7 @@ public class ApiNodesModelFactory
     private PersonService personService;
     private DispositionService dispositionService;
     private ServiceRegistry serviceRegistry;
+    private RecordsManagementServiceRegistry services;
 
     public NodeService getNodeService()
     {
@@ -152,6 +157,10 @@ public class ApiNodesModelFactory
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
+    }
+    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry services)
+    {
+        this.services = services;
     }
 
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
@@ -969,11 +978,11 @@ public class ApiNodesModelFactory
         {
             if (dispositionActionDefinition.getGhostOnDestroy().equals("ghost"))
             {
-                retentionScheduleActionDefinition.setDestroyContent(true);
+                retentionScheduleActionDefinition.setRetainRecordMetadataAfterDestruction(true);
             }
             else if (dispositionActionDefinition.getGhostOnDestroy().equals("delete"))
             {
-                retentionScheduleActionDefinition.setDestroyNode(false);
+                retentionScheduleActionDefinition.setRetainRecordMetadataAfterDestruction(false);
             }
         }
         return retentionScheduleActionDefinition;
@@ -1000,5 +1009,65 @@ public class ApiNodesModelFactory
             }
             retentionSchedule.setActions(actions);
         }
+    }
+
+    /**
+     * Create retention action Definition params
+     * @param nodeInfo
+     * @return
+     */
+    public Map<QName, Serializable> createRetentionActionDefinitionParams(RetentionScheduleActionDefinition nodeInfo)
+    {
+        Map<QName, Serializable>  actionDefinitionParams= new HashMap<>();
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, nodeInfo.getName());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
+        StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod() + "|");
+        if(nodeInfo.getPeriod().equals("day") || nodeInfo.getPeriod().equals("month") || nodeInfo.getPeriod().equals("quarter")
+                || nodeInfo.getPeriod().equals("week") || nodeInfo.getPeriod().equals("duration") || nodeInfo.getPeriod().equals("year"))
+        {
+            retentionPeriod.append(nodeInfo.getPeriodAmount());
+        }
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, retentionPeriod.toString());
+        QName periodProperty = QName.createQName(nodeInfo.getPeriodProperty(), namespaceService);
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
+                nodeInfo.getEligibleOnFirstCompleteEvent());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
+                nodeInfo.getCombineDispositionStepConditions());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
+                nodeInfo.getLocation());
+        List<String> inputEvents = nodeInfo.getEvents();
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
+        if (RetentionSteps.destroy.toString().equals(nodeInfo.getName()) && nodeInfo.getRetainRecordMetadataAfterDestruction())
+        {
+            actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
+        }
+        else
+        {
+            actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "delete");
+        }
+        return actionDefinitionParams;
+    }
+
+    /**
+     * Get retention actions
+     * @param retentionScheduleNodeRef
+     * @return
+     */
+    public List<DispositionActionDefinition> getRetentionActions(NodeRef retentionScheduleNodeRef)
+    {
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(
+                retentionScheduleNodeRef,
+                RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
+                RegexQNamePattern.MATCH_ALL);
+        List<DispositionActionDefinition> actions = new ArrayList<>(assocs.size());
+        int index = 0;
+        for (ChildAssociationRef assoc : assocs)
+        {
+            DispositionActionDefinition da = new DispositionActionDefinitionImpl(services.getRecordsManagementEventService(), services.getRecordsManagementActionService(), nodeService, assoc.getChildRef(), index);
+            actions.add(da);
+            index++;
+        }
+        return actions;
     }
 }

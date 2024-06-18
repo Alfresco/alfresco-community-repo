@@ -74,8 +74,6 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-#  SEE: ACS-6931 Currently times out after an hour. TO BE RESTORED after resolving the issue with Veracode Support.
-
   veracode_sast:
     name: "Pipeline SAST Scan"
     runs-on: ubuntu-latest

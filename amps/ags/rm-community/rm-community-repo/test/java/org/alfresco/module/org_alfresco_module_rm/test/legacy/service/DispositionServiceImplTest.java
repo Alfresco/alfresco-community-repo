@@ -51,8 +51,10 @@ import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorReg
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.junit.Assert;
 
 /**
  * Disposition service implementation unit test.
@@ -437,19 +439,12 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
             	// Check the disposition schedule
             	checkDispositionSchedule(ds, "testCreateDispositionSchedule", "testCreateDispositionSchedule", false);
-            }
-        });
 
-        // Failure: create disposition schedule on container with existing disposition schedule
-        doTestInTransaction(new FailureTest
-        (
-        	"Can not create a disposition schedule on a container with an existing disposition schedule"
-        )
-        {
-            @Override
-            public void run()
-            {
-            	utils.createBasicDispositionSchedule(rmContainer);
+                // Failure: create disposition schedule on container with existing disposition schedule
+                Assert.assertThrows(ConstraintViolatedException.class,
+                        ()->{
+                            utils.createBasicDispositionSchedule(rmContainer);
+                        });
             }
         });
     }
@@ -492,19 +487,12 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             	// Check the disposition schedule
             	checkDispositionSchedule(testA, "testA", "testA", false);
             	checkDispositionSchedule(testB, "testB", "testB", false);
-            }
-        });
 
-        // Failure: create disposition schedule on container with existing disposition schedule
-        doTestInTransaction(new FailureTest
-        (
-        	"Can not create a disposition schedule on container with an existing disposition schedule"
-        )
-        {
-            @Override
-            public void run()
-            {
-            	utils.createBasicDispositionSchedule(mhContainer11);
+                // Failure: create disposition schedule on container with existing disposition schedule
+                Assert.assertThrows(ConstraintViolatedException.class,
+                        ()->{
+                            utils.createBasicDispositionSchedule(rmContainer);
+                        });
             }
         });
 

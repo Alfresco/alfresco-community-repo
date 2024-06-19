@@ -98,7 +98,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         NodeRef nodeRef = actionedUponNodeRef;
         long totalSize = 0;
         long resultSize;
-        ResultSet results =null;
+        ResultSet results = null;
 
         StringBuilder aftsQuery = new StringBuilder();
         aftsQuery.append("ANCESTOR:\""+nodeRef+"\" AND TYPE:content");
@@ -129,10 +129,13 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
                 if (results.getNodeRefs().size() > maxItems) {
                     skipCount += maxItems;
-                    totalItems += maxItems;
+                    int remainingItems = (results.getNodeRefs().size()-totalItems);
+                    if(remainingItems > maxItems)
+                        totalItems += maxItems;
+                    else
+                        totalItems += remainingItems;
                 }
             }
-
         }
         catch (RuntimeException ex)
         {

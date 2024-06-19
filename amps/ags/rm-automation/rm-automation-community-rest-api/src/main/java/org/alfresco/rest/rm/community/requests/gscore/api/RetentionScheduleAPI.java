@@ -76,7 +76,7 @@ public class RetentionScheduleAPI extends RMModelRequest
         return getRmRestWrapper().processModel(RetentionSchedule.class, requestWithBody(
             POST,
             toJson(retentionScheduleModel),
-            "record-categories/{recordCategoryId}/retention-schedule",
+            "record-categories/{recordCategoryId}/retention-schedules",
             recordCategoryId,
             parameters
         ));
@@ -109,7 +109,7 @@ public class RetentionScheduleAPI extends RMModelRequest
 
         return getRmRestWrapper().processModels(RetentionScheduleCollection.class, simpleRequest(
             GET,
-            "record-categories/{recordCategoryId}/retention-schedule?{parameters}",
+            "record-categories/{recordCategoryId}/retention-schedules?{parameters}",
             recordCategoryId,
             parameters
         ));

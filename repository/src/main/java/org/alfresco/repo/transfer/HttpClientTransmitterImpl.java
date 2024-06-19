@@ -53,8 +53,6 @@ import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.cmr.transfer.TransferVersion;
 import org.alfresco.util.HttpClientHelper;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.json.ExceptionJsonSerializer;
-import org.alfresco.util.json.JsonSerializer;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
@@ -73,8 +71,10 @@ import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -102,7 +102,6 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     private Protocol httpsProtocol = new Protocol(HTTPS_SCHEME_NAME, (ProtocolSocketFactory) new SSLProtocolSocketFactory(), DEFAULT_HTTPS_PORT);
     private Map<String,Protocol> protocolMap = null;
     private HttpMethodFactory httpMethodFactory = null;
-    private JsonSerializer<Throwable, JSONObject> jsonErrorSerializer;
 
     private ContentService contentService;
 
@@ -125,7 +124,6 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         httpClient = new HttpClient();
         httpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
         httpMethodFactory = new StandardHttpMethodFactoryImpl();
-        jsonErrorSerializer = new ExceptionJsonSerializer();
 
         // Create an HTTP Proxy Host if appropriate system properties are set
         httpProxyHost = HttpClientHelper.createProxyHost("http.proxyHost", "http.proxyPort", DEFAULT_HTTP_PORT);
@@ -852,7 +850,27 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
      */
     private Throwable rehydrateError(JSONObject errorJSON)
     {
-        return jsonErrorSerializer.deserialize(errorJSON);
+        if (errorJSON == null)
+        {
+            return null;
+        }
+
+        String errorMessage = errorJSON.optString("errorMessage", StringUtils.EMPTY);
+        String errorId = errorJSON.optString("alfrescoMessageId", null);
+
+        Object[] errorParams = new Object[0];
+        JSONArray errorParamArray = errorJSON.optJSONArray("alfrescoMessageParams");
+        if (errorParamArray != null)
+        {
+            int length = errorParamArray.length();
+            errorParams = new Object[length];
+            for (int i = 0; i < length; ++i)
+            {
+                errorParams[i] = errorParamArray.getString(i);
+            }
+        }
+
+        return new TransferException(errorId == null ? errorMessage : errorId, errorParams);
     }
 
     public void setContentService(ContentService contentService)
@@ -868,11 +886,6 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void setHttpMethodFactory(HttpMethodFactory httpMethodFactory)
     {
         this.httpMethodFactory = httpMethodFactory;
-    }
-
-    public void setJsonErrorSerializer(JsonSerializer<Throwable, JSONObject> jsonErrorSerializer)
-    {
-        this.jsonErrorSerializer = jsonErrorSerializer;
     }
 
     public void setNodeService(NodeService nodeService)

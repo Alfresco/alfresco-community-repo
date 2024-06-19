@@ -26,27 +26,16 @@
  */
 package org.alfresco.rest.rm.community.model.hold;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
 
-/**
- * POJO for hold child entry
- *
- * @author Damian Ujma
- */
 @Builder
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public class BulkBodyCancel
 {
-    @JsonProperty
-    private HoldChild entry;
+    private String reason;
 }

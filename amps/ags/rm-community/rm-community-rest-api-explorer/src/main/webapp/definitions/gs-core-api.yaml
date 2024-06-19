@@ -2314,6 +2314,145 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses':
+    get:
+      tags:
+        - holds
+      operationId: listBulkStatuses
+      summary: Get bulk statuses
+      description: |
+        Gets bulk statuses for hold with id **holdId**.
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkStatusPaging'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses/{bulkStatusId}':
+    get:
+      tags:
+        - holds
+      operationId: getBulkStatus
+      summary: Get a bulk status
+      description: |
+        Gets a bulk status specified by **bulkStatusId** for **holdId**.
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/bulkStatusId'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkStatus'
+        '400':
+          description: |
+            Invalid parameter: **holdId** or **bulkStatusId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** or **bulkStatusId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses/{bulkStatusId}/cancel':
+    post:
+      tags:
+        - holds
+      operationId: cancelBulkStatus
+      summary: Cancel the bulk operation
+      description: |
+        Cancels the bulk operation specified by **bulkStatusId** for **holdId**.
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/bulkStatusId'
+        - in: body
+          name: cancelReason
+          description: Cancel reason.
+          required: false
+          schema:
+            $ref: '#/definitions/BulkBodyCancel'
+      responses:
+        '200':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdId** or **bulkStatusId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to cancel the bulk process for **holdId** and **bulkStatusId**
+        '404':
+          description: "**holdId** or **bulkStatusId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk':
+    post:
+      tags:
+        - holds
+      operationId: startHoldBulkProcess
+      summary: Start the hold bulk process
+      description: |
+        Start the asynchronous bulk process for a hold with id **holdId** based on search query results.
+        
+        ```JSON
+        For example, the following JSON body starts the bulk process to add search query results
+        as children of a hold.
+        
+        {
+          "query": {
+            "query": "SITE:swsdp and TYPE:content",
+            "language": "afts"
+          },
+          "op": "ADD"
+        }
+        ```
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdBulkOperation
+          description: Bulk operation.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldBulkOperation'
+      responses:
+        '202':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkOperationEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format or **HoldBulkOperation** is not valid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to start the bulk process for **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   '/holds/{holdId}/delete':
     post:
       tags:
@@ -2860,6 +2999,12 @@ parameters:
     name: holdChildId
     in: path
     description: The identifier of a child of a hold.
+    required: true
+    type: string
+  bulkStatusId:
+    name: bulkStatusId
+    in: path
+    description: The identifier of a bulk process.
     required: true
     type: string
   ## Record
@@ -4018,6 +4163,101 @@ definitions:
     properties:
       reason:
         type: string
+  SearchRequestQuery:
+    type: object
+    required:
+      - query
+    properties:
+      language:
+        description: The query language in which the query is written.
+        type: string
+        default: afts
+        enum:
+          - afts
+          - lucene
+          - cmis
+      userQuery:
+        description: The search request typed in by the user
+        type: string
+      query:
+        description: The query which may have been generated in some way from the userQuery
+        type: string
+  HoldBulkOperation:
+    type: object
+    properties:
+      query:
+        $ref: '#/definitions/SearchRequestQuery'
+      op:
+        description: The operation type.
+        type: string
+        default: ADD
+        enum:
+          - ADD
+  HoldBulkOperationEntry:
+    type: object
+    properties:
+      bulkStatusId:
+        type: string
+      totalItems:
+        type: integer
+        format: int64
+  BulkBodyCancel:
+    type: object
+    properties:
+      reason:
+        type: string
+  HoldBulkStatus:
+    type: object
+    properties:
+      bulkStatusId:
+        type: string
+      startTime:
+        type: string
+        format: date-time
+      endTime:
+        type: string
+        format: date-time
+      processedItems:
+        type: integer
+        format: int64
+      errorsCount:
+        type: integer
+        format: int64
+      totalItems:
+        type: integer
+        format: int64
+      lastError:
+        type: string
+      status:
+        type: string
+        enum:
+          - PENDING
+          - IN PROGRESS
+          - DONE
+          - CANCELLED
+      cancellationReason:
+        type: string
+      holdBulkOperation:
+        $ref: '#/definitions/HoldBulkOperation'
+  HoldBulkStatusEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldBulkStatus'
+  HoldBulkStatusPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldBulkStatusEntry'
   ##
   RequestBodyFile:
     type: object

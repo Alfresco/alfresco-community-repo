@@ -26,15 +26,17 @@
 
 package org.alfresco.rest.api.search.model;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * POJO class representing the query element of the JSON body
  **/
-public class Query
+public class Query implements Serializable
 {
-
+    private static final long serialVersionUID = 8443756988747629114L;
     private final String language;
     private final String query;
     private final String userQuery;

@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -31,22 +31,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
- * POJO for hold child entry
+ * POJO for hold bulk request
  *
  * @author Damian Ujma
  */
 @Builder
 @Data
-@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public class HoldBulkOperation extends TestModel
 {
-    @JsonProperty
-    private HoldChild entry;
+    public enum HoldBulkOperationType
+    {
+        ADD
+    }
+
+    @JsonProperty(required = true)
+    private RestRequestQueryModel query;
+    @JsonProperty(required = true)
+    private HoldBulkOperationType op;
+
 }

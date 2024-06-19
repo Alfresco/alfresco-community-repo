@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,29 +24,10 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
+package org.alfresco.rm.rest.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
-
-/**
- * POJO for hold child entry
- *
- * @author Damian Ujma
- */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
-{
-    @JsonProperty
-    private HoldChild entry;
+public record HoldBulkStatusEntry(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
+                                  long totalItems, String lastError, String status, String cancellationReason, HoldBulkOperation holdBulkOperation) {
 }

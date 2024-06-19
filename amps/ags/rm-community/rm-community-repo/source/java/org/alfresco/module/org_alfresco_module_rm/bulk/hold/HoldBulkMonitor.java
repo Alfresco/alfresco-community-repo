@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,29 +24,31 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
+package org.alfresco.module.org_alfresco_module_rm.bulk.hold;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+import org.alfresco.module.org_alfresco_module_rm.bulk.BulkMonitor;
 
 /**
- * POJO for hold child entry
- *
- * @author Damian Ujma
+ * An interface for monitoring the progress of a bulk hold operation
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public interface HoldBulkMonitor extends BulkMonitor<HoldBulkStatus>
 {
-    @JsonProperty
-    private HoldChild entry;
+    /**
+     * Get the bulk statuses with process details for a hold
+     *
+     * @param holdId the hold id
+     * @return the bulk statuses with process details
+     */
+    List<HoldBulkStatusAndProcessDetails> getBulkStatusesWithProcessDetails(String holdId);
+
+    /**
+     * Get the bulk status with process details
+     *
+     * @param holdId       the hold id
+     * @param bulkStatusId the bulk status id
+     * @return the bulk status with process details
+     */
+    HoldBulkStatusAndProcessDetails getBulkStatusWithProcessDetails(String holdId, String bulkStatusId);
 }

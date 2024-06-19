@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,29 +24,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+package org.alfresco.module.org_alfresco_module_rm.bulk;
 
 /**
- * POJO for hold child entry
- *
- * @author Damian Ujma
+ * An immutable POJO to represent a bulk cancellation request
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public record BulkCancellationRequest(String reason)
 {
-    @JsonProperty
-    private HoldChild entry;
 }

@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * Alfresco Records Management Module
  * %%
@@ -24,29 +24,15 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.hold;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
+package org.alfresco.rm.rest.api.model;
 
 /**
- * POJO for hold child entry
- *
- * @author Damian Ujma
+ * This enum represents the types of bulk operations that can be performed on holds
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
+public enum HoldBulkOperationType
 {
-    @JsonProperty
-    private HoldChild entry;
+    /**
+     * The ADD operation represents adding items to a hold in bulk.
+     */
+    ADD
 }

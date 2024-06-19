@@ -2638,7 +2638,7 @@ paths:
         '401':
           description: Authentication failed
         '403':
-          description: Current user does not have permission to create retention schedule
+          description: Current user does not have permission to create retention schedule step
         '404':
           description: retentionScheduleId does not exist
         '409':
@@ -2677,6 +2677,8 @@ paths:
             Invalid parameter: retentionScheduleId is not a valid format
         '401':
           description: Authentication failed
+        '403':
+          description: Current user does not have permission to get retention schedule steps
         '404':
           description: retentionScheduleId does not exist
         default:

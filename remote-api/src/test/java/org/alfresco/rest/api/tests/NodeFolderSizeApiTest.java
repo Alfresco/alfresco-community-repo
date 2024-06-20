@@ -125,7 +125,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         delete(getFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
-        delete(getFolderSizeUrl(folderId), folderId, null, 404);
+        delete(getFolderSizeUrl(folderId), "dummy", null, 404);
+        AuthenticationUtil.clearCurrentSecurityContext();
         delete(getFolderSizeUrl(folderId), folderId, null, 403);
     }
 

@@ -25,9 +25,12 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
@@ -51,7 +54,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
      */
     private Site userOneN1Site;
 
-    private Site userOneN2Site;
+    private PermissionService permissionService;
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
@@ -102,6 +105,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         params.put("nodeId",folderId);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId), user1, PermissionService.ALL_PERMISSIONS, true);
 
         HttpResponse response = getSingle(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
@@ -114,7 +118,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
     public void tearDown() throws Exception
     {
         deleteSite(userOneN1Site.getId(), true, 204);
-        deleteSite(userOneN2Site.getId(), true, 204);
     }
 
     @Override

@@ -52,7 +52,6 @@ public class DataDictionaryFolderTest extends BaseSpringTest
     private WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
 
     private NodeService nodeService;
-    private Repository repositoryHelper;
 
     @Before
     public void before()

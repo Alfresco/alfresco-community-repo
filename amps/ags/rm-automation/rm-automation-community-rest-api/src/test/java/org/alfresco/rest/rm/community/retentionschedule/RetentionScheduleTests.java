@@ -188,7 +188,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 6)
-    public void getRetentionScheduleWith403()
+    public void RetentionScheduleWith403()
     {
         //Get retention schedule with user having no rights
         getRestAPIFactory().getRetentionScheduleAPI(nonRMuser).getRetentionSchedule(recordCategory.getId());
@@ -205,7 +205,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 7)
-    public void getRetentionScheduleWith404()
+    public void RetentionScheduleWith404()
     {
 
         //Get retention schedule with category id that does not exist
@@ -223,7 +223,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 8)
-    public void getRetentionScheduleWith401()
+    public void RetentionScheduleWith401()
     {
         //Create retention schedule with a user with unauthorized access
         getRestAPIFactory().getRetentionScheduleAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).getRetentionSchedule(recordCategory.getId());
@@ -240,12 +240,12 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 9)
-    public void getRetentionScheduleWith200()
+    public void RetentionScheduleWith200()
     {
-        RetentionScheduleCollection receiveRetentionScheduleCollection = getRestAPIFactory().getRetentionScheduleAPI().getRetentionSchedule(recordCategory.getId());
+        RetentionScheduleCollection retentionScheduleCollection = getRestAPIFactory().getRetentionScheduleAPI().getRetentionSchedule(recordCategory.getId());
         // Verify the status code
         assertStatusCode(OK);
-        receiveRetentionScheduleCollection.getEntries().forEach(c ->
+        retentionScheduleCollection.getEntries().forEach(c ->
         {
             RetentionSchedule retentionSchedule = c.getEntry();
             String retentionScheduleId = retentionSchedule.getId();

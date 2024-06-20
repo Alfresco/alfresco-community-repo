@@ -69,6 +69,15 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         return true;
     }
 
+    private NodeRef testRM263RecordCategory;
+    private DispositionSchedule testRM263DispositionSchedule;
+    private NodeRef testRM263Record;
+    private NodeRef testRM386RecordCategory;
+    private DispositionSchedule testRM386DispositionSchedule;
+    private NodeRef testRM386Record;
+    private NodeRef record43;
+    private NodeRef record45;
+
     public void testGetDispositionProperties() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -568,9 +577,6 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
     // TODO void removeDispositionActionDefinition(
 
-    private NodeRef record43;
-    private NodeRef record45;
-
     public void testUpdateDispositionActionDefinitionMultiHier() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -777,10 +783,10 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         }
 
-        if (copy.size() != 0 && expectedEvents.size() != 0)
+        if (!copy.isEmpty() && !expectedEvents.isEmpty())
         {
             StringBuffer buff = new StringBuffer(255);
-            if (copy.size() != 0)
+            if (!copy.isEmpty())
             {
                 buff.append("The following events where found, but not expected: (");
                 for (String eventName : copy)
@@ -789,7 +795,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 }
                 buff.append(").  ");
             }
-            if (expectedEvents.size() != 0)
+            if (!expectedEvents.isEmpty())
             {
                 buff.append("The following events where not found, but expected: (");
                 for (String eventName : expectedEvents)
@@ -822,10 +828,6 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     // TODO List<QName> getDispositionPeriodProperties();
 
     /* === Issues === */
-
-    private NodeRef testRM263RecordCategory;
-    private DispositionSchedule testRM263DispositionSchedule;
-    private NodeRef testRM263Record;
 
     /**
      * https://issues.alfresco.com/jira/browse/RM-263
@@ -896,10 +898,6 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             }
         });
     }
-
-    private NodeRef testRM386RecordCategory;
-    private DispositionSchedule testRM386DispositionSchedule;
-    private NodeRef testRM386Record;
 
     /**
      * Test to make sure all the search rollups are correct after schedule is updated

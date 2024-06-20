@@ -312,36 +312,33 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             if (dsNextAction != null)
             {
                 final NodeRef action = dsNextAction.getNextActionNodeRef();
-                if (isNotTrue((Boolean)nodeService.getProperty(action, PROP_MANUALLY_SET_AS_OF)))
+                if (isNotTrue((Boolean)nodeService.getProperty(action, PROP_MANUALLY_SET_AS_OF)) && !dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
                 {
-                    if (!dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
+                    final String dispositionActionName = dsNextAction.getNextActionName();
+                    final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+
+                    RunAsWork<Void> runAsWork = () -> {
+                        nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                        return null;
+                    };
+
+                    // if the current transaction is READ ONLY set the property on the node
+                    // in a READ WRITE transaction
+                    if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
                     {
-                        final String dispositionActionName = dsNextAction.getNextActionName();
-                        final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
-
-                        RunAsWork<Void> runAsWork = () -> {
-                            nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                            return null;
-                        };
-
-                        // if the current transaction is READ ONLY set the property on the node
-                        // in a READ WRITE transaction
-                        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
-                        {
-                            transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                                AuthenticationUtil.runAsSystem(runAsWork);
-                                return null;
-                            }, false, true);
-                        }
-                        else
-                        {
+                        transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
                             AuthenticationUtil.runAsSystem(runAsWork);
-                        }
+                            return null;
+                        }, false, true);
+                    }
+                    else
+                    {
+                        AuthenticationUtil.runAsSystem(runAsWork);
+                    }
 
-                        if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
-                        {
-                            nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
-                        }
+                    if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                    {
+                        nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
                     }
                 }
                 
@@ -538,7 +535,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             }
             else if (filePlanService.isRecordCategory(item) && getAssociatedDispositionScheduleImpl(item) == null)
             {
-                if (hasDisposableItemsImpl(isRecordLevelDisposition, item));
+                if (hasDisposableItemsImpl(isRecordLevelDisposition, item))
                 {
                     return true;
                 }
@@ -684,7 +681,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         // make sure at least a name has been defined
         String name = (String)actionDefinitionParams.get(PROP_DISPOSITION_ACTION_NAME);
-        if (name == null || name.length() == 0)
+        if (name == null || name.isEmpty())
         {
             throw new IllegalArgumentException("'name' parameter is mandatory when creating a disposition action definition");
         }
@@ -1412,7 +1409,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, folderDS);
                 List<DispositionActionDefinition> dispositionActionDefinitions = ds.getDispositionActionDefinitions();
 
-                if (dispositionActionDefinitions != null && dispositionActionDefinitions.size() > 0)
+                if (dispositionActionDefinitions != null && !dispositionActionDefinitions.isEmpty())
                 {
                     DispositionActionDefinition firstDispositionActionDef = dispositionActionDefinitions.get(0);
                     dispositionNodeRef = folderDS;

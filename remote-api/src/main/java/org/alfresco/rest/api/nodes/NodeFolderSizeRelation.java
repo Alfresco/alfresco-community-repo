@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -53,8 +54,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Node Size
@@ -123,6 +123,7 @@ public class NodeFolderSizeRelation implements
     public Map<String, Object> createById(String nodeId, Parameters params) {
 
         NodeRef nodeRef = nodes.validateNode(nodeId);
+        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "IN-PROGRESS");
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
         int maxItems = params.getPaging().getMaxItems();
@@ -140,7 +141,6 @@ public class NodeFolderSizeRelation implements
             folderSizeAction.setExecuteAsynchronously(true);
             folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
             actionService.executeAction(folderSizeAction, nodeRef, false, true);
-            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "IN-PROGRESS");
             Map<String, Object> result = new HashMap<>();
             result.put("executionId", nodeId);
             return result;

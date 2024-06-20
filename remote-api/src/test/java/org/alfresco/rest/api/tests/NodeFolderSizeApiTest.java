@@ -46,9 +46,11 @@ import static org.junit.Assert.assertNotNull;
 public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
     /**
-     * Private site of user one from network one.
+     * Private site of user two from network one.
      */
     private Site userOneN1Site;
+
+    private Site userOneN2Site;
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
@@ -62,7 +64,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
      */
     @Test
-    public void testCalculateFolderSize() throws Exception
+    public void testPostCalculateFolderSize() throws Exception
     {
         setRequestContext(user1);
 
@@ -81,12 +83,43 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         assertNotNull(contentNodeId);
+
+        // -ve test - unknown nodeId
+        delete(getFolderSizeUrl(folderId), folderId, null, 404);
+
+        // -ve test - unauthenticated.
+        delete(getFolderSizeUrl(folderId), folderId, null, 401);
+
+        // -ve test - permission denied (on version other than most recent)
+        delete(getFolderSizeUrl(folderId), folderId, null, 403);
+    }
+
+    @Test
+    public void testGetCalculateFolderSize() throws Exception
+    {
+        setRequestContext(user1);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN2Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+
+        // Create a folder within the site document's library.
+        String folderName = "folder" + System.currentTimeMillis();
+        String folderId = addToDocumentLibrary(userOneN2Site, folderName, TYPE_CM_CONTENT, user1);
+
+        Map<String, String> params = new HashMap<>();
+        params.put("nodeId",folderId);
+
+        HttpResponse response = getSingle(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
+        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
+        String contentNodeId = document.toString();
+        assertNotNull(contentNodeId);
     }
 
     @After
     public void tearDown() throws Exception
     {
         deleteSite(userOneN1Site.getId(), true, 204);
+        deleteSite(userOneN2Site.getId(), true, 204);
     }
 
     @Override

@@ -562,13 +562,14 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     {
         private static final SignatureAlgorithm DEFAULT_SIGNATURE_ALGORITHM = SignatureAlgorithm.RS256;
         private final IdentityServiceConfig config;
-        private final SignatureAlgorithm signatureAlgorithm;
+        private final Set<SignatureAlgorithm> signatureAlgorithms;
 
         JwtDecoderProvider(IdentityServiceConfig config)
         {
             this.config = requireNonNull(config);
-            this.signatureAlgorithm = Optional.ofNullable(config.getSignatureAlgorithm())
-                .orElse(DEFAULT_SIGNATURE_ALGORITHM);
+            this.signatureAlgorithms = ofNullable(config.getSignatureAlgorithms())
+                .filter(algorithms -> !algorithms.isEmpty())
+                .orElse(Set.of(DEFAULT_SIGNATURE_ALGORITHM));
         }
 
         public JwtDecoder createJwtDecoder(RestOperations rest, ProviderDetails providerDetails)
@@ -596,12 +597,13 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
                 return NimbusJwtDecoder.withPublicKey(publicKey)
-                    .signatureAlgorithm(signatureAlgorithm)
+                    .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
                     .build();
             }
             final String jwkSetUri = requireValidJwkSetUri(providerDetails);
-            return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
-                .jwsAlgorithm(signatureAlgorithm)
+            final NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri);
+            signatureAlgorithms.forEach(decoderBuilder::jwsAlgorithm);
+            return decoderBuilder
                 .restOperations(rest)
                 .jwtProcessorCustomizer(this::reconfigureJWKSCache)
                 .build();
@@ -641,7 +643,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 resourceRetriever.get(), cache);
 
             jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
-                JWSAlgorithm.parse(signatureAlgorithm.getName()),
+                signatureAlgorithms.stream()
+                    .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
+                    .collect(Collectors.toSet()),
                 cachingJWKSource));
             jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }

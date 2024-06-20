@@ -25,7 +25,11 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -63,7 +67,7 @@ public class IdentityServiceConfig
     private String principalAttribute;
     private boolean clientIdValidationDisabled;
     private String adminConsoleRedirectPath;
-    private String signatureAlgorithm;
+    private String signatureAlgorithms;
 
     /**
      *
@@ -309,13 +313,18 @@ public class IdentityServiceConfig
         this.adminConsoleRedirectPath = adminConsoleRedirectPath;
     }
 
-    public SignatureAlgorithm getSignatureAlgorithm()
+    public Set<SignatureAlgorithm> getSignatureAlgorithms()
     {
-        return SignatureAlgorithm.from(signatureAlgorithm);
+
+        return Stream.of(signatureAlgorithms.split(","))
+            .map(String::trim)
+            .map(SignatureAlgorithm::from)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toUnmodifiableSet());
     }
 
-    public void setSignatureAlgorithm(String signatureAlgorithm)
+    public void setSignatureAlgorithms(String signatureAlgorithms)
     {
-        this.signatureAlgorithm = signatureAlgorithm;
+        this.signatureAlgorithms = signatureAlgorithms;
     }
 }

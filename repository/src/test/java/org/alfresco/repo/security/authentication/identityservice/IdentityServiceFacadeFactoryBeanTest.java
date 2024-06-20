@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import com.nimbusds.jose.Algorithm;
@@ -101,7 +102,7 @@ public class IdentityServiceFacadeFactoryBeanTest
     public void shouldAcceptAndDecodeAtJwtToken() throws JOSEException
     {
         when(config.isClientIdValidationDisabled()).thenReturn(true);
-        when(config.getSignatureAlgorithm()).thenReturn(SignatureAlgorithm.PS256);
+        when(config.getSignatureAlgorithms()).thenReturn(Set.of(SignatureAlgorithm.PS256, SignatureAlgorithm.ES512));
         when(restOperations.exchange(any(), any(Class.class))).thenReturn(responseEntity);
 
         final RSAKey rsaKey = getRsaKey();
@@ -131,7 +132,7 @@ public class IdentityServiceFacadeFactoryBeanTest
     public void shouldFailWithNotMatchingAlgorithm() throws JOSEException
     {
         when(config.isClientIdValidationDisabled()).thenReturn(true);
-        when(config.getSignatureAlgorithm()).thenReturn(SignatureAlgorithm.RS256);
+        when(config.getSignatureAlgorithms()).thenReturn(Set.of(SignatureAlgorithm.RS256));
 
         when(restOperations.exchange(any(), any(Class.class))).thenReturn(responseEntity);
 
@@ -156,7 +157,7 @@ public class IdentityServiceFacadeFactoryBeanTest
     public void shouldFailWithNotAllowedJOSEHeaderTyp() throws JOSEException
     {
         when(config.isClientIdValidationDisabled()).thenReturn(true);
-        when(config.getSignatureAlgorithm()).thenReturn(SignatureAlgorithm.PS256);
+        when(config.getSignatureAlgorithms()).thenReturn(Set.of(SignatureAlgorithm.PS256));
         when(restOperations.exchange(any(), any(Class.class))).thenReturn(responseEntity);
 
         final RSAKey rsaKey = getRsaKey();

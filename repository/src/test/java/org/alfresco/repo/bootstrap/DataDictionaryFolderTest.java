@@ -46,13 +46,13 @@ import java.util.List;
 public class DataDictionaryFolderTest extends BaseSpringTest
 {
     @ClassRule
-    public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    private static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
 
     @Rule
-    public WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
+    private WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
 
     private NodeService nodeService;
-    protected Repository repositoryHelper;
+    private Repository repositoryHelper;
 
     @Before
     public void before()

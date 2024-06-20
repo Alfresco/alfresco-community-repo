@@ -47,6 +47,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.TransferAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RetentionScheduleAPI;
 
 /**
  * Defines the entire GS Core API
@@ -193,4 +194,6 @@ public class GSCoreAPI extends RMModelRequest
     }
 
     public HoldsAPI usingHoldsAPI() { return new HoldsAPI(getRmRestWrapper()); }
+
+    public RetentionScheduleAPI usingRetentionScheduleAPI() { return new RetentionScheduleAPI(getRmRestWrapper()); }
 }

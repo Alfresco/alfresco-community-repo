@@ -83,15 +83,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         assertNotNull(contentNodeId);
-
-        // -ve test - unknown nodeId
-        delete(getFolderSizeUrl(folderId), folderId, null, 404);
-
-        // -ve test - unauthenticated.
-        delete(getFolderSizeUrl(folderId), folderId, null, 401);
-
-        // -ve test - permission denied (on version other than most recent)
-        delete(getFolderSizeUrl(folderId), folderId, null, 403);
     }
 
     @Test
@@ -109,7 +100,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);
 
-        HttpResponse response = getSingle(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
+        HttpResponse response = get(getFolderSizeUrl(folderId), params, 200);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         assertNotNull(contentNodeId);

@@ -288,7 +288,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     @Override
     public DispositionSchedule getDispositionSchedule(final NodeRef nodeRef)
     {
-        DispositionSchedule ds = null;
         NodeRef dsNodeRef = null;
         if (isRecord(nodeRef))
         {
@@ -354,7 +353,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             // Get the disposition instructions for the node reference provided
             dsNodeRef = getDispositionScheduleImpl(nodeRef);
         }
-
+        DispositionSchedule ds = null;
         if (dsNodeRef != null)
         {
             ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dsNodeRef);
@@ -384,7 +383,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
         return result;
     }
-    
+
+    @Override
     public DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef)
     {
         NodeRef parent = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
@@ -439,7 +439,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      */
     private NodeRef getAssociatedDispositionScheduleImpl(NodeRef nodeRef)
     {
-        NodeRef result = null;
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Make sure we are dealing with an RM node
@@ -447,6 +446,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
+        NodeRef result = null;
         if (getInternalNodeService().hasAspect(nodeRef, ASPECT_SCHEDULED))
         {
             List<ChildAssociationRef> childAssocs = getInternalNodeService().getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
@@ -475,16 +475,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(dsNodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
             if (!assocs.isEmpty())
             {
-                if (assocs.size() != 1)
+                if (assocs.size() != 1 && LOGGER.isWarnEnabled())
                 {
                     // TODO in the future we should be able to support disposition schedule reuse, but for now just warn that
                     //      only the first disposition schedule will be considered
-                    if (LOGGER.isWarnEnabled())
-                    {
-                        LOGGER.warn("Retention schedule has more than one associated records management container.  " +
-                                "This is not currently supported so only the first container will be considered. " +
-                                "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
-                    }
+                    LOGGER.warn("Retention schedule has more than one associated records management container.  " +
+                            "This is not currently supported so only the first container will be considered. " +
+                            "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
                 }
 
                 // Get the container reference
@@ -611,8 +608,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     @Override
     public DispositionSchedule createDispositionSchedule(NodeRef nodeRef, Map<QName, Serializable> props)
     {
-        NodeRef dsNodeRef = null;
-
         // Check mandatory parameters
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
@@ -631,6 +626,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
 
         behaviourFilter.disableBehaviour(nodeRef, ASPECT_SCHEDULED);
+        NodeRef dsNodeRef = null;
         try
         {
             // Add the schedules aspect if required
@@ -697,10 +693,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         // create the child association from the schedule to the action definition
         NodeRef actionNodeRef = this.nodeService.createNode(schedule.getNodeRef(),
-                    RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
+                    ASSOC_DISPOSITION_ACTION_DEFINITIONS,
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
                     QName.createValidLocalName(name)),
-                    RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION, actionDefinitionParams).getChildRef();
+                    TYPE_DISPOSITION_ACTION_DEFINITION, actionDefinitionParams).getChildRef();
 
         // get the updated disposition schedule and retrieve the new action definition
         NodeRef scheduleParent = this.nodeService.getPrimaryParent(schedule.getNodeRef()).getParentRef();
@@ -784,6 +780,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             da =
                     transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<DispositionAction>()
                     {
+                        @Override
                         public DispositionAction execute() throws Throwable
                         {
                             return createDispositionAction(nodeRef, props);
@@ -838,13 +835,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         Period period = dispositionActionDefinition.getPeriod();
         if (period != null)
         {
-            Date contextDate = null;
+            Date contextDate;
 
             // Get the period properties value
             QName periodProperty = dispositionActionDefinition.getPeriodProperty();
             if (periodProperty != null)
             {
-                if (RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty))
+                if (PROP_DISPOSITION_AS_OF.equals(periodProperty))
                 {
                     DispositionAction lastCompletedDispositionAction = getLastCompletedDispostionAction(nodeRef);
                     if (lastCompletedDispositionAction != null)
@@ -942,7 +939,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     NodeRef eventExecution = assoc.getChildRef();
                     Boolean isCompleteValue = (Boolean) getInternalNodeService().getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
-                    boolean isComplete = false;
+                    boolean isComplete;
                     if (isCompleteValue != null)
                     {
                         isComplete = isCompleteValue.booleanValue();
@@ -1115,7 +1112,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     }
 
                     List<DispositionActionDefinition> dispositionActionDefinitions = dispositionSchedule.getDispositionActionDefinitions();
-                    DispositionActionDefinition currentDispositionActionDefinition = null;
+                    DispositionActionDefinition currentDispositionActionDefinition;
                     DispositionActionDefinition nextDispositionActionDefinition = null;
 
                     if (currentDispositionAction == null)
@@ -1207,6 +1204,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     // runAs system so that we can close a record that has already been cutoff
                     authenticationUtil.runAsSystem(new RunAsWork<Void>()
                     {
+                        @Override
                         public Void doWork() throws Exception
                         {
                             recordFolderService.closeRecordFolder(nodeRef);
@@ -1226,6 +1224,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
     }
 
+    @Override
     public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
     {
         DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
@@ -1245,7 +1244,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
         return null;
     }
-    
+
+    @Override
     public void recalculateNextDispositionStep(NodeRef record)
     {
         List<NodeRef> recordFolders = recordFolderService.getRecordFolders(record);
@@ -1387,13 +1387,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         // We only need to update the date if the current one is too early.
         if (recordDate.before(calculatedDate))
-        {
             return WriteMode.DATE_ONLY;
-        }
         else
-        {
             return WriteMode.READ_ONLY;
-        }
     }
 
     /**

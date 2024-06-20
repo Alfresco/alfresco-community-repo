@@ -28,7 +28,6 @@ package org.alfresco.rm.rest.api.retentionschedule;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -92,7 +91,7 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
     {
         checkNotBlank("recordCategoryId", recordCategoryId);
         mandatory("parameters", parameters);
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, TYPE_RECORD_CATEGORY);
         DispositionSchedule schedule = dispositionService.getDispositionSchedule(parentNodeRef);
         RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(schedule);
         List<RetentionSchedule> retentionScheduleList = new ArrayList<>();

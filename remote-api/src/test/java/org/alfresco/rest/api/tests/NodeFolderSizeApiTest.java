@@ -29,8 +29,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
@@ -106,7 +104,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
-        permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId), user1, PermissionService.ALL_PERMISSIONS, true);
 
         HttpResponse response = getSingle(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);

@@ -133,8 +133,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         tgt.setTargetParentId(folderId);
         post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
 
-        setRequestContext(folderId, user1, null);
-        delete(getFolderSizeUrl(folderId), folderId, null, 403);
+        setRequestContext(networkAdmin);
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(my2NodeId);
+        post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(tgt), null, 403);
     }
 
     @After

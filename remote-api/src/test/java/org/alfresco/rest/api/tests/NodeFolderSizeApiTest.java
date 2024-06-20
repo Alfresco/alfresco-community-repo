@@ -52,8 +52,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
      */
     private Site userOneN1Site;
 
-    private PermissionService permissionService;
-
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
         String parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
@@ -103,12 +101,32 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         params.put("nodeId",folderId);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
-        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
 
         HttpResponse response = getSingle(getFolderSizeUrl(folderId), null, 200);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         assertNotNull(contentNodeId);
+    }
+
+    @Test
+    public void testHTTPStatus() throws Exception
+    {
+
+        setRequestContext(user1);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+
+        // Create a folder within the site document's library.
+        String folderName = "folder" + System.currentTimeMillis();
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT, user1);
+
+        setRequestContext(null);
+        delete(getFolderSizeUrl(folderId), folderId, null, 401);
+
+        setRequestContext(user1);
+        delete(getFolderSizeUrl(folderId), folderId, null, 404);
+        delete(getFolderSizeUrl(folderId), folderId, null, 403);
     }
 
     @After

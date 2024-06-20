@@ -40,6 +40,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Gavin Cornwell
  */
+@SuppressWarnings("PMD.ExcessivePublicCount")
 public class IdentityServiceConfig
 {
     private static final String REALMS = "realms";

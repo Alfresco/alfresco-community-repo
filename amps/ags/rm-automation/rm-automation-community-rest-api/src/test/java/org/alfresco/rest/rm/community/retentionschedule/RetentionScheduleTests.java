@@ -188,7 +188,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 6)
-    public void RetentionScheduleWith403()
+    public void retentionScheduleWith403()
     {
         //Get retention schedule with user having no rights
         getRestAPIFactory().getRetentionScheduleAPI(nonRMuser).getRetentionSchedule(recordCategory.getId());
@@ -205,7 +205,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 7)
-    public void RetentionScheduleWith404()
+    public void retentionScheduleWith404()
     {
 
         //Get retention schedule with category id that does not exist
@@ -223,7 +223,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 8)
-    public void RetentionScheduleWith401()
+    public void retentionScheduleWith401()
     {
         //Create retention schedule with a user with unauthorized access
         getRestAPIFactory().getRetentionScheduleAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).getRetentionSchedule(recordCategory.getId());
@@ -240,7 +240,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
      * </pre>
      */
     @Test(priority = 9)
-    public void RetentionScheduleWith200()
+    public void retentionScheduleWith200()
     {
         RetentionScheduleCollection retentionScheduleCollection = getRestAPIFactory().getRetentionScheduleAPI().getRetentionSchedule(recordCategory.getId());
         // Verify the status code

@@ -105,7 +105,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
 
-        HttpResponse response = getSingle(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
+        HttpResponse response = getSingle(getFolderSizeUrl(folderId), null, 200);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         assertNotNull(contentNodeId);

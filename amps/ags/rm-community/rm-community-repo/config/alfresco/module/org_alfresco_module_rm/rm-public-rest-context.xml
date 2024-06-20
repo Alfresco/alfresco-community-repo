@@ -31,6 +31,7 @@
         <property name="personService" ref="PersonService"/>
         <property name="dispositionService" ref="DispositionService"/>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
     </bean>
 
     <bean id="searchTypesFactory" class="org.alfresco.rm.rest.api.impl.SearchTypesFactory">
@@ -145,6 +146,13 @@
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
        <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.retentionschedule.RetentionScheduleRelation">
+        <property name="apiUtils" ref="apiUtils" />
+        <property name="nodesModelFactory" ref="nodesModelFactory" />
+        <property name="dispositionService" ref="DispositionService"/>
+        <property name="nodeService" ref="NodeService"/>
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderEntityResource">

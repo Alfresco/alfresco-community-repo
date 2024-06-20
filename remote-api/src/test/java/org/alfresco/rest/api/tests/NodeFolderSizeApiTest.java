@@ -119,6 +119,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
         String rootNodeId = getRootNodeId();
+        String my2NodeId = getMyNodeId();
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
@@ -133,8 +134,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
 
         tgt = new NodeTarget();
-        tgt.setTargetParentId(rootNodeId);
-        post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(tgt), null, 403);
+        tgt.setTargetParentId(my2NodeId);
+        post(getFolderSizeUrl(rootNodeId), toJsonAsStringNonNull(tgt), null, 403);
     }
 
     @After

@@ -27,7 +27,6 @@ package org.alfresco.repo.bootstrap;
 
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -72,7 +71,6 @@ public class DataDictionaryFolderTest extends BaseSpringTest
 
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(dataDictionaryRef);
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         for (ChildAssociationRef childAssociationRef : chilAssocsList)
         {
             NodeRef childNodeRef = childAssociationRef.getChildRef();

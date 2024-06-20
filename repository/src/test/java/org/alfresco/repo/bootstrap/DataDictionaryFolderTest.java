@@ -36,7 +36,11 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+
 import java.util.List;
 
 public class DataDictionaryFolderTest extends BaseSpringTest
@@ -58,7 +62,7 @@ public class DataDictionaryFolderTest extends BaseSpringTest
     }
 
     @Test
-    public void testDataDictionaryFolderIsUndeletable()
+    public void testDataDictionaryFolderIsUndeletableAndUnmovable()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // get the company_home
@@ -73,7 +77,8 @@ public class DataDictionaryFolderTest extends BaseSpringTest
         for (ChildAssociationRef childAssociationRef : chilAssocsList)
         {
             NodeRef childNodeRef = childAssociationRef.getChildRef();
-            Assert.assertTrue(nodeService.hasAspect(childNodeRef, ContentModel.ASPECT_UNDELETABLE));
+            assertTrue(nodeService.hasAspect(childNodeRef, ContentModel.ASPECT_UNDELETABLE));
+            assertTrue(nodeService.hasAspect(childNodeRef, ContentModel.ASPECT_UNMOVABLE));
         }
     }
 }

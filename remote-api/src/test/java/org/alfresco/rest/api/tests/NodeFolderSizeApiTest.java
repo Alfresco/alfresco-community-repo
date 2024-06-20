@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -36,6 +37,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertNotNull;
@@ -116,6 +118,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+        String rootNodeId = getRootNodeId();
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
@@ -125,9 +128,13 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         delete(getFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
-        delete(getFolderSizeUrl(folderId), "dummy", null, 404);
-        AuthenticationUtil.clearCurrentSecurityContext();
-        delete(getFolderSizeUrl(folderId), folderId, null, 403);
+        NodeTarget tgt = new NodeTarget();
+        tgt.setTargetParentId(UUID.randomUUID().toString());
+        post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(tgt), null, 404);
+
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(rootNodeId);
+        post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(tgt), null, 403);
     }
 
     @After

@@ -28,6 +28,7 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
 import org.junit.Test;
@@ -91,16 +92,19 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         setRequestContext(user1);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
-        userOneN2Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+        userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN2Site, folderName, TYPE_CM_CONTENT, user1);
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT, user1);
 
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);
 
-        HttpResponse response = get(getFolderSizeUrl(folderId), params, 200);
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId), user1, PermissionService.ALL_PERMISSIONS, true);
+
+        HttpResponse response = getSingle(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         assertNotNull(contentNodeId);

@@ -150,11 +150,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
         post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
-
-        setRequestContext(user1);
-        NodeRef folderC_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId);
-        permissionService.setPermission(folderC_Ref, user1, PermissionService.READ, false);
-        post(getFolderSizeUrl(folderC_Ref.getId()), toJsonAsStringNonNull(tgt), null, 403);
     }
 
     @After

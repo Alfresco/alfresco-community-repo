@@ -201,7 +201,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * Behavior to initialize the disposition schedule of a newly filed record.
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord#onFileRecord(org.alfresco.service.cmr.repository.NodeRef)
+     * @see RecordsManagementPolicies.OnFileRecord#onFileRecord(NodeRef)
      */
     @Override
     @Behaviour(kind=BehaviourKind.CLASS, type="rma:record")
@@ -219,7 +219,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#refreshDispositionAction(NodeRef)
+     * @see DispositionService#refreshDispositionAction(NodeRef)
      */
     @Override
     public void refreshDispositionAction(NodeRef nodeRef)
@@ -245,7 +245,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** ========= Disposition Property Methods ========= */
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#registerDispositionProperty(org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty)
+     * @see DispositionService#registerDispositionProperty(DispositionProperty)
      */
     @Override
     public void registerDispositionProperty(DispositionProperty dispositionProperty)
@@ -254,7 +254,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties(boolean, java.lang.String)
+     * @see DispositionService#getDispositionProperties(boolean, String)
      */
     @Override
     public Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction)
@@ -273,7 +273,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties()
+     * @see DispositionService#getDispositionProperties()
      */
     @Override
     public Collection<DispositionProperty> getDispositionProperties()
@@ -284,7 +284,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** ========= Disposition Schedule Methods ========= */
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getDispositionSchedule(NodeRef)
      */
     @Override
     public DispositionSchedule getDispositionSchedule(final NodeRef nodeRef)
@@ -406,7 +406,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getAssociatedDispositionSchedule(NodeRef)
      */
     @Override
     public DispositionSchedule getAssociatedDispositionSchedule(NodeRef nodeRef)
@@ -459,7 +459,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedRecordsManagementContainer(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
+     * @see DispositionService#getAssociatedRecordsManagementContainer(DispositionSchedule)
      */
     @Override
     public NodeRef getAssociatedRecordsManagementContainer(DispositionSchedule dispositionSchedule)
@@ -492,7 +492,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#hasDisposableItems(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
+     * @see DispositionService#hasDisposableItems(DispositionSchedule)
      */
     @Override
     public boolean hasDisposableItems(DispositionSchedule dispositionSchdule)
@@ -543,7 +543,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDisposableItems(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
+     * @see DispositionService#getDisposableItems(DispositionSchedule)
      */
     @Override
     public List<NodeRef> getDisposableItems(DispositionSchedule dispositionSchedule)
@@ -558,7 +558,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isDisposableItem(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#isDisposableItem(NodeRef)
      */
     @Override
     public boolean isDisposableItem(NodeRef nodeRef)
@@ -598,7 +598,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#createDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
+     * @see DispositionService#createDispositionSchedule(NodeRef, Map)
      */
     @Override
     public DispositionSchedule createDispositionSchedule(NodeRef nodeRef, Map<QName, Serializable> props)
@@ -701,7 +701,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#removeDispositionActionDefinition(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule, org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition)
+     * @see DispositionService#removeDispositionActionDefinition(DispositionSchedule, DispositionActionDefinition)
      */
     @Override
     public void removeDispositionActionDefinition(DispositionSchedule schedule, DispositionActionDefinition actionDefinition)
@@ -880,7 +880,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isNextDispositionActionEligible(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#isNextDispositionActionEligible(NodeRef)
      */
     @Override
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
@@ -981,7 +981,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getNextDispositionAction(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getNextDispositionAction(NodeRef)
      */
     @Override
     public DispositionAction getNextDispositionAction(NodeRef nodeRef)
@@ -1000,7 +1000,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** ========= Disposition Action History Methods ========= */
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getCompletedDispositionActions(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getCompletedDispositionActions(NodeRef)
      */
     @Override
     public List<DispositionAction> getCompletedDispositionActions(NodeRef nodeRef)
@@ -1016,7 +1016,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getLastCompletedDispostionAction(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getLastCompletedDispostionAction(NodeRef)
      */
     @Override
     public DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef)
@@ -1032,7 +1032,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isDisposableItemCutoff(NodeRef)
+     * @see DispositionService#isDisposableItemCutoff(NodeRef)
      */
     @Override
     public boolean isDisposableItemCutoff(NodeRef nodeRef)
@@ -1042,7 +1042,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#updateNextDispositionAction(NodeRef)
+     * @see DispositionService#updateNextDispositionAction(NodeRef)
      */
     @Override
     public void updateNextDispositionAction(final NodeRef nodeRef)
@@ -1052,7 +1052,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         RunAsWork<Void> runAsWork = new RunAsWork<Void>()
         {
             /**
-             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+             * @see RunAsWork#doWork()
              */
             @Override
             public Void doWork()
@@ -1071,7 +1071,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#updateNextDispositionAction(NodeRef)
+     * @see DispositionService#updateNextDispositionAction(NodeRef)
      */
     @Override
     public void updateNextDispositionAction(final NodeRef nodeRef, final DispositionSchedule dispositionSchedule)
@@ -1081,7 +1081,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         RunAsWork<Void> runAsWork = new RunAsWork<Void>()
         {
             /**
-             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+             * @see RunAsWork#doWork()
              */
             @Override
             public Void doWork()
@@ -1108,7 +1108,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
                     List<DispositionActionDefinition> dispositionActionDefinitions = dispositionSchedule.getDispositionActionDefinitions();
                     DispositionActionDefinition currentDispositionActionDefinition;
-                    DispositionActionDefinition nextDispositionActionDefinition;
+                    DispositionActionDefinition nextDispositionActionDefinition = null;
 
                     if (currentDispositionAction == null && !dispositionActionDefinitions.isEmpty())
                     {
@@ -1158,7 +1158,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#cutoffDisposableItem(NodeRef)
+     * @see DispositionService#cutoffDisposableItem(NodeRef)
      */
     @Override
     public void cutoffDisposableItem(final NodeRef nodeRef)

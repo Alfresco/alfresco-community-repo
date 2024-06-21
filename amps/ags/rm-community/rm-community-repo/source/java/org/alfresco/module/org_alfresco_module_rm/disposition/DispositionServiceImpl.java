@@ -61,6 +61,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -616,7 +617,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (!TYPE_RECORD_CATEGORY.equals(nodeRefType) &&
             !dictionaryService.isSubClass(nodeRefType, TYPE_RECORD_CATEGORY))
         {
-            throw new AlfrescoRuntimeException("Unable to create retention schedule on a node that is not a records management container.");
+            throw new InvalidArgumentException("The given id:'" + nodeRef.getId() + "' (nodeType:" + nodeRef
+                    + ") is not valid. Expected nodeType is:" + TYPE_RECORD_CATEGORY);
         }
 
         behaviourFilter.disableBehaviour(nodeRef, ASPECT_SCHEDULED);
@@ -771,8 +773,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // check if current transaction is a READ ONLY one and if true create the node in a READ WRITE transaction
         if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
         {
-            da =
-                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<DispositionAction>()
+            da = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<DispositionAction>()
                     {
                         @Override
                         public DispositionAction execute() throws Throwable
@@ -1107,15 +1108,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
                     List<DispositionActionDefinition> dispositionActionDefinitions = dispositionSchedule.getDispositionActionDefinitions();
                     DispositionActionDefinition currentDispositionActionDefinition;
-                    DispositionActionDefinition nextDispositionActionDefinition = null;
+                    DispositionActionDefinition nextDispositionActionDefinition;
 
-                    if (currentDispositionAction == null)
+                    if (currentDispositionAction == null && !dispositionActionDefinitions.isEmpty())
                     {
-                        if (!dispositionActionDefinitions.isEmpty())
-                        {
-                            // The next disposition action is the first action
-                            nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
-                        }
+                        // The next disposition action is the first action
+                        nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
                     }
                     else
                     {

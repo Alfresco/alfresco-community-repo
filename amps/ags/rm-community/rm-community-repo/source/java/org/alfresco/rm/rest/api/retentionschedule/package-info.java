@@ -26,7 +26,7 @@
  */
 
 /**
- * Package info that defines the Information Governance Record Categories REST API
+ * Package info that defines the Information Governance Retention Schedule REST API
  */
 @WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
 package org.alfresco.rm.rest.api.retentionschedule;

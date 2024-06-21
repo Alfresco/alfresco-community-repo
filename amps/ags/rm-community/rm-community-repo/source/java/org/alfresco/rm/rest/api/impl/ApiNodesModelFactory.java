@@ -943,7 +943,7 @@ public class ApiNodesModelFactory
         {
             retentionScheduleActionDefinition.setPeriod(periodArray[0]);
         }
-        if(periodArray.length == 2)
+        else if(periodArray.length == 2)
         {
             retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
         }

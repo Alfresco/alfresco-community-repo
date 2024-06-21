@@ -53,8 +53,6 @@ import static org.testng.AssertJUnit.assertEquals;
 
 /**
  * This class contains the tests for the Retention Schedule CRUD V1 API
- *
- * @author Manish Kumar
  */
 public class RetentionScheduleTests extends BaseRMRestTest
 {

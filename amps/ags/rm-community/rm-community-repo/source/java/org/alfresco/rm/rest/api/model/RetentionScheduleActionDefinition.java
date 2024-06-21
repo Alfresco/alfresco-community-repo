@@ -29,7 +29,7 @@ package org.alfresco.rm.rest.api.model;
 import java.util.List;
 
 /**
- * @author sathishkumar.t
+ * retention schedule action definition
  */
 public class RetentionScheduleActionDefinition
 {
@@ -136,11 +136,13 @@ public class RetentionScheduleActionDefinition
         this.description = description;
     }
 
-    public boolean getRetainRecordMetadataAfterDestruction() {
+    public boolean getRetainRecordMetadataAfterDestruction()
+    {
         return retainRecordMetadataAfterDestruction;
     }
 
-    public void setRetainRecordMetadataAfterDestruction(boolean retainRecordMetadataAfterDestruction) {
+    public void setRetainRecordMetadataAfterDestruction(boolean retainRecordMetadataAfterDestruction)
+    {
         this.retainRecordMetadataAfterDestruction = retainRecordMetadataAfterDestruction;
     }
 

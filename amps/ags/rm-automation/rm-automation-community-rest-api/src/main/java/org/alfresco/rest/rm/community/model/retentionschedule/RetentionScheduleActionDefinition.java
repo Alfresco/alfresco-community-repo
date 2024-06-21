@@ -29,7 +29,7 @@ package org.alfresco.rest.rm.community.model.retentionschedule;
 import java.util.List;
 
 /**
- * @author sathishkumar.t
+ * retention schedule action definition
  */
 public class RetentionScheduleActionDefinition
 {
@@ -42,8 +42,7 @@ public class RetentionScheduleActionDefinition
     private List<String> events;
     private boolean eligibleOnFirstCompleteEvent;
     private String description;
-    private boolean destroyNode;
-    private boolean destroyContent;
+    private boolean retainRecordMetadataAfterDestruction;
     private String location;
     private int index;
 
@@ -137,22 +136,14 @@ public class RetentionScheduleActionDefinition
         this.description = description;
     }
 
-    public boolean getDestroyNode()
+    public boolean getRetainRecordMetadataAfterDestruction()
     {
-        return destroyNode;
+        return retainRecordMetadataAfterDestruction;
     }
 
-    public void setDestroyNode(boolean destroyNode)
+    public void setRetainRecordMetadataAfterDestruction(boolean retainRecordMetadataAfterDestruction)
     {
-        this.destroyNode = destroyNode;
-    }
-
-    public boolean getDestroyContent() {
-        return destroyContent;
-    }
-
-    public void setDestroyContent(boolean destroyContent) {
-        this.destroyContent = destroyContent;
+        this.retainRecordMetadataAfterDestruction = retainRecordMetadataAfterDestruction;
     }
 
     public String getLocation()

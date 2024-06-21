@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,8 +27,6 @@
 
 /**
  * Package info that defines the Information Governance Record Categories REST API
- *
- * @author sathishkumar.t
  */
 @WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
 package org.alfresco.rm.rest.api.retentionschedule;

@@ -53,7 +53,6 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 
 /**
  * Retention schedule relation
- * @author sathishkumar.t
  */
 @RelationshipResource(name = "retention-schedules", entityResource = RecordCategoriesEntityResource.class, title = "Retention Schedule")
 public class RetentionScheduleRelation implements RelationshipResourceAction.Read<RetentionSchedule>,

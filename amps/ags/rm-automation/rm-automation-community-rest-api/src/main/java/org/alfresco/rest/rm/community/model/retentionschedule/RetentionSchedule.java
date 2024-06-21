@@ -31,7 +31,7 @@ import org.alfresco.utility.model.TestModel;
 import java.util.List;
 
 /**
- * @author sathishkumar.t
+ * retention schedule
  */
 public class RetentionSchedule extends TestModel
 {

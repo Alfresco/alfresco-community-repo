@@ -195,5 +195,8 @@ public class GSCoreAPI extends RMModelRequest
 
     public HoldsAPI usingHoldsAPI() { return new HoldsAPI(getRmRestWrapper()); }
 
-    public RetentionScheduleAPI usingRetentionScheduleAPI() { return new RetentionScheduleAPI(getRmRestWrapper()); }
+    public RetentionScheduleAPI usingRetentionScheduleAPI()
+    {
+        return new RetentionScheduleAPI(getRmRestWrapper());
+    }
 }

@@ -29,7 +29,7 @@ package org.alfresco.rm.rest.api.model;
 import java.util.List;
 
 /**
- * @author sathishkumar.t
+ * retention schedule
  */
 public class RetentionSchedule
 {

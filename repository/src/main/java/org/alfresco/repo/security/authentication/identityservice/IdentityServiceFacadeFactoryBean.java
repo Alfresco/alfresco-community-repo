@@ -569,7 +569,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             this.config = requireNonNull(config);
             this.signatureAlgorithms = ofNullable(config.getSignatureAlgorithms())
                 .filter(algorithms -> !algorithms.isEmpty())
-                .orElse(Set.of(DEFAULT_SIGNATURE_ALGORITHM));
+                .orElseGet(() -> {
+                    LOGGER.warn("Unable to find any valid signature algorithms in the configuration. "
+                        + "Using the default signature algorithm: " + DEFAULT_SIGNATURE_ALGORITHM.getName() + ".");
+                    return Set.of(DEFAULT_SIGNATURE_ALGORITHM);
+                });
         }
 
         public JwtDecoder createJwtDecoder(RestOperations rest, ProviderDetails providerDetails)

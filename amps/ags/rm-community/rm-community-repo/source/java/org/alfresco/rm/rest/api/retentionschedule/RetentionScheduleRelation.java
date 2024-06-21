@@ -47,7 +47,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.*;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_AUTHORITY;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_INSTRUCTIONS;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_RECORD_LEVEL_DISPOSITION;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RECORD_CATEGORY;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 

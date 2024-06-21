@@ -30,9 +30,17 @@ import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.NamespaceService;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -54,10 +62,20 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
      */
     private Site userOneN1Site;
 
+    protected PermissionService permissionService;
+
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
         String parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
         return createNode(parentId, name, nodeType, null).getId();
+    }
+
+    @Before
+    public void setup() throws Exception
+    {
+        super.setup();
+
+        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
     }
 
     /**
@@ -133,10 +151,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         tgt.setTargetParentId(folderId);
         post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
 
-        setRequestContext(networkAdmin);
-        tgt = new NodeTarget();
-        tgt.setTargetParentId(my2NodeId);
-        post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(tgt), null, 403);
+        setRequestContext(user1);
+        NodeRef folderC_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId);
+        permissionService.setPermission(folderC_Ref, user1, PermissionService.READ, false);
+        post(getFolderSizeUrl(folderC_Ref.getId()), toJsonAsStringNonNull(tgt), null, 403);
     }
 
     @After

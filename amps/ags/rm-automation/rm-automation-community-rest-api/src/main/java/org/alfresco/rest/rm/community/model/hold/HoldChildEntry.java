@@ -48,5 +48,5 @@ import org.alfresco.rest.core.RestModels;
 public class HoldChildEntry extends RestModels<Hold, HoldChildEntry>
 {
     @JsonProperty
-    private HoldChildEntry entry;
+    private HoldChild entry;
 }

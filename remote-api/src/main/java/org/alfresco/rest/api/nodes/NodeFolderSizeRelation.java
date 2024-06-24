@@ -79,7 +79,7 @@ public class NodeFolderSizeRelation implements
     /**
      * The logger
      */
-    private static Log logger = LogFactory.getLog(NodeFolderSizeRelation.class);
+    private static final Log LOGGER = LogFactory.getLog(NodeFolderSizeRelation.class);
 
     /**
      * The class that wraps the ReST APIs from core.
@@ -130,10 +130,9 @@ public class NodeFolderSizeRelation implements
         int maxItems = params.getPaging().getMaxItems();
         QName qName = nodeService.getType(nodeRef);
 
-        if (nodePerms != null) {
-            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED) {
-                throw new AccessDeniedException("permissions.err_access_denied");
-            }
+        if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+        {
+            throw new AccessDeniedException("permissions.err_access_denied");
         }
 
         if(!"folder".equals(qName.getLocalName()))
@@ -154,7 +153,7 @@ public class NodeFolderSizeRelation implements
         }
         catch (Exception ex)
         {
-            logger.error("Exception occured in NodeFolderSizeRelation:createById "+ex.getMessage());
+            LOGGER.error("Exception occured in NodeFolderSizeRelation:createById "+ex.getMessage());
         }
         return null;
     }
@@ -170,10 +169,9 @@ public class NodeFolderSizeRelation implements
         NodePermissions nodePerms = nodeInfo.getPermissions();
         QName qName = nodeService.getType(nodeRef);
 
-        if (nodePerms != null) {
-            if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED) {
-                throw new AccessDeniedException("permissions.err_access_denied");
-            }
+        if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+        {
+            throw new AccessDeniedException("permissions.err_access_denied");
         }
 
         if(!"folder".equals(qName.getLocalName()))
@@ -202,7 +200,7 @@ public class NodeFolderSizeRelation implements
         }
         catch (Exception ex)
         {
-            logger.error("Exception occured in NodeFolderSizeRelation:readById "+ex.getMessage());
+            LOGGER.error("Exception occured in NodeFolderSizeRelation:readById "+ex.getMessage());
         }
         return null;
     }

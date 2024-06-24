@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
@@ -32,6 +33,8 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,10 +61,17 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
     protected PermissionService permissionService;
 
-    private String addToDocumentLibrary(Site testSite, String name, String nodeType) throws Exception
+    private String addToDocumentLibrary(Site testSite, String name, String nodeType)
     {
-        String parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
-        return createNode(parentId, name, nodeType, null).getId();
+        String parentId;
+        try
+        {
+            parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
+            return createNode(parentId, name, nodeType, null).getId();
+        } catch (Exception e)
+        {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Before
@@ -141,8 +151,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         setRequestContext(user1);
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
-        post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
-        assertTrue(true);
+        HttpResponse response = post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
+        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
+        String contentNodeId = document.toString();
+        assertNotNull(contentNodeId);
     }
 
     @After

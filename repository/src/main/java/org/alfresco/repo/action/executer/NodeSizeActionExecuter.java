@@ -65,7 +65,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     /**
      * The logger
      */
-    private static final Log logger = LogFactory.getLog(NodeSizeActionExecuter.class);
+    private static final Log LOGGER = LogFactory.getLog(NodeSizeActionExecuter.class);
 
     /**
      * Set the node service
@@ -150,7 +150,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
         catch (RuntimeException ex)
         {
-            logger.error("Exception occured in NodeSizeActionExecutor:results "+ex.getMessage());
+            LOGGER.error("Exception occured in NodeSizeActionExecutor:results "+ex.getMessage());
         }
 
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
@@ -171,5 +171,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
+        // Intentionally empty
     }
 }

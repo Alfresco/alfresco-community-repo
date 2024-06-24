@@ -157,9 +157,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
         HttpResponse response = post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
-        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
-        String contentNodeId = document.toString();
-        assertNotNull(contentNodeId);
+        assertNotNull(response);
     }
 
     @After

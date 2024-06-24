@@ -30,7 +30,9 @@ import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
+import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleActionDefinition;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
+import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleStepCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
@@ -121,5 +123,75 @@ public class RetentionScheduleAPI extends RMModelRequest
     public RetentionScheduleCollection getRetentionSchedule(String recordCategoryId)
     {
         return getRetentionSchedule(recordCategoryId, EMPTY);
+    }
+    /**
+     * Creates a step in the retention schedule.
+     *
+     * @param retentionScheduleActionDefinition The retentionScheduleActionDefinition model
+     * @param retentionScheduleId The identifier of a retention schedule id
+     * @param parameters The URL parameters to add
+     * @return The created {@link RetentionScheduleActionDefinition}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>{@code retentionScheduleId} is not a valid format or {@code retentionScheduleId} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code retentionScheduleId}</li>
+     *  <li>{@code retentionScheduleId} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     * </ul>
+     */
+    public RetentionScheduleActionDefinition createRetentionScheduleStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition, String retentionScheduleId, String parameters)
+    {
+        mandatoryString("retentionScheduleId", retentionScheduleId);
+        mandatoryObject("retentionScheduleActionDefinition", retentionScheduleActionDefinition);
+
+        return getRmRestWrapper().processModel(RetentionScheduleActionDefinition.class, requestWithBody(
+            POST,
+            toJson(retentionScheduleActionDefinition),
+            "/retention-schedules/{retentionScheduleId}/retention-steps",
+            retentionScheduleId,
+            parameters
+        ));
+    }
+
+    /**
+     * See {@link #createRetentionScheduleStep(RetentionScheduleActionDefinition, String)} (RetentionSchedule, String, String)}
+     */
+    public RetentionScheduleActionDefinition createRetentionScheduleStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition, String retentionScheduleId)
+    {
+        return createRetentionScheduleStep(retentionScheduleActionDefinition, retentionScheduleId, EMPTY);
+    }
+
+    /**
+     * Gets the retentionSchedule of a record category.
+     *
+     * @param retentionScheduleId The identifier of a record category
+     * @param parameters The URL parameters to add
+     * @return The {@link RetentionScheduleActionDefinition} for the given {@code recordCategoryId}
+     * @throws RuntimeException for the following cases:
+     * <ul>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to read {@code recordCategoryId}</li>
+     *  <li>{@code recordCategoryId} does not exist</li>
+     *</ul>
+     */
+    public RetentionScheduleStepCollection getRetentionScheduleStep(String retentionScheduleId, String parameters)
+    {
+        mandatoryString("retentionScheduleId", retentionScheduleId);
+
+        return getRmRestWrapper().processModels(RetentionScheduleStepCollection.class, simpleRequest(
+            GET,
+            "/retention-schedules/{retentionScheduleId}/retention-steps?{parameters}",
+            retentionScheduleId,
+            parameters
+        ));
+    }
+
+    /**
+     * See {@link #getRetentionScheduleStep(String, String)}
+     */
+    public RetentionScheduleStepCollection getRetentionScheduleStep(String recordCategoryId)
+    {
+        return getRetentionScheduleStep(recordCategoryId, EMPTY);
     }
 }

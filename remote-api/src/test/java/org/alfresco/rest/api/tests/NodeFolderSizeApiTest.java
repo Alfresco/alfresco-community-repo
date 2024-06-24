@@ -61,13 +61,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
         String parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
-        Node n = new Node();
-        n.setName(name);
-        n.setNodeType(nodeType);
-        n.setProperties(null);
-        // created node.
-        HttpResponse response = post(getFolderSizeUrl(parentId), RestApiUtil.toJsonAsStringNonNull(n), 202);
-        return String.valueOf(RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class));
+        return createNode(parentId, name, nodeType, null).getId();
     }
 
     @Before

@@ -65,7 +65,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     /**
      * The logger
      */
-    private static Log logger = LogFactory.getLog(NodeSizeActionExecuter.class);
+    private static final Log logger = LogFactory.getLog(NodeSizeActionExecuter.class);
 
     /**
      * Set the node service
@@ -89,9 +89,10 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     /**
      * @see ActionExecuter#execute(Action, NodeRef)
      */
+    @Override
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-        Serializable serializable = ruleAction.getParameterValue(NodeSizeActionExecuter.PAGE_SIZE);
+        Serializable serializable = ruleAction.getParameterValue(PAGE_SIZE);
         int maxItems = Integer.parseInt(serializable.toString());
         int skipCount = 0;
         int totalItems = maxItems;
@@ -101,13 +102,13 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         ResultSet results = null;
 
         StringBuilder aftsQuery = new StringBuilder();
-        aftsQuery.append("ANCESTOR:\""+nodeRef+"\" AND TYPE:content");
+        aftsQuery.append("ANCESTOR:\"").append(nodeRef).append("\" AND TYPE:content");
         String query = aftsQuery.toString();
 
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-        searchParameters.setQuery(query.toString());
+        searchParameters.setQuery(query);
 
         try{
             // executing Alfresco FTS query.
@@ -116,7 +117,9 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
             while(true) {
 
                 if (results.getNodeRefs().size() < maxItems)
+                {
                     totalItems = results.getNodeRefs().size();
+                }
 
                 resultSize = results.getNodeRefs().subList(skipCount,totalItems).parallelStream()
                         .map(id -> ((ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT)).getSize())
@@ -125,15 +128,23 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
                 totalSize+=resultSize;
 
                 if (results.getNodeRefs().size() <= totalItems || results.getNodeRefs().size() <= maxItems)
+                {
                     break;
+                }
 
-                if (results.getNodeRefs().size() > maxItems) {
+                if (results.getNodeRefs().size() > maxItems)
+                {
                     skipCount += maxItems;
-                    int remainingItems = (results.getNodeRefs().size()-totalItems);
+                    int remainingItems = results.getNodeRefs().size()-totalItems;
+
                     if(remainingItems > maxItems)
+                    {
                         totalItems += maxItems;
+                    }
                     else
+                    {
                         totalItems += remainingItems;
+                    }
                 }
             }
         }

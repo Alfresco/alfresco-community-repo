@@ -648,7 +648,7 @@ public class InspectorTests
     public void testCalculateSizeRelation()
     {
         List<ResourceMetadata> metainfo = ResourceInspector.inspect(NodeFolderSizeRelation.class);
-        assertTrue("Must be one ResourceMetadata",metainfo.size()>0);
+        assertTrue("Must be one ResourceMetadata",!metainfo.isEmpty());
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
         ResourceOperation op = metaData.getOperation(HttpMethod.POST);

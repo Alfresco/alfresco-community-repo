@@ -49,16 +49,6 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     private NodeService nodeService;
 
     /**
-     * The store reference
-     */
-    private StoreRef testStoreRef;
-
-    /**
-     * The root node reference
-     */
-    private NodeRef rootNodeRef;
-
-    /**
      * The test node reference
      */
     private NodeRef nodeRef;
@@ -79,24 +69,27 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     @Before
     public void before() throws Exception
     {
+
         this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
+        StoreRef testStoreRef;
+        NodeRef rootNodeRef;
 
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         // Create the store and get the root node
-        this.testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
+        testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
                         + System.currentTimeMillis());
-        this.rootNodeRef = this.nodeService.getRootNode(this.testStoreRef);
+        rootNodeRef = this.nodeService.getRootNode(testStoreRef);
 
         // Create the node used for tests
         this.nodeRef = this.nodeService.createNode(
-                this.rootNodeRef,
+                rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),
                 ContentModel.TYPE_CONTENT).getChildRef();
 
-        // Get the executer instance
+        // Get the executer instance.
         this.executer = (NodeSizeActionExecuter)this.applicationContext.getBean(NodeSizeActionExecuter.NAME);
     }
 
@@ -108,11 +101,10 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     {
         assertEquals(1,1);
         int maxItems = 100;
-        // Execute the action
         ActionImpl action = new ActionImpl(null, ID, NodeSizeActionExecuter.NAME, null);
         action.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
         this.executer.executeImpl(action, this.nodeRef);
         String compareString = this.nodeService.getProperty(this.nodeRef, FolderSizeModel.PROP_STATUS).toString();
-        assertTrue(compareString!=null?true:false);
+        assertTrue(compareString != null);
     }
 }

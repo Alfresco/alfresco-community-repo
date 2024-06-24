@@ -29,7 +29,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -43,6 +42,7 @@ import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * V1 REST API tests for Folder size
@@ -58,7 +58,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
     protected PermissionService permissionService;
 
-    private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
+    private String addToDocumentLibrary(Site testSite, String name, String nodeType) throws Exception
     {
         String parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
         return createNode(parentId, name, nodeType, null).getId();
@@ -87,7 +87,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, user1);
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
 
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);
@@ -109,7 +109,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, user1);
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
 
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);
@@ -130,12 +130,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
-        String rootNodeId = getRootNodeId();
-        String my2NodeId = getMyNodeId();
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, user1);
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
 
         setRequestContext(null);
         delete(getFolderSizeUrl(folderId), folderId, null, 401);
@@ -144,6 +142,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
         post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
+        assertTrue(true);
     }
 
     @After

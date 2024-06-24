@@ -30,27 +30,30 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionSchedule;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleActionDefinition;
-import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleCollection;
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleStepCollection;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.model.UserModel;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.alfresco.rest.core.v0.BaseAPI.RM_SITE_ID;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertEquals;
 
@@ -63,6 +66,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
 
     private RetentionScheduleActionDefinition createdRetentionScheduleActionDefinition;
     private UserModel nonRMuser;
+    private List<String> recordCategories = new ArrayList<>();
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
@@ -74,10 +78,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         nonRMuser = dataUser.createRandomTestUser("testUser");
         //Create record category
         recordCategory = createRootCategory(getRandomName("recordCategory"));
-    }
-    @Test(priority = 1)
-    public void createRetentionScheduleStepFor201()
-    {
+        recordCategories.add(recordCategory.getId());
 
         RetentionSchedule retentionSchedule = new RetentionSchedule();
         String authority = "authority" + getRandomAlphanumeric();
@@ -91,17 +92,153 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
             .createRetentionSchedule(retentionSchedule, recordCategory.getId());
 
-        // Verify the status code
-        assertStatusCode(CREATED);
-
         retentionScheduleActionDefinition.setName("retain");
         retentionScheduleActionDefinition.setDescription("randomDescription");
         retentionScheduleActionDefinition.setPeriodAmount(2);
+        retentionScheduleActionDefinition.setPeriodProperty("cm:created");
         retentionScheduleActionDefinition.setPeriod("month");
         retentionScheduleActionDefinition.setCombineDispositionStepConditions(false);
         retentionScheduleActionDefinition.setEligibleOnFirstCompleteEvent(true);
         retentionScheduleActionDefinition.setEvents(Arrays.asList("case_closed","abolished"));
+    }
 
+    @Test(priority = 1)
+    public void createRetentionScheduleStepFor422()
+    {
+        RetentionScheduleActionDefinition actionDefinition = getRetentionScheduleActionDefinition();
+        //Creating the first action "transfer" should give 422
+        actionDefinition.setName("transfer");
+        //Create retention schedule action definition
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition,createdRetentionSchedule.getId());
+
+        // Verify the status code
+        assertStatusCode(UNPROCESSABLE_ENTITY);
+    }
+
+    @Test(priority = 2)
+    public void createRetentionScheduleStepWithInvalidPeriodValue()
+    {
+        RetentionScheduleActionDefinition actionDefinition = getRetentionScheduleActionDefinition();
+        actionDefinition.setName("retain");
+        //Invalid period value
+        actionDefinition.setPeriod("random");
+        //Create retention schedule action definition
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition,createdRetentionSchedule.getId());
+
+        // Verify the status code
+        assertStatusCode(BAD_REQUEST);
+    }
+
+    @Test(priority = 3)
+    public void createRetentionScheduleWithInvalidStep()
+    {
+        RecordCategory recordCategory = createRootCategory(getRandomName("recordCategory"));
+        recordCategories.add(recordCategory.getId());
+        RetentionSchedule retentionSchedule = createRetentionSchedule(recordCategory);
+        RetentionScheduleActionDefinition actionDefinition = getRetentionScheduleActionDefinition();
+        actionDefinition.setName("retain");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition,retentionSchedule.getId());
+
+        assertStatusCode(CREATED);
+
+        RetentionScheduleActionDefinition actionDefinition1 = getRetentionScheduleActionDefinition();
+        actionDefinition1.setName("transfer");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition1,retentionSchedule.getId());
+
+        assertStatusCode(CREATED);
+
+        RetentionScheduleActionDefinition actionDefinition2 = getRetentionScheduleActionDefinition();
+        actionDefinition2.setName("cutoff");
+        //Create retention schedule action definition
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition2,retentionSchedule.getId());
+
+        // Verify the status code
+        assertStatusCode(CONFLICT);
+    }
+
+    @Test(priority = 4)
+    public void createRetentionScheduleWithInvalidStepAfterDestroy()
+    {
+        RecordCategory recordCategory = createRootCategory(getRandomName("recordCategory"));
+        recordCategories.add(recordCategory.getId());
+        RetentionSchedule retentionSchedule = createRetentionSchedule(recordCategory);
+        RetentionScheduleActionDefinition actionDefinition = getRetentionScheduleActionDefinition();
+        actionDefinition.setName("retain");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition,retentionSchedule.getId());
+
+        assertStatusCode(CREATED);
+
+        RetentionScheduleActionDefinition actionDefinition1 = getRetentionScheduleActionDefinition();
+        actionDefinition1.setName("destroy");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition1,retentionSchedule.getId());
+
+        assertStatusCode(CREATED);
+
+        RetentionScheduleActionDefinition actionDefinition2 = getRetentionScheduleActionDefinition();
+        actionDefinition2.setName("cutoff");
+        //Create retention schedule action definition
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition2,retentionSchedule.getId());
+
+        // Verify the status code
+        assertStatusCode(CONFLICT);
+    }
+
+    @Test(priority = 5)
+    public void createRetentionScheduleWithSameStep()
+    {
+        RecordCategory recordCategory = createRootCategory(getRandomName("recordCategory"));
+        recordCategories.add(recordCategory.getId());
+        RetentionSchedule retentionSchedule = createRetentionSchedule(recordCategory);
+        RetentionScheduleActionDefinition actionDefinition = getRetentionScheduleActionDefinition();
+        actionDefinition.setName("retain");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition,retentionSchedule.getId());
+
+        assertStatusCode(CREATED);
+
+        RetentionScheduleActionDefinition actionDefinition1 = getRetentionScheduleActionDefinition();
+        actionDefinition1.setName("retain");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition1,retentionSchedule.getId());
+
+        // Verify the status code
+        assertStatusCode(CONFLICT);
+    }
+
+    @Test(priority = 6)
+    public void createRetentionScheduleWithMultipleTransferStep()
+    {
+        RecordCategory recordCategory = createRootCategory(getRandomName("recordCategory"));
+        recordCategories.add(recordCategory.getId());
+        RetentionSchedule retentionSchedule = createRetentionSchedule(recordCategory);
+        RetentionScheduleActionDefinition actionDefinition = getRetentionScheduleActionDefinition();
+        actionDefinition.setName("retain");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition,retentionSchedule.getId());
+
+        assertStatusCode(CREATED);
+
+        RetentionScheduleActionDefinition actionDefinition1 = getRetentionScheduleActionDefinition();
+        actionDefinition1.setName("transfer");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition1,retentionSchedule.getId());
+
+        RetentionScheduleActionDefinition actionDefinition2 = getRetentionScheduleActionDefinition();
+        actionDefinition2.setName("transfer");
+
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition2,retentionSchedule.getId());
+
+        // Verify the status code
+        assertStatusCode(CREATED);
+    }
+
+    @Test(priority = 7)
+    public void createRetentionScheduleStepFor201()
+    {
         //Create retention schedule action definition
         createdRetentionScheduleActionDefinition = getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(retentionScheduleActionDefinition,createdRetentionSchedule.getId());
 
@@ -111,41 +248,50 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         // Find this retention schedule is created one or not
         assertEquals(createdRetentionScheduleActionDefinition.getName(),retentionScheduleActionDefinition.getName());
         assertEquals(createdRetentionScheduleActionDefinition.getDescription(),retentionScheduleActionDefinition.getDescription());
-        assertEquals(createdRetentionScheduleActionDefinition.getPeriod(),retentionScheduleActionDefinition.getPeriod());
         assertEquals(createdRetentionScheduleActionDefinition.getPeriodAmount(),retentionScheduleActionDefinition.getPeriodAmount());
         assertEquals(createdRetentionScheduleActionDefinition.getCombineDispositionStepConditions(),retentionScheduleActionDefinition.getCombineDispositionStepConditions());
         assertEquals(createdRetentionScheduleActionDefinition.getEligibleOnFirstCompleteEvent(),retentionScheduleActionDefinition.getEligibleOnFirstCompleteEvent());
     }
 
-    @Test(priority = 2)
+    @Test(priority = 8)
     public void createRetentionScheduleStepFor401()
     {
         //Create retention schedule action definition
-        createdRetentionScheduleActionDefinition = getRestAPIFactory().getRetentionScheduleAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).createRetentionScheduleStep(retentionScheduleActionDefinition,createdRetentionSchedule.getId());
+        getRestAPIFactory().getRetentionScheduleAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).createRetentionScheduleStep(retentionScheduleActionDefinition,createdRetentionSchedule.getId());
 
         // Verify the status code
         assertStatusCode(UNAUTHORIZED);
     }
 
-    @Test(priority = 3)
+    @Test(priority = 9)
     public void createRetentionScheduleStepFor403()
     {
         //Create retention schedule action definition
-        createdRetentionScheduleActionDefinition = getRestAPIFactory().getRetentionScheduleAPI(nonRMuser).createRetentionScheduleStep(retentionScheduleActionDefinition,createdRetentionSchedule.getId());
+        getRestAPIFactory().getRetentionScheduleAPI(nonRMuser).createRetentionScheduleStep(retentionScheduleActionDefinition,createdRetentionSchedule.getId());
 
         // Verify the status code
         assertStatusCode(FORBIDDEN);
     }
 
-    @Test(priority = 4)
-    public void createdRetentionScheduleStepFor404()
+    @Test(priority = 10)
+    public void createdRetentionScheduleStepFor400()
     {
         getRestAPIFactory().getRetentionScheduleAPI().getRetentionScheduleStep(recordCategory.getId());
 
         // Verify the status code
+        assertStatusCode(BAD_REQUEST);
+    }
+
+    @Test(priority = 11)
+    public void createRetentionScheduleStepFor404()
+    {
+        //Create retention schedule action definition
+        getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(retentionScheduleActionDefinition,getRandomAlphanumeric());
+
+        // Verify the status code
         assertStatusCode(NOT_FOUND);
     }
-    @Test(priority = 5)
+    @Test(priority = 12)
     public void getRetentionScheduleStepFor403()
     {
         // Get retention schedule steps with user having no rights
@@ -154,7 +300,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(FORBIDDEN);
     }
-    @Test(priority = 6)
+    @Test(priority = 13)
     public void getRetentionScheduleStepFor401()
     {
         getRestAPIFactory().getRetentionScheduleAPI(new UserModel(getAdminUser().getUsername(), "wrongPassword")).getRetentionScheduleStep(createdRetentionSchedule.getId());
@@ -162,7 +308,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(UNAUTHORIZED);
     }
-    @Test(priority = 7)
+    @Test(priority = 14)
     public void getRetentionScheduleStepWith200()
     {
         RetentionScheduleStepCollection receiveRetentionScheduleStepCollection = getRestAPIFactory().getRetentionScheduleAPI().getRetentionScheduleStep(createdRetentionSchedule.getId());
@@ -185,12 +331,44 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
             assertEquals(createdRetentionScheduleActionDefinition.getEligibleOnFirstCompleteEvent(),retentionScheduleActionDefinition1.getEligibleOnFirstCompleteEvent());
         });
     }
+
     @AfterClass(alwaysRun = true)
-    public void cleanUpRetentionScheduleTests()
+    public void cleanUpRetentionScheduleStepTests()
     {
         rmRolesAndActionsAPI.deleteAllItemsInContainer(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), RM_SITE_ID, recordCategory.getName());
-        deleteRecordCategory(recordCategory.getId());
+        recordCategories.forEach(this::deleteRecordCategory);
         dataUser.deleteUser(nonRMuser);
+    }
+
+    private RetentionSchedule createRetentionSchedule(RecordCategory recordCategory)
+    {
+        RetentionSchedule retentionSchedule = new RetentionSchedule();
+        String authority = "authority" + getRandomAlphanumeric();
+        String instructions = "instructions" + getRandomAlphanumeric();
+        boolean isRecordLevel = false;
+        retentionSchedule.setAuthority(authority);
+        retentionSchedule.setInstructions(instructions);
+        retentionSchedule.setIsRecordLevel(isRecordLevel);
+
+        //Create retention schedule with a valid user
+        retentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
+            .createRetentionSchedule(retentionSchedule, recordCategory.getId());
+
+        // Verify the status code
+        assertStatusCode(CREATED);
+        return retentionSchedule;
+    }
+
+    private static @NotNull RetentionScheduleActionDefinition getRetentionScheduleActionDefinition() {
+        RetentionScheduleActionDefinition actionDefinition = new RetentionScheduleActionDefinition();
+        actionDefinition.setDescription("randomDescription");
+        actionDefinition.setPeriodAmount(2);
+        actionDefinition.setPeriodProperty("cm:created");
+        actionDefinition.setPeriod("month");
+        actionDefinition.setCombineDispositionStepConditions(false);
+        actionDefinition.setEligibleOnFirstCompleteEvent(true);
+        actionDefinition.setEvents(Arrays.asList("case_closed","abolished"));
+        return actionDefinition;
     }
 }

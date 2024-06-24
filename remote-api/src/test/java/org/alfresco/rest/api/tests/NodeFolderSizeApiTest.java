@@ -108,7 +108,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT, user1);
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, "folder", user1);
 
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);
@@ -134,7 +134,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT, user1);
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, "folder", user1);
 
         setRequestContext(null);
         delete(getFolderSizeUrl(folderId), folderId, null, 401);

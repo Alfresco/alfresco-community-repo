@@ -48,8 +48,8 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
 
@@ -79,7 +79,7 @@ public class NodeFolderSizeRelation implements
     /**
      * The logger
      */
-    private static final Log LOGGER = LogFactory.getLog(NodeFolderSizeRelation.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeFolderSizeRelation.class);
 
     /**
      * The class that wraps the ReST APIs from core.
@@ -153,7 +153,7 @@ public class NodeFolderSizeRelation implements
         }
         catch (Exception ex)
         {
-            LOGGER.error("Exception occured in NodeFolderSizeRelation:createById "+ex.getMessage());
+            LOG.error("Exception occured in NodeFolderSizeRelation:createById {}", ex.getMessage());
         }
         return null;
     }
@@ -200,7 +200,7 @@ public class NodeFolderSizeRelation implements
         }
         catch (Exception ex)
         {
-            LOGGER.error("Exception occured in NodeFolderSizeRelation:readById "+ex.getMessage());
+            LOG.error("Exception occured in NodeFolderSizeRelation:readById {}", ex.getMessage());
         }
         return null;
     }

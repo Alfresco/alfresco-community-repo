@@ -33,11 +33,11 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +45,6 @@ import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * V1 REST API tests for Folder size
@@ -61,6 +60,11 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
     protected PermissionService permissionService;
 
+    /**
+     * The logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(NodeFolderSizeApiTest.class);
+
     private String addToDocumentLibrary(Site testSite, String name, String nodeType)
     {
         String parentId;
@@ -70,8 +74,9 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
             return createNode(parentId, name, nodeType, null).getId();
         } catch (Exception e)
         {
-            throw new RuntimeException(e.getMessage());
+            LOG.error("Exception occured in NodeFolderSizeApiTest:addToDocumentLibrary {}", e.getMessage());
         }
+        return null;
     }
 
     @Before

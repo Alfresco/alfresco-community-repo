@@ -36,8 +36,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -65,7 +65,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     /**
      * The logger
      */
-    private static final Log LOGGER = LogFactory.getLog(NodeSizeActionExecuter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeActionExecuter.class);
 
     /**
      * Set the node service
@@ -150,7 +150,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
         catch (RuntimeException ex)
         {
-            LOGGER.error("Exception occured in NodeSizeActionExecutor:results "+ex.getMessage());
+            LOG.error("Exception occured in NodeSizeActionExecutor:results {}", ex.getMessage());
         }
 
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());

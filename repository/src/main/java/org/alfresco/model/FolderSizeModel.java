@@ -29,11 +29,11 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 @AlfrescoPublicApi
-public interface FolderSizeModel {
+public class FolderSizeModel {
 
     /** Folder Model URI */
-    String SIZE_MODEL_1_0_URI = "http://www.alfresco.org/model/size/1.0";
+    private static final String SIZE_MODEL_1_0_URI = "http://www.alfresco.org/model/size/1.0";
 
-    QName PROP_STATUS = QName.createQName(SIZE_MODEL_1_0_URI, "status");
-    QName PROP_OUTPUT = QName.createQName(SIZE_MODEL_1_0_URI, "result");
+    public static final QName PROP_STATUS = QName.createQName(SIZE_MODEL_1_0_URI, "status");
+    public static final QName PROP_OUTPUT = QName.createQName(SIZE_MODEL_1_0_URI, "result");
 }

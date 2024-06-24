@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -149,6 +149,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         response.put("id", nodeRef.getId());
         response.put("size", totalSize);
         response.put("calculatedAtTime", formattedTimestamp);
+        response.put("numberOfFiles", results!=null?results.getNodeRefs().size():0);
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) response);
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS,"COMPLETED");
     }

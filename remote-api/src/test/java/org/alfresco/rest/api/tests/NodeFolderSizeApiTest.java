@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,15 +30,8 @@ import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.namespace.NamespaceService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -136,8 +129,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
-        String rootNodeId = getRootNodeId();
-        String my2NodeId = getMyNodeId();
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();

@@ -129,6 +129,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+        String rootNodeId = getRootNodeId();
+        String my2NodeId = getMyNodeId();
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();

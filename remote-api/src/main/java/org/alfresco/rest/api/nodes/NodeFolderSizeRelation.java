@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.nodes;
 
-
 import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -35,7 +34,6 @@ import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -172,15 +170,15 @@ public class NodeFolderSizeRelation implements
         NodePermissions nodePerms = nodeInfo.getPermissions();
         QName qName = nodeService.getType(nodeRef);
 
-        if(!"folder".equals(qName.getLocalName()))
-        {
-            throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
-        }
-
         if (nodePerms != null) {
             if (permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED) {
                 throw new AccessDeniedException("permissions.err_access_denied");
             }
+        }
+
+        if(!"folder".equals(qName.getLocalName()))
+        {
+            throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
         }
 
         try

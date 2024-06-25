@@ -2674,7 +2674,7 @@ paths:
             $ref: '#/definitions/RetentionScheduleResponse'
         '400':
           description: |
-            Invalid parameter: recordCategoryId is not a valid format
+            Invalid parameter: value of recordCategoryId is invalid
         '401':
           description: Authentication failed
         '403':
@@ -2713,7 +2713,7 @@ paths:
             $ref: '#/definitions/RetentionScheduleResponseList'
         '400':
           description: |
-            Invalid parameter: recordCategoryId is not a valid format
+            Invalid parameter: value of recordCategoryId is invalid
         '401':
           description: Authentication failed
         '403':
@@ -2772,7 +2772,7 @@ paths:
             $ref: '#/definitions/RetentionStepNodeBodyResponse'
         '400':
           description: |
-            Invalid parameter: retentionScheduleId is not a valid format
+            Invalid parameter: value of retentionScheduleId is invalid
             Invalid parameter (e.g. event, period, periodProperty)
         '401':
           description: Authentication failed
@@ -2813,7 +2813,7 @@ paths:
             $ref: '#/definitions/RetentionStepsNodeBodyResponse'
         '400':
           description: |
-            Invalid parameter: retentionScheduleId is not a valid format
+            Invalid parameter: value of retentionScheduleId is invalid
         '401':
           description: Authentication failed
         '403':
@@ -4527,10 +4527,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Actions'
-      events:
-        type: array
-        items:
-          type: string
   Actions:
     type: object
     properties:
@@ -4556,6 +4552,10 @@ definitions:
         type: boolean
       location:
         type: string
+      events:
+        type: array
+        items:
+          type: string
       index:
         type: integer
   RetentionStepNodeBodyCreate:

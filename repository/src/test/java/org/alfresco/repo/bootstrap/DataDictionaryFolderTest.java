@@ -41,7 +41,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 import java.util.List;
 
@@ -62,15 +61,14 @@ public class DataDictionaryFolderTest extends BaseSpringTest
         this.nodeService = serviceRegistry.getNodeService();
     }
 
-    //@Test(expected = PermissionDeniedException.class)
+    @Test
     public void testDataDictionaryFolderIsUndeletable()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // get the company_home
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
         // get the Data Dictionary
-        NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS,
-                "Data Dictionary");
+        NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS, "Data Dictionary");
 
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(dataDictionaryRef);
 
@@ -82,39 +80,36 @@ public class DataDictionaryFolderTest extends BaseSpringTest
             {
                 nodeService.deleteNode(childNodeRef);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                System.out.println(ex.getMessage());
-                System.out.println(ex.getStackTrace().toString());
+                assertTrue(ex.getMessage().contains("deletion is not allowed"));
             }
         }
     }
 
-    //@Test(expected = PermissionDeniedException.class)
+    @Test
     public void testDataDictionaryFolderIsUnmovable()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // get the company_home
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
         // get the Data Dictionary
-        NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS,
-                "Data Dictionary");
+        NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS, "Data Dictionary");
 
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(dataDictionaryRef);
 
         for (ChildAssociationRef childAssociationRef : chilAssocsList)
         {
             NodeRef childNodeRef = childAssociationRef.getChildRef();
-            NodeRef folderRef = nodeService.createNode(companyHomeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("testDeleteAndRestore-folder2-"+System.currentTimeMillis()), ContentModel.TYPE_FOLDER).getChildRef();
             assertTrue(nodeService.hasAspect(childNodeRef, ContentModel.ASPECT_UNMOVABLE));
+            NodeRef folderRef = nodeService.createNode(companyHomeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("testDeleteAndRestore-folder2-"+System.currentTimeMillis()), ContentModel.TYPE_FOLDER).getChildRef();
             try
             {
                 nodeService.moveNode(childNodeRef, folderRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                System.out.println(ex.getMessage());
-                System.out.println(ex.getStackTrace().toString());
+                assertTrue(ex.getMessage().contains("move is not allowed"));
             }
         }
     }

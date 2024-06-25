@@ -4670,10 +4670,6 @@ definitions:
     properties:
       actions:
         $ref: '#/definitions/Actions'
-      events:
-        type: array
-        items:
-          type: string
   RetentionStepsNodeBodyResponse:
     type: object
     properties:

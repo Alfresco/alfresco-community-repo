@@ -26,7 +26,6 @@
 package org.alfresco.repo.bootstrap;
 
 
-import org.alfresco.jlan.server.filesys.PermissionDeniedException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;

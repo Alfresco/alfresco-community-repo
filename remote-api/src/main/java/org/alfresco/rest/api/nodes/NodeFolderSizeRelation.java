@@ -47,34 +47,33 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
-
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Node Size
- *
- * - get folder size
- *
+ *   NodeFolderSizeRelation
+ *   Calculating and Retrieving the folder size
+ *   @author Mohit Singh
  */
-@RelationshipResource(name = "calculateSize",  entityResource = NodesEntityResource.class, title = "Calculate size")
-public class NodeFolderSizeRelation implements
-        RelationshipResourceAction.CalculateSize<Map<String, Object>>,
-        RelationshipResourceAction.ReadById<Map<String, Object>>,
-        InitializingBean {
 
+@RelationshipResource(name = "calculateSize",  entityResource = NodesEntityResource.class, title = "Calculate size")
+public class NodeFolderSizeRelation implements RelationshipResourceAction.CalculateSize<Map<String, Object>>,
+                                               RelationshipResourceAction.ReadById<Map<String, Object>>, InitializingBean
+{
     private Nodes nodes;
     private SearchService searchService;
     private ServiceRegistry serviceRegistry;
     private PermissionService permissionService;
     private NodeService nodeService;
     private ActionService actionService;
-    static final String NOT_A_VALID_NODEID = "Node Id does not refer to a valid type [folder type]";
+    private static final String NOT_A_VALID_NODEID = "Node Id does not refer to a valid type [should be of folder type]";
 
     /**
      * The logger
@@ -85,29 +84,35 @@ public class NodeFolderSizeRelation implements
      * The class that wraps the ReST APIs from core.
      */
 
-    public void setNodes(Nodes nodes) {
+    public void setNodes(Nodes nodes)
+    {
         this.nodes = nodes;
     }
 
-    public void setSearchService(SearchService searchService) {
+    public void setSearchService(SearchService searchService)
+    {
         this.searchService = searchService;
     }
 
-    public void setServiceRegistry(ServiceRegistry serviceRegistry) {
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
         this.serviceRegistry = serviceRegistry;
         this.permissionService = serviceRegistry.getPermissionService();
     }
 
-    public void setNodeService(NodeService nodeService) {
+    public void setNodeService(NodeService nodeService)
+    {
         this.nodeService = nodeService;
     }
 
-    public void setActionService(ActionService actionService) {
+    public void setActionService(ActionService actionService)
+    {
         this.actionService = actionService;
     }
 
     @Override
-    public void afterPropertiesSet() {
+    public void afterPropertiesSet()
+    {
         ParameterCheck.mandatory("nodes", this.nodes);
     }
 
@@ -116,19 +121,23 @@ public class NodeFolderSizeRelation implements
      *
      * @param nodeId String id of folder - will also accept well-known alias, eg. -root- or -my- or -shared-
      *               Please refer to OpenAPI spec for more details !
+     * Returns the executionId which shows pending action, which can be used in a
+     * GET/calculateSize endpoint to check if the action's status has been completed, comprising the size of the node in bytes.
      *               <p>
      *               If NodeId does not exist, EntityNotFoundException (status 404).
+     *               If nodeId does not represent a folder, InvalidNodeTypeException (status 400).
      */
     @Override
-    @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder/file", successStatus = Status.STATUS_ACCEPTED)
-    public Map<String, Object> createById(String nodeId, Parameters params) {
-
+    @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder", successStatus = Status.STATUS_ACCEPTED)
+    public Map<String, Object> createById(String nodeId, Parameters params)
+    {
         NodeRef nodeRef = nodes.validateNode(nodeId);
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "IN-PROGRESS");
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
         int maxItems = params.getPaging().getMaxItems();
         QName qName = nodeService.getType(nodeRef);
+        Map<String, Object> result = new HashMap<>();
 
         if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
         {
@@ -147,13 +156,12 @@ public class NodeFolderSizeRelation implements
             folderSizeAction.setExecuteAsynchronously(true);
             folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
             actionService.executeAction(folderSizeAction, nodeRef, false, true);
-            Map<String, Object> result = new HashMap<>();
             result.put("executionId", nodeId);
             return result;
         }
         catch (Exception ex)
         {
-            LOG.error("Exception occured in NodeFolderSizeRelation:createById {}", ex.getMessage());
+            LOG.error("Exception occurred in NodeFolderSizeRelation:createById {}", ex.getMessage());
         }
         return null;
     }
@@ -168,6 +176,7 @@ public class NodeFolderSizeRelation implements
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
         QName qName = nodeService.getType(nodeRef);
+        Map<String, Object> result = new HashMap<>();
 
         if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
         {
@@ -182,15 +191,20 @@ public class NodeFolderSizeRelation implements
         try
         {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-            Map<String, Object> result = new HashMap<>();
 
-            if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT)) {
+            if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
+            {
                 result.put("status", "NOT INITIATED");
-            } else {
+            }
+            else
+            {
                 String status = (String) properties.get(FolderSizeModel.PROP_STATUS);
-                if ("IN-PROGRESS".equals(status)) {
+                if ("IN-PROGRESS".equals(status))
+                {
                     result.put("status", status);
-                } else {
+                }
+                else
+                {
                     Map<String, Object> mapResult = (Map<String, Object>) properties.get(FolderSizeModel.PROP_OUTPUT);
                     mapResult.put("status", status);
                     result = mapResult;
@@ -200,7 +214,7 @@ public class NodeFolderSizeRelation implements
         }
         catch (Exception ex)
         {
-            LOG.error("Exception occured in NodeFolderSizeRelation:readById {}", ex.getMessage());
+            LOG.error("Exception occurred in NodeFolderSizeRelation:readById {}", ex.getMessage());
         }
         return null;
     }

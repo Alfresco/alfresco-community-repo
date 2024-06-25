@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
@@ -51,7 +50,8 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author Mohit Singh
  */
-public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
+public class NodeFolderSizeApiTest extends AbstractBaseApiTest
+{
 
     /**
      * Private site of user two from network one.
@@ -72,7 +72,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         {
             parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
             return createNode(parentId, name, nodeType, null).getId();
-        } catch (Exception e)
+        }
+        catch (Exception e)
         {
             LOG.error("Exception occured in NodeFolderSizeApiTest:addToDocumentLibrary {}", e.getMessage());
         }
@@ -83,12 +84,11 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
     public void setup() throws Exception
     {
         super.setup();
-
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
     }
 
     /**
-     * Tests Folder Size Calculation
+     * Test case for POST/calculateSize, which calculates Folder Size.
      * <p>POST:</p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
      */
@@ -114,6 +114,11 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         assertNotNull(contentNodeId);
     }
 
+    /**
+     * Test case for GET/calculateSize, to retrieve FolderSize.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
+     */
     @Test
     public void testGetCalculateFolderSize() throws Exception
     {
@@ -137,12 +142,14 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
         assertNotNull(contentNodeId);
     }
 
+    /**
+     * Test case for others HTTP status codes.
+     */
     @Test
     public void testHTTPStatus() throws Exception
     {
 
         setRequestContext(user1);
-
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
 
@@ -167,7 +174,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest{
     }
 
     @Override
-    public String getScope() {
+    public String getScope()
+    {
         return "public";
     }
 }

@@ -167,7 +167,7 @@ public interface RelationshipResourceAction
     interface CalculateSize<E> extends ResourceAction
     {
         /**
-         * Calculate the size of Folder/File.
+         * Calculate the size of Folder Node.
          *
          * @param nodeId Entity resource context for this relationship.
          * @param params implementation may choose to restrict the set to be deleted based on params (ie. not necessarily "all")

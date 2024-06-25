@@ -27,6 +27,7 @@ package org.alfresco.repo.action.executer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.FolderSizeModel;
+import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -82,7 +83,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
      *
      * @param searchService  the search service
      */
-    public void setSearchService(SearchService searchService) {
+    public void setSearchService(SearchService searchService)
+    {
         this.searchService = searchService;
     }
 
@@ -93,7 +95,16 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
         Serializable serializable = ruleAction.getParameterValue(PAGE_SIZE);
-        int maxItems = Integer.parseInt(serializable.toString());
+        int maxItems = 0;
+        try
+        {
+            maxItems = Integer.parseInt(serializable.toString());
+        }
+        catch (NumberFormatException e)
+        {
+            LOG.error("Exception occurred in NodeSizeActionExecutor:executeImpl:parsingInteger{}", e.getMessage());
+        }
+
         int skipCount = 0;
         int totalItems = maxItems;
         NodeRef nodeRef = actionedUponNodeRef;
@@ -110,12 +121,13 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQuery(query);
 
-        try{
+        try
+        {
             // executing Alfresco FTS query.
             results = searchService.query(searchParameters);
 
-            while(true) {
-
+            while(true)
+            {
                 if (results.getNodeRefs().size() < maxItems)
                 {
                     totalItems = results.getNodeRefs().size();
@@ -150,7 +162,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
         catch (RuntimeException ex)
         {
-            LOG.error("Exception occured in NodeSizeActionExecutor:results {}", ex.getMessage());
+            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
         }
 
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
@@ -166,7 +178,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(List)
+     * @see ParameterizedItemAbstractBase#addParameterDefinitions(List)
      */
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)

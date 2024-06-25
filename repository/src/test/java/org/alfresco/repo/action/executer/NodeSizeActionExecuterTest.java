@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.action.executer;
 
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -64,7 +63,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     private final static String ID = GUID.generate();
 
     /**
-     * Called at the begining of all tests
+     * Called at the begining of all tests.
      */
     @Before
     public void before() throws Exception
@@ -94,7 +93,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     }
 
     /**
-     * Test execution
+     * Test execution.
      */
     @Test
     public void testExecution()

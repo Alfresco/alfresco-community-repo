@@ -28,6 +28,7 @@ package org.alfresco.rm.rest.api.retentionschedule;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -55,7 +56,7 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 /**
- * Retention schedule relation
+ * Retention schedule relation is used perform retention schedule operation for a record category.
  */
 @RelationshipResource(name = "retention-schedules", entityResource = RecordCategoriesEntityResource.class, title = "Retention Schedule")
 public class RetentionScheduleRelation implements RelationshipResourceAction.Read<RetentionSchedule>,
@@ -68,40 +69,6 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
     private DispositionService dispositionService;
     /** Node service */
     protected NodeService nodeService;
-
-    @Override
-    public List<RetentionSchedule> create(String recordCategoryId, List<RetentionSchedule> nodeInfos, Parameters parameters)
-    {
-        checkNotBlank("recordCategoryId", recordCategoryId);
-        mandatory("entity", nodeInfos);
-        mandatory("parameters", parameters);
-        NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, recordCategoryId);
-        List<RetentionSchedule> result = new ArrayList<>(nodeInfos.size());
-        // Create the disposition schedule
-        Map<QName, Serializable> dsProps = new HashMap<>(3);
-        dsProps.put(PROP_DISPOSITION_AUTHORITY, nodeInfos.get(0).getAuthority());
-        dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, nodeInfos.get(0).getInstructions());
-        dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, nodeInfos.get(0).getIsRecordLevel());
-        DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(parentNodeRef, dsProps);
-        RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
-        result.add(retentionSchedule);
-        return result;
-    }
-
-    @Override
-    public CollectionWithPagingInfo<RetentionSchedule> readAll(String recordCategoryId, Parameters parameters)
-    {
-        checkNotBlank("recordCategoryId", recordCategoryId);
-        mandatory("parameters", parameters);
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, TYPE_RECORD_CATEGORY);
-        DispositionSchedule schedule = dispositionService.getDispositionSchedule(parentNodeRef);
-        RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(schedule);
-        List<RetentionSchedule> retentionScheduleList = new ArrayList<>();
-        nodesModelFactory.mapRetentionScheduleOptionalInfo(retentionSchedule, schedule, parameters.getInclude());
-        retentionScheduleList.add(retentionSchedule);
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), retentionScheduleList, false,
-                retentionScheduleList.size());
-    }
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -121,5 +88,41 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    @Override
+    @WebApiDescription(title="Create a retention schedule for the particular record category using the 'recordCategoryId'")
+    public List<RetentionSchedule> create(String recordCategoryId, List<RetentionSchedule> nodeInfos, Parameters parameters)
+    {
+        checkNotBlank("recordCategoryId", recordCategoryId);
+        mandatory("entity", nodeInfos);
+        mandatory("parameters", parameters);
+        NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, recordCategoryId);
+        List<RetentionSchedule> result = new ArrayList<>();
+        // Create the disposition schedule
+        Map<QName, Serializable> dsProps = new HashMap<>();
+        dsProps.put(PROP_DISPOSITION_AUTHORITY, nodeInfos.get(0).getAuthority());
+        dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, nodeInfos.get(0).getInstructions());
+        dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, nodeInfos.get(0).getIsRecordLevel());
+        DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(parentNodeRef, dsProps);
+        RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
+        result.add(retentionSchedule);
+        return result;
+    }
+
+    @Override
+    @WebApiDescription(title = "Return a paged list of retention schedule based on the 'recordCategoryId'")
+    public CollectionWithPagingInfo<RetentionSchedule> readAll(String recordCategoryId, Parameters parameters)
+    {
+        checkNotBlank("recordCategoryId", recordCategoryId);
+        mandatory("parameters", parameters);
+        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, TYPE_RECORD_CATEGORY);
+        DispositionSchedule schedule = dispositionService.getDispositionSchedule(parentNodeRef);
+        RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(schedule);
+        List<RetentionSchedule> retentionScheduleList = new ArrayList<>();
+        nodesModelFactory.mapRetentionScheduleOptionalInfo(retentionSchedule, schedule, parameters.getInclude());
+        retentionScheduleList.add(retentionSchedule);
+        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), retentionScheduleList, false,
+                retentionScheduleList.size());
     }
 }

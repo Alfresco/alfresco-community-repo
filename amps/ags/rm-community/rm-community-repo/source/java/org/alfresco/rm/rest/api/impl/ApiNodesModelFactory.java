@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -901,7 +902,7 @@ public class ApiNodesModelFactory
     /**
      * map retention schedule data
      * @param dispositionSchedule
-     * @return
+     * @return RetentionSchedule
      */
     public RetentionSchedule mapRetentionScheduleData(DispositionSchedule dispositionSchedule)
     {
@@ -913,15 +914,9 @@ public class ApiNodesModelFactory
         retentionSchedule.setAuthority(dispositionSchedule.getDispositionAuthority());
         retentionSchedule.setIsRecordLevel(dispositionSchedule.isRecordLevelDisposition());
 
-        boolean unpublishedUpdates = false;
-        for (DispositionActionDefinition actionDef : dispositionSchedule.getDispositionActionDefinitions())
-        {
-            NodeRef actionDefNodeRef = actionDef.getNodeRef();
-            if (nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE))
-            {
-                unpublishedUpdates = true;
-            }
-        }
+        boolean unpublishedUpdates = dispositionSchedule.getDispositionActionDefinitions().stream()
+                .map(DispositionActionDefinition::getNodeRef)
+                .anyMatch(actionDefNodeRef -> nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE));
         retentionSchedule.setIsUnpublishedUpdates(unpublishedUpdates);
         return retentionSchedule;
     }
@@ -929,54 +924,93 @@ public class ApiNodesModelFactory
     /**
      * map retention schedule action definition data
      * @param dispositionActionDefinition
-     * @return
+     * @return RetentionScheduleActionDefinition
      */
     public RetentionScheduleActionDefinition mapRetentionScheduleActionDefData(DispositionActionDefinition dispositionActionDefinition)
     {
         RetentionScheduleActionDefinition retentionScheduleActionDefinition = new RetentionScheduleActionDefinition();
+        // Mapping basic properties
+        mapRetentionActionProperties(dispositionActionDefinition, retentionScheduleActionDefinition);
+        // Mapping period and period amount
+        mapPeriodProperties(dispositionActionDefinition, retentionScheduleActionDefinition);
+        // Mapping events properties
+        mapEventsProperties(dispositionActionDefinition, retentionScheduleActionDefinition);
+        return retentionScheduleActionDefinition;
+    }
+
+    /**
+     * map retention action properties
+     * @param dispositionActionDefinition
+     * @param retentionScheduleActionDefinition
+     */
+    private void mapRetentionActionProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
         retentionScheduleActionDefinition.setId(dispositionActionDefinition.getId());
         retentionScheduleActionDefinition.setName(dispositionActionDefinition.getName());
         retentionScheduleActionDefinition.setDescription(dispositionActionDefinition.getDescription());
-        String period = dispositionActionDefinition.getPeriod().toString();
-        String[] periodArray = period.split("\\|");
-        if(periodArray.length == 1)
-        {
-            retentionScheduleActionDefinition.setPeriod(periodArray[0]);
-        }
-        else if(periodArray.length == 2)
-        {
-            retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
-        }
-        retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
         retentionScheduleActionDefinition.setEligibleOnFirstCompleteEvent(dispositionActionDefinition.eligibleOnFirstCompleteEvent());
         if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
         {
             retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
         }
         retentionScheduleActionDefinition.setLocation(dispositionActionDefinition.getLocation());
+        if (dispositionActionDefinition.getGhostOnDestroy() != null)
+        {
+            retentionScheduleActionDefinition.setRetainRecordMetadataAfterDestruction(dispositionActionDefinition.getGhostOnDestroy().equals("ghost"));
+        }
+        retentionScheduleActionDefinition.setIndex(dispositionActionDefinition.getIndex());
+    }
+
+    /**
+     * map period properties
+     * @param dispositionActionDefinition
+     * @param retentionScheduleActionDefinition
+     */
+    private void mapPeriodProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
+        String period = dispositionActionDefinition.getPeriod().toString();
+        if (!period.isEmpty())
+        {
+            // In rest api we are splitting `period` property into `period` and `periodAmount`.
+            // so we need to split the period into two properties.
+            // ex. period -> 'month|10' so the split properties would be like below
+            // period -> 'month'
+            // periodAmount -> 10
+            String[] periodArray = period.split("\\|");
+            if (periodArray.length == 1)
+            {
+                retentionScheduleActionDefinition.setPeriod(periodArray[0]);
+            }
+            else if (periodArray.length == 2)
+            {
+                try
+                {
+                    retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
+                }
+                catch (NumberFormatException e)
+                {
+                    throw new NumberFormatException("Error parsing period amount: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * map events properties
+     * @param dispositionActionDefinition
+     * @param retentionScheduleActionDefinition
+     */
+    private void mapEventsProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
         List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
         if (events != null && !events.isEmpty())
         {
-            List<String> eventNames = new ArrayList<>(events.size());
-            for (RecordsManagementEvent event : events)
-            {
-                eventNames.add(event.getName());
-            }
+            List<String> eventNames = events.stream()
+                    .map(RecordsManagementEvent::getName)
+                    .collect(Collectors.toList());
             retentionScheduleActionDefinition.setEvents(eventNames);
         }
-        retentionScheduleActionDefinition.setIndex(dispositionActionDefinition.getIndex());
-        if (dispositionActionDefinition.getGhostOnDestroy() != null)
-        {
-            if (dispositionActionDefinition.getGhostOnDestroy().equals("ghost"))
-            {
-                retentionScheduleActionDefinition.setRetainRecordMetadataAfterDestruction(true);
-            }
-            else if (dispositionActionDefinition.getGhostOnDestroy().equals("delete"))
-            {
-                retentionScheduleActionDefinition.setRetainRecordMetadataAfterDestruction(false);
-            }
-        }
-        return retentionScheduleActionDefinition;
     }
 
     /**
@@ -987,17 +1021,11 @@ public class ApiNodesModelFactory
      */
     public void mapRetentionScheduleOptionalInfo(RetentionSchedule retentionSchedule, DispositionSchedule schedule, List<String> includeParam)
     {
-        if (includeParam == null || includeParam.isEmpty())
+        if (includeParam != null && !includeParam.isEmpty() && includeParam.contains("actions"))
         {
-            return;
-        }
-        if (includeParam.contains("actions"))
-        {
-            List<RetentionScheduleActionDefinition> actions = new ArrayList<>();
-            for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions())
-            {
-                actions.add(mapRetentionScheduleActionDefData(actionDef));
-            }
+            List<RetentionScheduleActionDefinition> actions = schedule.getDispositionActionDefinitions().stream()
+                    .map(this::mapRetentionScheduleActionDefData)
+                    .collect(Collectors.toList());
             retentionSchedule.setActions(actions);
         }
     }

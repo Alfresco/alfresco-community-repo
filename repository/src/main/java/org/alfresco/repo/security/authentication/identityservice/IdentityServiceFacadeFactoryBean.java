@@ -568,7 +568,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         {
             this.config = requireNonNull(config);
             this.signatureAlgorithms = ofNullable(config.getSignatureAlgorithms())
-                .filter(algorithms -> !algorithms.isEmpty())
+                .filter(not(Set::isEmpty))
                 .orElseGet(() -> {
                     LOGGER.warn("Unable to find any valid signature algorithms in the configuration. "
                         + "Using the default signature algorithm: " + DEFAULT_SIGNATURE_ALGORITHM.getName() + ".");

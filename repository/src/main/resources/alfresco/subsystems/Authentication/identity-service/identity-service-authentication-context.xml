@@ -156,7 +156,7 @@
          <value>${identity-service.admin-console.redirect-path}</value>
       </property>
       <property name="signatureAlgorithms">
-         <value>${identity-service.signatureAlgorithms:RS256,PS256}</value>
+         <value>${identity-service.signature-algorithms:RS256,PS256}</value>
       </property>
    </bean>
 

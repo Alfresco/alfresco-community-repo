@@ -316,7 +316,6 @@ public class IdentityServiceConfig
 
     public Set<SignatureAlgorithm> getSignatureAlgorithms()
     {
-
         return Stream.of(signatureAlgorithms.split(","))
             .map(String::trim)
             .map(SignatureAlgorithm::from)

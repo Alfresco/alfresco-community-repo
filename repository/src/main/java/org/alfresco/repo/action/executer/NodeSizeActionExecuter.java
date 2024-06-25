@@ -49,6 +49,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ *   NodeSizeActionExecuter
+ *   Executing Alfresco FTS Query to find size of Folder Node.
+ *   @author Mohit Singh
+ */
+
 public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 {
     /**

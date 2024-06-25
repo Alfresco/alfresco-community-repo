@@ -102,6 +102,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     {
         Serializable serializable = ruleAction.getParameterValue(PAGE_SIZE);
         int maxItems = 0;
+        Map<String,Object> response = new HashMap<>();
+
         try
         {
             maxItems = Integer.parseInt(serializable.toString());
@@ -117,6 +119,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         long totalSize = 0;
         long resultSize;
         ResultSet results = null;
+        boolean isCalculationCompleted = false;
 
         StringBuilder aftsQuery = new StringBuilder();
         aftsQuery.append("ANCESTOR:\"").append(nodeRef).append("\" AND TYPE:content");
@@ -147,6 +150,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
                 if (results.getNodeRefs().size() <= totalItems || results.getNodeRefs().size() <= maxItems)
                 {
+                    isCalculationCompleted = true;
                     break;
                 }
 
@@ -174,13 +178,15 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
         String formattedTimestamp = eventTimestamp.format(formatter);
-        Map<String,Object> response = new HashMap<>();
         response.put("id", nodeRef.getId());
         response.put("size", totalSize);
         response.put("calculatedAtTime", formattedTimestamp);
         response.put("numberOfFiles", results!=null?results.getNodeRefs().size():0);
-        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) response);
-        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS,"COMPLETED");
+        if(isCalculationCompleted)
+        {
+            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) response);
+            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "COMPLETED");
+        }
     }
 
     /**

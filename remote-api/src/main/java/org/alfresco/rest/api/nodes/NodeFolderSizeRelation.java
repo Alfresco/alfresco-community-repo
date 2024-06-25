@@ -63,8 +63,7 @@ import java.util.Map;
  */
 
 @RelationshipResource(name = "calculateSize",  entityResource = NodesEntityResource.class, title = "Calculate size")
-public class NodeFolderSizeRelation implements RelationshipResourceAction.CalculateSize<Map<String, Object>>,
-                                               RelationshipResourceAction.ReadById<Map<String, Object>>, InitializingBean
+public class NodeFolderSizeRelation implements RelationshipResourceAction.CalculateSize<Map<String, Object>>,RelationshipResourceAction.ReadById<Map<String, Object>>, InitializingBean
 {
     private Nodes nodes;
     private SearchService searchService;
@@ -190,24 +189,19 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         try
         {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-
             if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
             {
                 result.put("status", "NOT INITIATED");
             }
+            else if (!properties.containsKey(FolderSizeModel.PROP_OUTPUT))
+            {
+                result.put("status", "IN-PROGRESS");
+            }
             else
             {
-                String status = (String) properties.get(FolderSizeModel.PROP_STATUS);
-                if ("IN-PROGRESS".equals(status))
-                {
-                    result.put("status", status);
-                }
-                else
-                {
-                    Map<String, Object> mapResult = (Map<String, Object>) properties.get(FolderSizeModel.PROP_OUTPUT);
-                    mapResult.put("status", status);
-                    result = mapResult;
-                }
+                Map<String, Object> mapResult = (Map<String, Object>) properties.get(FolderSizeModel.PROP_OUTPUT);
+                mapResult.put("status", "COMPLETED");
+                result = mapResult;
             }
             return result;
         }

@@ -34,10 +34,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
@@ -61,6 +64,8 @@ import org.alfresco.rm.rest.api.model.UnfiledContainer;
 import org.alfresco.rm.rest.api.model.UnfiledContainerChild;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolder;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolderChild;
+import org.alfresco.rm.rest.api.model.RetentionSchedule;
+import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -70,6 +75,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
 
 /**
  * Utility class containing Alfresco and RM java services required by the API
@@ -890,5 +897,140 @@ public class ApiNodesModelFactory
         mapRecordInfo(record, info, parameters.getInclude());
         mapAssociations(record, info, parameters.getInclude());
         return record;
+    }
+
+    /**
+     * Helper method that sets the information for the retention schedule type.
+     * @param dispositionSchedule
+     * @return RetentionSchedule
+     */
+    public RetentionSchedule mapRetentionScheduleData(DispositionSchedule dispositionSchedule)
+    {
+        RetentionSchedule retentionSchedule = new RetentionSchedule();
+        retentionSchedule.setId(dispositionSchedule.getNodeRef().getId());
+        if(dispositionSchedule.getNodeRef() != null) {
+            NodeRef parent = this.nodeService.getPrimaryParent(dispositionSchedule.getNodeRef()).getParentRef();
+            retentionSchedule.setParentId(parent.getId());
+        }
+        retentionSchedule.setInstructions(dispositionSchedule.getDispositionInstructions());
+        retentionSchedule.setAuthority(dispositionSchedule.getDispositionAuthority());
+        retentionSchedule.setRecordLevel(dispositionSchedule.isRecordLevelDisposition());
+
+        boolean unpublishedUpdates = dispositionSchedule.getDispositionActionDefinitions().stream()
+                .map(DispositionActionDefinition::getNodeRef)
+                .anyMatch(actionDefNodeRef -> nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE));
+        retentionSchedule.setUnpublishedUpdates(unpublishedUpdates);
+        return retentionSchedule;
+    }
+
+    /**
+     * Helper method that sets the information for the retention schedule action definition type.
+     * @param dispositionActionDefinition
+     * @return RetentionScheduleActionDefinition
+     */
+    public RetentionScheduleActionDefinition mapRetentionScheduleActionDefData(DispositionActionDefinition dispositionActionDefinition)
+    {
+        RetentionScheduleActionDefinition retentionScheduleActionDefinition = new RetentionScheduleActionDefinition();
+        // Mapping basic properties
+        mapRetentionActionProperties(dispositionActionDefinition, retentionScheduleActionDefinition);
+        // Mapping period and period amount
+        mapPeriodProperties(dispositionActionDefinition, retentionScheduleActionDefinition);
+        // Mapping events properties
+        mapEventsProperties(dispositionActionDefinition, retentionScheduleActionDefinition);
+        return retentionScheduleActionDefinition;
+    }
+
+    /**
+     * Helper method that sets core information for the retention schedule action definition type.
+     * @param dispositionActionDefinition
+     * @param retentionScheduleActionDefinition
+     */
+    private void mapRetentionActionProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        retentionScheduleActionDefinition.setId(dispositionActionDefinition.getId());
+        retentionScheduleActionDefinition.setName(dispositionActionDefinition.getName());
+        retentionScheduleActionDefinition.setDescription(dispositionActionDefinition.getDescription());
+        retentionScheduleActionDefinition.setEligibleOnFirstCompleteEvent(dispositionActionDefinition.eligibleOnFirstCompleteEvent());
+        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+        {
+            retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+        }
+        retentionScheduleActionDefinition.setLocation(dispositionActionDefinition.getLocation());
+        if (dispositionActionDefinition.getGhostOnDestroy() != null)
+        {
+            retentionScheduleActionDefinition.setRetainRecordMetadataAfterDestruction(dispositionActionDefinition.getGhostOnDestroy().equals("ghost"));
+        }
+        retentionScheduleActionDefinition.setIndex(dispositionActionDefinition.getIndex());
+    }
+
+    /**
+     * Helper method that sets the period-related information for the retention schedule action definition type.
+     * @param dispositionActionDefinition
+     * @param retentionScheduleActionDefinition
+     */
+    private void mapPeriodProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        if(dispositionActionDefinition.getPeriodProperty() != null) {
+            retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
+        }
+        String period = dispositionActionDefinition.getPeriod().toString();
+        if (!period.isEmpty())
+        {
+            // In rest api we are splitting `period` property into `period` and `periodAmount`.
+            // so we need to split the period into two properties.
+            // ex. period -> 'month|10' so the split properties would be like below
+            // period -> 'month'
+            // periodAmount -> 10
+            String[] periodArray = period.split("\\|");
+            if (periodArray.length > 0)
+            {
+                retentionScheduleActionDefinition.setPeriod(periodArray[0]);
+            }
+            if (periodArray.length > 1)
+            {
+                try
+                {
+                    retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
+                }
+                catch (NumberFormatException e)
+                {
+                    throw new NumberFormatException("Error parsing period amount: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper method that sets the events information for the retention schedule action definition type.
+     * @param dispositionActionDefinition
+     * @param retentionScheduleActionDefinition
+     */
+    private void mapEventsProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
+        if (events != null && !events.isEmpty())
+        {
+            List<String> eventNames = events.stream()
+                    .map(RecordsManagementEvent::getName)
+                    .collect(Collectors.toList());
+            retentionScheduleActionDefinition.setEvents(eventNames);
+        }
+    }
+
+    /**
+     * Helper method that sets the optional information for the retention schedule type.
+     * @param retentionSchedule
+     * @param schedule
+     * @param includeParam
+     */
+    public void mapRetentionScheduleOptionalInfo(RetentionSchedule retentionSchedule, DispositionSchedule schedule, List<String> includeParam)
+    {
+        if (includeParam != null && !includeParam.isEmpty() && includeParam.contains("actions"))
+        {
+            List<RetentionScheduleActionDefinition> actions = schedule.getDispositionActionDefinitions().stream()
+                    .map(this::mapRetentionScheduleActionDefData)
+                    .collect(Collectors.toList());
+            retentionSchedule.setActions(actions);
+        }
     }
 }

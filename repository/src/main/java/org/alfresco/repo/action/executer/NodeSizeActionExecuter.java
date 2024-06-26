@@ -118,7 +118,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         NodeRef nodeRef = actionedUponNodeRef;
         long totalSize = 0;
         long resultSize;
-        ResultSet results = null;
+        ResultSet results;
         boolean isCalculationCompleted = false;
 
         StringBuilder aftsQuery = new StringBuilder();

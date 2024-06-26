@@ -47,8 +47,6 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * V1 REST API tests for Folder size
- *
- * @author Mohit Singh
  */
 public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 {

@@ -158,7 +158,7 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
             folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
             actionService.executeAction(folderSizeAction, nodeRef, false, true);
             LOG.info(" Executing ActionExecutor in NodeFolderSizeRelation:createById ");
-            result.put("executionId", nodeId);
+            result.put("nodeId", nodeId);
             return result;
         }
         catch (Exception ex)

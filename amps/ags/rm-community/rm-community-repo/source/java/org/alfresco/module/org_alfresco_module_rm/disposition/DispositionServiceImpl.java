@@ -479,7 +479,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     //      only the first disposition schedule will be considered
                     LOGGER.atWarn().log("Retention schedule has more than one associated records management container.  " +
                             "This is not currently supported so only the first container will be considered. " +
-                            "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
+                            "(dispositionScheduleNodeRef={})", dispositionSchedule.getNodeRef());
                 }
 
                 // Get the container reference

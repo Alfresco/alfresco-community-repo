@@ -31,19 +31,25 @@ package org.alfresco.rm.rest.api.model;
  */
 public enum RetentionEvents
 {
-    case_closed,
-    abolished,
-    re_designated,
-    no_longer_needed,
-    superseded,
-    versioned,
-    study_complete,
-    training_complete,
-    related_record_trasfered_inactive_storage,
-    obsolete,
-    all_allowances_granted_are_terminated,
-    WGI_action_complete,
-    separation,
-    case_complete,
-    declassification_review
+    CASE_CLOSED("case_closed"),
+    ABOLISHED("abolished"),
+    RE_DESIGNATED("re_designated"),
+    NO_LONGER_NEEDED("no_longer_needed"),
+    SUPERSEDED("superseded"),
+    VERSIONED("versioned"),
+    STUDY_COMPLETE("study_complete"),
+    TRAINING_COMPLETE("training_complete"),
+    RELATED_RECORD_TRASFERED_INACTIVE_STORAGE("related_record_trasfered_inactive_storage"),
+    OBSOLETE("obsolete"),
+    ALL_ALLOWANCES_GRANTED_ARE_TERMINATED("all_allowances_granted_are_terminated"),
+    WGI_ACTION_COMPLETE("WGI_action_complete"),
+    SEPARATION("separation"),
+    CASE_COMPLETE("case_complete"),
+    DECLASSIFICATION_REVIEW("declassification_review");
+
+    public final String eventName;
+
+    RetentionEvents(String eventName) {
+        this.eventName = eventName;
+    }
 }

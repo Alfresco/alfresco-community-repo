@@ -31,18 +31,25 @@ package org.alfresco.rm.rest.api.model;
  */
 public enum RetentionPeriod
 {
-    day,
-    fmend,
-    fqend,
-    fyend,
-    immediately,
-    monthend,
-    quarterend,
-    yearend,
-    month,
-    none,
-    quarter,
-    week,
-    duration,
-    year
+    DAY("day"),
+    END_OF_FINANCIAL_MONTH("fmend"),
+    END_OF_FINANCIAL_QUARTER("fqend"),
+    END_OF_FINANCIAL_YEAR("fyend"),
+    IMMEDIATELY("immediately"),
+    END_OF_MONTH("monthend"),
+    END_OF_QUARTER("quarterend"),
+    END_OF_YEAR("yearend"),
+    MONTH("month"),
+    NONE("none"),
+    QUARTER("quarter"),
+    WEEK("week"),
+    XML_DURATION("duration"),
+    YEAR("year");
+
+    public final String periodName;
+
+    RetentionPeriod(String periodName)
+    {
+        this.periodName = periodName;
+    }
 }

@@ -27,18 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.base.Enums;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
@@ -64,8 +52,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rm.rest.api.model.RetentionEvents;
-import org.alfresco.rm.rest.api.model.RetentionPeriod;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -78,6 +64,16 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 
 /**
  * Disposition service implementation.
@@ -687,30 +683,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (name == null || name.isEmpty())
         {
             throw new IllegalArgumentException("'name' parameter is mandatory when creating a disposition action definition");
-        }
-        if (!Enums.getIfPresent(RetentionPeriod.class, name).isPresent())
-        {
-            throw new InvalidArgumentException("name value is invalid : " +name);
-        }
-
-        String period = (String)actionDefinitionParams.get(PROP_DISPOSITION_PERIOD);
-        if(period != null){
-            String[] periodArray = period.split("\\|");
-            if (periodArray.length > 0)
-            {
-                if (!Enums.getIfPresent(RetentionPeriod.class, periodArray[0]).isPresent())
-                {
-                    throw new InvalidArgumentException("period value is invalid : " +periodArray[0]);
-                }
-            }
-        }
-
-        List<String> eventsList = (List<String>) actionDefinitionParams.get(PROP_DISPOSITION_EVENT);
-        if (Arrays.stream(RetentionEvents.values())
-                .map(RetentionEvents::name)
-                .noneMatch(eventsList::contains))
-        {
-            throw new InvalidArgumentException("event value is invalid : " + eventsList);
         }
 
         // create the child association from the schedule to the action definition

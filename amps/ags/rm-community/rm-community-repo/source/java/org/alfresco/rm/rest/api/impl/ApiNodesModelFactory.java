@@ -82,8 +82,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
-
 /**
  * Utility class containing Alfresco and RM java services required by the API
  * endpoints
@@ -963,9 +961,9 @@ public class ApiNodesModelFactory
         retentionScheduleActionDefinition.setName(dispositionActionDefinition.getName());
         retentionScheduleActionDefinition.setDescription(dispositionActionDefinition.getDescription());
         retentionScheduleActionDefinition.setEligibleOnFirstCompleteEvent(dispositionActionDefinition.eligibleOnFirstCompleteEvent());
-        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
         {
-            retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+            retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
         }
         retentionScheduleActionDefinition.setLocation(dispositionActionDefinition.getLocation());
         if (dispositionActionDefinition.getGhostOnDestroy() != null)
@@ -1056,12 +1054,10 @@ public class ApiNodesModelFactory
         Map<QName, Serializable>  actionDefinitionParams= new HashMap<>();
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, nodeInfo.getName());
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
-        StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod() + "|");
+        StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod()).append("|");
         // periodAmount property only applicable for following periods
         // day, week, month, quarter, year and duration
-        if(nodeInfo.getPeriod().equals(RetentionPeriod.day.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.month.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.quarter.toString())
-                || nodeInfo.getPeriod().equals(RetentionPeriod.week.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.duration.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.year.toString()))
-        {
+        if(isPeriodAmountApplicable(nodeInfo.getPeriod())){
             retentionPeriod.append(nodeInfo.getPeriodAmount());
         }
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, retentionPeriod.toString());
@@ -1075,7 +1071,7 @@ public class ApiNodesModelFactory
                 nodeInfo.getLocation());
         List<String> inputEvents = nodeInfo.getEvents();
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
-        if (RetentionSteps.destroy.toString().equals(nodeInfo.getName()) && nodeInfo.isRetainRecordMetadataAfterDestruction())
+        if (RetentionSteps.DESTROY.stepName.equals(nodeInfo.getName()) && nodeInfo.isRetainRecordMetadataAfterDestruction())
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
         }
@@ -1111,5 +1107,16 @@ public class ApiNodesModelFactory
                 })
                 .collect(Collectors.toList());
         return actions;
+    }
+
+    /**
+     *
+     * @param period
+     * @return boolean
+     */
+    private boolean isPeriodAmountApplicable(String period)
+    {
+        return (period.equals(RetentionPeriod.DAY.periodName) || period.equals(RetentionPeriod.MONTH.periodName) || period.equals(RetentionPeriod.QUARTER.periodName)
+                || period.equals(RetentionPeriod.WEEK.periodName) || period.equals(RetentionPeriod.XML_DURATION.periodName) || period.equals(RetentionPeriod.YEAR.periodName));
     }
 }

@@ -34,7 +34,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +50,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * V1 REST API tests for Folder size
  */
+@FixMethodOrder (MethodSorters.NAME_ASCENDING)
 public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 {
 
@@ -91,7 +94,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
      */
     @Test
-    public void testPostCalculateFolderSize() throws Exception
+    public void testAPostCalculateFolderSize() throws Exception
     {
         setRequestContext(user1);
 
@@ -118,7 +121,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
      */
     @Test
-    public void testGetCalculateFolderSize() throws Exception
+    public void testBGetCalculateFolderSize() throws Exception
     {
         setRequestContext(user1);
 

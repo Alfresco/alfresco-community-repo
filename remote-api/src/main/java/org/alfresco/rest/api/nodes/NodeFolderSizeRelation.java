@@ -133,6 +133,7 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         resetFolderOutput.put("status","IN-PROGRESS");
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "IN-PROGRESS");
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) resetFolderOutput);
+        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,null);
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
         int maxItems = params.getPaging().getMaxItems();
@@ -177,6 +178,7 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
         QName qName = nodeService.getType(nodeRef);
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         Map<String, Object> result = new HashMap<>();
 
         if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
@@ -189,10 +191,14 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
             throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
         }
 
+        if(properties.containsKey(FolderSizeModel.PROP_ERROR) && properties.get(FolderSizeModel.PROP_ERROR) != null)
+        {
+            throw new RuntimeException(String.valueOf(properties.get(FolderSizeModel.PROP_ERROR)));
+        }
+
         try
         {
             LOG.info(" Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById ");
-            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
             {
                 result.put("status", "NOT-INITIATED");

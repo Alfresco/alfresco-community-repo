@@ -111,6 +111,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (NumberFormatException e)
         {
             LOG.error("Exception occurred while parsing String to INT: {}", e.getMessage());
+            nodeService.setProperty(actionedUponNodeRef, FolderSizeModel.PROP_ERROR,e.getMessage());
             throw e;
         }
 
@@ -133,28 +134,26 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         {
             // executing Alfresco FTS query.
             results = searchService.query(searchParameters);
-            List<NodeRef> nodeRefs = results.getNodeRefs();
             int skipCount = 0;
             int totalItems;
-            totalItems = Math.min(nodeRefs.size(), maxItems);
+            totalItems = Math.min(results.getNodeRefs().size(), maxItems);
 
             while (!isCalculationCompleted)
             {
-                List<NodeRef> subList = nodeRefs.subList(skipCount, totalItems);
-                resultSize = subList.parallelStream()
-                        .map(id -> ((ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT)).getSize())
-                        .reduce(0L, Long::sum);
+                resultSize = results.getNodeRefs().subList(skipCount,totalItems).parallelStream()
+                                    .map(id -> nodeService.getProperty(id, ContentModel.PROP_CONTENT)!=null? ((ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT)).getSize():0)
+                                    .reduce(0L, Long::sum);
 
                 totalSize+=resultSize;
 
-                if (nodeRefs.size() <= totalItems || nodeRefs.size() <= maxItems)
+                if (results.getNodeRefs().size() <= totalItems || results.getNodeRefs().size() <= maxItems)
                 {
                     isCalculationCompleted = true;
                 }
                 else
                 {
                     skipCount += maxItems;
-                    int remainingItems = nodeRefs.size() - totalItems;
+                    int remainingItems = results.getNodeRefs().size() - totalItems;
                     totalItems += Math.min(remainingItems, maxItems);
                 }
             }
@@ -162,6 +161,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (RuntimeException ex)
         {
             LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
+            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,ex.getMessage());
             throw ex;
         }
 
@@ -177,7 +177,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         if(isCalculationCompleted)
         {
             nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) response);
-            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "COMPLETED");
         }
     }
 

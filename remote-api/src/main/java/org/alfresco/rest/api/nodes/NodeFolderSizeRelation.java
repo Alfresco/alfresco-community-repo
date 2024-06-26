@@ -130,19 +130,14 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
         Map<String, Object> resetFolderOutput = new HashMap<>();
-        resetFolderOutput.put("status","IN-PROGRESS");
-        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) resetFolderOutput);
-        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,null);
-        Node nodeInfo = nodes.getNode(nodeId);
-        NodePermissions nodePerms = nodeInfo.getPermissions();
         int maxItems = params.getPaging().getMaxItems();
         QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
+        resetFolderOutput.put("status","IN-PROGRESS");
+        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) resetFolderOutput);
+        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,null);
 
-        if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
-        {
-            throw new AccessDeniedException("permissions.err_access_denied");
-        }
+        validatePermissions(nodeRef, nodeId);
 
         if(!"folder".equals(qName.getLocalName()))
         {
@@ -174,33 +169,13 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
     public Map<String, Object> readById(String nodeId, String id, Parameters parameters)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
-        Node nodeInfo = nodes.getNode(nodeId);
-        NodePermissions nodePerms = nodeInfo.getPermissions();
+        validatePermissions(nodeRef, nodeId);
+        validateNodeType(nodeRef);
 
-        // Validate permissions.
-        if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
-        {
-            throw new AccessDeniedException("permissions.err_access_denied");
-        }
-
-        // Check node type.
-        QName qName = nodeService.getType(nodeRef);
-        if (!"folder".equals(qName.getLocalName()))
-        {
-            throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
-        }
-
-        // Check for specific properties
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        if (properties.containsKey(FolderSizeModel.PROP_ERROR) && properties.get(FolderSizeModel.PROP_ERROR) != null)
-        {
-            throw new InvalidNodeTypeException(String.valueOf(properties.get(FolderSizeModel.PROP_ERROR)));
-        }
-
-        // Process properties and return result.
         try
         {
             LOG.info("Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById");
+            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             Map<String, Object> result = new HashMap<>();
 
             if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
@@ -228,6 +203,36 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         {
             LOG.error("Exception occurred in NodeFolderSizeRelation:readById {}", ex.getMessage());
             throw ex; // Rethrow with original stack trace
+        }
+    }
+
+    private void validatePermissions(NodeRef nodeRef, String nodeId)
+    {
+        Node nodeInfo = nodes.getNode(nodeId);
+        NodePermissions nodePerms = nodeInfo.getPermissions();
+
+        // Validate permissions.
+        if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
+        {
+            throw new AccessDeniedException("permissions.err_access_denied");
+        }
+    }
+
+    private void validateNodeType(NodeRef nodeRef)
+    {
+        // Check node type.
+        QName qName = nodeService.getType(nodeRef);
+
+        if (!"folder".equals(qName.getLocalName()))
+        {
+            throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
+        }
+
+        // Check for specific properties
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        if (properties.containsKey(FolderSizeModel.PROP_ERROR) && properties.get(FolderSizeModel.PROP_ERROR) != null)
+        {
+            throw new InvalidNodeTypeException(String.valueOf(properties.get(FolderSizeModel.PROP_ERROR)));
         }
     }
 

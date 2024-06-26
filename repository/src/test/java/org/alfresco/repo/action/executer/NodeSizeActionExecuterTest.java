@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -98,12 +100,11 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     @Test
     public void testExecution()
     {
-        assertEquals(1,1);
         int maxItems = 100;
         ActionImpl action = new ActionImpl(null, ID, NodeSizeActionExecuter.NAME, null);
         action.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
         this.executer.executeImpl(action, this.nodeRef);
-        String compareString = this.nodeService.getProperty(this.nodeRef, FolderSizeModel.PROP_STATUS).toString();
-        assertTrue(compareString != null);
+        Map<String, Object> mapResult = (Map<String, Object>)this.nodeService.getProperty(this.nodeRef, FolderSizeModel.PROP_OUTPUT);
+        assertTrue(mapResult != null);
     }
 }

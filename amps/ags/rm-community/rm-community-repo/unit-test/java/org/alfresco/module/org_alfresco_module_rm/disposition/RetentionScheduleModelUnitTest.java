@@ -24,10 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.model.apiNodes;
+package org.alfresco.module.org_alfresco_module_rm.disposition;
 
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.model.RetentionSchedule;
@@ -48,7 +46,7 @@ import static org.mockito.Mockito.when;
 /**
  * Api nodes modal factory unit test
  */
-public class ApiNodesModelFactoryUnitTest extends BaseUnitTest
+public class RetentionScheduleModelUnitTest extends BaseUnitTest
 {
     private static final String AUTHORITY = "authority";
     private static final String INSTRUCTIONS = "instructions";

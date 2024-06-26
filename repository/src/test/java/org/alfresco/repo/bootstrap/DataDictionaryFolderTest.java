@@ -80,13 +80,13 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.deleteNode(childNodeRef);
-                        fail("folder is deleted");
                     }
                     catch (Exception ex)
                     {
                         assertTrue(ex.getMessage().contains("deletion is not allowed"));
                     }
                 });
+        fail("folder is deletable");
     }
 
     @Test
@@ -113,12 +113,12 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.moveNode(childNodeRef, folderRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
-                        fail("folder is moved");
                     }
                     catch (Exception ex)
                     {
                         assertTrue(ex.getMessage().contains("move is not allowed"));
                     }
                 });
+        fail("folder is movable");
     }
 }

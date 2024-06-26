@@ -900,7 +900,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * map retention schedule data
+     * Helper method that sets the information for the retention schedule type.
      * @param dispositionSchedule
      * @return RetentionSchedule
      */
@@ -908,8 +908,10 @@ public class ApiNodesModelFactory
     {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
         retentionSchedule.setId(dispositionSchedule.getNodeRef().getId());
-        NodeRef parent = this.nodeService.getPrimaryParent(dispositionSchedule.getNodeRef()).getParentRef();
-        retentionSchedule.setParentId(parent.getId());
+        if(dispositionSchedule.getNodeRef() != null) {
+            NodeRef parent = this.nodeService.getPrimaryParent(dispositionSchedule.getNodeRef()).getParentRef();
+            retentionSchedule.setParentId(parent.getId());
+        }
         retentionSchedule.setInstructions(dispositionSchedule.getDispositionInstructions());
         retentionSchedule.setAuthority(dispositionSchedule.getDispositionAuthority());
         retentionSchedule.setRecordLevel(dispositionSchedule.isRecordLevelDisposition());
@@ -922,7 +924,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * map retention schedule action definition data
+     * Helper method that sets the information for the retention schedule action definition type.
      * @param dispositionActionDefinition
      * @return RetentionScheduleActionDefinition
      */
@@ -939,7 +941,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * map retention action properties
+     * Helper method that sets core information for the retention schedule action definition type.
      * @param dispositionActionDefinition
      * @param retentionScheduleActionDefinition
      */
@@ -962,13 +964,15 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * map period properties
+     * Helper method that sets the period-related information for the retention schedule action definition type.
      * @param dispositionActionDefinition
      * @param retentionScheduleActionDefinition
      */
     private void mapPeriodProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
-        retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
+        if(dispositionActionDefinition.getPeriodProperty() != null) {
+            retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
+        }
         String period = dispositionActionDefinition.getPeriod().toString();
         if (!period.isEmpty())
         {
@@ -997,7 +1001,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * map events properties
+     * Helper method that sets the events information for the retention schedule action definition type.
      * @param dispositionActionDefinition
      * @param retentionScheduleActionDefinition
      */
@@ -1014,7 +1018,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * map retention schedule optional info
+     * Helper method that sets the optional information for the retention schedule type.
      * @param retentionSchedule
      * @param schedule
      * @param includeParam

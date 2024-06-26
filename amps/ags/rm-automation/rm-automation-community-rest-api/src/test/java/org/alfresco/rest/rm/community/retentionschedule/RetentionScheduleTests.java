@@ -33,8 +33,6 @@ import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleC
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.Assert;
-import org.testng.AssertJUnit;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -48,6 +46,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.AssertJUnit.assertEquals;
 
@@ -154,10 +153,10 @@ public class RetentionScheduleTests extends BaseRMRestTest
 
         // Verify the status code
         assertStatusCode(CREATED);
-        AssertJUnit.assertEquals(createdRetentionSchedule.getAuthority(), authority);
-        AssertJUnit.assertEquals(createdRetentionSchedule.getInstructions(), instructions);
-        AssertJUnit.assertFalse(createdRetentionSchedule.isRecordLevel());
-        Assert.assertNotNull(createdRetentionSchedule.getId());
+        assertEquals(createdRetentionSchedule.getAuthority(), authority);
+        assertEquals(createdRetentionSchedule.getInstructions(), instructions);
+        assertFalse(createdRetentionSchedule.isRecordLevel());
+        assertNotNull(createdRetentionSchedule.getId());
     }
 
     /**
@@ -251,7 +250,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
             logger.info("Checking retention schedule " + retentionScheduleId);
 
             // Find this retention schedule is created one or not
-            assertEquals(createdRetentionSchedule.getId(),retentionScheduleId);
+            assertEquals(createdRetentionSchedule.getId(), retentionScheduleId);
             assertEquals(createdRetentionSchedule.getParentId(),retentionSchedule.getParentId());
             assertEquals(createdRetentionSchedule.getAuthority(), retentionSchedule.getAuthority());
             assertEquals(createdRetentionSchedule.getInstructions(), retentionSchedule.getInstructions());

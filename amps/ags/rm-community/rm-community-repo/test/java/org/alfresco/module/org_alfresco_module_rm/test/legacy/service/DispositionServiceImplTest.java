@@ -442,7 +442,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
                 // Failure: create disposition schedule on container with existing disposition schedule
                 Assert.assertThrows(ConstraintViolatedException.class,
-                        ()->{
+                        () -> {
                             utils.createBasicDispositionSchedule(rmContainer);
                         });
             }
@@ -490,7 +490,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
 
                 // Failure: create disposition schedule on container with existing disposition schedule
                 Assert.assertThrows(ConstraintViolatedException.class,
-                        ()->{
+                        () -> {
                             utils.createBasicDispositionSchedule(rmContainer);
                         });
             }

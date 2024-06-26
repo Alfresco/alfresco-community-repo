@@ -31,17 +31,19 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.model.RetentionSchedule;
 import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
- * Api nodes modal factory unit test
+ * Retention schedule model unit test
  */
 public class RetentionScheduleModelUnitTest extends BaseUnitTest
 {
@@ -52,34 +54,38 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
     @InjectMocks
     private ApiNodesModelFactory apiNodesModelFactory;
 
+    @Mock
+    DispositionSchedule dispositionSchedule;
+
+    @Mock
+    DispositionActionDefinition dispositionActionDefinition;
+
     @Test
     public void mapRetentionScheduleDataTest()
     {
         // Mock data
-        DispositionSchedule dispositionSchedule = mock(DispositionSchedule.class);
-        RetentionSchedule retentionSchedule = mock(RetentionSchedule.class);
         NodeRef nodeRef = generateNodeRef(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE, true);
+        ChildAssociationRef childAssociationRef = generateChildAssociationRef(filePlan, record);
         when(dispositionSchedule.getDispositionAuthority()).thenReturn(AUTHORITY);
         when(dispositionSchedule.getDispositionInstructions()).thenReturn(INSTRUCTIONS);
         when(dispositionSchedule.getNodeRef()).thenReturn(nodeRef);
         when(dispositionSchedule.isRecordLevelDisposition()).thenReturn(false);
-        when(apiNodesModelFactory.mapRetentionScheduleData(dispositionSchedule)).thenReturn(retentionSchedule);
+        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(childAssociationRef);
         // Call the method
-        RetentionSchedule result = apiNodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
-
-        assertEquals(dispositionSchedule.getNodeRef().getId(),result.getId());
-        assertEquals(dispositionSchedule.getDispositionAuthority(),result.getAuthority());
-        assertEquals(dispositionSchedule.getDispositionInstructions(),result.getInstructions());
-        assertEquals(dispositionSchedule.isRecordLevelDisposition(),result.isRecordLevel());
+        RetentionSchedule expectedResult = apiNodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
+        assertEquals(expectedResult.getId(), dispositionSchedule.getNodeRef().getId());
+        assertEquals(expectedResult.getAuthority(), dispositionSchedule.getDispositionAuthority());
+        assertEquals(expectedResult.getInstructions(), dispositionSchedule.getDispositionInstructions());
+        assertEquals(expectedResult.isRecordLevel(), dispositionSchedule.isRecordLevelDisposition());
     }
 
     @Test
     public void mapRetentionScheduleActionDefDataTest()
     {
         // Mock data
-        DispositionActionDefinition dispositionActionDefinition = mock(DispositionActionDefinition.class);
         NodeRef nodeRef = generateNodeRef(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE, true);
         String period = "month|10";
+        ChildAssociationRef childAssociationRef = generateChildAssociationRef(filePlan, record);
         when(dispositionActionDefinition.getNodeRef()).thenReturn(nodeRef);
         when(dispositionActionDefinition.getName()).thenReturn(RETAIN_STEP);
         when(dispositionActionDefinition.getDescription()).thenReturn("Description");
@@ -87,16 +93,18 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         when(dispositionActionDefinition.getGhostOnDestroy()).thenReturn("ghost");
         when(dispositionActionDefinition.getPeriod()).thenReturn(new Period(period));
         when(dispositionActionDefinition.getLocation()).thenReturn("location");
+        when(dispositionActionDefinition.getId()).thenReturn(nodeRef.getId());
+        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(childAssociationRef);
         // Call the method
-        RetentionScheduleActionDefinition result = apiNodesModelFactory.mapRetentionScheduleActionDefData(dispositionActionDefinition);
-        String resultPeriod = result.getPeriod()+"|"+result.getPeriodAmount();
+        RetentionScheduleActionDefinition expectedResult = apiNodesModelFactory.mapRetentionScheduleActionDefData(dispositionActionDefinition);
+        String resultPeriod = expectedResult.getPeriod() + "|" + expectedResult.getPeriodAmount();
         // Assertions
-        assertEquals(dispositionActionDefinition.getNodeRef().getId(),result.getId());
-        assertEquals(dispositionActionDefinition.getName(),result.getName());
-        assertEquals(dispositionActionDefinition.getDescription(),result.getDescription());
-        assertEquals(dispositionActionDefinition.getIndex(),result.getIndex());
-        assertEquals(dispositionActionDefinition.getLocation(),result.getLocation());
-        assertEquals(dispositionActionDefinition.getPeriodProperty().getLocalName(),result.getPeriodProperty());
-        assertEquals(dispositionActionDefinition.getPeriod(),new Period(resultPeriod));
+        assertEquals(expectedResult.getId(), dispositionActionDefinition.getId());
+        assertEquals(expectedResult.getName(), dispositionActionDefinition.getName());
+        assertEquals(expectedResult.getDescription(), dispositionActionDefinition.getDescription());
+        assertEquals(expectedResult.getIndex(), dispositionActionDefinition.getIndex());
+        assertEquals(expectedResult.getLocation(), dispositionActionDefinition.getLocation());
+        assertEquals(new Period(resultPeriod), dispositionActionDefinition.getPeriod());
+        assertTrue(expectedResult.isRetainRecordMetadataAfterDestruction());
     }
 }

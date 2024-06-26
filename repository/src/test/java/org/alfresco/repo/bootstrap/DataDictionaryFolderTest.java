@@ -80,6 +80,7 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.deleteNode(childNodeRef);
+                        fail("folder is deleted");
                     }
                     catch (Exception ex)
                     {
@@ -112,6 +113,7 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.moveNode(childNodeRef, folderRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+                        fail("folder is moved");
                     }
                     catch (Exception ex)
                     {

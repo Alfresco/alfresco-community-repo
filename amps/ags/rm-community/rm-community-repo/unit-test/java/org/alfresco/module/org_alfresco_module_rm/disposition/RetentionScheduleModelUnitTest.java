@@ -76,7 +76,7 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         assertEquals(expectedResult.getId(), dispositionSchedule.getNodeRef().getId());
         assertEquals(expectedResult.getAuthority(), dispositionSchedule.getDispositionAuthority());
         assertEquals(expectedResult.getInstructions(), dispositionSchedule.getDispositionInstructions());
-        assertEquals(expectedResult.isRecordLevel(), dispositionSchedule.isRecordLevelDisposition());
+        assertEquals(expectedResult.getIsRecordLevel(), dispositionSchedule.isRecordLevelDisposition());
     }
 
     @Test
@@ -105,6 +105,6 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         assertEquals(expectedResult.getIndex(), dispositionActionDefinition.getIndex());
         assertEquals(expectedResult.getLocation(), dispositionActionDefinition.getLocation());
         assertEquals(new Period(resultPeriod), dispositionActionDefinition.getPeriod());
-        assertTrue(expectedResult.isRetainRecordMetadataAfterDestruction());
+        assertTrue(expectedResult.getRetainRecordMetadataAfterDestruction());
     }
 }

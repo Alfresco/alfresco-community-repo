@@ -42,6 +42,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DataDictionaryFolderTest extends BaseSpringTest
 {
@@ -65,6 +66,8 @@ public class DataDictionaryFolderTest extends BaseSpringTest
     @Test
     public void testDataDictionaryFolderIsUndeletable()
     {
+        AtomicBoolean isDeleted = new AtomicBoolean(false);
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // get the company_home
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
@@ -80,18 +83,24 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.deleteNode(childNodeRef);
+                        isDeleted.set(true);
                     }
                     catch (Exception ex)
                     {
                         assertTrue(ex.getMessage().contains("deletion is not allowed"));
                     }
                 });
-        fail("folder is deletable");
+        if (isDeleted.get())
+        {
+            fail("folder is deletable");
+        }
     }
 
     @Test
     public void testDataDictionaryFolderIsUnmovable()
     {
+        AtomicBoolean isMovable = new AtomicBoolean(false);
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // get the company_home
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
@@ -113,12 +122,16 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.moveNode(childNodeRef, folderRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+                        isMovable.set(true);
                     }
                     catch (Exception ex)
                     {
                         assertTrue(ex.getMessage().contains("move is not allowed"));
                     }
                 });
-        fail("folder is movable");
+        if (isMovable.get())
+        {
+            fail("folder is movable");
+        }
     }
 }

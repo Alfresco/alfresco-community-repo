@@ -66,13 +66,12 @@ public class DataDictionaryFolderTest extends BaseSpringTest
     @Test
     public void testDataDictionaryFolderIsUndeletable()
     {
-        AtomicBoolean isDeleted = new AtomicBoolean(false);
-
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // get the company_home
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
         // get the Data Dictionary
         NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS, DATA_DICTIONARY);
+        assertTrue(nodeService.hasAspect(dataDictionaryRef, ContentModel.ASPECT_UNDELETABLE));
 
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(dataDictionaryRef);
 
@@ -83,29 +82,23 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.deleteNode(childNodeRef);
-                        isDeleted.set(true);
                     }
                     catch (Exception ex)
                     {
                         assertTrue(ex.getMessage().contains("deletion is not allowed"));
                     }
                 });
-        if (isDeleted.get())
-        {
-            fail("folder is deletable");
-        }
     }
 
     @Test
     public void testDataDictionaryFolderIsUnmovable()
     {
-        AtomicBoolean isMovable = new AtomicBoolean(false);
-
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         // get the company_home
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
         // get the Data Dictionary
         NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS, DATA_DICTIONARY);
+        assertTrue(nodeService.hasAspect(dataDictionaryRef, ContentModel.ASPECT_UNMOVABLE));
 
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(dataDictionaryRef);
 
@@ -122,16 +115,11 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                     try
                     {
                         nodeService.moveNode(childNodeRef, folderRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
-                        isMovable.set(true);
                     }
                     catch (Exception ex)
                     {
                         assertTrue(ex.getMessage().contains("move is not allowed"));
                     }
                 });
-        if (isMovable.get())
-        {
-            fail("folder is movable");
-        }
     }
 }

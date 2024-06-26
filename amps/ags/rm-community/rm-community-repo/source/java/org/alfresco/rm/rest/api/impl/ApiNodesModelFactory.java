@@ -35,9 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinitionImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
@@ -56,6 +59,8 @@ import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordCategory;
 import org.alfresco.rm.rest.api.model.RecordCategoryChild;
 import org.alfresco.rm.rest.api.model.RecordFolder;
+import org.alfresco.rm.rest.api.model.RetentionPeriod;
+import org.alfresco.rm.rest.api.model.RetentionSteps;
 import org.alfresco.rm.rest.api.model.Transfer;
 import org.alfresco.rm.rest.api.model.TransferChild;
 import org.alfresco.rm.rest.api.model.TransferContainer;
@@ -75,6 +80,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
 
@@ -109,6 +115,7 @@ public class ApiNodesModelFactory
     private PersonService personService;
     private DispositionService dispositionService;
     private ServiceRegistry serviceRegistry;
+    private RecordsManagementServiceRegistry services;
 
     public NodeService getNodeService()
     {
@@ -158,6 +165,11 @@ public class ApiNodesModelFactory
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
+    }
+
+    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry services)
+    {
+        this.services = services;
     }
 
     /**
@@ -1032,5 +1044,72 @@ public class ApiNodesModelFactory
                     .collect(Collectors.toList());
             retentionSchedule.setActions(actions);
         }
+    }
+
+    /**
+     * Create retention schedule action Definition params
+     * @param nodeInfo retention schedule action definition
+     * @return Map<QName, Serializable>
+     */
+    public Map<QName, Serializable> createRetentionActionDefinitionParams(RetentionScheduleActionDefinition nodeInfo)
+    {
+        Map<QName, Serializable>  actionDefinitionParams= new HashMap<>();
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, nodeInfo.getName());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
+        StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod() + "|");
+        // periodAmount property only applicable for following periods
+        // day, week, month, quarter, year and duration
+        if(nodeInfo.getPeriod().equals(RetentionPeriod.day.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.month.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.quarter.toString())
+                || nodeInfo.getPeriod().equals(RetentionPeriod.week.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.duration.toString()) || nodeInfo.getPeriod().equals(RetentionPeriod.year.toString()))
+        {
+            retentionPeriod.append(nodeInfo.getPeriodAmount());
+        }
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, retentionPeriod.toString());
+        QName periodProperty = QName.createQName(nodeInfo.getPeriodProperty(), namespaceService);
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
+                nodeInfo.isEligibleOnFirstCompleteEvent());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
+                nodeInfo.isCombineDispositionStepConditions());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
+                nodeInfo.getLocation());
+        List<String> inputEvents = nodeInfo.getEvents();
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
+        if (RetentionSteps.destroy.toString().equals(nodeInfo.getName()) && nodeInfo.isRetainRecordMetadataAfterDestruction())
+        {
+            actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
+        }
+        else
+        {
+            actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "delete");
+        }
+        return actionDefinitionParams;
+    }
+
+    /**
+     * Get retention actions details
+     * @param retentionScheduleNodeRef nodeRef
+     * @return List<DispositionActionDefinition>
+     */
+    public List<DispositionActionDefinition> getRetentionActions(NodeRef retentionScheduleNodeRef)
+    {
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(
+                retentionScheduleNodeRef,
+                RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
+                RegexQNamePattern.MATCH_ALL);
+        List<DispositionActionDefinition> actions;
+        actions = IntStream.range(0, assocs.size())
+                .mapToObj(index ->
+                {
+                    ChildAssociationRef assoc = assocs.get(index);
+                    return new DispositionActionDefinitionImpl(
+                            services.getRecordsManagementEventService(),
+                            services.getRecordsManagementActionService(),
+                            nodeService,
+                            assoc.getChildRef(),
+                            index);
+                })
+                .collect(Collectors.toList());
+        return actions;
     }
 }

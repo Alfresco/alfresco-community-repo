@@ -178,6 +178,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.ArchivedContentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_PRECONDITION_FAILED}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.RestoreInProgressException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException" value="#{T(org.apache.http.HttpStatus).SC_UNPROCESSABLE_ENTITY}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.UnprocessableContentException" value="#{T(org.apache.http.HttpStatus).SC_UNPROCESSABLE_ENTITY}" />
             </map>
         </property>
     </bean>

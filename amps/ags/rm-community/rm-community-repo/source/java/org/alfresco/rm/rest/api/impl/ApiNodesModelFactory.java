@@ -912,12 +912,12 @@ public class ApiNodesModelFactory
         retentionSchedule.setParentId(parent.getId());
         retentionSchedule.setInstructions(dispositionSchedule.getDispositionInstructions());
         retentionSchedule.setAuthority(dispositionSchedule.getDispositionAuthority());
-        retentionSchedule.setIsRecordLevel(dispositionSchedule.isRecordLevelDisposition());
+        retentionSchedule.setRecordLevel(dispositionSchedule.isRecordLevelDisposition());
 
         boolean unpublishedUpdates = dispositionSchedule.getDispositionActionDefinitions().stream()
                 .map(DispositionActionDefinition::getNodeRef)
                 .anyMatch(actionDefNodeRef -> nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE));
-        retentionSchedule.setIsUnpublishedUpdates(unpublishedUpdates);
+        retentionSchedule.setUnpublishedUpdates(unpublishedUpdates);
         return retentionSchedule;
     }
 
@@ -978,11 +978,11 @@ public class ApiNodesModelFactory
             // period -> 'month'
             // periodAmount -> 10
             String[] periodArray = period.split("\\|");
-            if (periodArray.length == 1)
+            if (periodArray.length > 0)
             {
                 retentionScheduleActionDefinition.setPeriod(periodArray[0]);
             }
-            else if (periodArray.length == 2)
+            if (periodArray.length > 1)
             {
                 try
                 {

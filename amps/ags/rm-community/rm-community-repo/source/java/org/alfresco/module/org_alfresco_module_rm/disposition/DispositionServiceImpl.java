@@ -473,11 +473,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             List<ChildAssociationRef> assocs = this.nodeService.getParentAssocs(dsNodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
             if (!assocs.isEmpty())
             {
-                if (assocs.size() != 1 && LOGGER.isWarnEnabled())
+                if (assocs.size() != 1)
                 {
                     // TODO in the future we should be able to support disposition schedule reuse, but for now just warn that
                     //      only the first disposition schedule will be considered
-                    LOGGER.warn("Retention schedule has more than one associated records management container.  " +
+                    LOGGER.atWarn().log("Retention schedule has more than one associated records management container.  " +
                             "This is not currently supported so only the first container will be considered. " +
                             "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
                 }
@@ -771,16 +771,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         DispositionAction da;
         // check if current transaction is a READ ONLY one and if true create the node in a READ WRITE transaction
-        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
-        {
-            da = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<DispositionAction>()
-                    {
-                        @Override
-                        public DispositionAction execute() throws Throwable
-                        {
-                            return createDispositionAction(nodeRef, props);
-                        }
-                    }, false, true);
+        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY)) {
+            da = transactionService.getRetryingTransactionHelper().doInTransaction(
+                    () -> createDispositionAction(nodeRef, props),
+                    false,
+                    true
+            );
         }
         else
         {
@@ -1378,10 +1374,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         Date calculatedDate = (nextDispositionActionDate != null ? nextDispositionActionDate : maxDate);
 
         // We only need to update the date if the current one is too early.
-        if (recordDate.before(calculatedDate))
-            return WriteMode.DATE_ONLY;
-        else
-            return WriteMode.READ_ONLY;
+        return recordDate.before(calculatedDate) ? WriteMode.DATE_ONLY : WriteMode.READ_ONLY;
     }
 
     /**

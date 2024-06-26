@@ -72,7 +72,7 @@ public class DataDictionaryFolderTest extends BaseSpringTest
         // get the company_home
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
         // get the Data Dictionary
-        NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS, "Data Dictionary");
+        NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS, DATA_DICTIONARY);
 
         List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(dataDictionaryRef);
 

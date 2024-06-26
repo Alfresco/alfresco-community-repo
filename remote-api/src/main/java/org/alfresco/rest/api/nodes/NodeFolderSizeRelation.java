@@ -131,7 +131,6 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         NodeRef nodeRef = nodes.validateNode(nodeId);
         Map<String, Object> resetFolderOutput = new HashMap<>();
         resetFolderOutput.put("status","IN-PROGRESS");
-        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "IN-PROGRESS");
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) resetFolderOutput);
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,null);
         Node nodeInfo = nodes.getNode(nodeId);
@@ -177,48 +176,55 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         NodeRef nodeRef = nodes.validateNode(nodeId);
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
-        QName qName = nodeService.getType(nodeRef);
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        Map<String, Object> result = new HashMap<>();
 
+        // Validate permissions.
         if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
         {
             throw new AccessDeniedException("permissions.err_access_denied");
         }
 
-        if(!"folder".equals(qName.getLocalName()))
+        // Check node type.
+        QName qName = nodeService.getType(nodeRef);
+        if (!"folder".equals(qName.getLocalName()))
         {
             throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
         }
 
-        if(properties.containsKey(FolderSizeModel.PROP_ERROR) && properties.get(FolderSizeModel.PROP_ERROR) != null)
+        // Check for specific properties
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        if (properties.containsKey(FolderSizeModel.PROP_ERROR) && properties.get(FolderSizeModel.PROP_ERROR) != null)
         {
-            throw new RuntimeException(String.valueOf(properties.get(FolderSizeModel.PROP_ERROR)));
+            throw new InvalidNodeTypeException(String.valueOf(properties.get(FolderSizeModel.PROP_ERROR)));
         }
 
+        // Process properties and return result.
         try
         {
-            LOG.info(" Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById ");
+            LOG.info("Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById");
+            Map<String, Object> result = new HashMap<>();
             if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
             {
                 result.put("status", "NOT-INITIATED");
             }
-            else if (!properties.containsKey(FolderSizeModel.PROP_OUTPUT))
-            {
-                result.put("status", "IN-PROGRESS");
-            }
-            else
+            else if(properties.containsKey(FolderSizeModel.PROP_OUTPUT))
             {
                 Map<String, Object> mapResult = (Map<String, Object>) properties.get(FolderSizeModel.PROP_OUTPUT);
-                mapResult.put("status", "COMPLETED");
-                result = mapResult;
+                if(mapResult.get(0).toString().contains("IN-PROGRESS"))
+                {
+                    result.put("status", "IN-PROGRESS");
+                }
+                else
+                {
+                    mapResult.put("status", "COMPLETED");
+                    result = mapResult;
+                }
             }
             return result;
         }
         catch (Exception ex)
         {
             LOG.error("Exception occurred in NodeFolderSizeRelation:readById {}", ex.getMessage());
-            throw ex;// This rethrows with the original stack trace preserved.
+            throw ex; // Rethrow with original stack trace
         }
     }
 }

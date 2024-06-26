@@ -26,13 +26,11 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-import lombok.Data;
 import java.util.List;
 
 /**
  * retention schedule
  */
-@Data
 public class RetentionSchedule
 {
     private String id ;
@@ -42,4 +40,74 @@ public class RetentionSchedule
     private boolean isRecordLevel;
     private boolean isUnpublishedUpdates;
     private List<RetentionScheduleActionDefinition> actions;
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public String getParentId()
+    {
+        return parentId;
+    }
+
+    public void setParentId(String parentId)
+    {
+        this.parentId = parentId;
+    }
+
+    public String getAuthority()
+    {
+        return authority;
+    }
+
+    public void setAuthority(String authority)
+    {
+        this.authority = authority;
+    }
+
+    public String getInstructions()
+    {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions)
+    {
+        this.instructions = instructions;
+    }
+
+    public boolean getIsRecordLevel()
+    {
+        return isRecordLevel;
+    }
+
+    public void setIsRecordLevel(boolean isRecordLevel)
+    {
+        this.isRecordLevel = isRecordLevel;
+    }
+
+    public boolean getIsUnpublishedUpdates()
+    {
+        return isUnpublishedUpdates;
+    }
+
+    public void setIsUnpublishedUpdates(boolean unpublishedUpdates)
+    {
+        this.isUnpublishedUpdates = unpublishedUpdates;
+    }
+
+    public List<RetentionScheduleActionDefinition> getActions()
+    {
+        return actions;
+    }
+
+    public void setActions(List<RetentionScheduleActionDefinition> actions)
+    {
+        this.actions = actions;
+    }
 }

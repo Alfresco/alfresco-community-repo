@@ -159,7 +159,7 @@
         <property name="apiUtils" ref="apiUtils" />
         <property name="nodesModelFactory" ref="nodesModelFactory" />
         <property name="nodeService" ref="NodeService"/>
-        <property name="service" ref="RecordsManagementServiceRegistry"/>
+        <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderEntityResource">

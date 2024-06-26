@@ -924,12 +924,12 @@ public class ApiNodesModelFactory
         }
         retentionSchedule.setInstructions(dispositionSchedule.getDispositionInstructions());
         retentionSchedule.setAuthority(dispositionSchedule.getDispositionAuthority());
-        retentionSchedule.setRecordLevel(dispositionSchedule.isRecordLevelDisposition());
+        retentionSchedule.setIsRecordLevel(dispositionSchedule.isRecordLevelDisposition());
 
         boolean unpublishedUpdates = dispositionSchedule.getDispositionActionDefinitions().stream()
                 .map(DispositionActionDefinition::getNodeRef)
                 .anyMatch(actionDefNodeRef -> nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE));
-        retentionSchedule.setUnpublishedUpdates(unpublishedUpdates);
+        retentionSchedule.setIsUnpublishedUpdates(unpublishedUpdates);
         return retentionSchedule;
     }
 
@@ -1064,14 +1064,14 @@ public class ApiNodesModelFactory
         QName periodProperty = QName.createQName(nodeInfo.getPeriodProperty(), namespaceService);
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
-                nodeInfo.isEligibleOnFirstCompleteEvent());
+                nodeInfo.getEligibleOnFirstCompleteEvent());
         actionDefinitionParams.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
-                nodeInfo.isCombineDispositionStepConditions());
+                nodeInfo.getCombineDispositionStepConditions());
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
                 nodeInfo.getLocation());
         List<String> inputEvents = nodeInfo.getEvents();
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
-        if (RetentionSteps.DESTROY.stepName.equals(nodeInfo.getName()) && nodeInfo.isRetainRecordMetadataAfterDestruction())
+        if (RetentionSteps.DESTROY.stepName.equals(nodeInfo.getName()) && nodeInfo.getRetainRecordMetadataAfterDestruction())
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
         }
@@ -1116,7 +1116,7 @@ public class ApiNodesModelFactory
      */
     private boolean isPeriodAmountApplicable(String period)
     {
-        return (period.equals(RetentionPeriod.DAY.periodName) || period.equals(RetentionPeriod.MONTH.periodName) || period.equals(RetentionPeriod.QUARTER.periodName)
-                || period.equals(RetentionPeriod.WEEK.periodName) || period.equals(RetentionPeriod.XML_DURATION.periodName) || period.equals(RetentionPeriod.YEAR.periodName));
+        return period.equals(RetentionPeriod.DAY.periodName) || period.equals(RetentionPeriod.MONTH.periodName) || period.equals(RetentionPeriod.QUARTER.periodName)
+                || period.equals(RetentionPeriod.WEEK.periodName) || period.equals(RetentionPeriod.XML_DURATION.periodName) || period.equals(RetentionPeriod.YEAR.periodName);
     }
 }

@@ -27,7 +27,6 @@
 package org.alfresco.rm.rest.api.retentionschedule;
 
 import com.google.common.base.Enums;
-import lombok.Data;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -68,7 +67,6 @@ import static org.alfresco.util.ParameterCheck.mandatory;
  * Retention schedule action relation is used to perform the retention schedule step operations.
  */
 @RelationshipResource(name = "retention-steps", entityResource = RetentionScheduleEntityResource.class, title = "Retention Schedule Action")
-@Data
 public class RetentionScheduleActionRelation implements RelationshipResourceAction.Read<RetentionScheduleActionDefinition>,
         RelationshipResourceAction.Create<RetentionScheduleActionDefinition>
 {
@@ -77,6 +75,26 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     protected NodeService nodeService;
     private RecordsManagementServiceRegistry service;
     private ApiNodesModelFactory nodesModelFactory;
+
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
+    {
+        this.apiUtils = apiUtils;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
+    {
+        this.nodesModelFactory = nodesModelFactory;
+    }
+
+    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry service)
+    {
+        this.service = service;
+    }
 
     @Override
     @WebApiDescription(title="Create a retention schedule step for the particular retention schedule using the 'retentionScheduleId'")
@@ -131,32 +149,36 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     private void retentionScheduleStepValidation(NodeRef retentionScheduleNodeRef, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
         List<DispositionActionDefinition> actions = nodesModelFactory.getRetentionActions(retentionScheduleNodeRef);
-        Set<String> completedActionNames = new HashSet<>();
+        Set<String> completedActions = new HashSet<>();
         if (!actions.isEmpty())
         {
-            completedActionNames = actions.stream()
+            completedActions = actions.stream()
                     .map(DispositionActionDefinition::getName)
                     .collect(Collectors.toSet());
         }
 
-        if (completedActionNames.contains(RetentionSteps.DESTROY.stepName))
+        if (completedActions.contains(RetentionSteps.DESTROY.stepName))
         {
             throw new ConstraintViolatedException("Invalid Step - destroy action is already added . No other action is allowed after Destroy.");
         }
-        if (completedActionNames.contains(retentionScheduleActionDefinition.getName()) && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName))
+        if (completedActions.contains(retentionScheduleActionDefinition.getName()) && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName))
         {
             throw new ConstraintViolatedException("Invalid Step - This step already exists. You can’t create it again. Only transfer action is allowed multiple times.");
         }
         if (actions.isEmpty()
-                && (!retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName) && (!retentionScheduleActionDefinition.getName().equals(RetentionSteps.RETAIN.stepName))))
+                && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName) && (!retentionScheduleActionDefinition.getName().equals(RetentionSteps.RETAIN.stepName)))
         {
             throw new UnprocessableContentException("Invalid Step - cutoff or retain should be the first step");
         }
-        if ((completedActionNames.contains(RetentionSteps.TRANSFER.stepName) || completedActionNames.contains(RetentionSteps.ACCESSION.stepName))
-                && retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName))
+        if (isCutOffStepAllowed(completedActions, retentionScheduleActionDefinition))
         {
             throw new ConstraintViolatedException("Invalid Step - Can't use cutoff after transfer or accession");
         }
+    }
+
+    private boolean isCutOffStepAllowed(Set<String> completedActions, RetentionScheduleActionDefinition retentionScheduleActionDefinition) {
+        return (completedActions.contains(RetentionSteps.TRANSFER.stepName) || completedActions.contains(RetentionSteps.ACCESSION.stepName))
+                && retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName);
     }
 
     private void retentionScheduleRequestValidation(RetentionScheduleActionDefinition retentionScheduleActionDefinition)

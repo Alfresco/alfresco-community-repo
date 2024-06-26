@@ -27,6 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
@@ -64,16 +74,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 
 /**
  * Disposition service implementation.
@@ -684,6 +684,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             throw new IllegalArgumentException("'name' parameter is mandatory when creating a disposition action definition");
         }
+
+        // TODO: also check the action name is valid?
 
         // create the child association from the schedule to the action definition
         NodeRef actionNodeRef = this.nodeService.createNode(schedule.getNodeRef(),

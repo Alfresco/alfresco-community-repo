@@ -130,7 +130,10 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
     public Map<String, Object> createById(String nodeId, Parameters params)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
+        Map<String, Object> resetFolderOutput = new HashMap<>();
+        resetFolderOutput.put("status","IN-PROGRESS");
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_STATUS, "IN-PROGRESS");
+        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) resetFolderOutput);
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
         int maxItems = params.getPaging().getMaxItems();
@@ -154,14 +157,14 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
             folderSizeAction.setExecuteAsynchronously(true);
             folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
             actionService.executeAction(folderSizeAction, nodeRef, false, true);
+            LOG.info(" Executing ActionExecutor in NodeFolderSizeRelation:createById ");
             result.put("executionId", nodeId);
             return result;
         }
         catch (Exception ex)
         {
-            LOG.error("Exception occurred in NodeFolderSizeRelation:createById {}", ex.getMessage());
+            throw new RuntimeException("Exception occurred in NodeFolderSizeRelation:createById "+ex.getMessage());
         }
-        return null;
     }
 
     @Override
@@ -188,10 +191,11 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
 
         try
         {
+            LOG.info(" Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById ");
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
             if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
             {
-                result.put("status", "NOT INITIATED");
+                result.put("status", "NOT-INITIATED");
             }
             else if (!properties.containsKey(FolderSizeModel.PROP_OUTPUT))
             {
@@ -207,8 +211,7 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         }
         catch (Exception ex)
         {
-            LOG.error("Exception occurred in NodeFolderSizeRelation:readById {}", ex.getMessage());
+            throw new RuntimeException("Exception occurred in NodeFolderSizeRelation:readById "+ex.getMessage());
         }
-        return null;
     }
 }

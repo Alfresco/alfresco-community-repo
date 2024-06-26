@@ -374,7 +374,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceAction.CalculateSize.class))
                         {
-                            throw new DeletedResourceException("(GET by id) " + resource.getMetaData().getUniqueId());
+                            throw new DeletedResourceException("(POST by id) " + resource.getMetaData().getUniqueId());
                         }
                         RelationshipResourceAction.CalculateSize<?> relationGetter = (RelationshipResourceAction.CalculateSize<?>) resource.getResource();
                         Object result = relationGetter.createById(params.getEntityId(),params);

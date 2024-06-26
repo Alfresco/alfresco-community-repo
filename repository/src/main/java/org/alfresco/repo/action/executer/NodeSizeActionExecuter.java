@@ -28,6 +28,7 @@ package org.alfresco.repo.action.executer;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -101,7 +102,9 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
         Serializable serializable = ruleAction.getParameterValue(PAGE_SIZE);
-        int maxItems = 0;
+        int maxItems;
+        int skipCount = 0;
+        int totalItems;
         Map<String,Object> response = new HashMap<>();
 
         try
@@ -110,11 +113,9 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
         catch (NumberFormatException e)
         {
-            LOG.error("Exception occurred in NodeSizeActionExecutor:executeImpl:parsingInteger{}", e.getMessage());
+            throw new NumberFormatException("Exception occurred in NodeSizeActionExecutor "+e.getMessage());
         }
 
-        int skipCount = 0;
-        int totalItems = maxItems;
         NodeRef nodeRef = actionedUponNodeRef;
         long totalSize = 0;
         long resultSize;
@@ -134,54 +135,45 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         {
             // executing Alfresco FTS query.
             results = searchService.query(searchParameters);
+            List<NodeRef> nodeRefs = results.getNodeRefs();
+            totalItems = Math.min(nodeRefs.size(), maxItems);
 
-            while(true)
+            while (!isCalculationCompleted)
             {
-                if (results.getNodeRefs().size() < maxItems)
-                {
-                    totalItems = results.getNodeRefs().size();
-                }
+                List<NodeRef> subList = nodeRefs.subList(skipCount, totalItems);
 
-                resultSize = results.getNodeRefs().subList(skipCount,totalItems).parallelStream()
+                resultSize = subList.parallelStream()
                         .map(id -> ((ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT)).getSize())
                         .reduce(0L, Long::sum);
 
                 totalSize+=resultSize;
 
-                if (results.getNodeRefs().size() <= totalItems || results.getNodeRefs().size() <= maxItems)
+                if (nodeRefs.size() <= totalItems || nodeRefs.size() <= maxItems)
                 {
                     isCalculationCompleted = true;
-                    break;
                 }
-
-                if (results.getNodeRefs().size() > maxItems)
+                else
                 {
                     skipCount += maxItems;
-                    int remainingItems = results.getNodeRefs().size()-totalItems;
-
-                    if(remainingItems > maxItems)
-                    {
-                        totalItems += maxItems;
-                    }
-                    else
-                    {
-                        totalItems += remainingItems;
-                    }
+                    int remainingItems = nodeRefs.size() - totalItems;
+                    totalItems += Math.min(remainingItems, maxItems);
                 }
             }
         }
         catch (RuntimeException ex)
         {
-            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
+            throw new RuntimeException("Exception occurred in NodeSizeActionExecutor:results "+ex.getMessage());
         }
 
+        LOG.info(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
         String formattedTimestamp = eventTimestamp.format(formatter);
         response.put("id", nodeRef.getId());
         response.put("size", totalSize);
         response.put("calculatedAtTime", formattedTimestamp);
-        response.put("numberOfFiles", results!=null?results.getNodeRefs().size():0);
+        response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
+
         if(isCalculationCompleted)
         {
             nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) response);

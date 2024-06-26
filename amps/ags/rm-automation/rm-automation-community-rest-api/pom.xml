@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>23.3.0.43-SNAPSHOT</version>
+      <version>23.3.0.59-SNAPSHOT</version>
    </parent>
 
    <build>
@@ -82,6 +82,12 @@
       <dependency>
          <groupId>com.squareup.okhttp3</groupId>
          <artifactId>okhttp</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.awaitility</groupId>
+         <artifactId>awaitility</artifactId>
+         <version>${dependency.awaitility.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>

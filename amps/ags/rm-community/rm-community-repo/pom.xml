@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>23.3.0.43-SNAPSHOT</version>
+      <version>23.3.0.59-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -155,6 +155,12 @@
            <artifactId>lombok</artifactId>
            <scope>provided</scope>
        </dependency>
+      <dependency>
+         <groupId>org.awaitility</groupId>
+         <artifactId>awaitility</artifactId>
+         <version>${dependency.awaitility.version}</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <build>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -85,6 +85,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.model.ModelTestSuite.class,
     org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class,
     org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class,
+    org.alfresco.repo.security.permissions.dynamic.ServiceAccountRoleTest.class
 })
 public class AppContext05TestSuite
 {

@@ -62,6 +62,7 @@ import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_C
  */
 public class CombinedConfig extends CombinedTransformConfig
 {
+    public static final String X_ALFRESCO_RETRY_NEEDED_HEADER = "X-Alfresco-Retry-Needed";
     private final Log log;
 
     private ObjectMapper jsonObjectMapper = new ObjectMapper();
@@ -137,7 +138,7 @@ public class CombinedConfig extends CombinedTransformConfig
                             {
                                 int transformCount = transformerCount();
                                 configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
-                                if (transformCount == transformerCount())
+                                if (transformCount == transformerCount() || response.containsHeader(X_ALFRESCO_RETRY_NEEDED_HEADER))
                                 {
                                     successReadingConfig = false;
                                 }

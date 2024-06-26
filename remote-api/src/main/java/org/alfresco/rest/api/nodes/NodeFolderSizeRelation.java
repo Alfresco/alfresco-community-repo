@@ -202,14 +202,17 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         {
             LOG.info("Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById");
             Map<String, Object> result = new HashMap<>();
+
             if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
             {
                 result.put("status", "NOT-INITIATED");
             }
-            else if(properties.containsKey(FolderSizeModel.PROP_OUTPUT))
+            else
             {
                 Map<String, Object> mapResult = (Map<String, Object>) properties.get(FolderSizeModel.PROP_OUTPUT);
-                if(mapResult.get(0).toString().contains("IN-PROGRESS"))
+                Object status = mapResult.get("status");
+
+                if (status != null && status.toString().contains("IN-PROGRESS"))
                 {
                     result.put("status", "IN-PROGRESS");
                 }
@@ -227,4 +230,5 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
             throw ex; // Rethrow with original stack trace
         }
     }
+
 }

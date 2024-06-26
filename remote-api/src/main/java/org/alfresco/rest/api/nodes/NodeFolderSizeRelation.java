@@ -59,7 +59,6 @@ import java.util.Map;
 /**
  *   NodeFolderSizeRelation
  *   Calculating and Retrieving the folder size
- *   @author Mohit Singh
  */
 
 @RelationshipResource(name = "calculateSize",  entityResource = NodesEntityResource.class, title = "Calculate size")

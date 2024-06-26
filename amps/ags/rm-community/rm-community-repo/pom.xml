@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-governance-services-community-repo</artifactId>
-   <packaging>amp</packaging>
+   <packaging>jar</packaging>
    <name>Alfresco Governance Services Community Repository AMP</name>
    <description>Alfresco Governance Services Repository Extension</description>
 
@@ -219,26 +219,6 @@
          </plugin>
 
          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-               <execution>
-                  <phase>prepare-package</phase>
-                  <goals>
-                     <goal>run</goal>
-                  </goals>
-                  <configuration>
-                     <target>
-                        <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
-                           <fileset dir="${project.build.outputDirectory}/alfresco" />
-                        </move>
-                        <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
-                        <copy file="${project.build.directory}/generated-sources/license/THIRD-PARTY.txt" todir="${project.build.directory}/${project.build.finalName}/licenses/${artifactId}" />
-                     </target>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
@@ -311,27 +291,60 @@
             </executions>
          </plugin>
 
-         <plugin>
-            <groupId>org.alfresco.maven.plugin</groupId>
-            <artifactId>alfresco-maven-plugin</artifactId>
-         </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <version>2.6</version>
+              <executions>
+                  <execution>
+                      <id>build-amp-file</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>single</goal>
+                      </goals>
+                      <configuration>
+                          <appendAssemblyId>false</appendAssemblyId>
+                          <descriptor>src/main/assembly/amp.xml</descriptor>
+                      </configuration>
+                  </execution>
+              </executions>
+              <dependencies>
+                  <dependency>
+                      <groupId>org.alfresco.maven.plugin</groupId>
+                      <artifactId>alfresco-maven-plugin</artifactId>
+                      <version>${alfresco.maven-plugin.version}</version>
+                  </dependency>
+              </dependencies>
+          </plugin>
 
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <executions>
-               <execution>
-                  <goals>
-                     <goal>test-jar</goal>
-                  </goals>
-               </execution>
-            </executions>
-            <configuration>
-               <excludes>
-                  <exclude>**/alfresco-global.properties</exclude>
-               </excludes>
-            </configuration>
-         </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <id>default-jar</id>
+                      <goals>
+                          <goal>jar</goal>
+                      </goals>
+                      <configuration>
+                          <excludes>
+                              <exclude>alfresco/**</exclude>
+                          </excludes>
+                      </configuration>
+                  </execution>
+                  <execution>
+                      <id>test-jar</id>
+                      <goals>
+                          <goal>test-jar</goal>
+                      </goals>
+                      <configuration>
+                          <excludes>
+                              <exclude>**/alfresco-global.properties</exclude>
+                          </excludes>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
 
          <plugin>
             <groupId>org.codehaus.mojo</groupId>

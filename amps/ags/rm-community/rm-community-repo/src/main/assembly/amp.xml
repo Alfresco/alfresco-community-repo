@@ -1,0 +1,62 @@
+<assembly
+        xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
+
+    <id>build-amp-file</id>
+
+    <formats>
+        <format>amp</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <files>
+        <!-- Filter module.properties and put at top level in the AMP -->
+        <file>
+            <source>config/alfresco/module/org_alfresco_module_rm/module.properties</source>
+            <filtered>true</filtered>
+        </file>
+        <!-- Include the POM and pom.properties files in the /META-INF/maven directory in the AMP -->
+<!--        <file>-->
+<!--            <source>pom.xml</source>-->
+<!--            <outputDirectory>META-INF/maven/${project.groupId}/${project.artifactId}</outputDirectory>-->
+<!--        </file>-->
+<!--        <file>-->
+<!--            <source>${project.build.directory}/maven-archiver/pom.properties</source>-->
+<!--            <outputDirectory>META-INF/maven/${project.groupId}/${project.artifactId}</outputDirectory>-->
+<!--        </file>-->
+    </files>
+
+    <fileSets>
+        <!-- Include the generated license file in the /license directory in the AMP -->
+        <fileSet>
+            <directory>${project.build.directory}/generated-sources/license</directory>
+            <outputDirectory>licenses/${project.artifactId}</outputDirectory>
+        </fileSet>
+        <!-- Anything in the alfresco directory will end up in the config/alfresco directory in the AMP -->
+        <fileSet>
+            <directory>${project.build.outputDirectory}/alfresco</directory>
+            <outputDirectory>config/alfresco</outputDirectory>
+        </fileSet>
+        <!-- Anything in the assembly/web directory will end up in the /web directory in the AMP -->
+        <fileSet>
+            <directory>src/main/assembly/web</directory>
+            <outputDirectory>web</outputDirectory>
+            <filtered>true</filtered> <!-- Will filter files and substitute POM props such as for example ${project.name} -->
+            <excludes>
+                <exclude>README.md</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+
+    <!-- Include the project artifact (JAR) in the /lib directory in the AMP, and any 3rd party libraries (JARs)
+         used by the customization.
+    -->
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+
+</assembly>

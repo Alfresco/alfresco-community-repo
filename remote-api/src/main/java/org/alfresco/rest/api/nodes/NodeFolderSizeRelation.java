@@ -163,7 +163,8 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         }
         catch (Exception ex)
         {
-            throw new RuntimeException("Exception occurred in NodeFolderSizeRelation:createById "+ex.getMessage());
+            LOG.error("Exception occurred in NodeFolderSizeRelation:createById {}", ex.getMessage());
+            throw ex; // This rethrows with the original stack trace preserved.
         }
     }
 
@@ -211,7 +212,8 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         }
         catch (Exception ex)
         {
-            throw new RuntimeException("Exception occurred in NodeFolderSizeRelation:readById "+ex.getMessage());
+            LOG.error("Exception occurred in NodeFolderSizeRelation:readById {}", ex.getMessage());
+            throw ex;// This rethrows with the original stack trace preserved.
         }
     }
 }

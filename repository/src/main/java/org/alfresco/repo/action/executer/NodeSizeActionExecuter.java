@@ -103,8 +103,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     {
         Serializable serializable = ruleAction.getParameterValue(PAGE_SIZE);
         int maxItems;
-        int skipCount = 0;
-        int totalItems;
         Map<String,Object> response = new HashMap<>();
 
         try
@@ -113,7 +111,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
         catch (NumberFormatException e)
         {
-            throw new NumberFormatException("Exception occurred in NodeSizeActionExecutor "+e.getMessage());
+            LOG.error("Exception occurred while parsing String to INT: {}", e.getMessage());
+            throw e;
         }
 
         NodeRef nodeRef = actionedUponNodeRef;
@@ -136,12 +135,13 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
             // executing Alfresco FTS query.
             results = searchService.query(searchParameters);
             List<NodeRef> nodeRefs = results.getNodeRefs();
+            int skipCount = 0;
+            int totalItems;
             totalItems = Math.min(nodeRefs.size(), maxItems);
 
             while (!isCalculationCompleted)
             {
                 List<NodeRef> subList = nodeRefs.subList(skipCount, totalItems);
-
                 resultSize = subList.parallelStream()
                         .map(id -> ((ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT)).getSize())
                         .reduce(0L, Long::sum);
@@ -162,7 +162,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
         catch (RuntimeException ex)
         {
-            throw new RuntimeException("Exception occurred in NodeSizeActionExecutor:results "+ex.getMessage());
+            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
+            throw ex;
         }
 
         LOG.info(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");

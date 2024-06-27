@@ -103,8 +103,6 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
             .createRetentionSchedule(retentionSchedule, recordCategory.getId());
 
-        System.out.println("Sathish->"+createdRetentionSchedule.getId());
-
         retentionScheduleActionDefinition.setName(RETAIN_STEP);
         retentionScheduleActionDefinition.setDescription(INSTRUCTIONS);
         retentionScheduleActionDefinition.setPeriodAmount(PERIOD_AMOUNT);

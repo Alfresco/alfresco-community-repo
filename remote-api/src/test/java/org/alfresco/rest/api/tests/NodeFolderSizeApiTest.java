@@ -25,13 +25,23 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.rest.api.model.ContentInfo;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -39,6 +49,11 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -59,6 +74,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     private Site userOneN1Site;
 
     protected PermissionService permissionService;
+
+    private NodeService nodeService;
+
+    private MimetypeService mimeTypeService;
 
     /**
      * The logger
@@ -85,6 +104,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     {
         super.setup();
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
+        nodeService = applicationContext.getBean("NodeService", NodeService.class);
+        mimeTypeService = applicationContext.getBean("MimetypeService", MimetypeService.class);
     }
 
     /**
@@ -111,6 +132,71 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         HttpResponse response = post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
+        assertNotNull(contentNodeId);
+    }
+
+    /**
+     * Test case to trigger POST/calculateSize with >200 Children Nodes.
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
+     */
+    @Test
+    public void testPerformance() throws Exception
+    {
+        setRequestContext(user1);
+        Node n;
+
+        // Logging initial time.
+        LocalDateTime eventTimestamp = LocalDateTime.now();
+        String formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
+        LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Initial Time : {}", formattedTimestamp);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+
+        // Create a folder within the site document's library.
+        String folderName = "folder" + System.currentTimeMillis();
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,folderId);
+        QName qName = nodeService.getType(nodeRef);
+
+        for(int i =0;i<300;i++)
+        {
+            n = new Node();
+            n.setName("c1" + RUNID);
+            n.setNodeType(TYPE_CM_FOLDER);
+            QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(n.getName()));
+
+            if(i%7==0)
+            {
+                for(int j =0 ; j<=5; j++)
+                {
+                    n = new Node();
+                    n.setName("c2" + RUNID);
+                    n.setNodeType(TYPE_CM_CONTENT);
+                    ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10L, null);
+                    String mimeType = contentData.getMimetype();
+                    String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
+                    ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, contentData.getSize(),contentData.getEncoding());
+                    n.setContent(contentInfo);
+                    QName assocChildQNameInternal = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(n.getName()));
+                    nodeService.addChild(n.getNodeRef(), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, n.getName()), qName, assocChildQNameInternal);
+                }
+            }
+            nodeService.addChild(nodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, n.getName()), qName, assocChildQName);
+        }
+        Map<String, String> params = new HashMap<>();
+        params.put("nodeId",folderId);
+        params.put("maxItems","100");
+
+        HttpResponse response = post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
+        String contentNodeId = document.toString();
+        if(contentNodeId != null)
+        {
+            eventTimestamp = LocalDateTime.now();
+            formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
+            LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Completed Time : {}", formattedTimestamp);
+        }
         assertNotNull(contentNodeId);
     }
 

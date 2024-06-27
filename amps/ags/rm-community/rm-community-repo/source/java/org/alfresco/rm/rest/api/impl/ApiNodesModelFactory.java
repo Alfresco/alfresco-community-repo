@@ -1070,7 +1070,8 @@ public class ApiNodesModelFactory
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, nodeInfo.getName());
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
         StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod()).append("|");
-        if(isPeriodAmountApplicable(nodeInfo.getPeriod())){
+        if(isPeriodAmountApplicable(nodeInfo.getPeriod()))
+        {
             retentionPeriod.append(nodeInfo.getPeriodAmount());
         }
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, retentionPeriod.toString());

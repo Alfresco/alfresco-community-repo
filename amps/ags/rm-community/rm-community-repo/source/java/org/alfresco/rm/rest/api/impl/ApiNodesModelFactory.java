@@ -1045,7 +1045,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * Create retention schedule action Definition params
+     * this method is used for creation of retention schedule action definition params
      * @param nodeInfo retention schedule action definition
      * @return Map<QName, Serializable>
      */
@@ -1055,8 +1055,6 @@ public class ApiNodesModelFactory
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, nodeInfo.getName());
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
         StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod()).append("|");
-        // periodAmount property only applicable for following periods
-        // day, week, month, quarter, year and duration
         if(isPeriodAmountApplicable(nodeInfo.getPeriod())){
             retentionPeriod.append(nodeInfo.getPeriodAmount());
         }
@@ -1083,7 +1081,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * Get retention actions details
+     * this method is used retrieve retention schedule action details
      * @param retentionScheduleNodeRef nodeRef
      * @return List<DispositionActionDefinition>
      */
@@ -1110,12 +1108,14 @@ public class ApiNodesModelFactory
     }
 
     /**
-     *
-     * @param period
+     * this method is used to check period amount applicable or not
+     * @param period period
      * @return boolean
      */
     private boolean isPeriodAmountApplicable(String period)
     {
+        // periodAmount property only applicable for following periods
+        // day, week, month, quarter, year and duration
         return period.equals(RetentionPeriod.DAY.periodName) || period.equals(RetentionPeriod.MONTH.periodName) || period.equals(RetentionPeriod.QUARTER.periodName)
                 || period.equals(RetentionPeriod.WEEK.periodName) || period.equals(RetentionPeriod.XML_DURATION.periodName) || period.equals(RetentionPeriod.YEAR.periodName);
     }

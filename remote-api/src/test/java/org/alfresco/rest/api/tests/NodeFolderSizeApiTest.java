@@ -200,6 +200,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         {
             parentNodes = new Node();
             parentNodes.setName("c1" + RUNID);
+            parentNodes.setNodeId("folder1"+RUNID);
             parentNodes.setNodeType(TYPE_CM_FOLDER);
             QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(parentNodes.getName()));
 
@@ -219,7 +220,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
                     nodeService.addChild(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentNodes.getNodeId()), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, childNodes.getName()), qName, assocChildQNameInternal);
                 }
             }
-            nodeService.addChild(nodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parentNodes.getName()), qName, assocChildQName);
+            nodeService.addChild(nodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parentNodes.getNodeId()), qName, assocChildQName);
         }
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);

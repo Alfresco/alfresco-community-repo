@@ -46,8 +46,6 @@ import java.util.UUID;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertNotNull;
 
-import javax.validation.constraints.AssertTrue;
-
 /**
  * V1 REST API tests for Folder size
  */

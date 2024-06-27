@@ -49,7 +49,8 @@ public enum RetentionEvents
 
     public final String eventName;
 
-    RetentionEvents(String eventName) {
+    RetentionEvents(String eventName)
+    {
         this.eventName = eventName;
     }
 }

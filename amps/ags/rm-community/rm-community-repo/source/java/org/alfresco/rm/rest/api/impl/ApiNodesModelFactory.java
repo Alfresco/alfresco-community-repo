@@ -1001,9 +1001,11 @@ public class ApiNodesModelFactory
      */
     private void mapPeriodProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
-        if(dispositionActionDefinition.getPeriodProperty() != null) {
+        if(dispositionActionDefinition.getPeriodProperty() != null)
+        {
             retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
         }
+
         String period = dispositionActionDefinition.getPeriod().toString();
         if (!period.isEmpty())
         {
@@ -1013,20 +1015,22 @@ public class ApiNodesModelFactory
             // period -> 'month'
             // periodAmount -> 10
             String[] periodArray = period.split("\\|");
+
             if (periodArray.length > 0)
             {
                 retentionScheduleActionDefinition.setPeriod(periodArray[0]);
             }
+
             if (periodArray.length > 1)
             {
                 try
                 {
                     retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
                 }
-                catch (NumberFormatException exception)
+                catch (NumberFormatException numberFormatException)
                 {
-                    LOGGER.error ("Error parsing period amount: {}", exception.getMessage(), exception);
-                    throw new IllegalArgumentException ("Error parsing period amount: " + periodArray[1]);
+                    LOGGER.error("Error parsing period amount: {}{}", numberFormatException.getMessage(), periodArray[1], numberFormatException);
+                    throw numberFormatException;
                 }
             }
         }

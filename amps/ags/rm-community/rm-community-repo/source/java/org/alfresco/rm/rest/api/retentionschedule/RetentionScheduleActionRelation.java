@@ -71,7 +71,6 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 public class RetentionScheduleActionRelation implements RelationshipResourceAction.Read<RetentionScheduleActionDefinition>,
         RelationshipResourceAction.Create<RetentionScheduleActionDefinition>
 {
-
     private FilePlanComponentsApiUtils apiUtils;
     protected NodeService nodeService;
     private RecordsManagementServiceRegistry service;
@@ -97,8 +96,8 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
                         QName.createValidLocalName(nodeInfos.get(0).getName())),
                 RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION, actionDefinitionParams).getChildRef();
-        DispositionSchedule schedule = new DispositionScheduleImpl(service, nodeService, retentionScheduleNodeRef);
-        DispositionActionDefinition dispositionActionDefinition = schedule.getDispositionActionDefinition(actionNodeRef.getId());
+        DispositionSchedule dispositionSchedule = new DispositionScheduleImpl(service, nodeService, retentionScheduleNodeRef);
+        DispositionActionDefinition dispositionActionDefinition = dispositionSchedule.getDispositionActionDefinition(actionNodeRef.getId());
         List<RetentionScheduleActionDefinition> responseActions = new ArrayList<>();
         if (dispositionActionDefinition != null)
         {
@@ -199,7 +198,8 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
                 && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName) && (!retentionScheduleActionDefinition.getName().equals(RetentionSteps.RETAIN.stepName));
     }
 
-    private boolean isCutOffStepAllowed(Set<String> completedActions, RetentionScheduleActionDefinition retentionScheduleActionDefinition) {
+    private boolean isCutOffStepAllowed(Set<String> completedActions, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
         return (completedActions.contains(RetentionSteps.TRANSFER.stepName) || completedActions.contains(RetentionSteps.ACCESSION.stepName))
                 && retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName);
     }

@@ -34,12 +34,12 @@ import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
@@ -72,11 +72,17 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         when(dispositionSchedule.isRecordLevelDisposition()).thenReturn(false);
         when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(childAssociationRef);
         // Call the method
-        RetentionSchedule expectedResult = apiNodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
-        assertEquals(expectedResult.getId(), dispositionSchedule.getNodeRef().getId());
-        assertEquals(expectedResult.getAuthority(), dispositionSchedule.getDispositionAuthority());
-        assertEquals(expectedResult.getInstructions(), dispositionSchedule.getDispositionInstructions());
-        assertEquals(expectedResult.getIsRecordLevel(), dispositionSchedule.isRecordLevelDisposition());
+        RetentionSchedule actualResult = apiNodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
+
+        //Expected Result
+        RetentionSchedule expectedResult = new RetentionSchedule();
+        expectedResult.setId(nodeRef.getId());
+        expectedResult.setParentId(filePlan.getId());
+        expectedResult.setAuthority(AUTHORITY);
+        expectedResult.setInstructions(INSTRUCTIONS);
+
+        // Assertions
+        assertEquals(expectedResult, actualResult);
     }
 
     @Test
@@ -96,15 +102,27 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         when(dispositionActionDefinition.getId()).thenReturn(nodeRef.getId());
         when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(childAssociationRef);
         // Call the method
-        RetentionScheduleActionDefinition expectedResult = apiNodesModelFactory.mapRetentionScheduleActionDefData(dispositionActionDefinition);
-        String resultPeriod = expectedResult.getPeriod() + "|" + expectedResult.getPeriodAmount();
-        // Assertions
-        assertEquals(expectedResult.getId(), dispositionActionDefinition.getId());
-        assertEquals(expectedResult.getName(), dispositionActionDefinition.getName());
-        assertEquals(expectedResult.getDescription(), dispositionActionDefinition.getDescription());
-        assertEquals(expectedResult.getIndex(), dispositionActionDefinition.getIndex());
-        assertEquals(expectedResult.getLocation(), dispositionActionDefinition.getLocation());
-        assertEquals(new Period(resultPeriod), dispositionActionDefinition.getPeriod());
-        assertTrue(expectedResult.isRetainRecordMetadataAfterDestruction());
+        RetentionScheduleActionDefinition actualResult = apiNodesModelFactory.mapRetentionScheduleActionDefData(dispositionActionDefinition);
+
+        //Expected Result
+        RetentionScheduleActionDefinition expectedResult = getRetentionScheduleActionDefinition(nodeRef);
+
+        // Assertion
+        assertEquals(expectedResult, actualResult);
+    }
+
+    @NotNull
+    private static RetentionScheduleActionDefinition getRetentionScheduleActionDefinition(NodeRef nodeRef)
+    {
+        RetentionScheduleActionDefinition expectedResult = new RetentionScheduleActionDefinition();
+        expectedResult.setId(nodeRef.getId());
+        expectedResult.setName(RETAIN_STEP);
+        expectedResult.setDescription("Description");
+        expectedResult.setIndex(1);
+        expectedResult.setLocation("location");
+        expectedResult.setPeriod("month");
+        expectedResult.setPeriodAmount(10);
+        expectedResult.setRetainRecordMetadataAfterDestruction(true);
+        return expectedResult;
     }
 }

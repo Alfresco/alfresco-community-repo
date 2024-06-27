@@ -142,17 +142,17 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
             throw new ConstraintViolatedException("Invalid Step - destroy action is already added . No other action is allowed after Destroy.");
         }
 
-        if (checkStepAlreadyExists(completedActions, retentionScheduleActionDefinition))
+        if (checkStepAlreadyExists(completedActions, retentionScheduleActionDefinition.getName()))
         {
             throw new ConstraintViolatedException("Invalid Step - This step already exists. You can’t create it again. Only transfer action is allowed multiple times.");
         }
 
-        if (firstStepValidation(actions, retentionScheduleActionDefinition))
+        if (firstStepValidation(actions, retentionScheduleActionDefinition.getName()))
         {
             throw new UnprocessableContentException("Invalid Step - cutoff or retain should be the first step");
         }
 
-        if (isCutOffStepAllowed(completedActions, retentionScheduleActionDefinition))
+        if (isCutOffStepAllowed(completedActions, retentionScheduleActionDefinition.getName()))
         {
             throw new ConstraintViolatedException("Invalid Step - Can't use cutoff after transfer or accession");
         }
@@ -165,17 +165,17 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     private void retentionScheduleRequestValidation(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
         // step name validation
-        if (invalidStepNameCheck(retentionScheduleActionDefinition))
+        if (invalidStepNameCheck(retentionScheduleActionDefinition.getName()))
         {
             throw new InvalidArgumentException("name value is invalid : " +retentionScheduleActionDefinition.getName());
         }
         // period value validation
-        if (invalidPeriodCheck(retentionScheduleActionDefinition))
+        if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
         {
             throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
         }
         // event name validation
-        if (invalidEventNameCheck(retentionScheduleActionDefinition))
+        if (invalidEventNameCheck(retentionScheduleActionDefinition.getEvents()))
         {
             throw new InvalidArgumentException("event value is invalid: " + retentionScheduleActionDefinition.getEvents());
         }
@@ -187,38 +187,38 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         }
     }
 
-    private boolean checkStepAlreadyExists(Set<String> completedActions, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private boolean checkStepAlreadyExists(Set<String> completedActions, String stepName)
     {
-        return completedActions.contains(retentionScheduleActionDefinition.getName()) && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName);
+        return completedActions.contains(stepName) && !stepName.equals(RetentionSteps.TRANSFER.stepName);
     }
 
-    private boolean firstStepValidation(List<DispositionActionDefinition> actions, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private boolean firstStepValidation(List<DispositionActionDefinition> actions, String stepName)
     {
         return actions.isEmpty()
-                && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName) && (!retentionScheduleActionDefinition.getName().equals(RetentionSteps.RETAIN.stepName));
+                && !stepName.equals(RetentionSteps.CUTOFF.stepName) && (!stepName.equals(RetentionSteps.RETAIN.stepName));
     }
 
-    private boolean isCutOffStepAllowed(Set<String> completedActions, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private boolean isCutOffStepAllowed(Set<String> completedActions, String stepName)
     {
         return (completedActions.contains(RetentionSteps.TRANSFER.stepName) || completedActions.contains(RetentionSteps.ACCESSION.stepName))
-                && retentionScheduleActionDefinition.getName().equals(RetentionSteps.CUTOFF.stepName);
+                && stepName.equals(RetentionSteps.CUTOFF.stepName);
     }
 
-    private boolean invalidStepNameCheck(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private boolean invalidStepNameCheck(String stepName)
     {
-        return retentionScheduleActionDefinition.getName() != null && Arrays.stream(RetentionSteps.values())
-                .noneMatch(retentionStep -> retentionStep.stepName.equals(retentionScheduleActionDefinition.getName()));
+        return stepName != null && Arrays.stream(RetentionSteps.values())
+                .noneMatch(retentionStep -> retentionStep.stepName.equals(stepName));
     }
 
-    private boolean invalidPeriodCheck(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private boolean invalidPeriodCheck(String period)
     {
-        return retentionScheduleActionDefinition.getPeriod() != null && Arrays.stream(RetentionPeriod.values())
-                .noneMatch(retentionPeriod -> retentionPeriod.periodName.equals(retentionScheduleActionDefinition.getPeriod()));
+        return period != null && Arrays.stream(RetentionPeriod.values())
+                .noneMatch(retentionPeriod -> retentionPeriod.periodName.equals(period));
     }
 
-    private boolean invalidEventNameCheck(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    private boolean invalidEventNameCheck(List<String> events)
     {
-        return !retentionScheduleActionDefinition.getEvents().isEmpty() && retentionScheduleActionDefinition.getEvents().stream()
+        return !events.isEmpty() && events.stream()
                 .anyMatch(event -> Arrays.stream(RetentionEvents.values())
                         .noneMatch(retentionEvent -> retentionEvent.eventName.equals(event)));
     }

@@ -68,14 +68,6 @@
       <property name="systemPaths">
          <list>
             <value>/${spaces.company_home.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.content.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.rss.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.scripts.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.webscripts.childname}</value>
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.extension_webscripts.childname}</value>
          </list>
       </property>
    </bean>

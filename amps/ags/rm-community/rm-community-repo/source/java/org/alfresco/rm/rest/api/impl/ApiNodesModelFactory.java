@@ -81,6 +81,8 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class containing Alfresco and RM java services required by the API
@@ -91,6 +93,9 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class ApiNodesModelFactory
 {
+
+    /** Logger */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiNodesModelFactory.class);
 
     // excluded namespaces (aspects, properties, assoc types)
     public static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
@@ -597,7 +602,8 @@ public class ApiNodesModelFactory
         {
             Serializable val = info.getProperties().get(ContentModel.PROP_CONTENT);
 
-            if (val instanceof ContentData) {
+            if (val instanceof ContentData)
+            {
                 ContentData cd = (ContentData)val;
                 String mimeType = cd.getMimetype();
                 String mimeTypeName = serviceRegistry.getMimetypeService().getDisplaysByMimetype().get(mimeType);
@@ -1017,9 +1023,10 @@ public class ApiNodesModelFactory
                 {
                     retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
                 }
-                catch (Exception exception)
+                catch (NumberFormatException exception)
                 {
-                    throw new NumberFormatException("Error parsing period amount: " + exception);
+                    LOGGER.error ("Error parsing period amount: {}", exception.getMessage(), exception);
+                    throw new IllegalArgumentException ("Error parsing period amount: " + periodArray[1]);
                 }
             }
         }

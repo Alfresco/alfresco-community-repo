@@ -142,14 +142,17 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         {
             throw new ConstraintViolatedException("Invalid Step - destroy action is already added . No other action is allowed after Destroy.");
         }
-        if(checkStepAlreadyExists(completedActions, retentionScheduleActionDefinition))
+
+        if (checkStepAlreadyExists(completedActions, retentionScheduleActionDefinition))
         {
             throw new ConstraintViolatedException("Invalid Step - This step already exists. You can’t create it again. Only transfer action is allowed multiple times.");
         }
-        if(firstStepValidation(actions, retentionScheduleActionDefinition))
+
+        if (firstStepValidation(actions, retentionScheduleActionDefinition))
         {
             throw new UnprocessableContentException("Invalid Step - cutoff or retain should be the first step");
         }
+
         if (isCutOffStepAllowed(completedActions, retentionScheduleActionDefinition))
         {
             throw new ConstraintViolatedException("Invalid Step - Can't use cutoff after transfer or accession");
@@ -163,17 +166,17 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     private void retentionScheduleRequestValidation(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
         // step name validation
-        if(invalidStepNameCheck(retentionScheduleActionDefinition))
+        if (invalidStepNameCheck(retentionScheduleActionDefinition))
         {
             throw new InvalidArgumentException("name value is invalid : " +retentionScheduleActionDefinition.getName());
         }
         // period value validation
-        if(invalidPeriodCheck(retentionScheduleActionDefinition))
+        if (invalidPeriodCheck(retentionScheduleActionDefinition))
         {
             throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
         }
         // event name validation
-        if(invalidEventNameCheck(retentionScheduleActionDefinition))
+        if (invalidEventNameCheck(retentionScheduleActionDefinition))
         {
             throw new InvalidArgumentException("event value is invalid: " + retentionScheduleActionDefinition.getEvents());
         }

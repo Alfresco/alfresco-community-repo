@@ -49,11 +49,13 @@ public class RetentionSchedule
         return isRecordLevel;
     }
 
-    public void setIsRecordLevel(boolean recordLevel) {
+    public void setIsRecordLevel(boolean recordLevel)
+    {
         isRecordLevel = recordLevel;
     }
 
-    public void setIsUnpublishedUpdates(boolean unpublishedUpdates) {
+    public void setIsUnpublishedUpdates(boolean unpublishedUpdates)
+    {
         isUnpublishedUpdates = unpublishedUpdates;
     }
 

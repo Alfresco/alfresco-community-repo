@@ -521,15 +521,15 @@ public class ApiNodesModelFactory
         }
         if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(info.getType()))
         {
-            if(setRecordFolder(isMinimalInfo, propertyFilter, includeParam))
+            if (isRecordFolder(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordFolder(true);
             }
-            if(setRecordCategory(isMinimalInfo, propertyFilter, includeParam))
+            if (isRecordCategory(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordCategory(false);
             }
-            if(setRecordCategoryChildClosed(isMinimalInfo, propertyFilter, includeParam))
+            if (isRecordCategoryChildClosed(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsClosed((Boolean) nodeService.getProperty(info.getNodeRef(), RecordsManagementModel.PROP_IS_CLOSED));
             }
@@ -540,11 +540,11 @@ public class ApiNodesModelFactory
         }
         else
         {
-            if(setRecordFolder(isMinimalInfo, propertyFilter, includeParam))
+            if (isRecordFolder(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordFolder(false);
             }
-            if(setRecordCategory(isMinimalInfo, propertyFilter, includeParam))
+            if (isRecordCategory(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordCategory(true);
             }
@@ -553,24 +553,24 @@ public class ApiNodesModelFactory
                 DispositionSchedule ds = dispositionService.getDispositionSchedule(info.getNodeRef());
                 recordCategoryChild.setHasRetentionSchedule(ds != null);
             }
-            if(setRecordCategoryChildClosed(isMinimalInfo, propertyFilter, includeParam))
+            if (isRecordCategoryChildClosed(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsClosed(null);
             }
         }
     }
 
-    private boolean setRecordCategoryChildClosed(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
+    private boolean isRecordCategoryChildClosed(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
     {
         return (!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_IS_CLOSED)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED));
     }
 
-    private boolean setRecordCategory(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
+    private boolean isRecordCategory(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
     {
         return (!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY));
     }
 
-    private boolean setRecordFolder(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
+    private boolean isRecordFolder(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
     {
         return (!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_FOLDER)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_FOLDER));
     }
@@ -597,7 +597,7 @@ public class ApiNodesModelFactory
         {
             Serializable val = info.getProperties().get(ContentModel.PROP_CONTENT);
 
-            if ((val instanceof ContentData)) {
+            if (val instanceof ContentData) {
                 ContentData cd = (ContentData)val;
                 String mimeType = cd.getMimetype();
                 String mimeTypeName = serviceRegistry.getMimetypeService().getDisplaysByMimetype().get(mimeType);

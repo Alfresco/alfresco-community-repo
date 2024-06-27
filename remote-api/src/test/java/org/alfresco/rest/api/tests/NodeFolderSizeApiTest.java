@@ -43,17 +43,16 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,6 +65,7 @@ import static org.junit.Assert.assertNotNull;
  * V1 REST API tests for Folder size
  */
 @FixMethodOrder (MethodSorters.NAME_ASCENDING)
+@RunWith (JUnit4.class)
 public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 {
 
@@ -79,8 +79,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     private NodeService nodeService;
 
     private MimetypeService mimeTypeService;
-
-    private String folderName;
 
     private static  String folderId;
 
@@ -111,6 +109,15 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         mimeTypeService = applicationContext.getBean("MimetypeService", MimetypeService.class);
+
+        setRequestContext(user1);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        this.userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+
+        // Create a folder within the site document's library.
+        String folderName = "folder" + System.currentTimeMillis();
+        folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
     }
 
     /**
@@ -119,25 +126,54 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
      */
     @Test
-    public void testAPostCalculateFolderSize() throws Exception
-    {
-        setRequestContext(user1);
-
-        String siteTitle = "RandomSite" + System.currentTimeMillis();
-        this.userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
-
-        // Create a folder within the site document's library.
-        this.folderName = "folder" + System.currentTimeMillis();
-        this.folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
-
+    public void testAPostCalculateFolderSize() throws Exception {
+        // Prepare parameters
         Map<String, String> params = new HashMap<>();
-        params.put("nodeId",folderId);
-        params.put("maxItems","100");
+        params.put("nodeId", folderId);
+        params.put("maxItems", "100");
 
+        // Perform POST request
         HttpResponse response = post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        // Validate response and parsed document
+        assertNotNull("Response should not be null", response);
+
+        String jsonResponse = String.valueOf(response.getJsonResponse());
+        assertNotNull("JSON response should not be null", jsonResponse);
+
+        // Parse JSON response
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
+        assertNotNull("Parsed document should not be null", document);
+
+        // Convert document to string and validate contentNodeId
         String contentNodeId = document.toString();
-        assertNotNull(contentNodeId);
+        assertNotNull("Content node ID should not be null", contentNodeId);
+    }
+
+
+    /**
+     * Test case for GET/calculateSize, to retrieve FolderSize.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
+     */
+    @Test
+    public void testBGetCalculateFolderSize() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        // Check if response and JSON parsing were successful
+        HttpResponse response = getSingle(getFolderSizeUrl(folderId), null, 200);
+        assertNotNull(response);
+
+        String jsonResponse = String.valueOf(response.getJsonResponse());
+        assertNotNull("JSON response should not be null", jsonResponse);
+
+        // Parse the JSON response.
+        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
+        assertNotNull("Parsed document should not be null", document);
+
+        // Convert document to string and verify contentNodeId.
+        String contentNodeId = document.toString();
+        assertNotNull("Content node ID should not be null", contentNodeId);
     }
 
     /**
@@ -202,24 +238,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
             formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
             LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Completed Time :{}", formattedTimestamp);
         }
-        assertNotNull(contentNodeId);
-    }
-
-    /**
-     * Test case for GET/calculateSize, to retrieve FolderSize.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
-     */
-    @Test
-    public void testBGetCalculateFolderSize() throws Exception
-    {
-        setRequestContext(user1);
-
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
-        HttpResponse response = getSingle(getFolderSizeUrl(this.folderId), null, 200);
-        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
-        String contentNodeId = document.toString();
         assertNotNull(contentNodeId);
     }
 

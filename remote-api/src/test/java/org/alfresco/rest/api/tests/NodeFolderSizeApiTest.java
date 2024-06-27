@@ -79,6 +79,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     private MimetypeService mimeTypeService;
 
+    private String folderName;
+
+    private String folderId;
+
     /**
      * The logger
      */
@@ -119,11 +123,11 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         setRequestContext(user1);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
-        userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+        this.userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
 
         // Create a folder within the site document's library.
-        String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
+        this.folderName = "folder" + System.currentTimeMillis();
+        this.folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
 
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);
@@ -148,7 +152,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         // Logging initial time.
         LocalDateTime eventTimestamp = LocalDateTime.now();
         String formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
-        LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Initial Time : {}", formattedTimestamp);
+        System.out.println(" ********** In NodeFolderSizeApiTest:testPerformance Initial Time :"+formattedTimestamp);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
@@ -157,7 +161,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         String folderName = "folder" + System.currentTimeMillis();
         String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,folderId);
-        QName qName = nodeService.getType(nodeRef);
+        QName qName =  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeRef.getId()));
 
         for(int i =0;i<300;i++)
         {
@@ -195,7 +199,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         {
             eventTimestamp = LocalDateTime.now();
             formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
-            LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Completed Time : {}", formattedTimestamp);
+            System.out.println(" ********** In NodeFolderSizeApiTest:testPerformance Completed Time :"+formattedTimestamp);
         }
         assertNotNull(contentNodeId);
     }
@@ -210,19 +214,9 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     {
         setRequestContext(user1);
 
-        String siteTitle = "RandomSite" + System.currentTimeMillis();
-        userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
-
-        // Create a folder within the site document's library.
-        String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
-
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId",folderId);
-
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        HttpResponse response = getSingle(getFolderSizeUrl(folderId), null, 200);
+        HttpResponse response = getSingle(getFolderSizeUrl(this.folderId), null, 200);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         assertNotNull(contentNodeId);

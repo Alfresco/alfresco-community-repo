@@ -53,14 +53,4 @@ public class RetentionSchedule
     {
         isRecordLevel = recordLevel;
     }
-
-    public void setIsUnpublishedUpdates(boolean unpublishedUpdates)
-    {
-        isUnpublishedUpdates = unpublishedUpdates;
-    }
-
-    public boolean getIsUnpublishedUpdates()
-    {
-        return isUnpublishedUpdates;
-    }
 }

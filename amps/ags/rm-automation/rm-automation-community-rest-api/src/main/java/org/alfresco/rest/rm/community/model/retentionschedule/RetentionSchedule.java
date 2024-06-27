@@ -55,13 +55,4 @@ public class RetentionSchedule extends TestModel
     public void setIsRecordLevel(boolean recordLevel) {
         isRecordLevel = recordLevel;
     }
-
-    public void setIsUnpublishedUpdates(boolean unpublishedUpdates) {
-        isUnpublishedUpdates = unpublishedUpdates;
-    }
-
-    public boolean getIsUnpublishedUpdates()
-    {
-        return isUnpublishedUpdates;
-    }
 }

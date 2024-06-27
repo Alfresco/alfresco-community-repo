@@ -255,7 +255,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
             assertEquals(createdRetentionSchedule.getAuthority(), retentionSchedule.getAuthority());
             assertEquals(createdRetentionSchedule.getInstructions(), retentionSchedule.getInstructions());
             assertEquals(createdRetentionSchedule.getIsRecordLevel(), retentionSchedule.getIsRecordLevel());
-            assertEquals(createdRetentionSchedule.getIsUnpublishedUpdates(), retentionSchedule.getIsUnpublishedUpdates());
+            assertEquals(createdRetentionSchedule.isUnpublishedUpdates(), retentionSchedule.isUnpublishedUpdates());
         });
     }
 

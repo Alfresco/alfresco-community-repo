@@ -944,7 +944,7 @@ public class ApiNodesModelFactory
         boolean unpublishedUpdates = dispositionSchedule.getDispositionActionDefinitions().stream()
                 .map(DispositionActionDefinition::getNodeRef)
                 .anyMatch(actionDefNodeRef -> nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE));
-        retentionSchedule.setIsUnpublishedUpdates(unpublishedUpdates);
+        retentionSchedule.setUnpublishedUpdates(unpublishedUpdates);
         return retentionSchedule;
     }
 

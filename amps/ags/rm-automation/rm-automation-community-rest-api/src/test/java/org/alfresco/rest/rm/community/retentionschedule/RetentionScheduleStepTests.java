@@ -282,6 +282,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(NOT_FOUND);
     }
+
     @Test(priority = 12)
     public void retentionScheduleStepFor403()
     {
@@ -290,6 +291,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(FORBIDDEN);
     }
+
     @Test(priority = 13)
     public void retentionScheduleStepFor401()
     {
@@ -297,6 +299,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(UNAUTHORIZED);
     }
+
     @Test(priority = 14)
     public void retentionScheduleStepWith200()
     {

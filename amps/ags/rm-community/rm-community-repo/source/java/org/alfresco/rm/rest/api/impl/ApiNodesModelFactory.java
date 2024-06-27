@@ -1123,7 +1123,7 @@ public class ApiNodesModelFactory
     }
 
     /**
-     * this method is used to check period amount applicable or not
+     * this method is used to check period amount applicable or not for particular period
      * @param period period
      * @return boolean
      */

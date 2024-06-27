@@ -321,12 +321,9 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
     private RetentionSchedule createRetentionSchedule(RecordCategory recordCategory)
     {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
-        String authority = AUTHORITY + getRandomAlphanumeric();
-        String instructions = INSTRUCTIONS + getRandomAlphanumeric();
-        boolean isRecordLevel = false;
-        retentionSchedule.setAuthority(authority);
-        retentionSchedule.setInstructions(instructions);
-        retentionSchedule.setIsRecordLevel(isRecordLevel);
+        retentionSchedule.setAuthority(AUTHORITY + getRandomAlphanumeric());
+        retentionSchedule.setInstructions(INSTRUCTIONS + getRandomAlphanumeric());
+        retentionSchedule.setIsRecordLevel(false);
         //Create retention schedule with a valid user
         retentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
             .createRetentionSchedule(retentionSchedule, recordCategory.getId());

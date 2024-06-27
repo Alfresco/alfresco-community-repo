@@ -26,6 +26,7 @@
  */
 package org.alfresco.rm.rest.api.retentionschedule;
 
+import lombok.Data;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -66,6 +67,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
  * Retention schedule action relation is used to perform the retention schedule step operations.
  */
 @RelationshipResource(name = "retention-steps", entityResource = RetentionScheduleEntityResource.class, title = "Retention Schedule Action")
+@Data
 public class RetentionScheduleActionRelation implements RelationshipResourceAction.Read<RetentionScheduleActionDefinition>,
         RelationshipResourceAction.Create<RetentionScheduleActionDefinition>
 {
@@ -74,26 +76,6 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
     protected NodeService nodeService;
     private RecordsManagementServiceRegistry service;
     private ApiNodesModelFactory nodesModelFactory;
-
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
-
-    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry service)
-    {
-        this.service = service;
-    }
 
     @Override
     @WebApiDescription(title="Create a retention schedule step for the particular retention schedule using the 'retentionScheduleId'")

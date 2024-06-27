@@ -29,12 +29,14 @@ package org.alfresco.rm.rest.api.model;
 /**
  * Retention steps values
  */
-public enum RetentionSteps {
+public enum RetentionSteps
+{
     RETAIN("retain"),
     CUTOFF("cutoff"),
     TRANSFER("transfer"),
     ACCESSION("accession"),
     DESTROY("destroy");
+
     public final String stepName;
 
     RetentionSteps(String stepName)

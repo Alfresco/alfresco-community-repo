@@ -26,9 +26,9 @@
  */
 package org.alfresco.rm.rest.api.model;
 
-import lombok.Data;
-
 import java.util.List;
+
+import lombok.Data;
 
 /**
  * retention schedule action definition

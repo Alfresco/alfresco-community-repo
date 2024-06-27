@@ -33,7 +33,6 @@ import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleA
 import org.alfresco.rest.rm.community.model.retentionschedule.RetentionScheduleStepCollection;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.model.UserModel;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -335,7 +334,8 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         return retentionSchedule;
     }
 
-    private static @NotNull RetentionScheduleActionDefinition getRetentionScheduleActionDefinition() {
+    private static RetentionScheduleActionDefinition getRetentionScheduleActionDefinition()
+    {
         RetentionScheduleActionDefinition actionDefinition = new RetentionScheduleActionDefinition();
         actionDefinition.setDescription(INSTRUCTIONS);
         actionDefinition.setPeriodAmount(PERIOD_AMOUNT);

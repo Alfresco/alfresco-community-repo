@@ -34,7 +34,6 @@ import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -111,7 +110,6 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         assertEquals(expectedResult, actualResult);
     }
 
-    @NotNull
     private static RetentionScheduleActionDefinition getRetentionScheduleActionDefinition(NodeRef nodeRef)
     {
         RetentionScheduleActionDefinition expectedResult = new RetentionScheduleActionDefinition();

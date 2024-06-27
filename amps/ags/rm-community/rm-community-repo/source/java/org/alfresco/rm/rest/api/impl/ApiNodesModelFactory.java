@@ -1118,6 +1118,8 @@ public class ApiNodesModelFactory
                 retentionScheduleNodeRef,
                 RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
                 RegexQNamePattern.MATCH_ALL);
+        // we are getting disposition action definitions based on retention schedule child association.
+        // setting the index value for each action.
         List<DispositionActionDefinition> actions;
         actions = IntStream.range(0, assocs.size())
                 .mapToObj(index ->

@@ -183,16 +183,12 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     @Test
     public void testPerformance() throws Exception
     {
-        setRequestContext(user1);
         Node parentNodes;
 
         // Logging initial time.
         LocalDateTime eventTimestamp = LocalDateTime.now();
         String formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
         LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Initial Time :{}", formattedTimestamp);
-
-        String siteTitle = "RandomSite" + System.currentTimeMillis();
-        userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
@@ -247,15 +243,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     @Test
     public void testHTTPStatus() throws Exception
     {
-
-        setRequestContext(user1);
-        String siteTitle = "RandomSite" + System.currentTimeMillis();
-        userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
-
-        // Create a folder within the site document's library.
-        String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
-
         setRequestContext(null);
         delete(getFolderSizeUrl(folderId), folderId, null, 401);
 

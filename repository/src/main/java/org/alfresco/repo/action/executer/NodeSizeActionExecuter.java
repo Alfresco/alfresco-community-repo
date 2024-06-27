@@ -48,6 +48,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *   NodeSizeActionExecuter
@@ -116,7 +117,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
         NodeRef nodeRef = actionedUponNodeRef;
         long totalSize = 0;
-        long resultSize;
         ResultSet results;
         boolean isCalculationCompleted = false;
 
@@ -139,11 +139,25 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
             while (!isCalculationCompleted)
             {
-                resultSize = results.getNodeRefs().subList(skipCount,totalItems).parallelStream()
-                                    .map(id -> nodeService.getProperty(id, ContentModel.PROP_CONTENT)!=null? ((ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT)).getSize():0)
-                                    .reduce(0L, Long::sum);
+                List<NodeRef> nodeRefs = results.getNodeRefs().subList(skipCount, totalItems);
+                // Using AtomicLong to accumulate the total size.
+                AtomicLong resultSize = new AtomicLong(0);
+                nodeRefs.parallelStream().forEach(id -> {
+                    try
+                    {
+                        ContentData contentData = (ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT);
+                        if (contentData != null)
+                        {
+                            resultSize.addAndGet(contentData.getSize());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        resultSize.addAndGet(0);
+                    }
+                });
 
-                totalSize+=resultSize;
+                totalSize+=resultSize.longValue();
 
                 if (results.getNodeRefs().size() <= totalItems || results.getNodeRefs().size() <= maxItems)
                 {
@@ -176,6 +190,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         if(isCalculationCompleted)
         {
             nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) response);
+            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,null);
         }
     }
 

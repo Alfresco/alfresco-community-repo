@@ -135,7 +135,6 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         Map<String, Object> result = new HashMap<>();
         resetFolderOutput.put("status","IN-PROGRESS");
         nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) resetFolderOutput);
-        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,null);
 
         validatePermissions(nodeRef, nodeId);
 
@@ -164,8 +163,7 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
 
     @Override
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
-    @WebApiParameters({
-            @WebApiParam(name = "nodeId", title = "The unique id of the Node being addressed", description = "A single node id")})
+    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of the Node being addressed", description = "A single node id")})
     public Map<String, Object> readById(String nodeId, String id, Parameters parameters)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);

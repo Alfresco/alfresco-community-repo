@@ -1002,9 +1002,9 @@ public class ApiNodesModelFactory
                 {
                     retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
                 }
-                catch (NumberFormatException e)
+                catch (Exception exception)
                 {
-                    throw new NumberFormatException("Error parsing period amount: " + e.getMessage());
+                    throw new NumberFormatException("Error parsing period amount: " + exception);
                 }
             }
         }

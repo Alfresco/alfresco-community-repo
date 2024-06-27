@@ -46,4 +46,22 @@ public class RetentionSchedule extends TestModel
     private boolean isRecordLevel;
     private boolean isUnpublishedUpdates;
     private List<RetentionScheduleActionDefinition> actions;
+
+    public boolean getIsRecordLevel()
+    {
+        return isRecordLevel;
+    }
+
+    public void setIsRecordLevel(boolean recordLevel) {
+        isRecordLevel = recordLevel;
+    }
+
+    public void setIsUnpublishedUpdates(boolean unpublishedUpdates) {
+        isUnpublishedUpdates = unpublishedUpdates;
+    }
+
+    public boolean getIsUnpublishedUpdates()
+    {
+        return isUnpublishedUpdates;
+    }
 }

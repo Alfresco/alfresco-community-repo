@@ -98,10 +98,12 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         RetentionSchedule retentionSchedule = new RetentionSchedule();
         retentionSchedule.setAuthority(AUTHORITY + getRandomAlphanumeric());
         retentionSchedule.setInstructions(INSTRUCTIONS + getRandomAlphanumeric());
-        retentionSchedule.setRecordLevel(false);
+        retentionSchedule.setIsRecordLevel(false);
         //Create retention schedule with a valid user
         createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
             .createRetentionSchedule(retentionSchedule, recordCategory.getId());
+
+        System.out.println("Sathish->"+createdRetentionSchedule.getId());
 
         retentionScheduleActionDefinition.setName(RETAIN_STEP);
         retentionScheduleActionDefinition.setDescription(INSTRUCTIONS);
@@ -326,7 +328,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         boolean isRecordLevel = false;
         retentionSchedule.setAuthority(authority);
         retentionSchedule.setInstructions(instructions);
-        retentionSchedule.setRecordLevel(isRecordLevel);
+        retentionSchedule.setIsRecordLevel(isRecordLevel);
         //Create retention schedule with a valid user
         retentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
             .createRetentionSchedule(retentionSchedule, recordCategory.getId());

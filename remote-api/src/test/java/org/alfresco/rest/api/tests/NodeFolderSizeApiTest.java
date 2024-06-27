@@ -210,6 +210,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
                 {
                     Node childNodes = new Node();
                     childNodes.setName("c2" + RUNID);
+                    childNodes.setNodeId("doc"+RUNID);
                     childNodes.setNodeType(TYPE_CM_CONTENT);
                     ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10L, null);
                     String mimeType = contentData.getMimetype();
@@ -217,7 +218,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
                     ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, contentData.getSize(),contentData.getEncoding());
                     childNodes.setContent(contentInfo);
                     QName assocChildQNameInternal = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(childNodes.getName()));
-                    nodeService.addChild(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentNodes.getNodeId()), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, childNodes.getName()), qName, assocChildQNameInternal);
+                    nodeService.addChild(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentNodes.getNodeId()), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, childNodes.getNodeId()), qName, assocChildQNameInternal);
                 }
             }
             nodeService.addChild(nodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parentNodes.getNodeId()), qName, assocChildQName);

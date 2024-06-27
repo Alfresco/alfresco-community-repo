@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -81,7 +82,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     private String folderName;
 
-    private String folderId;
+    private static  String folderId;
 
     /**
      * The logger
@@ -147,12 +148,12 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     public void testPerformance() throws Exception
     {
         setRequestContext(user1);
-        Node n;
+        Node parentNodes;
 
         // Logging initial time.
         LocalDateTime eventTimestamp = LocalDateTime.now();
         String formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
-        System.out.println(" ********** In NodeFolderSizeApiTest:testPerformance Initial Time :"+formattedTimestamp);
+        LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Initial Time :{}", formattedTimestamp);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
@@ -165,28 +166,28 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
         for(int i =0;i<300;i++)
         {
-            n = new Node();
-            n.setName("c1" + RUNID);
-            n.setNodeType(TYPE_CM_FOLDER);
-            QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(n.getName()));
+            parentNodes = new Node();
+            parentNodes.setName("c1" + RUNID);
+            parentNodes.setNodeType(TYPE_CM_FOLDER);
+            QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(parentNodes.getName()));
 
             if(i%7==0)
             {
                 for(int j =0 ; j<=5; j++)
                 {
-                    n = new Node();
-                    n.setName("c2" + RUNID);
-                    n.setNodeType(TYPE_CM_CONTENT);
+                    Node childNodes = new Node();
+                    childNodes.setName("c2" + RUNID);
+                    childNodes.setNodeType(TYPE_CM_CONTENT);
                     ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10L, null);
                     String mimeType = contentData.getMimetype();
                     String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
                     ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, contentData.getSize(),contentData.getEncoding());
-                    n.setContent(contentInfo);
-                    QName assocChildQNameInternal = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(n.getName()));
-                    nodeService.addChild(n.getNodeRef(), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, n.getName()), qName, assocChildQNameInternal);
+                    childNodes.setContent(contentInfo);
+                    QName assocChildQNameInternal = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(childNodes.getName()));
+                    nodeService.addChild(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentNodes.getNodeId()), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, childNodes.getName()), qName, assocChildQNameInternal);
                 }
             }
-            nodeService.addChild(nodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, n.getName()), qName, assocChildQName);
+            nodeService.addChild(nodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parentNodes.getName()), qName, assocChildQName);
         }
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);
@@ -199,7 +200,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         {
             eventTimestamp = LocalDateTime.now();
             formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
-            System.out.println(" ********** In NodeFolderSizeApiTest:testPerformance Completed Time :"+formattedTimestamp);
+            LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Completed Time :{}", formattedTimestamp);
         }
         assertNotNull(contentNodeId);
     }

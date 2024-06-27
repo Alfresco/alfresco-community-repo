@@ -200,6 +200,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        // Intentionally empty
+        // Intentionally empty.
     }
 }

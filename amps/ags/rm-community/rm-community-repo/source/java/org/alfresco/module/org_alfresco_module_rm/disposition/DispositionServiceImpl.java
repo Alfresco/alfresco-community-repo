@@ -59,6 +59,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -198,7 +201,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * Behavior to initialize the disposition schedule of a newly filed record.
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord#onFileRecord(org.alfresco.service.cmr.repository.NodeRef)
+     * @see RecordsManagementPolicies.OnFileRecord#onFileRecord(NodeRef)
      */
     @Override
     @Behaviour(kind=BehaviourKind.CLASS, type="rma:record")
@@ -216,7 +219,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#refreshDispositionAction(NodeRef)
+     * @see DispositionService#refreshDispositionAction(NodeRef)
      */
     @Override
     public void refreshDispositionAction(NodeRef nodeRef)
@@ -242,7 +245,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** ========= Disposition Property Methods ========= */
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#registerDispositionProperty(org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty)
+     * @see DispositionService#registerDispositionProperty(DispositionProperty)
      */
     @Override
     public void registerDispositionProperty(DispositionProperty dispositionProperty)
@@ -251,7 +254,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties(boolean, java.lang.String)
+     * @see DispositionService#getDispositionProperties(boolean, String)
      */
     @Override
     public Collection<DispositionProperty> getDispositionProperties(boolean isRecordLevel, String dispositionAction)
@@ -270,7 +273,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionProperties()
+     * @see DispositionService#getDispositionProperties()
      */
     @Override
     public Collection<DispositionProperty> getDispositionProperties()
@@ -281,12 +284,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** ========= Disposition Schedule Methods ========= */
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getDispositionSchedule(NodeRef)
      */
     @Override
     public DispositionSchedule getDispositionSchedule(final NodeRef nodeRef)
     {
-        DispositionSchedule ds = null;
         NodeRef dsNodeRef = null;
         if (isRecord(nodeRef))
         {
@@ -311,36 +313,33 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             if (dsNextAction != null)
             {
                 final NodeRef action = dsNextAction.getNextActionNodeRef();
-                if (isNotTrue((Boolean)nodeService.getProperty(action, PROP_MANUALLY_SET_AS_OF)))
+                if (isNotTrue((Boolean)nodeService.getProperty(action, PROP_MANUALLY_SET_AS_OF)) && !dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
                 {
-                    if (!dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
+                    final String dispositionActionName = dsNextAction.getNextActionName();
+                    final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+
+                    RunAsWork<Void> runAsWork = () -> {
+                        nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                        return null;
+                    };
+
+                    // if the current transaction is READ ONLY set the property on the node
+                    // in a READ WRITE transaction
+                    if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
                     {
-                        final String dispositionActionName = dsNextAction.getNextActionName();
-                        final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
-
-                        RunAsWork<Void> runAsWork = () -> {
-                            nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                            return null;
-                        };
-
-                        // if the current transaction is READ ONLY set the property on the node
-                        // in a READ WRITE transaction
-                        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
-                        {
-                            transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                                AuthenticationUtil.runAsSystem(runAsWork);
-                                return null;
-                            }, false, true);
-                        }
-                        else
-                        {
+                        transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
                             AuthenticationUtil.runAsSystem(runAsWork);
-                        }
+                            return null;
+                        }, false, true);
+                    }
+                    else
+                    {
+                        AuthenticationUtil.runAsSystem(runAsWork);
+                    }
 
-                        if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
-                        {
-                            nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
-                        }
+                    if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                    {
+                        nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
                     }
                 }
                 
@@ -352,7 +351,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             // Get the disposition instructions for the node reference provided
             dsNodeRef = getDispositionScheduleImpl(nodeRef);
         }
-
+        DispositionSchedule ds = null;
         if (dsNodeRef != null)
         {
             ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dsNodeRef);
@@ -382,7 +381,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
         return result;
     }
-    
+
+    @Override
     public DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef)
     {
         NodeRef parent = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
@@ -406,7 +406,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getAssociatedDispositionSchedule(NodeRef)
      */
     @Override
     public DispositionSchedule getAssociatedDispositionSchedule(NodeRef nodeRef)
@@ -437,7 +437,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      */
     private NodeRef getAssociatedDispositionScheduleImpl(NodeRef nodeRef)
     {
-        NodeRef result = null;
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Make sure we are dealing with an RM node
@@ -445,6 +444,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
+        NodeRef result = null;
         if (getInternalNodeService().hasAspect(nodeRef, ASPECT_SCHEDULED))
         {
             List<ChildAssociationRef> childAssocs = getInternalNodeService().getChildAssocs(nodeRef, ASSOC_DISPOSITION_SCHEDULE, RegexQNamePattern.MATCH_ALL);
@@ -459,7 +459,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedRecordsManagementContainer(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
+     * @see DispositionService#getAssociatedRecordsManagementContainer(DispositionSchedule)
      */
     @Override
     public NodeRef getAssociatedRecordsManagementContainer(DispositionSchedule dispositionSchedule)
@@ -477,12 +477,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     // TODO in the future we should be able to support disposition schedule reuse, but for now just warn that
                     //      only the first disposition schedule will be considered
-                    if (LOGGER.isWarnEnabled())
-                    {
-                        LOGGER.warn("Retention schedule has more than one associated records management container.  " +
-                                "This is not currently supported so only the first container will be considered. " +
-                                "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
-                    }
+                    LOGGER.atWarn().log("Retention schedule has more than one associated records management container.  " +
+                            "This is not currently supported so only the first container will be considered. " +
+                            "(dispositionScheduleNodeRef={})", dispositionSchedule.getNodeRef());
                 }
 
                 // Get the container reference
@@ -495,7 +492,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#hasDisposableItems(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
+     * @see DispositionService#hasDisposableItems(DispositionSchedule)
      */
     @Override
     public boolean hasDisposableItems(DispositionSchedule dispositionSchdule)
@@ -537,19 +534,16 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     return true;
                 }
             }
-            else if (filePlanService.isRecordCategory(item) && getAssociatedDispositionScheduleImpl(item) == null)
+            else if (filePlanService.isRecordCategory(item) && getAssociatedDispositionScheduleImpl(item) == null && hasDisposableItemsImpl(isRecordLevelDisposition, item))
             {
-                if (hasDisposableItemsImpl(isRecordLevelDisposition, item));
-                {
-                    return true;
-                }
+                return true;
             }
         }
         return false;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDisposableItems(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
+     * @see DispositionService#getDisposableItems(DispositionSchedule)
      */
     @Override
     public List<NodeRef> getDisposableItems(DispositionSchedule dispositionSchedule)
@@ -564,7 +558,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isDisposableItem(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#isDisposableItem(NodeRef)
      */
     @Override
     public boolean isDisposableItem(NodeRef nodeRef)
@@ -604,20 +598,18 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#createDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
+     * @see DispositionService#createDispositionSchedule(NodeRef, Map)
      */
     @Override
     public DispositionSchedule createDispositionSchedule(NodeRef nodeRef, Map<QName, Serializable> props)
     {
-        NodeRef dsNodeRef = null;
-
         // Check mandatory parameters
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         // Check exists
         if (!nodeService.exists(nodeRef))
         {
-            throw new AlfrescoRuntimeException("Unable to create retention schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
+            throw new EntityNotFoundException(nodeRef.getId());
         }
 
         // Check is sub-type of rm:recordCategory
@@ -625,10 +617,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (!TYPE_RECORD_CATEGORY.equals(nodeRefType) &&
             !dictionaryService.isSubClass(nodeRefType, TYPE_RECORD_CATEGORY))
         {
-            throw new AlfrescoRuntimeException("Unable to create retention schedule on a node that is not a records management container.");
+            throw new InvalidArgumentException("The given id:'" + nodeRef.getId() + "' (nodeType:" + nodeRef
+                    + ") is not valid. Expected nodeType is:" + TYPE_RECORD_CATEGORY);
         }
 
         behaviourFilter.disableBehaviour(nodeRef, ASPECT_SCHEDULED);
+        NodeRef dsNodeRef = null;
         try
         {
             // Add the schedules aspect if required
@@ -662,7 +656,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             else
             {
                 // Error since the node already has a disposition schedule set
-                throw new AlfrescoRuntimeException("Unable to create retention schedule on node that already has a retention schedule.");
+                throw new ConstraintViolatedException("Unable to create retention schedule on node that already has a retention schedule.");
             }
         }
         finally
@@ -686,7 +680,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         // make sure at least a name has been defined
         String name = (String)actionDefinitionParams.get(PROP_DISPOSITION_ACTION_NAME);
-        if (name == null || name.length() == 0)
+        if (name == null || name.isEmpty())
         {
             throw new IllegalArgumentException("'name' parameter is mandatory when creating a disposition action definition");
         }
@@ -695,10 +689,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         // create the child association from the schedule to the action definition
         NodeRef actionNodeRef = this.nodeService.createNode(schedule.getNodeRef(),
-                    RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
+                    ASSOC_DISPOSITION_ACTION_DEFINITIONS,
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
                     QName.createValidLocalName(name)),
-                    RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION, actionDefinitionParams).getChildRef();
+                    TYPE_DISPOSITION_ACTION_DEFINITION, actionDefinitionParams).getChildRef();
 
         // get the updated disposition schedule and retrieve the new action definition
         NodeRef scheduleParent = this.nodeService.getPrimaryParent(schedule.getNodeRef()).getParentRef();
@@ -707,7 +701,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#removeDispositionActionDefinition(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule, org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition)
+     * @see DispositionService#removeDispositionActionDefinition(DispositionSchedule, DispositionActionDefinition)
      */
     @Override
     public void removeDispositionActionDefinition(DispositionSchedule schedule, DispositionActionDefinition actionDefinition)
@@ -777,16 +771,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         DispositionAction da;
         // check if current transaction is a READ ONLY one and if true create the node in a READ WRITE transaction
-        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
-        {
-            da =
-                    transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<DispositionAction>()
-                    {
-                        public DispositionAction execute() throws Throwable
-                        {
-                            return createDispositionAction(nodeRef, props);
-                        }
-                    }, false, true);
+        if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY)) {
+            da = transactionService.getRetryingTransactionHelper().doInTransaction(
+                    () -> createDispositionAction(nodeRef, props),
+                    false,
+                    true
+            );
         }
         else
         {
@@ -836,13 +826,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         Period period = dispositionActionDefinition.getPeriod();
         if (period != null)
         {
-            Date contextDate = null;
+            Date contextDate;
 
             // Get the period properties value
             QName periodProperty = dispositionActionDefinition.getPeriodProperty();
             if (periodProperty != null)
             {
-                if (RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty))
+                if (PROP_DISPOSITION_AS_OF.equals(periodProperty))
                 {
                     DispositionAction lastCompletedDispositionAction = getLastCompletedDispostionAction(nodeRef);
                     if (lastCompletedDispositionAction != null)
@@ -886,7 +876,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isNextDispositionActionEligible(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#isNextDispositionActionEligible(NodeRef)
      */
     @Override
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
@@ -940,7 +930,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     NodeRef eventExecution = assoc.getChildRef();
                     Boolean isCompleteValue = (Boolean) getInternalNodeService().getProperty(eventExecution, PROP_EVENT_EXECUTION_COMPLETE);
-                    boolean isComplete = false;
+                    boolean isComplete;
                     if (isCompleteValue != null)
                     {
                         isComplete = isCompleteValue.booleanValue();
@@ -987,7 +977,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getNextDispositionAction(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getNextDispositionAction(NodeRef)
      */
     @Override
     public DispositionAction getNextDispositionAction(NodeRef nodeRef)
@@ -1006,7 +996,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /** ========= Disposition Action History Methods ========= */
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getCompletedDispositionActions(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getCompletedDispositionActions(NodeRef)
      */
     @Override
     public List<DispositionAction> getCompletedDispositionActions(NodeRef nodeRef)
@@ -1022,7 +1012,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getLastCompletedDispostionAction(org.alfresco.service.cmr.repository.NodeRef)
+     * @see DispositionService#getLastCompletedDispostionAction(NodeRef)
      */
     @Override
     public DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef)
@@ -1038,7 +1028,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isDisposableItemCutoff(NodeRef)
+     * @see DispositionService#isDisposableItemCutoff(NodeRef)
      */
     @Override
     public boolean isDisposableItemCutoff(NodeRef nodeRef)
@@ -1048,7 +1038,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#updateNextDispositionAction(NodeRef)
+     * @see DispositionService#updateNextDispositionAction(NodeRef)
      */
     @Override
     public void updateNextDispositionAction(final NodeRef nodeRef)
@@ -1058,7 +1048,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         RunAsWork<Void> runAsWork = new RunAsWork<Void>()
         {
             /**
-             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+             * @see RunAsWork#doWork()
              */
             @Override
             public Void doWork()
@@ -1077,7 +1067,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#updateNextDispositionAction(NodeRef)
+     * @see DispositionService#updateNextDispositionAction(NodeRef)
      */
     @Override
     public void updateNextDispositionAction(final NodeRef nodeRef, final DispositionSchedule dispositionSchedule)
@@ -1087,7 +1077,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         RunAsWork<Void> runAsWork = new RunAsWork<Void>()
         {
             /**
-             * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
+             * @see RunAsWork#doWork()
              */
             @Override
             public Void doWork()
@@ -1113,16 +1103,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     }
 
                     List<DispositionActionDefinition> dispositionActionDefinitions = dispositionSchedule.getDispositionActionDefinitions();
-                    DispositionActionDefinition currentDispositionActionDefinition = null;
+                    DispositionActionDefinition currentDispositionActionDefinition;
                     DispositionActionDefinition nextDispositionActionDefinition = null;
 
-                    if (currentDispositionAction == null)
+                    if (currentDispositionAction == null && !dispositionActionDefinitions.isEmpty())
                     {
-                        if (!dispositionActionDefinitions.isEmpty())
-                        {
-                            // The next disposition action is the first action
-                            nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
-                        }
+                        // The next disposition action is the first action
+                        nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
                     }
                     else
                     {
@@ -1167,7 +1154,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#cutoffDisposableItem(NodeRef)
+     * @see DispositionService#cutoffDisposableItem(NodeRef)
      */
     @Override
     public void cutoffDisposableItem(final NodeRef nodeRef)
@@ -1205,6 +1192,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     // runAs system so that we can close a record that has already been cutoff
                     authenticationUtil.runAsSystem(new RunAsWork<Void>()
                     {
+                        @Override
                         public Void doWork() throws Exception
                         {
                             recordFolderService.closeRecordFolder(nodeRef);
@@ -1224,6 +1212,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
     }
 
+    @Override
     public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
     {
         DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
@@ -1243,7 +1232,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
         return null;
     }
-    
+
+    @Override
     public void recalculateNextDispositionStep(NodeRef record)
     {
         List<NodeRef> recordFolders = recordFolderService.getRecordFolders(record);
@@ -1384,14 +1374,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         Date calculatedDate = (nextDispositionActionDate != null ? nextDispositionActionDate : maxDate);
 
         // We only need to update the date if the current one is too early.
-        if (recordDate.before(calculatedDate))
-        {
-            return WriteMode.DATE_ONLY;
-        }
-        else
-        {
-            return WriteMode.READ_ONLY;
-        }
+        return recordDate.before(calculatedDate) ? WriteMode.DATE_ONLY : WriteMode.READ_ONLY;
     }
 
     /**
@@ -1414,7 +1397,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, folderDS);
                 List<DispositionActionDefinition> dispositionActionDefinitions = ds.getDispositionActionDefinitions();
 
-                if (dispositionActionDefinitions != null && dispositionActionDefinitions.size() > 0)
+                if (dispositionActionDefinitions != null && !dispositionActionDefinitions.isEmpty())
                 {
                     DispositionActionDefinition firstDispositionActionDef = dispositionActionDefinitions.get(0);
                     dispositionNodeRef = folderDS;

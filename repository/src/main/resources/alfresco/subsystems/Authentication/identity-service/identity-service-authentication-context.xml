@@ -155,6 +155,9 @@
       <property name="adminConsoleRedirectPath">
          <value>${identity-service.admin-console.redirect-path}</value>
       </property>
+      <property name="signatureAlgorithms">
+         <value>${identity-service.signature-algorithms:RS256,PS256}</value>
+      </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->

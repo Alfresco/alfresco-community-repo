@@ -11,5 +11,9 @@
          <cm:title>${spaces.actions.scheduled_actions.name}</cm:title>
          <cm:description>${spaces.actions.scheduled_actions.description}</cm:description>
       </view:properties>
+      <view:aspects>
+         <sys:undeletable/>
+         <sys:unmovable/>
+      </view:aspects>
    </cm:folder>
 </view:view>

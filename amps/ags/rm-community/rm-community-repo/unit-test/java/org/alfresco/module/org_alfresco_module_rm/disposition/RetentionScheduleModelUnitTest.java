@@ -105,6 +105,6 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         assertEquals(expectedResult.getIndex(), dispositionActionDefinition.getIndex());
         assertEquals(expectedResult.getLocation(), dispositionActionDefinition.getLocation());
         assertEquals(new Period(resultPeriod), dispositionActionDefinition.getPeriod());
-        assertTrue(expectedResult.getRetainRecordMetadataAfterDestruction());
+        assertTrue(expectedResult.isRetainRecordMetadataAfterDestruction());
     }
 }

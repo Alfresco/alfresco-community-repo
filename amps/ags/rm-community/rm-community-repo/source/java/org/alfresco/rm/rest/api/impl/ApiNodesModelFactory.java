@@ -1064,14 +1064,14 @@ public class ApiNodesModelFactory
         QName periodProperty = QName.createQName(nodeInfo.getPeriodProperty(), namespaceService);
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
-                nodeInfo.getEligibleOnFirstCompleteEvent());
+                nodeInfo.isEligibleOnFirstCompleteEvent());
         actionDefinitionParams.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
-                nodeInfo.getCombineDispositionStepConditions());
+                nodeInfo.isCombineDispositionStepConditions());
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
                 nodeInfo.getLocation());
         List<String> inputEvents = nodeInfo.getEvents();
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
-        if (RetentionSteps.DESTROY.stepName.equals(nodeInfo.getName()) && nodeInfo.getRetainRecordMetadataAfterDestruction())
+        if (RetentionSteps.DESTROY.stepName.equals(nodeInfo.getName()) && nodeInfo.isRetainRecordMetadataAfterDestruction())
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
         }

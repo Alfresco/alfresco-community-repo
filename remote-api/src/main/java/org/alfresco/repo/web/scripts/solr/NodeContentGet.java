@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.solr;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.UnavailableTransformerException;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
@@ -200,6 +201,12 @@ public class NodeContentGet extends StreamContent
         }
         catch (Exception e)
         {
+            if(e.getCause() instanceof UnavailableTransformerException)
+            {
+                res.setHeader(TRANSFORM_STATUS_HEADER, "unavailableTransformer");
+                res.setStatus(HttpStatus.SC_NO_CONTENT);
+                return;
+            }
             transformException = e;
         }
 

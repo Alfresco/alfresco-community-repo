@@ -24,35 +24,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.retentionschedule;
-
-import lombok.EqualsAndHashCode;
-import org.alfresco.utility.model.TestModel;
-import lombok.Data;
-
-import java.util.List;
+package org.alfresco.rm.rest.api.model;
 
 /**
- * retention schedule
+ * Retention period values
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
-public class RetentionSchedule extends TestModel
+public enum RetentionPeriod
 {
-    private String id ;
-    private String parentId;
-    private String authority;
-    private String instructions;
-    private boolean isRecordLevel;
-    private boolean isUnpublishedUpdates;
-    private List<RetentionScheduleActionDefinition> actions;
+    DAY("day"),
+    END_OF_FINANCIAL_MONTH("fmend"),
+    END_OF_FINANCIAL_QUARTER("fqend"),
+    END_OF_FINANCIAL_YEAR("fyend"),
+    IMMEDIATELY("immediately"),
+    END_OF_MONTH("monthend"),
+    END_OF_QUARTER("quarterend"),
+    END_OF_YEAR("yearend"),
+    MONTH("month"),
+    NONE("none"),
+    QUARTER("quarter"),
+    WEEK("week"),
+    XML_DURATION("duration"),
+    YEAR("year");
 
-    public boolean getIsRecordLevel()
+    public final String periodName;
+
+    RetentionPeriod(String periodName)
     {
-        return isRecordLevel;
-    }
-
-    public void setIsRecordLevel(boolean recordLevel) {
-        isRecordLevel = recordLevel;
+        this.periodName = periodName;
     }
 }

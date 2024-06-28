@@ -145,7 +145,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
         boolean isRecordLevel = false;
         retentionSchedule.setAuthority(authority);
         retentionSchedule.setInstructions(instructions);
-        retentionSchedule.setRecordLevel(isRecordLevel);
+        retentionSchedule.setIsRecordLevel(isRecordLevel);
 
         //Create retention schedule with a valid user
         createdRetentionSchedule = getRestAPIFactory().getRetentionScheduleAPI()
@@ -155,7 +155,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
         assertStatusCode(CREATED);
         assertEquals(createdRetentionSchedule.getAuthority(), authority);
         assertEquals(createdRetentionSchedule.getInstructions(), instructions);
-        assertFalse(createdRetentionSchedule.isRecordLevel());
+        assertFalse(createdRetentionSchedule.getIsRecordLevel());
         assertNotNull(createdRetentionSchedule.getId());
     }
 
@@ -254,7 +254,7 @@ public class RetentionScheduleTests extends BaseRMRestTest
             assertEquals(createdRetentionSchedule.getParentId(),retentionSchedule.getParentId());
             assertEquals(createdRetentionSchedule.getAuthority(), retentionSchedule.getAuthority());
             assertEquals(createdRetentionSchedule.getInstructions(), retentionSchedule.getInstructions());
-            assertEquals(createdRetentionSchedule.isRecordLevel(), retentionSchedule.isRecordLevel());
+            assertEquals(createdRetentionSchedule.getIsRecordLevel(), retentionSchedule.getIsRecordLevel());
             assertEquals(createdRetentionSchedule.isUnpublishedUpdates(), retentionSchedule.isUnpublishedUpdates());
         });
     }

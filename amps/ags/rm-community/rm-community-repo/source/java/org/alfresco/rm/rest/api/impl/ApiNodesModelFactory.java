@@ -35,9 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinitionImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
@@ -56,6 +59,8 @@ import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordCategory;
 import org.alfresco.rm.rest.api.model.RecordCategoryChild;
 import org.alfresco.rm.rest.api.model.RecordFolder;
+import org.alfresco.rm.rest.api.model.RetentionPeriod;
+import org.alfresco.rm.rest.api.model.RetentionSteps;
 import org.alfresco.rm.rest.api.model.Transfer;
 import org.alfresco.rm.rest.api.model.TransferChild;
 import org.alfresco.rm.rest.api.model.TransferContainer;
@@ -75,8 +80,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class containing Alfresco and RM java services required by the API
@@ -87,6 +93,9 @@ import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagement
  */
 public class ApiNodesModelFactory
 {
+
+    /** Logger */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiNodesModelFactory.class);
 
     // excluded namespaces (aspects, properties, assoc types)
     public static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
@@ -109,6 +118,7 @@ public class ApiNodesModelFactory
     private PersonService personService;
     private DispositionService dispositionService;
     private ServiceRegistry serviceRegistry;
+    private RecordsManagementServiceRegistry services;
 
     public NodeService getNodeService()
     {
@@ -158,6 +168,11 @@ public class ApiNodesModelFactory
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
+    }
+
+    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry services)
+    {
+        this.services = services;
     }
 
     /**
@@ -511,15 +526,15 @@ public class ApiNodesModelFactory
         }
         if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(info.getType()))
         {
-            if((!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_FOLDER)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_FOLDER)))
+            if (isRecordFolder(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordFolder(true);
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY)))
+            if (isRecordCategory(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordCategory(false);
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_IS_CLOSED)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED)))
+            if (isRecordCategoryChildClosed(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsClosed((Boolean) nodeService.getProperty(info.getNodeRef(), RecordsManagementModel.PROP_IS_CLOSED));
             }
@@ -530,11 +545,11 @@ public class ApiNodesModelFactory
         }
         else
         {
-            if((!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_FOLDER)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_FOLDER)))
+            if (isRecordFolder(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordFolder(false);
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY)))
+            if (isRecordCategory(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsRecordCategory(true);
             }
@@ -543,11 +558,26 @@ public class ApiNodesModelFactory
                 DispositionSchedule ds = dispositionService.getDispositionSchedule(info.getNodeRef());
                 recordCategoryChild.setHasRetentionSchedule(ds != null);
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_IS_CLOSED)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED)))
+            if (isRecordCategoryChildClosed(isMinimalInfo, propertyFilter, includeParam))
             {
                 recordCategoryChild.setIsClosed(null);
             }
         }
+    }
+
+    private boolean isRecordCategoryChildClosed(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
+    {
+        return (!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_IS_CLOSED)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED));
+    }
+
+    private boolean isRecordCategory(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
+    {
+        return (!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY));
+    }
+
+    private boolean isRecordFolder(boolean isMinimalInfo, BeanPropertiesFilter propertyFilter, List<String> includeParam)
+    {
+        return (!isMinimalInfo && propertyFilter.isAllowed(RecordCategoryChild.PARAM_IS_RECORD_FOLDER)) || (isMinimalInfo && includeParam.contains(RecordCategoryChild.PARAM_IS_RECORD_FOLDER));
     }
 
 
@@ -572,7 +602,8 @@ public class ApiNodesModelFactory
         {
             Serializable val = info.getProperties().get(ContentModel.PROP_CONTENT);
 
-            if ((val != null) && (val instanceof ContentData)) {
+            if (val instanceof ContentData)
+            {
                 ContentData cd = (ContentData)val;
                 String mimeType = cd.getMimetype();
                 String mimeTypeName = serviceRegistry.getMimetypeService().getDisplaysByMimetype().get(mimeType);
@@ -914,7 +945,7 @@ public class ApiNodesModelFactory
         }
         retentionSchedule.setInstructions(dispositionSchedule.getDispositionInstructions());
         retentionSchedule.setAuthority(dispositionSchedule.getDispositionAuthority());
-        retentionSchedule.setRecordLevel(dispositionSchedule.isRecordLevelDisposition());
+        retentionSchedule.setIsRecordLevel(dispositionSchedule.isRecordLevelDisposition());
 
         boolean unpublishedUpdates = dispositionSchedule.getDispositionActionDefinitions().stream()
                 .map(DispositionActionDefinition::getNodeRef)
@@ -951,9 +982,9 @@ public class ApiNodesModelFactory
         retentionScheduleActionDefinition.setName(dispositionActionDefinition.getName());
         retentionScheduleActionDefinition.setDescription(dispositionActionDefinition.getDescription());
         retentionScheduleActionDefinition.setEligibleOnFirstCompleteEvent(dispositionActionDefinition.eligibleOnFirstCompleteEvent());
-        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
+        if (nodeService.getProperty(dispositionActionDefinition.getNodeRef(), RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
         {
-            retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+            retentionScheduleActionDefinition.setCombineDispositionStepConditions((Boolean) nodeService.getProperty(dispositionActionDefinition.getNodeRef(), RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
         }
         retentionScheduleActionDefinition.setLocation(dispositionActionDefinition.getLocation());
         if (dispositionActionDefinition.getGhostOnDestroy() != null)
@@ -970,9 +1001,11 @@ public class ApiNodesModelFactory
      */
     private void mapPeriodProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
-        if(dispositionActionDefinition.getPeriodProperty() != null) {
+        if(dispositionActionDefinition.getPeriodProperty() != null)
+        {
             retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
         }
+
         String period = dispositionActionDefinition.getPeriod().toString();
         if (!period.isEmpty())
         {
@@ -982,19 +1015,22 @@ public class ApiNodesModelFactory
             // period -> 'month'
             // periodAmount -> 10
             String[] periodArray = period.split("\\|");
+
             if (periodArray.length > 0)
             {
                 retentionScheduleActionDefinition.setPeriod(periodArray[0]);
             }
+
             if (periodArray.length > 1)
             {
                 try
                 {
                     retentionScheduleActionDefinition.setPeriodAmount(Integer.parseInt(periodArray[1]));
                 }
-                catch (NumberFormatException e)
+                catch (NumberFormatException numberFormatException)
                 {
-                    throw new NumberFormatException("Error parsing period amount: " + e.getMessage());
+                    LOGGER.error("Error parsing period amount: {}{}", numberFormatException.getMessage(), periodArray[1], numberFormatException);
+                    throw numberFormatException;
                 }
             }
         }
@@ -1032,5 +1068,84 @@ public class ApiNodesModelFactory
                     .collect(Collectors.toList());
             retentionSchedule.setActions(actions);
         }
+    }
+
+    /**
+     * this method is used for creation of retention schedule action definition params
+     * @param nodeInfo retention schedule action definition
+     * @return Map<QName, Serializable>
+     */
+    public Map<QName, Serializable> createRetentionActionDefinitionParams(RetentionScheduleActionDefinition nodeInfo)
+    {
+        Map<QName, Serializable>  actionDefinitionParams= new HashMap<>();
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, nodeInfo.getName());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
+        StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod()).append("|");
+        if(isPeriodAmountApplicable(nodeInfo.getPeriod()))
+        {
+            retentionPeriod.append(nodeInfo.getPeriodAmount());
+        }
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, retentionPeriod.toString());
+        QName periodProperty = QName.createQName(nodeInfo.getPeriodProperty(), namespaceService);
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
+                nodeInfo.isEligibleOnFirstCompleteEvent());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
+                nodeInfo.isCombineDispositionStepConditions());
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
+                nodeInfo.getLocation());
+        List<String> inputEvents = nodeInfo.getEvents();
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
+        if (RetentionSteps.DESTROY.stepName.equals(nodeInfo.getName()) && nodeInfo.isRetainRecordMetadataAfterDestruction())
+        {
+            actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
+        }
+        else
+        {
+            actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "delete");
+        }
+        return actionDefinitionParams;
+    }
+
+    /**
+     * this method is used retrieve retention schedule action details
+     * @param retentionScheduleNodeRef nodeRef
+     * @return List<DispositionActionDefinition>
+     */
+    public List<DispositionActionDefinition> getRetentionActions(NodeRef retentionScheduleNodeRef)
+    {
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(
+                retentionScheduleNodeRef,
+                RecordsManagementModel.ASSOC_DISPOSITION_ACTION_DEFINITIONS,
+                RegexQNamePattern.MATCH_ALL);
+        // we are getting disposition action definitions based on retention schedule child association.
+        // setting the index value for each action.
+        List<DispositionActionDefinition> actions;
+        actions = IntStream.range(0, assocs.size())
+                .mapToObj(index ->
+                {
+                    ChildAssociationRef assoc = assocs.get(index);
+                    return new DispositionActionDefinitionImpl(
+                            services.getRecordsManagementEventService(),
+                            services.getRecordsManagementActionService(),
+                            nodeService,
+                            assoc.getChildRef(),
+                            index);
+                })
+                .collect(Collectors.toList());
+        return actions;
+    }
+
+    /**
+     * this method is used to check period amount applicable or not for particular period
+     * @param period period
+     * @return boolean
+     */
+    private boolean isPeriodAmountApplicable(String period)
+    {
+        // periodAmount property only applicable for following periods
+        // day, week, month, quarter, year and duration
+        return period.equals(RetentionPeriod.DAY.periodName) || period.equals(RetentionPeriod.MONTH.periodName) || period.equals(RetentionPeriod.QUARTER.periodName)
+                || period.equals(RetentionPeriod.WEEK.periodName) || period.equals(RetentionPeriod.XML_DURATION.periodName) || period.equals(RetentionPeriod.YEAR.periodName);
     }
 }

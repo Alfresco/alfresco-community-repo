@@ -54,13 +54,11 @@ import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagement
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RECORD_CATEGORY;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
-import lombok.Data;
 
 /**
  * Retention schedule relation is used perform retention schedule operation for a record category.
  */
 @RelationshipResource(name = "retention-schedules", entityResource = RecordCategoriesEntityResource.class, title = "Retention Schedule")
-@Data
 public class RetentionScheduleRelation implements RelationshipResourceAction.Read<RetentionSchedule>,
         RelationshipResourceAction.Create<RetentionSchedule>
 {
@@ -69,6 +67,26 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
     private ApiNodesModelFactory nodesModelFactory;
     private DispositionService dispositionService;
     protected NodeService nodeService;
+
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
+    {
+        this.apiUtils = apiUtils;
+    }
+
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
+    {
+        this.nodesModelFactory = nodesModelFactory;
+    }
+
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
 
     @Override
     @WebApiDescription(title="Create a retention schedule for the particular record category using the 'recordCategoryId'")
@@ -83,7 +101,7 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
         Map<QName, Serializable> dsProps = new HashMap<>();
         dsProps.put(PROP_DISPOSITION_AUTHORITY, nodeInfos.get(0).getAuthority());
         dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, nodeInfos.get(0).getInstructions());
-        dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, nodeInfos.get(0).isRecordLevel());
+        dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, nodeInfos.get(0).getIsRecordLevel());
         DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(parentNodeRef, dsProps);
         RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
         result.add(retentionSchedule);

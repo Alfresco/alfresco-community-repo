@@ -201,6 +201,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
             parentNodes = new Node();
             parentNodes.setName("c1" + RUNID);
             parentNodes.setNodeId("folder1"+RUNID);
+            parentNodes.setNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentNodes.getNodeId()));
             parentNodes.setNodeType(TYPE_CM_FOLDER);
             QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(parentNodes.getName()));
 
@@ -212,16 +213,17 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
                     childNodes.setName("c2" + RUNID);
                     childNodes.setNodeId("doc"+RUNID);
                     childNodes.setNodeType(TYPE_CM_CONTENT);
+                    childNodes.setNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, childNodes.getNodeId()));
                     ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10L, null);
                     String mimeType = contentData.getMimetype();
                     String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
                     ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, contentData.getSize(),contentData.getEncoding());
                     childNodes.setContent(contentInfo);
                     QName assocChildQNameInternal = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(childNodes.getName()));
-                    nodeService.addChild(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentNodes.getNodeId()), new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, childNodes.getNodeId()), qName, assocChildQNameInternal);
+                    nodeService.addChild(parentNodes.getNodeRef(), childNodes.getNodeRef(), qName, assocChildQNameInternal);
                 }
             }
-            nodeService.addChild(nodeRef, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, parentNodes.getNodeId()), qName, assocChildQName);
+            nodeService.addChild(nodeRef, parentNodes.getNodeRef(), qName, assocChildQName);
         }
         Map<String, String> params = new HashMap<>();
         params.put("nodeId",folderId);

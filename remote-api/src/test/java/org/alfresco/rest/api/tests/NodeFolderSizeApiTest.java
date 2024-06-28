@@ -32,6 +32,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -192,30 +193,32 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,folderId);
+        String parentFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentFolderId);
         QName qName =  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeRef.getId()));
 
         for(int i =0;i<300;i++)
         {
-            parentNodes = new Node();
-            parentNodes.setName("c1" + RUNID);
-            parentNodes.setNodeId("folder1"+RUNID);
-            parentNodes.setNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentNodes.getNodeId()));
-            parentNodes.setNodeType(TYPE_CM_FOLDER);
+            Folder folder = createFolder(parentFolderId,"c1" + RUNID);
             ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10L, null);
             String mimeType = contentData.getMimetype();
             String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
-            ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, contentData.getSize(),contentData.getEncoding());
-            parentNodes.setContent(contentInfo);
-            QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(parentNodes.getName()));
-            nodeService.addChild(nodeRef, parentNodes.getNodeRef(), qName, assocChildQName);
+            org.alfresco.rest.api.tests.client.data.ContentInfo contentInfo1 = new org.alfresco.rest.api.tests.client.data.ContentInfo();
+            contentInfo1.setEncoding(contentData.getEncoding());
+            contentInfo1.setSizeInBytes(contentData.getSize());
+            contentInfo1.setMimeType(mimeType);
+            contentInfo1.setMimeTypeName(mimeTypeName);
+            folder.setContent(contentInfo1);
+            String folderID = addToDocumentLibrary(userOneN1Site, folder.getName(), TYPE_CM_FOLDER);
+            NodeRef folderNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,folderID);
+            QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(folder.getName()));
+            nodeService.addChild(nodeRef, folderNodeRef , qName, assocChildQName);
         }
         Map<String, String> params = new HashMap<>();
-        params.put("nodeId",folderId);
+        params.put("nodeId",parentFolderId);
         params.put("maxItems","100");
 
-        HttpResponse response = post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        HttpResponse response = post(getFolderSizeUrl(parentFolderId), toJsonAsStringNonNull(params), 202);
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         String contentNodeId = document.toString();
         if(contentNodeId != null)

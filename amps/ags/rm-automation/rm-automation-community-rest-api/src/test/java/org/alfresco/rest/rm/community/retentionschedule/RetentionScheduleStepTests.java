@@ -203,7 +203,6 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
         getRestAPIFactory().getRetentionScheduleAPI().createRetentionScheduleStep(actionDefinition,retentionSchedule.getId());
 
         assertStatusCode(BAD_REQUEST);
-
     }
 
     @Test(priority = 6)

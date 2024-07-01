@@ -146,7 +146,7 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
      */
     private void retentionScheduleStepValidation(NodeRef retentionScheduleNodeRef, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
-        if (retentionScheduleActionDefinition.getName() == null || retentionScheduleActionDefinition.getName().isEmpty())
+        if (checkStepNameIsEmpty(retentionScheduleActionDefinition.getName()))
         {
             throw new IllegalArgumentException("'name' parameter is mandatory when creating a disposition action definition");
         }
@@ -181,6 +181,11 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         }
     }
 
+    private boolean checkStepNameIsEmpty(String name)
+    {
+        return name == null || name.isEmpty();
+    }
+
     /**
      * this method is used to validate the request of the retention schedule
      * @param retentionScheduleActionDefinition retention schedule action definition
@@ -209,17 +214,28 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
             throw new InvalidArgumentException("periodProperty value is invalid: " + retentionScheduleActionDefinition.getPeriodProperty());
         }
 
-        if(!retentionScheduleActionDefinition.getName().equals(RetentionSteps.ACCESSION.stepName) && retentionScheduleActionDefinition.isCombineRetentionStepConditions())
+        if (validateCombineRetentionStepConditionsForNonAccessionStep(retentionScheduleActionDefinition))
         {
             throw new IllegalArgumentException("combineRetentionStepConditions property is only valid for accession step. Not valid for :" + retentionScheduleActionDefinition.getName());
         }
 
-        if(retentionScheduleActionDefinition.getLocation() != null
-                        && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName)
-                            && !retentionScheduleActionDefinition.getLocation().isEmpty())
+        if (validateLocationForNonTransferStep(retentionScheduleActionDefinition))
         {
             throw new IllegalArgumentException("location property is only valid for transfer step. Not valid for :" + retentionScheduleActionDefinition.getName());
         }
+    }
+
+    private boolean validateCombineRetentionStepConditionsForNonAccessionStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        return !retentionScheduleActionDefinition.getName().equals(RetentionSteps.ACCESSION.stepName)
+                && retentionScheduleActionDefinition.isCombineRetentionStepConditions();
+    }
+
+    private boolean validateLocationForNonTransferStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        return retentionScheduleActionDefinition.getLocation() != null
+                && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName)
+                    && !retentionScheduleActionDefinition.getLocation().isEmpty();
     }
 
     private boolean checkStepAlreadyExists(Set<String> completedActions, String stepName)

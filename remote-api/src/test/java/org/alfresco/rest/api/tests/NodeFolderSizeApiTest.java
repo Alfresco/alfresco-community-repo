@@ -182,6 +182,18 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         tgt.setTargetParentId(folderId);
         HttpResponse response = post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
         assertNotNull(response);
+
+        // Create a folder within the site document's library.
+        String folderName = "nestedFolder" + System.currentTimeMillis();
+        String nestedFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
+        // Prepare parameters
+        Map<String, String> params = new HashMap<>();
+        params.put("nodeId", nestedFolderId);
+        params.put("maxItems", "100");
+
+        // Perform POST request
+        response = post(getFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
+        assertNotNull(response);
     }
 
     @After

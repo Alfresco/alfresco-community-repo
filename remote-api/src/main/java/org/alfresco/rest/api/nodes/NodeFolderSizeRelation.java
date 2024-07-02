@@ -256,7 +256,10 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         if(folderSizeAction!=null)
         {
             String errorInAction = (String) folderSizeAction.getParameterValue(NodeSizeActionExecuter.ERROR);
-            throw new InvalidNodeTypeException(errorInAction);
+            if(errorInAction.length()>1)
+            {
+              throw new InvalidNodeTypeException(errorInAction);
+            }
         }
     }
 

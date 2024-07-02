@@ -33,7 +33,5 @@ public class FolderSizeModel
 {
     /** Folder Model URI */
     private static final String SIZE_MODEL_1_0_URI = "http://www.alfresco.org/model/size/1.0";
-    public static final QName PROP_STATUS = QName.createQName(SIZE_MODEL_1_0_URI, "status");
     public static final QName PROP_OUTPUT = QName.createQName(SIZE_MODEL_1_0_URI, "result");
-    public static final QName PROP_ERROR = QName.createQName(SIZE_MODEL_1_0_URI, "error");
 }

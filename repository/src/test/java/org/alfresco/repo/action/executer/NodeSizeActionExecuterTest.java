@@ -104,7 +104,8 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
         ActionImpl action = new ActionImpl(null, ID, NodeSizeActionExecuter.NAME, null);
         action.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
         this.executer.executeImpl(action, this.nodeRef);
-        Map<String, Object> mapResult = (Map<String, Object>)this.nodeService.getProperty(this.nodeRef, FolderSizeModel.PROP_OUTPUT);
+        Object resultAction = action.getParameterValue(NodeSizeActionExecuter.RESULT);
+        Map<String, Object> mapResult = (Map<String, Object>)resultAction;
         assertTrue(mapResult != null);
     }
 }

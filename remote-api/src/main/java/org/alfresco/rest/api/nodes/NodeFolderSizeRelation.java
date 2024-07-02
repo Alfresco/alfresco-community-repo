@@ -80,6 +80,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private ActionTrackingService actionTrackingService;
     private Action folderSizeAction;
     private String exceptionMessage = "Invalid parameter: value of nodeId is invalid";
+    private InvalidNodeTypeException invalidNodeTypeException;
 
     /**
      * The logger
@@ -151,7 +152,8 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         if(!"folder".equals(qName.getLocalName()))
         {
-            makeErrorResponse(new InvalidNodeTypeException(exceptionMessage),422);
+            invalidNodeTypeException = new InvalidNodeTypeException(exceptionMessage);
+            return (Map<String, Object>) new ErrorResponse(invalidNodeTypeException.getMsgId(), 422, invalidNodeTypeException.getLocalizedMessage(), invalidNodeTypeException.getStackTrace(), invalidNodeTypeException.getAdditionalState());
         }
 
         try
@@ -181,10 +183,18 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     public Map<String, Object> readById(String nodeId, String id, Parameters parameters)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
+        // Check node type.
+        QName qName = nodeService.getType(nodeRef);
         Object resultAction;
         Map<String, Object> result = new HashMap<>();
         validatePermissions(nodeRef, nodeId);
         validateNodeType(nodeRef);
+
+        if(!"folder".equals(qName.getLocalName()))
+        {
+            invalidNodeTypeException = new InvalidNodeTypeException(exceptionMessage);
+            return (Map<String, Object>) new ErrorResponse(invalidNodeTypeException.getMsgId(), 422, invalidNodeTypeException.getLocalizedMessage(), invalidNodeTypeException.getStackTrace(), invalidNodeTypeException.getAdditionalState());
+        }
 
         try
         {
@@ -246,14 +256,6 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
     private void validateNodeType(NodeRef nodeRef)
     {
-        // Check node type.
-        QName qName = nodeService.getType(nodeRef);
-
-        if (!"folder".equals(qName.getLocalName()))
-        {
-            makeErrorResponse(new InvalidNodeTypeException(exceptionMessage),422);
-        }
-
         if(folderSizeAction!=null)
         {
             String errorInAction = (String) folderSizeAction.getParameterValue(NodeSizeActionExecuter.ERROR);

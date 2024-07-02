@@ -63,6 +63,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "folder-size";
     public static final String PAGE_SIZE = "page-size";
     public static final String RESULT = "size-result";
+    public static final String ERROR = "exception";
 
     /**
      * The node service
@@ -112,7 +113,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (NumberFormatException e)
         {
             LOG.error("Exception occurred while parsing String to INT: {}", e.getMessage());
-            nodeService.setProperty(actionedUponNodeRef, FolderSizeModel.PROP_ERROR,e.getMessage());
+            ruleAction.setParameterValue(ERROR, e.getMessage());
             throw e;
         }
 
@@ -175,7 +176,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (RuntimeException ex)
         {
             LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
-            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,ex.getMessage());
+            ruleAction.setParameterValue(ERROR, ex.getMessage());
             throw ex;
         }
 
@@ -190,7 +191,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
         if(isCalculationCompleted)
         {
-            ruleAction.setParameterValue(NodeSizeActionExecuter.RESULT, (Serializable) response);
+            ruleAction.setParameterValue(RESULT, (Serializable) response);
         }
     }
 

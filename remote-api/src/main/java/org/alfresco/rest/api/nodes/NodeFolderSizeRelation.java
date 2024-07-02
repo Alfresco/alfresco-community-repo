@@ -253,11 +253,10 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
         }
 
-        // Check for specific properties
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        if (properties.containsKey(FolderSizeModel.PROP_ERROR) && properties.get(FolderSizeModel.PROP_ERROR) != null)
+        if(folderSizeAction!=null)
         {
-            throw new InvalidNodeTypeException(String.valueOf(properties.get(FolderSizeModel.PROP_ERROR)));
+            String errorInAction = (String) folderSizeAction.getParameterValue(NodeSizeActionExecuter.ERROR);
+            throw new InvalidNodeTypeException(errorInAction);
         }
     }
 

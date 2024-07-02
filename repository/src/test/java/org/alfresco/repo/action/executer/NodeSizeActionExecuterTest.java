@@ -44,11 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class NodeSizeActionExecuterTest extends BaseSpringTest
 {
     /**
-     * The node service
-     */
-    private NodeService nodeService;
-
-    /**
      * The test node reference
      */
     private NodeRef nodeRef;
@@ -69,8 +64,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     @Before
     public void before() throws Exception
     {
-
-        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
+        NodeService nodeService = (NodeService)this.applicationContext.getBean("nodeService");
         StoreRef testStoreRef;
         NodeRef rootNodeRef;
 
@@ -78,12 +72,12 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         // Create the store and get the root node
-        testStoreRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
+        testStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
                         + System.currentTimeMillis());
-        rootNodeRef = this.nodeService.getRootNode(testStoreRef);
+        rootNodeRef = nodeService.getRootNode(testStoreRef);
 
         // Create the node used for tests
-        this.nodeRef = this.nodeService.createNode(
+        this.nodeRef = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testnode"),

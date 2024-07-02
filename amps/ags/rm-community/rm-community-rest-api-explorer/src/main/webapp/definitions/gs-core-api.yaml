@@ -2745,7 +2745,7 @@ paths:
               "periodAmount": 2,
               "period":"month",
               "periodProperty":"cm:created",
-              "combineDispositionStepConditions": false,
+              "combineRetentionStepConditions": false,
               "events":["versioned"],
               "eligibleOnFirstCompleteEvent": true,
               "description":"Step Description"
@@ -4540,7 +4540,7 @@ definitions:
         type: string
       periodProperty:
         type: string
-      combineDispositionStepConditions:
+      combineRetentionStepConditions:
         type: boolean
         default: false
       eligibleOnFirstCompleteEvent:
@@ -4560,6 +4560,9 @@ definitions:
         type: integer
   RetentionStepNodeBodyCreate:
     type: object
+    required:
+      - name
+      - description
     properties:
       name:
         type: string
@@ -4618,7 +4621,7 @@ definitions:
           * cm:created = Created Date (defult value) 
           * rma:cutOffDate = Cut Off Date
           * rma:dispositionAsOf = Retention Action
-      combineDispositionStepConditions:
+      combineRetentionStepConditions:
         type: boolean
         description: |
           This property is only valid for **accession** step.

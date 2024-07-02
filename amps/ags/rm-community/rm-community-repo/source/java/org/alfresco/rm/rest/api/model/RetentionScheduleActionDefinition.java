@@ -41,7 +41,7 @@ public class RetentionScheduleActionDefinition
     private int periodAmount;
     private String period;
     private String periodProperty;
-    private boolean combineDispositionStepConditions;
+    private boolean combineRetentionStepConditions;
     private List<String> events;
     private boolean eligibleOnFirstCompleteEvent;
     private String description;

@@ -26,7 +26,6 @@
 package org.alfresco.repo.action.executer;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;

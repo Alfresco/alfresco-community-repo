@@ -28,7 +28,6 @@ package org.alfresco.repo.action.executer;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;

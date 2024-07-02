@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.nodes;
 
-import org.alfresco.model.FolderSizeModel;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.Nodes;
@@ -36,7 +35,6 @@ import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.CalculateSize;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -57,7 +55,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

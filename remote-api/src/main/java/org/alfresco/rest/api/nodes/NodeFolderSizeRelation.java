@@ -37,10 +37,15 @@ import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.CalculateSize;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionTrackingService;
+import org.alfresco.service.cmr.action.ExecutionDetails;
+import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -54,6 +59,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -62,7 +68,7 @@ import java.util.Map;
  */
 
 @RelationshipResource(name = "calculateSize",  entityResource = NodesEntityResource.class, title = "Calculate size")
-public class NodeFolderSizeRelation implements RelationshipResourceAction.CalculateSize<Map<String, Object>>,RelationshipResourceAction.ReadById<Map<String, Object>>, InitializingBean
+public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>>, ReadById<Map<String, Object>>, InitializingBean
 {
     private Nodes nodes;
     private SearchService searchService;
@@ -70,6 +76,8 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
     private PermissionService permissionService;
     private NodeService nodeService;
     private ActionService actionService;
+    private ActionTrackingService actionTrackingService;
+    private Action folderSizeAction;
     private static final String NOT_A_VALID_NODEID = "Node Id does not refer to a valid type [should be of folder type]";
 
     /**
@@ -113,6 +121,11 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
         ParameterCheck.mandatory("nodes", this.nodes);
     }
 
+    public void setActionTrackingService(ActionTrackingService actionTrackingService)
+    {
+        this.actionTrackingService = actionTrackingService;
+    }
+
     /**
      * Folder Size - returns size of a folder.
      *
@@ -122,19 +135,16 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
      * GET/calculateSize endpoint to check if the action's status has been completed, comprising the size of the node in bytes.
      *               <p>
      *               If NodeId does not exist, EntityNotFoundException (status 404).
-     *               If nodeId does not represent a folder, InvalidNodeTypeException (status 400).
+     *               If nodeId does not represent a folder, InvalidNodeTypeException (status 422).
      */
     @Override
     @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder", successStatus = Status.STATUS_ACCEPTED)
     public Map<String, Object> createById(String nodeId, Parameters params)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
-        Map<String, Object> resetFolderOutput = new HashMap<>();
-        int maxItems = params.getPaging().getMaxItems();
+        int maxItems = Math.min(params.getPaging().getMaxItems(), 1000);
         QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
-        resetFolderOutput.put("status","IN-PROGRESS");
-        nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) resetFolderOutput);
 
         validatePermissions(nodeRef, nodeId);
 
@@ -145,13 +155,16 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
 
         try
         {
-            Action folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
+            folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
             folderSizeAction.setTrackStatus(true);
             folderSizeAction.setExecuteAsynchronously(true);
             folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
+            folderSizeAction.setParameterValue(NodeSizeActionExecuter.RESULT, "IN-PROGRESS");
             actionService.executeAction(folderSizeAction, nodeRef, false, true);
             LOG.info(" Executing ActionExecutor in NodeFolderSizeRelation:createById ");
-            result.put("nodeId", nodeId);
+            List<ExecutionSummary> executionSummaryList = actionTrackingService.getExecutingActions(NodeSizeActionExecuter.NAME);
+            ExecutionDetails executionDetails = actionTrackingService.getExecutionDetails(executionSummaryList.get(0));
+            result.put("executionId", executionDetails.getActionId());
             return result;
         }
         catch (Exception ex)
@@ -167,33 +180,22 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
     public Map<String, Object> readById(String nodeId, String id, Parameters parameters)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
+        Object resultAction;
+        Map<String, Object> result = new HashMap<>();
         validatePermissions(nodeRef, nodeId);
         validateNodeType(nodeRef);
 
         try
         {
             LOG.info("Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById");
-            Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-            Map<String, Object> result = new HashMap<>();
-
-            if (properties == null || !properties.containsKey(FolderSizeModel.PROP_OUTPUT))
+            if(folderSizeAction!=null)
             {
-                result.put("status", "NOT-INITIATED");
+                resultAction = folderSizeAction.getParameterValue(NodeSizeActionExecuter.RESULT);
+                result = getResult(resultAction);
             }
             else
             {
-                Map<String, Object> mapResult = (Map<String, Object>) properties.get(FolderSizeModel.PROP_OUTPUT);
-                Object status = mapResult.get("status");
-
-                if (status != null && status.toString().contains("IN-PROGRESS"))
-                {
-                    result.put("status", "IN-PROGRESS");
-                }
-                else
-                {
-                    mapResult.put("status", "COMPLETED");
-                    result = mapResult;
-                }
+                result.put("status", "NOT-INITIATED");
             }
             return result;
         }
@@ -202,6 +204,31 @@ public class NodeFolderSizeRelation implements RelationshipResourceAction.Calcul
             LOG.error("Exception occurred in NodeFolderSizeRelation:readById {}", ex.getMessage());
             throw ex; // Rethrow with original stack trace
         }
+    }
+
+    private Map<String, Object> getResult(Object resultAction)
+    {
+        Map<String, Object> result = new HashMap<>();
+
+        if (resultAction == null)
+        {
+            result.put("status", "NOT-INITIATED");
+        }
+        else
+        {
+            Map<String, Object> mapResult = (Map<String, Object>) resultAction;
+
+            if(!mapResult.containsKey("size"))
+            {
+                result.put("status", "IN-PROGRESS");
+            }
+            else
+            {
+                mapResult.put("status", "COMPLETED");
+                result = mapResult;
+            }
+        }
+        return result;
     }
 
     private void validatePermissions(NodeRef nodeRef, String nodeId)

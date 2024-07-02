@@ -62,6 +62,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
      */
     public static final String NAME = "folder-size";
     public static final String PAGE_SIZE = "page-size";
+    public static final String RESULT = "size-result";
 
     /**
      * The node service
@@ -189,8 +190,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
         if(isCalculationCompleted)
         {
-            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_OUTPUT, (Serializable) response);
-            nodeService.setProperty(nodeRef, FolderSizeModel.PROP_ERROR,null);
+            ruleAction.setParameterValue(NodeSizeActionExecuter.RESULT, (Serializable) response);
         }
     }
 

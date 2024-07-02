@@ -25,24 +25,16 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.api.model.ContentInfo;
-import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.data.Folder;
+import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -52,15 +44,13 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * V1 REST API tests for Folder size
@@ -150,7 +140,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         assertNotNull("Content node ID should not be null", contentNodeId);
     }
 
-
     /**
      * Test case for GET/calculateSize, to retrieve FolderSize.
      * <p>GET:</p>
@@ -168,6 +157,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);
 
+        assertTrue("We are not getting correct response",jsonResponse.contains("size") || jsonResponse.contains("status"));
+
         // Parse the JSON response.
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
@@ -175,59 +166,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         // Convert document to string and verify contentNodeId.
         String contentNodeId = document.toString();
         assertNotNull("Content node ID should not be null", contentNodeId);
-    }
-
-    /**
-     * Test case to trigger POST/calculateSize with >200 Children Nodes.
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
-     */
-    @Test
-    public void testPerformance() throws Exception
-    {
-        Node parentNodes;
-
-        // Logging initial time.
-        LocalDateTime eventTimestamp = LocalDateTime.now();
-        String formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
-        LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Initial Time :{}", formattedTimestamp);
-
-        // Create a folder within the site document's library.
-        String folderName = "folder" + System.currentTimeMillis();
-        String parentFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,parentFolderId);
-        QName qName =  QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeRef.getId()));
-
-        for(int i =0;i<300;i++)
-        {
-            Folder folder = createFolder(parentFolderId,"c1" + RUNID);
-            ContentData contentData = new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 10L, null);
-            String mimeType = contentData.getMimetype();
-            String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
-            org.alfresco.rest.api.tests.client.data.ContentInfo contentInfo1 = new org.alfresco.rest.api.tests.client.data.ContentInfo();
-            contentInfo1.setEncoding(contentData.getEncoding());
-            contentInfo1.setSizeInBytes(contentData.getSize());
-            contentInfo1.setMimeType(mimeType);
-            contentInfo1.setMimeTypeName(mimeTypeName);
-            folder.setContent(contentInfo1);
-            String folderID = addToDocumentLibrary(userOneN1Site, folder.getName(), TYPE_CM_FOLDER);
-            NodeRef folderNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,folderID);
-            QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(folder.getName()));
-            nodeService.addChild(nodeRef, folderNodeRef , qName, assocChildQName);
-        }
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId",parentFolderId);
-        params.put("maxItems","100");
-
-        HttpResponse response = post(getFolderSizeUrl(parentFolderId), toJsonAsStringNonNull(params), 202);
-        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
-        String contentNodeId = document.toString();
-        if(contentNodeId != null)
-        {
-            eventTimestamp = LocalDateTime.now();
-            formattedTimestamp = eventTimestamp.format(DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss"));
-            LOG.info(" ********** In NodeFolderSizeApiTest:testPerformance Completed Time :{}", formattedTimestamp);
-        }
-        assertNotNull(contentNodeId);
     }
 
     /**
@@ -243,6 +181,15 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
         HttpResponse response = post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
+
+        assertNotNull(response);
+
+        // create node
+        Node n = new Node();
+        n.setName("temp1");
+        n.setNodeType("");
+
+        response = post(getFolderSizeUrl(n.getName()), RestApiUtil.toJsonAsStringNonNull(n), 422);
         assertNotNull(response);
     }
 

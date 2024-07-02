@@ -1776,5 +1776,6 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="nodeService" ref="nodeService" />
         <property name="actionService" ref="ActionService"/>
+        <property name="actionTrackingService" ref="actionTrackingService" />
     </bean>
 </beans>

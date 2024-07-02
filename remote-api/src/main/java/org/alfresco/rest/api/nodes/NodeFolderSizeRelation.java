@@ -34,6 +34,9 @@ import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
+import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
+import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.CalculateSize;
@@ -76,7 +79,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private ActionService actionService;
     private ActionTrackingService actionTrackingService;
     private Action folderSizeAction;
-    private InvalidNodeTypeException invalidNodeTypeException;
+    private String exceptionMessage = "Invalid parameter: value of nodeId is invalid";
 
     /**
      * The logger
@@ -124,11 +127,6 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         this.actionTrackingService = actionTrackingService;
     }
 
-    public void setInvalidNodeTypeException(InvalidNodeTypeException invalidNodeTypeException)
-    {
-        this.invalidNodeTypeException = invalidNodeTypeException;
-    }
-
     /**
      * Folder Size - returns size of a folder.
      *
@@ -153,7 +151,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         if(!"folder".equals(qName.getLocalName()))
         {
-            throw invalidNodeTypeException;
+            makeErrorResponse(new InvalidNodeTypeException(exceptionMessage),422);
         }
 
         try
@@ -253,7 +251,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         if (!"folder".equals(qName.getLocalName()))
         {
-            throw invalidNodeTypeException;
+            makeErrorResponse(new InvalidNodeTypeException(exceptionMessage),422);
         }
 
         if(folderSizeAction!=null)
@@ -263,6 +261,19 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             {
               throw new AlfrescoRuntimeException(errorInAction);
             }
+        }
+    }
+
+    private ErrorResponse makeErrorResponse(Exception ex, Integer statusCode)
+    {
+        if (ex instanceof ApiException)
+        {
+            ApiException apEx = (ApiException) ex;
+            return new ErrorResponse(apEx.getMsgId(), statusCode, ex.getLocalizedMessage(), ex.getStackTrace(), apEx.getAdditionalState());
+        }
+        else
+        {
+            return new ErrorResponse(DefaultExceptionResolver.DEFAULT_MESSAGE_ID, statusCode, ex.getLocalizedMessage(), ex.getStackTrace(), null);
         }
     }
 

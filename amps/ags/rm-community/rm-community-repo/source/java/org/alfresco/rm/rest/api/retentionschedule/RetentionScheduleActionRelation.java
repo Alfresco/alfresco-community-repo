@@ -207,9 +207,8 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         {
             throw new InvalidArgumentException("event value is invalid: " + retentionScheduleActionDefinition.getEvents());
         }
-        // periodProperty validation
-        List<String> validPeriodProperties = Arrays.asList("cm:created", "rma:cutOffDate", "rma:dispositionAsOf");
-        if (validPeriodProperties.stream().noneMatch(retentionScheduleActionDefinition.getPeriodProperty()::equals))
+
+        if (validatePeriodProperty(retentionScheduleActionDefinition.getPeriodProperty()))
         {
             throw new InvalidArgumentException("periodProperty value is invalid: " + retentionScheduleActionDefinition.getPeriodProperty());
         }
@@ -223,6 +222,13 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         {
             throw new IllegalArgumentException("location property is only valid for transfer step. Not valid for :" + retentionScheduleActionDefinition.getName());
         }
+    }
+
+    private boolean validatePeriodProperty(String periodProperty)
+    {
+        // periodProperty validation
+        List<String> validPeriodProperties = Arrays.asList("cm:created", "rma:cutOffDate", "rma:dispositionAsOf");
+        return validPeriodProperties.stream().noneMatch(periodProperty::equals);
     }
 
     private boolean validateCombineRetentionStepConditionsForNonAccessionStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition)

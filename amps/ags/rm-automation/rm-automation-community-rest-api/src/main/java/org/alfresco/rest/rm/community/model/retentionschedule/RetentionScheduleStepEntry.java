@@ -26,33 +26,13 @@
  */
 package org.alfresco.rest.rm.community.model.retentionschedule;
 
-import lombok.EqualsAndHashCode;
-import org.alfresco.utility.model.TestModel;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import org.alfresco.rest.core.RestModels;
 
-import java.util.List;
-
-/**
- * retention schedule
- */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class RetentionSchedule extends TestModel
+public class RetentionScheduleStepEntry extends RestModels<RetentionScheduleActionDefinition, RetentionScheduleStepEntry>
 {
-    private String id ;
-    private String parentId;
-    private String authority;
-    private String instructions;
-    private boolean isRecordLevel;
-    private boolean isUnpublishedUpdates;
-    private List<RetentionScheduleActionDefinition> actions;
-
-    public boolean getIsRecordLevel()
-    {
-        return isRecordLevel;
-    }
-
-    public void setIsRecordLevel(boolean recordLevel) {
-        isRecordLevel = recordLevel;
-    }
+    @JsonProperty
+    private RetentionScheduleActionDefinition entry;
 }

@@ -27,6 +27,7 @@
 package org.alfresco.rm.rest.api.model;
 
 import lombok.Data;
+
 import java.util.List;
 
 /**
@@ -42,4 +43,14 @@ public class RetentionSchedule
     private boolean isRecordLevel;
     private boolean isUnpublishedUpdates;
     private List<RetentionScheduleActionDefinition> actions;
+
+    public boolean getIsRecordLevel()
+    {
+        return isRecordLevel;
+    }
+
+    public void setIsRecordLevel(boolean recordLevel)
+    {
+        isRecordLevel = recordLevel;
+    }
 }

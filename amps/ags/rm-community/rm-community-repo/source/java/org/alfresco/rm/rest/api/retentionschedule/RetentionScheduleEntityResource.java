@@ -24,35 +24,15 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.retentionschedule;
+package org.alfresco.rm.rest.api.retentionschedule;
 
-import lombok.EqualsAndHashCode;
-import org.alfresco.utility.model.TestModel;
-import lombok.Data;
-
-import java.util.List;
+import org.alfresco.rest.framework.resource.EntityResource;
 
 /**
- * retention schedule
+ * Retention schedule entity resource
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
-public class RetentionSchedule extends TestModel
+@EntityResource(name="retention-schedules", title = "Retention Schedule")
+public class RetentionScheduleEntityResource
 {
-    private String id ;
-    private String parentId;
-    private String authority;
-    private String instructions;
-    private boolean isRecordLevel;
-    private boolean isUnpublishedUpdates;
-    private List<RetentionScheduleActionDefinition> actions;
 
-    public boolean getIsRecordLevel()
-    {
-        return isRecordLevel;
-    }
-
-    public void setIsRecordLevel(boolean recordLevel) {
-        isRecordLevel = recordLevel;
-    }
 }

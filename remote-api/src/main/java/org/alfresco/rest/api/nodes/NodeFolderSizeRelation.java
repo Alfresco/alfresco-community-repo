@@ -80,7 +80,6 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private ActionTrackingService actionTrackingService;
     private Action folderSizeAction;
     private String exceptionMessage = "Invalid parameter: value of nodeId is invalid";
-    private InvalidNodeTypeException invalidNodeTypeException;
 
     /**
      * The logger
@@ -152,7 +151,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         if(!"folder".equals(qName.getLocalName()))
         {
-            invalidNodeTypeException = new InvalidNodeTypeException(exceptionMessage);
+            InvalidNodeTypeException invalidNodeTypeException = new InvalidNodeTypeException(exceptionMessage);
             return (Map<String, Object>) new ErrorResponse(invalidNodeTypeException.getMsgId(), 422, invalidNodeTypeException.getLocalizedMessage(), invalidNodeTypeException.getStackTrace(), invalidNodeTypeException.getAdditionalState());
         }
 
@@ -185,14 +184,13 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         NodeRef nodeRef = nodes.validateNode(nodeId);
         // Check node type.
         QName qName = nodeService.getType(nodeRef);
-        Object resultAction;
         Map<String, Object> result = new HashMap<>();
         validatePermissions(nodeRef, nodeId);
-        validateNodeType(nodeRef);
+        validateAction();
 
         if(!"folder".equals(qName.getLocalName()))
         {
-            invalidNodeTypeException = new InvalidNodeTypeException(exceptionMessage);
+            InvalidNodeTypeException invalidNodeTypeException = new InvalidNodeTypeException(exceptionMessage);
             return (Map<String, Object>) new ErrorResponse(invalidNodeTypeException.getMsgId(), 422, invalidNodeTypeException.getLocalizedMessage(), invalidNodeTypeException.getStackTrace(), invalidNodeTypeException.getAdditionalState());
         }
 
@@ -201,7 +199,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             LOG.info("Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById");
             if(folderSizeAction!=null)
             {
-                resultAction = folderSizeAction.getParameterValue(NodeSizeActionExecuter.RESULT);
+                Object resultAction = folderSizeAction.getParameterValue(NodeSizeActionExecuter.RESULT);
                 result = getResult(resultAction);
             }
             else
@@ -254,7 +252,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         }
     }
 
-    private void validateNodeType(NodeRef nodeRef)
+    private void validateAction()
     {
         if(folderSizeAction!=null)
         {
@@ -263,19 +261,6 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             {
               throw new AlfrescoRuntimeException(errorInAction);
             }
-        }
-    }
-
-    private ErrorResponse makeErrorResponse(Exception ex, Integer statusCode)
-    {
-        if (ex instanceof ApiException)
-        {
-            ApiException apEx = (ApiException) ex;
-            return new ErrorResponse(apEx.getMsgId(), statusCode, ex.getLocalizedMessage(), ex.getStackTrace(), apEx.getAdditionalState());
-        }
-        else
-        {
-            return new ErrorResponse(DefaultExceptionResolver.DEFAULT_MESSAGE_ID, statusCode, ex.getLocalizedMessage(), ex.getStackTrace(), null);
         }
     }
 

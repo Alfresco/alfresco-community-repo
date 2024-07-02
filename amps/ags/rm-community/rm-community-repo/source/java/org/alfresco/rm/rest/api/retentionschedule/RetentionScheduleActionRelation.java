@@ -197,20 +197,13 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         {
             throw new InvalidArgumentException("name value is invalid : " +retentionScheduleActionDefinition.getName());
         }
-        // period value validation
-        if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
-        {
-            throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
-        }
+
+        validatePeriodAndPeriodProperty(retentionScheduleActionDefinition);
+
         // event name validation
         if (invalidEventNameCheck(retentionScheduleActionDefinition.getEvents()))
         {
             throw new InvalidArgumentException("event value is invalid: " + retentionScheduleActionDefinition.getEvents());
-        }
-
-        if (validatePeriodProperty(retentionScheduleActionDefinition.getPeriodProperty()))
-        {
-            throw new InvalidArgumentException("periodProperty value is invalid: " + retentionScheduleActionDefinition.getPeriodProperty());
         }
 
         if (validateCombineRetentionStepConditionsForNonAccessionStep(retentionScheduleActionDefinition))
@@ -224,11 +217,20 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         }
     }
 
-    private boolean validatePeriodProperty(String periodProperty)
+    private void validatePeriodAndPeriodProperty(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
+        // period value validation
+        if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
+        {
+            throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
+        }
+
         // periodProperty validation
         List<String> validPeriodProperties = Arrays.asList("cm:created", "rma:cutOffDate", "rma:dispositionAsOf");
-        return validPeriodProperties.stream().noneMatch(periodProperty::equals);
+        if (validPeriodProperties.stream().noneMatch(retentionScheduleActionDefinition.getPeriodProperty()::equals))
+        {
+            throw new InvalidArgumentException("periodProperty value is invalid: " + retentionScheduleActionDefinition.getPeriodProperty());
+        }
     }
 
     private boolean validateCombineRetentionStepConditionsForNonAccessionStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition)

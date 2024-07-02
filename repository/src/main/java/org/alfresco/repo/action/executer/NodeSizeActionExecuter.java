@@ -104,6 +104,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         Serializable serializable = ruleAction.getParameterValue(PAGE_SIZE);
         int maxItems;
         Map<String,Object> response = new HashMap<>();
+        ruleAction.setParameterValue(ERROR, "");
 
         try
         {

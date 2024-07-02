@@ -187,7 +187,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         // create node
         Node n = new Node();
         n.setName("temp1");
-        n.setNodeType("");
+        n.setNodeType("retention");
 
         response = post(getFolderSizeUrl(n.getName()), RestApiUtil.toJsonAsStringNonNull(n), 422);
         assertNotNull(response);

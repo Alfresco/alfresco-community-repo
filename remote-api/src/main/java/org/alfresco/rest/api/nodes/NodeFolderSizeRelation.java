@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.Nodes;
@@ -75,7 +76,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private ActionService actionService;
     private ActionTrackingService actionTrackingService;
     private Action folderSizeAction;
-    private static final String NOT_A_VALID_NODEID = "Node Id does not refer to a valid type [should be of folder type]";
+    private InvalidNodeTypeException invalidNodeTypeException;
 
     /**
      * The logger
@@ -123,6 +124,11 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         this.actionTrackingService = actionTrackingService;
     }
 
+    public void setInvalidNodeTypeException(InvalidNodeTypeException invalidNodeTypeException)
+    {
+        this.invalidNodeTypeException = invalidNodeTypeException;
+    }
+
     /**
      * Folder Size - returns size of a folder.
      *
@@ -147,7 +153,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         if(!"folder".equals(qName.getLocalName()))
         {
-            throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
+            throw invalidNodeTypeException;
         }
 
         try
@@ -247,7 +253,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         if (!"folder".equals(qName.getLocalName()))
         {
-            throw new InvalidNodeTypeException(NOT_A_VALID_NODEID);
+            throw invalidNodeTypeException;
         }
 
         if(folderSizeAction!=null)
@@ -255,7 +261,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             String errorInAction = (String) folderSizeAction.getParameterValue(NodeSizeActionExecuter.ERROR);
             if(errorInAction.length()>1)
             {
-              throw new InvalidNodeTypeException(errorInAction);
+              throw new AlfrescoRuntimeException(errorInAction);
             }
         }
     }

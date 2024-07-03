@@ -2742,13 +2742,13 @@ paths:
         ```JSON
           {
               "name":"accession",
+              "description":"Step Description",
               "periodAmount": 2,
               "period":"month",
               "periodProperty":"cm:created",
               "combineRetentionStepConditions": false,
               "events":["versioned"],
-              "eligibleOnFirstCompleteEvent": true,
-              "description":"Step Description"
+              "eligibleOnFirstCompleteEvent": true              
           }
         ```
       operationId: createRetentionScheduleAction
@@ -4534,6 +4534,8 @@ definitions:
         type: string
       name:
         type: string
+      description:
+        type: string
       periodAmount:
         type: integer
       period:
@@ -4546,8 +4548,6 @@ definitions:
       eligibleOnFirstCompleteEvent:
         type: boolean
         default: true
-      description:
-        type: string
       retainRecordMetadataAfterDestruction:
         type: boolean
       location:
@@ -4572,7 +4572,15 @@ definitions:
           * cutoff
           * accession
           * transfer
-          * destroy
+          * destroyContent
+          * destroyNode
+          
+          **destroyContent** step will create destroy step and set retainRecordMetadataAfterDestruction to true.
+          **destroyNode** step will create destroy step and set retainRecordMetadataAfterDestruction to false.
+      description:
+        type: string
+        description: |
+          This property is used to provide the step description.
       periodAmount:
         type: integer
         description: |
@@ -4656,14 +4664,6 @@ definitions:
         description: |
           * false = When all events have happened
           * true = Whichever event is earlier
-      description:
-        type: string
-        description: |
-          This property is used to provide the step description.
-      retainRecordMetadataAfterDestruction:
-        type: boolean
-        description: |
-          This property is used to retain the metadata after record destruction.
       location:
         type: string
         description: |

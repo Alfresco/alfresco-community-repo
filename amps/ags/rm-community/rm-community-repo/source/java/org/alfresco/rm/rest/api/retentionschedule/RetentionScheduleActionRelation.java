@@ -160,9 +160,9 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
                     .collect(Collectors.toSet());
         }
 
-        if (completedActions.contains(RetentionSteps.DESTROY.stepName))
+        if (completedActions.contains("destroy"))
         {
-            throw new ConstraintViolatedException("Invalid Step - destroy action is already added . No other action is allowed after Destroy.");
+            throw new ConstraintViolatedException("Invalid Step - destroy action is already added. No other action is allowed after Destroy.");
         }
 
         if (checkStepAlreadyExists(completedActions, retentionScheduleActionDefinition.getName()))

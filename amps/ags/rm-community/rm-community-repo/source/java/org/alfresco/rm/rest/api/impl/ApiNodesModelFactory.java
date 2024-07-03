@@ -1078,7 +1078,15 @@ public class ApiNodesModelFactory
     public Map<QName, Serializable> createRetentionActionDefinitionParams(RetentionScheduleActionDefinition nodeInfo)
     {
         Map<QName, Serializable>  actionDefinitionParams= new HashMap<>();
-        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, nodeInfo.getName());
+
+        String retentionActionName = nodeInfo.getName();
+        if (nodeInfo.getName().equals(RetentionSteps.DESTROY_NODE.stepName) ||
+                nodeInfo.getName().equals(RetentionSteps.DESTROY_CONTENT.stepName))
+        {
+            retentionActionName = "destroy";
+        }
+
+        actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, retentionActionName);
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
         StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod()).append("|");
         if(isPeriodAmountApplicable(nodeInfo.getPeriod()))
@@ -1099,11 +1107,11 @@ public class ApiNodesModelFactory
         }
         List<String> inputEvents = nodeInfo.getEvents();
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
-        if (RetentionSteps.DESTROY.stepName.equals(nodeInfo.getName()) && nodeInfo.isRetainRecordMetadataAfterDestruction())
+        if (RetentionSteps.DESTROY_CONTENT.stepName.equals(nodeInfo.getName()))
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
         }
-        else
+        else if (RetentionSteps.DESTROY_NODE.stepName.equals(nodeInfo.getName()))
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "delete");
         }

@@ -79,7 +79,7 @@ public class RetentionScheduleStepTests extends BaseRMRestTest
     private static final String RETAIN_STEP = "retain";
     private static final String INVALID_PERIOD = "random";
     private static final String CUTOFF_STEP = "cutoff";
-    private static final String DESTROY_STEP = "destroy";
+    private static final String DESTROY_STEP = "destroyContent";
     private static final String INVALID_PASSWORD = "wrongPassword";
 
     @Autowired

@@ -38,13 +38,13 @@ public class RetentionScheduleActionDefinition
 {
     private String id;
     private String name;
+    private String description;
     private int periodAmount;
     private String period;
     private String periodProperty;
     private boolean combineRetentionStepConditions;
     private List<String> events;
     private boolean eligibleOnFirstCompleteEvent;
-    private String description;
     private boolean retainRecordMetadataAfterDestruction;
     private String location;
     private int index;

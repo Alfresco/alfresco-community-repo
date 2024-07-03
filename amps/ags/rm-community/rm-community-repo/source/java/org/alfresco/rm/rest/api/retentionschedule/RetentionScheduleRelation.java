@@ -104,7 +104,7 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
 
         if (checkCategoryHasAssocFolder(parentNodeRef) && nodeInfos.get(0).getIsRecordLevel())
         {
-            throw new UnprocessableContentException("can't create record level retention schedule for this record category");
+            throw new UnprocessableContentException("Record level retention schedule cannot be created for a record category having folder associated.");
         }
         List<RetentionSchedule> result = new ArrayList<>();
         // Create the disposition schedule

@@ -2683,6 +2683,8 @@ paths:
           description: recordCategoryId does not exist
         '409':
           description: Retention schedule already exist for the given recordCategoryId
+        '422':
+          description: Record level retention schedule cannot be created for a record category having folder associated
         default:
           description: Unexpected error
           schema:
@@ -4575,8 +4577,8 @@ definitions:
           * destroyContent
           * destroyNode
           
-          **destroyContent** step will create destroy step and set retainRecordMetadataAfterDestruction to true.
-          **destroyNode** step will create destroy step and set retainRecordMetadataAfterDestruction to false.
+          destroyNode step can be used to destroy content along with record metadata. 
+          In case, record metadata needs to be retained, then destroyContent step should be used.
       description:
         type: string
         description: |

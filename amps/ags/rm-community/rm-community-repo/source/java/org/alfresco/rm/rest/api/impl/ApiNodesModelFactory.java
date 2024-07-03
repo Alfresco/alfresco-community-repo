@@ -939,7 +939,7 @@ public class ApiNodesModelFactory
     {
         RetentionSchedule retentionSchedule = new RetentionSchedule();
         retentionSchedule.setId(dispositionSchedule.getNodeRef().getId());
-        if(dispositionSchedule.getNodeRef() != null) {
+        if (dispositionSchedule.getNodeRef() != null) {
             NodeRef parent = this.nodeService.getPrimaryParent(dispositionSchedule.getNodeRef()).getParentRef();
             retentionSchedule.setParentId(parent.getId());
         }
@@ -1001,7 +1001,7 @@ public class ApiNodesModelFactory
      */
     private void mapPeriodProperties(DispositionActionDefinition dispositionActionDefinition, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
-        if(dispositionActionDefinition.getPeriodProperty() != null)
+        if (dispositionActionDefinition.getPeriodProperty() != null)
         {
             retentionScheduleActionDefinition.setPeriodProperty(dispositionActionDefinition.getPeriodProperty().toPrefixString(namespaceService));
         }
@@ -1080,6 +1080,7 @@ public class ApiNodesModelFactory
         Map<QName, Serializable>  actionDefinitionParams= new HashMap<>();
 
         String retentionActionName = nodeInfo.getName();
+
         if (nodeInfo.getName().equals(RetentionSteps.DESTROY_NODE.stepName) ||
                 nodeInfo.getName().equals(RetentionSteps.DESTROY_CONTENT.stepName))
         {
@@ -1089,7 +1090,8 @@ public class ApiNodesModelFactory
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, retentionActionName);
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, nodeInfo.getDescription());
         StringBuilder retentionPeriod = new StringBuilder(nodeInfo.getPeriod()).append("|");
-        if(isPeriodAmountApplicable(nodeInfo.getPeriod()))
+
+        if (isPeriodAmountApplicable(nodeInfo.getPeriod()))
         {
             retentionPeriod.append(nodeInfo.getPeriodAmount());
         }
@@ -1100,6 +1102,7 @@ public class ApiNodesModelFactory
                 nodeInfo.isEligibleOnFirstCompleteEvent());
         boolean combineConditions = nodeInfo.getName().equals(RetentionSteps.ACCESSION.stepName) && nodeInfo.isCombineRetentionStepConditions();
         actionDefinitionParams.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS, combineConditions);
+
         if(nodeInfo.getLocation() != null && nodeInfo.getName().equals(RetentionSteps.TRANSFER.stepName))
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
@@ -1107,6 +1110,7 @@ public class ApiNodesModelFactory
         }
         List<String> inputEvents = nodeInfo.getEvents();
         actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) inputEvents);
+
         if (RetentionSteps.DESTROY_CONTENT.stepName.equals(nodeInfo.getName()))
         {
             actionDefinitionParams.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");

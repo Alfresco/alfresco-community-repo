@@ -29,6 +29,7 @@ package org.alfresco.rm.rest.api.retentionschedule;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.UnprocessableContentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -119,8 +120,10 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
 
     private boolean checkCategoryHasAssocFolder(NodeRef nodeRef)
     {
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL, 1, true);
-        return !assocs.isEmpty() && assocs.get(0).getQName().getLocalName().equals(ContentModel.TYPE_FOLDER.getLocalName());
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        return assocs.stream()
+                .map(assoc -> nodeService.getType(assoc.getChildRef()))
+                .anyMatch(nodeType -> nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER));
     }
 
     @Override

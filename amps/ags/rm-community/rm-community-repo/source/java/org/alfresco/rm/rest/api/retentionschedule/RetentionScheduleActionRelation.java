@@ -146,6 +146,11 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
      */
     private void retentionScheduleStepValidation(NodeRef retentionScheduleNodeRef, RetentionScheduleActionDefinition retentionScheduleActionDefinition)
     {
+        if (checkStepNameIsEmpty(retentionScheduleActionDefinition.getName()))
+        {
+            throw new IllegalArgumentException("'name' parameter is mandatory when creating a disposition action definition");
+        }
+
         List<DispositionActionDefinition> actions = nodesModelFactory.getRetentionActions(retentionScheduleNodeRef);
         Set<String> completedActions = new HashSet<>();
         if (!actions.isEmpty())
@@ -155,9 +160,9 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
                     .collect(Collectors.toSet());
         }
 
-        if (completedActions.contains(RetentionSteps.DESTROY.stepName))
+        if (completedActions.contains("destroy"))
         {
-            throw new ConstraintViolatedException("Invalid Step - destroy action is already added . No other action is allowed after Destroy.");
+            throw new ConstraintViolatedException("Invalid Step - destroy action is already added. No other action is allowed after Destroy.");
         }
 
         if (checkStepAlreadyExists(completedActions, retentionScheduleActionDefinition.getName()))
@@ -176,6 +181,11 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         }
     }
 
+    private boolean checkStepNameIsEmpty(String name)
+    {
+        return name == null || name.isEmpty();
+    }
+
     /**
      * this method is used to validate the request of the retention schedule
      * @param retentionScheduleActionDefinition retention schedule action definition
@@ -187,22 +197,53 @@ public class RetentionScheduleActionRelation implements RelationshipResourceActi
         {
             throw new InvalidArgumentException("name value is invalid : " +retentionScheduleActionDefinition.getName());
         }
-        // period value validation
-        if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
-        {
-            throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
-        }
+
+        validatePeriodAndPeriodProperty(retentionScheduleActionDefinition);
+
         // event name validation
         if (invalidEventNameCheck(retentionScheduleActionDefinition.getEvents()))
         {
             throw new InvalidArgumentException("event value is invalid: " + retentionScheduleActionDefinition.getEvents());
         }
+
+        if (validateCombineRetentionStepConditionsForNonAccessionStep(retentionScheduleActionDefinition))
+        {
+            throw new IllegalArgumentException("combineRetentionStepConditions property is only valid for accession step. Not valid for :" + retentionScheduleActionDefinition.getName());
+        }
+
+        if (validateLocationForNonTransferStep(retentionScheduleActionDefinition))
+        {
+            throw new IllegalArgumentException("location property is only valid for transfer step. Not valid for :" + retentionScheduleActionDefinition.getName());
+        }
+    }
+
+    private void validatePeriodAndPeriodProperty(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        // period value validation
+        if (invalidPeriodCheck(retentionScheduleActionDefinition.getPeriod()))
+        {
+            throw new InvalidArgumentException("period value is invalid : " +retentionScheduleActionDefinition.getPeriod());
+        }
+
         // periodProperty validation
         List<String> validPeriodProperties = Arrays.asList("cm:created", "rma:cutOffDate", "rma:dispositionAsOf");
         if (validPeriodProperties.stream().noneMatch(retentionScheduleActionDefinition.getPeriodProperty()::equals))
         {
             throw new InvalidArgumentException("periodProperty value is invalid: " + retentionScheduleActionDefinition.getPeriodProperty());
         }
+    }
+
+    private boolean validateCombineRetentionStepConditionsForNonAccessionStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        return !retentionScheduleActionDefinition.getName().equals(RetentionSteps.ACCESSION.stepName)
+                && retentionScheduleActionDefinition.isCombineRetentionStepConditions();
+    }
+
+    private boolean validateLocationForNonTransferStep(RetentionScheduleActionDefinition retentionScheduleActionDefinition)
+    {
+        return retentionScheduleActionDefinition.getLocation() != null
+                && !retentionScheduleActionDefinition.getName().equals(RetentionSteps.TRANSFER.stepName)
+                    && !retentionScheduleActionDefinition.getLocation().isEmpty();
     }
 
     private boolean checkStepAlreadyExists(Set<String> completedActions, String stepName)

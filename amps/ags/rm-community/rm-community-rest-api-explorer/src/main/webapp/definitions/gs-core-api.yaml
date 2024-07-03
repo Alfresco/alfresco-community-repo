@@ -2683,6 +2683,8 @@ paths:
           description: recordCategoryId does not exist
         '409':
           description: Retention schedule already exist for the given recordCategoryId
+        '422':
+          description: Record level retention schedule cannot be created for a record category having folder associated
         default:
           description: Unexpected error
           schema:
@@ -2742,13 +2744,13 @@ paths:
         ```JSON
           {
               "name":"accession",
+              "description":"Step Description",
               "periodAmount": 2,
               "period":"month",
               "periodProperty":"cm:created",
-              "combineDispositionStepConditions": false,
+              "combineRetentionStepConditions": false,
               "events":["versioned"],
-              "eligibleOnFirstCompleteEvent": true,
-              "description":"Step Description"
+              "eligibleOnFirstCompleteEvent": true              
           }
         ```
       operationId: createRetentionScheduleAction
@@ -4534,20 +4536,20 @@ definitions:
         type: string
       name:
         type: string
+      description:
+        type: string
       periodAmount:
         type: integer
       period:
         type: string
       periodProperty:
         type: string
-      combineDispositionStepConditions:
+      combineRetentionStepConditions:
         type: boolean
         default: false
       eligibleOnFirstCompleteEvent:
         type: boolean
         default: true
-      description:
-        type: string
       retainRecordMetadataAfterDestruction:
         type: boolean
       location:
@@ -4560,6 +4562,9 @@ definitions:
         type: integer
   RetentionStepNodeBodyCreate:
     type: object
+    required:
+      - name
+      - description
     properties:
       name:
         type: string
@@ -4569,7 +4574,15 @@ definitions:
           * cutoff
           * accession
           * transfer
-          * destroy
+          * destroyContent
+          * destroyNode
+          
+          destroyNode step can be used to destroy content along with record metadata. 
+          In case, record metadata needs to be retained, then destroyContent step should be used.
+      description:
+        type: string
+        description: |
+          This property is used to provide the step description.
       periodAmount:
         type: integer
         description: |
@@ -4618,7 +4631,7 @@ definitions:
           * cm:created = Created Date (defult value) 
           * rma:cutOffDate = Cut Off Date
           * rma:dispositionAsOf = Retention Action
-      combineDispositionStepConditions:
+      combineRetentionStepConditions:
         type: boolean
         description: |
           This property is only valid for **accession** step.
@@ -4653,14 +4666,6 @@ definitions:
         description: |
           * false = When all events have happened
           * true = Whichever event is earlier
-      description:
-        type: string
-        description: |
-          This property is used to provide the step description.
-      retainRecordMetadataAfterDestruction:
-        type: boolean
-        description: |
-          This property is used to retain the metadata after record destruction.
       location:
         type: string
         description: |

@@ -35,7 +35,8 @@ public enum RetentionSteps
     CUTOFF("cutoff"),
     TRANSFER("transfer"),
     ACCESSION("accession"),
-    DESTROY("destroy");
+    DESTROY_CONTENT("destroyContent"),
+    DESTROY_NODE("destroyNode");
 
     public final String stepName;
 

@@ -109,7 +109,7 @@ jobs:
           project_name: alfresco-community-repo
           issue_details: true
           veracode_policy_name: Alfresco Default
-          json_output: false
+          json_output_file: veracode.json
           summary_output: true
           summary_output_file: human_readable.txt
           summary_display: true

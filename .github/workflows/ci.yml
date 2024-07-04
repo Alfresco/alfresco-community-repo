@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
-      (github.ref_name == 'master' || startsWith(github.ref_name, 'release/') || github.event_name == 'pull_request') &&
+      (startsWith(github.ref_name, 'fix/')) &&
       github.actor != 'dependabot[bot]' &&
       !contains(github.event.head_commit.message, '[skip tests]') &&
       !contains(github.event.head_commit.message, '[force')
@@ -109,13 +109,14 @@ jobs:
           project_name: alfresco-community-repo
           issue_details: true
           veracode_policy_name: Alfresco Default
+          json_output: false
           summary_output: true
-          summary_output_file: results.json
+          summary_output_file: human_readable.txt
           summary_display: true
           baseline_file: baseline.json
       - name: Upload scan result
         if: success() || failure()
-        run: zip readable_output.zip results.json
+        run: zip readable_output.zip human_readable.txt
       - name: Upload Artifact
         if: success() || failure()
         uses: actions/upload-artifact@v3

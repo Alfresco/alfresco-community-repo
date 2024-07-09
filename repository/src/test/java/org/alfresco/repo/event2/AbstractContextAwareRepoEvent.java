@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -71,7 +71,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -122,9 +121,6 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     @Autowired
     private NamespaceDAO namespaceDAO;
-
-    @Value("${repo.event2.queue.skip}")
-    protected boolean skipEventQueue;
 
     protected NodeRef rootNodeRef;
 

@@ -27,6 +27,7 @@ package org.alfresco.repo.event2;
 
 import jakarta.annotation.Nonnull;
 import org.alfresco.util.PropertyCheck;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.core.env.PropertyResolver;
@@ -49,7 +50,8 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     private String configuredSenderName;
     private boolean legacySkipQueueConfig;
 
-    public EventSenderFactoryBean(PropertyResolver propertyResolver, Event2MessageProducer event2MessageProducer, Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
+    public EventSenderFactoryBean(@Autowired PropertyResolver propertyResolver, Event2MessageProducer event2MessageProducer,
+                                  Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
     {
         PropertyCheck.mandatory(this, "propertyResolver", propertyResolver);
         PropertyCheck.mandatory(this, "event2MessageProducer", event2MessageProducer);

@@ -60,7 +60,6 @@
     <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2"/>
 
     <bean id="eventSender" class="org.alfresco.repo.event2.EventSenderFactoryBean">
-        <constructor-arg ref="propertyResolver" />
         <constructor-arg ref="event2MessageProducer"/>
         <constructor-arg ref="eventAsyncEnqueueThreadPool"/>
         <constructor-arg ref="eventAsyncDequeueThreadPool"/>

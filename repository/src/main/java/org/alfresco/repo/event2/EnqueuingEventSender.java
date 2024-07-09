@@ -58,6 +58,7 @@ public class EnqueuingEventSender extends DirectEventSender
         PropertyCheck.mandatory(this, "dequeueThreadPoolExecutor", dequeueThreadPoolExecutor);
         this.enqueueThreadPoolExecutor = enqueueThreadPoolExecutor;
         this.dequeueThreadPoolExecutor = dequeueThreadPoolExecutor;
+        dequeueThreadPoolExecutor.execute(listener);
     }
 
     /**

@@ -44,7 +44,7 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
     @Test
     public void testIfOnlyRequiredEventSenderIsInstantiated()
     {
-        assertTrue(allEventSenderBeans.size() == 1);
+        assertEquals(1, allEventSenderBeans.size());
         assertTrue(allEventSenderBeans.contains(eventSender));
     }
 
@@ -52,8 +52,7 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
     @Test
     public void testIfDirectSenderIsSetInEventGenerator()
     {
-        assertTrue(skipEventQueue);
+        assertEquals(DirectEventSender.class, eventSender.getClass());
         assertEquals(eventSender, eventGenerator.getEventSender());
-        assertEquals(eventSender.getClass(), DirectEventSender.class);
     }
 }

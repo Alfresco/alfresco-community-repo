@@ -4,9 +4,9 @@ set -x
 # Display running containers
 docker ps
 
-alfrescoContainerId=$(docker ps -a | grep '_alfresco_' | awk '{print $1}')
-shareContainerId=$(docker ps -a | grep '_share_' | awk '{print $1}')
-solrContainerId=$(docker ps -a | grep '_search_' | awk '{print $1}')
+alfrescoContainerId=$(docker ps -a | grep '\-alfresco\-' | awk '{print $1}')
+shareContainerId=$(docker ps -a | grep '\-share\-' | awk '{print $1}')
+solrContainerId=$(docker ps -a | grep '\-search\-' | awk '{print $1}')
 
 docker logs $alfrescoContainerId > alfresco.log
 if [ -n "$shareContainerId" ]; then

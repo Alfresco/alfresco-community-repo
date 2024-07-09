@@ -86,6 +86,15 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     @Nonnull
     protected EventSender createInstance() throws Exception
     {
+        EventSender sender = instantiateConfiguredSender();
+        
+        sender.initialize();
+
+        return sender;
+    }
+
+    private EventSender instantiateConfiguredSender()
+    {
         if (isSenderNameConfigured())
         {
             return instantiateSender(getConfiguredSenderName());

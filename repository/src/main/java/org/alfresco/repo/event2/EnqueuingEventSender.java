@@ -58,7 +58,6 @@ public class EnqueuingEventSender extends DirectEventSender
         PropertyCheck.mandatory(this, "dequeueThreadPoolExecutor", dequeueThreadPoolExecutor);
         this.enqueueThreadPoolExecutor = enqueueThreadPoolExecutor;
         this.dequeueThreadPoolExecutor = dequeueThreadPoolExecutor;
-        dequeueThreadPoolExecutor.execute(listener);
     }
 
     /**
@@ -80,6 +79,12 @@ public class EnqueuingEventSender extends DirectEventSender
                 LOGGER.error("Unexpected error while enqueuing maker function for repository event" + e);
             }
         });
+    }
+
+    @Override
+    public void initialize()
+    {
+        dequeueThreadPoolExecutor.execute(listener);
     }
 
     /**

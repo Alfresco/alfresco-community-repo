@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,78 +25,35 @@
  */
 package org.alfresco.repo.event2;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.ContextHierarchy;
+import org.springframework.test.context.TestPropertySource;
 
-@ContextHierarchy({
-    // Context hierarchy inherits context config from parent classes and extends it with TestConfig from this class
-    @ContextConfiguration(classes = DirectEventGeneratorTest.TestConfig.class)
-})
+import java.util.Collection;
+
+@TestPropertySource(properties = {"repo.event2.queue.skip=true"})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class DirectEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired
-    private InstantiatedBeansRegistry instantiatedBeansRegistry;
-
+    private EventSender eventSender;
     @Autowired
-    private EventSender directEventSender;
-
-    @BeforeClass
-    public static void beforeClass()
-    {
-        System.setProperty("repo.event2.queue.skip", "true");
-    }
+    private Collection<EventSender> allEventSenderBeans;
 
     @Test
-    public void testIfEnqueuingEventSenderIsNotInstantiated()
+    public void testIfOnlyRequiredEventSenderIsInstantiated()
     {
-        final Set<String> instantiatedBeans = this.instantiatedBeansRegistry.getBeans();
-
-        assertTrue(skipEventQueue);
-        assertFalse(instantiatedBeans.contains("enqueuingEventSender"));
+        assertTrue(allEventSenderBeans.size() == 1);
+        assertTrue(allEventSenderBeans.contains(eventSender));
     }
+
 
     @Test
     public void testIfDirectSenderIsSetInEventGenerator()
     {
         assertTrue(skipEventQueue);
-        assertEquals(directEventSender, eventGenerator.getEventSender());
-    }
-
-    @Configuration
-    public static class TestConfig
-    {
-        @Bean
-        public BeanPostProcessor instantiatedBeansRegistry()
-        {
-            return new InstantiatedBeansRegistry();
-        }
-    }
-
-    protected static class InstantiatedBeansRegistry implements BeanPostProcessor
-    {
-        private final Set<String> registeredBeans = new HashSet<>();
-
-        @Override
-        public Object postProcessAfterInitialization(final Object bean, final String beanName) throws BeansException
-        {
-            registeredBeans.add(beanName);
-            return bean;
-        }
-
-        public Set<String> getBeans() {
-            return registeredBeans;
-        }
+        assertEquals(eventSender, eventGenerator.getEventSender());
+        assertEquals(eventSender.getClass(), DirectEventSender.class);
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -46,28 +46,18 @@ public class EnqueuingEventSender extends DirectEventSender
 {
     protected static final Log LOGGER = LogFactory.getLog(EnqueuingEventSender.class);
 
-    protected Executor enqueueThreadPoolExecutor;
-    protected Executor dequeueThreadPoolExecutor;
+    protected final Executor enqueueThreadPoolExecutor;
+    protected final Executor dequeueThreadPoolExecutor;
     protected BlockingQueue<EventInMaking> queue = new LinkedBlockingQueue<>();
     protected Runnable listener = createListener();
 
-    @Override
-    public void afterPropertiesSet()
+    public EnqueuingEventSender(Event2MessageProducer event2MessageProducer, Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
     {
-        super.afterPropertiesSet();
+        super(event2MessageProducer);
         PropertyCheck.mandatory(this, "enqueueThreadPoolExecutor", enqueueThreadPoolExecutor);
         PropertyCheck.mandatory(this, "dequeueThreadPoolExecutor", dequeueThreadPoolExecutor);
-    }
-
-    public void setEnqueueThreadPoolExecutor(Executor enqueueThreadPoolExecutor)
-    {
         this.enqueueThreadPoolExecutor = enqueueThreadPoolExecutor;
-    }
-
-    public void setDequeueThreadPoolExecutor(Executor dequeueThreadPoolExecutor)
-    {
         this.dequeueThreadPoolExecutor = dequeueThreadPoolExecutor;
-        dequeueThreadPoolExecutor.execute(listener);
     }
 
     /**

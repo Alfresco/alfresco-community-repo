@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -65,15 +65,10 @@ public class EnqueuingEventSenderUnitTest
     @Before
     public void setup() 
     {
-        eventSender = new EnqueuingEventSender();
-
-        enqueuePool = newThreadPool();
-        eventSender.setEnqueueThreadPoolExecutor(enqueuePool);
-        dequeuePool = newThreadPool();
-        eventSender.setDequeueThreadPoolExecutor(dequeuePool);
-
         bus = mock(Event2MessageProducer.class);
-        eventSender.setEvent2MessageProducer(bus);
+        enqueuePool = newThreadPool();
+        dequeuePool = newThreadPool();
+        eventSender = new EnqueuingEventSender(bus, enqueuePool, dequeuePool);
 
         events = new HashMap<>();
 

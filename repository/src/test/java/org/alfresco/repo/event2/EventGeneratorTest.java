@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -51,7 +51,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.test.context.TestPropertySource;
 
+@TestPropertySource(properties = {"repo.event2.queue.skip=false"})
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";
@@ -59,12 +61,6 @@ public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 
     private ActiveMQConnection connection;
     protected List<RepoEvent<?>> receivedEvents;
-
-    @BeforeClass
-    public static void beforeClass()
-    {
-        System.setProperty("repo.event2.queue.skip", "false");
-    }
 
     @Before
     public void startupTopicListener() throws Exception

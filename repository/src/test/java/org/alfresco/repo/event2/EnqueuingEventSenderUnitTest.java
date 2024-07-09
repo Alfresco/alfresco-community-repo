@@ -69,6 +69,7 @@ public class EnqueuingEventSenderUnitTest
         enqueuePool = newThreadPool();
         dequeuePool = newThreadPool();
         eventSender = new EnqueuingEventSender(bus, enqueuePool, dequeuePool);
+        eventSender.initialize();
 
         events = new HashMap<>();
 

@@ -87,7 +87,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     protected EventSender createInstance() throws Exception
     {
         EventSender sender = instantiateConfiguredSender();
-        
+
         sender.initialize();
 
         return sender;
@@ -117,18 +117,6 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
         throw new IllegalStateException("Failed to instantiate sender: " + senderName);
     }
 
-    private boolean isLegacySkipQueueConfigured()
-    {
-        return Optional.ofNullable(propertyResolver.getProperty(LEGACY_SKIP_QUEUE_PROPERTY, Boolean.class))
-                .orElse(legacySkipQueueConfig);
-    }
-
-    private String getConfiguredSenderName()
-    {
-        return Optional.ofNullable(propertyResolver.getProperty(EVENT_SEND_STRATEGY_PROPERTY, String.class))
-                .orElse(configuredSenderName);
-    }
-
     private DirectEventSender instantiateDirectSender()
     {
         return new DirectEventSender(event2MessageProducer);
@@ -144,5 +132,17 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
         return !Optional.ofNullable(getConfiguredSenderName())
                 .map(String::isBlank)
                 .orElse(true);
+    }
+
+    private boolean isLegacySkipQueueConfigured()
+    {
+        return Optional.ofNullable(propertyResolver.getProperty(LEGACY_SKIP_QUEUE_PROPERTY, Boolean.class))
+                .orElse(legacySkipQueueConfig);
+    }
+
+    private String getConfiguredSenderName()
+    {
+        return Optional.ofNullable(propertyResolver.getProperty(EVENT_SEND_STRATEGY_PROPERTY, String.class))
+                .orElse(configuredSenderName);
     }
 }

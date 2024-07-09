@@ -53,6 +53,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     public EventSenderFactoryBean(@Autowired PropertyResolver propertyResolver, Event2MessageProducer event2MessageProducer,
                                   Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
     {
+        super();
         PropertyCheck.mandatory(this, "propertyResolver", propertyResolver);
         PropertyCheck.mandatory(this, "event2MessageProducer", event2MessageProducer);
         PropertyCheck.mandatory(this, "enqueueThreadPoolExecutor", enqueueThreadPoolExecutor);
@@ -89,7 +90,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
         {
             return instantiateSender(getConfiguredSenderName());
         }
-        return getLegacySkipQueueConfig() ? instantiateDirectSender() : instantiateAsyncSender();
+        return isLegacySkipQueueConfigured() ? instantiateDirectSender() : instantiateAsyncSender();
     }
 
     protected EventSender instantiateSender(String senderName)
@@ -107,7 +108,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
         throw new IllegalStateException("Failed to instantiate sender: " + senderName);
     }
 
-    private boolean getLegacySkipQueueConfig()
+    private boolean isLegacySkipQueueConfigured()
     {
         return Optional.ofNullable(propertyResolver.getProperty(LEGACY_SKIP_QUEUE_PROPERTY, Boolean.class))
                 .orElse(legacySkipQueueConfig);

@@ -44,34 +44,34 @@ import org.junit.runners.Suite;
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
-//    // Requires a running ActiveMQ
-//    org.alfresco.repo.rawevents.EventBehaviourTest.class,
-//    org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
-//    org.alfresco.repo.event2.RepoEvent2ITSuite.class,
-//
-//    // Requires running transformers
-//    org.alfresco.transform.registry.LocalTransformServiceRegistryConfigTest.class,
-    org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class
-//    org.alfresco.repo.rendition2.LocalTransformServiceRegistryIntegrationTest.class,
-//    org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,
-//    org.alfresco.repo.rendition2.LocalRenditionTest.class,
-//    org.alfresco.repo.rendition2.NoneRenditionTest.class,
-//
-//    org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
-//    org.alfresco.repo.tagging.TaggingServiceImplTest.class,
-//    org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
-//    org.alfresco.repo.transaction.RetryingTransactionHelperTest.class,
-//    org.alfresco.repo.transaction.TransactionAwareSingletonTest.class,
-//    org.alfresco.repo.transaction.TransactionServiceImplTest.class,
-//    org.alfresco.repo.oauth1.OAuth1CredentialsStoreServiceTest.class,
-//    org.alfresco.repo.oauth2.OAuth2CredentialsStoreServiceTest.class,
-//    org.alfresco.repo.template.TemplateServiceImplTest.class,
-//    org.alfresco.repo.tenant.MultiTServiceImplTest.class,
-//    org.alfresco.repo.search.SearcherComponentTest.class,
-//    org.alfresco.repo.blog.BlogServiceImplTest.class,
-//    org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class,
-//
-//    org.alfresco.repo.rendition2.RenditionDefinitionTest.class
+    // Requires a running ActiveMQ
+    org.alfresco.repo.rawevents.EventBehaviourTest.class,
+    org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
+    org.alfresco.repo.event2.RepoEvent2ITSuite.class,
+
+    // Requires running transformers
+    org.alfresco.transform.registry.LocalTransformServiceRegistryConfigTest.class,
+    org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
+    org.alfresco.repo.rendition2.LocalTransformServiceRegistryIntegrationTest.class,
+    org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,
+    org.alfresco.repo.rendition2.LocalRenditionTest.class,
+    org.alfresco.repo.rendition2.NoneRenditionTest.class,
+
+    org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
+    org.alfresco.repo.tagging.TaggingServiceImplTest.class,
+    org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
+    org.alfresco.repo.transaction.RetryingTransactionHelperTest.class,
+    org.alfresco.repo.transaction.TransactionAwareSingletonTest.class,
+    org.alfresco.repo.transaction.TransactionServiceImplTest.class,
+    org.alfresco.repo.oauth1.OAuth1CredentialsStoreServiceTest.class,
+    org.alfresco.repo.oauth2.OAuth2CredentialsStoreServiceTest.class,
+    org.alfresco.repo.template.TemplateServiceImplTest.class,
+    org.alfresco.repo.tenant.MultiTServiceImplTest.class,
+    org.alfresco.repo.search.SearcherComponentTest.class,
+    org.alfresco.repo.blog.BlogServiceImplTest.class,
+    org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class,
+
+    org.alfresco.repo.rendition2.RenditionDefinitionTest.class
 })
 public class AppContext06TestSuite
 {

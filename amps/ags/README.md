@@ -71,7 +71,7 @@ the _alfresco-internal_ repository:
    </snapshots>
 </repository>
 ```
- 
+
 
 For additional instructions you can check the official Maven documentation:
 * [setting up repositories](https://maven.apache.org/guides/mini/guide-multiple-repositories.html)
@@ -227,7 +227,7 @@ If only the Community or Enterprise images need to be built than the same comman
 
 The Docker images of the Repo can be started independently from Share running the following command in the rm-repo-enterprise or rm-repo-community folder which contains the Docker-compose.yml file:
 ```
-docker-compose up
+docker compose up
 ```
 > Be aware of the fact that the Share images can not be started independently from Repo
 
@@ -237,5 +237,5 @@ e.g. In order to start an instance of rm-enterprise-repo and rm-enterprise-share
 
 If you have a license for jRebel then this can be used from the rm-community-share or rm-enterprise-share directories with:
 ```
-docker-compose -f docker-compose.yml -f jrebel-docker-compose.yml --project-name agsdev up --build --force-recreate
+docker compose -f docker-compose.yml -f jrebel-docker-compose.yml --project-name agsdev up --build --force-recreate
 ```

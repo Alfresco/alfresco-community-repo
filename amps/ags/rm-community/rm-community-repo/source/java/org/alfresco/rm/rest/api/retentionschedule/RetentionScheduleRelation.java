@@ -26,9 +26,12 @@
  */
 package org.alfresco.rm.rest.api.retentionschedule;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.UnprocessableContentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -37,10 +40,12 @@ import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.RetentionSchedule;
 import org.alfresco.rm.rest.api.recordcategories.RecordCategoriesEntityResource;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -96,6 +101,11 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
         mandatory("entity", nodeInfos);
         mandatory("parameters", parameters);
         NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, recordCategoryId);
+
+        if (checkCategoryHasAssocFolder(parentNodeRef) && nodeInfos.get(0).getIsRecordLevel())
+        {
+            throw new UnprocessableContentException("Record level retention schedule cannot be created for a record category having folder associated.");
+        }
         List<RetentionSchedule> result = new ArrayList<>();
         // Create the disposition schedule
         Map<QName, Serializable> dsProps = new HashMap<>();
@@ -106,6 +116,14 @@ public class RetentionScheduleRelation implements RelationshipResourceAction.Rea
         RetentionSchedule retentionSchedule = nodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
         result.add(retentionSchedule);
         return result;
+    }
+
+    private boolean checkCategoryHasAssocFolder(NodeRef nodeRef)
+    {
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        return assocs.stream()
+                .map(assoc -> nodeService.getType(assoc.getChildRef()))
+                .anyMatch(nodeType -> nodeType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER));
     }
 
     @Override

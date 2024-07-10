@@ -27,13 +27,11 @@ package org.alfresco.repo.event2;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.Collection;
 
 @TestPropertySource(properties = {"repo.event2.queue.skip=true"})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class DirectEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired

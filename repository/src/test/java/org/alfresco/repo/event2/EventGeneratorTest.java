@@ -49,11 +49,8 @@ import org.apache.activemq.command.ActiveMQTopic;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.test.context.TestPropertySource;
 
-@TestPropertySource(properties = {"repo.event2.queue.skip=false"})
 public abstract class EventGeneratorTest extends AbstractContextAwareRepoEvent
 {
     private static final String EVENT2_TOPIC_NAME = "alfresco.repo.event2";

@@ -73,11 +73,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.test.context.TestPropertySource;
 
 /**
  * @author Iulian Aftene
  */
-
+@TestPropertySource(properties = {"repo.event2.queue.skip=false"})
 public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 {
     protected static final boolean            DEBUG = false;

@@ -31,7 +31,7 @@ env:
   AUTH0_ADMIN_PASSWORD: ${{ secrets.AUTH0_OIDC_ADMIN_PASSWORD }}
   # Report Portal settings
   RP_LAUNCH_PREFIX: "${{ github.workflow }} - ${{ github.job }}"
-  RP_PROJECT: alfresco-backend
+  RP_PROJECT: alfresco-backend-makeItFall
 
 jobs:
   prepare:

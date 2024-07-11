@@ -182,6 +182,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master'
         env:
@@ -189,6 +190,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -201,6 +203,7 @@ jobs:
         if: github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -210,6 +213,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -265,6 +269,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -272,6 +277,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -284,6 +290,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
             echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -293,6 +300,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -336,6 +344,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -343,6 +352,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -355,6 +365,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -364,6 +375,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -403,6 +415,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -410,6 +423,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -422,6 +436,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -431,6 +446,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -470,6 +486,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -477,6 +494,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -489,6 +507,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -498,6 +517,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -536,6 +556,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -543,6 +564,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -555,6 +577,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -564,6 +587,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -602,6 +626,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -609,6 +634,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -621,6 +647,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -630,6 +657,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -668,6 +696,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -675,6 +704,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -687,6 +717,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -696,6 +727,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -730,6 +762,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -737,6 +770,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -749,6 +783,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.13.1
@@ -758,6 +793,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -841,6 +877,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -848,6 +885,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -860,6 +898,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -869,6 +908,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -943,6 +983,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -950,6 +991,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: tests
         env:
@@ -969,6 +1011,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -978,6 +1021,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.tests.outcome != 'success'
         run: |
@@ -1012,6 +1056,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -1019,6 +1064,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
@@ -1031,6 +1077,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -1040,6 +1087,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -1083,6 +1131,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -1128,6 +1177,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
@@ -1175,6 +1225,7 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
         if: github.ref_name == 'master'
         env:
@@ -1182,6 +1233,7 @@ jobs:
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Test"
         id: run-tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
@@ -1195,6 +1247,7 @@ jobs:
         if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
@@ -1204,6 +1257,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |

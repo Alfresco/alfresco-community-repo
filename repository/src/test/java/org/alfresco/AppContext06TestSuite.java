@@ -44,11 +44,6 @@ import org.junit.runners.Suite;
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
-    // Requires a running ActiveMQ
-    org.alfresco.repo.rawevents.EventBehaviourTest.class,
-    org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
-    org.alfresco.repo.event2.RepoEvent2ITSuite.class,
-
     // Requires running transformers
     org.alfresco.transform.registry.LocalTransformServiceRegistryConfigTest.class,
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
@@ -71,7 +66,12 @@ import org.junit.runners.Suite;
     org.alfresco.repo.blog.BlogServiceImplTest.class,
     org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class,
 
-    org.alfresco.repo.rendition2.RenditionDefinitionTest.class
+    org.alfresco.repo.rendition2.RenditionDefinitionTest.class,
+
+    // Requires a running ActiveMQ
+    org.alfresco.repo.rawevents.EventBehaviourTest.class,
+    org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
+    org.alfresco.repo.event2.RepoEvent2ITSuite.class,
 })
 public class AppContext06TestSuite
 {

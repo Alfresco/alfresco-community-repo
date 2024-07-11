@@ -82,17 +82,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-dbcp2</artifactId>
-            <exclusions>
-              <!-- Exclude jakarta.transaction-api so that other repositories importing
-                   the alfresco-repository as a dependency, not having community-repo as
-                   a parent, and therefore not sharing the dependencyManagement with it,
-                   won't inherit the outdated jakarta.transaction-api version coming from
-                   this library -->
-              <exclusion>
-                  <groupId>jakarta.transaction</groupId>
-                  <artifactId>jakarta.transaction-api</artifactId>
-              </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

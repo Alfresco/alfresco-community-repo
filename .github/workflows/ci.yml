@@ -174,7 +174,7 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare Report Portal"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -183,7 +183,7 @@ jobs:
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
       - name: "Add GitHub Step Summary"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
@@ -192,17 +192,17 @@ jobs:
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
+          RP_OPTS: ${{ github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
       - name: "Summarize Report Portal"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-8394_Report_Portal_Integration_On_Master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:

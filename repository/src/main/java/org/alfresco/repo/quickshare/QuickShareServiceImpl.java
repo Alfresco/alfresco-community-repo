@@ -1247,7 +1247,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         }
 
         // Create the expiry action
-        final QuickShareLinkExpiryAction expiryAction = new QuickShareLinkExpiryActionImpl(java.util.UUID.randomUUID().toString(), sharedId,
+        final QuickShareLinkExpiryAction expiryAction = new QuickShareLinkExpiryActionImpl(UUID.randomUUID().toString(), sharedId,
                     "QuickShare link expiry action");
         // Create the persisted schedule
         final ScheduledPersistedAction schedule = scheduledPersistedActionService.createSchedule(expiryAction);

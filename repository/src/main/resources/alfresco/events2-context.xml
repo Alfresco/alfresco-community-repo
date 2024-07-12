@@ -55,7 +55,7 @@
         <property name="permissionService" ref="permissionService"/>
     </bean>
 
-    <bean id="baseEventSender" autowire="constructor" abstract="true">
+    <bean id="baseEventSender" abstract="true">
         <constructor-arg ref="event2MessageProducer"/>
         <constructor-arg ref="eventAsyncEnqueueThreadPool"/>
         <constructor-arg ref="eventAsyncDequeueThreadPool"/>
@@ -65,7 +65,7 @@
 
     <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2"/>
 
-    <bean id="eventSender" class="org.alfresco.repo.event2.EventSenderFactoryBean" parent="baseEventSender" />
+    <bean id="eventSender" class="org.alfresco.repo.event2.EventSenderFactoryBean" autowire="constructor" parent="baseEventSender" />
 
     <bean id="eventAsyncEnqueueThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
         <property name="poolName">

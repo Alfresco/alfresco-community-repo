@@ -55,15 +55,17 @@
         <property name="permissionService" ref="permissionService"/>
     </bean>
 
-    <bean id="nodeResourceHelper" class="org.alfresco.repo.event2.NodeResourceHelper" parent="baseNodeResourceHelper"/>
-
-    <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2"/>
-
-    <bean id="eventSender" class="org.alfresco.repo.event2.EventSenderFactoryBean" autowire="constructor">
+    <bean id="baseEventSender" autowire="constructor" abstract="true">
         <constructor-arg ref="event2MessageProducer"/>
         <constructor-arg ref="eventAsyncEnqueueThreadPool"/>
         <constructor-arg ref="eventAsyncDequeueThreadPool"/>
     </bean>
+
+    <bean id="nodeResourceHelper" class="org.alfresco.repo.event2.NodeResourceHelper" parent="baseNodeResourceHelper"/>
+
+    <bean id="eventGeneratorV2" class="org.alfresco.repo.event2.EventGenerator" parent="baseEventGeneratorV2"/>
+
+    <bean id="eventSender" class="org.alfresco.repo.event2.EventSenderFactoryBean" parent="baseEventSender" />
 
     <bean id="eventAsyncEnqueueThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
         <property name="poolName">

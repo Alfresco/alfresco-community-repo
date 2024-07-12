@@ -119,12 +119,12 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
 
     private DirectEventSender instantiateDirectSender()
     {
-        return new DirectEventSender(event2MessageProducer);
+        return new DirectEventSender(getEvent2MessageProducer());
     }
 
     private EnqueuingEventSender instantiateAsyncSender()
     {
-        return new EnqueuingEventSender(event2MessageProducer, enqueueThreadPoolExecutor, dequeueThreadPoolExecutor);
+        return new EnqueuingEventSender(getEvent2MessageProducer(), enqueueThreadPoolExecutor, dequeueThreadPoolExecutor);
     }
 
     private boolean isSenderNameConfigured()
@@ -136,13 +136,23 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
 
     private boolean isLegacySkipQueueConfigured()
     {
-        return Optional.ofNullable(propertyResolver.getProperty(LEGACY_SKIP_QUEUE_PROPERTY, Boolean.class))
+        return Optional.ofNullable(resolveProperty(LEGACY_SKIP_QUEUE_PROPERTY, Boolean.class))
                 .orElse(legacySkipQueueConfig);
     }
 
     private String getConfiguredSenderName()
     {
-        return Optional.ofNullable(propertyResolver.getProperty(EVENT_SEND_STRATEGY_PROPERTY, String.class))
+        return Optional.ofNullable(resolveProperty(EVENT_SEND_STRATEGY_PROPERTY, String.class))
                 .orElse(configuredSenderName);
+    }
+
+    protected <T> T resolveProperty(String key, Class<T> targetType)
+    {
+        return propertyResolver.getProperty(key, targetType);
+    }
+
+    protected Event2MessageProducer getEvent2MessageProducer()
+    {
+        return event2MessageProducer;
     }
 }

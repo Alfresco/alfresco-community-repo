@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>23.3.0.69-SNAPSHOT</version>
+        <version>23.3.0.71-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -178,7 +178,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-json</artifactId>
-            <version>3.0.19</version>
+            <version>3.0.22</version>
         </dependency>
 
        <dependency>

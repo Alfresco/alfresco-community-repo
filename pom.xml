@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>23.3.0.69-SNAPSHOT</version>
+    <version>23.3.0.71-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -85,7 +85,7 @@
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.5</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>4.0.5</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.camel.version>4.6.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
         <dependency.netty.version>4.1.110.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.3</dependency.activemq.version>
         <dependency.apache-compress.version>1.26.2</dependency.apache-compress.version>
@@ -851,6 +851,17 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-dbcp2</artifactId>
                 <version>${dependency.commons-dbcp.version}</version>
+                <exclusions>
+                <!-- Exclude jakarta.transaction-api so that other repositories importing
+                     the alfresco-repository as a dependency, not having community-repo as
+                     a parent, and therefore not sharing the dependencyManagement with it,
+                     won't inherit the outdated jakarta.transaction-api version coming from
+                     this library -->
+                    <exclusion>
+                        <groupId>jakarta.transaction</groupId>
+                        <artifactId>jakarta.transaction-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.google.code.gson</groupId>

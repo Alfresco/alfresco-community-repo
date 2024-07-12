@@ -88,14 +88,7 @@ public class CrcHelper
         try
         {
             CRC32 crc = new CRC32();
-            if (caseSensitive)
-            {
-                crc.update(value.getBytes("UTF-8"));
-            }
-            else
-            {
-                crc.update(valueLowerCase.getBytes("UTF-8"));
-            }
+            crc.update(valueLowerCase.getBytes("UTF-8"));
             valueCrc = crc.getValue();
         }
         catch (UnsupportedEncodingException e)

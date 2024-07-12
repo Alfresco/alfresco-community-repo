@@ -64,13 +64,13 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
         this.dequeueThreadPoolExecutor = dequeueThreadPoolExecutor;
     }
 
-    @Value("${" + LEGACY_SKIP_QUEUE_PROPERTY + ":#{false}}")
+    @Value("${" + LEGACY_SKIP_QUEUE_PROPERTY + "}")
     public void setLegacySkipQueueConfig(boolean legacySkipQueueConfig)
     {
         this.legacySkipQueueConfig = legacySkipQueueConfig;
     }
 
-    @Value("${" + EVENT_SEND_STRATEGY_PROPERTY + ":#{null}}")
+    @Value("${" + EVENT_SEND_STRATEGY_PROPERTY + "}")
     public void setConfiguredSenderName(String configuredSenderName)
     {
         this.configuredSenderName = configuredSenderName;

@@ -167,8 +167,8 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
             String guidString = uid.substring(uid.length() - 36);
             try
             {
-               @SuppressWarnings("unused")
-               UUID id = UUID.fromString(guidString);
+                @SuppressWarnings("unused")
+                UUID id = UUID.fromString(guidString);
                 // We have a valid guid.
                 return true;
             }
@@ -188,7 +188,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
                 try
                 {
                     @SuppressWarnings("unused")
-                   UUID id = UUID.fromString(guidString);
+                    UUID id = UUID.fromString(guidString);
                     // We have a valid guid.
                     return true;
                 }

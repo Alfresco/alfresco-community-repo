@@ -21,7 +21,7 @@ package org.alfresco.util;
 import java.security.SecureRandom;
 import java.util.Random;
 
-import org.safehaus.uuid.UUIDGenerator;
+import com.fasterxml.uuid.Generators;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**
@@ -69,7 +69,7 @@ public final class GUID
     public static String generate()
     {
         int randomInt = RANDOM.nextInt(SECURE_RANDOM_POOL_MAX_ITEMS);
-        return UUIDGenerator.getInstance().generateRandomBasedUUID(SECURE_RANDOM_POOL[randomInt]).toString();
+        return Generators.randomBasedGenerator(SECURE_RANDOM_POOL[randomInt]).generate().toString();
     }
 
 // == Not sure if we need this functionality again (derekh) ==

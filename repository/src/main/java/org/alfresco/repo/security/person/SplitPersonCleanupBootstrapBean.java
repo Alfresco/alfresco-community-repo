@@ -27,6 +27,7 @@ package org.alfresco.repo.security.person;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.batch.BatchProcessor;
@@ -41,7 +42,6 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.safehaus.uuid.UUID;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -167,8 +167,8 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
             String guidString = uid.substring(uid.length() - 36);
             try
             {
-                @SuppressWarnings("unused")
-                UUID id = new UUID(guidString);
+               @SuppressWarnings("unused")
+               UUID id = UUID.fromString(guidString);
                 // We have a valid guid.
                 return true;
             }
@@ -188,7 +188,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
                 try
                 {
                     @SuppressWarnings("unused")
-                    UUID id = new UUID(guidString);
+                   UUID id = UUID.fromString(guidString);
                     // We have a valid guid.
                     return true;
                 }

@@ -84,7 +84,7 @@
                             <include>org.alfresco:alfresco-core</include>
                             <include>org.alfresco:alfresco-repository</include>
                             <include>org.apache.commons:commons-compress</include>
-                            <include>org.safehaus.jug:jug</include>
+                            <include>com.fasterxml.uuid:java-uuid-generator</include>
                             <include>org.alfresco.surf:spring-surf-core</include>
                             <include>org.tukaani:xz</include>
                             <include>org.apache.maven:maven-artifact</include>

@@ -37,7 +37,10 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.UUIDUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.model.Repository;
@@ -83,8 +86,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
-import org.safehaus.uuid.UUID;
-import org.safehaus.uuid.UUIDGenerator;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -420,8 +421,8 @@ public class QuickShareServiceIntegrationTest
     
     @Test(expected=InvalidSharedIdException.class) public void getMetadataFromShareIdWithInvalidId()
     {
-        UUID uuid = UUIDGenerator.getInstance().generateRandomBasedUUID();
-        String sharedId = Base64.encodeBase64URLSafeString(uuid.toByteArray()); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
+        UUID uuid = Generators.randomBasedGenerator().generate();
+        String sharedId = Base64.encodeBase64URLSafeString(UUIDUtil.asByteArray(uuid)); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
 
         Map<String, Object> metadata = quickShareService.getMetaData(sharedId);
     }
@@ -884,7 +885,7 @@ public class QuickShareServiceIntegrationTest
         {
             // Create a private site
             AuthenticationUtil.setFullyAuthenticatedUser(user1.getUsername());
-            String randomUUID = UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
+            String randomUUID = Generators.randomBasedGenerator().generate().toString();
             String siteName = "testSite" + randomUUID;
             siteService.createSite("site-dashboard", siteName, "Title for " + siteName,
                     "Description for " + siteName, SiteVisibility.PRIVATE);

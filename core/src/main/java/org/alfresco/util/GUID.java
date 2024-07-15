@@ -22,7 +22,6 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 import com.fasterxml.uuid.Generators;
-import com.fasterxml.uuid.UUIDGenerator;
 import org.alfresco.api.AlfrescoPublicApi;
 
 /**

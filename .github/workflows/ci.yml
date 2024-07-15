@@ -174,6 +174,7 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -181,24 +182,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -206,6 +213,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -253,6 +261,7 @@ jobs:
       - name: "Set up the environment"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -260,24 +269,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"  
           mvn -B test -pl remote-api -Dtest=${{ matrix.testSuite }} -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
             echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -285,6 +300,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -320,6 +336,7 @@ jobs:
         env:
           MARIADB_VERSION: ${{ matrix.version }}
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -327,24 +344,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -352,6 +375,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -383,6 +407,7 @@ jobs:
         env:
           MARIADB_VERSION: 10.6
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -390,24 +415,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -415,6 +446,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -446,6 +478,7 @@ jobs:
         env:
           MYSQL_VERSION: 8
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -453,24 +486,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)" 
           mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -478,6 +517,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -508,6 +548,7 @@ jobs:
         env:
           POSTGRES_VERSION: 13.12
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -515,24 +556,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)" 
           mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -540,6 +587,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -570,6 +618,7 @@ jobs:
         env:
           POSTGRES_VERSION: 14.9
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -577,24 +626,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)" 
           mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -602,6 +657,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -632,6 +688,7 @@ jobs:
         env:
           POSTGRES_VERSION: 15.4
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -639,24 +696,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)" 
           mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -664,6 +727,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -690,6 +754,7 @@ jobs:
       - name: "Run ActiveMQ"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile activemq up -d
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.13.1
         id: rp-prepare
         with:
@@ -697,24 +762,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl repository -am -Dtest=MessagingUnitTestSuite -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.13.1
         id: rp-summarize
         with:
@@ -722,6 +793,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -797,6 +869,7 @@ jobs:
       - name: "Set up the environment"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -804,24 +877,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }} "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -829,6 +908,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -895,6 +975,7 @@ jobs:
         if: ${{ matrix.test-name }} == 'Integration TAS tests'
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -902,16 +983,19 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           eval "args=($RP_OPTS)"
@@ -924,9 +1008,12 @@ jobs:
         if: ${{ always() && steps.tests.outcome == 'failure' }}
         run: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/${{ matrix.pom-dir }}"
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -934,6 +1021,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.tests.outcome != 'success'
         run: |
@@ -960,6 +1048,7 @@ jobs:
       - name: "Run Postgres 15.4 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -967,24 +1056,30 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -992,6 +1087,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |
@@ -1027,6 +1123,7 @@ jobs:
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -1034,10 +1131,11 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }} "${args[@]}"
@@ -1071,6 +1169,7 @@ jobs:
           bash ./scripts/ci/init.sh
           bash ./scripts/ci/build.sh
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -1078,10 +1177,11 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }} "${args[@]}"
@@ -1117,6 +1217,7 @@ jobs:
           ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
           mvn -B install -pl :alfresco-governance-services-automation-community-rest-api -am -Pags -Pall-tas-tests -DskipTests
       - name: "Prepare Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -1124,25 +1225,31 @@ jobs:
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-use-static-launch-name: true
+        continue-on-error: true
       - name: "Add GitHub Step Summary"
+        if: github.ref_name == 'master'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
+        continue-on-error: true
       - name: "Test"
         id: run-tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
-          RP_OPTS: ${{ steps.rp-prepare.outputs.mvn-opts }}
+          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl :alfresco-governance-services-automation-community-rest-api -Dskip.automationtests=false -Pags -Pall-tas-tests "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'master'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
       - name: "Summarize Report Portal"
+        if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:
@@ -1150,6 +1257,7 @@ jobs:
           rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
           rp-project: ${{ env.RP_PROJECT }}
           rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Exit on failure"
         if: steps.run-tests.outcome != 'success'
         run: |

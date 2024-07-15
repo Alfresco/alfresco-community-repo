@@ -253,6 +253,10 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
         {
             bound = bindListener(listener, COMMIT_ORDER_CACHE);
         }
+        else if (listener.getCustomOrder() != null)
+        {
+            bound = bindListener(listener, listener.getCustomOrder());
+        }
         else
         {
             bound = bindListener(listener,  COMMIT_ORDER_NORMAL);

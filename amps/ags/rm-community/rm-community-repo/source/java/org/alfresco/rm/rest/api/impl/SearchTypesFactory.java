@@ -92,7 +92,7 @@ public class SearchTypesFactory
         boolean includeRecords = false;
         boolean includeSubTypes = false;
 
-        if (q != null)
+        if (q != null && q.getTree() != null)
         {
             // filtering via "where" clause
             MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(listFolderChildrenEqualsQueryProperties, null);

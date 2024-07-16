@@ -2246,7 +2246,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         private boolean isDenied(AccessControlEntry ace, Set<String> authorisations, Set<Pair<String, PermissionReference>> allowed, PermissionContext context)
         {
             // If the permission entry denies then we just deny
-            if (ace.getAccessStatus() == AccessStatus.ALLOWED)
+             if (ace.getAccessStatus() == AccessStatus.ALLOWED)
             {
                 allowed.add(new Pair<String, PermissionReference>(ace.getAuthority(), ace.getPermission()));
 

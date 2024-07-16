@@ -27,7 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInvocation;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
@@ -41,6 +43,15 @@ public class DeletePolicy extends AbstractBasePolicy
             Class[] params,
             ConfigAttributeDefinition cad)
     {
+        QName recordType = null;
+
+        //get the recordType
+        for (Object qname : invocation.getArguments()) {
+            if (qname != null && (qname.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) || qname.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))) {
+                recordType = (QName) qname;
+            }
+        }
+
         NodeRef deletee = null;
         if (cad.getParameters().get(0) > -1)
         {
@@ -49,7 +60,7 @@ public class DeletePolicy extends AbstractBasePolicy
         if (deletee != null)
         {
 
-            return getCapabilityService().getCapability("Delete").evaluate(deletee);
+            return ((DeleteCapability) getCapabilityService().getCapability("Delete")).evaluate(deletee,null);
 
         }
         else

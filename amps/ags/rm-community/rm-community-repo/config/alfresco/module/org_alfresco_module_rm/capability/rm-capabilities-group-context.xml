@@ -15,23 +15,33 @@
       <property name="private" value="true"/>
    </bean>
 
-   <bean id="rmDelete"
-      parent="compositeCapability">
-      <property name="name" value="Delete"/>
-      <property name="private" value="true"/>
-      <property name="capabilities">
-         <list>
-            <ref bean="rmDeleteRecordsCapability"/>
-            <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
-            <ref bean="rmDeleteRecordFolderCapability"/>
-            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
-            <ref bean="rmDeleteHoldCapability"/>
-            <ref bean="rmUnlinkFromRecordFolderCapability"/>
-            <ref bean="rmDeleteTransferContainerCapability"/>
-            <ref bean="rmDeleteHoldContainerCapability"/>
-         </list>
-      </property>
-   </bean>
+    <bean id="rmDelete"
+          parent="rmBaseCapability"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.policy.DeleteCapability">
+        <property name="recordService" ref="recordService"/>
+        <property name="recordFolderService" ref="RecordFolderService"/>
+
+        <property name="name" value="Delete"/>
+        <property name="private" value="true"/>
+    </bean>
+
+<!--   <bean id="rmDelete"-->
+<!--      parent="compositeCapability">-->
+<!--      <property name="name" value="Delete"/>-->
+<!--      <property name="private" value="true"/>-->
+<!--      <property name="capabilities">-->
+<!--         <list>-->
+<!--            <ref bean="rmDeleteRecordsCapability"/>-->
+<!--            <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>-->
+<!--            <ref bean="rmDeleteRecordFolderCapability"/>-->
+<!--            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>-->
+<!--            <ref bean="rmDeleteHoldCapability"/>-->
+<!--            <ref bean="rmUnlinkFromRecordFolderCapability"/>-->
+<!--            <ref bean="rmDeleteTransferContainerCapability"/>-->
+<!--            <ref bean="rmDeleteHoldContainerCapability"/>-->
+<!--         </list>-->
+<!--      </property>-->
+<!--   </bean>-->
 
    <bean id="rmUpdate"
       parent="compositeCapability"

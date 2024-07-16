@@ -106,7 +106,6 @@ public class FixedAclUpdaterTest
     private static final long MAX_TRANSACTION_TIME_DEFAULT = 10;
     private static final int[] filesPerLevelMoreFolders = { 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
     private static final int[] filesPerLevelMoreFiles = { 5, 100 };
-    private long maxTransactionTime;
     private static HashMap<Integer, Class<?>> errors;
     private static String TEST_GROUP_NAME = "FixedACLUpdaterTest";
     private static String TEST_GROUP_NAME_FULL = PermissionService.GROUP_PREFIX + TEST_GROUP_NAME;
@@ -134,8 +133,11 @@ public class FixedAclUpdaterTest
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
         homeFolderNodeRef = repository.getCompanyHome();
-        maxTransactionTime = MAX_TRANSACTION_TIME_DEFAULT;
-        setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
+        setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, MAX_TRANSACTION_TIME_DEFAULT);
+
+        fixedAclUpdater.setForceSharedACL(false);
+        fixedAclUpdater.setMaxItems(-1);
+        fixedAclUpdater.setOrderNodes(true);
     }
 
     @After
@@ -155,7 +157,7 @@ public class FixedAclUpdaterTest
 
         try
         {
-            maxTransactionTime = 86400000;
+            int maxTransactionTime = 86400000;
             setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
             setPermissionsOnTree(folderRef, false, false);
             aclComparator.compareACLs();
@@ -164,6 +166,7 @@ public class FixedAclUpdaterTest
         }
         finally
         {
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, MAX_TRANSACTION_TIME_DEFAULT);
             deleteNodes(folderRef);
         }
     }
@@ -344,7 +347,7 @@ public class FixedAclUpdaterTest
 
         try
         {
-            maxTransactionTime = 86400000;
+            int maxTransactionTime = 86400000;
             setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
 
             // Set permissions on target folder
@@ -386,6 +389,7 @@ public class FixedAclUpdaterTest
         }
         finally
         {
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, MAX_TRANSACTION_TIME_DEFAULT);
             deleteNodes(originalRef);
             deleteNodes(targetRefBase);
         }
@@ -1438,6 +1442,80 @@ public class FixedAclUpdaterTest
         }
     }
 
+    /*
+     * Test with maxItems limit
+     */
+    @Test
+    @RetryAtMost(3)
+    public void testWithLimits()
+    {
+        NodeRef folderRef = createFolderHierarchyInRootForFileTests("testWithLimitsFolder");
+
+        try
+        {
+            int maxItems = 200;
+            setPermissionsOnTree(folderRef, true, true);
+
+            // Get the current amount of pending ACls
+            int initialPendingAcls = getNodesCountWithPendingFixedAclAspect();
+
+            // We need at least maxItems+1 pending ACLs
+            while (initialPendingAcls <= maxItems && initialPendingAcls > 0)
+            {
+                // Trigger the job a single round each time to create new pendings until we have enough
+                triggerFixedACLJob(false,true,maxItems,1);
+                initialPendingAcls = getNodesCountWithPendingFixedAclAspect();
+            }
+
+            assertTrue("We don't have enough pending acls to test", initialPendingAcls > 0);
+
+            // Increase transaction time to not create new pending ACLs
+            int maxTransactionTime = 86400000;
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
+
+            // Trigger job in single round without timeout
+            triggerFixedACLJob(false,true,maxItems,1);
+
+            int finalPendingAcls = getNodesCountWithPendingFixedAclAspect();
+
+            assertTrue("Processed ACLs should not have exceeded 200", (initialPendingAcls - finalPendingAcls) <= maxItems);
+        }
+        finally
+        {
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, MAX_TRANSACTION_TIME_DEFAULT);
+            deleteNodes(folderRef);
+        }
+    }
+
+    /*
+     * Test without imposing the order by
+     */
+    @Test
+    @RetryAtMost(3)
+    public void testUnordered()
+    {
+        NodeRef folderRef = createFolderHierarchyInRootForFileTests("testWithLimitsFolder");
+
+        try
+        {
+            setPermissionsOnTree(folderRef, true, true);
+
+            int initialPendingAcls = getNodesCountWithPendingFixedAclAspect();
+            assertTrue("We don't have enough pending acls to test", initialPendingAcls > 0);
+
+            triggerFixedACLJob(false,true,-1,30);
+
+            int finalPendingAcls = getNodesCountWithPendingFixedAclAspect();
+
+            assertEquals("Not all ACls were processed",0, finalPendingAcls);
+        }
+        finally
+        {
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, MAX_TRANSACTION_TIME_DEFAULT);
+            deleteNodes(folderRef);
+        }
+    }
+
     private Long getChild(Long parentId)
     {
         List<FileInfo> children = fileFolderService.list(nodeDAO.getNodePair(parentId).getSecond());
@@ -1601,13 +1679,18 @@ public class FixedAclUpdaterTest
 
     private void triggerFixedACLJob()
     {
-        triggerFixedACLJob(false);
+        // Trigger job 30 times max to process all nodes
+        triggerFixedACLJob(false, true, -1, 30);
     }
 
     private void triggerFixedACLJob(boolean forceSharedACL)
     {
+        triggerFixedACLJob(forceSharedACL, true, -1, 30);
+    }
+
+    private void triggerFixedACLJob(boolean forceSharedACL, boolean orderNodes, int maxItems, int rounds)
+    {
         LOG.debug("Fixing ACL");
-        final int rounds = 30;
         final int enoughZeros = 3;
 
         int numberOfConsecutiveZeros = 0;
@@ -1615,6 +1698,8 @@ public class FixedAclUpdaterTest
         {
             int count = txnHelper.doInTransaction(() -> {
                 fixedAclUpdater.setForceSharedACL(forceSharedACL);
+                fixedAclUpdater.setMaxItems(maxItems);
+                fixedAclUpdater.setOrderNodes(orderNodes);
                 return fixedAclUpdater.execute();
             }, false, true);
             numberOfConsecutiveZeros = count == 0 ? numberOfConsecutiveZeros + 1 : 0;

@@ -116,6 +116,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_MAX_ID = "alfresco.node.select_NodeMaxId";
     private static final String SELECT_NODE_INTERVAL_BY_TYPE = "alfresco.node.select_MinMaxNodeIdForNodeType";
     private static final String SELECT_NODES_WITH_ASPECT_IDS = "alfresco.node.select_NodesWithAspectIds";
+    private static final String SELECT_NODES_WITH_ASPECT_IDS_LIMITED = "alfresco.node.select_NodesWithAspectIds_Limited";
     private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
     private static final String UPDATE_NODE_ASSOC = "alfresco.node.update_NodeAssoc";
     private static final String DELETE_NODE_ASSOC = "alfresco.node.delete_NodeAssoc";
@@ -797,6 +798,33 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         parameters.setIds(qnameIds);
         parameters.setOrdered(ordered);
         template.select(SELECT_NODES_WITH_ASPECT_IDS, parameters, resultHandler);
+    }
+
+    @Override
+    protected void selectNodesWithAspects(
+            List<Long> qnameIds,
+            Long minNodeId, Long maxNodeId, boolean ordered,
+            final int maxResults,
+            final NodeRefQueryCallback resultsCallback)
+    {
+        @SuppressWarnings("rawtypes")
+        ResultHandler resultHandler = new ResultHandler()
+        {
+            public void handleResult(ResultContext context)
+            {
+                NodeEntity entity = (NodeEntity) context.getResultObject();
+                Pair<Long, NodeRef> nodePair = new Pair<Long, NodeRef>(entity.getId(), entity.getNodeRef());
+                resultsCallback.handle(nodePair);
+            }
+        };
+
+        IdsEntity parameters = new IdsEntity();
+        parameters.setIdOne(minNodeId);
+        parameters.setIdTwo(maxNodeId);
+        parameters.setIds(qnameIds);
+        parameters.setOrdered(ordered);
+        parameters.setMaxResults(maxResults);
+        template.select(SELECT_NODES_WITH_ASPECT_IDS_LIMITED, parameters, resultHandler);
     }
 
     @Override

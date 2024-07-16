@@ -708,16 +708,24 @@ public class PeopleImpl implements People
         // if requested, update password
         updatePassword(isAdmin, personIdToUpdate, person);
 
-        if (person.isEnabled() != null)
+        Boolean isEnabled = person.isEnabled();
+        if (isEnabled != null)
         {
             if (isAdminAuthority(personIdToUpdate))
             {
                 throw new PermissionDeniedException("Admin authority cannot be disabled.");
             }
 
-            // note: if current user is not an admin then permission denied exception is thrown
-            MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
-            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+            if (isAdmin && !isMutableAuthority(personIdToUpdate))
+            {
+                LOGGER.info("User " + personIdToUpdate + " is immutable but enabled status will be set to: " + isEnabled);
+            }
+            else
+            {
+                // note: if current user is not an admin then permission denied exception is thrown
+                MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+                mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+            }
         }
 
 		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);

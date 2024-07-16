@@ -584,7 +584,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             return nodeDAO.getCurrentTransactionCommitTime() != null;
         }
 
-        private void sendAllEvents()
+        protected void sendAllEvents()
         {
             if (isTransactionCommitted())
             {

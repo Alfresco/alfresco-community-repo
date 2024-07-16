@@ -298,7 +298,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                 log.debug("Query for batch executed in " + (endTime-initTime) + " ms");
             }
 
-            if (batchNodes.isEmpty())
+            if (!batchNodes.isEmpty())
             {
                 // Increment estimatedUpdatedItems with the expected number of nodes to process
                 estimatedUpdatedItems += batchNodes.size();

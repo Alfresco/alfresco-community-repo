@@ -112,9 +112,11 @@ public class PropertyStringValueEntity
         }
         stringValue = value;
         // Calculate the crc value from the original value
-        Pair<String, Long> crcPair = CrcHelper.getStringCrcPair(value, 16, false, true);
-        stringEndLower = crcPair.getFirst();
-        stringCrc = crcPair.getSecond();
+        Pair<String, Long> crcPairCaseSensitive = CrcHelper.getStringCrcPair(value, 16, false, true);
+        stringCrc = crcPairCaseSensitive.getSecond();
+        // Calculate the crc value with setting caseSensitive false
+        Pair<String, Long> crcPairCaseInSensitive = CrcHelper.getStringCrcPair(value, 16, false, false);
+        stringEndLower = crcPairCaseInSensitive.getFirst();
     }
 
     public Long getId()

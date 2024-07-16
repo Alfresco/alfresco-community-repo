@@ -2793,12 +2793,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             NodeRefQueryCallback resultsCallback)
     {
         Set<Long> qnameIdsSet = qnameDAO.convertQNamesToIds(aspectQNames, false);
-        if (qnameIdsSet.size() == 0)
+        if (qnameIdsSet.isEmpty())
         {
             // No point running a query
             return;
         }
-        List<Long> qnameIds = new ArrayList<Long>(qnameIdsSet);
+        List<Long> qnameIds = new ArrayList<>(qnameIdsSet);
         selectNodesWithAspects(qnameIds, minNodeId, maxNodeId, ordered, maxResults, resultsCallback);
     }
 

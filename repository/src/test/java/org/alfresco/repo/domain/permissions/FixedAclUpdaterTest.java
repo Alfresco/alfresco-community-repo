@@ -104,6 +104,7 @@ public class FixedAclUpdaterTest
     private ContentService contentService;
     private AuthorityService authorityService;
     private static final long MAX_TRANSACTION_TIME_DEFAULT = 10;
+    private static final int LARGE_TRANSACTION_TIME = 86_400_000;
     private static final int[] filesPerLevelMoreFolders = { 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
     private static final int[] filesPerLevelMoreFiles = { 5, 100 };
     private static HashMap<Integer, Class<?>> errors;
@@ -157,8 +158,7 @@ public class FixedAclUpdaterTest
 
         try
         {
-            int maxTransactionTime = 86400000;
-            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, LARGE_TRANSACTION_TIME);
             setPermissionsOnTree(folderRef, false, false);
             aclComparator.compareACLs();
 
@@ -347,8 +347,7 @@ public class FixedAclUpdaterTest
 
         try
         {
-            int maxTransactionTime = 86400000;
-            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, LARGE_TRANSACTION_TIME);
 
             // Set permissions on target folder
             txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
@@ -1470,8 +1469,7 @@ public class FixedAclUpdaterTest
             assertTrue("We don't have enough pending acls to test", initialPendingAcls > 0);
 
             // Increase transaction time to not create new pending ACLs
-            int maxTransactionTime = 86400000;
-            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, maxTransactionTime);
+            setFixedAclMaxTransactionTime(permissionsDaoComponent, homeFolderNodeRef, LARGE_TRANSACTION_TIME);
 
             // Trigger job in single round without timeout
             triggerFixedACLJob(false,true,maxItems,1);

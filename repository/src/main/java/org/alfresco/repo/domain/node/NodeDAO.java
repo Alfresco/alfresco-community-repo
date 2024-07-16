@@ -435,6 +435,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param minNodeId                 the minimum node ID (inclusive)
      * @param maxNodeId                 the maximum node ID (exclusive)
      * @param ordered                   if the results are to be ordered by nodeID
+     * @param maxResults                limit query to maxResults
      * @param resultsCallback           callback to process results
      */
     public void getNodesWithAspects(

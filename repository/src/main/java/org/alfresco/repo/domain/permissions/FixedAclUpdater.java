@@ -292,9 +292,13 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
             long initTime = System.currentTimeMillis();
             Collection<NodeRef> batchNodes = getNodesWithAspects.getNodesWithAspects();
             long endTime = System.currentTimeMillis();
-            log.debug("Query for batch executed in " + (endTime-initTime) + " ms");
 
-            if (batchNodes.size() > 0)
+            if (log.isDebugEnabled())
+            {
+                log.debug("Query for batch executed in " + (endTime-initTime) + " ms");
+            }
+
+            if (batchNodes.isEmpty())
             {
                 // Increment estimatedUpdatedItems with the expected number of nodes to process
                 estimatedUpdatedItems += batchNodes.size();

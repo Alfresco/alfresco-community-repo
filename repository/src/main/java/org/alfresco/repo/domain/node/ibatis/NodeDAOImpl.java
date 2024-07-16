@@ -813,7 +813,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             public void handleResult(ResultContext context)
             {
                 NodeEntity entity = (NodeEntity) context.getResultObject();
-                Pair<Long, NodeRef> nodePair = new Pair<Long, NodeRef>(entity.getId(), entity.getNodeRef());
+                Pair<Long, NodeRef> nodePair = new Pair<>(entity.getId(), entity.getNodeRef());
                 resultsCallback.handle(nodePair);
             }
         };

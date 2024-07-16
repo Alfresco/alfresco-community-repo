@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,18 +36,13 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * Sends a message to a destination in the current thread.
  */
-public class DirectEventSender implements EventSender, InitializingBean
+public class DirectEventSender implements EventSender
 {
-    protected Event2MessageProducer event2MessageProducer;
+    protected final Event2MessageProducer event2MessageProducer;
 
-    @Override
-    public void afterPropertiesSet()
+    public DirectEventSender(Event2MessageProducer event2MessageProducer)
     {
         PropertyCheck.mandatory(this, "event2MessageProducer", event2MessageProducer);
-    }
-
-    public void setEvent2MessageProducer(Event2MessageProducer event2MessageProducer)
-    {
         this.event2MessageProducer = event2MessageProducer;
     }
 

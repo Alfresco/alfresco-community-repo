@@ -36,7 +36,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
+import com.fasterxml.uuid.Generators;
+import com.fasterxml.uuid.impl.UUIDUtil;
 import org.alfresco.sync.events.types.ActivityEvent;
 import org.alfresco.sync.events.types.Event;
 import org.alfresco.model.ContentModel;
@@ -108,8 +111,6 @@ import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.PeriodType;
-import org.safehaus.uuid.UUID;
-import org.safehaus.uuid.UUIDGenerator;
 
 /**
  * QuickShare Service implementation.
@@ -435,8 +436,8 @@ public class QuickShareServiceImpl implements QuickShareService,
         // If it is retura dto built from the existing properties.
         if (! nodeService.getAspects(nodeRef).contains(QuickShareModel.ASPECT_QSHARE))
         {
-            UUID uuid = UUIDGenerator.getInstance().generateRandomBasedUUID();
-            sharedId = Base64.encodeBase64URLSafeString(uuid.toByteArray()); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
+            UUID uuid = Generators.randomBasedGenerator().generate();
+            sharedId = Base64.encodeBase64URLSafeString(UUIDUtil.asByteArray(uuid)); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
 
             final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
             props.put(QuickShareModel.PROP_QSHARE_SHAREDID, sharedId);
@@ -1246,7 +1247,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         }
 
         // Create the expiry action
-        final QuickShareLinkExpiryAction expiryAction = new QuickShareLinkExpiryActionImpl(java.util.UUID.randomUUID().toString(), sharedId,
+        final QuickShareLinkExpiryAction expiryAction = new QuickShareLinkExpiryActionImpl(UUID.randomUUID().toString(), sharedId,
                     "QuickShare link expiry action");
         // Create the persisted schedule
         final ScheduledPersistedAction schedule = scheduledPersistedActionService.createSchedule(expiryAction);

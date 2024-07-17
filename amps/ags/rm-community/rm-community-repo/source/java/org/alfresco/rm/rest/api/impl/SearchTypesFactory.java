@@ -101,11 +101,11 @@ public class SearchTypesFactory
             Boolean isUnfiledRecordFolder = propertyWalker.getProperty(UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER,
                     WhereClauseParser.EQUALS, Boolean.class);
             Boolean isRecord = propertyWalker.getProperty(UnfiledChild.PARAM_IS_RECORD, WhereClauseParser.EQUALS, Boolean.class);
-            if ((isUnfiledRecordFolder != null && isUnfiledRecordFolder) || (isRecord != null && !isRecord))
+            if (checkIncludeUnfiledRecordFolders(isUnfiledRecordFolder, isRecord))
             {
                 includeUnfiledRecordFolders = true;
             }
-            else if (isRecord != null)
+            else if (checkIncludeRecords(isUnfiledRecordFolder, isRecord))
             {
                 includeRecords = true;
             }
@@ -199,11 +199,11 @@ public class SearchTypesFactory
                     WhereClauseParser.EQUALS, Boolean.class);
             Boolean isRecordCategory = propertyWalker.getProperty(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, WhereClauseParser.EQUALS, Boolean.class);
 
-            if ((isRecordFolder != null && isRecordFolder.booleanValue()) || (isRecordCategory != null && !isRecordCategory.booleanValue()))
+            if (checkIncludeUnifiedRecordFolders(isRecordFolder, isRecordCategory))
             {
                 includeRecordFolders = true;
             }
-            else if ((isRecordFolder != null && !isRecordFolder.booleanValue()) || (isRecordCategory != null && isRecordCategory.booleanValue()))
+            else if (checkIncludeRecords(isRecordFolder, isRecordCategory))
             {
                 includeRecordCategories = true;
             }
@@ -290,5 +290,17 @@ public class SearchTypesFactory
         }
 
         return new Pair<>(filterNodeTypeQName, filterIncludeSubTypes);
+    }
+
+    private static boolean checkIncludeRecords(Boolean isUnfiledRecordFolder, Boolean isRecord)
+    {
+        return (isUnfiledRecordFolder != null && !isUnfiledRecordFolder.booleanValue()) || (isRecord != null
+                    && isRecord.booleanValue());
+    }
+
+    private static boolean checkIncludeUnfiledRecordFolders(Boolean isUnfiledRecordFolder, Boolean isRecord)
+    {
+        return (isUnfiledRecordFolder != null && isUnfiledRecordFolder.booleanValue()) || (isRecord != null
+                    && !isRecord.booleanValue());
     }
 }

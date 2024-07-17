@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -956,10 +956,8 @@ public class AuditComponentImpl implements AuditComponent
         return auditDAO.getAuditEntriesCountByApp(applicationId);
     }
 
-    @Override public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
+    @Override public int getAuditEntriesCountByAppAndProperties(AuditQueryParameters parameters)
     {
-        org.alfresco.repo.domain.audit.AuditQueryParameters dbParameters = new org.alfresco.repo.domain.audit.AuditQueryParameters();
-
-        return auditDAO.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
+        return auditDAO.getAuditEntriesCountByAppAndProperties(parameters);
     }
 }

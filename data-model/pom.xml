@@ -238,10 +238,6 @@
             <version>${dependency.tika.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.bouncycastle</groupId>
-                    <artifactId>bcprov-jdk15on</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
                 </exclusion>

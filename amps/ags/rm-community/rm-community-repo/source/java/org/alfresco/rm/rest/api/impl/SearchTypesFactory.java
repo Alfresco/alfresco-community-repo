@@ -199,7 +199,7 @@ public class SearchTypesFactory
                     WhereClauseParser.EQUALS, Boolean.class);
             Boolean isRecordCategory = propertyWalker.getProperty(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, WhereClauseParser.EQUALS, Boolean.class);
 
-            if (checkIncludeUnifiedRecordFolders(isRecordFolder, isRecordCategory))
+            if (checkIncludeUnfiledRecordFolders(isRecordFolder, isRecordCategory))
             {
                 includeRecordFolders = true;
             }

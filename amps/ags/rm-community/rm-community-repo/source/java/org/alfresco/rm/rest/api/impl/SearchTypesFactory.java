@@ -101,11 +101,11 @@ public class SearchTypesFactory
             Boolean isUnfiledRecordFolder = propertyWalker.getProperty(UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER,
                     WhereClauseParser.EQUALS, Boolean.class);
             Boolean isRecord = propertyWalker.getProperty(UnfiledChild.PARAM_IS_RECORD, WhereClauseParser.EQUALS, Boolean.class);
-            if ((isUnfiledRecordFolder != null && isUnfiledRecordFolder.booleanValue()) || (isRecord != null && !isRecord.booleanValue()))
+            if (isUnfiledRecordFolder || !isRecord)
             {
                 includeUnfiledRecordFolders = true;
             }
-            else if ((isUnfiledRecordFolder != null && !isUnfiledRecordFolder.booleanValue()) || (isRecord != null && isRecord.booleanValue()))
+            else
             {
                 includeRecords = true;
             }

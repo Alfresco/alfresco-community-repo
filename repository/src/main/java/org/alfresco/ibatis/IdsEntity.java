@@ -41,6 +41,8 @@ public class IdsEntity
     private Long idFour;
     private List<Long> ids;
     private boolean ordered;
+    private Integer maxResults;
+
     public Long getIdOne()
     {
         return idOne;
@@ -88,5 +90,13 @@ public class IdsEntity
     public void setOrdered(boolean ordered)
     {
         this.ordered = ordered;
+    }
+    public int getMaxResults()
+    {
+        return maxResults;
+    }
+    public void setMaxResults(Integer maxResults)
+    {
+        this.maxResults = maxResults;
     }
 }

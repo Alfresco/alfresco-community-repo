@@ -572,7 +572,17 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         @Override
         public Integer getCustomOrder()
         {
-            return isSendingEventBeforeCommitRequired() ? 3 : null;
+            return isSendingEventBeforeCommitRequired() ? getBeforeCommitOrder() : getAfterCommitOrder();
+        }
+
+        protected Integer getBeforeCommitOrder()
+        {
+            return 3;
+        }
+
+        protected Integer getAfterCommitOrder()
+        {
+            return null;
         }
 
         /**

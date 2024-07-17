@@ -1,6 +1,6 @@
 # Fetch image based on Tomcat 9.0, Java 17 and Rocky Linux 8
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM alfresco/alfresco-base-tomcat:tomcat10-jre17-rockylinux8-202306291245
+FROM alfresco/alfresco-base-tomcat@sha256:dcc57342f22d1b919dd8388b30183c189bd073515691b0b8fbfa6aaaf4f4fc16  # tomcat10-jre17-rockylinux9 (17/07/2024)
 
 # Set default docker_context.
 ARG resource_path=target
@@ -14,6 +14,9 @@ ARG USERID=33000
 # Set default environment args
 ARG TOMCAT_DIR=/usr/local/tomcat
 
+# Needed for installation but make sure another USER directive is added after
+# this with a non-root user
+USER root
 
 # Create prerequisite to store tools and properties
 RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
@@ -70,7 +73,7 @@ RUN yum install -y fontconfig-2.13.1-4.el8 \
                    dejavu-sans-fonts-2.35-7.el8 && \
     yum clean all
 
-# The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 
+# The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges,
 # group only has restricted permissions and world has no permissions.
 RUN mkdir -p ${TOMCAT_DIR}/conf/Catalina/localhost && \
     mkdir -p ${TOMCAT_DIR}/alf_data && \

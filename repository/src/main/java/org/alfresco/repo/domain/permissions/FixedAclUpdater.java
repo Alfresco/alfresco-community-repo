@@ -85,7 +85,10 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
     public static final String FIXED_ACL_ASYNC_REQUIRED_KEY = "FIXED_ACL_ASYNC_REQUIRED";
     public static final String FIXED_ACL_ASYNC_CALL_KEY = "FIXED_ACL_ASYNC_CALL";
+
     protected static final QName LOCK_Q_NAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "FixedAclUpdater");
+
+    private static final int DEFAULT_MAX_ITEMS = Integer.MAX_VALUE;
 
     /** A set of listeners to receive callback events whenever permissions are updated by this class. */
     private static Set<FixedAclUpdaterListener> listeners = Sets.newConcurrentHashSet();
@@ -101,6 +104,8 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     private int maxItemBatchSize = 100;
     private int numThreads = 4;
     private boolean forceSharedACL = false;
+    private int maxItems = DEFAULT_MAX_ITEMS;
+    private boolean orderNodes = true;
 
     private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;
     private PolicyComponent policyComponent;
@@ -147,10 +152,20 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         this.forceSharedACL = forceSharedACL;
     }
 
+    public void setOrderNodes(boolean orderNodes)
+    {
+        this.orderNodes = orderNodes;
+    }
+
     public void setLockTimeToLive(long lockTimeToLive)
     {
         this.lockTimeToLive = lockTimeToLive;
         this.lockRefreshTime = lockTimeToLive / 2;
+    }
+
+    public void setMaxItems(int maxItems)
+    {
+        this.maxItems = maxItems > 0 ? maxItems : DEFAULT_MAX_ITEMS;
     }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -209,7 +224,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                         public List<NodeRef> execute() throws Throwable
                         {
                             getNodesCallback.init();
-                            nodeDAO.getNodesWithAspects(aspects, getNodesCallback.getMinNodeId(), null, true, getNodesCallback);
+                            nodeDAO.getNodesWithAspects(aspects, getNodesCallback.getMinNodeId(), null, orderNodes, maxItemBatchSize, getNodesCallback);
                             getNodesCallback.done();
 
                             return getNodesCallback.getNodes();
@@ -231,6 +246,12 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                             return countNodesCallback.getCount();
                         }
                     }, false, true);
+
+            if (count > maxItems)
+            {
+                log.info("Total nodes with pending acl: " + count + " Limiting work to " + maxItems);
+                return maxItems;
+            }
             return count;
         }
     }
@@ -238,6 +259,9 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     private class AclWorkProvider implements BatchProcessWorkProvider<NodeRef>
     {
         private GetNodesWithAspects getNodesWithAspects;
+        private long estimatedUpdatedItems;
+        private long execTime;
+        private long execBatches;
 
         AclWorkProvider()
         {
@@ -259,8 +283,37 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
         @Override
         public Collection<NodeRef> getNextWork()
         {
-            return getNodesWithAspects.getNodesWithAspects();
+            if(estimatedUpdatedItems >= maxItems)
+            {
+                log.info("Reached max items to process. Nodes Processed: " + estimatedUpdatedItems + "/" + maxItems);
+                return Collections.emptyList();
+            }
+
+            long initTime = System.currentTimeMillis();
+            Collection<NodeRef> batchNodes = getNodesWithAspects.getNodesWithAspects();
+            long endTime = System.currentTimeMillis();
+
+            if (log.isDebugEnabled())
+            {
+                log.debug("Query for batch executed in " + (endTime-initTime) + " ms");
+            }
+
+            if (!batchNodes.isEmpty())
+            {
+                // Increment estimatedUpdatedItems with the expected number of nodes to process
+                estimatedUpdatedItems += batchNodes.size();
+                execTime+=endTime-initTime;
+                execBatches++;
+            }
+
+            return batchNodes;
         }
+
+        public double getAverageQueryExecutionTime()
+        {
+            return execBatches > 0 ? execTime/execBatches : 0;
+        }
+
     }
 
     protected class AclWorker implements BatchProcessor.BatchProcessWorker<NodeRef>
@@ -451,6 +504,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
         try
         {
+            log.info("Running FixedAclUpdater. Max Items: " + maxItems + ", Impose order: " + orderNodes);
             lockToken = jobLockService.getLock(LOCK_Q_NAME, lockTimeToLive, 0, 1);
             jobLockService.refreshLock(lockToken, LOCK_Q_NAME, lockRefreshTime, jobLockRefreshCallback);
 
@@ -460,6 +514,7 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                     transactionService.getRetryingTransactionHelper(), provider, numThreads, maxItemBatchSize, applicationContext,
                     log, 100);
             int count = bp.process(worker, true);
+            log.info("FixedAclUpdater updated " + count + ". Average query time " + provider.getAverageQueryExecutionTime() + " ms");
             return count;
         }
         catch (LockAcquisitionException e)

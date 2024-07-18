@@ -26,8 +26,8 @@
 
 package org.alfresco.repo.virtual.bundle;
 
-import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -910,7 +910,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
             return result;
         }
-        catch (IOException e)
+        catch (UncheckedIOException e)
         {
             throw new VirtualizationException(e);
         }
@@ -968,7 +968,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 }
                 writer.putContent(text);
             }
-            catch (IOException e)
+            catch (UncheckedIOException e)
             {
                 throw new ActualEnvironmentException(e);
             }

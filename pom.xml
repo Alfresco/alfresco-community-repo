@@ -81,7 +81,7 @@
         <dependency.tika.version>2.9.2</dependency.tika.version>
         <dependency.spring-security.version>5.8.11</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>5.2.2</dependency.poi.version>
+        <dependency.poi.version>5.2.5</dependency.poi.version>
         <dependency.poi-ooxml-lite.version>5.2.3</dependency.poi-ooxml-lite.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.20.2</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
@@ -89,7 +89,7 @@
         <dependency.netty.qpid.version>4.1.82.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies: native-unix-common/native-epoll/native-kqueue -->
         <dependency.netty-tcnative.version>2.0.56.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
         <dependency.activemq.version>5.17.6</dependency.activemq.version>
-        <dependency.apache-compress.version>1.22</dependency.apache-compress.version>
+        <dependency.apache-compress.version>1.25</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
         <dependency.awaitility.version>4.2.0</dependency.awaitility.version>
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
@@ -424,7 +424,7 @@
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>5.1.1</version>
+                <version>5.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>

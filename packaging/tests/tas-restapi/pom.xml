@@ -23,6 +23,7 @@
 
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
     </properties>
 
     <profiles>
@@ -47,6 +48,11 @@
     </profiles>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>restapi</artifactId>

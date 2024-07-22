@@ -25,11 +25,6 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +32,6 @@ import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
-import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;

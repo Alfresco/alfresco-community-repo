@@ -36,7 +36,11 @@ import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -49,10 +53,28 @@ public class AuthenticationContextImpl implements AuthenticationContext
     private final Log logger = LogFactory.getLog(getClass());
     
     private TenantService tenantService;
+    private PersonService personService;
+    private AuthenticationService authenticationService;
+    private Boolean allowImmutableUserEnabledStatusUpdate;
 
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
+    }
+
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
+    }
+
+    public void setAllowImmutableUserEnabledStatusUpdate(Boolean allowImmutableUserEnabledStatusUpdate)
+    {
+        this.allowImmutableUserEnabledStatusUpdate = allowImmutableUserEnabledStatusUpdate;
     }
 
     /**
@@ -70,7 +92,7 @@ public class AuthenticationContextImpl implements AuthenticationContext
         {
             // Apply the same validation that ACEGI would have to the user details - we may be going through a 'back
             // door'.
-            if (!ud.isEnabled())
+            if (isDisabled(userId, ud))
             {
                 throw new DisabledException("User is disabled");
             }
@@ -112,6 +134,43 @@ public class AuthenticationContextImpl implements AuthenticationContext
             // Support for logging tenantdomain / username (via log4j NDC)
             AuthenticationUtil.logNDC(ud.getUsername());
         }
+    }
+
+    private boolean isDisabled(String userId, UserDetails ud)
+    {
+        boolean isDisabled = !ud.isEnabled();
+        boolean isSystemUser = isSystemUserName(userId);
+
+        if (allowImmutableUserEnabledStatusUpdate && !isSystemUser)
+        {
+            try
+            {
+                boolean isImmutable = isImmutableAuthority(userId);
+                boolean isPersonEnabled = personService.isEnabled(userId);
+                isDisabled = isDisabled || (isImmutable && !isPersonEnabled);
+            }
+            catch (Exception e)
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Failed to determine if person is enabled: " + userId + ", using user details status: " + isDisabled);
+                }
+            }
+        }
+
+        return isDisabled;
+    }
+
+    private boolean isImmutableAuthority(String authorityName)
+    {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
+        {
+            @Override public Boolean doWork() throws Exception
+            {
+                MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+                return !mutableAuthenticationService.isAuthenticationMutable(authorityName);
+            }
+        });
     }
 
     public Authentication setSystemUserAsCurrentUser()

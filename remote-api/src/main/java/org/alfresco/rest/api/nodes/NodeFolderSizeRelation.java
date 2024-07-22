@@ -27,8 +27,10 @@ package org.alfresco.rest.api.nodes;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.impl.FolderSizeImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -42,9 +44,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ActionStatus;
 import org.alfresco.service.cmr.action.ActionTrackingService;
-import org.alfresco.service.cmr.action.ExecutionDetails;
-import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.SearchService;
@@ -56,8 +57,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
+
+import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -76,7 +78,11 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private ActionService actionService;
     private ActionTrackingService actionTrackingService;
     private Action folderSizeAction;
+    private FolderSizeImpl folderSizeImpl;
+    private NodeRef nodeRef;
     private String exceptionMessage = "Invalid parameter: value of nodeId is invalid";
+    /** the shared cache that will hold action data */
+    private static SimpleCache<Serializable,Object> sharedCache;
 
     /**
      * The logger
@@ -124,6 +130,11 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         this.actionTrackingService = actionTrackingService;
     }
 
+    public void setSharedCache(SimpleCache<Serializable, Object> sharedCache)
+    {
+        this.sharedCache = sharedCache;
+    }
+
     /**
      * Folder Size - returns size of a folder.
      *
@@ -139,7 +150,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder", successStatus = Status.STATUS_ACCEPTED)
     public Map<String, Object> createById(String nodeId, Parameters params)
     {
-        NodeRef nodeRef = nodes.validateNode(nodeId);
+        nodeRef = nodes.validateNode(nodeId);
         int maxItems = Math.min(params.getPaging().getMaxItems(), 1000);
         QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
@@ -153,49 +164,33 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         try
         {
-            folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
-            folderSizeAction.setTrackStatus(true);
-            folderSizeAction.setExecuteAsynchronously(true);
-            folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
-            folderSizeAction.setParameterValue(NodeSizeActionExecuter.RESULT, "IN-PROGRESS");
-            actionService.executeAction(folderSizeAction, nodeRef, false, true);
-            LOG.info(" Executing ActionExecutor in NodeFolderSizeRelation:createById ");
-            List<ExecutionSummary> executionSummaryList = actionTrackingService.getExecutingActions(NodeSizeActionExecuter.NAME);
-            ExecutionDetails executionDetails = actionTrackingService.getExecutionDetails(executionSummaryList.get(0));
-            result.put("executionId", executionDetails.getActionId());
-            return result;
+            this.folderSizeImpl = new FolderSizeImpl(actionService, actionTrackingService, nodeService);
+            return this.folderSizeImpl.executingAsynchronousFolderAction(maxItems, nodeRef, result, sharedCache);
         }
         catch (Exception ex)
         {
             LOG.error("Exception occurred in NodeFolderSizeRelation:createById {}", ex.getMessage());
-            throw ex; // This rethrows with the original stack trace preserved.
+            throw new AlfrescoRuntimeException("Exception occurred in NodeFolderSizeRelation:createById");
         }
     }
 
     @Override
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
-    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of the Node being addressed", description = "A single node id")})
-    public Map<String, Object> readById(String nodeId, String id, Parameters parameters)
+    @WebApiParameters({@WebApiParam(name = "executionId", title = "The unique id of Execution Job", description = "A single execution id")})
+    public Map<String, Object> readById(String executionId, String id, Parameters parameters)
     {
-        NodeRef nodeRef = nodes.validateNode(nodeId);
-        // Check node type.
-        QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
-        validatePermissions(nodeRef, nodeId);
-        validateAction();
-
-        if(!"folder".equals(qName.getLocalName()))
-        {
-            throw new InvalidNodeTypeException(exceptionMessage);
-        }
 
         try
         {
-            LOG.info("Retrieving OUTPUT from ActionExecutor in NodeFolderSizeRelation:readById");
-            if(folderSizeAction!=null)
+            LOG.info("Retrieving OUTPUT from NodeSizeActionExecutor - NodeFolderSizeRelation:readById");
+            if(nodeRef!=null)
             {
-                Object resultAction = folderSizeAction.getParameterValue(NodeSizeActionExecuter.RESULT);
-                result = getResult(resultAction, nodeId);
+                //Action extractedResult = this.folderSizeImpl.extractingActionsResult(nodeRef, executionId);
+                Action actionData = (Action) sharedCache.get(executionId);
+                Action extractedResult = this.folderSizeImpl.getAction(nodeRef, executionId);
+                result = getResult(extractedResult);
+
             }
             else
             {
@@ -210,7 +205,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         }
     }
 
-    private Map<String, Object> getResult(Object resultAction, String nodeId)
+    private Map<String, Object> getResult(Action resultAction)
     {
         Map<String, Object> result = new HashMap<>();
 
@@ -220,20 +215,17 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         }
         else
         {
-            Map<String, Object> mapResult = (Map<String, Object>) resultAction;
+            ActionStatus actionStatus = resultAction.getExecutionStatus();
 
-            if (!mapResult.containsKey("size"))
+            if(ActionStatus.Pending.name().equals(actionStatus.name()))
             {
                 result.put("status", "IN-PROGRESS");
             }
-            else if (mapResult.get("id").equals(nodeId))
-            {
-                mapResult.put("status", "COMPLETED");
-                result = mapResult;
-            }
             else
             {
-                result.put("status", "NOT-INITIATED");
+                Map<String, Object> mapResult = (Map<String, Object>) resultAction.getParameterValue(NodeSizeActionExecuter.RESULT);
+                mapResult.put("status","COMPLETED");
+                result = mapResult;
             }
         }
         return result;

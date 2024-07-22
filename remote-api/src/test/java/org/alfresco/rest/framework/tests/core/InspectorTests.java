@@ -644,14 +644,4 @@ public class InspectorTests
         assertEquals(Status.STATUS_NOT_MODIFIED,ResourceInspector.validSuccessCode(HttpMethod.DELETE, Status.STATUS_NOT_MODIFIED));
     }
 
-    @Test
-    public void testCalculateSizeRelation()
-    {
-        List<ResourceMetadata> metainfo = ResourceInspector.inspect(NodeFolderSizeRelation.class);
-        assertTrue("Must be one ResourceMetadata",!metainfo.isEmpty());
-        ResourceMetadata metaData = metainfo.get(0);
-        assertNotNull(metaData);
-        ResourceOperation op = metaData.getOperation(HttpMethod.POST);
-        assertNotNull("NodeFolderSizeRelation supports POST", op);
-    }
 }

@@ -27,6 +27,7 @@ package org.alfresco.repo.action.executer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -44,6 +45,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public static final String PAGE_SIZE = "page-size";
     public static final String RESULT = "size-result";
     public static final String ERROR = "exception";
+    public static final String CACHE_REF = "sharedCache";
+    public static final Map<String,Action> actionsRecords = new HashMap<>();
 
     /**
      * The node service
@@ -99,9 +103,10 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
      * @see ActionExecuter#execute(Action, NodeRef)
      */
     @Override
-    public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
+    public void executeImpl(Action nodeAction, NodeRef actionedUponNodeRef)
     {
-        Serializable serializable = ruleAction.getParameterValue(PAGE_SIZE);
+        Serializable serializable = nodeAction.getParameterValue(PAGE_SIZE);
+        Serializable serializedCache = nodeAction.getParameterValue(CACHE_REF);
         int maxItems;
         Map<String,Object> response = new HashMap<>();
 
@@ -112,7 +117,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (NumberFormatException e)
         {
             LOG.error("Exception occurred while parsing String to INT: {}", e.getMessage());
-            ruleAction.setParameterValue(ERROR, e.getMessage());
+            nodeAction.setParameterValue(ERROR, e.getMessage());
             throw e;
         }
 
@@ -129,6 +134,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQuery(query);
+        //searchParameters.addFacetQuery();
 
         try
         {
@@ -175,7 +181,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (RuntimeException ex)
         {
             LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
-            ruleAction.setParameterValue(ERROR, ex.getMessage());
+            nodeAction.setParameterValue(ERROR, ex.getMessage());
             throw ex;
         }
 
@@ -185,12 +191,15 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         String formattedTimestamp = eventTimestamp.format(formatter);
         response.put("id", nodeRef.getId());
         response.put("size", totalSize);
-        response.put("calculatedAtTime", formattedTimestamp);
+        response.put("calculatedAt", formattedTimestamp);
         response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
 
         if(isCalculationCompleted)
         {
-            ruleAction.setParameterValue(RESULT, (Serializable) response);
+            nodeAction.setParameterValue(RESULT, (Serializable) response);
+            actionsRecords.put(nodeAction.getId(),nodeAction);
+            SimpleCache<Serializable,Object> simpleCache = (SimpleCache<Serializable, Object>) serializedCache;
+            simpleCache.put(nodeAction.getId(),nodeAction);
         }
     }
 

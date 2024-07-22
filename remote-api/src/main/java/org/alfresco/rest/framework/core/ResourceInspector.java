@@ -294,6 +294,7 @@ public class ResourceInspector
 
         findOperation(MultiPartRelationshipResourceAction.Create.class, POST, helper);
         findOperation(RelationshipResourceAction.CalculateSize.class, POST, helper);
+        findOperation(RelationshipResourceAction.CalculateSize.class, GET, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)

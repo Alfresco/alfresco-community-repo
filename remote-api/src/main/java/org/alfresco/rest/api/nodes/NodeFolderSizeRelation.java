@@ -243,16 +243,4 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         }
     }
 
-    private void validateAction()
-    {
-        if(folderSizeAction != null)
-        {
-            String errorInAction = (String) folderSizeAction.getParameterValue(NodeSizeActionExecuter.ERROR);
-            if(errorInAction != null && errorInAction.length()>1)
-            {
-              throw new AlfrescoRuntimeException(errorInAction);
-            }
-        }
-    }
-
 }

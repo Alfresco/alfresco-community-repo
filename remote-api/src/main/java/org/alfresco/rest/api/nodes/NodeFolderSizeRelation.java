@@ -186,10 +186,8 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             if(nodeRef!=null)
             {
                 //Action extractedResult = this.folderSizeImpl.extractingActionsResult(nodeRef, executionId);
-                Action actionData = (Action) sharedCache.get(executionId);
                 Action extractedResult = this.folderSizeImpl.getAction(nodeRef, executionId);
                 result = getResult(extractedResult);
-
             }
             else
             {

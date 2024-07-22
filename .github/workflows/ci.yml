@@ -307,7 +307,7 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 13.12 database"
-        run: docker-compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
+        run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 13.12
       - name: "Run tests"

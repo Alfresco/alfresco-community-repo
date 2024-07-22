@@ -332,7 +332,7 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.35.2
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 13.7 database"
+      - name: "Run PostgreSQL 14.9 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 14.9
@@ -358,7 +358,7 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.35.2
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 14.4 database"
+      - name: "Run PostgreSQL 15.4 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
           POSTGRES_VERSION: 15.4
@@ -545,7 +545,7 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.35.2
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run Postgres 14.4 database"
+      - name: "Run Postgres 15.4 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Run tests"
         run: mvn -B test -pl :alfresco-share-services -am -Dtest=ShareServicesTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco

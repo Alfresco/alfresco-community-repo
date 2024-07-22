@@ -25,6 +25,11 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +37,11 @@ import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
+import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionTrackingService;
-import org.alfresco.service.cmr.action.ExecutionDetails;
-import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.slf4j.Logger;
@@ -58,7 +62,6 @@ public class FolderSizeImpl {
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
         folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
-        folderSizeAction.setParameterValue(NodeSizeActionExecuter.CACHE_REF, (Serializable) sharedCache);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
         NodeSizeActionExecuter.actionsRecords.put(folderSizeAction.getId(),folderSizeAction);
         LOG.info("Executing NodeSizeActionExecuter from executingAsynchronousFolderAction method");

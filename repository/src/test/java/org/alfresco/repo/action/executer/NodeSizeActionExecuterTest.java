@@ -92,7 +92,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
         // Get the executer instance.
         this.executer = (NodeSizeActionExecuter)this.applicationContext.getBean(NodeSizeActionExecuter.NAME);
 
-        executingActionsCache = (SimpleCache<Serializable,Object>)this.applicationContext.getBean("folderSizeSharedCache");
+        executingActionsCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
     }
 
     /**
@@ -104,7 +104,6 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
         int maxItems = 100;
         ActionImpl action = new ActionImpl(null, ID, NodeSizeActionExecuter.NAME, null);
         action.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
-        action.setParameterValue(NodeSizeActionExecuter.CACHE_REF, (Serializable)executingActionsCache);
         this.executer.executeImpl(action, this.nodeRef);
         Object resultAction = action.getParameterValue(NodeSizeActionExecuter.RESULT);
         Map<String, Object> mapResult = (Map<String, Object>)resultAction;

@@ -45,7 +45,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +105,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public void executeImpl(Action nodeAction, NodeRef actionedUponNodeRef)
     {
         Serializable serializable = nodeAction.getParameterValue(PAGE_SIZE);
-        Serializable serializedCache = nodeAction.getParameterValue(CACHE_REF);
         int maxItems;
         Map<String,Object> response = new HashMap<>();
 
@@ -198,8 +196,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         {
             nodeAction.setParameterValue(RESULT, (Serializable) response);
             actionsRecords.put(nodeAction.getId(),nodeAction);
-            SimpleCache<Serializable,Object> simpleCache = (SimpleCache<Serializable, Object>) serializedCache;
-            simpleCache.put(nodeAction.getId(),nodeAction);
         }
     }
 

@@ -25,11 +25,14 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -38,6 +41,7 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -57,6 +61,8 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
      * Id used to identify the test action created
      */
     private final static String ID = GUID.generate();
+
+    private SimpleCache<Serializable,Object> executingActionsCache;
 
     /**
      * Called at the begining of all tests.
@@ -85,6 +91,8 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
 
         // Get the executer instance.
         this.executer = (NodeSizeActionExecuter)this.applicationContext.getBean(NodeSizeActionExecuter.NAME);
+
+        executingActionsCache = (SimpleCache<Serializable,Object>)this.applicationContext.getBean("folderSizeSharedCache");
     }
 
     /**
@@ -96,6 +104,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
         int maxItems = 100;
         ActionImpl action = new ActionImpl(null, ID, NodeSizeActionExecuter.NAME, null);
         action.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
+        action.setParameterValue(NodeSizeActionExecuter.CACHE_REF, (Serializable)executingActionsCache);
         this.executer.executeImpl(action, this.nodeRef);
         Object resultAction = action.getParameterValue(NodeSizeActionExecuter.RESULT);
         Map<String, Object> mapResult = (Map<String, Object>)resultAction;

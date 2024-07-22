@@ -77,7 +77,6 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private NodeService nodeService;
     private ActionService actionService;
     private ActionTrackingService actionTrackingService;
-    private Action folderSizeAction;
     private FolderSizeImpl folderSizeImpl;
     private NodeRef nodeRef;
     private String exceptionMessage = "Invalid parameter: value of nodeId is invalid";

@@ -124,7 +124,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        HttpResponse response = post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        HttpResponse response = post(postFolderSizeCalculation(folderId), toJsonAsStringNonNull(params), 202);
         // Validate response and parsed document
         assertNotNull("Response should not be null", response);
 
@@ -180,7 +180,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         setRequestContext(user1);
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
-        HttpResponse response = post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
+        HttpResponse response = post(postFolderSizeCalculation(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
         assertNotNull(response);
 
         // Create a folder within the site document's library.
@@ -192,7 +192,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        response = post(getFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
+        response = post(postFolderSizeCalculation(nestedFolderId), toJsonAsStringNonNull(params), 422);
         assertNotNull(response);
     }
 

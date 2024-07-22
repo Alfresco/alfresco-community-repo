@@ -1122,9 +1122,14 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         restDauConfig.setEnabled(false);
     }
 
-    protected String getFolderSizeUrl(String nodeId)
+    protected String postFolderSizeCalculation(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_CALCULATESIZE;
+    }
+
+    protected String getFolderSizeUrl(String executionId)
+    {
+        return URL_NODES + "/" + executionId + "/" + URL_CALCULATESIZE;
     }
 }
 

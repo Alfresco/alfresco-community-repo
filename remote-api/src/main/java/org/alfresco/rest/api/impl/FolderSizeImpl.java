@@ -62,8 +62,6 @@ public class FolderSizeImpl {
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
         NodeSizeActionExecuter.actionsRecords.put(folderSizeAction.getId(),folderSizeAction);
         LOG.info("Executing NodeSizeActionExecuter from executingAsynchronousFolderAction method");
-        List<ExecutionSummary> executionSummaryList = actionTrackingService.getExecutingActions(NodeSizeActionExecuter.NAME);
-        ExecutionDetails executionDetails = actionTrackingService.getExecutionDetails(executionSummaryList.get(0));
         result.putIfAbsent("executionId",folderSizeAction.getId());
         return result;
     }

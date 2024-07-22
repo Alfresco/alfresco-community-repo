@@ -60,7 +60,7 @@ public class DeletePolicy extends AbstractBasePolicy
         if (deletee != null)
         {
 
-            return ((DeleteCapability) getCapabilityService().getCapability("Delete")).evaluate(deletee,null);
+            return getCapabilityService().getCapability("Delete").evaluate(deletee);
 
         }
         else

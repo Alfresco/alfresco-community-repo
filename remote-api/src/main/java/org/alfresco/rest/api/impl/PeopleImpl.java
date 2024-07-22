@@ -125,7 +125,7 @@ public class PeopleImpl implements People
     protected ResetPasswordService resetPasswordService;
     protected UserRegistrySynchronizer userRegistrySynchronizer;
     protected Renditions renditions;
-
+    private Boolean allowImmutableUserEnabledStatusUpdate;
 
     private final static Map<String, QName> sort_params_to_qnames;
     static
@@ -200,6 +200,11 @@ public class PeopleImpl implements People
     public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
     {
         this.userRegistrySynchronizer = userRegistrySynchronizer;
+    }
+
+    public void setAllowImmutableUserEnabledStatusUpdate(Boolean allowImmutableUserEnabledStatusUpdate)
+    {
+        this.allowImmutableUserEnabledStatusUpdate = allowImmutableUserEnabledStatusUpdate;
     }
 
     /**
@@ -716,7 +721,7 @@ public class PeopleImpl implements People
                 throw new PermissionDeniedException("Admin authority cannot be disabled.");
             }
 
-            if (isAdmin && !isMutableAuthority(personIdToUpdate))
+            if (allowImmutableUserEnabledStatusUpdate && isAdmin && !isMutableAuthority(personIdToUpdate))
             {
                 LOGGER.info("User " + personIdToUpdate + " is immutable but enabled status will be set to: " + isEnabled);
             }

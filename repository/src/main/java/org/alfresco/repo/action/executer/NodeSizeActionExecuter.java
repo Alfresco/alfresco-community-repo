@@ -27,6 +27,7 @@ package org.alfresco.repo.action.executer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -63,7 +64,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public static final String PAGE_SIZE = "page-size";
     public static final String RESULT = "size-result";
     public static final String ERROR = "exception";
-    public static final String CACHE_REF = "sharedCache";
+    private SimpleCache<Serializable,Object> simpleCache;
     public static final Map<String,Action> actionsRecords = new HashMap<>();
 
     /**
@@ -95,6 +96,11 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
+    }
+
+    public void setSimpleCache(SimpleCache<Serializable, Object> simpleCache)
+    {
+        this.simpleCache = simpleCache;
     }
 
     /**
@@ -131,7 +137,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQuery(query);
-        //searchParameters.addFacetQuery();
 
         try
         {
@@ -195,6 +200,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         {
             nodeAction.setParameterValue(RESULT, (Serializable) response);
             actionsRecords.put(nodeAction.getId(),nodeAction);
+            simpleCache.put(nodeAction.getId(),response);
         }
     }
 

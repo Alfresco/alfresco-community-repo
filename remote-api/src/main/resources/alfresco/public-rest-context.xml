@@ -1777,6 +1777,6 @@
         <property name="nodeService" ref="nodeService" />
         <property name="actionService" ref="ActionService"/>
         <property name="actionTrackingService" ref="actionTrackingService" />
-        <property name="sharedCache" ref="folderSizeSharedCache" />
+        <property name="simpleCache" ref="folderSizeSharedCache" />
     </bean>
 </beans>

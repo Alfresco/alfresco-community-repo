@@ -45,37 +45,19 @@ import org.slf4j.LoggerFactory;
 public class FolderSizeImpl {
 
     private ActionService actionService;
-    private ActionTrackingService actionTrackingService;
-    private NodeService nodeService;
-
     private static final Logger LOG = LoggerFactory.getLogger(FolderSizeImpl.class);
 
-    public Map<String, Object> executingAsynchronousFolderAction(final int maxItems, final NodeRef nodeRef, final Map<String, Object> result, final SimpleCache<Serializable, Object> sharedCache) throws Exception
+    public Map<String, Object> executingAsynchronousFolderAction(final int maxItems, final NodeRef nodeRef, final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache) throws Exception
     {
         Action folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
         folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
+        simpleCache.put(folderSizeAction.getId(),"IN-PROGRESS");
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
         NodeSizeActionExecuter.actionsRecords.put(folderSizeAction.getId(),folderSizeAction);
         LOG.info("Executing NodeSizeActionExecuter from executingAsynchronousFolderAction method");
         result.putIfAbsent("executionId",folderSizeAction.getId());
         return result;
-    }
-
-    public Action getAction(NodeRef nodeRef, String executionId)
-    {
-        if (this.nodeService.exists(nodeRef) == true)
-        {
-                Map<String, Action> actionsRecords = NodeSizeActionExecuter.actionsRecords;
-                List<Action> actionList = new ArrayList<>(actionsRecords.values());
-                 for (Action action : actionList)
-                 {
-                    if (action.getId().equals(executionId)) {
-                        return action;
-                    }
-                }
-        }
-        return null;
     }
 }

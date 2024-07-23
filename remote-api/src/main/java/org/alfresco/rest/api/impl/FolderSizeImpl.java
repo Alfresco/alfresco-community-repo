@@ -43,7 +43,7 @@ public class FolderSizeImpl {
     private ActionService actionService;
     private static final Logger LOG = LoggerFactory.getLogger(FolderSizeImpl.class);
 
-    public Map<String, Object> executingAsynchronousFolderAction(final int maxItems, final NodeRef nodeRef, final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache) throws Exception
+    public Map<String, Object> executingAsynchronousFolderAction(final int maxItems, final NodeRef nodeRef, final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache)
     {
         Action folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
         folderSizeAction.setTrackStatus(true);

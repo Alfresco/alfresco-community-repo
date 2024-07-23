@@ -75,10 +75,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private NodeService nodeService;
     private ActionService actionService;
     private ActionTrackingService actionTrackingService;
-    private FolderSizeImpl folderSizeImpl;
-    private NodeRef nodeRef;
     private String invalidMessage = "Invalid parameter: value of nodeId is invalid";
-
     private String notFoundMessage = "Searched ExecutionId does not exist";
 
     /** the simple cache that will hold action data */
@@ -150,7 +147,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder", successStatus = Status.STATUS_ACCEPTED)
     public Map<String, Object> createById(String nodeId, Parameters params)
     {
-        nodeRef = nodes.validateNode(nodeId);
+        NodeRef nodeRef = nodes.validateNode(nodeId);
         int maxItems = Math.min(params.getPaging().getMaxItems(), 1000);
         QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
@@ -164,13 +161,13 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
 
         try
         {
-            this.folderSizeImpl = new FolderSizeImpl(actionService);
-            return this.folderSizeImpl.executingAsynchronousFolderAction(maxItems, nodeRef, result, simpleCache);
+            FolderSizeImpl folderSizeImpl = new FolderSizeImpl(actionService);
+            return folderSizeImpl.executingAsynchronousFolderAction(maxItems, nodeRef, result, simpleCache);
         }
         catch (Exception ex)
         {
             LOG.error("Exception occurred in NodeFolderSizeRelation:createById {}", ex.getMessage());
-            throw new AlfrescoRuntimeException("Exception occurred in NodeFolderSizeRelation:createById");
+            throw new AlfrescoRuntimeException("Exception occurred in NodeFolderSizeRelation:createById",ex);
         }
     }
 
@@ -179,7 +176,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     @WebApiParameters({@WebApiParam(name = "executionId", title = "The unique id of Execution Job", description = "A single execution id")})
     public Map<String, Object> readById(String executionId, String id, Parameters parameters)
     {
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result;
 
         try
         {

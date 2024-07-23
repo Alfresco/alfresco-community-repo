@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
@@ -43,6 +44,8 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -72,6 +75,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     private static  String folderId;
 
+    private static String executionId;
+
+    private SimpleCache<Serializable,Object> executingActionsCache;
+
     /**
      * The logger
      */
@@ -99,6 +106,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         mimeTypeService = applicationContext.getBean("MimetypeService", MimetypeService.class);
+        executingActionsCache = (SimpleCache<Serializable, Object>) applicationContext.getBean("folderSizeSharedCache");
 
         setRequestContext(user1);
 
@@ -134,9 +142,9 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        // Convert document to string and validate contentNodeId
-        String contentNodeId = document.toString();
-        assertNotNull("Content node ID should not be null", contentNodeId);
+        // Convert document to string and validate executionId
+        executionId = document.toString();
+        assertNotNull("executionId should not be null", executionId);
     }
 
     /**
@@ -150,7 +158,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Check if response and JSON parsing were successful
-        HttpResponse response = getSingle(getFolderSizeUrl(folderId), null, 200);
+        HttpResponse response = getSingle(getFolderSizeUrl(executionId), null, 200);
         assertNotNull(response);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());

@@ -65,7 +65,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public static final String RESULT = "size-result";
     public static final String ERROR = "exception";
     private SimpleCache<Serializable,Object> simpleCache;
-    public static final Map<String,Action> actionsRecords = new HashMap<>();
 
     /**
      * The node service
@@ -199,7 +198,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         if(isCalculationCompleted)
         {
             nodeAction.setParameterValue(RESULT, (Serializable) response);
-            actionsRecords.put(nodeAction.getId(),nodeAction);
             simpleCache.put(nodeAction.getId(),response);
         }
     }

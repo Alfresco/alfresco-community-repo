@@ -158,6 +158,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Check if response and JSON parsing were successful
+        executionId = executionId.substring(executionId.indexOf("=") + 1,executionId.indexOf("}"));
         HttpResponse response = getSingle(getFolderSizeUrl(executionId), null, 200);
         assertNotNull(response);
 

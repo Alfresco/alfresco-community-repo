@@ -64,13 +64,10 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public static final String PAGE_SIZE = "page-size";
     public static final String RESULT = "size-result";
     public static final String ERROR = "exception";
-    private SimpleCache<Serializable,Object> simpleCache;
 
-    /**
-     * The node service
-     */
     private NodeService nodeService;
     private SearchService searchService;
+    private SimpleCache<Serializable,Object> simpleCache;
 
     /**
      * The logger
@@ -97,6 +94,11 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         this.searchService = searchService;
     }
 
+    /**
+     * Set the simpleCache service
+     *
+     * @param simpleCache  the cache service
+     */
     public void setSimpleCache(SimpleCache<Serializable, Object> simpleCache)
     {
         this.simpleCache = simpleCache;

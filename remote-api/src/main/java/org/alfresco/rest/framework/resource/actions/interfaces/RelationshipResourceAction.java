@@ -166,6 +166,9 @@ public interface RelationshipResourceAction
 
     interface CalculateSize<E> extends ResourceAction
     {
+        String STATUS = "status";
+        String COMPLETED = "Completed";
+        String FOLDER = "folder";
         /**
          * Calculate the size of Folder Node.
          *

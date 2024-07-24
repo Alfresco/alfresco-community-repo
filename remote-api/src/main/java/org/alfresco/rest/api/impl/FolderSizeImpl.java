@@ -42,6 +42,7 @@ public class FolderSizeImpl {
 
     private ActionService actionService;
     private static final Logger LOG = LoggerFactory.getLogger(FolderSizeImpl.class);
+    private static final String IN_PROGRESS = "IN-PROGRESS";
 
     public Map<String, Object> executingAsynchronousFolderAction(final int maxItems, final NodeRef nodeRef, final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache)
     {
@@ -49,9 +50,11 @@ public class FolderSizeImpl {
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
         folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
-        simpleCache.put(folderSizeAction.getId(),"IN-PROGRESS");
+        simpleCache.put(folderSizeAction.getId(),IN_PROGRESS);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
+
         LOG.info("Executing NodeSizeActionExecuter from executingAsynchronousFolderAction method");
+
         result.putIfAbsent("executionId",folderSizeAction.getId());
         return result;
     }

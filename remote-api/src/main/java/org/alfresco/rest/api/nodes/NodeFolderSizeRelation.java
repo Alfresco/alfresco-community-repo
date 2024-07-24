@@ -37,6 +37,7 @@ import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.CalculateSize;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById;
@@ -68,6 +69,12 @@ import java.util.Map;
 @RelationshipResource(name = "calculateSize",  entityResource = NodesEntityResource.class, title = "Calculate size")
 public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>>, ReadById<Map<String, Object>>, InitializingBean
 {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NodeFolderSizeRelation.class);
+
+    private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
+    private static final String EXECUTIONID_NOT_FOUND = "Searched ExecutionId does not exist";
+
     private Nodes nodes;
     private SearchService searchService;
     private ServiceRegistry serviceRegistry;
@@ -75,20 +82,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
     private NodeService nodeService;
     private ActionService actionService;
     private ActionTrackingService actionTrackingService;
-    private String invalidMessage = "Invalid parameter: value of nodeId is invalid";
-    private String notFoundMessage = "Searched ExecutionId does not exist";
-
-    /** the simple cache that will hold action data */
     private SimpleCache<Serializable,Object> simpleCache;
-
-    /**
-     * The logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(NodeFolderSizeRelation.class);
-
-    /**
-     * The class that wraps the ReST APIs from core.
-     */
 
     public void setNodes(Nodes nodes)
     {
@@ -116,12 +110,6 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         this.actionService = actionService;
     }
 
-    @Override
-    public void afterPropertiesSet()
-    {
-        ParameterCheck.mandatory("nodes", this.nodes);
-    }
-
     public void setActionTrackingService(ActionTrackingService actionTrackingService)
     {
         this.actionTrackingService = actionTrackingService;
@@ -132,6 +120,11 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         this.simpleCache = simpleCache;
     }
 
+    @Override
+    public void afterPropertiesSet()
+    {
+        ParameterCheck.mandatory("nodes", this.nodes);
+    }
     /**
      * Folder Size - returns size of a folder.
      *
@@ -151,12 +144,11 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         int maxItems = Math.min(params.getPaging().getMaxItems(), 1000);
         QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
-
         validatePermissions(nodeRef, nodeId);
 
-        if(!"folder".equals(qName.getLocalName()))
+        if(!FOLDER.equalsIgnoreCase(qName.getLocalName()))
         {
-            throw new InvalidNodeTypeException(invalidMessage);
+            throw new InvalidNodeTypeException(INVALID_NODEID);
         }
 
         try
@@ -164,33 +156,30 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             FolderSizeImpl folderSizeImpl = new FolderSizeImpl(actionService);
             return folderSizeImpl.executingAsynchronousFolderAction(maxItems, nodeRef, result, simpleCache);
         }
-        catch (Exception ex)
+        catch (Exception alfrescoRuntimeError)
         {
-            LOG.error("Exception occurred in NodeFolderSizeRelation:createById {}", ex.getMessage());
-            throw new AlfrescoRuntimeException("Exception occurred in NodeFolderSizeRelation:createById",ex);
+            LOG.error("Exception occurred in NodeFolderSizeRelation:createById {}", alfrescoRuntimeError.getMessage());
+            throw new AlfrescoRuntimeException("Exception occurred in NodeFolderSizeRelation:createById",alfrescoRuntimeError);
         }
     }
 
     @Override
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
     @WebApiParameters({@WebApiParam(name = "executionId", title = "The unique id of Execution Job", description = "A single execution id")})
-    public Map<String, Object> readById(String executionId, String id, Parameters parameters)
+    public Map<String, Object> readById(String executionId, String nodeId, Parameters parameters)
     {
-        Map<String, Object> result;
-
         try
         {
             LOG.info("Retrieving OUTPUT from NodeSizeActionExecutor - NodeFolderSizeRelation:readById");
             Object cachedResult = simpleCache.get(executionId);
             if(cachedResult != null)
             {
-                result = getResult(cachedResult);
+                return getResult(cachedResult);
             }
             else
             {
-                throw new NotFoundException(notFoundMessage);
+                throw new NotFoundException(EXECUTIONID_NOT_FOUND);
             }
-            return result;
         }
         catch (Exception ex)
         {
@@ -198,6 +187,7 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             throw ex; // Rethrow with original stack trace
         }
     }
+
     private Map<String, Object> getResult(Object outputResult)
     {
         Map<String, Object> result = new HashMap<>();
@@ -205,12 +195,12 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
         if (outputResult instanceof Map)
         {
             Map<String, Object> mapResult = (Map<String, Object>) outputResult;
-            mapResult.put("status", "COMPLETED");
+            mapResult.put(STATUS, COMPLETED);
             result = mapResult;
         }
-        else
+        else if(outputResult instanceof String)
         {
-            result.put("status", "IN-PROGRESS");
+            result.put(STATUS, outputResult);
         }
         return result;
     }
@@ -226,5 +216,4 @@ public class NodeFolderSizeRelation implements CalculateSize<Map<String, Object>
             throw new AccessDeniedException("permissions.err_access_denied");
         }
     }
-
 }

@@ -229,6 +229,11 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
         int countNodesWithAspects()
         {
+            if (maxItems < DEFAULT_MAX_ITEMS) {
+                log.info("Job limited to process a maximum of " + maxItems + " Pending Acls");
+                return maxItems;
+            }
+
             final CountNodesWithAspectCallback countNodesCallback = new CountNodesWithAspectCallback();
             int count = transactionService.getRetryingTransactionHelper()
                     .doInTransaction(new RetryingTransactionCallback<Integer>()
@@ -240,12 +245,6 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
                             return countNodesCallback.getCount();
                         }
                     }, false, true);
-
-            if (count > maxItems)
-            {
-                log.info("Total nodes with pending acl: " + count + " Limiting work to " + maxItems);
-                return maxItems;
-            }
             return count;
         }
     }

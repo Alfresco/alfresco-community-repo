@@ -163,7 +163,7 @@ public class AuthenticationContextImpl implements AuthenticationContext
 
     private boolean isImmutableAuthority(String authorityName)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<>()
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
         {
             @Override public Boolean doWork() throws Exception
             {

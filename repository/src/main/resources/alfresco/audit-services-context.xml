@@ -29,6 +29,7 @@
     <bean id="auditComponent" class="org.alfresco.repo.audit.AuditComponentImpl">
         <property name="transactionService" ref="transactionService"/>
         <property name="auditDAO" ref="auditDAO"/>
+        <property name="auditOutboxSystem" ref="auditOutboxSystem"/>
         <property name="auditModelRegistry" ref="Audit"/>
         <property name="propertyValueDAO" ref="propertyValueDAO"/>
         <property name="userAuditFilter" ref="userAuditFilter"/>
@@ -38,7 +39,11 @@
             </bean>
         </property>
     </bean>
-    
+
+    <!-- Audit Outbox System -->
+
+    <bean id="auditOutboxSystem" class="org.alfresco.repo.audit.AuditOutboxSystemImpl"/>
+
     <!-- User Audit Filter -->
     
     <bean id="userAuditFilter" class="org.alfresco.repo.audit.UserAuditFilter">

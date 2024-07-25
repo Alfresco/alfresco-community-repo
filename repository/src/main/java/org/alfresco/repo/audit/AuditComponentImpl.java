@@ -78,6 +78,7 @@ public class AuditComponentImpl implements AuditComponent
     private AuditModelRegistryImpl auditModelRegistry;
     private PropertyValueDAO propertyValueDAO;
     private AuditDAO auditDAO;
+    private AuditOutboxSystem auditOutboxSystem;
     private TransactionService transactionService;
     private AuditFilter auditFilter;
     private UserAuditFilter userAuditFilter;
@@ -114,6 +115,11 @@ public class AuditComponentImpl implements AuditComponent
     public void setAuditDAO(AuditDAO auditDAO)
     {
         this.auditDAO = auditDAO;
+    }
+
+    public void setAuditOutboxSystem(AuditOutboxSystem auditOutboxSystem)
+    {
+        this.auditOutboxSystem = auditOutboxSystem;
     }
 
     /**
@@ -750,6 +756,7 @@ public class AuditComponentImpl implements AuditComponent
             if (!justGatherPreCallData)
             {
                 entryId = auditDAO.createAuditEntry(applicationId, time, username, auditData);
+                auditOutboxSystem.createAuditRepoEvent(applicationId, time, username, auditData);
             }
             // Done
             if (logger.isDebugEnabled())

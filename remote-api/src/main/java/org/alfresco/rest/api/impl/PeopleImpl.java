@@ -125,7 +125,7 @@ public class PeopleImpl implements People
     protected ResetPasswordService resetPasswordService;
     protected UserRegistrySynchronizer userRegistrySynchronizer;
     protected Renditions renditions;
-    private Boolean allowImmutableUserEnabledStatusUpdate;
+    private Boolean allowImmutableEnabledUpdate;
 
     private final static Map<String, QName> sort_params_to_qnames;
     static
@@ -202,9 +202,9 @@ public class PeopleImpl implements People
         this.userRegistrySynchronizer = userRegistrySynchronizer;
     }
 
-    public void setAllowImmutableUserEnabledStatusUpdate(Boolean allowImmutableUserEnabledStatusUpdate)
+    public void setAllowImmutableEnabledUpdate(Boolean allowImmutableEnabledUpdate)
     {
-        this.allowImmutableUserEnabledStatusUpdate = allowImmutableUserEnabledStatusUpdate;
+        this.allowImmutableEnabledUpdate = allowImmutableEnabledUpdate;
     }
 
     /**
@@ -713,6 +713,8 @@ public class PeopleImpl implements People
         // if requested, update password
         updatePassword(isAdmin, personIdToUpdate, person);
 
+        Set<QName> immutableProperties = userRegistrySynchronizer.getPersonMappedProperties(personIdToUpdate);
+
         Boolean isEnabled = person.isEnabled();
         if (isEnabled != null)
         {
@@ -721,7 +723,7 @@ public class PeopleImpl implements People
                 throw new PermissionDeniedException("Admin authority cannot be disabled.");
             }
 
-            if (allowImmutableUserEnabledStatusUpdate && isAdmin && !isMutableAuthority(personIdToUpdate))
+            if (allowImmutableEnabledStatusUpdate(personIdToUpdate, isAdmin, immutableProperties))
             {
                 LOGGER.info("User " + personIdToUpdate + " is immutable but enabled status will be set to: " + isEnabled);
             }
@@ -755,9 +757,7 @@ public class PeopleImpl implements People
 			properties.putAll(nodes.mapToNodeProperties(customProps));
 		}
 
-        // MNT-21150 LDAP synced attributes can be changed using REST API
-        Set<QName> immutableProperties = userRegistrySynchronizer.getPersonMappedProperties(personIdToUpdate);
-
+        // MNT-21150 LDAP synced attributes can't be changed using REST API
         immutableProperties.forEach(immutableProperty -> {
             if (properties.containsKey(immutableProperty))
             {
@@ -779,6 +779,28 @@ public class PeopleImpl implements People
         }
 		
         return getPerson(personId);
+    }
+
+    private boolean allowImmutableEnabledStatusUpdate(String userId, boolean isAdmin, Set<QName> immutableProperties)
+    {
+        if (allowImmutableEnabledUpdate)
+        {
+            boolean containLdapUserAccountStatus = false;
+            QName propertyNameToCheck = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "userAccountStatusProperty");
+
+            for (QName immutableProperty : immutableProperties)
+            {
+                if (immutableProperty.equals(propertyNameToCheck))
+                {
+                    containLdapUserAccountStatus = true;
+                    break;
+                }
+            }
+
+            return isAdmin && !containLdapUserAccountStatus && !isMutableAuthority(userId);
+        }
+
+        return false;
     }
 
     private boolean checkCurrentUserOrAdmin(String personId)

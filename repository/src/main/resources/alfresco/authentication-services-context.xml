@@ -280,7 +280,7 @@
         <property name="authenticationService">
             <ref bean="AuthenticationService" />
         </property>
-        <property name="allowImmutableUserEnabledStatusUpdate">
+        <property name="allowImmutableEnabledUpdate">
             <value>${allow.immutable.user.enabled.status.update}</value>
         </property>
     </bean>

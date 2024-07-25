@@ -55,7 +55,7 @@ public class AuthenticationContextImpl implements AuthenticationContext
     private TenantService tenantService;
     private PersonService personService;
     private AuthenticationService authenticationService;
-    private Boolean allowImmutableUserEnabledStatusUpdate;
+    private Boolean allowImmutableEnabledUpdate;
 
     public void setTenantService(TenantService tenantService)
     {
@@ -72,9 +72,9 @@ public class AuthenticationContextImpl implements AuthenticationContext
         this.authenticationService = authenticationService;
     }
 
-    public void setAllowImmutableUserEnabledStatusUpdate(Boolean allowImmutableUserEnabledStatusUpdate)
+    public void setAllowImmutableEnabledUpdate(Boolean allowImmutableEnabledUpdate)
     {
-        this.allowImmutableUserEnabledStatusUpdate = allowImmutableUserEnabledStatusUpdate;
+        this.allowImmutableEnabledUpdate = allowImmutableEnabledUpdate;
     }
 
     /**
@@ -141,7 +141,7 @@ public class AuthenticationContextImpl implements AuthenticationContext
         boolean isDisabled = !ud.isEnabled();
         boolean isSystemUser = isSystemUserName(userId);
 
-        if (allowImmutableUserEnabledStatusUpdate && !isSystemUser)
+        if (allowImmutableEnabledUpdate && !isSystemUser)
         {
             try
             {

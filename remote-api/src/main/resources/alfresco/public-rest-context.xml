@@ -743,6 +743,7 @@
         <property name="thumbnailService" ref="ThumbnailService" />
         <property name="resetPasswordService" ref="resetPasswordService" />
         <property name="userRegistrySynchronizer" ref="userRegistrySynchronizer" />
+        <property name="allowImmutableEnabledUpdate" value="${allow.immutable.user.enabled.status.update}" />
     </bean>
 
     <bean id="People" class="org.springframework.aop.framework.ProxyFactoryBean">

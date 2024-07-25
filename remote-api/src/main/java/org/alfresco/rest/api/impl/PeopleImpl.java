@@ -125,7 +125,7 @@ public class PeopleImpl implements People
     protected ResetPasswordService resetPasswordService;
     protected UserRegistrySynchronizer userRegistrySynchronizer;
     protected Renditions renditions;
-
+    private Boolean allowImmutableEnabledUpdate;
 
     private final static Map<String, QName> sort_params_to_qnames;
     static
@@ -200,6 +200,11 @@ public class PeopleImpl implements People
     public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
     {
         this.userRegistrySynchronizer = userRegistrySynchronizer;
+    }
+
+    public void setAllowImmutableEnabledUpdate(Boolean allowImmutableEnabledUpdate)
+    {
+        this.allowImmutableEnabledUpdate = allowImmutableEnabledUpdate;
     }
 
     /**
@@ -708,16 +713,26 @@ public class PeopleImpl implements People
         // if requested, update password
         updatePassword(isAdmin, personIdToUpdate, person);
 
-        if (person.isEnabled() != null)
+        Set<QName> immutableProperties = userRegistrySynchronizer.getPersonMappedProperties(personIdToUpdate);
+
+        Boolean isEnabled = person.isEnabled();
+        if (isEnabled != null)
         {
             if (isAdminAuthority(personIdToUpdate))
             {
                 throw new PermissionDeniedException("Admin authority cannot be disabled.");
             }
 
-            // note: if current user is not an admin then permission denied exception is thrown
-            MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
-            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+            if (allowImmutableEnabledStatusUpdate(personIdToUpdate, isAdmin, immutableProperties))
+            {
+                LOGGER.info("User " + personIdToUpdate + " is immutable but enabled status will be set to: " + isEnabled);
+            }
+            else
+            {
+                // note: if current user is not an admin then permission denied exception is thrown
+                MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+                mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+            }
         }
 
 		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
@@ -742,9 +757,7 @@ public class PeopleImpl implements People
 			properties.putAll(nodes.mapToNodeProperties(customProps));
 		}
 
-        // MNT-21150 LDAP synced attributes can be changed using REST API
-        Set<QName> immutableProperties = userRegistrySynchronizer.getPersonMappedProperties(personIdToUpdate);
-
+        // MNT-21150 LDAP synced attributes can't be changed using REST API
         immutableProperties.forEach(immutableProperty -> {
             if (properties.containsKey(immutableProperty))
             {
@@ -766,6 +779,28 @@ public class PeopleImpl implements People
         }
 		
         return getPerson(personId);
+    }
+
+    private boolean allowImmutableEnabledStatusUpdate(String userId, boolean isAdmin, Set<QName> immutableProperties)
+    {
+        if (allowImmutableEnabledUpdate)
+        {
+            boolean containLdapUserAccountStatus = false;
+            QName propertyNameToCheck = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "userAccountStatusProperty");
+
+            for (QName immutableProperty : immutableProperties)
+            {
+                if (immutableProperty.equals(propertyNameToCheck))
+                {
+                    containLdapUserAccountStatus = true;
+                    break;
+                }
+            }
+
+            return isAdmin && !containLdapUserAccountStatus && !isMutableAuthority(userId);
+        }
+
+        return false;
     }
 
     private boolean checkCurrentUserOrAdmin(String personId)

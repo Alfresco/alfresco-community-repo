@@ -126,7 +126,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        HttpResponse response = post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        HttpResponse response = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
         // Validate response and parsed document
         assertNotNull("Response should not be null", response);
 
@@ -153,7 +153,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Check if response and JSON parsing were successful
-        HttpResponse response = getSingle(getFolderSizeUrl(folderId), null, 200);
+        HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), null, 200);
         assertNotNull(response);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
@@ -177,12 +177,12 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     public void testHTTPStatus() throws Exception
     {
         setRequestContext(null);
-        delete(getFolderSizeUrl(folderId), folderId, null, 401);
+        delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
-        HttpResponse response = post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
+        HttpResponse response = post(getCalculateFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
         assertNotNull(response);
 
         // Create a folder within the site document's library.
@@ -194,7 +194,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        response = post(getFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
+        response = post(getCalculateFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
         assertNotNull(response);
     }
 

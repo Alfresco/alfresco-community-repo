@@ -93,10 +93,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 {
                     throw new UnsupportedResourceOperationException("POST is executed against a collection URL");
                 }
-                else if ("calculateSize".equals(operationName))
-                {
-                    return Params.valueOf(entityId, params, "", req);
-                }
                 else
                 {
                     Object postedObj = processRequest(resourceMeta, operation, req);
@@ -320,16 +316,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         {
                             return wrapWithCollectionWithPaging(created);
                         }
-                    }
-                    else if (EntityResourceAction.CalculateFolderSize.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.CalculateFolderSize.class))
-                        {
-                            throw new DeletedResourceException("(POST by id) " + resource.getMetaData().getUniqueId());
-                        }
-                        EntityResourceAction.CalculateFolderSize<?> relationGetter = (EntityResourceAction.CalculateFolderSize<?>) resource.getResource();
-                        Object result = relationGetter.createById(params.getEntityId(),params);
-                        return result;
                     }
                 }
 

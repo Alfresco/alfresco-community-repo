@@ -78,12 +78,16 @@ import org.springframework.extensions.webscripts.Status;
 @EntityResource(name="nodes", title = "Nodes")
 public class NodesEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
-        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, EntityResourceAction.CalculateFolderSize<Map<String, Object>>, EntityResourceAction.RetrieveFolderSize<Map<String, Object>>, InitializingBean
+        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, InitializingBean
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
+
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
     private static final String NODEID_NOT_FOUND = "Searched nodeId does not exist";
+    private static final String STATUS = "status";
+    private static final String COMPLETED = "Completed";
+    private static final String FOLDER = "folder";
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
     private SearchService searchService;
@@ -287,12 +291,13 @@ public class NodesEntityResource implements
      *               If NodeId does not exist, EntityNotFoundException (status 404).
      *               If nodeId does not represent a folder, InvalidNodeTypeException (status 422).
      */
-    @Override
+    @Operation("calculate-folder-size")
     @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder", successStatus = Status.STATUS_ACCEPTED)
-    public Map<String, Object> createById(String nodeId, Parameters params)
+    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
+    public Map<String, Object> calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
-        int maxItems = Math.min(params.getPaging().getMaxItems(), 1000);
+        int maxItems = Math.min(parameters.getPaging().getMaxItems(), 1000);
         QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
         validatePermissions(nodeRef, nodeId);
@@ -314,10 +319,10 @@ public class NodesEntityResource implements
         }
     }
 
-    @Override
+    @Operation("get-folder-size")
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
-    public Map<String, Object> readByNodeId(String nodeId, Parameters parameters)
+    public Map<String, Object> getFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
         try
         {

@@ -73,8 +73,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     private static  String folderId;
 
-    private static String executionId;
-
     /**
      * The logger
      */
@@ -138,7 +136,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         assertNotNull("Parsed document should not be null", document);
 
         // Convert document to string and validate executionId
-        executionId = document.toString();
+        String executionId = document.toString();
         assertNotNull("executionId should not be null", executionId);
     }
 
@@ -153,7 +151,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Check if response and JSON parsing were successful
-        HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), null, 200);
+        HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), folderId, 200);
         assertNotNull(response);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());

@@ -41,7 +41,6 @@ import java.util.Map;
 
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.nodes.NodeCommentsRelation;
-import org.alfresco.rest.api.nodes.NodeFolderSizeRelation;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.OperationResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;

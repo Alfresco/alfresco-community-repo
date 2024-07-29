@@ -188,7 +188,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
             throw ex;
         }
 
-        LOG.info(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");
+        LOG.debug(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
         String formattedTimestamp = eventTimestamp.format(formatter);
@@ -200,7 +200,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         if(isCalculationCompleted)
         {
             nodeAction.setParameterValue(RESULT, (Serializable) response);
-            simpleCache.put(nodeAction.getId(),response);
+            simpleCache.put(nodeRef.getId(),response);
         }
     }
 

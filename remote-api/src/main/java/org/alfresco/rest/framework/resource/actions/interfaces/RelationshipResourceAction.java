@@ -26,7 +26,12 @@
 package org.alfresco.rest.framework.resource.actions.interfaces;
 
 import java.util.List;
+import java.util.Map;
 
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.WebApiParameters;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -164,17 +169,4 @@ public interface RelationshipResourceAction
         public void deleteSet(String entityResourceId, Parameters params, WithResponse withResponse);
     }
 
-    interface CalculateSize<E> extends ResourceAction
-    {
-        String STATUS = "status";
-        String COMPLETED = "Completed";
-        String FOLDER = "folder";
-        /**
-         * Calculate the size of Folder Node.
-         *
-         * @param nodeId Entity resource context for this relationship.
-         * @param params implementation may choose to restrict the set to be deleted based on params (ie. not necessarily "all")
-         */
-        E createById(String nodeId,Parameters params);
-    }
 }

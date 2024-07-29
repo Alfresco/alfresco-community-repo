@@ -219,6 +219,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         Object result = entityGetter.readById(params.getEntityId(), params, withResponse);
                         return result;
                     }
+                    else if (EntityResourceAction.RetrieveFolderSize.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.RetrieveFolderSize.class))
+                        {
+                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.RetrieveFolderSize<?> relationGetter = (EntityResourceAction.RetrieveFolderSize<?>) resource.getResource();
+                        Object result = relationGetter.readByNodeId(params.getEntityId(), params);
+                        return result;
+                    }
                     else
                     {
                         throw new UnsupportedResourceOperationException();
@@ -237,16 +247,6 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         RelationshipResourceAction.Read<?> relationGetter = (RelationshipResourceAction.Read<?>) resource.getResource();
                         CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params);
                         return relations;
-                    }
-                    else if (RelationshipResourceAction.ReadById.class.isAssignableFrom(resource.getResource().getClass()))
-                    {
-                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadById.class))
-                        {
-                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
-                        }
-                        RelationshipResourceAction.ReadById<?> relationGetter = (RelationshipResourceAction.ReadById<?>) resource.getResource();
-                        Object result = relationGetter.readById(params.getEntityId(), params.getRelationshipId(), params);
-                        return result;
                     }
                     else
                     {

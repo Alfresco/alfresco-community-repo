@@ -60,7 +60,12 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
      */
     private final static String ID = GUID.generate();
 
-    private SimpleCache<Serializable,Object> executingActionsCache;
+    /**
+     * Set the simpleCache service
+     *
+     * @param simpleCache  the cache service
+     */
+    private SimpleCache<Serializable,Object> simpleCache;
 
     /**
      * Called at the begining of all tests.
@@ -90,7 +95,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
         // Get the executer instance.
         this.executer = (NodeSizeActionExecuter)this.applicationContext.getBean(NodeSizeActionExecuter.NAME);
 
-        executingActionsCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
+        simpleCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
     }
 
     /**

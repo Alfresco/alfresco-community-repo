@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
@@ -45,7 +44,6 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -77,8 +75,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     private static String executionId;
 
-    private SimpleCache<Serializable,Object> executingActionsCache;
-
     /**
      * The logger
      */
@@ -106,7 +102,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         mimeTypeService = applicationContext.getBean("MimetypeService", MimetypeService.class);
-        executingActionsCache = (SimpleCache<Serializable, Object>) applicationContext.getBean("folderSizeSharedCache");
 
         setRequestContext(user1);
 
@@ -131,7 +126,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        HttpResponse response = post(postFolderSizeCalculation(folderId), toJsonAsStringNonNull(params), 202);
+        HttpResponse response = post(getFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
         // Validate response and parsed document
         assertNotNull("Response should not be null", response);
 
@@ -158,8 +153,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Check if response and JSON parsing were successful
-        executionId = executionId.substring(executionId.indexOf('=') + 1,executionId.indexOf('}'));
-        HttpResponse response = getSingle(getFolderSizeUrl(executionId), null, 200);
+        HttpResponse response = getSingle(getFolderSizeUrl(folderId), null, 200);
         assertNotNull(response);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
@@ -188,7 +182,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         setRequestContext(user1);
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(folderId);
-        HttpResponse response = post(postFolderSizeCalculation(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
+        HttpResponse response = post(getFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
         assertNotNull(response);
 
         // Create a folder within the site document's library.
@@ -200,7 +194,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        response = post(postFolderSizeCalculation(nestedFolderId), toJsonAsStringNonNull(params), 422);
+        response = post(getFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
         assertNotNull(response);
     }
 

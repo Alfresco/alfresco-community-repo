@@ -33,13 +33,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.CRC32;
 
+import com.fasterxml.uuid.Generators;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.datatype.Duration;
 import org.alfresco.util.GUID;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.safehaus.uuid.UUIDGenerator;
 import org.alfresco.util.ParameterCheck;
 
 /**
@@ -497,7 +497,7 @@ public class InMemoryTicketComponentImpl implements TicketComponent
             this.userName = userName;
             this.validDuration = validDuration;
             this.testDuration = validDuration.divide(2);
-            final String guid = UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
+            final String guid = Generators.randomBasedGenerator().generate().toString();
 
             this.ticketId = computeTicketId(expires, expiryDate, userName, guid);
 

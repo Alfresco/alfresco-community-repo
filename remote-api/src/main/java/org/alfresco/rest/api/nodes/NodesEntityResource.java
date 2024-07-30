@@ -97,7 +97,6 @@ public class NodesEntityResource implements
     private ActionService actionService;
     private SimpleCache<Serializable,Object> simpleCache;
 
-
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
@@ -318,7 +317,6 @@ public class NodesEntityResource implements
             throw new AlfrescoRuntimeException("Exception occurred in NodesEntityResource:createById",alfrescoRuntimeError);
         }
     }
-
     @Operation("get-folder-size")
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})

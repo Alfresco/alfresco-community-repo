@@ -126,8 +126,6 @@ public class ResourceInspector
 
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(MultiPartRelationshipResourceAction.Create.class);
 
-
-
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Read.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Delete.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Update.class);
@@ -727,7 +725,15 @@ public class ResourceInspector
                     Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
                     String actionName = String.valueOf(annotAttribs.get("value"));
                     String actionPath = ResourceDictionary.propertyResourceKey(entityPath, actionName);
-                    ResourceOperation ro = inspectOperation(anyClass, annotatedMethod, POST);
+                    ResourceOperation ro;
+                    if("/nodes/{id}/get-folder-size".equals(actionPath))
+                    {
+                        ro = inspectOperation(anyClass, annotatedMethod, GET);
+                    }
+                    else
+                    {
+                        ro = inspectOperation(anyClass, annotatedMethod, POST);
+                    }
                     embeds.put(actionPath, new Pair<ResourceOperation, Method>(ro, annotatedMethod));
                 }
             }

@@ -279,6 +279,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
             case PROPERTY:
                 if (StringUtils.isNotBlank(params.getEntityId()))
                 {
+                    if (EntityResourceAction.RetrieveFolderSize.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.RetrieveFolderSize.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.RetrieveFolderSize getter = (EntityResourceAction.RetrieveFolderSize) resource.getResource();
+                        Object result = getter.getFolderSize(params.getEntityId());
+                        return result;
+                    }
                     if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(BinaryResourceAction.Read.class))

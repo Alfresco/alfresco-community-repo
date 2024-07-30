@@ -319,12 +319,11 @@ public class NodesEntityResource implements
         }
     }
     @Override
-    @BinaryProperties({"get-folder-size"})
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
-    public Map<String, Object> getFolderSize(String nodeId, Parameters parameters) throws EntityNotFoundException
+    @BinaryProperties({"get-folder-size"})
+    public Map<String, Object> getFolderSize(String nodeId) throws EntityNotFoundException
     {
-
         try
         {
             LOG.debug("Retrieving OUTPUT from NodeSizeActionExecutor - NodesEntityResource:readById");

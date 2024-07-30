@@ -78,7 +78,7 @@ import org.springframework.extensions.webscripts.Status;
 @EntityResource(name="nodes", title = "Nodes")
 public class NodesEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
-        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, InitializingBean
+        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, EntityResourceAction.RetrieveFolderSize<Map<String,Object>>, InitializingBean
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
@@ -88,6 +88,7 @@ public class NodesEntityResource implements
     private static final String STATUS = "status";
     private static final String COMPLETED = "Completed";
     private static final String FOLDER = "folder";
+
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
     private SearchService searchService;
@@ -317,11 +318,13 @@ public class NodesEntityResource implements
             throw new AlfrescoRuntimeException("Exception occurred in NodesEntityResource:createById",alfrescoRuntimeError);
         }
     }
-    @Operation("get-folder-size")
+    @Override
+    @BinaryProperties({"get-folder-size"})
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
-    public Map<String, Object> getFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
+    public Map<String, Object> getFolderSize(String nodeId, Parameters parameters) throws EntityNotFoundException
     {
+
         try
         {
             LOG.debug("Retrieving OUTPUT from NodeSizeActionExecutor - NodesEntityResource:readById");

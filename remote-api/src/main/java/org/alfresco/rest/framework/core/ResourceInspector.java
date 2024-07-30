@@ -110,6 +110,8 @@ public class ResourceInspector
 
         ALL_ENTITY_RESOURCE_INTERFACES.add(MultiPartResourceAction.Create.class);
 
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.RetrieveFolderSize.class);
+
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Create.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Read.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadById.class);
@@ -163,6 +165,7 @@ public class ResourceInspector
         findOperation(EntityResourceAction.UpdateWithResponse.class,   PUT, helper);
         findOperation(EntityResourceAction.DeleteWithResponse.class,   DELETE, helper);
         findOperation(EntityResourceAction.DeleteSetWithResponse.class,   DELETE, helper);
+        findOperation(EntityResourceAction.RetrieveFolderSize.class,   GET, helper);
 
         findOperation(MultiPartResourceAction.Create.class,   POST, helper);
 
@@ -725,15 +728,7 @@ public class ResourceInspector
                     Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
                     String actionName = String.valueOf(annotAttribs.get("value"));
                     String actionPath = ResourceDictionary.propertyResourceKey(entityPath, actionName);
-                    ResourceOperation ro;
-                    if("/nodes/{id}/get-folder-size".equals(actionPath))
-                    {
-                        ro = inspectOperation(anyClass, annotatedMethod, GET);
-                    }
-                    else
-                    {
-                        ro = inspectOperation(anyClass, annotatedMethod, POST);
-                    }
+                    ResourceOperation ro = inspectOperation(anyClass, annotatedMethod, POST);
                     embeds.put(actionPath, new Pair<ResourceOperation, Method>(ro, annotatedMethod));
                 }
             }

@@ -28,6 +28,7 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -152,14 +153,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", folderId);
-        params.put("skipCount", "0");
-        params.put("maxItems", "100");
-        params.put("properties", "");
-
         // Check if response and JSON parsing were successful
-        HttpResponse response = get(getFolderSizeDataUrl(folderId),params,200);
+        HttpResponse response = getSingle(NodesEntityResource.class, folderId+"/get-folder-size", null, 200);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);

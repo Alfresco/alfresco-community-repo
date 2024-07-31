@@ -1342,6 +1342,8 @@
       </property>
    </bean>
 
+    <bean id="search.suggesterService" class="org.alfresco.repo.search.impl.DummySuggesterServiceImpl">
+    </bean>
    <!-- Custom property editors -->
    <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
       <property name="propertyEditorRegistrars">

@@ -39,10 +39,6 @@
         </property>
     </bean>
 
-    <!-- Audit Outbox System -->
-
-    <bean id="auditOutboxSystem" class="org.alfresco.repo.audit2.AuditRepoEventReporterImpl"/>
-
     <!-- User Audit Filter -->
     
     <bean id="userAuditFilter" class="org.alfresco.repo.audit.UserAuditFilter">

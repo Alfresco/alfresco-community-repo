@@ -23,12 +23,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.audit;
+package org.alfresco.repo.audit2;
 
-import java.io.Serializable;
-import java.util.Map;
 
-public interface AuditOutboxSystem
+public interface AuditRepoEventReporter
 {
-    void createAuditRepoEvent(Long applicationId, long time, String username, Map<String, Serializable> values);
+    /**
+     * This method will report AuditRecord to Audit Storage using RepoEvent2
+     * @param auditRecord represent data that will be reported.
+     */
+    void reportAudit(AuditRecord auditRecord);
 }

@@ -23,15 +23,12 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.audit;
+package org.alfresco.repo.audit2;
 
-import java.io.Serializable;
-import java.util.Map;
-
-public class AuditOutboxSystemImpl implements AuditOutboxSystem
+public class AuditRepoEventReporterImpl implements AuditRepoEventReporter
 {
     @Override
-    public void createAuditRepoEvent(Long applicationId, long time, String username, Map<String, Serializable> values)
+    public void reportAudit(AuditRecord auditRecord)
     {
         //empty implementation
     }

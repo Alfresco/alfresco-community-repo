@@ -150,16 +150,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     @Test
     public void testBGetCalculateFolderSize() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
-        HttpResponse response2 = get(getFolderSizeDataUrl(folderId),null,200);
+        setRequestContext(null, user1, null);
 
         // Check if response and JSON parsing were successful
-        String fileName = "demo.docx";
-        File file = getResourceFile(fileName);
-        PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(file);
-        HttpResponse response = putBinary(getFolderSizeDataUrl(folderId), payload, null, null, 200);
-        assertNotNull(response);
+        HttpResponse response = get(getFolderSizeDataUrl(folderId),null,200);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);

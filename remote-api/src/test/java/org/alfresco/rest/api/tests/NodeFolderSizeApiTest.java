@@ -29,6 +29,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -44,6 +45,7 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -150,8 +152,13 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
+        HttpResponse response2 = get(getFolderSizeDataUrl(folderId),null,200);
+
         // Check if response and JSON parsing were successful
-        HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), folderId, 200);
+        String fileName = "demo.docx";
+        File file = getResourceFile(fileName);
+        PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(file);
+        HttpResponse response = putBinary(getFolderSizeDataUrl(folderId), payload, null, null, 200);
         assertNotNull(response);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());

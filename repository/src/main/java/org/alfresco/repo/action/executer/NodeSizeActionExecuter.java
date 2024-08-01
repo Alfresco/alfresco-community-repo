@@ -138,6 +138,12 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQuery(query);
+        searchParameters.addFacetQuery("content.size:[0 TO 10240]\", \"label\": \"extra small\",\"group\":\"Size\"");
+        searchParameters.addFacetQuery("content.size:[10240 TO 102400]\", \"label\": \"small\", \"group\":\"Size\"");
+        searchParameters.addFacetQuery("content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"Size\"");
+        searchParameters.addFacetQuery("content.size:[1048576 TO 16777216]\", \"label\": \"large\",\"group\":\"Size\"");
+        final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet("content.size");
+        searchParameters.addFieldFacet(ff);
 
         try
         {

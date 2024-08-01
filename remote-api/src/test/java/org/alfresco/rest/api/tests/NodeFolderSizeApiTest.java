@@ -154,8 +154,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Check if response and JSON parsing were successful
-        //HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), null, null, 200);
-        HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), folderId, null, 200);
+        HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), "get-folder-size", 200);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);

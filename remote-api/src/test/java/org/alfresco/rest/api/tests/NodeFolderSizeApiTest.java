@@ -159,7 +159,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);
 
-        assertTrue("We are not getting correct response",jsonResponse.contains("size") || jsonResponse.contains("status"));
+        assertTrue("We are not getting correct response "+jsonResponse,jsonResponse.contains("size") || jsonResponse.contains("status"));
 
         // Parse the JSON response.
         Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);

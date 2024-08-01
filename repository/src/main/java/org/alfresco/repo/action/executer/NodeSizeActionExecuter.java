@@ -129,7 +129,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
         NodeRef nodeRef = actionedUponNodeRef;
         long totalSize = 0;
-        long totalSizeFromFacet = 0;
+        long totalSizeFromFacet;
         ResultSet results;
         boolean isCalculationCompleted = false;
 

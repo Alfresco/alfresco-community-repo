@@ -161,7 +161,7 @@ public interface EntityResourceAction
          */
         public void deleteSet(Parameters params, WithResponse withResponse);
     }
-    public static interface RetrieveFolderSize<E> extends ResourceAction
+    interface RetrieveFolderSize<E> extends ResourceAction
     {
         /**
          * get the size of Folder Node.

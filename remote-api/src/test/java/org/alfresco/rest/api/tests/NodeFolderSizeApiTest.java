@@ -138,7 +138,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     @Test
     public void testBGetCalculateFolderSize() throws Exception
     {
-        setRequestContext(null);
+        setRequestContext(user1);
 
         // Check if response and JSON parsing were successful
         HttpResponse response = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);

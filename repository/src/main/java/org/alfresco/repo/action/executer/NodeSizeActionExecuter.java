@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public static final String PAGE_SIZE = "page-size";
     public static final String RESULT = "size-result";
     public static final String ERROR = "exception";
+    public static final String FIELD_FACET = "content.size";
 
     private NodeService nodeService;
     private SearchService searchService;
@@ -127,6 +129,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 
         NodeRef nodeRef = actionedUponNodeRef;
         long totalSize = 0;
+        long totalSizeFromFacet = 0;
         ResultSet results;
         boolean isCalculationCompleted = false;
 
@@ -142,13 +145,19 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addFacetQuery("content.size:[10240 TO 102400]\", \"label\": \"small\", \"group\":\"Size\"");
         searchParameters.addFacetQuery("content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"Size\"");
         searchParameters.addFacetQuery("content.size:[1048576 TO 16777216]\", \"label\": \"large\",\"group\":\"Size\"");
-        final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet("content.size");
+        final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(FIELD_FACET);
         searchParameters.addFieldFacet(ff);
 
         try
         {
             // executing Alfresco FTS query.
             results = searchService.query(searchParameters);
+            List<Pair<String, Integer>> fieldData = results.getFieldFacet(FIELD_FACET);
+            totalSizeFromFacet = fieldData.stream()
+                    .filter(pairData -> pairData.getSecond() > 0)
+                    .mapToLong(pairData -> Long.valueOf(pairData.getFirst()) * pairData.getSecond())
+                    .sum();
+
             int skipCount = 0;
             int totalItems;
             totalItems = Math.min(results.getNodeRefs().size(), maxItems);
@@ -200,6 +209,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         String formattedTimestamp = eventTimestamp.format(formatter);
         response.put("id", nodeRef.getId());
         response.put("size", totalSize);
+        response.put("sizeFromFacet", totalSizeFromFacet);
         response.put("calculatedAt", formattedTimestamp);
         response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
 

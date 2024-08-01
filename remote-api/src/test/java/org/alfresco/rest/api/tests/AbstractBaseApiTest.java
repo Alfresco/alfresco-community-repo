@@ -1126,9 +1126,5 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     {
         return URL_NODES + "/" + nodeId + "/" + URL_CALCULATEFOLDERSIZE;
     }
-    protected String getFolderSizeDataUrl(String nodeId)
-    {
-        return URL_NODES + "/" + nodeId + "/";
-    }
 }
 

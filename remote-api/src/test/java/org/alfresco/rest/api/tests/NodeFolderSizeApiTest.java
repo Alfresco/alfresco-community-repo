@@ -30,11 +30,7 @@ import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
 import org.junit.Before;
@@ -46,7 +42,6 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -68,13 +63,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
      */
     private Site userOneN1Site;
 
-    protected PermissionService permissionService;
-
-    private NodeService nodeService;
-
-    private MimetypeService mimeTypeService;
-
-    private static  String folderId;
+    private String folderId;
 
     /**
      * The logger
@@ -100,9 +89,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     public void setup() throws Exception
     {
         super.setup();
-        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
-        nodeService = applicationContext.getBean("NodeService", NodeService.class);
-        mimeTypeService = applicationContext.getBean("MimetypeService", MimetypeService.class);
 
         setRequestContext(user1);
 
@@ -154,7 +140,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         // Check if response and JSON parsing were successful
-        HttpResponse response = getSingle(getFolderSizeDataUrl(folderId), "get-folder-size", 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, folderId+"/get-folder-size", null, 200);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);

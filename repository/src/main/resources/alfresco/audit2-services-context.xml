@@ -6,6 +6,6 @@
 
     <!-- Audit Outbox System -->
 
-    <bean id="auditOutboxSystem" class="org.alfresco.repo.audit2.AuditRepoEventReporterImpl"/>
+    <bean id="auditRecordReporter" class="org.alfresco.repo.audit2.AuditRecordReporterImpl"/>
 
 </beans>

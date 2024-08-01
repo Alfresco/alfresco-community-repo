@@ -25,12 +25,11 @@
  */
 package org.alfresco.repo.audit2;
 
-
-public interface AuditRepoEventReporter
+public class AuditRecordReporterImpl implements AuditRecordReporter
 {
-    /**
-     * This method will report AuditRecord to Audit Storage using RepoEvent2
-     * @param auditRecord represent data that will be reported.
-     */
-    void reportAudit(AuditRecord auditRecord);
+    @Override
+    public void reportAuditRecord(AuditRecord auditRecord)
+    {
+        //empty implementation
+    }
 }

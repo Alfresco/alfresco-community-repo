@@ -29,6 +29,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
+import org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -137,10 +138,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     @Test
     public void testBGetCalculateFolderSize() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        setRequestContext(null);
 
         // Check if response and JSON parsing were successful
-        HttpResponse response = putBinary(getFolderSizeDataUrl(folderId), null, null, null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);

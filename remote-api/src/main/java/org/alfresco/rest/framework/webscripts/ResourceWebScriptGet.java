@@ -282,7 +282,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                 if (StringUtils.isNotBlank(params.getEntityId()))
                 {
                     if (EntityResourceAction.RetrieveFolderSize.class.isAssignableFrom(resource.getResource().getClass())
-                       && (GET_FOLDERSIZE.equals(resource.getMetaData().getUniqueId()) || params.getBinaryProperty().equals("get-folder-size")))
+                       && (GET_FOLDERSIZE.equals(resource.getMetaData().getUniqueId())))
                     {
                         if (resource.getMetaData().isDeleted(EntityResourceAction.RetrieveFolderSize.class))
                         {

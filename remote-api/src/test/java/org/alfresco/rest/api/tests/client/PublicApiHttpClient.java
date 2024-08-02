@@ -305,6 +305,7 @@ public class PublicApiHttpClient
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, params);
         String url = endpoint.getUrl();
+        System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&& "+url+" :: "+entityId);
 
         GetMethod req = new GetMethod(url);
         return submitRequest(req, rq);
@@ -762,6 +763,7 @@ public class PublicApiHttpClient
             }
 
             addParams(sb, params);
+            System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&& 2 "+sb.toString());
 
             this.url = sb.toString();
         }

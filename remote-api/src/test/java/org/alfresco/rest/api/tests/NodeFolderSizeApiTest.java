@@ -100,9 +100,9 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     }
 
     /**
-     * Test case for POST/calculateSize, which calculates Folder Size.
+     * Test case for POST/calculate-folder-size, which calculates Folder Size.
      * <p>POST:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculate-folder-size}
      */
     @Test
     public void testAPostCalculateFolderSize() throws Exception {
@@ -129,9 +129,9 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     }
 
     /**
-     * Test case for GET/calculateSize, to retrieve FolderSize.
+     * Test case for GET/get-folder-size, to retrieve FolderSize.
      * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculateSize}
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/get-folder-size}
      */
     @Test
     public void testBGetCalculateFolderSize() throws Exception

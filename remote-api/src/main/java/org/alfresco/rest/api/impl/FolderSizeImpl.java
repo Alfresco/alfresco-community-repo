@@ -46,16 +46,23 @@ public class FolderSizeImpl {
 
     public Map<String, Object> executingAsynchronousFolderAction(final NodeRef nodeRef, final int maxItems,  final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache)
     {
+        if(simpleCache.get(nodeRef.getId()) == null)
+        {
+            executeAction(nodeRef, maxItems, simpleCache);
+        }
+        LOG.debug("Executing NodeSizeActionExecuter from executingAsynchronousFolderAction method");
+
+        result.putIfAbsent("nodeId",nodeRef.getId());
+        return result;
+    }
+
+    protected void executeAction(NodeRef nodeRef, int maxItems, SimpleCache<Serializable, Object> simpleCache)
+    {
         Action folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
         folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
         simpleCache.put(nodeRef.getId(),IN_PROGRESS);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
-
-        LOG.debug("Executing NodeSizeActionExecuter from executingAsynchronousFolderAction method");
-
-        result.putIfAbsent("executionId",folderSizeAction.getId());
-        return result;
     }
 }

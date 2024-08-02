@@ -25,14 +25,11 @@
  */
 package org.alfresco.repo.action.executer;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -49,7 +46,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *   NodeSizeActionExecuter
@@ -58,33 +54,19 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
 {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeActionExecuter.class);
+
     /**
      * Action constants
      */
     public static final String NAME = "folder-size";
     public static final String PAGE_SIZE = "page-size";
-    public static final String RESULT = "size-result";
     public static final String ERROR = "exception";
     public static final String FIELD_FACET = "content.size";
 
-    private NodeService nodeService;
     private SearchService searchService;
     private SimpleCache<Serializable,Object> simpleCache;
-
-    /**
-     * The logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeActionExecuter.class);
-
-    /**
-     * Set the node service
-     *
-     * @param nodeService  the node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
 
     /**
      * Set the search service
@@ -128,11 +110,39 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
 
         NodeRef nodeRef = actionedUponNodeRef;
-        long totalSize = 0;
         long totalSizeFromFacet;
         ResultSet results;
-        boolean isCalculationCompleted = false;
 
+        try
+        {
+            // executing Alfresco FTS facet query.
+            results = facetQuery(nodeRef);
+            List<Pair<String, Integer>> fieldData = results.getFieldFacet(FIELD_FACET);
+            totalSizeFromFacet = fieldData.stream()
+                    .filter(pairData -> pairData.getSecond() > 0)
+                    .mapToLong(pairData -> Long.valueOf(pairData.getFirst()) * pairData.getSecond())
+                    .sum();
+        }
+        catch (RuntimeException ex)
+        {
+            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
+            nodeAction.setParameterValue(ERROR, ex.getMessage());
+            throw ex;
+        }
+
+        LOG.debug(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");
+        final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
+        String formattedTimestamp = eventTimestamp.format(formatter);
+        response.put("nodeId", nodeRef.getId());
+        response.put("size", totalSizeFromFacet);
+        response.put("calculatedAt", formattedTimestamp);
+        response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
+        simpleCache.put(nodeRef.getId(),response);
+    }
+
+    protected ResultSet facetQuery(NodeRef nodeRef)
+    {
         StringBuilder aftsQuery = new StringBuilder();
         aftsQuery.append("ANCESTOR:\"").append(nodeRef).append("\" AND TYPE:content");
         String query = aftsQuery.toString();
@@ -147,77 +157,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addFacetQuery("content.size:[1048576 TO 16777216]\", \"label\": \"large\",\"group\":\"Size\"");
         final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(FIELD_FACET);
         searchParameters.addFieldFacet(ff);
-
-        try
-        {
-            // executing Alfresco FTS query.
-            results = searchService.query(searchParameters);
-            List<Pair<String, Integer>> fieldData = results.getFieldFacet(FIELD_FACET);
-            totalSizeFromFacet = fieldData.stream()
-                    .filter(pairData -> pairData.getSecond() > 0)
-                    .mapToLong(pairData -> Long.valueOf(pairData.getFirst()) * pairData.getSecond())
-                    .sum();
-
-            int skipCount = 0;
-            int totalItems;
-            totalItems = Math.min(results.getNodeRefs().size(), maxItems);
-
-            while (!isCalculationCompleted)
-            {
-                List<NodeRef> nodeRefs = results.getNodeRefs().subList(skipCount, totalItems);
-                // Using AtomicLong to accumulate the total size.
-                AtomicLong resultSize = new AtomicLong(0);
-                nodeRefs.parallelStream().forEach(id -> {
-                    try
-                    {
-                        ContentData contentData = (ContentData) nodeService.getProperty(id, ContentModel.PROP_CONTENT);
-                        if (contentData != null)
-                        {
-                            resultSize.addAndGet(contentData.getSize());
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        resultSize.addAndGet(0);
-                    }
-                });
-
-                totalSize+=resultSize.longValue();
-
-                if (results.getNodeRefs().size() <= totalItems || results.getNodeRefs().size() <= maxItems)
-                {
-                    isCalculationCompleted = true;
-                }
-                else
-                {
-                    skipCount += maxItems;
-                    int remainingItems = results.getNodeRefs().size() - totalItems;
-                    totalItems += Math.min(remainingItems, maxItems);
-                }
-            }
-        }
-        catch (RuntimeException ex)
-        {
-            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
-            nodeAction.setParameterValue(ERROR, ex.getMessage());
-            throw ex;
-        }
-
-        LOG.debug(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");
-        final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
-        String formattedTimestamp = eventTimestamp.format(formatter);
-        response.put("id", nodeRef.getId());
-        response.put("size", totalSize);
-        response.put("sizeFromFacet", totalSizeFromFacet);
-        response.put("calculatedAt", formattedTimestamp);
-        response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
-
-        if(isCalculationCompleted)
-        {
-            nodeAction.setParameterValue(RESULT, (Serializable) response);
-            simpleCache.put(nodeRef.getId(),response);
-        }
+        return searchService.query(searchParameters);
     }
 
     /**

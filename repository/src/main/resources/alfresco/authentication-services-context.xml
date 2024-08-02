@@ -274,6 +274,15 @@
         <property name="tenantService">
             <ref bean="tenantService" />
         </property>
+        <property name="personService">
+            <ref bean="personService" />
+        </property>
+        <property name="authenticationService">
+            <ref bean="AuthenticationService" />
+        </property>
+        <property name="allowImmutableEnabledUpdate">
+            <value>${allow.immutable.user.enabled.status.update}</value>
+        </property>
     </bean>
 
     <!-- Simple Authentication component that rejects all authentication requests -->

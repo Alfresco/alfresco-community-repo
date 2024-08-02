@@ -139,7 +139,9 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         setRequestContext(user1);
 
         // Check if response and JSON parsing were successful
-        HttpResponse response = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
+        Map<String, String> params = new HashMap<>();
+        params.put("nodeId", folderId);
+        HttpResponse response = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", params, 200);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);

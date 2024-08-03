@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -41,6 +42,7 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -57,12 +59,11 @@ import static org.junit.Assert.assertTrue;
 public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 {
 
-    /**
-     * Private site of user two from network one.
-     */
     private Site userOneN1Site;
 
     private String folderId;
+
+    private SimpleCache<Serializable,Object> simpleCache;
 
     /**
      * The logger
@@ -139,9 +140,11 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         setRequestContext(user1);
 
         // Check if response and JSON parsing were successful
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", folderId);
-        HttpResponse response = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", params, 200);
+        simpleCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
+        Object resultAction = simpleCache.get(folderId);
+        assertNotNull("simpleCache response should not be null", resultAction);
+
+        HttpResponse response = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
 
         String jsonResponse = String.valueOf(response.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);

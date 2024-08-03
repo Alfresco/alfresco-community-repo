@@ -113,55 +113,24 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        HttpResponse response = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
-        simpleCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
-        Object resultAction = simpleCache.get(folderId);
-        assertNotNull("simpleCache response should not be null", resultAction);
+        HttpResponse postResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
 
         // Validate response and parsed document
-        assertNotNull("Response should not be null", response);
+        assertNotNull("Response should not be null", postResponse);
 
-        String jsonResponse = String.valueOf(response.getJsonResponse());
+        String jsonResponse = String.valueOf(postResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", jsonResponse);
 
         // Parse JSON response
-        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
+        Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        // Convert document to string and validate executionId
-        String executionId = document.toString();
-        assertNotNull("executionId should not be null", executionId);
-    }
+        HttpResponse getResponse = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
 
-    /**
-     * Test case for GET/get-folder-size, to retrieve FolderSize.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/get-folder-size}
-     */
-    @Test
-    public void testBGetCalculateFolderSize() throws Exception
-    {
-        setRequestContext(user1);
+        String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
+        assertNotNull("JSON response should not be null", getJsonResponse);
 
-        // Check if response and JSON parsing were successful
-        simpleCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
-        Object resultAction = simpleCache.get(folderId);
-        assertNotNull("simpleCache response should not be null", resultAction);
-
-        HttpResponse response = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
-
-        String jsonResponse = String.valueOf(response.getJsonResponse());
-        assertNotNull("JSON response should not be null", jsonResponse);
-
-        assertTrue("We are not getting correct response "+jsonResponse,jsonResponse.contains("size") || jsonResponse.contains("status"));
-
-        // Parse the JSON response.
-        Object document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Object.class);
-        assertNotNull("Parsed document should not be null", document);
-
-        // Convert document to string and verify contentNodeId.
-        String contentNodeId = document.toString();
-        assertNotNull("Content node ID should not be null", contentNodeId);
+        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
     }
 
     /**

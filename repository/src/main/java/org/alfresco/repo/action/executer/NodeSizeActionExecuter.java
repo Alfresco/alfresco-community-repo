@@ -46,6 +46,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *   NodeSizeActionExecuter
@@ -121,13 +122,26 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
             // executing Alfresco FTS facet query.
             results = facetQuery(nodeRef);
             totalItems = Math.min(results.getFieldFacet(FIELD_FACET).size(), maxItems);
+            // Using AtomicLong to accumulate the total size.
+            AtomicLong resultSize = new AtomicLong(0);
 
             while (!isCalculationCompleted)
             {
                 List<Pair<String, Integer>> pairSizes = results.getFieldFacet(FIELD_FACET).subList(skipCount, totalItems);
-                totalSizeFromFacet = pairSizes.parallelStream().filter(pairData -> pairData.getSecond() > 0)
-                        .mapToLong(pairData -> Long.valueOf(pairData.getFirst()) * pairData.getSecond())
-                        .sum();
+                pairSizes.parallelStream().forEach(id -> {
+                    try
+                    {
+                        if(id.getSecond()>0){
+                            resultSize.addAndGet(Long.valueOf(id.getFirst()) * id.getSecond());
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        resultSize.addAndGet(0);
+                    }
+                });
+
+                totalSizeFromFacet+=resultSize.longValue();
 
                 if (results.getFieldFacet(FIELD_FACET).size() <= totalItems || results.getFieldFacet(FIELD_FACET).size() <= maxItems)
                 {

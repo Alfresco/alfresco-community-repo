@@ -114,6 +114,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
         // Perform POST request
         HttpResponse response = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        simpleCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
         Object resultAction = simpleCache.get(folderId);
         assertNotNull("simpleCache response should not be null", resultAction);
 

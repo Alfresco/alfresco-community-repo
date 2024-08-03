@@ -102,11 +102,12 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     /**
      * Test case for POST/calculate-folder-size, which calculates Folder Size.
-     * <p>POST:</p>
+     * Test case for GET/get-folder-size, which calculates Folder Size.
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculate-folder-size}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/get-folder-size}
      */
     @Test
-    public void testAPostCalculateFolderSize() throws Exception {
+    public void testPostAndGetFolderSize() throws Exception {
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);

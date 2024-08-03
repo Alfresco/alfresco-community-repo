@@ -110,18 +110,36 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
 
         NodeRef nodeRef = actionedUponNodeRef;
-        long totalSizeFromFacet;
+        long totalSizeFromFacet = 0;
+        int skipCount = 0;
         ResultSet results;
+        int totalItems;
+        boolean isCalculationCompleted = false;
 
         try
         {
             // executing Alfresco FTS facet query.
             results = facetQuery(nodeRef);
-            List<Pair<String, Integer>> fieldData = results.getFieldFacet(FIELD_FACET);
-            totalSizeFromFacet = fieldData.stream()
-                    .filter(pairData -> pairData.getSecond() > 0)
-                    .mapToLong(pairData -> Long.valueOf(pairData.getFirst()) * pairData.getSecond())
-                    .sum();
+            totalItems = Math.min(results.getFieldFacet(FIELD_FACET).size(), maxItems);
+
+            while (!isCalculationCompleted)
+            {
+                List<Pair<String, Integer>> pairSizes = results.getFieldFacet(FIELD_FACET).subList(skipCount, totalItems);
+                totalSizeFromFacet = pairSizes.parallelStream().filter(pairData -> pairData.getSecond() > 0)
+                        .mapToLong(pairData -> Long.valueOf(pairData.getFirst()) * pairData.getSecond())
+                        .sum();
+
+                if (results.getFieldFacet(FIELD_FACET).size() <= totalItems || results.getFieldFacet(FIELD_FACET).size() <= maxItems)
+                {
+                    isCalculationCompleted = true;
+                }
+                else
+                {
+                    skipCount += maxItems;
+                    int remainingItems = results.getFieldFacet(FIELD_FACET).size() - totalItems;
+                    totalItems += Math.min(remainingItems, maxItems);
+                }
+            }
         }
         catch (RuntimeException ex)
         {
@@ -138,7 +156,10 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         response.put("size", totalSizeFromFacet);
         response.put("calculatedAt", formattedTimestamp);
         response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
-        simpleCache.put(nodeRef.getId(),response);
+        if(isCalculationCompleted)
+        {
+            simpleCache.put(nodeRef.getId(),response);
+        }
     }
 
     protected ResultSet facetQuery(NodeRef nodeRef)

@@ -25,12 +25,12 @@
  */
 package org.alfresco.rest.framework.resource.actions.interfaces;
 
+import java.util.List;
+
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-
-import java.util.List;
 
 /**
  * Permissible actions for an Relationship Resources
@@ -163,5 +163,4 @@ public interface RelationshipResourceAction
          */
         public void deleteSet(String entityResourceId, Parameters params, WithResponse withResponse);
     }
-
 }

@@ -141,6 +141,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
                 });
 
                 totalSizeFromFacet+=resultSize.longValue();
+                resultSize.set(0);
 
                 if (results.getFieldFacet(FIELD_FACET).size() <= totalItems || results.getFieldFacet(FIELD_FACET).size() <= maxItems)
                 {

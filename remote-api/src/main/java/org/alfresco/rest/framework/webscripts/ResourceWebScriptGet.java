@@ -227,7 +227,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     }
                 }
             case RELATIONSHIP:
-                if (StringUtils.isBlank(params.getRelationshipId()) || (params.isCollectionResource()))
+                if (StringUtils.isBlank(params.getRelationshipId()) || params.isCollectionResource())
                 {
                     // Get the collection
                     if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
@@ -292,7 +292,6 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         Object result = getter.getFolderSize(params.getEntityId());
                         return result;
                     }
-
                     if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(BinaryResourceAction.Read.class))
@@ -341,7 +340,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
             default:
                 throw new UnsupportedResourceOperationException("GET not supported for Actions");
         }
-    }
 
+    }
 
 }

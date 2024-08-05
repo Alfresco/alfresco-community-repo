@@ -52,12 +52,10 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -88,11 +86,8 @@ public class NodesEntityResource implements
     private static final String STATUS = "status";
     private static final String COMPLETED = "Completed";
     private static final String FOLDER = "folder";
-
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
-    private SearchService searchService;
-    private ServiceRegistry serviceRegistry;
     private PermissionService permissionService;
     private NodeService nodeService;
     private ActionService actionService;
@@ -108,15 +103,9 @@ public class NodesEntityResource implements
         this.directAccessUrlHelper = directAccessUrlHelper;
     }
 
-    public void setSearchService(SearchService searchService)
+    public void setPermissionService(PermissionService permissionService)
     {
-        this.searchService = searchService;
-    }
-
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-        this.permissionService = serviceRegistry.getPermissionService();
+        this.permissionService = permissionService;
     }
 
     public void setNodeService(NodeService nodeService)

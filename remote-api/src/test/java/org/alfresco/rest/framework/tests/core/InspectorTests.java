@@ -642,5 +642,4 @@ public class InspectorTests
         assertEquals(Status.STATUS_ACCEPTED,ResourceInspector.validSuccessCode(HttpMethod.PUT, Status.STATUS_ACCEPTED));
         assertEquals(Status.STATUS_NOT_MODIFIED,ResourceInspector.validSuccessCode(HttpMethod.DELETE, Status.STATUS_NOT_MODIFIED));
     }
-
 }

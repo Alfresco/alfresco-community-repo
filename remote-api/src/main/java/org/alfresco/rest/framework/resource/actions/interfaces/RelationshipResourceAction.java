@@ -25,17 +25,12 @@
  */
 package org.alfresco.rest.framework.resource.actions.interfaces;
 
-import java.util.List;
-import java.util.Map;
-
-import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.WebApiParameters;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
+
+import java.util.List;
 
 /**
  * Permissible actions for an Relationship Resources

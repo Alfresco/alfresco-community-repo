@@ -1148,8 +1148,7 @@
     <bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
         <property name="nodes" ref="Nodes" />
         <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
-        <property name="searchService" ref="SearchService" />
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="permissionService" ref="permissionService"/>
         <property name="nodeService" ref="NodeService" />
         <property name="actionService" ref="ActionService"/>
         <property name="simpleCache" ref="folderSizeSharedCache" />
@@ -1775,5 +1774,4 @@
             </list>
         </property>
     </bean>
-
 </beans>

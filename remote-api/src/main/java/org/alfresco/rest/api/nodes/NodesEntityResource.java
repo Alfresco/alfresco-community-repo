@@ -86,6 +86,7 @@ public class NodesEntityResource implements
     private static final String STATUS = "status";
     private static final String COMPLETED = "Completed";
     private static final String FOLDER = "folder";
+    private static final String EXCEPTION = "Exception";
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
     private PermissionService permissionService;
@@ -355,6 +356,10 @@ public class NodesEntityResource implements
         else if(outputResult instanceof String)
         {
             result.put(STATUS, outputResult);
+        }
+        else if(outputResult instanceof Exception)
+        {
+            result.put(EXCEPTION, ((Exception) outputResult).getMessage());
         }
         return result;
     }

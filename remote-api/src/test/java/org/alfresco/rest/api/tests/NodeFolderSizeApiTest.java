@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -41,8 +40,6 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -58,17 +55,10 @@ import static org.junit.Assert.assertTrue;
 @RunWith (JUnit4.class)
 public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 {
+    private static final Logger LOG = LoggerFactory.getLogger(NodeFolderSizeApiTest.class);
 
     private Site userOneN1Site;
-
     private String folderId;
-
-    private SimpleCache<Serializable,Object> simpleCache;
-
-    /**
-     * The logger
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(NodeFolderSizeApiTest.class);
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType)
     {

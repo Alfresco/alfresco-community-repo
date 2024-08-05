@@ -292,7 +292,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         Object result = getter.getFolderSize(params.getEntityId());
                         return result;
                     }
-                    if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    else if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(BinaryResourceAction.Read.class))
                         {
@@ -302,7 +302,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params);
                         return prop;
                     }
-                    if (BinaryResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    else if (BinaryResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(BinaryResourceAction.ReadWithResponse.class))
                         {
@@ -312,7 +312,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params, withResponse);
                         return prop;
                     }
-                    if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Read.class))
                         {
@@ -322,7 +322,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params);
                         return prop;
                     }
-                    if (RelationshipResourceBinaryAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    else if (RelationshipResourceBinaryAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.ReadWithResponse.class))
                         {
@@ -331,6 +331,10 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         RelationshipResourceBinaryAction.ReadWithResponse getter = (RelationshipResourceBinaryAction.ReadWithResponse) resource.getResource();
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params, withResponse);
                         return prop;
+                    }
+                    else
+                    {
+                        throw new UnsupportedResourceOperationException();
                     }
                 }
                 else

@@ -63,7 +63,6 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
      */
     public static final String NAME = "folder-size";
     public static final String PAGE_SIZE = "page-size";
-    public static final String ERROR = "exception";
     public static final String FIELD_FACET = "content.size";
 
     private SearchService searchService;
@@ -103,11 +102,11 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         {
             maxItems = Integer.parseInt(serializable.toString());
         }
-        catch (NumberFormatException e)
+        catch (NumberFormatException numberFormatException)
         {
-            LOG.error("Exception occurred while parsing String to INT: {}", e.getMessage());
-            nodeAction.setParameterValue(ERROR, e.getMessage());
-            throw e;
+            LOG.error("Exception occurred while parsing String to INT: {}", numberFormatException.getMessage());
+            simpleCache.put(actionedUponNodeRef.getId(),numberFormatException);
+            throw numberFormatException;
         }
 
         NodeRef nodeRef = actionedUponNodeRef;
@@ -155,11 +154,11 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
                 }
             }
         }
-        catch (RuntimeException ex)
+        catch (RuntimeException runtimeException)
         {
-            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", ex.getMessage());
-            nodeAction.setParameterValue(ERROR, ex.getMessage());
-            throw ex;
+            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", runtimeException.getMessage());
+            simpleCache.put(nodeRef.getId(),runtimeException);
+            throw runtimeException;
         }
 
         LOG.debug(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");

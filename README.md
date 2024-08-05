@@ -129,6 +129,6 @@ Please use [**this guide**](CONTRIBUTING.md) to make a contribution to the proje
 
 ## Helpful links
 
-- [Alfresco Content Services Documentation ](https://docs.alfresco.com/content-services/latest/)
+- [Alfresco Content Services Documentation](https://docs.alfresco.com/content-services/latest/)
 - [Alfresco Content Application Repository](https://github.com/Alfresco/alfresco-content-app)
 - [Alfresco Platform](https://www.hyland.com/en/products/alfresco-platform)

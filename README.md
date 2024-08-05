@@ -8,7 +8,7 @@
 3. [Setup](#setting-up-and-building-your-development-environment)
 4. [Branches](#branches)
 5. [Contributing](#contributing-guide)
-6. [Helpful Links](#helpful-links)
+6. [Helpful links](#helpful-links)
 
 
 ## Content

@@ -47,7 +47,7 @@ public class AuditRecord
 
     }
 
-    public AuditedActionType getAuditEventType()
+    public AuditedActionType getAuditedActionType()
     {
         return auditedActionType;
     }

@@ -6,10 +6,9 @@
 1. [Content](#content)
 2. [Artifacts](#artifacts)
 3. [Setup](#setting-up-and-building-your-development-environment)
-4. [Connection with ACA](#connection-with-alfresco-content-app)
-5. [Branches](#branches)
-6. [Contributing](#contributing-guide)
-7. [Helpful Links](#helpful-links)
+4. [Branches](#branches)
+5. [Contributing](#contributing-guide)
+6. [Helpful Links](#helpful-links)
 
 
 ## Content
@@ -105,10 +104,6 @@ The SNAPSHOT versions of the artifact are not published.
 See the [**Development Tomcat Environment**](https://github.com/Alfresco/acs-community-packaging/tree/master/dev/README.md)
 page which will show you how to try out your repository changes in a local Tomcat instance or using Docker containers. 
 
-## Connection with Alfresco Content App
-After you have set up correctly your environment you may want to connect it with Alfresco Content Application.
-To do this - see this [**link**](https://github.com/Alfresco/alfresco-content-app).
-
 ## Branches
 
 This project has a branch for each ACS release. For example the code in ACS 6.2.2 is a
@@ -130,5 +125,4 @@ Please use [**this guide**](CONTRIBUTING.md) to make a contribution to the proje
 ## Helpful links
 
 - [Alfresco Content Services Documentation](https://docs.alfresco.com/content-services/latest/)
-- [Alfresco Content Application Repository](https://github.com/Alfresco/alfresco-content-app)
 - [Alfresco Platform](https://www.hyland.com/en/products/alfresco-platform)

@@ -25,34 +25,41 @@
  */
 package org.alfresco.repo.audit2;
 
-import org.apache.camel.resume.Serializable;
+import org.alfresco.repo.event.v1.model.UserInfo;
 
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 public class AuditRecord
 {
-    String applicationId;
+    AuditedActionType auditedActionType;
+    ZonedDateTime createdAt;
     long timestamp;
-    String username;
+    UserInfo userInfo;
     Map<String, ?> auditData;
 
-    public AuditRecord(String applicationId, String username, Map<String, Serializable> auditData, long timestamp)
+    public AuditRecord(AuditedActionType auditedActionType, UserInfo userInfo, Map<String, ?> auditData, long timestamp)
     {
-        this.applicationId = applicationId;
-        this.username = username;
+        this.auditedActionType = auditedActionType;
+        this.userInfo = userInfo;
         this.auditData = auditData;
         this.timestamp = timestamp;
 
     }
 
-    public String getApplicationId()
+    public AuditedActionType getAuditEventType()
     {
-        return applicationId;
+        return auditedActionType;
     }
 
-    public String getUsername()
+    public ZonedDateTime getCreatedAt()
     {
-        return username;
+        return createdAt;
+    }
+
+    public UserInfo getUserInfo()
+    {
+        return userInfo;
     }
 
     public long getTimestamp()
@@ -63,6 +70,24 @@ public class AuditRecord
     public Map<String, ?> getAuditData()
     {
         return auditData;
+    }
+
+
+    public enum AuditedActionType
+    {
+        BASIC_ACTION("basic_action");
+
+        private final String auditedAction;
+
+        AuditedActionType(String auditedAction)
+        {
+            this.auditedAction = auditedAction;
+        }
+
+        public String getAuditedAction()
+        {
+            return auditedAction;
+        }
     }
 }
 

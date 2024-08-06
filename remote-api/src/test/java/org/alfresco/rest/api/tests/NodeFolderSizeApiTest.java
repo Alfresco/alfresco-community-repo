@@ -145,26 +145,21 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     {
         UserInfo userInfo = new UserInfo(user1);
 
-        for(int i=0;i<=10;i++)
+        for(int i=0;i<=200;i++)
         {
             String folderAName = "folder" + RUNID + "_A";
-            String folderA_Id = createFolder(folderId, folderAName).getId();
-
-            for(int j=0;j<=50;j++)
-            {
-                String folderBName = "folder" + RUNID + "_B";
-                String folderB_Id = createFolder(folderA_Id, folderBName).getId();
-                String fileName = "content " + RUNID + ".txt";
-
-                Document d1 = new Document();
-                d1.setIsFolder(false);
-                d1.setParentId(folderB_Id);
-                d1.setName(fileName);
-                d1.setNodeType(TYPE_CM_CONTENT);
-                d1.setContent(createContentInfo());
-                d1.setCreatedByUser(userInfo);
-                d1.setModifiedByUser(userInfo);
-            }
+            String folderBName = "folder" + RUNID + "_B";
+            String folderA_Id = createFolder(folderId, folderAName,null).getId();
+            String folderB_Id = createFolder(folderA_Id, folderBName,null).getId();
+            String fileName = "content " + RUNID + ".txt";
+            Document d1 = new Document();
+            d1.setIsFolder(false);
+            d1.setParentId(folderB_Id);
+            d1.setName(fileName);
+            d1.setNodeType(TYPE_CM_CONTENT);
+            d1.setContent(createContentInfo());
+            d1.setCreatedByUser(userInfo);
+            d1.setModifiedByUser(userInfo);
         }
 
         PublicApiClient.Paging paging = getPaging(0, 1000);

@@ -162,7 +162,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         }
 
         PublicApiClient.Paging paging = getPaging(0, 1000);
-        HttpResponse response = getAll(getNodeChildrenUrl(tDocLibNodeId), paging, 200);
+        HttpResponse response = getAll(getNodeChildrenUrl(parentFolder), paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertTrue("We are getting no. of nodes"+nodes.stream().filter(n->n.getIsFolder()).toList().size(),nodes.size()>100);
         assertEquals(200, nodes.size());
@@ -173,7 +173,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        HttpResponse postResponse = post(getCalculateFolderSizeUrl(tDocLibNodeId), toJsonAsStringNonNull(params), 202);
+        HttpResponse postResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 202);
 
         // Validate response and parsed document
         assertNotNull("Response should not be null", postResponse);
@@ -185,7 +185,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        HttpResponse getResponse = getSingle(NodesEntityResource.class, tDocLibNodeId + "/get-folder-size", null, 200);
+        HttpResponse getResponse = getSingle(NodesEntityResource.class, parentFolder + "/get-folder-size", null, 200);
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);

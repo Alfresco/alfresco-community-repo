@@ -27,7 +27,6 @@ package org.alfresco.repo.audit2;
 
 import org.alfresco.repo.event.v1.model.UserInfo;
 
-import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
@@ -36,15 +35,14 @@ public class AuditRecord
     AuditedActionType auditedActionType;
     ZonedDateTime createdAt;
     UserInfo userInfo;
-    Map<String, Serializable> auditData;
+    Map<String, ?> auditData;
 
-    public AuditRecord(AuditedActionType auditedActionType, UserInfo userInfo, Map<String, Serializable> auditData, ZonedDateTime createdAt)
+    public AuditRecord(AuditedActionType auditedActionType, UserInfo userInfo, Map<String, ?> auditData, ZonedDateTime createdAt)
     {
         this.auditedActionType = auditedActionType;
         this.userInfo = userInfo;
         this.auditData = auditData;
         this.createdAt = createdAt;
-
     }
 
     public AuditedActionType getAuditedActionType()
@@ -62,7 +60,7 @@ public class AuditRecord
         return userInfo;
     }
 
-    public Map<String, Serializable> getAuditData()
+    public Map<String, ?> getAuditData()
     {
         return auditData;
     }

@@ -29,6 +29,11 @@ import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
+import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
@@ -41,12 +46,12 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for Folder size
@@ -59,6 +64,16 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     private Site userOneN1Site;
     private String folderId;
+
+    // Method to create content info
+    private ContentInfo createContentInfo() {
+        ContentInfo ciExpected = new ContentInfo();
+        ciExpected.setMimeType("text/plain");
+        ciExpected.setMimeTypeName("Plain Text");
+        ciExpected.setSizeInBytes(44500L);
+        ciExpected.setEncoding("ISO-8859-1");
+        return ciExpected;
+    }
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType)
     {
@@ -97,7 +112,67 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/get-folder-size}
      */
     @Test
-    public void testPostAndGetFolderSize() throws Exception {
+    public void testPostAndGetFolderSize() throws Exception
+    {
+        // Prepare parameters
+        Map<String, String> params = new HashMap<>();
+        params.put("nodeId", folderId);
+        params.put("maxItems", "100");
+
+        // Perform POST request
+        HttpResponse postResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+
+        // Validate response and parsed document
+        assertNotNull("Response should not be null", postResponse);
+
+        String jsonResponse = String.valueOf(postResponse.getJsonResponse());
+        assertNotNull("JSON response should not be null", jsonResponse);
+
+        // Parse JSON response
+        Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
+        assertNotNull("Parsed document should not be null", document);
+
+        HttpResponse getResponse = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
+
+        String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
+        assertNotNull("JSON response should not be null", getJsonResponse);
+
+        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
+    }
+
+    @Test
+    public void testPerformanceTesting() throws Exception
+    {
+        UserInfo userInfo = new UserInfo(user1);
+
+        for(int i=0;i<=10;i++)
+        {
+            String folderAName = "folder" + RUNID + "_A";
+            String folderA_Id = createFolder(folderId, folderAName).getId();
+
+            for(int j=0;j<=50;j++)
+            {
+                String folderBName = "folder" + RUNID + "_B";
+                String folderB_Id = createFolder(folderA_Id, folderBName).getId();
+                String fileName = "content " + RUNID + ".txt";
+
+                Document d1 = new Document();
+                d1.setIsFolder(false);
+                d1.setParentId(folderB_Id);
+                d1.setName(fileName);
+                d1.setNodeType(TYPE_CM_CONTENT);
+                d1.setContent(createContentInfo());
+                d1.setCreatedByUser(userInfo);
+                d1.setModifiedByUser(userInfo);
+            }
+        }
+
+        PublicApiClient.Paging paging = getPaging(0, 1000);
+        HttpResponse response = getAll(getNodeChildrenUrl(folderId), paging, 200);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        assertTrue("We are getting no. of nodes"+nodes.stream().filter(n->n.getIsFolder()).toList().size(),nodes.size()>100);
+        assertEquals(500, nodes.size());
+
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);

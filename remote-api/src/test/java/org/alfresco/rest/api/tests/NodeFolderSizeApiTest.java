@@ -144,13 +144,12 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     public void testPerformanceTesting() throws Exception
     {
         UserInfo userInfo = new UserInfo(user1);
+        String parentFolder = createFolder(tDocLibNodeId, "ParentFolder",null).getId();
 
         for(int i=0;i<=200;i++)
         {
-            String folderAName = "folder" + RUNID + "_A";
             String folderBName = "folder" + RUNID + "_B";
-            String folderA_Id = createFolder(folderId, folderAName,null).getId();
-            String folderB_Id = createFolder(folderA_Id, folderBName,null).getId();
+            String folderB_Id = createFolder(parentFolder, folderBName,null).getId();
             String fileName = "content " + RUNID + ".txt";
             Document d1 = new Document();
             d1.setIsFolder(false);
@@ -163,10 +162,10 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         }
 
         PublicApiClient.Paging paging = getPaging(0, 1000);
-        HttpResponse response = getAll(getNodeChildrenUrl(folderId), paging, 200);
+        HttpResponse response = getAll(getNodeChildrenUrl(tDocLibNodeId), paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertTrue("We are getting no. of nodes"+nodes.stream().filter(n->n.getIsFolder()).toList().size(),nodes.size()>100);
-        assertEquals(500, nodes.size());
+        assertEquals(200, nodes.size());
 
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
@@ -174,7 +173,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         params.put("maxItems", "100");
 
         // Perform POST request
-        HttpResponse postResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        HttpResponse postResponse = post(getCalculateFolderSizeUrl(tDocLibNodeId), toJsonAsStringNonNull(params), 202);
 
         // Validate response and parsed document
         assertNotNull("Response should not be null", postResponse);
@@ -186,7 +185,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        HttpResponse getResponse = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
+        HttpResponse getResponse = getSingle(NodesEntityResource.class, tDocLibNodeId + "/get-folder-size", null, 200);
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);

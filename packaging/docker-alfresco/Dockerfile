@@ -13,6 +13,9 @@ ARG USERID=33000
 # Set default environment args
 ARG TOMCAT_DIR=/usr/local/tomcat
 
+# Needed for installation but make sure another USER directive is added after
+# this with a non-root user
+USER root
 
 # Create prerequisite to store tools and properties
 RUN mkdir -p ${TOMCAT_DIR}/shared/classes/alfresco/extension/mimetypes && \
@@ -61,12 +64,7 @@ RUN sed -i -e "s_appender.rolling.fileName\=alfresco.log_appender.rolling.fileNa
 
 # fontconfig is required by Activiti worflow diagram generator
 # installing pinned dependencies as well
-RUN yum install -y fontconfig-2.13.1-4.el8 \
-                   dejavu-fonts-common-2.35-7.el8 \
-                   fontpackages-filesystem-1.44-22.el8 \
-                   freetype-2.9.1-9.el8 \
-                   libpng-1.6.34-5.el8 \
-                   dejavu-sans-fonts-2.35-7.el8 && \
+RUN yum install -y fontconfig-2.14.0-2.el9_1 && \
     yum clean all
 
 # The standard configuration is to have all Tomcat files owned by root with group GROUPNAME and whilst owner has read/write privileges, 

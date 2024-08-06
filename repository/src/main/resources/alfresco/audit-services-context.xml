@@ -38,7 +38,7 @@
             </bean>
         </property>
     </bean>
-    
+
     <!-- User Audit Filter -->
     
     <bean id="userAuditFilter" class="org.alfresco.repo.audit.UserAuditFilter">

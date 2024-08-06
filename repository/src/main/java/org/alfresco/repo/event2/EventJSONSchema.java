@@ -45,7 +45,8 @@ public enum EventJSONSchema
     CHILD_ASSOC_DELETED_V1("childAssocDeleted", 1, EventType.CHILD_ASSOC_DELETED),
     PEER_ASSOC_CREATED_V1("peerAssocCreated", 1 , EventType.PEER_ASSOC_CREATED),
     PEER_ASSOC_DELETED_V1("peerAssocDeleted", 1 , EventType.PEER_ASSOC_DELETED),
-    PERMISSION_UPDATED_V1("permissionUpdated", 1, EventType.PERMISSION_UPDATED);
+    PERMISSION_UPDATED_V1("permissionUpdated", 1, EventType.PERMISSION_UPDATED),
+    AUDIT_ENTRY_CREATED_V1("auditEntryCreated", 1, EventType.AUDIT_ENTRY_CREATED);
 
     private static final String PREFIX = "https://api.alfresco.com/schema/event/repo/v";
 

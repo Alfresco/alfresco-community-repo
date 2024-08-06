@@ -34,17 +34,15 @@ public class AuditRecord
 {
     AuditedActionType auditedActionType;
     ZonedDateTime createdAt;
-    long timestamp;
     UserInfo userInfo;
     Map<String, ?> auditData;
 
-    public AuditRecord(AuditedActionType auditedActionType, UserInfo userInfo, Map<String, ?> auditData, long timestamp)
+    public AuditRecord(AuditedActionType auditedActionType, UserInfo userInfo, Map<String, ?> auditData, ZonedDateTime createdAt)
     {
         this.auditedActionType = auditedActionType;
         this.userInfo = userInfo;
         this.auditData = auditData;
-        this.timestamp = timestamp;
-
+        this.createdAt = createdAt;
     }
 
     public AuditedActionType getAuditedActionType()
@@ -60,11 +58,6 @@ public class AuditRecord
     public UserInfo getUserInfo()
     {
         return userInfo;
-    }
-
-    public long getTimestamp()
-    {
-        return timestamp;
     }
 
     public Map<String, ?> getAuditData()

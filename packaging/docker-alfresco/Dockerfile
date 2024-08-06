@@ -1,5 +1,5 @@
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM alfresco/alfresco-base-tomcat:tomcat10-jre17-rockylinux9@sha256:8a0f62fd86123abbb38d3492ea5ce8caa8b586f2e19d25c47be7b413f9f0bc07
+FROM alfresco/alfresco-base-tomcat:tomcat10-jre17-rockylinux9@sha256:395664f9d9be0c9f73d3b722a58fd559ee7231609b263dfe19502617652740e3
 
 # Set default docker_context.
 ARG resource_path=target
@@ -63,7 +63,6 @@ RUN sed -i -e "s_appender.rolling.fileName\=alfresco.log_appender.rolling.fileNa
     sed -i -e "\$a\grant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/alfresco\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/_vti_bin\/-\" \{\n\    permission\ java.security.AllPermission\;\n\};\ngrant\ codeBase\ \"file:\$\{catalina.base\}\/webapps\/ROOT\/-\" \{\n\    permission org.apache.catalina.security.DeployXmlPermission \"ROOT\";\n\};" ${TOMCAT_DIR}/conf/catalina.policy
 
 # fontconfig is required by Activiti worflow diagram generator
-# installing pinned dependencies as well
 RUN yum install -y fontconfig-2.14.0-2.el9_1 && \
     yum clean all
 

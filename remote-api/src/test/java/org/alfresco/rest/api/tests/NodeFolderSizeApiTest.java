@@ -173,7 +173,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         assertEquals(300, nodes.size());
 
         //Start Time before triggering POST/calculate-folder-size API
-        LocalTime expectedTime = LocalTime.now().plusMinutes(2);
+        LocalTime expectedTime = LocalTime.now().plusSeconds(15);
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
@@ -202,7 +202,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
         //current Time after executing GET/get-folder-size API
         LocalTime actualTime = LocalTime.now();
-        assertTrue("Calculating folder node is taking time greater than 2 minute ",actualTime.isBefore(expectedTime));
+        assertTrue("Calculating folder node is taking time greater than 15 seconds ",actualTime.isBefore(expectedTime));
     }
 
     /**

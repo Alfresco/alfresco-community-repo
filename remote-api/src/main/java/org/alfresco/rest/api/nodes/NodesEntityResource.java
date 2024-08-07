@@ -308,6 +308,7 @@ public class NodesEntityResource implements
             throw new AlfrescoRuntimeException("Exception occurred in NodesEntityResource:createById",alfrescoRuntimeError);
         }
     }
+
     @Override
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
@@ -343,6 +344,9 @@ public class NodesEntityResource implements
         }
     }
 
+    /**
+     * Providing the response from SimpleCache.
+     */
     private Map<String, Object> getResult(Object outputResult)
     {
         Map<String, Object> result = new HashMap<>();
@@ -364,6 +368,9 @@ public class NodesEntityResource implements
         return result;
     }
 
+    /**
+     * Validating node permission [i.e. READ permission should be there ]
+     */
     private void validatePermissions(NodeRef nodeRef, String nodeId)
     {
         Node nodeInfo = nodes.getNode(nodeId);

@@ -130,7 +130,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
                 pairSizes.parallelStream().forEach(id -> {
                     try
                     {
-                        if(id.getSecond()>0){
+                        if(id.getSecond()>0)
+                        {
                             resultSize.addAndGet(Long.valueOf(id.getFirst()) * id.getSecond());
                         }
                     }

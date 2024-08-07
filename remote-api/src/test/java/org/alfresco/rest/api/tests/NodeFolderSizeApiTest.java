@@ -68,7 +68,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     private String folderId;
 
     // Method to create content info
-    private ContentInfo createContentInfo() {
+    private ContentInfo createContentInfo()
+    {
         ContentInfo ciExpected = new ContentInfo();
         ciExpected.setMimeType("text/plain");
         ciExpected.setMimeTypeName("Plain Text");

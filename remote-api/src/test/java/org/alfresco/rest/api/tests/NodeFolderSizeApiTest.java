@@ -45,6 +45,8 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,12 +146,12 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     public void testPerformanceTesting() throws Exception
     {
         setRequestContext(user1);
-
         UserInfo userInfo = new UserInfo(user1);
+
         String folder0Name = "f0-testParentFolder-"+RUNID;
         String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
 
-        for(int i=0;i<=100;i++)
+        for(int i=1;i<=300;i++)
         {
             String folderBName = "folder"+i+RUNID + "_B";
             String folderB_Id = createFolder(parentFolder, folderBName, null).getId();
@@ -167,10 +169,12 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         PublicApiClient.Paging paging = getPaging(0, 1000);
         HttpResponse response = getAll(getNodeChildrenUrl(parentFolder), paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-        assertTrue("We are getting no. of nodes "+nodes.stream().filter(n->n.getIsFolder()).toList().size(),nodes.size()>10);
-        assertEquals(100, nodes.size());
+        assertEquals(300, nodes.size());
 
-        // Prepare parameters
+        //Start Time before triggering POST/calculate-folder-size API
+        LocalTime expectedTime = LocalTime.now().plusMinutes(1);
+
+        // Prepare parameters.
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
         params.put("maxItems", "100");
@@ -187,6 +191,11 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         // Parse JSON response
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
+
+        //end Time after executing POST/calculate-folder-size API
+        LocalTime actualTime = LocalTime.now();
+
+        assertTrue("Calculating folder node is taking time greater than 1 minute ",actualTime.isAfter(expectedTime));
 
         HttpResponse getResponse = getSingle(NodesEntityResource.class, parentFolder + "/get-folder-size", null, 200);
 

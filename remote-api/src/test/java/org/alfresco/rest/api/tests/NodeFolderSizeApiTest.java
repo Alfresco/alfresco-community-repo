@@ -143,8 +143,11 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     @Test
     public void testPerformanceTesting() throws Exception
     {
+        setRequestContext(user1);
+
         UserInfo userInfo = new UserInfo(user1);
-        String parentFolder = createFolder(tDocLibNodeId, "ParentFolder",null).getId();
+        String folder0Name = "f0-testParentFolder-"+RUNID;
+        String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
 
         for(int i=0;i<=200;i++)
         {

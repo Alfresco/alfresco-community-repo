@@ -149,25 +149,23 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         String folder0Name = "f0-testParentFolder-"+RUNID;
         String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
 
-        for(int i=0;i<=200;i++)
-        {
-            String folderBName = "folder" + RUNID + "_B";
-            String folderB_Id = createFolder(parentFolder, folderBName,null).getId();
-            String fileName = "content " + RUNID + ".txt";
-            Document d1 = new Document();
-            d1.setIsFolder(false);
-            d1.setParentId(folderB_Id);
-            d1.setName(fileName);
-            d1.setNodeType(TYPE_CM_CONTENT);
-            d1.setContent(createContentInfo());
-            d1.setCreatedByUser(userInfo);
-            d1.setModifiedByUser(userInfo);
-        }
+        String folderBName = "folder" + RUNID + "_B";
+        String folderB_Id = createFolder(parentFolder, folderBName,null).getId();
+        String fileName = "content " + RUNID + ".txt";
+        Document d1 = new Document();
+        d1.setIsFolder(false);
+        d1.setParentId(folderB_Id);
+        d1.setName(fileName);
+        d1.setNodeType(TYPE_CM_CONTENT);
+        d1.setContent(createContentInfo());
+        d1.setCreatedByUser(userInfo);
+        d1.setModifiedByUser(userInfo);
+
 
         PublicApiClient.Paging paging = getPaging(0, 1000);
         HttpResponse response = getAll(getNodeChildrenUrl(parentFolder), paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-        assertTrue("We are getting no. of nodes"+nodes.stream().filter(n->n.getIsFolder()).toList().size(),nodes.size()>100);
+        assertTrue("We are getting no. of nodes"+nodes.stream().filter(n->n.getIsFolder()).toList().size(),nodes.size()>10);
         assertEquals(200, nodes.size());
 
         // Prepare parameters

@@ -110,9 +110,9 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
     /**
      * Test case for POST/calculate-folder-size, which calculates Folder Size.
-     * Test case for GET/get-folder-size, which receive Folder Size.
+     * Test case for GET/size, which receive Folder Size.
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculate-folder-size}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/get-folder-size}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size}
      */
     @Test
     public void testPostAndGetFolderSize() throws Exception
@@ -135,7 +135,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        HttpResponse getResponse = getSingle(NodesEntityResource.class, folderId + "/get-folder-size", null, 200);
+        HttpResponse getResponse = getSingle(NodesEntityResource.class, folderId + "/size", null, 200);
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);
@@ -193,14 +193,14 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        HttpResponse getResponse = getSingle(NodesEntityResource.class, parentFolder + "/get-folder-size", null, 200);
+        HttpResponse getResponse = getSingle(NodesEntityResource.class, parentFolder + "/size", null, 200);
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);
 
         assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size"));
 
-        //current Time after executing GET/get-folder-size API
+        //current Time after executing GET/size API
         LocalTime actualTime = LocalTime.now();
         assertTrue("Calculating folder node is taking time greater than 15 seconds ",actualTime.isBefore(expectedTime));
     }

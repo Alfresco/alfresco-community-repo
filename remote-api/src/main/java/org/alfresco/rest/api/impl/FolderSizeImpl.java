@@ -43,25 +43,26 @@ public class FolderSizeImpl {
     private ActionService actionService;
     private static final Logger LOG = LoggerFactory.getLogger(FolderSizeImpl.class);
     private static final String IN_PROGRESS = "IN-PROGRESS";
+    private static final String MESSAGE = "Request has been acknowledged";
 
-    public Map<String, Object> executingAsynchronousFolderAction(final NodeRef nodeRef, final int maxItems,  final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache)
+    public Map<String, Object> executingAsynchronousFolderAction(final NodeRef nodeRef, final int defaultItems,  final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache)
     {
         if(simpleCache.get(nodeRef.getId()) == null)
         {
-            executeAction(nodeRef, maxItems, simpleCache);
+            executeAction(nodeRef, defaultItems, simpleCache);
         }
         LOG.debug("Executing NodeSizeActionExecuter from executingAsynchronousFolderAction method");
 
-        result.putIfAbsent("nodeId",nodeRef.getId());
+        result.putIfAbsent("message",MESSAGE);
         return result;
     }
 
-    protected void executeAction(NodeRef nodeRef, int maxItems, SimpleCache<Serializable, Object> simpleCache)
+    protected void executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Object> simpleCache)
     {
         Action folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
-        folderSizeAction.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
+        folderSizeAction.setParameterValue(NodeSizeActionExecuter.DEFAULT_SIZE, defaultItems);
         simpleCache.put(nodeRef.getId(),IN_PROGRESS);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
     }

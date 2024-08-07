@@ -44,7 +44,6 @@ import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -82,9 +81,9 @@ public class NodesEntityResource implements
     private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
 
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
-    private static final String NODEID_NOT_FOUND = "Searched nodeId does not exist";
+    private static final String NOT_INITIATED = "NOT-INITIATED";
     private static final String STATUS = "status";
-    private static final String COMPLETED = "Completed";
+    private static final String COMPLETED = "COMPLETED";
     private static final String FOLDER = "folder";
     private static final String EXCEPTION = "Exception";
     private Nodes nodes;
@@ -93,6 +92,8 @@ public class NodesEntityResource implements
     private NodeService nodeService;
     private ActionService actionService;
     private SimpleCache<Serializable,Object> simpleCache;
+
+    private int defaultItems;
 
     public void setNodes(Nodes nodes)
     {
@@ -122,6 +123,11 @@ public class NodesEntityResource implements
     public void setSimpleCache(SimpleCache<Serializable, Object> simpleCache)
     {
         this.simpleCache = simpleCache;
+    }
+
+    public void setDefaultItems(int defaultItems)
+    {
+        this.defaultItems = defaultItems;
     }
 
     @Override
@@ -287,7 +293,6 @@ public class NodesEntityResource implements
     public Map<String, Object> calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
-        int maxItems = Math.min(parameters.getPaging().getMaxItems(), 1000);
         QName qName = nodeService.getType(nodeRef);
         Map<String, Object> result = new HashMap<>();
         validatePermissions(nodeRef, nodeId);
@@ -300,7 +305,7 @@ public class NodesEntityResource implements
         try
         {
             FolderSizeImpl folderSizeImpl = new FolderSizeImpl(actionService);
-            return folderSizeImpl.executingAsynchronousFolderAction(nodeRef, maxItems, result, simpleCache);
+            return folderSizeImpl.executingAsynchronousFolderAction(nodeRef, defaultItems, result, simpleCache);
         }
         catch (Exception alfrescoRuntimeError)
         {
@@ -312,9 +317,10 @@ public class NodesEntityResource implements
     @Override
     @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
-    @BinaryProperties({"get-folder-size"})
+    @BinaryProperties({"size"})
     public Map<String, Object> getFolderSize(String nodeId) throws EntityNotFoundException
     {
+        Map<String, Object> result = new HashMap<>();
         try
         {
             LOG.debug("Retrieving OUTPUT from NodeSizeActionExecutor - NodesEntityResource:readById");
@@ -330,12 +336,13 @@ public class NodesEntityResource implements
             Object cachedResult = simpleCache.get(nodeId);
             if(cachedResult != null)
             {
-                return getResult(cachedResult);
+                return getResult(cachedResult, result);
             }
             else
             {
-                throw new NotFoundException(NODEID_NOT_FOUND);
+                result.put(STATUS,NOT_INITIATED);
             }
+            return result;
         }
         catch (Exception ex)
         {
@@ -347,10 +354,8 @@ public class NodesEntityResource implements
     /**
      * Providing the response from SimpleCache.
      */
-    private Map<String, Object> getResult(Object outputResult)
+    private Map<String, Object> getResult(Object outputResult, Map<String, Object> result)
     {
-        Map<String, Object> result = new HashMap<>();
-
         if (outputResult instanceof Map)
         {
             Map<String, Object> mapResult = (Map<String, Object>) outputResult;

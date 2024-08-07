@@ -62,9 +62,9 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
      * Action constants
      */
     public static final String NAME = "folder-size";
-    public static final String PAGE_SIZE = "page-size";
-    public static final String FIELD_FACET = "content.size";
-
+    public static final String DEFAULT_SIZE = "default-size";
+    private static final String FIELD_FACET = "content.size";
+    private static final String FACET_QUERY = "content.size:[0 TO "+Integer.MAX_VALUE+"] \"label\": \"extra small\",\"group\":\"Size\"";
     private SearchService searchService;
     private SimpleCache<Serializable,Object> simpleCache;
 
@@ -94,13 +94,13 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     @Override
     public void executeImpl(Action nodeAction, NodeRef actionedUponNodeRef)
     {
-        Serializable serializable = nodeAction.getParameterValue(PAGE_SIZE);
-        int maxItems;
+        Serializable serializable = nodeAction.getParameterValue(DEFAULT_SIZE);
+        int defaultItems;
         Map<String,Object> response = new HashMap<>();
 
         try
         {
-            maxItems = Integer.parseInt(serializable.toString());
+            defaultItems = Integer.parseInt(serializable.toString());
         }
         catch (NumberFormatException numberFormatException)
         {
@@ -120,7 +120,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         {
             // executing Alfresco FTS facet query.
             results = facetQuery(nodeRef);
-            totalItems = Math.min(results.getFieldFacet(FIELD_FACET).size(), maxItems);
+            totalItems = Math.min(results.getFieldFacet(FIELD_FACET).size(), defaultItems);
             // Using AtomicLong to accumulate the total size.
             AtomicLong resultSize = new AtomicLong(0);
 
@@ -144,15 +144,15 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
                 totalSizeFromFacet+=resultSize.longValue();
                 resultSize.set(0);
 
-                if (results.getFieldFacet(FIELD_FACET).size() <= totalItems || results.getFieldFacet(FIELD_FACET).size() <= maxItems)
+                if (results.getFieldFacet(FIELD_FACET).size() <= totalItems || results.getFieldFacet(FIELD_FACET).size() <= defaultItems)
                 {
                     isCalculationCompleted = true;
                 }
                 else
                 {
-                    skipCount += maxItems;
+                    skipCount += defaultItems;
                     int remainingItems = results.getFieldFacet(FIELD_FACET).size() - totalItems;
-                    totalItems += Math.min(remainingItems, maxItems);
+                    totalItems += Math.min(remainingItems, defaultItems);
                 }
             }
         }
@@ -187,10 +187,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQuery(query);
-        searchParameters.addFacetQuery("content.size:[0 TO 10240]\", \"label\": \"extra small\",\"group\":\"Size\"");
-        searchParameters.addFacetQuery("content.size:[10240 TO 102400]\", \"label\": \"small\", \"group\":\"Size\"");
-        searchParameters.addFacetQuery("content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"Size\"");
-        searchParameters.addFacetQuery("content.size:[1048576 TO 16777216]\", \"label\": \"large\",\"group\":\"Size\"");
+        searchParameters.addFacetQuery(FACET_QUERY);
         final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(FIELD_FACET);
         searchParameters.addFieldFacet(ff);
         return searchService.query(searchParameters);

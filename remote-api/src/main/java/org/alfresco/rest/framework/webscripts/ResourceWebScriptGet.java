@@ -58,7 +58,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
 {
     private static Log logger = LogFactory.getLog(ResourceWebScriptGet.class);
 
-    private static final String GET_FOLDERSIZE = "/nodes/{id}/get-folder-size";
+    private static final String GET_FOLDERSIZE = "/nodes/{id}/size";
     
     public ResourceWebScriptGet()
     {

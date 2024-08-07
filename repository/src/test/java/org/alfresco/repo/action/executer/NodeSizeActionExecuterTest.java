@@ -106,7 +106,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     {
         int maxItems = 100;
         ActionImpl action = new ActionImpl(null, ID, NodeSizeActionExecuter.NAME, null);
-        action.setParameterValue(NodeSizeActionExecuter.PAGE_SIZE, maxItems);
+        action.setParameterValue(NodeSizeActionExecuter.DEFAULT_SIZE, maxItems);
         this.executer.executeImpl(action, this.nodeRef);
         Object resultAction = simpleCache.get(this.nodeRef.getId());
         Map<String, Object> mapResult = (Map<String, Object>)resultAction;

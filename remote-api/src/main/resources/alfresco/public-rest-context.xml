@@ -1152,6 +1152,7 @@
         <property name="nodeService" ref="NodeService" />
         <property name="actionService" ref="ActionService"/>
         <property name="simpleCache" ref="folderSizeSharedCache" />
+        <property name="defaultItems" value="${alfresco.restApi.calculateFolderSize.items}"/>
     </bean>
 	
     <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">

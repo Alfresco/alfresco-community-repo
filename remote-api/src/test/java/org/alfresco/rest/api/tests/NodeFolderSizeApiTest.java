@@ -172,7 +172,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         assertEquals(300, nodes.size());
 
         //Start Time before triggering POST/calculate-folder-size API
-        LocalTime expectedTime = LocalTime.now().plusMinutes(1);
+        LocalTime expectedTime = LocalTime.now().plusMinutes(2);
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
@@ -192,17 +192,16 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        //end Time after executing POST/calculate-folder-size API
-        LocalTime actualTime = LocalTime.now();
-
-        assertTrue("Calculating folder node is taking time greater than 1 minute ",actualTime.isAfter(expectedTime));
-
         HttpResponse getResponse = getSingle(NodesEntityResource.class, parentFolder + "/get-folder-size", null, 200);
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);
 
-        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
+        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size"));
+
+        //current Time after executing GET/get-folder-size API
+        LocalTime actualTime = LocalTime.now();
+        assertTrue("Calculating folder node is taking time greater than 2 minute ",actualTime.isBefore(expectedTime));
     }
 
     /**

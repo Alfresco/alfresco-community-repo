@@ -173,7 +173,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         assertEquals(300, nodes.size());
 
         //Start Time before triggering POST/calculate-folder-size API
-        LocalTime expectedTime = LocalTime.now().plusSeconds(15);
+        LocalTime expectedTime = LocalTime.now().plusSeconds(5);
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();

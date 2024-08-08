@@ -281,10 +281,9 @@ public class NodesEntityResource implements
      *
      * @param nodeId String id of folder - will also accept well-known alias, eg. -root- or -my- or -shared-
      *               Please refer to OpenAPI spec for more details !
-     * Returns the executionId which shows pending action, which can be used in a
-     * GET/calculateSize endpoint to check if the action's status has been completed, comprising the size of the node in bytes.
+     * Returns the response message i.e. Request has been acknowledged with 202
+     * GET/size endpoint to check if the action's status has been completed, comprising the size of the node in bytes.
      *               <p>
-     *               If NodeId does not exist, EntityNotFoundException (status 404).
      *               If nodeId does not represent a folder, InvalidNodeTypeException (status 422).
      */
     @Operation("calculate-folder-size")
@@ -309,8 +308,8 @@ public class NodesEntityResource implements
         }
         catch (Exception alfrescoRuntimeError)
         {
-            LOG.error("Exception occurred in NodesEntityResource:createById {}", alfrescoRuntimeError.getMessage());
-            throw new AlfrescoRuntimeException("Exception occurred in NodesEntityResource:createById",alfrescoRuntimeError);
+            LOG.error("Exception occurred in NodesEntityResource:calculateFolderSize {}", alfrescoRuntimeError.getMessage());
+            throw new AlfrescoRuntimeException("Exception occurred in NodesEntityResource:calculateFolderSize",alfrescoRuntimeError);
         }
     }
 
@@ -323,7 +322,7 @@ public class NodesEntityResource implements
         Map<String, Object> result = new HashMap<>();
         try
         {
-            LOG.debug("Retrieving OUTPUT from NodeSizeActionExecutor - NodesEntityResource:readById");
+            LOG.debug("Retrieving OUTPUT from NodeSizeActionExecutor - NodesEntityResource:getFolderSize");
             NodeRef nodeRef = nodes.validateNode(nodeId);
             validatePermissions(nodeRef, nodeId);
             QName qName = nodeService.getType(nodeRef);
@@ -346,7 +345,7 @@ public class NodesEntityResource implements
         }
         catch (Exception ex)
         {
-            LOG.error("Exception occurred in NodesEntityResource:readById {}", ex.getMessage());
+            LOG.error("Exception occurred in NodesEntityResource:getFolderSize {}", ex.getMessage());
             throw ex; // Rethrow with original stack trace
         }
     }

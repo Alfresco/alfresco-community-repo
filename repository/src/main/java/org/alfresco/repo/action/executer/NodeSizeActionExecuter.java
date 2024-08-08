@@ -64,7 +64,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "folder-size";
     public static final String DEFAULT_SIZE = "default-size";
     private static final String FIELD_FACET = "content.size";
-    private static final String FACET_QUERY = "content.size:[0 TO "+Integer.MAX_VALUE+"] \"label\": \"extra small\",\"group\":\"Size\"";
+    private static final String FACET_QUERY = "content.size:[0 TO "+Integer.MAX_VALUE+"] \"label\": \"large\",\"group\":\"Size\"";
     private SearchService searchService;
     private SimpleCache<Serializable,Object> simpleCache;
 

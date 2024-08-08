@@ -152,7 +152,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         String folder0Name = "f0-testParentFolder-"+RUNID;
         String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
 
-        for(int i=1;i<=300;i++)
+        for(int i=1;i<=500;i++)
         {
             String folderBName = "folder"+i+RUNID + "_B";
             String folderB_Id = createFolder(parentFolder, folderBName, null).getId();
@@ -202,7 +202,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
 
         //current Time after executing GET/size API
         LocalTime actualTime = LocalTime.now();
-        assertTrue("Calculating folder node is taking time greater than 15 seconds ",actualTime.isBefore(expectedTime));
+        assertTrue("Calculating folder node is taking time greater than 5 seconds ",actualTime.isBefore(expectedTime));
     }
 
     /**

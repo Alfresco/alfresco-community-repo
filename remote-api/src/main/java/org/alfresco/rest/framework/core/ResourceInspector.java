@@ -110,6 +110,8 @@ public class ResourceInspector
 
         ALL_ENTITY_RESOURCE_INTERFACES.add(MultiPartResourceAction.Create.class);
 
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.RetrieveFolderSize.class);
+
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Create.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Read.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadById.class);
@@ -133,6 +135,7 @@ public class ResourceInspector
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.ReadWithResponse.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.DeleteWithResponse.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.UpdateWithResponse.class);
+        ALL_PROPERTY_RESOURCE_INTERFACES.add(EntityResourceAction.RetrieveFolderSize.class);
     }
     
     /**
@@ -219,6 +222,8 @@ public class ResourceInspector
         findOperation(RelationshipResourceBinaryAction.ReadWithResponse.class,   GET, helperForAddressProps);
         findOperation(RelationshipResourceBinaryAction.DeleteWithResponse.class, DELETE, helperForAddressProps);
         findOperation(RelationshipResourceBinaryAction.UpdateWithResponse.class, PUT, helperForAddressProps);
+
+        findOperation(EntityResourceAction.RetrieveFolderSize.class, GET, helperForAddressProps);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)

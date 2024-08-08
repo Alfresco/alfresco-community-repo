@@ -170,7 +170,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         PublicApiClient.Paging paging = getPaging(0, 1000);
         HttpResponse response = getAll(getNodeChildrenUrl(parentFolder), paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-        assertEquals(300, nodes.size());
+        assertEquals(500, nodes.size());
 
         //Start Time before triggering POST/calculate-folder-size API
         LocalTime expectedTime = LocalTime.now().plusSeconds(5);

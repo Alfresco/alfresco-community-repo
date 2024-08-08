@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -55,7 +55,17 @@ public class PagingRequestConstraint extends VirtualQueryConstraintDecorator
         if (pagingRequest != null)
         {
             searchParametersCopy.setSkipCount(pagingRequest.getSkipCount());
-            searchParametersCopy.setMaxItems(pagingRequest.getMaxItems());
+
+            // MNT-20791 : Smart folders will retrieve incorrect totalResults.
+            // Search query will return a set of size equal to searchParameters.maxItems
+            // For pagingRequest maxItems represents number of elements on the page and requestTotalCountMax the maximum number of elements to retrieve
+            // The Search query will retrieve elements starting from skipCount + 1, because of this in order to display pages consisten in share
+            // the numberOfElementsToRetrieve will be requestTotalCountMax - skipCount.
+            int numberOfElementsToRetrieve = pagingRequest.getRequestTotalCountMax() != 0
+                ? pagingRequest.getRequestTotalCountMax() - pagingRequest.getSkipCount()
+                : pagingRequest.getMaxItems();
+
+            searchParametersCopy.setMaxItems(numberOfElementsToRetrieve);
         }
 
         return searchParametersCopy;

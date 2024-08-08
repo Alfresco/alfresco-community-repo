@@ -264,7 +264,9 @@ public class ResultMapperTests
         CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, searchRequest, SearchQuery.EMPTY, results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
-        assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
+        // We have one deleted node that will not be part of the results
+        int shouldbeReturned = found.intValue()-1;
+        assertEquals(shouldbeReturned, collectionWithPage.getTotalItems().intValue());
         Node firstNode = collectionWithPage.getCollection().stream().findFirst().get();
         assertNotNull(firstNode.getSearch().getScore());
         assertEquals(StoreMapper.LIVE_NODES, firstNode.getLocation());
@@ -885,5 +887,49 @@ public class ResultMapperTests
         Node node = mapper.getNode(mockRow, EMPTY_PARAMS, null, false);
 
         assertNull("Expected node to be filtered due to permission exception.", node);
+    }
+
+    /** Verify counters and faceting is disabled when we have results that are no longer valid */
+    @Test
+    public void testUnknownNodesInResults()
+    {
+        String jsonQuery = "{\"query\": {\"query\": \"alfresco\"}," 
+                + "\"facetFields\": {\"facets\": ["
+                + "{\"field\": \"creator\", \"mincount\": 1}," 
+                + "{\"field\": \"modifier\", \"mincount\": 1}]},"
+                + "\"facetQueries\": [" 
+                + "{\"query\": \"content.size:[o TO 102400]\", \"label\": \"small\"},"
+                + "{\"query\": \"content.size:[102400 TO 1048576]\", \"label\": \"medium\"},"
+                + "{\"query\": \"content.size:[1048576 TO 16777216]\", \"label\": \"large\"}]" 
+                + "}";
+
+        SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
+        SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
+
+        // With 1 unknown node in the results
+        ResultSet resultsWithUnkown = mockResultSet(Collections.emptyList(), asList(VERSIONED_ID));
+
+        // Total items must match the total number of documents returned
+        CollectionWithPagingInfo<Node> collectionWithUnkown = mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, searchRequest,
+                searchQuery, resultsWithUnkown);
+        assertEquals(collectionWithUnkown.getTotalItems().intValue(), collectionWithUnkown.getCollection().size());
+
+        // No facets, facet queries or facet fields should be returned
+        assertTrue(collectionWithUnkown.getContext().getFacets().isEmpty());
+        assertTrue(collectionWithUnkown.getContext().getFacetsFields().isEmpty());
+        assertNull(collectionWithUnkown.getContext().getFacetQueries());
+
+        // With all nodes ok
+        ResultSet resultsWithoutUnknown = mockResultSet(Collections.emptyList(), Collections.emptyList());
+
+        // Total items still needs to match the total number of documents returned
+        CollectionWithPagingInfo<Node> collectionWithoutUnkown = mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, searchRequest,
+                searchQuery, resultsWithoutUnknown);
+        assertEquals(collectionWithoutUnkown.getTotalItems().intValue(), collectionWithoutUnkown.getCollection().size());
+
+        // Facets, facet queries and facet fields should be returned
+        assertFalse(collectionWithoutUnkown.getContext().getFacets().isEmpty());
+        assertFalse(collectionWithoutUnkown.getContext().getFacetsFields().isEmpty());
+        assertNotNull(collectionWithoutUnkown.getContext().getFacetQueries());
     }
 }

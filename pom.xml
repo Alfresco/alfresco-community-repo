@@ -117,7 +117,7 @@
         <alfresco.api-explorer.version>23.2.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
-        <license-maven-plugin.version>2.0.1</license-maven-plugin.version>
+        <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
 
         <dependency.postgresql.version>42.6.0</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>

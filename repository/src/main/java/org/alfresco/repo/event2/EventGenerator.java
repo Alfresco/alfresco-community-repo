@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -164,6 +164,11 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         setAssociationBehaviour(BeforeDeleteChildAssociationPolicy.QNAME, "beforeDeleteChildAssociation");
         setAssociationBehaviour(OnCreateAssociationPolicy.QNAME, "onCreateAssociation");
         setAssociationBehaviour(BeforeDeleteAssociationPolicy.QNAME, "beforeDeleteAssociation");
+    }
+
+    private boolean isSendingEventBeforeCommitRequired()
+    {
+        return eventSender.shouldParticipateInTransaction();
     }
 
     /**
@@ -547,20 +552,37 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     protected class EventTransactionListener extends TransactionListenerAdapter
     {
         @Override
+        public void beforeCommit(boolean readOnly)
+        {
+            if (isSendingEventBeforeCommitRequired())
+            {
+                sendAllEvents();
+            }
+        }
+
+        @Override
         public void afterCommit()
         {
-            if (isTransactionCommitted())
+            if (!isSendingEventBeforeCommitRequired())
             {
-                try
-                {
-                    sendEvents();
-                }
-                catch (Exception e)
-                {
-                    // Must consume the exception to protect other TransactionListeners
-                    LOGGER.error("Unexpected error while sending repository events", e);
-                }
+                sendAllEvents();
             }
+        }
+
+        @Override
+        public Integer getCustomOrder()
+        {
+            return isSendingEventBeforeCommitRequired() ? getBeforeCommitOrder() : getAfterCommitOrder();
+        }
+
+        protected Integer getBeforeCommitOrder()
+        {
+            return 3;
+        }
+
+        protected Integer getAfterCommitOrder()
+        {
+            return null;
         }
 
         /**
@@ -570,6 +592,21 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         protected boolean isTransactionCommitted()
         {
             return nodeDAO.getCurrentTransactionCommitTime() != null;
+        }
+
+        protected void sendAllEvents()
+        {
+            if (isTransactionCommitted())
+            {
+                try
+                {
+                    sendEvents();
+                } catch (Exception e)
+                {
+                    // Must consume the exception to protect other TransactionListeners
+                    LOGGER.error("Unexpected error while sending repository events", e);
+                }
+            }
         }
 
         private void sendEvents()
@@ -623,10 +660,17 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
             final REF entityReference, final CON eventConsolidator, final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
         {
             final EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
-            transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
+            if (isSendingEventBeforeCommitRequired())
+            {
                 eventSender.accept(() -> createEvent(entityReference, eventConsolidator, eventInfo, entityToEventEligibilityVerifier));
-                return null;
-            }, true, true);
+            }
+            else
+            {
+                transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                    eventSender.accept(() -> createEvent(entityReference, eventConsolidator, eventInfo, entityToEventEligibilityVerifier));
+                    return null;
+                }, true, true);
+            }
         }
 
         /**

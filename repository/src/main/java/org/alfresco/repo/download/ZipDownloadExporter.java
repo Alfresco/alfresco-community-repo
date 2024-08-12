@@ -174,6 +174,10 @@ public class ZipDownloadExporter extends BaseExporter
         
         try
         {
+            if (log.isDebugEnabled())
+            {
+                log.debug("Archiving content for nodeRef: "+nodeRef+" with contentURL: "+contentData.getContentUrl() );
+            }
             // ALF-2016
             ZipArchiveEntry zipEntry=new ZipArchiveEntry(getPath());
             zipEntry.setTime(zipTimestampCreated.getTime());

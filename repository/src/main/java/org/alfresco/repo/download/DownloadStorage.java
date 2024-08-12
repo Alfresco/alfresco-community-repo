@@ -158,8 +158,7 @@ public class DownloadStorage
         if (log.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
-            msg.append("Created Download. ")
-               .append("', Download-NodeRef=");
+            msg.append("Created Download. ").append("Download-NodeRef="+downloadNodeRef);
             log.debug(msg.toString());
         }
         return downloadNodeRef;
@@ -221,6 +220,11 @@ public class DownloadStorage
         Long total = (Long)properties.get(DownloadModel.PROP_TOTAL);
         Long filesAdded = (Long)properties.get(DownloadModel.PROP_FILES_ADDED);
         Long totalFiles = (Long)properties.get(DownloadModel.PROP_TOTAL_FILES);
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("Status for Download-NodeRef: "+downloadNodeRef+": done: "+done+", total: "+total+", filesAdded: "+filesAdded+", totalFiles: "+totalFiles);
+        }
         
         return new DownloadStatus(DownloadStatus.Status.valueOf((String)properties.get(DownloadModel.PROP_STATUS)),
                                   done != null ? done.longValue() : 0l,
@@ -239,6 +243,10 @@ public class DownloadStorage
 
     public void updateStatus(NodeRef nodeRef, DownloadStatus status)
     {
+        if (log.isDebugEnabled())
+        {
+            log.debug("Updating status for Download-NodeRef: "+nodeRef+" to status: "+status.getStatus());
+        }
         validateNode(nodeRef);
         
         nodeService.setProperty(nodeRef, DownloadModel.PROP_STATUS, status.getStatus().toString());

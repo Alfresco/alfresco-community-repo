@@ -368,25 +368,6 @@ public class NodesEntityResource implements
     }
 
     /**
-     * Providing the response from SimpleCache.
-     */
-    private Map<String, Object> getResult(Map<String, Object> cachedResult)
-    {
-        Map<String, Object> result;
-
-        if(cachedResult.containsKey("size"))
-        {
-            cachedResult.put(STATUS, COMPLETED);
-            result = cachedResult;
-        }
-        else
-        {
-            result = cachedResult;
-        }
-        return result;
-    }
-
-    /**
      * Validating node permission [i.e. READ permission should be there ]
      */
     private void validatePermissions(NodeRef nodeRef, String nodeId)

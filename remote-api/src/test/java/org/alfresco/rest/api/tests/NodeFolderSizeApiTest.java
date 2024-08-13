@@ -178,7 +178,6 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
-        params.put("maxItems", "100");
 
         // Perform POST request
         HttpResponse postResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 202);

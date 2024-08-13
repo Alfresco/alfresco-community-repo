@@ -190,11 +190,9 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQuery(query);
-        ResultSet resultsWithoutFacet = searchService.query(searchParameters);
 
         searchParameters.addFacetQuery(FACET_QUERY);
         final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(FIELD_FACET);
-        ff.setLimitOrNull(resultsWithoutFacet.getNodeRefs().size());
         searchParameters.addFieldFacet(ff);
         return searchService.query(searchParameters);
     }

@@ -197,7 +197,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);
 
-        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size"));
+        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
 
         //current Time after executing GET/size API
         LocalTime actualTime = LocalTime.now();

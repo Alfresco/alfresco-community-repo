@@ -26,9 +26,9 @@
 package org.alfresco.rest.api.impl;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
-import lombok.AllArgsConstructor;
 import org.alfresco.repo.action.executer.NodeSizeActionExecuter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
@@ -37,15 +37,20 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@AllArgsConstructor
 public class FolderSizeImpl {
 
     private ActionService actionService;
     private static final Logger LOG = LoggerFactory.getLogger(FolderSizeImpl.class);
     private static final String IN_PROGRESS = "IN-PROGRESS";
+    private static final String STATUS = "status";
     private static final String MESSAGE = "Request has been acknowledged";
 
-    public Map<String, Object> executingAsynchronousFolderAction(final NodeRef nodeRef, final int defaultItems,  final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache)
+    public FolderSizeImpl(ActionService actionService)
+    {
+        this.actionService = actionService;
+    }
+
+    public Map<String, Object> executingAsynchronousFolderAction(final NodeRef nodeRef, final int defaultItems, final Map<String, Object> result, final SimpleCache<Serializable, Object> simpleCache)
     {
         if(simpleCache.get(nodeRef.getId()) == null)
         {
@@ -59,11 +64,14 @@ public class FolderSizeImpl {
 
     protected void executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Object> simpleCache)
     {
+        Map<String, Object> currentStatus = new HashMap<>();
+        currentStatus.put(STATUS,IN_PROGRESS);
+
         Action folderSizeAction = actionService.createAction(NodeSizeActionExecuter.NAME);
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
         folderSizeAction.setParameterValue(NodeSizeActionExecuter.DEFAULT_SIZE, defaultItems);
-        simpleCache.put(nodeRef.getId(),IN_PROGRESS);
+        simpleCache.put(nodeRef.getId(),currentStatus);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
     }
 }

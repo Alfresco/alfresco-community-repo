@@ -161,13 +161,4 @@ public interface EntityResourceAction
          */
         public void deleteSet(Parameters params, WithResponse withResponse);
     }
-    interface RetrieveFolderSize<E> extends ResourceAction
-    {
-        /**
-         * get the size of Folder Node.
-         *
-         * @param nodeId Entity resource context for this relationship.
-         */
-        E getFolderSize (String nodeId);
-    }
 }

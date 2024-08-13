@@ -30,12 +30,9 @@ import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.DeletedResourceException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
-import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.*;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.Read;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -281,14 +278,14 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
             case PROPERTY:
                 if (StringUtils.isNotBlank(params.getEntityId()))
                 {
-                    if (EntityResourceAction.RetrieveFolderSize.class.isAssignableFrom(resource.getResource().getClass())
+                    if (FolderResourceAction.RetrieveFolderSize.class.isAssignableFrom(resource.getResource().getClass())
                        && GET_FOLDERSIZE.equals(resource.getMetaData().getUniqueId()))
                     {
-                        if (resource.getMetaData().isDeleted(EntityResourceAction.RetrieveFolderSize.class))
+                        if (resource.getMetaData().isDeleted(FolderResourceAction.RetrieveFolderSize.class))
                         {
                             throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
                         }
-                        EntityResourceAction.RetrieveFolderSize getter = (EntityResourceAction.RetrieveFolderSize) resource.getResource();
+                        FolderResourceAction.RetrieveFolderSize getter = (FolderResourceAction.RetrieveFolderSize) resource.getResource();
                         Object result = getter.getFolderSize(params.getEntityId());
                         return result;
                     }

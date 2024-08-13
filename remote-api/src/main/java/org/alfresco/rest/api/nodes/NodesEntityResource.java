@@ -38,8 +38,16 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.FolderSizeImpl;
-import org.alfresco.rest.api.model.*;
-import org.alfresco.rest.framework.*;
+import org.alfresco.rest.api.model.DirectAccessUrlRequest;
+import org.alfresco.rest.api.model.LockInfo;
+import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.NodeTarget;
+import org.alfresco.rest.api.model.NodePermissions;
+import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.framework.Operation;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -47,6 +55,7 @@ import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.FolderResourceAction;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -75,7 +84,7 @@ import org.springframework.extensions.webscripts.Status;
 @EntityResource(name="nodes", title = "Nodes")
 public class NodesEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
-        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, EntityResourceAction.RetrieveFolderSize<Map<String,Object>>, InitializingBean
+        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, FolderResourceAction.RetrieveFolderSize<Map<String,Object>>, InitializingBean
 {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
@@ -332,10 +341,18 @@ public class NodesEntityResource implements
                 throw new InvalidNodeTypeException(INVALID_NODEID);
             }
 
-            Object cachedResult = simpleCache.get(nodeId);
+            Map<String, Object> cachedResult = (Map<String, Object>) simpleCache.get(nodeId);
             if(cachedResult != null)
             {
-                return getResult(cachedResult, result);
+                if(cachedResult.containsKey("size"))
+                {
+                    cachedResult.put(STATUS, COMPLETED);
+                    result = cachedResult;
+                }
+                else
+                {
+                    result = cachedResult;
+                }
             }
             else
             {
@@ -353,21 +370,18 @@ public class NodesEntityResource implements
     /**
      * Providing the response from SimpleCache.
      */
-    private Map<String, Object> getResult(Object outputResult, Map<String, Object> result)
+    private Map<String, Object> getResult(Map<String, Object> cachedResult)
     {
-        if (outputResult instanceof Map)
+        Map<String, Object> result;
+
+        if(cachedResult.containsKey("size"))
         {
-            Map<String, Object> mapResult = (Map<String, Object>) outputResult;
-            mapResult.put(STATUS, COMPLETED);
-            result = mapResult;
+            cachedResult.put(STATUS, COMPLETED);
+            result = cachedResult;
         }
-        else if(outputResult instanceof String)
+        else
         {
-            result.put(STATUS, outputResult);
-        }
-        else if(outputResult instanceof Exception)
-        {
-            result.put(EXCEPTION, ((Exception) outputResult).getMessage());
+            result = cachedResult;
         }
         return result;
     }

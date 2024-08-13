@@ -62,6 +62,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
      * Action constants
      */
     public static final String NAME = "folder-size";
+    private static final String EXCEPTION = "Exception";
     public static final String DEFAULT_SIZE = "default-size";
     private static final String FIELD_FACET = "content.size";
     private static final String FACET_QUERY = "content.size:[0 TO "+Integer.MAX_VALUE+"] \"label\": \"large\",\"group\":\"Size\"";
@@ -105,7 +106,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (NumberFormatException numberFormatException)
         {
             LOG.error("Exception occurred while parsing String to INT: {}", numberFormatException.getMessage());
-            simpleCache.put(actionedUponNodeRef.getId(),numberFormatException);
+            response.put(EXCEPTION,numberFormatException.getMessage());
+            simpleCache.put(actionedUponNodeRef.getId(),response);
             throw numberFormatException;
         }
 
@@ -159,7 +161,8 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         catch (RuntimeException runtimeException)
         {
             LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", runtimeException.getMessage());
-            simpleCache.put(nodeRef.getId(),runtimeException);
+            response.put(EXCEPTION,runtimeException.getMessage());
+            simpleCache.put(nodeRef.getId(),response);
             throw runtimeException;
         }
 
@@ -187,8 +190,11 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
         searchParameters.setQuery(query);
+        ResultSet resultsWithoutFacet = searchService.query(searchParameters);
+
         searchParameters.addFacetQuery(FACET_QUERY);
         final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(FIELD_FACET);
+        ff.setLimitOrNull(resultsWithoutFacet.getNodeRefs().size());
         searchParameters.addFieldFacet(ff);
         return searchService.query(searchParameters);
     }

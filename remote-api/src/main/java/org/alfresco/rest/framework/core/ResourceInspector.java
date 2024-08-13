@@ -57,13 +57,7 @@ import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.UniqueId;
-import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.*;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -110,7 +104,7 @@ public class ResourceInspector
 
         ALL_ENTITY_RESOURCE_INTERFACES.add(MultiPartResourceAction.Create.class);
 
-        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.RetrieveFolderSize.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(FolderResourceAction.RetrieveFolderSize.class);
 
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Create.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Read.class);
@@ -135,7 +129,7 @@ public class ResourceInspector
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.ReadWithResponse.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.DeleteWithResponse.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.UpdateWithResponse.class);
-        ALL_PROPERTY_RESOURCE_INTERFACES.add(EntityResourceAction.RetrieveFolderSize.class);
+        ALL_PROPERTY_RESOURCE_INTERFACES.add(FolderResourceAction.RetrieveFolderSize.class);
     }
     
     /**
@@ -223,7 +217,7 @@ public class ResourceInspector
         findOperation(RelationshipResourceBinaryAction.DeleteWithResponse.class, DELETE, helperForAddressProps);
         findOperation(RelationshipResourceBinaryAction.UpdateWithResponse.class, PUT, helperForAddressProps);
 
-        findOperation(EntityResourceAction.RetrieveFolderSize.class, GET, helperForAddressProps);
+        findOperation(FolderResourceAction.RetrieveFolderSize.class, GET, helperForAddressProps);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)

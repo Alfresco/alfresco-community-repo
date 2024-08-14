@@ -32,17 +32,24 @@ import java.util.Map;
 
 public class AuditRecord
 {
+    boolean inTransaction;
     AuditedActionType auditedActionType;
     ZonedDateTime createdAt;
     UserInfo userInfo;
     Map<String, ?> auditData;
 
-    public AuditRecord(AuditedActionType auditedActionType, UserInfo userInfo, Map<String, ?> auditData, ZonedDateTime createdAt)
+    public AuditRecord(boolean inTransaction, AuditedActionType auditedActionType, UserInfo userInfo, Map<String, ?> auditData, ZonedDateTime createdAt)
     {
+        this.inTransaction = inTransaction;
         this.auditedActionType = auditedActionType;
         this.userInfo = userInfo;
         this.auditData = auditData;
         this.createdAt = createdAt;
+    }
+
+    public boolean isInTransaction()
+    {
+        return inTransaction;
     }
 
     public AuditedActionType getAuditedActionType()

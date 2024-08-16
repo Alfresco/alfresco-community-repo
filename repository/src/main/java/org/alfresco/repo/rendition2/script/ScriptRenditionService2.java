@@ -39,6 +39,7 @@ import org.apache.commons.logging.LogFactory;
  * The {@code ScriptRenditionService2} class provides a scripting interface for working with Rendition Service 2.
  * It allows rendering source nodes with specified rendition definitions and retrieving renditions associated with a node.
  */
+@SuppressWarnings({"PMD:ProperLogger", "PMD:FieldNamingConventions"})
 public class ScriptRenditionService2 extends BaseScopableProcessorExtension
 {
     private static final Log logger = LogFactory.getLog(ScriptRenditionService2.class);

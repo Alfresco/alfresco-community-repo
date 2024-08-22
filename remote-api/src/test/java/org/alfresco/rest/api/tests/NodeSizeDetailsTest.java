@@ -30,10 +30,7 @@ import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.Document;
-import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.UserInfo;
+import org.alfresco.rest.api.tests.client.data.*;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -208,7 +205,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
         params.put("nodeId", folderId);
         params.put("maxItems", "1000");
+        String childFolderName = "dummyFolder";
         String fileName = "dummyContent.txt";
+
+        Folder folder = createFolder(tDocLibNodeId, childFolderName);
+
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
         locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.READ, AccessStatus.DENIED.toString()));
@@ -216,15 +217,16 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         Document d1 = new Document();
         d1.setIsFolder(false);
-        d1.setParentId(folderId);
+        d1.setParentId(folder.getId());
         d1.setName(fileName);
         d1.setNodeType(TYPE_CM_CONTENT);
         d1.setContent(createContentInfo());
         d1.setCreatedByUser(userInfo);
         d1.setModifiedByUser(userInfo);
         d1.setPermissions(nodePermissions);
+        folder.setPermissions(nodePermissions);
 
-        HttpResponse response = post(getCalculateFolderSizeUrl(folderId),  toJsonAsStringNonNull(params), null, 403);
+        HttpResponse response = post(getCalculateFolderSizeUrl(folder.getId()),  toJsonAsStringNonNull(params), null, 403);
         assertNotNull(response);
 
         // Create a folder within the site document's library.

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -77,7 +77,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.BufferedResponseTest.class,
     org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class,
     org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class,
-    NodeSizeDetailsTest.class
+    org.alfresco.rest.api.tests.NodeSizeDetailsTest.class
 })
 public class AppContext02TestSuite
 {

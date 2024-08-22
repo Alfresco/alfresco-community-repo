@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -47,13 +46,11 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.*;
@@ -69,8 +66,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
     private Site userOneN1Site;
     private String folderId;
-    private ApplicationContext applicationContext;
-
     private PermissionService permissionService;
 
     // Method to create content info
@@ -188,7 +183,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
 
-        //current Time after executing GET/size API
+        //current Time after executing GET/request-size-details
         LocalTime actualTime = LocalTime.now();
         assertTrue("Calculating folder node is taking time greater than 5 seconds ",actualTime.isBefore(expectedTime));
     }
@@ -201,7 +196,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     {
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
-
 
         setRequestContext(null);
         delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);

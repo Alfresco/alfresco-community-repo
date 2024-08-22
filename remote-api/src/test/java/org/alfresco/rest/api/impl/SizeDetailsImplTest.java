@@ -33,7 +33,6 @@ import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.Before;
@@ -44,7 +43,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link SizeDetailsImpl} class.
@@ -53,14 +51,13 @@ import static org.mockito.Mockito.when;
 public class SizeDetailsImplTest extends AbstractBaseApiTest
 {
     private SizeDetailsImpl sizeDetailsImpl;
-    private Nodes nodes;
     private final static int DEFAULT_ITEMS = 1000;
 
     @Before
     public void setUp()
     {
         sizeDetailsImpl = new SizeDetailsImpl();
-        nodes = mock(Nodes.class);
+        Nodes nodes = mock(Nodes.class);
         NodeService nodeService = mock(NodeService.class);
         PermissionService permissionService = mock(PermissionService.class);
         ActionService actionService = mock(ActionService.class);
@@ -93,7 +90,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         d1.setCreatedByUser(userInfo);
         d1.setModifiedByUser(userInfo);
 
-        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(parentFolder);
+        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(tDocLibNodeId);
         assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",nodeSizeDetails);
     }
 

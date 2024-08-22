@@ -208,7 +208,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String childFolderName = "dummyFolder";
         String fileName = "dummyContent.txt";
 
-        Folder folder = createFolder(tDocLibNodeId, childFolderName);
+        Folder folder = createFolder(Nodes.PATH_MY, childFolderName);
 
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
@@ -226,7 +226,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         d1.setPermissions(nodePermissions);
         folder.setPermissions(nodePermissions);
 
-        setRequestContext(user2);
         HttpResponse response = post(getCalculateFolderSizeUrl(folder.getId()),  toJsonAsStringNonNull(d1), null, 403);
         assertNotNull(response);
 

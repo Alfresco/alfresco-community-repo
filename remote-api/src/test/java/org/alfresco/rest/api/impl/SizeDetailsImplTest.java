@@ -53,7 +53,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
 {
     private SizeDetailsImpl sizeDetailsImpl;
     private Nodes nodes;
-    private final static int defaultItems = 1000;
+    private final static int DEFAULT_ITEMS = 1000;
 
     @Before
     public void setUp()
@@ -70,7 +70,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         sizeDetailsImpl.setPermissionService(permissionService);
         sizeDetailsImpl.setActionService(actionService);
         sizeDetailsImpl.setSimpleCache(simpleCache);
-        sizeDetailsImpl.setDefaultItems(defaultItems);
+        sizeDetailsImpl.setDefaultItems(DEFAULT_ITEMS);
     }
 
     @Test

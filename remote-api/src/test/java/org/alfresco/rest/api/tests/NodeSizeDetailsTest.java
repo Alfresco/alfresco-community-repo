@@ -212,7 +212,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.READ, AccessStatus.DENIED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.DELETE, AccessStatus.DENIED.toString()));
         nodePermissions.setLocallySet(locallySetPermissions);
 
         Document d1 = new Document();

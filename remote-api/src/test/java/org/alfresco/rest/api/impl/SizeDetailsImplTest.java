@@ -50,16 +50,18 @@ import static org.mockito.Mockito.mock;
  */
 public class SizeDetailsImplTest extends AbstractBaseApiTest
 {
-    private SizeDetailsImpl sizeDetailsImpl;
     private final static int DEFAULT_ITEMS = 1000;
+    private SizeDetailsImpl sizeDetailsImpl;
+    private NodeService nodeService;
+    private PermissionService permissionService;
 
     @Before
     public void setUp()
     {
         sizeDetailsImpl = new SizeDetailsImpl();
         Nodes nodes = mock(Nodes.class);
-        NodeService nodeService = mock(NodeService.class);
-        PermissionService permissionService = mock(PermissionService.class);
+        nodeService = mock(NodeService.class);
+        permissionService = mock(PermissionService.class);
         ActionService actionService = mock(ActionService.class);
         SimpleCache<Serializable, Map<String, Object>> simpleCache  = mock(SimpleCache.class);
 
@@ -80,6 +82,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         String fileName = "content.txt";
         String folder0Name = "f0-testParentFolder-"+RUNID;
         String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
+        permissionService.setPermission(nodeService.getNodeRef(Long.valueOf(parentFolder)), user1, PermissionService.READ, true);
 
         Document d1 = new Document();
         d1.setIsFolder(false);
@@ -90,7 +93,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         d1.setCreatedByUser(userInfo);
         d1.setModifiedByUser(userInfo);
 
-        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(tDocLibNodeId);
+        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(parentFolder);
         assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",nodeSizeDetails);
     }
 

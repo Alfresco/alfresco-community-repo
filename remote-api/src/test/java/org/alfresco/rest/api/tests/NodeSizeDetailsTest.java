@@ -204,7 +204,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         NodeRef folderIdRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId);
         params.put("nodeId", folderIdRef.getId());
         params.put("maxItems", "1000");
-        permissionService.setPermission(folderIdRef, user1, PermissionService.ASPECTS, true);
+        permissionService.setPermission(folderIdRef, user1, PermissionService.WRITE, false);
         HttpResponse response = post(getCalculateFolderSizeUrl(folderIdRef.getId()),  toJsonAsStringNonNull(params), null, 403);
         assertNotNull(response);
 

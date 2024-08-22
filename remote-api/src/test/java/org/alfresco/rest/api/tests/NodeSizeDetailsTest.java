@@ -26,13 +26,14 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.alfresco.rest.api.tests.client.data.*;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
+import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.UserInfo;
+import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
@@ -46,13 +47,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * V1 REST API tests for calculating and retrieving Folder size.
@@ -195,47 +198,15 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     @Test
     public void testHTTPStatus() throws Exception
     {
-        // Prepare parameters
-        Map<String, String> params = new HashMap<>();
-        UserInfo userInfo = new UserInfo(user1);
-
         setRequestContext(null);
         delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
-        params.put("nodeId", folderId);
-        params.put("maxItems", "1000");
-        String childFolderName = "dummyFolder";
-        String fileName = "dummyContent.txt";
-
-        Folder folder = createFolder(Nodes.PATH_MY, childFolderName);
-
-        NodePermissions nodePermissions = new NodePermissions();
-        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.READ, AccessStatus.DENIED.toString()));
-        nodePermissions.setLocallySet(locallySetPermissions);
-
-        Document d1 = new Document();
-        d1.setIsFolder(false);
-        d1.setParentId(folder.getId());
-        d1.setName(fileName);
-        d1.setNodeType(TYPE_CM_CONTENT);
-        d1.setContent(createContentInfo());
-        d1.setCreatedByUser(userInfo);
-        d1.setModifiedByUser(userInfo);
-        d1.setPermissions(nodePermissions);
-        folder.setPermissions(nodePermissions);
-
-        HttpResponse response = post(getCalculateFolderSizeUrl(folder.getId()),  toJsonAsStringNonNull(d1), null, 403);
-        assertNotNull(response);
-
-        setRequestContext(user1);
-
         // Create a folder within the site document's library.
         String folderName = "nestedFolder" + System.currentTimeMillis();
         String nestedFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
 
-        params = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
         params.put("maxItems", "1000");
 

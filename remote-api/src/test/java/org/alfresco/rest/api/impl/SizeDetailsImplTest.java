@@ -63,7 +63,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         NodeService nodeService = mock(NodeService.class);
         PermissionService permissionService = mock(PermissionService.class);
         ActionService actionService = mock(ActionService.class);
-        SimpleCache simpleCache = mock(SimpleCache.class);
+        SimpleCache<Serializable, Object> simpleCache  = mock(SimpleCache.class);
 
         sizeDetailsImpl.setNodes(nodes);
         sizeDetailsImpl.setNodeService(nodeService);

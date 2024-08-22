@@ -213,11 +213,13 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         d1.setName(fileName);
         d1.setNodeType(TYPE_CM_CONTENT);
 
+        // Prepare parameters
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", nestedFolderId);
+        params.put("maxItems", "100");
 
         // Perform POST request
-        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(d1.getId()), toJsonAsStringNonNull(d1), 422);
+        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
         assertNotNull(responseForInvalidNode);
     }
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -77,8 +77,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.web.scripts.node.NodeWebScripTest.class,
     org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
     org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
-    org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class,
-    org.alfresco.rest.api.impl.SizeDetailsImplTest.class
+    org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class
 })
 public class AppContext04TestSuite
 {

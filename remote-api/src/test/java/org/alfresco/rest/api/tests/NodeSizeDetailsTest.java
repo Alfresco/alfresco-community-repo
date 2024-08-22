@@ -208,7 +208,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
         params.put("nodeId", folderId);
         params.put("maxItems", "1000");
-        String fileName = "content.txt";
+        String fileName = "dummyContent.txt";
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
         locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.READ, AccessStatus.DENIED.toString()));

@@ -98,6 +98,7 @@ public class SizeDetailsImpl implements SizeDetails
      * calculateNodeSize : providing HTTP STATUS 202 which signifies REQUEST ACCEPTED.
      *                     HTTP STATUS 200 will provide the size details response from cache.
      */
+    @Override
     public NodeSizeDetails calculateNodeSize(final String nodeId)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);

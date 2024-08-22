@@ -53,21 +53,17 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
 {
     private SizeDetailsImpl sizeDetailsImpl;
     private Nodes nodes;
-    private NodeService nodeService;
-    private PermissionService permissionService;
-    private ActionService actionService;
-    private SimpleCache<Serializable,Object> simpleCache;
-    private final int defaultItems = 1000;
+    private final static int defaultItems = 1000;
 
     @Before
     public void setUp()
     {
         sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
-        nodeService = mock(NodeService.class);
-        permissionService = mock(PermissionService.class);
-        actionService = mock(ActionService.class);
-        simpleCache = mock(SimpleCache.class);
+        NodeService nodeService = mock(NodeService.class);
+        PermissionService permissionService = mock(PermissionService.class);
+        ActionService actionService = mock(ActionService.class);
+        SimpleCache simpleCache = mock(SimpleCache.class);
 
         sizeDetailsImpl.setNodes(nodes);
         sizeDetailsImpl.setNodeService(nodeService);

@@ -154,11 +154,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         for(int i=1;i<=500;i++)
         {
             String folderBName = "folder"+i+RUNID + "_B";
-            String folderB_Id = createFolder(parentFolder, folderBName, null).getId();
+            String folderBId = createFolder(parentFolder, folderBName, null).getId();
             String fileName = "content"+i+ RUNID + ".txt";
             Document d1 = new Document();
             d1.setIsFolder(false);
-            d1.setParentId(folderB_Id);
+            d1.setParentId(folderBId);
             d1.setName(fileName);
             d1.setNodeType(TYPE_CM_CONTENT);
             d1.setContent(createContentInfo());

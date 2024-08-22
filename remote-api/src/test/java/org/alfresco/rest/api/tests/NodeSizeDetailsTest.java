@@ -212,7 +212,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.DELETE, AccessStatus.DENIED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.READ, AccessStatus.DENIED.toString()));
         nodePermissions.setLocallySet(locallySetPermissions);
 
         Document d1 = new Document();
@@ -226,8 +226,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         d1.setPermissions(nodePermissions);
         folder.setPermissions(nodePermissions);
 
-        HttpResponse response = post(getCalculateFolderSizeUrl(folder.getId()),  toJsonAsStringNonNull(params), null, 403);
+        setRequestContext(user2);
+        HttpResponse response = post(getCalculateFolderSizeUrl(folder.getId()),  toJsonAsStringNonNull(d1), null, 403);
         assertNotNull(response);
+
+        setRequestContext(user1);
 
         // Create a folder within the site document's library.
         String folderName = "nestedFolder" + System.currentTimeMillis();

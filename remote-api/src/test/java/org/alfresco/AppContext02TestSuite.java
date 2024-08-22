@@ -25,6 +25,7 @@
  */
 package org.alfresco;
 
+import org.alfresco.rest.api.tests.NodeSizeDetailsTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -76,7 +77,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.BufferedResponseTest.class,
     org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class,
     org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class,
-    org.alfresco.rest.api.tests.NodeFolderSizeApiTest.class
+    NodeSizeDetailsTest.class
 })
 public class AppContext02TestSuite
 {

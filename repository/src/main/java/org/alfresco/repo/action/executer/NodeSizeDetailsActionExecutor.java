@@ -49,20 +49,20 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *   NodeSizeActionExecuter
+ *   NodeSizeDetailsActionExecutor
  *   Executing Alfresco FTS Query to find size of Folder Node
  */
 
-public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
+public class NodeSizeDetailsActionExecutor extends ActionExecuterAbstractBase
 {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeActionExecuter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsActionExecutor.class);
 
     /**
      * Action constants
      */
     public static final String NAME = "folder-size";
-    private static final String EXCEPTION = "Exception";
+    public static final String EXCEPTION = "Exception";
     public static final String DEFAULT_SIZE = "default-size";
     private static final String FIELD_FACET = "content.size";
     private static final String FACET_QUERY = "content.size:[0 TO "+Integer.MAX_VALUE+"] \"label\": \"large\",\"group\":\"Size\"";
@@ -160,13 +160,13 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         }
         catch (RuntimeException runtimeException)
         {
-            LOG.error("Exception occurred in NodeSizeActionExecutor:results {}", runtimeException.getMessage());
+            LOG.error("Exception occurred in NodeSizeDetailsActionExecutor:results {}", runtimeException.getMessage());
             response.put(EXCEPTION,runtimeException.getMessage());
             simpleCache.put(nodeRef.getId(),response);
             throw runtimeException;
         }
 
-        LOG.debug(" Calculating size of Folder Node - NodeSizeActionExecutor:executeImpl ");
+        LOG.debug(" Calculating size of Folder Node - NodeSizeDetailsActionExecutor:executeImpl ");
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
         String formattedTimestamp = eventTimestamp.format(formatter);
@@ -174,6 +174,7 @@ public class NodeSizeActionExecuter extends ActionExecuterAbstractBase
         response.put("size", totalSizeFromFacet);
         response.put("calculatedAt", formattedTimestamp);
         response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
+
         if(isCalculationCompleted)
         {
             simpleCache.put(nodeRef.getId(),response);

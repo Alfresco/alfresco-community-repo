@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,46 +27,34 @@ package org.alfresco.rest.api.nodes;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.impl.FolderSizeImpl;
 import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
-import org.alfresco.rest.api.model.NodePermissions;
+import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
+import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.FolderResourceAction;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 
 import org.slf4j.Logger;
@@ -84,25 +72,13 @@ import org.springframework.extensions.webscripts.Status;
 @EntityResource(name="nodes", title = "Nodes")
 public class NodesEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
-        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, FolderResourceAction.RetrieveFolderSize<Map<String,Object>>, InitializingBean
+        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, InitializingBean
 {
-
     private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
-
-    private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
-    private static final String NOT_INITIATED = "NOT-INITIATED";
-    private static final String STATUS = "status";
-    private static final String COMPLETED = "COMPLETED";
-    private static final String FOLDER = "folder";
-    private static final String EXCEPTION = "Exception";
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
-    private PermissionService permissionService;
-    private NodeService nodeService;
-    private ActionService actionService;
-    private SimpleCache<Serializable,Object> simpleCache;
 
-    private int defaultItems;
+    private SizeDetails sizeDetails;
 
     public void setNodes(Nodes nodes)
     {
@@ -112,31 +88,6 @@ public class NodesEntityResource implements
     public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
     {
         this.directAccessUrlHelper = directAccessUrlHelper;
-    }
-
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
-    }
-
-    public void setSimpleCache(SimpleCache<Serializable, Object> simpleCache)
-    {
-        this.simpleCache = simpleCache;
-    }
-
-    public void setDefaultItems(int defaultItems)
-    {
-        this.defaultItems = defaultItems;
     }
 
     @Override
@@ -286,34 +237,32 @@ public class NodesEntityResource implements
     }
 
     /**
-     * Folder Size - returns size of a folder.
+     * Folder Size - returns size details of a folder.
      *
      * @param nodeId String id of folder - will also accept well-known alias, eg. -root- or -my- or -shared-
      *               Please refer to OpenAPI spec for more details !
      * Returns the response message i.e. Request has been acknowledged with 202
-     * GET/size endpoint to check if the action's status has been completed, comprising the size of the node in bytes.
+     * Also, size-details endpoint to check if the action's status has been completed, comprising the size of the node in bytes.
      *               <p>
      *               If nodeId does not represent a folder, InvalidNodeTypeException (status 422).
      */
-    @Operation("calculate-folder-size")
-    @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder", successStatus = Status.STATUS_ACCEPTED)
+    @Operation("request-size-details")
+    @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder",successStatus = Status.STATUS_ACCEPTED)
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
-    public Map<String, Object> calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
+    public NodeSizeDetails calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
-        NodeRef nodeRef = nodes.validateNode(nodeId);
-        QName qName = nodeService.getType(nodeRef);
-        Map<String, Object> result = new HashMap<>();
-        validatePermissions(nodeRef, nodeId);
-
-        if(!FOLDER.equalsIgnoreCase(qName.getLocalName()))
-        {
-            throw new InvalidNodeTypeException(INVALID_NODEID);
-        }
-
         try
         {
-            FolderSizeImpl folderSizeImpl = new FolderSizeImpl(actionService);
-            return folderSizeImpl.executingAsynchronousFolderAction(nodeRef, defaultItems, result, simpleCache);
+            NodeSizeDetails nodeSizeDetails = sizeDetails.calculateNodeSize(nodeId);
+            if(nodeSizeDetails == null)
+            {
+                withResponse.setStatus(Status.STATUS_ACCEPTED);
+            }
+            else
+            {
+                withResponse.setStatus(Status.STATUS_OK);
+            }
+            return nodeSizeDetails;
         }
         catch (Exception alfrescoRuntimeError)
         {
@@ -322,64 +271,4 @@ public class NodesEntityResource implements
         }
     }
 
-    @Override
-    @WebApiDescription(title = "Returns Folder Node Size", description = "Returning a Folder Node Size")
-    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
-    @BinaryProperties({"size"})
-    public Map<String, Object> getFolderSize(String nodeId) throws EntityNotFoundException
-    {
-        Map<String, Object> result = new HashMap<>();
-        try
-        {
-            LOG.debug("Retrieving OUTPUT from NodeSizeActionExecutor - NodesEntityResource:getFolderSize");
-            NodeRef nodeRef = nodes.validateNode(nodeId);
-            validatePermissions(nodeRef, nodeId);
-            QName qName = nodeService.getType(nodeRef);
-
-            if(!FOLDER.equalsIgnoreCase(qName.getLocalName()))
-            {
-                throw new InvalidNodeTypeException(INVALID_NODEID);
-            }
-
-            Map<String, Object> cachedResult = (Map<String, Object>) simpleCache.get(nodeId);
-            if(cachedResult != null)
-            {
-                if(cachedResult.containsKey("size"))
-                {
-                    cachedResult.put(STATUS, COMPLETED);
-                    result = cachedResult;
-                }
-                else
-                {
-                    result = cachedResult;
-                }
-            }
-            else
-            {
-                result.put(STATUS,NOT_INITIATED);
-            }
-            return result;
-        }
-        catch (Exception ex)
-        {
-            LOG.error("Exception occurred in NodesEntityResource:getFolderSize {}", ex.getMessage());
-            throw ex; // Rethrow with original stack trace
-        }
-    }
-
-    /**
-     * Validating node permission [i.e. READ permission should be there ]
-     */
-    private void validatePermissions(NodeRef nodeRef, String nodeId)
-    {
-        Node nodeInfo = nodes.getNode(nodeId);
-        NodePermissions nodePerms = nodeInfo.getPermissions();
-
-        // Validate permissions.
-        if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
-        {
-            throw new AccessDeniedException("permissions.err_access_denied");
-        }
-    }
 }
-

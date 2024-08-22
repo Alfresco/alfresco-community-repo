@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class NodeSizeActionExecuterTest extends BaseSpringTest
+public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
 {
     /**
      * The test node reference
@@ -53,7 +53,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     /**
      * The folder Size executer
      */
-    private NodeSizeActionExecuter executer;
+    private NodeSizeDetailsActionExecutor executer;
 
     /**
      * Id used to identify the test action created
@@ -82,7 +82,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
 
         // Create the store and get the root node
         testStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
-                        + System.currentTimeMillis());
+                + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(testStoreRef);
 
         // Create the node used for tests
@@ -93,7 +93,7 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT).getChildRef();
 
         // Get the executer instance.
-        this.executer = (NodeSizeActionExecuter)this.applicationContext.getBean(NodeSizeActionExecuter.NAME);
+        this.executer = (NodeSizeDetailsActionExecutor)this.applicationContext.getBean(NodeSizeDetailsActionExecutor.NAME);
 
         simpleCache = (SimpleCache<Serializable, Object>) this.applicationContext.getBean("folderSizeSharedCache");
     }
@@ -104,9 +104,9 @@ public class NodeSizeActionExecuterTest extends BaseSpringTest
     @Test
     public void testExecution()
     {
-        int maxItems = 100;
-        ActionImpl action = new ActionImpl(null, ID, NodeSizeActionExecuter.NAME, null);
-        action.setParameterValue(NodeSizeActionExecuter.DEFAULT_SIZE, maxItems);
+        int maxItems = 1000;
+        ActionImpl action = new ActionImpl(null, ID, NodeSizeDetailsActionExecutor.NAME, null);
+        action.setParameterValue(NodeSizeDetailsActionExecutor.DEFAULT_SIZE, maxItems);
         this.executer.executeImpl(action, this.nodeRef);
         Object resultAction = simpleCache.get(this.nodeRef.getId());
         Map<String, Object> mapResult = (Map<String, Object>)resultAction;

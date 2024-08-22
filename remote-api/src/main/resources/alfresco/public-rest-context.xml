@@ -996,6 +996,29 @@
         </property>
     </bean>
 
+    <bean id="sizeDetails" class="org.alfresco.rest.api.impl.SizeDetailsImpl">
+        <property name="nodes" ref="nodes" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="permissionService" ref="permissionService"/>
+        <property name="actionService" ref="ActionService"/>
+        <property name="simpleCache" ref="folderSizeSharedCache" />
+        <property name="defaultItems" value="${alfresco.restApi.calculateFolderSize.items}"/>
+    </bean>
+
+    <bean id="SizeDetails" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.SizeDetails</value>
+        </property>
+        <property name="target">
+            <ref bean="sizeDetails" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
     <bean class="org.alfresco.rest.api.rules.NodeRuleSettingsRelation">
         <property name="ruleSettings" ref="RuleSettings" />
     </bean>
@@ -1148,11 +1171,7 @@
     <bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
         <property name="nodes" ref="Nodes" />
         <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
-        <property name="permissionService" ref="permissionService"/>
-        <property name="nodeService" ref="NodeService" />
-        <property name="actionService" ref="ActionService"/>
-        <property name="simpleCache" ref="folderSizeSharedCache" />
-        <property name="defaultItems" value="${alfresco.restApi.calculateFolderSize.items}"/>
+        <property name="sizeDetails" ref="SizeDetails" />
     </bean>
 	
     <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">

@@ -36,7 +36,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.FolderResourceAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -58,8 +57,6 @@ import java.util.Map;
 public class ResourceWebScriptGet extends AbstractResourceWebScript implements ParamsExtractor, RecognizedParamsExtractor
 {
     private static Log logger = LogFactory.getLog(ResourceWebScriptGet.class);
-
-    private static final String GET_FOLDERSIZE = "/nodes/{id}/size";
     
     public ResourceWebScriptGet()
     {
@@ -228,7 +225,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     }
                 }
             case RELATIONSHIP:
-                if (StringUtils.isBlank(params.getRelationshipId()) || params.isCollectionResource())
+                if (StringUtils.isBlank(params.getRelationshipId()) || (params.isCollectionResource()))
                 {
                     // Get the collection
                     if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
@@ -282,18 +279,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
             case PROPERTY:
                 if (StringUtils.isNotBlank(params.getEntityId()))
                 {
-                    if (FolderResourceAction.RetrieveFolderSize.class.isAssignableFrom(resource.getResource().getClass())
-                       && GET_FOLDERSIZE.equals(resource.getMetaData().getUniqueId()))
-                    {
-                        if (resource.getMetaData().isDeleted(FolderResourceAction.RetrieveFolderSize.class))
-                        {
-                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
-                        }
-                        FolderResourceAction.RetrieveFolderSize getter = (FolderResourceAction.RetrieveFolderSize) resource.getResource();
-                        Object result = getter.getFolderSize(params.getEntityId());
-                        return result;
-                    }
-                    else if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(BinaryResourceAction.Read.class))
                         {
@@ -303,7 +289,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params);
                         return prop;
                     }
-                    else if (BinaryResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (BinaryResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(BinaryResourceAction.ReadWithResponse.class))
                         {
@@ -313,7 +299,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params, withResponse);
                         return prop;
                     }
-                    else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Read.class))
                         {
@@ -323,7 +309,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params);
                         return prop;
                     }
-                    else if (RelationshipResourceBinaryAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    if (RelationshipResourceBinaryAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.ReadWithResponse.class))
                         {
@@ -333,10 +319,6 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params, withResponse);
                         return prop;
                     }
-                    else
-                    {
-                        throw new UnsupportedResourceOperationException();
-                    }
                 }
                 else
                 {
@@ -345,7 +327,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
             default:
                 throw new UnsupportedResourceOperationException("GET not supported for Actions");
         }
-
     }
+
 
 }

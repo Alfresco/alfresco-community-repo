@@ -27,7 +27,6 @@ package org.alfresco.rest.api.tests;
 
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
-import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -53,16 +52,18 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
- * V1 REST API tests for Folder size
+ * V1 REST API tests for calculating and retrieving Folder size.
  */
 @FixMethodOrder (MethodSorters.NAME_ASCENDING)
 @RunWith (JUnit4.class)
-public class NodeFolderSizeApiTest extends AbstractBaseApiTest
+public class NodeSizeDetailsTest extends AbstractBaseApiTest
 {
-    private static final Logger LOG = LoggerFactory.getLogger(NodeFolderSizeApiTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsTest.class);
 
     private Site userOneN1Site;
     private String folderId;
@@ -88,7 +89,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         }
         catch (Exception e)
         {
-            LOG.error("Exception occured in NodeFolderSizeApiTest:addToDocumentLibrary {}", e.getMessage());
+            LOG.error("Exception occured in NodeSizeDetailsTest:addToDocumentLibrary {}", e.getMessage());
         }
         return null;
     }
@@ -109,10 +110,8 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
     }
 
     /**
-     * Test case for POST/calculate-folder-size, which calculates Folder Size.
-     * Test case for GET/size, which receive Folder Size.
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/calculate-folder-size}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size}
+     * Test case for POST/request-size-details, which calculates and retrieve size of a folder.
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/request-size-details}
      */
     @Test
     public void testPostAndGetFolderSize() throws Exception
@@ -120,7 +119,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
-        params.put("maxItems", "100");
+        params.put("maxItems", "1000");
 
         // Perform POST request
         HttpResponse postResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
@@ -135,7 +134,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        HttpResponse getResponse = getSingle(NodesEntityResource.class, folderId + "/size", null, 200);
+        HttpResponse getResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);
@@ -192,7 +191,7 @@ public class NodeFolderSizeApiTest extends AbstractBaseApiTest
         Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
         assertNotNull("Parsed document should not be null", document);
 
-        HttpResponse getResponse = getSingle(NodesEntityResource.class, parentFolder + "/size", null, 200);
+        HttpResponse getResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 200);
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
         assertNotNull("JSON response should not be null", getJsonResponse);

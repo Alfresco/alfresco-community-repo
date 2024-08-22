@@ -76,7 +76,8 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.TempOutputStreamTest.class,
     org.alfresco.rest.api.tests.BufferedResponseTest.class,
     org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class,
-    org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class
+    org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class,
+    org.alfresco.rest.api.tests.NodeSizeDetailsTest.class
 })
 public class AppContext02TestSuite
 {

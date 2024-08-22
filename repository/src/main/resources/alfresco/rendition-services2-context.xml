@@ -176,4 +176,11 @@
 
 <!-- The definitions are read from json files (possibly added to a volume via k8 ConfigMaps) -->
 
+    <!-- JavaScript API support -->
+    <bean id="renditionService2Script"
+          class="org.alfresco.repo.rendition2.script.ScriptRenditionService2"
+          parent="baseJavaScriptExtension">
+        <property name="extensionName" value="renditionService2" />
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+    </bean>
 </beans>

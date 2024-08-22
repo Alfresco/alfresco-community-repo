@@ -27,18 +27,20 @@ package org.alfresco.rest.api.impl;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.api.tests.AbstractBaseApiTest;
-import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.Document;
-import org.alfresco.rest.api.tests.client.data.UserInfo;
+import org.alfresco.rest.api.tests.client.data.*;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertNull;
@@ -52,17 +54,14 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
 {
     private final static int DEFAULT_ITEMS = 1000;
     private SizeDetailsImpl sizeDetailsImpl;
-    private NodeService nodeService;
-    private PermissionService permissionService;
-    private Nodes nodes;
 
     @Before
     public void setUp()
     {
         sizeDetailsImpl = new SizeDetailsImpl();
-        nodes = mock(Nodes.class);
-        nodeService = mock(NodeService.class);
-        permissionService = mock(PermissionService.class);
+        Nodes nodes = mock(Nodes.class);
+        NodeService nodeService = mock(NodeService.class);
+        PermissionService permissionService = mock(PermissionService.class);
         ActionService actionService = mock(ActionService.class);
         SimpleCache<Serializable, Map<String, Object>> simpleCache  = mock(SimpleCache.class);
 
@@ -80,21 +79,28 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         setRequestContext(user1);
         UserInfo userInfo = new UserInfo(user1);
 
+        String myNodeId = getMyNodeId();
         String fileName = "content.txt";
         String folder0Name = "f0-testParentFolder-"+RUNID;
-        String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
-        permissionService.setPermission(nodes.validateNode(parentFolder), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
+        NodePermissions nodePermissions = new NodePermissions();
+        Folder parentFolder = createFolder(myNodeId, folder0Name,null);
+
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.ALL_AUTHORITIES, AccessStatus.ALLOWED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
 
         Document d1 = new Document();
         d1.setIsFolder(false);
-        d1.setParentId(parentFolder);
+        d1.setPermissions(nodePermissions);
+        d1.setParentId(parentFolder.getId());
         d1.setName(fileName);
         d1.setNodeType(TYPE_CM_CONTENT);
         d1.setContent(createContentInfo());
         d1.setCreatedByUser(userInfo);
         d1.setModifiedByUser(userInfo);
+        parentFolder.setPermissions(nodePermissions);
 
-        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(parentFolder);
+        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(parentFolder.getId());
         assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",nodeSizeDetails);
     }
 

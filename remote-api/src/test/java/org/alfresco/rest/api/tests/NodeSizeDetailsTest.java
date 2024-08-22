@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -34,8 +35,7 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,6 +200,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     {
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
+        UserInfo userInfo = new UserInfo(user1);
 
         setRequestContext(null);
         delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
@@ -206,7 +208,22 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
         params.put("nodeId", folderId);
         params.put("maxItems", "1000");
-        permissionService.setPermission(nodes.validateNode(folderId), PermissionService.ALL_AUTHORITIES, PermissionService.READ, false);
+        String fileName = "content.txt";
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(user1, PermissionService.READ, AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+
+        Document d1 = new Document();
+        d1.setIsFolder(false);
+        d1.setParentId(folderId);
+        d1.setName(fileName);
+        d1.setNodeType(TYPE_CM_CONTENT);
+        d1.setContent(createContentInfo());
+        d1.setCreatedByUser(userInfo);
+        d1.setModifiedByUser(userInfo);
+        d1.setPermissions(nodePermissions);
+
         HttpResponse response = post(getCalculateFolderSizeUrl(folderId),  toJsonAsStringNonNull(params), null, 403);
         assertNotNull(response);
 

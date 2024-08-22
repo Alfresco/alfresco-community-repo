@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -67,6 +68,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     private Site userOneN1Site;
     private String folderId;
     private PermissionService permissionService;
+    private Nodes nodes;
 
     // Method to create content info
     private ContentInfo createContentInfo()
@@ -108,6 +110,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String folderName = "folder" + System.currentTimeMillis();
         folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
+        nodes = applicationContext.getBean("Nodes", Nodes.class);
     }
 
     /**
@@ -201,11 +204,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
-        NodeRef folderIdRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId);
-        params.put("nodeId", folderIdRef.getId());
+        params.put("nodeId", folderId);
         params.put("maxItems", "1000");
-        permissionService.setPermission(folderIdRef, user1, PermissionService.WRITE, false);
-        HttpResponse response = post(getCalculateFolderSizeUrl(folderIdRef.getId()),  toJsonAsStringNonNull(params), null, 403);
+        permissionService.setPermission(nodes.validateNode(folderId), PermissionService.ALL_AUTHORITIES, PermissionService.READ, false);
+        HttpResponse response = post(getCalculateFolderSizeUrl(folderId),  toJsonAsStringNonNull(params), null, 403);
         assertNotNull(response);
 
         // Create a folder within the site document's library.
@@ -213,7 +215,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String nestedFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
 
         params = new HashMap<>();
-        params.put("nodeId", folderIdRef.getId());
+        params.put("nodeId", folderId);
         params.put("maxItems", "1000");
 
         // Perform POST request

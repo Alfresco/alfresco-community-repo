@@ -54,12 +54,13 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
     private SizeDetailsImpl sizeDetailsImpl;
     private NodeService nodeService;
     private PermissionService permissionService;
+    private Nodes nodes;
 
     @Before
     public void setUp()
     {
         sizeDetailsImpl = new SizeDetailsImpl();
-        Nodes nodes = mock(Nodes.class);
+        nodes = mock(Nodes.class);
         nodeService = mock(NodeService.class);
         permissionService = mock(PermissionService.class);
         ActionService actionService = mock(ActionService.class);
@@ -82,7 +83,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         String fileName = "content.txt";
         String folder0Name = "f0-testParentFolder-"+RUNID;
         String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
-        permissionService.setPermission(nodeService.getNodeRef(Long.valueOf(parentFolder)), user1, PermissionService.READ, true);
+        permissionService.setPermission(nodes.validateNode(parentFolder), PermissionService.ALL_AUTHORITIES, PermissionService.READ, true);
 
         Document d1 = new Document();
         d1.setIsFolder(false);

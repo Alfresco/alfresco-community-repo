@@ -40,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
@@ -63,7 +64,7 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         NodeService nodeService = mock(NodeService.class);
         PermissionService permissionService = mock(PermissionService.class);
         ActionService actionService = mock(ActionService.class);
-        SimpleCache<Serializable, Object> simpleCache  = mock(SimpleCache.class);
+        SimpleCache<Serializable, Map<String, Object>> simpleCache  = mock(SimpleCache.class);
 
         sizeDetailsImpl.setNodes(nodes);
         sizeDetailsImpl.setNodeService(nodeService);
@@ -82,7 +83,6 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         String fileName = "content.txt";
         String folder0Name = "f0-testParentFolder-"+RUNID;
         String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
-        NodeRef nodeRef = new NodeRef("protocol", "identifier", parentFolder);
 
         Document d1 = new Document();
         d1.setIsFolder(false);
@@ -93,7 +93,6 @@ public class SizeDetailsImplTest extends AbstractBaseApiTest
         d1.setCreatedByUser(userInfo);
         d1.setModifiedByUser(userInfo);
 
-        when(nodes.validateNode(parentFolder)).thenReturn(nodeRef);
         NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(parentFolder);
         assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",nodeSizeDetails);
     }

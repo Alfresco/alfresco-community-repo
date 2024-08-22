@@ -61,7 +61,7 @@ public class SizeDetailsImpl implements SizeDetails
     private NodeService nodeService;
     private PermissionService permissionService;
     private ActionService actionService;
-    private SimpleCache<Serializable,Object> simpleCache;
+    private SimpleCache<Serializable,Map<String, Object>> simpleCache;
     private int defaultItems;
 
     public void setNodes(Nodes nodes)
@@ -84,7 +84,7 @@ public class SizeDetailsImpl implements SizeDetails
         this.actionService = actionService;
     }
 
-    public void setSimpleCache(SimpleCache<Serializable, Object> simpleCache)
+    public void setSimpleCache(SimpleCache<Serializable, Map<String, Object>> simpleCache)
     {
         this.simpleCache = simpleCache;
     }
@@ -117,13 +117,13 @@ public class SizeDetailsImpl implements SizeDetails
         }
 
         LOG.debug("Executing NodeSizeActionExecuter from calculateNodeSize method");
-        return executorResultToSizeDetails((Map<String, Object>)simpleCache.get(nodeRef.getId()));
+        return executorResultToSizeDetails(simpleCache.get(nodeRef.getId()));
     }
 
     /**
      * Executing Action Asynchronously.
      */
-    private void executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Object> simpleCache)
+    private void executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Map<String, Object>> simpleCache)
     {
         Map<String, Object > currentStatus = new HashMap<>();
         currentStatus.put(STATUS,IN_PROGRESS);

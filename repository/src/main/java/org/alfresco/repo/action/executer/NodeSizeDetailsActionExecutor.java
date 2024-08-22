@@ -67,7 +67,7 @@ public class NodeSizeDetailsActionExecutor extends ActionExecuterAbstractBase
     private static final String FIELD_FACET = "content.size";
     private static final String FACET_QUERY = "content.size:[0 TO "+Integer.MAX_VALUE+"] \"label\": \"large\",\"group\":\"Size\"";
     private SearchService searchService;
-    private SimpleCache<Serializable,Object> simpleCache;
+    private SimpleCache<Serializable, Map<String, Object>> simpleCache;
 
     /**
      * Set the search service
@@ -84,7 +84,7 @@ public class NodeSizeDetailsActionExecutor extends ActionExecuterAbstractBase
      *
      * @param simpleCache  the cache service
      */
-    public void setSimpleCache(SimpleCache<Serializable, Object> simpleCache)
+    public void setSimpleCache(SimpleCache<Serializable, Map<String, Object>> simpleCache)
     {
         this.simpleCache = simpleCache;
     }

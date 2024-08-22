@@ -34,6 +34,9 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
 import org.junit.Before;
@@ -44,6 +47,7 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -52,9 +56,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for calculating and retrieving Folder size.
@@ -67,6 +69,9 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
     private Site userOneN1Site;
     private String folderId;
+    private ApplicationContext applicationContext;
+
+    private PermissionService permissionService;
 
     // Method to create content info
     private ContentInfo createContentInfo()
@@ -107,6 +112,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
         folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
+        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
     }
 
     /**
@@ -124,15 +130,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // Perform POST request
         HttpResponse postResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
 
-        // Validate response and parsed document
-        assertNotNull("Response should not be null", postResponse);
-
-        String jsonResponse = String.valueOf(postResponse.getJsonResponse());
-        assertNotNull("JSON response should not be null", jsonResponse);
-
-        // Parse JSON response
-        Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
-        assertNotNull("Parsed document should not be null", document);
+        assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",postResponse.getJsonResponse());
 
         HttpResponse getResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
 
@@ -181,15 +179,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // Perform POST request
         HttpResponse postResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 202);
 
-        // Validate response and parsed document
-        assertNotNull("Response should not be null", postResponse);
-
-        String jsonResponse = String.valueOf(postResponse.getJsonResponse());
-        assertNotNull("JSON response should not be null", jsonResponse);
-
-        // Parse JSON response
-        Object document = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), Object.class);
-        assertNotNull("Parsed document should not be null", document);
+        assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",postResponse.getJsonResponse());
 
         HttpResponse getResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 200);
 
@@ -209,26 +199,32 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     @Test
     public void testHTTPStatus() throws Exception
     {
+        // Prepare parameters
+        Map<String, String> params = new HashMap<>();
+
+
         setRequestContext(null);
         delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
-        NodeTarget tgt = new NodeTarget();
-        tgt.setTargetParentId(folderId);
-        HttpResponse response = post(getCalculateFolderSizeUrl(UUID.randomUUID().toString()), toJsonAsStringNonNull(tgt), null, 404);
+        NodeRef folderIdRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId);
+        params.put("nodeId", folderIdRef.getId());
+        params.put("maxItems", "1000");
+        permissionService.setPermission(folderIdRef, user1, PermissionService.ASPECTS, true);
+        HttpResponse response = post(getCalculateFolderSizeUrl(folderIdRef.getId()),  toJsonAsStringNonNull(params), null, 403);
         assertNotNull(response);
 
         // Create a folder within the site document's library.
         String folderName = "nestedFolder" + System.currentTimeMillis();
         String nestedFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
-        // Prepare parameters
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", nestedFolderId);
-        params.put("maxItems", "100");
+
+        params = new HashMap<>();
+        params.put("nodeId", folderIdRef.getId());
+        params.put("maxItems", "1000");
 
         // Perform POST request
-        response = post(getCalculateFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
-        assertNotNull(response);
+        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
+        assertNotNull(responseForInvalidNode);
     }
 
     @After

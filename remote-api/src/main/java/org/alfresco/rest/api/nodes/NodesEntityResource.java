@@ -77,7 +77,6 @@ public class NodesEntityResource implements
     private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
-
     private SizeDetails sizeDetails;
 
     public void setNodes(Nodes nodes)
@@ -88,6 +87,11 @@ public class NodesEntityResource implements
     public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
     {
         this.directAccessUrlHelper = directAccessUrlHelper;
+    }
+
+    public void setSizeDetails(SizeDetails sizeDetails)
+    {
+        this.sizeDetails = sizeDetails;
     }
 
     @Override

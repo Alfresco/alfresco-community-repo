@@ -204,14 +204,20 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
         // Create a folder within the site document's library.
         String folderName = "nestedFolder" + System.currentTimeMillis();
+        String fileName = "dummyContent.txt";
         String nestedFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
 
+        Document d1 = new Document();
+        d1.setIsFolder(false);
+        d1.setParentId(nestedFolderId);
+        d1.setName(fileName);
+        d1.setNodeType(TYPE_CM_CONTENT);
+
         Map<String, String> params = new HashMap<>();
-        params.put("nodeId", folderId);
-        params.put("maxItems", "1000");
+        params.put("nodeId", nestedFolderId);
 
         // Perform POST request
-        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(nestedFolderId), toJsonAsStringNonNull(params), 422);
+        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(d1.getId()), toJsonAsStringNonNull(d1), 422);
         assertNotNull(responseForInvalidNode);
     }
 

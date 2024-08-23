@@ -48,9 +48,9 @@ import java.util.HashMap;
 
 import org.alfresco.repo.action.executer.NodeSizeDetailsActionExecutor;
 
-import static org.alfresco.rest.api.SizeDetails.PROCESSING_STATE.COMPLETED;
-import static org.alfresco.rest.api.SizeDetails.PROCESSING_STATE.NOT_INITIATED;
-import static org.alfresco.rest.api.SizeDetails.PROCESSING_STATE.IN_PROGRESS;
+import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.COMPLETED;
+import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.NOT_INITIATED;
+import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.IN_PROGRESS;
 
 public class SizeDetailsImpl implements SizeDetails
 {

@@ -251,8 +251,8 @@ public class NodesEntityResource implements
      *               If nodeId does not represent a folder, InvalidNodeTypeException (status 422).
      */
     @Operation("request-size-details")
-    @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder",successStatus = Status.STATUS_ACCEPTED)
-    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of Execution Job", description = "A single nodeId")})
+    @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder node",successStatus = Status.STATUS_ACCEPTED)
+    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id", description = "A single nodeId")})
     public NodeSizeDetails calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
         try

@@ -57,7 +57,6 @@ public class SizeDetailsImplTest
     private Nodes nodes;
     private NodeService nodeService;
     private ActionService actionService;
-    private SimpleCache<Serializable, Map<String, Object>> simpleCache;
     private Action action;
     private static final String NAMESPACE = "http://www.alfresco.org/test/NodeSizeDetailsTest";
     private static final QName TYPE_FOLDER = QName.createQName(NAMESPACE, "folder");
@@ -71,7 +70,7 @@ public class SizeDetailsImplTest
         PermissionService permissionService = mock(PermissionService.class);
         actionService = mock(ActionService.class);
         action = mock(Action.class);
-        simpleCache  = mock(SimpleCache.class);
+        SimpleCache<Serializable, Map<String, Object>> simpleCache  = mock(SimpleCache.class);
 
         sizeDetailsImpl.setNodes(nodes);
         sizeDetailsImpl.setNodeService(nodeService);

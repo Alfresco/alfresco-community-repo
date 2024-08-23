@@ -53,7 +53,8 @@ public class SizeDetailsImpl implements SizeDetails
     private enum STATE
     {
         NOT_INITIATED, IN_PROGRESS, COMPLETED;
-    };
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(SizeDetailsImpl.class);
     private static final String STATUS = "status";
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";

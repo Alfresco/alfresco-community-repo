@@ -29,5 +29,10 @@ import org.alfresco.rest.api.model.NodeSizeDetails;
 
 public interface SizeDetails
 {
+     enum PROCESSING_STATE
+     {
+          NOT_INITIATED, IN_PROGRESS, COMPLETED;
+     }
+
      NodeSizeDetails calculateNodeSize(String nodeId);
 }

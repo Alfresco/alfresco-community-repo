@@ -28,7 +28,6 @@ package org.alfresco.rest.api.nodes;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
 import org.alfresco.rest.api.Nodes;

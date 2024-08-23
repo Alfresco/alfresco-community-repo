@@ -203,28 +203,24 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
-        String nodeName = "node0" + System.currentTimeMillis();
         String folderName = "folder0" + System.currentTimeMillis();
-        String nodeType = "app:folderlink";
-        String nodeId = "docId0" + System.currentTimeMillis();
+
+        HttpResponse responseForNotFound = post(getCalculateFolderSizeUrl(folderName), null, 404);
+        assertNotNull(responseForNotFound);
+
+        folderName = "folder1" + System.currentTimeMillis();
+        String nodeType = "cm:content";
 
         Node nodeResp = createNode(folderId, folderName, nodeType, null);
         String n1Id = nodeResp.getId();
 
-        Node n2 = new Node();
-        n2.setName(nodeName);
-        n2.setId(nodeId);
-        n2.setNodeType(nodeType);
-        n2.setIsFolder(false);
-        n2.setParentId(n1Id);
-
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
-        params.put("nodeId", nodeId);
+        params.put("nodeId", n1Id);
         params.put("maxItems", "1000");
 
         // Perform POST request
-        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(nodeId), toJsonAsStringNonNull(params), 422);
+        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(n1Id), toJsonAsStringNonNull(params), 422);
         assertNotNull(responseForInvalidNode);
     }
 

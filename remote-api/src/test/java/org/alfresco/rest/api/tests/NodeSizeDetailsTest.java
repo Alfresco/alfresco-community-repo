@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,27 +203,28 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
-        // Create a folder within the site document's library.
-        String folderName = "nestedFolder" + System.currentTimeMillis();
-        String fileName = "dummyContent.txt";
-        String docId = "docId" + System.currentTimeMillis();
-        String nestedFolderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
+        String nodeName = "node0" + System.currentTimeMillis();
+        String folderName = "folder0" + System.currentTimeMillis();
+        String nodeType = "app:folderlink";
+        String nodeId = "docId0" + System.currentTimeMillis();
 
-        Document d1 = new Document();
-        d1.setIsFolder(false);
-        d1.setId(docId);
-        d1.setParentId(nestedFolderId);
-        d1.setName(fileName);
-        d1.setNodeType(TYPE_CM_CONTENT);
+        Node nodeResp = createNode(folderId, folderName, nodeType, null);
+        String n1Id = nodeResp.getId();
 
+        Node n2 = new Node();
+        n2.setName(nodeName);
+        n2.setId(nodeId);
+        n2.setNodeType(nodeType);
+        n2.setIsFolder(false);
+        n2.setParentId(n1Id);
 
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
-        params.put("nodeId", docId);
+        params.put("nodeId", nodeId);
         params.put("maxItems", "1000");
 
         // Perform POST request
-        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(docId), toJsonAsStringNonNull(params), 422);
+        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(nodeId), toJsonAsStringNonNull(params), 422);
         assertNotNull(responseForInvalidNode);
     }
 

@@ -255,8 +255,6 @@ public class NodesEntityResource implements
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id", description = "A single nodeId")})
     public NodeSizeDetails calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
-        try
-        {
             NodeSizeDetails nodeSizeDetails = sizeDetails.calculateNodeSize(nodeId);
             if(nodeSizeDetails == null)
             {
@@ -267,12 +265,6 @@ public class NodesEntityResource implements
                 withResponse.setStatus(Status.STATUS_OK);
             }
             return nodeSizeDetails;
-        }
-        catch (Exception alfrescoRuntimeError)
-        {
-            LOG.error("Exception occurred in NodesEntityResource:calculateFolderSize {}", alfrescoRuntimeError.getMessage());
-            throw new AlfrescoRuntimeException("Exception occurred in NodesEntityResource:calculateFolderSize",alfrescoRuntimeError);
-        }
     }
 
 }

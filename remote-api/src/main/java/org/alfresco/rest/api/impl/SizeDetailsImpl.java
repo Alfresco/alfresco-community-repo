@@ -50,11 +50,11 @@ import org.alfresco.repo.action.executer.NodeSizeDetailsActionExecutor;
 
 public class SizeDetailsImpl implements SizeDetails
 {
+    private enum STATE
+    {
+        STATUS, NOT_INITIATED, IN_PROGRESS, COMPLETED;
+    };
     private static final Logger LOG = LoggerFactory.getLogger(SizeDetailsImpl.class);
-    private static final String IN_PROGRESS = "IN-PROGRESS";
-    private static final String STATUS = "status";
-    private static final String COMPLETED = "COMPLETED";
-    private static final String NOT_INITIATED = "NOT-INITIATED";
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
     private static final String FOLDER = "folder";
     private Nodes nodes;
@@ -126,7 +126,7 @@ public class SizeDetailsImpl implements SizeDetails
     private void executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Map<String, Object>> simpleCache)
     {
         Map<String, Object > currentStatus = new HashMap<>();
-        currentStatus.put(STATUS,IN_PROGRESS);
+        currentStatus.put(STATE.STATUS.name(),STATE.IN_PROGRESS.name());
 
         Action folderSizeAction = actionService.createAction(NodeSizeDetailsActionExecutor.NAME);
         folderSizeAction.setTrackStatus(true);
@@ -143,7 +143,7 @@ public class SizeDetailsImpl implements SizeDetails
     {
         if (result == null)
         {
-            return new NodeSizeDetails(NOT_INITIATED);
+            return new NodeSizeDetails(STATE.NOT_INITIATED.name());
         }
         else if(result.containsKey(NodeSizeDetailsActionExecutor.EXCEPTION))
         {
@@ -155,11 +155,11 @@ public class SizeDetailsImpl implements SizeDetails
 
         if (hasSizeKey)
         {
-            return new NodeSizeDetails((String) result.get("nodeId"), (Long) result.get("size"), (String) result.get("calculatedAt"), (Integer) result.get("numberOfFiles"), COMPLETED);
+            return new NodeSizeDetails((String) result.get("nodeId"), (Long) result.get("size"), (String) result.get("calculatedAt"), (Integer) result.get("numberOfFiles"), STATE.COMPLETED.name());
         }
         else
         {
-            return new NodeSizeDetails(IN_PROGRESS);
+            return new NodeSizeDetails(STATE.IN_PROGRESS.name());
         }
     }
 

@@ -105,8 +105,8 @@ public class NodeSizeDetailsActionExecutor extends ActionExecuterAbstractBase
         }
         catch (NumberFormatException numberFormatException)
         {
-            LOG.error("Exception occurred while parsing String to INT: {}", numberFormatException.getMessage());
-            response.put(EXCEPTION,numberFormatException.getMessage());
+            LOG.error("Exception occurred while parsing String to INT: {} ", numberFormatException.getMessage());
+            response.put(EXCEPTION,"Exception occurred while parsing String to INT: {} " + numberFormatException.getMessage());
             simpleCache.put(actionedUponNodeRef.getId(),response);
             throw numberFormatException;
         }
@@ -160,8 +160,8 @@ public class NodeSizeDetailsActionExecutor extends ActionExecuterAbstractBase
         }
         catch (RuntimeException runtimeException)
         {
-            LOG.error("Exception occurred in NodeSizeDetailsActionExecutor:results {}", runtimeException.getMessage());
-            response.put(EXCEPTION,runtimeException.getMessage());
+            LOG.error("Exception occurred in NodeSizeDetailsActionExecutor:results {} ", runtimeException.getMessage());
+            response.put(EXCEPTION,"Exception occurred in NodeSizeDetailsActionExecutor:results {} "+runtimeException.getMessage());
             simpleCache.put(nodeRef.getId(),response);
             throw runtimeException;
         }

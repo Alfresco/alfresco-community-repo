@@ -52,9 +52,10 @@ public class SizeDetailsImpl implements SizeDetails
 {
     private enum STATE
     {
-        STATUS, NOT_INITIATED, IN_PROGRESS, COMPLETED;
+        NOT_INITIATED, IN_PROGRESS, COMPLETED;
     };
     private static final Logger LOG = LoggerFactory.getLogger(SizeDetailsImpl.class);
+    private static final String STATUS = "status";
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
     private static final String FOLDER = "folder";
     private Nodes nodes;
@@ -126,7 +127,7 @@ public class SizeDetailsImpl implements SizeDetails
     private void executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Map<String, Object>> simpleCache)
     {
         Map<String, Object > currentStatus = new HashMap<>();
-        currentStatus.put(STATE.STATUS.name(),STATE.IN_PROGRESS.name());
+        currentStatus.put(STATUS,STATE.IN_PROGRESS.name());
 
         Action folderSizeAction = actionService.createAction(NodeSizeDetailsActionExecutor.NAME);
         folderSizeAction.setTrackStatus(true);

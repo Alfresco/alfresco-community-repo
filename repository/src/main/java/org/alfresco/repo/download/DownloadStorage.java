@@ -157,9 +157,10 @@ public class DownloadStorage
          
         if (log.isDebugEnabled())
         {
+            String downloadNodeRefString = "Download-NodeRef=" + downloadNodeRef;
             StringBuilder msg = new StringBuilder();
             msg.append("Created Download. ")
-                    .append("Download-NodeRef="+downloadNodeRef);
+                    .append(downloadNodeRefString);
             log.debug(msg.toString());
         }
         return downloadNodeRef;

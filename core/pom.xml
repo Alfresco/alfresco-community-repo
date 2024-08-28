@@ -132,6 +132,12 @@
          <scope>test</scope>
       </dependency>
       <dependency>
+         <groupId>org.testng</groupId>
+         <artifactId>testng</artifactId>
+         <version>7.9.0</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>com.epam.reportportal</groupId>
          <artifactId>agent-java-junit</artifactId>
          <version>5.2.3</version>

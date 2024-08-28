@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.api.impl;
 
-import org.alfresco.repo.action.executer.NodeSizeDetailsActionExecutor;
+import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.NodeSizeDetails;
+import org.alfresco.rest.api.model.NodeSizeDetail;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,13 +47,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link SizeDetailsImpl} class.
+ * Unit tests for {@link SizeDetailImpl} class.
  *
  */
-public class SizeDetailsImplTest
+public class SizeDetailImplTest
 {
     private final static int DEFAULT_ITEMS = 1000;
-    private SizeDetailsImpl sizeDetailsImpl;
+    private SizeDetailImpl sizeDetailImpl;
     private Nodes nodes;
     private NodeService nodeService;
     private ActionService actionService;
@@ -64,7 +64,7 @@ public class SizeDetailsImplTest
     @Before
     public void setUp()
     {
-        sizeDetailsImpl = new SizeDetailsImpl();
+        sizeDetailImpl = new SizeDetailImpl();
         nodes = mock(Nodes.class);
         nodeService = mock(NodeService.class);
         PermissionService permissionService = mock(PermissionService.class);
@@ -72,12 +72,12 @@ public class SizeDetailsImplTest
         action = mock(Action.class);
         SimpleCache<Serializable, Map<String, Object>> simpleCache  = mock(SimpleCache.class);
 
-        sizeDetailsImpl.setNodes(nodes);
-        sizeDetailsImpl.setNodeService(nodeService);
-        sizeDetailsImpl.setPermissionService(permissionService);
-        sizeDetailsImpl.setActionService(actionService);
-        sizeDetailsImpl.setSimpleCache(simpleCache);
-        sizeDetailsImpl.setDefaultItems(DEFAULT_ITEMS);
+        sizeDetailImpl.setNodes(nodes);
+        sizeDetailImpl.setNodeService(nodeService);
+        sizeDetailImpl.setPermissionService(permissionService);
+        sizeDetailImpl.setActionService(actionService);
+        sizeDetailImpl.setSimpleCache(simpleCache);
+        sizeDetailImpl.setDefaultItems(DEFAULT_ITEMS);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class SizeDetailsImplTest
         NodeRef nodeRef = new NodeRef("protocol", "identifier", nodeId);
         action.setTrackStatus(true);
         action.setExecuteAsynchronously(true);
-        action.setParameterValue(NodeSizeDetailsActionExecutor.DEFAULT_SIZE, DEFAULT_ITEMS);
+        action.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, DEFAULT_ITEMS);
 
         Node node = new Node();
         node.setIsFolder(true);
@@ -100,9 +100,9 @@ public class SizeDetailsImplTest
         when(nodes.validateNode(nodeId)).thenReturn(nodeRef);
         when(nodes.getNode(nodeId)).thenReturn(node);
         when(nodeService.getType(nodeRef)).thenReturn(TYPE_FOLDER);
-        when(actionService.createAction(NodeSizeDetailsActionExecutor.NAME)).thenReturn(action);
-        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.calculateNodeSize(nodeId);
-        assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",nodeSizeDetails);
+        when(actionService.createAction(NodeSizeDetailActionExecutor.NAME)).thenReturn(action);
+        NodeSizeDetail nodeSizeDetail = sizeDetailImpl.calculateNodeSize(nodeId);
+        assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code", nodeSizeDetail);
     }
 
 }

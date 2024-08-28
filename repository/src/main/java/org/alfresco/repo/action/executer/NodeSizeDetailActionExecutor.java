@@ -49,14 +49,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *   NodeSizeDetailsActionExecutor
+ *   NodeSizeDetailActionExecutor
  *   Executing Alfresco FTS Query to find size of Folder Node
  */
 
-public class NodeSizeDetailsActionExecutor extends ActionExecuterAbstractBase
+public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
 {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsActionExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailActionExecutor.class);
 
     /**
      * Action constants
@@ -160,13 +160,13 @@ public class NodeSizeDetailsActionExecutor extends ActionExecuterAbstractBase
         }
         catch (RuntimeException runtimeException)
         {
-            LOG.error("Exception occurred in NodeSizeDetailsActionExecutor:results {} ", runtimeException.getMessage());
-            response.put(EXCEPTION,"Exception occurred in NodeSizeDetailsActionExecutor:results {} "+runtimeException.getMessage());
+            LOG.error("Exception occurred in NodeSizeDetailActionExecutor:results {} ", runtimeException.getMessage());
+            response.put(EXCEPTION,"Exception occurred in NodeSizeDetailActionExecutor:results {} "+runtimeException.getMessage());
             simpleCache.put(nodeRef.getId(),response);
             throw runtimeException;
         }
 
-        LOG.debug(" Calculating size of Folder Node - NodeSizeDetailsActionExecutor:executeImpl ");
+        LOG.debug(" Calculating size of Folder Node - NodeSizeDetailActionExecutor:executeImpl ");
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
         String formattedTimestamp = eventTimestamp.format(formatter);

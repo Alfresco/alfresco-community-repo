@@ -105,7 +105,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     private static final String URL_CHILDREN = "children";
     private static final String URL_CONTENT = "content";
-    private static final String URL_CALCULATEFOLDERSIZE = "request-size-details";
+    private static final String URL_CALCULATEFOLDERSIZE = "request-size-detail";
 
     protected static final String TYPE_CM_FOLDER = "cm:folder";
     protected static final String TYPE_CM_CONTENT = "cm:content";

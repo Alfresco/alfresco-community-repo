@@ -996,7 +996,7 @@
         </property>
     </bean>
 
-    <bean id="sizeDetails" class="org.alfresco.rest.api.impl.SizeDetailsImpl">
+    <bean id="sizeDetail" class="org.alfresco.rest.api.impl.SizeDetailImpl">
         <property name="nodes" ref="nodes" />
         <property name="nodeService" ref="NodeService" />
         <property name="permissionService" ref="permissionService"/>
@@ -1007,10 +1007,10 @@
 
     <bean id="SizeDetails" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
-            <value>org.alfresco.rest.api.SizeDetails</value>
+            <value>org.alfresco.rest.api.SizeDetail</value>
         </property>
         <property name="target">
-            <ref bean="sizeDetails" />
+            <ref bean="sizeDetail" />
         </property>
         <property name="interceptorNames">
             <list>
@@ -1171,7 +1171,7 @@
     <bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
         <property name="nodes" ref="Nodes" />
         <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
-        <property name="sizeDetails" ref="SizeDetails" />
+        <property name="sizeDetail" ref="SizeDetails" />
     </bean>
 	
     <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">

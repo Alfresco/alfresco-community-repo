@@ -31,17 +31,14 @@ import java.io.InputStream;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.rest.api.DirectAccessUrlHelper;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.DirectAccessUrlRequest;
-import org.alfresco.rest.api.model.LockInfo;
-import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.NodeTarget;
-import org.alfresco.rest.api.model.NodeSizeDetails;
+import org.alfresco.rest.api.SizeDetail;
+import org.alfresco.rest.api.model.*;
+import org.alfresco.rest.api.model.NodeSizeDetail;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
-import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -76,7 +73,7 @@ public class NodesEntityResource implements
     private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
-    private SizeDetails sizeDetails;
+    private SizeDetail sizeDetail;
 
     public void setNodes(Nodes nodes)
     {
@@ -88,9 +85,9 @@ public class NodesEntityResource implements
         this.directAccessUrlHelper = directAccessUrlHelper;
     }
 
-    public void setSizeDetails(SizeDetails sizeDetails)
+    public void setSizeDetails(SizeDetail sizeDetail)
     {
-        this.sizeDetails = sizeDetails;
+        this.sizeDetail = sizeDetail;
     }
 
     @Override
@@ -249,13 +246,13 @@ public class NodesEntityResource implements
      *               <p>
      *               If nodeId does not represent a folder, InvalidNodeTypeException (status 422).
      */
-    @Operation("request-size-details")
+    @Operation("request-size-detail")
     @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder node",successStatus = Status.STATUS_ACCEPTED)
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id", description = "A single nodeId")})
-    public NodeSizeDetails calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
+    public NodeSizeDetail calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
-            NodeSizeDetails nodeSizeDetails = sizeDetails.calculateNodeSize(nodeId);
-            if(nodeSizeDetails == null)
+            NodeSizeDetail nodeSizeDetail = sizeDetail.calculateNodeSize(nodeId);
+            if(nodeSizeDetail == null)
             {
                 withResponse.setStatus(Status.STATUS_ACCEPTED);
             }
@@ -263,7 +260,7 @@ public class NodesEntityResource implements
             {
                 withResponse.setStatus(Status.STATUS_OK);
             }
-            return nodeSizeDetails;
+            return nodeSizeDetail;
     }
 
 }

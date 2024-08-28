@@ -25,14 +25,14 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.NodeSizeDetails;
+import org.alfresco.rest.api.model.NodeSizeDetail;
 
-public interface SizeDetails
+public interface SizeDetail
 {
      enum PROCESSINGSTATE
      {
           NOT_INITIATED, IN_PROGRESS, COMPLETED;
      }
 
-     NodeSizeDetails calculateNodeSize(String nodeId);
+     NodeSizeDetail calculateNodeSize(String nodeId);
 }

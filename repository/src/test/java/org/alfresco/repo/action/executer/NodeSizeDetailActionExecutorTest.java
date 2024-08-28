@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
+public class NodeSizeDetailActionExecutorTest extends BaseSpringTest
 {
     /**
      * The test node reference
@@ -53,7 +53,7 @@ public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
     /**
      * The folder Size executer
      */
-    private NodeSizeDetailsActionExecutor executer;
+    private NodeSizeDetailActionExecutor executer;
 
     /**
      * Id used to identify the test action created
@@ -93,7 +93,7 @@ public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
                 ContentModel.TYPE_CONTENT).getChildRef();
 
         // Get the executer instance.
-        this.executer = (NodeSizeDetailsActionExecutor)this.applicationContext.getBean(NodeSizeDetailsActionExecutor.NAME);
+        this.executer = (NodeSizeDetailActionExecutor)this.applicationContext.getBean(NodeSizeDetailActionExecutor.NAME);
 
         simpleCache = (SimpleCache<Serializable, Map<String,Object>>) this.applicationContext.getBean("folderSizeSharedCache");
     }
@@ -105,8 +105,8 @@ public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
     public void testExecution()
     {
         int maxItems = 1000;
-        ActionImpl action = new ActionImpl(null, ID, NodeSizeDetailsActionExecutor.NAME, null);
-        action.setParameterValue(NodeSizeDetailsActionExecutor.DEFAULT_SIZE, maxItems);
+        ActionImpl action = new ActionImpl(null, ID, NodeSizeDetailActionExecutor.NAME, null);
+        action.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, maxItems);
         this.executer.executeImpl(action, this.nodeRef);
         Object resultAction = simpleCache.get(this.nodeRef.getId());
         Map<String, Object> mapResult = (Map<String, Object>)resultAction;

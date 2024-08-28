@@ -25,7 +25,7 @@
  */
 package org.alfresco;
 
-import org.alfresco.repo.action.executer.NodeSizeDetailsActionExecutorTest;
+import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutorTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -79,7 +79,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity.class,
     org.alfresco.repo.admin.registry.RegistryServiceImplTest.class,
     org.alfresco.repo.bootstrap.DataDictionaryFolderTest.class,
-    org.alfresco.repo.action.executer.NodeSizeDetailsActionExecutorTest.class
+    NodeSizeDetailActionExecutorTest.class
 })
 public class AppContext01TestSuite
 {

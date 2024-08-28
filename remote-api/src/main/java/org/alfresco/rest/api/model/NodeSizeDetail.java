@@ -25,23 +25,23 @@
  */
 package org.alfresco.rest.api.model;
 
-public class NodeSizeDetails
+public class NodeSizeDetail
 {
     private String nodeId;
     private long size;
     private String calculatedAt;
     private int numberOfFiles;
     private String status;
-    public NodeSizeDetails()
+    public NodeSizeDetail()
     {
         super();
     }
 
-    public NodeSizeDetails(String status)
+    public NodeSizeDetail(String status)
     {
         this.status = status;
     }
-    public NodeSizeDetails(String nodeId, long size, String calculatedAt, int numberOfFiles, String status)
+    public NodeSizeDetail(String nodeId, long size, String calculatedAt, int numberOfFiles, String status)
     {
         this.nodeId = nodeId;
         this.size = size;
@@ -102,7 +102,7 @@ public class NodeSizeDetails
 
     @Override
     public String toString() {
-        return "NodeSizeDetails{" +
+        return "NodeSizeDetail{" +
                 "nodeId='" + nodeId + '\'' +
                 ", size='" + size + '\'' +
                 ", calculatedAt='" + calculatedAt + '\'' +

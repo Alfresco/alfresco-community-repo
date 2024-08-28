@@ -62,9 +62,9 @@ import static org.junit.Assert.assertNull;
  */
 @FixMethodOrder (MethodSorters.NAME_ASCENDING)
 @RunWith (JUnit4.class)
-public class NodeSizeDetailsTest extends AbstractBaseApiTest
+public class NodeSizeDetailTest extends AbstractBaseApiTest
 {
-    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailTest.class);
 
     private Site userOneN1Site;
     private String folderId;
@@ -92,7 +92,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         }
         catch (Exception e)
         {
-            LOG.error("Exception occured in NodeSizeDetailsTest:addToDocumentLibrary {}", e.getMessage());
+            LOG.error("Exception occured in NodeSizeDetailTest:addToDocumentLibrary {}", e.getMessage());
         }
         return null;
     }

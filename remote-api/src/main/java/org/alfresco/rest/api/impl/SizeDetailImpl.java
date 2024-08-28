@@ -25,13 +25,14 @@
  */
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.SizeDetails;
+import org.alfresco.rest.api.SizeDetail;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodePermissions;
-import org.alfresco.rest.api.model.NodeSizeDetails;
+import org.alfresco.rest.api.model.NodeSizeDetail;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -46,15 +47,13 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.HashMap;
 
-import org.alfresco.repo.action.executer.NodeSizeDetailsActionExecutor;
+import static org.alfresco.rest.api.SizeDetail.PROCESSINGSTATE.COMPLETED;
+import static org.alfresco.rest.api.SizeDetail.PROCESSINGSTATE.NOT_INITIATED;
+import static org.alfresco.rest.api.SizeDetail.PROCESSINGSTATE.IN_PROGRESS;
 
-import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.COMPLETED;
-import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.NOT_INITIATED;
-import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.IN_PROGRESS;
-
-public class SizeDetailsImpl implements SizeDetails
+public class SizeDetailImpl implements SizeDetail
 {
-    private static final Logger LOG = LoggerFactory.getLogger(SizeDetailsImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SizeDetailImpl.class);
     private static final String STATUS = "status";
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
     private static final String FOLDER = "folder";
@@ -100,7 +99,7 @@ public class SizeDetailsImpl implements SizeDetails
      *                     HTTP STATUS 200 will provide the size details response from cache.
      */
     @Override
-    public NodeSizeDetails calculateNodeSize(final String nodeId)
+    public NodeSizeDetail calculateNodeSize(final String nodeId)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
         QName qName = nodeService.getType(nodeRef);
@@ -118,7 +117,7 @@ public class SizeDetailsImpl implements SizeDetails
         }
 
         LOG.debug("Executing NodeSizeActionExecuter from calculateNodeSize method");
-        return executorResultToSizeDetails(simpleCache.get(nodeRef.getId()));
+        return executorResultToSizeDetail(simpleCache.get(nodeRef.getId()));
     }
 
     /**
@@ -129,10 +128,10 @@ public class SizeDetailsImpl implements SizeDetails
         Map<String, Object > currentStatus = new HashMap<>();
         currentStatus.put(STATUS,IN_PROGRESS.name());
 
-        Action folderSizeAction = actionService.createAction(NodeSizeDetailsActionExecutor.NAME);
+        Action folderSizeAction = actionService.createAction(NodeSizeDetailActionExecutor.NAME);
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
-        folderSizeAction.setParameterValue(NodeSizeDetailsActionExecutor.DEFAULT_SIZE, defaultItems);
+        folderSizeAction.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, defaultItems);
         simpleCache.put(nodeRef.getId(),currentStatus);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
     }
@@ -140,15 +139,15 @@ public class SizeDetailsImpl implements SizeDetails
     /**
      * Converting action executor response to their respective model class.
      */
-    private NodeSizeDetails executorResultToSizeDetails(final Map<String,Object> result)
+    private NodeSizeDetail executorResultToSizeDetail(final Map<String,Object> result)
     {
         if (result == null)
         {
-            return new NodeSizeDetails(NOT_INITIATED.name());
+            return new NodeSizeDetail(NOT_INITIATED.name());
         }
-        else if(result.containsKey(NodeSizeDetailsActionExecutor.EXCEPTION))
+        else if(result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
         {
-            return new NodeSizeDetails((String) result.get(NodeSizeDetailsActionExecutor.EXCEPTION));
+            return new NodeSizeDetail((String) result.get(NodeSizeDetailActionExecutor.EXCEPTION));
         }
 
         // Check for the presence of "size" key.
@@ -156,11 +155,11 @@ public class SizeDetailsImpl implements SizeDetails
 
         if (hasSizeKey)
         {
-            return new NodeSizeDetails((String) result.get("nodeId"), (Long) result.get("size"), (String) result.get("calculatedAt"), (Integer) result.get("numberOfFiles"), COMPLETED.name());
+            return new NodeSizeDetail((String) result.get("nodeId"), (Long) result.get("size"), (String) result.get("calculatedAt"), (Integer) result.get("numberOfFiles"), COMPLETED.name());
         }
         else
         {
-            return new NodeSizeDetails(IN_PROGRESS.name());
+            return new NodeSizeDetail(IN_PROGRESS.name());
         }
     }
 

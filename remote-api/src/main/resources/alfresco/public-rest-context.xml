@@ -1005,7 +1005,7 @@
         <property name="defaultItems" value="${alfresco.restApi.calculateFolderSize.items}"/>
     </bean>
 
-    <bean id="SizeDetails" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <bean id="sizeDetail" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.SizeDetail</value>
         </property>

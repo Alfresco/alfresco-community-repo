@@ -85,7 +85,7 @@ public class NodesEntityResource implements
         this.directAccessUrlHelper = directAccessUrlHelper;
     }
 
-    public void setSizeDetails(SizeDetail sizeDetail)
+    public void setSizeDetail(SizeDetail sizeDetail)
     {
         this.sizeDetail = sizeDetail;
     }

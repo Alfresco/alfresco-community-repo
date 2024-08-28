@@ -116,7 +116,7 @@ public class SizeDetailImpl implements SizeDetail
             return null;
         }
 
-        LOG.debug("Executing NodeSizeActionExecuter from calculateNodeSize method");
+        LOG.debug("Executing NodeSizeDetailActionExecuter from calculateNodeSize method");
         return executorResultToSizeDetail(simpleCache.get(nodeRef.getId()));
     }
 

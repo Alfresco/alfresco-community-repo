@@ -92,7 +92,7 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         }
         catch (Exception e)
         {
-            LOG.error("Exception occured in NodeSizeDetailTest:addToDocumentLibrary {}", e.getMessage());
+            LOG.error("Exception occurred in NodeSizeDetailTest:addToDocumentLibrary {}", e.getMessage());
         }
         return null;
     }
@@ -115,8 +115,8 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
     }
 
     /**
-     * Test case for POST/request-size-details, which calculates and retrieve size of a folder.
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/request-size-details}
+     * Test case for POST/request-size-detail, which calculates and retrieve size of a folder.
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/request-size-detail}
      */
     @Test
     public void testPostAndGetFolderSize() throws Exception
@@ -129,7 +129,7 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         // Perform POST request
         HttpResponse postResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
 
-        assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",postResponse.getJsonResponse());
+        assertNull("After executing POST/request-size-detail first time, it will provide null with 202 status code",postResponse.getJsonResponse());
 
         HttpResponse getResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
 
@@ -178,7 +178,7 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         // Perform POST request
         HttpResponse postResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 202);
 
-        assertNull("After executing POST/request-size-details first time, it will provide null with 202 status code",postResponse.getJsonResponse());
+        assertNull("After executing POST/request-size-detail first time, it will provide null with 202 status code",postResponse.getJsonResponse());
 
         HttpResponse getResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 200);
 

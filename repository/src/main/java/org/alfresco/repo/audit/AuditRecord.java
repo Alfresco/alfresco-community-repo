@@ -33,10 +33,10 @@ import java.util.Map;
 public class AuditRecord
 {
     private final boolean inTransaction;
-    private String auditedActionType;
-    private ZonedDateTime createdAt;
-    private UserInfo userInfo;
-    private Map<String, ?> auditData;
+    private final String auditedActionType;
+    private final ZonedDateTime createdAt;
+    private final UserInfo userInfo;
+    private final Map<String, ?> auditData;
 
     public AuditRecord(boolean inTransaction,
                        String auditedActionType,

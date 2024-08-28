@@ -198,8 +198,9 @@ jobs:
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
-          mvn dependency:tree | grep 'org.testng:testng' || true
         continue-on-error: true
+      - name: "Print TestNG Version"
+        run: mvn dependency:tree | grep 'org.testng:testng' || true
       - name: "Update GitHub Step Summary"
         if: github.ref_name == 'feature/ACS-6309_Bump_TestNG'
         run: |

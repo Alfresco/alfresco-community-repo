@@ -251,16 +251,17 @@ public class NodesEntityResource implements
     @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id", description = "A single nodeId")})
     public NodeSizeDetail calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
-            NodeSizeDetail nodeSizeDetail = sizeDetail.calculateNodeSize(nodeId);
-            if(nodeSizeDetail == null)
-            {
-                withResponse.setStatus(Status.STATUS_ACCEPTED);
-            }
-            else
-            {
-                withResponse.setStatus(Status.STATUS_OK);
-            }
-            return nodeSizeDetail;
+        LOG.debug(" Executing calculateFolderSize method ");
+        NodeSizeDetail nodeSizeDetail = sizeDetail.calculateNodeSize(nodeId);
+        if(nodeSizeDetail == null)
+        {
+            withResponse.setStatus(Status.STATUS_ACCEPTED);
+        }
+        else
+        {
+            withResponse.setStatus(Status.STATUS_OK);
+        }
+        return nodeSizeDetail;
     }
 
 }

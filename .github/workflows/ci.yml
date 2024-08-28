@@ -174,7 +174,7 @@ jobs:
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare Report Portal"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-6309_Bump_TestNG'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v5.1.0
         id: rp-prepare
         with:
@@ -184,7 +184,7 @@ jobs:
           rp-use-static-launch-name: true
         continue-on-error: true
       - name: "Add GitHub Step Summary"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-6309_Bump_TestNG'
         env:
           RP_ENABLED: ${{ steps.rp-prepare.outputs.enabled }}
           RP_KEY: ${{ steps.rp-prepare.outputs.key }}
@@ -194,18 +194,18 @@ jobs:
       - name: "Run tests"
         id: run-tests
         env:
-          RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
+          RP_OPTS: ${{ github.ref_name == 'feature/ACS-6309_Bump_TestNG' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn -B test -pl ${{ matrix.testModule }} -am ${{ matrix.testAttributes }} -DfailIfNoTests=false "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-6309_Bump_TestNG'
         run: |
           echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
       - name: "Summarize Report Portal"
-        if: github.ref_name == 'master'
+        if: github.ref_name == 'feature/ACS-6309_Bump_TestNG'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
         id: rp-summarize
         with:

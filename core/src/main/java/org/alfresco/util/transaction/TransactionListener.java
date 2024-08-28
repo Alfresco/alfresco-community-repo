@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2023 Alfresco Software Limited.
+ * Copyright (C) 2005-2024 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -67,4 +67,14 @@ public interface TransactionListener
      * be used only for cleaning up resources after a rollback has occurred.
      */
     void afterRollback();
+
+    /**
+     * Allows to provide a custom listener's order.
+     * See {@link org.alfresco.repo.transaction.AlfrescoTransactionSupport#COMMIT_ORDER_NORMAL}
+     * @return custom order or null for the default one
+     */
+    default Integer getCustomOrder()
+    {
+        return null;
+    }
 }

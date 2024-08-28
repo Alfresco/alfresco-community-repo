@@ -79,7 +79,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
     org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
     org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class,
-    SizeDetailImplTest.class
+    org.alfresco.rest.api.impl.SizeDetailImplTest.class
 })
 public class AppContext04TestSuite
 {

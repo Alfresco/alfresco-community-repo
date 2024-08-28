@@ -79,7 +79,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity.class,
     org.alfresco.repo.admin.registry.RegistryServiceImplTest.class,
     org.alfresco.repo.bootstrap.DataDictionaryFolderTest.class,
-    NodeSizeDetailActionExecutorTest.class
+    org.alfresco.repo.action.executer.NodeSizeDetailActionExecutorTest.class
 })
 public class AppContext01TestSuite
 {

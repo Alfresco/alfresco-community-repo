@@ -49,4 +49,9 @@ public interface EventSender
     {
         //no initialization by default
     }
+
+    default boolean shouldParticipateInTransaction()
+    {
+        return false;
+    }
 }

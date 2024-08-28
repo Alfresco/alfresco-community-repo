@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.audit2;
+package org.alfresco.repo.audit;
 
 import org.alfresco.repo.event.v1.model.UserInfo;
 

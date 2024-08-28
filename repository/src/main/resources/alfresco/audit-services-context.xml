@@ -108,5 +108,8 @@
    
     <!-- Reference in the audit registry managed bean -->
     <alias name="Audit" alias="auditModel.modelRegistry"/>
-      
+
+    <!-- Audit Record Reported -->
+    <bean id="auditRecordReporter" class="org.alfresco.repo.audit.AuditRecordReporterImpl"/>
+
 </beans>

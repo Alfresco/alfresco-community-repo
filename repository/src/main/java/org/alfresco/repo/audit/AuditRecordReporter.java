@@ -23,13 +23,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.audit2;
+package org.alfresco.repo.audit;
 
-public class AuditRecordReporterImpl implements AuditRecordReporter
+
+public interface AuditRecordReporter
 {
-    @Override
-    public void reportAuditRecord(AuditRecord auditRecord)
-    {
-        //empty implementation
-    }
+    /**
+     * This method will report AuditRecord to Audit Storage using RepoEvent2
+     * @param auditRecord represent data that will be reported.
+     */
+    void reportAuditRecord(AuditRecord auditRecord);
 }

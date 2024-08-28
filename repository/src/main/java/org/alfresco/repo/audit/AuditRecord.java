@@ -32,13 +32,17 @@ import java.util.Map;
 
 public class AuditRecord
 {
-    boolean inTransaction;
-    AuditedActionType auditedActionType;
-    ZonedDateTime createdAt;
-    UserInfo userInfo;
-    Map<String, ?> auditData;
+    private final boolean inTransaction;
+    private String auditedActionType;
+    private ZonedDateTime createdAt;
+    private UserInfo userInfo;
+    private Map<String, ?> auditData;
 
-    public AuditRecord(boolean inTransaction, AuditedActionType auditedActionType, UserInfo userInfo, Map<String, ?> auditData, ZonedDateTime createdAt)
+    public AuditRecord(boolean inTransaction,
+                       String auditedActionType,
+                       UserInfo userInfo,
+                       Map<String, ?> auditData,
+                       ZonedDateTime createdAt)
     {
         this.inTransaction = inTransaction;
         this.auditedActionType = auditedActionType;
@@ -52,7 +56,7 @@ public class AuditRecord
         return inTransaction;
     }
 
-    public AuditedActionType getAuditedActionType()
+    public String getAuditedActionType()
     {
         return auditedActionType;
     }
@@ -72,25 +76,5 @@ public class AuditRecord
         return auditData;
     }
 
-
-    public enum AuditedActionType
-    {
-        BASIC_ACTION("basic_action"),
-        LOGIN("login"),
-        DOWNLOAD_CONTENT("download-content"),
-        API_CALL("api-call");
-
-        private final String auditedAction;
-
-        AuditedActionType(String auditedAction)
-        {
-            this.auditedAction = auditedAction;
-        }
-
-        public String getAuditedAction()
-        {
-            return auditedAction;
-        }
-    }
 }
 

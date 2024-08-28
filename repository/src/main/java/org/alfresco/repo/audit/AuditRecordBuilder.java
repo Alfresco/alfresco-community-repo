@@ -32,8 +32,13 @@ import java.util.Map;
 
 public class AuditRecordBuilder
 {
+    public static final String BASIC_ACTION = "basic_action";
+    public static final String LOGIN = "login";
+    public static final String DOWNLOAD_CONTENT = "download-content";
+    public static final String API_CALL = "api-call";
+
     private boolean inTransaction;
-    private AuditRecord.AuditedActionType auditedActionType;
+    private String auditedActionType;
     private UserInfo userInfo;
     private Map<String, ?> auditData;
     private ZonedDateTime createdAt;
@@ -44,7 +49,7 @@ public class AuditRecordBuilder
         return this;
     }
 
-    public AuditRecordBuilder setAuditedActionType(AuditRecord.AuditedActionType auditedActionType)
+    public AuditRecordBuilder setAuditedActionType(String auditedActionType)
     {
         this.auditedActionType = auditedActionType;
         return this;
@@ -68,7 +73,7 @@ public class AuditRecordBuilder
         return this;
     }
 
-    public AuditRecord createAuditRecord()
+    public AuditRecord build()
     {
         return new AuditRecord(inTransaction, auditedActionType, userInfo, auditData, createdAt);
     }

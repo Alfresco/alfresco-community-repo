@@ -28,19 +28,24 @@ package org.alfresco.rest.api.model;
 public class NodeSizeDetail
 {
     private String nodeId;
-    private long size;
+    private Long size;
     private String calculatedAt;
-    private int numberOfFiles;
+    private Integer numberOfFiles;
     private String status;
-    public NodeSizeDetail()
-    {
-        super();
-    }
 
     public NodeSizeDetail(String status)
     {
         this.status = status;
     }
+
+    public NodeSizeDetail(String nodeId, Long size, Integer numberOfFiles, String status)
+    {
+        this.nodeId = nodeId;
+        this.size = size;
+        this.numberOfFiles = numberOfFiles;
+        this.status = status;
+    }
+
     public NodeSizeDetail(String nodeId, long size, String calculatedAt, int numberOfFiles, String status)
     {
         this.nodeId = nodeId;
@@ -60,12 +65,12 @@ public class NodeSizeDetail
         this.nodeId = nodeId;
     }
 
-    public long getSize()
+    public Long getSize()
     {
         return size;
     }
 
-    public void setSize(long size)
+    public void setSize(Long size)
     {
         this.size = size;
     }
@@ -80,12 +85,12 @@ public class NodeSizeDetail
         this.calculatedAt = calculatedAt;
     }
 
-    public int getNumberOfFiles()
+    public Integer getNumberOfFiles()
     {
         return numberOfFiles;
     }
 
-    public void setNumberOfFiles(int numberOfFiles)
+    public void setNumberOfFiles(Integer numberOfFiles)
     {
         this.numberOfFiles = numberOfFiles;
     }

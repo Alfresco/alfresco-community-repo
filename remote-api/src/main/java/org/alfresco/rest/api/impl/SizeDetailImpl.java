@@ -147,7 +147,7 @@ public class SizeDetailImpl implements SizeDetail
         }
         else if(result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
         {
-            return new NodeSizeDetail((String) result.get(NodeSizeDetailActionExecutor.EXCEPTION));
+            return new NodeSizeDetail((String) result.get("nodeId"), 0L, 0, COMPLETED.name());
         }
 
         // Check for the presence of "size" key.

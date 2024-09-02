@@ -143,11 +143,11 @@ public class SizeDetailImpl implements SizeDetail
     {
         if (result == null)
         {
-            return new NodeSizeDetail(NOT_INITIATED.name());
+            return new NodeSizeDetail(null, null, null, null, NOT_INITIATED.name());
         }
         else if(result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
         {
-            return new NodeSizeDetail((String) result.get("nodeId"), 0L, 0, COMPLETED.name());
+            return new NodeSizeDetail(null, 0L, null, 0, COMPLETED.name());
         }
 
         // Check for the presence of "size" key.
@@ -159,7 +159,7 @@ public class SizeDetailImpl implements SizeDetail
         }
         else
         {
-            return new NodeSizeDetail(IN_PROGRESS.name());
+            return new NodeSizeDetail(null, null, null, null, IN_PROGRESS.name());
         }
     }
 

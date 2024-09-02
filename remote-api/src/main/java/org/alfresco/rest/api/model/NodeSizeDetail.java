@@ -33,20 +33,7 @@ public class NodeSizeDetail
     private Integer numberOfFiles;
     private String status;
 
-    public NodeSizeDetail(String status)
-    {
-        this.status = status;
-    }
-
-    public NodeSizeDetail(String nodeId, Long size, Integer numberOfFiles, String status)
-    {
-        this.nodeId = nodeId;
-        this.size = size;
-        this.numberOfFiles = numberOfFiles;
-        this.status = status;
-    }
-
-    public NodeSizeDetail(String nodeId, long size, String calculatedAt, int numberOfFiles, String status)
+    public NodeSizeDetail(String nodeId, Long size, String calculatedAt, Integer numberOfFiles, String status)
     {
         this.nodeId = nodeId;
         this.size = size;

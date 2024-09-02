@@ -630,7 +630,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>${dependency.org.testng.version}</version>
+            <version>${dependency.testng.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

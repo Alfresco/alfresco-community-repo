@@ -79,13 +79,6 @@
             <version>${commons-lang3.version}</version>
         </dependency>
 
-        <!--<dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>${dependency.testng.version}</version>
-            <scope>test</scope>
-        </dependency>-->
-
         <dependency>
             <groupId>com.epam.reportportal</groupId>
             <artifactId>agent-java-testng</artifactId>

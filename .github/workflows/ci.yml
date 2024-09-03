@@ -35,8 +35,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -56,13 +56,13 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v7.0.0
         continue-on-error: true
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
@@ -79,8 +79,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -118,8 +118,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Build"
@@ -153,8 +153,8 @@ jobs:
         version: ['10.2.18', '10.4', '10.5']
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -181,8 +181,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -209,8 +209,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -238,8 +238,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -271,8 +271,8 @@ jobs:
         version: ['10.9', '11.12', '11.7', '12.4', '12.7', '13.1']
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -298,8 +298,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -323,8 +323,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -370,8 +370,8 @@ jobs:
             mvn-options: '-Dindex.subsystem.name=solr6'
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -427,8 +427,8 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Build"
@@ -466,8 +466,8 @@ jobs:
       !contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Init"
@@ -497,8 +497,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Build"
@@ -530,8 +530,8 @@ jobs:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Build"
@@ -559,8 +559,8 @@ jobs:
       REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v6.1.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
         with:
           java-version: "11"
       - name: "Build"

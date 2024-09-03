@@ -34,5 +34,6 @@ public interface SizeDetail
           NOT_INITIATED, IN_PROGRESS, COMPLETED;
      }
 
-     NodeSizeDetail calculateNodeSize(String nodeId);
+     NodeSizeDetail generateNodeSizeDetailsRequest(String nodeId);
+     NodeSizeDetail getNodeSizeDetails(String nodeId, String jobId);
 }

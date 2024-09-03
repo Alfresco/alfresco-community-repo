@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2023 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -35,13 +35,10 @@ import org.alfresco.rest.api.model.DirectAccessUrlRequest;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
-import org.alfresco.rest.api.model.NodeSizeDetail;
-import org.alfresco.rest.api.SizeDetail;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -56,10 +53,7 @@ import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.Status;
 
 /**
  * An implementation of an Entity Resource for a Node (file or folder)
@@ -73,10 +67,8 @@ public class NodesEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
         BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, InitializingBean
 {
-    private static final Logger LOG = LoggerFactory.getLogger(NodesEntityResource.class);
     private Nodes nodes;
     private DirectAccessUrlHelper directAccessUrlHelper;
-    private SizeDetail sizeDetail;
 
     public void setNodes(Nodes nodes)
     {
@@ -86,11 +78,6 @@ public class NodesEntityResource implements
     public void setDirectAccessUrlHelper(DirectAccessUrlHelper directAccessUrlHelper)
     {
         this.directAccessUrlHelper = directAccessUrlHelper;
-    }
-
-    public void setSizeDetail(SizeDetail sizeDetail)
-    {
-        this.sizeDetail = sizeDetail;
     }
 
     @Override
@@ -238,33 +225,5 @@ public class NodesEntityResource implements
         }
         return directAccessUrl;
     }
-
-    /**
-     * Folder Size - returns size details of a folder.
-     *
-     * @param nodeId String id of folder - will also accept well-known alias, eg. -root- or -my- or -shared-
-     *               Please refer to OpenAPI spec for more details !
-     * Returns the response message i.e. Request has been acknowledged with 202
-     * Also, size-details endpoint to check if the action's status has been completed, comprising the size of the node in bytes.
-     *               <p>
-     *               If nodeId does not represent a folder, InvalidNodeTypeException (status 422).
-     */
-    @Operation("request-size-detail")
-    @WebApiDescription(title = "Calculating Folder Size", description = "Calculating size of a folder node",successStatus = Status.STATUS_ACCEPTED)
-    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id", description = "A single nodeId")})
-    public NodeSizeDetail calculateFolderSize(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
-    {
-        LOG.debug(" Executing calculateFolderSize method ");
-        NodeSizeDetail nodeSizeDetail = sizeDetail.calculateNodeSize(nodeId);
-        if(nodeSizeDetail == null)
-        {
-            withResponse.setStatus(Status.STATUS_ACCEPTED);
-        }
-        else
-        {
-            withResponse.setStatus(Status.STATUS_OK);
-        }
-        return nodeSizeDetail;
-    }
-
 }
+

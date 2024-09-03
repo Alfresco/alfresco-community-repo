@@ -101,7 +101,7 @@ public class SizeDetailImplTest
         when(nodes.getNode(nodeId)).thenReturn(node);
         when(nodeService.getType(nodeRef)).thenReturn(TYPE_FOLDER);
         when(actionService.createAction(NodeSizeDetailActionExecutor.NAME)).thenReturn(action);
-        NodeSizeDetail nodeSizeDetail = sizeDetailImpl.calculateNodeSize(nodeId);
+        NodeSizeDetail nodeSizeDetail = sizeDetailImpl.getNodeSizeDetails(nodeId,"");
         assertNull("After executing POST/request-size-detail first time, it will provide null with 202 status code", nodeSizeDetail);
     }
 

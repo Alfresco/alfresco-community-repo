@@ -174,6 +174,7 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
         response.put("size", totalSizeFromFacet);
         response.put("calculatedAt", formattedTimestamp);
         response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
+        response.put("actionId", nodeAction.getId());
 
         if(isCalculationCompleted)
         {

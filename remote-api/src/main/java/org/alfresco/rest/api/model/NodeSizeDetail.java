@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.model;
 
+import java.util.Objects;
+
 public class NodeSizeDetail
 {
     private String nodeId;
@@ -32,14 +34,25 @@ public class NodeSizeDetail
     private String calculatedAt;
     private Integer numberOfFiles;
     private String status;
+    private String jobId;
 
-    public NodeSizeDetail(String nodeId, Long size, String calculatedAt, Integer numberOfFiles, String status)
+    public NodeSizeDetail(String jobId) {
+        this.jobId = jobId;
+    }
+
+    public NodeSizeDetail(String nodeId, String status) {
+        this.nodeId = nodeId;
+        this.status = status;
+    }
+
+    public NodeSizeDetail(String nodeId, Long size, String calculatedAt, Integer numberOfFiles, String status, String jobId)
     {
         this.nodeId = nodeId;
         this.size = size;
         this.calculatedAt = calculatedAt;
         this.numberOfFiles = numberOfFiles;
         this.status = status;
+        this.jobId = jobId;
     }
 
     public String getNodeId()
@@ -92,14 +105,32 @@ public class NodeSizeDetail
         this.status = status;
     }
 
+    public String getJobId() { return jobId; }
+
+    public void setJobId(String jobId) { this.jobId = jobId; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        NodeSizeDetail that = (NodeSizeDetail) o;
+        return Objects.equals(nodeId, that.nodeId) && Objects.equals(size, that.size) && Objects.equals(calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles) && Objects.equals(status, that.status) && Objects.equals(jobId, that.jobId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodeId, size, calculatedAt, numberOfFiles, status, jobId);
+    }
+
     @Override
     public String toString() {
         return "NodeSizeDetail{" +
                 "nodeId='" + nodeId + '\'' +
-                ", size='" + size + '\'' +
+                ", size=" + size +
                 ", calculatedAt='" + calculatedAt + '\'' +
                 ", numberOfFiles=" + numberOfFiles +
                 ", status='" + status + '\'' +
+                ", jobId='" + jobId + '\'' +
                 '}';
     }
 }

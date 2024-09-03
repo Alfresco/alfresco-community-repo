@@ -34,6 +34,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.NodeSizeDetail;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
+import org.alfresco.rest.framework.core.exceptions.UnprocessableContentException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -55,7 +56,9 @@ public class SizeDetailImpl implements SizeDetail
 {
     private static final Logger LOG = LoggerFactory.getLogger(SizeDetailImpl.class);
     private static final String STATUS = "status";
+    private static final String ACTIONID = "actionId";
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
+    private static final String INVALID_JOBID = "Invalid parameter: value of jobId is invalid";
     private static final String FOLDER = "folder";
     private Nodes nodes;
     private NodeService nodeService;
@@ -94,60 +97,65 @@ public class SizeDetailImpl implements SizeDetail
         this.defaultItems = defaultItems;
     }
 
+    @Override
+    public NodeSizeDetail generateNodeSizeDetailsRequest(String nodeId) {
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        validateType(nodeRef);
+        String actionId;
+        if(simpleCache.get(nodeId) == null)
+        {
+            actionId = executeAction(nodeRef, defaultItems, simpleCache);
+        } else {
+            Map<String, Object> result = simpleCache.get(nodeRef.getId());
+            actionId = (String)result.get(ACTIONID);
+        }
+        return new NodeSizeDetail(actionId);
+    }
+
     /**
      * calculateNodeSize : providing HTTP STATUS 202 which signifies REQUEST ACCEPTED.
      *                     HTTP STATUS 200 will provide the size details response from cache.
      */
     @Override
-    public NodeSizeDetail calculateNodeSize(final String nodeId)
+    public NodeSizeDetail getNodeSizeDetails(final String nodeId, final String jobId)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
-        QName qName = nodeService.getType(nodeRef);
-        validatePermissions(nodeRef, nodeId);
+        validateType(nodeRef);
 
-        if(!FOLDER.equalsIgnoreCase(qName.getLocalName()))
+        if(simpleCache.get(nodeId) == null)
         {
-            throw new InvalidNodeTypeException(INVALID_NODEID);
-        }
-
-        if(simpleCache.get(nodeRef.getId()) == null)
-        {
-            executeAction(nodeRef, defaultItems, simpleCache);
-            return null;
+            return new NodeSizeDetail(nodeId, NOT_INITIATED.name());
         }
 
         LOG.debug("Executing NodeSizeDetailActionExecuter from calculateNodeSize method");
-        return executorResultToSizeDetail(simpleCache.get(nodeRef.getId()));
+        return executorResultToSizeDetail(simpleCache.get(nodeId), nodeId, jobId);
     }
 
     /**
      * Executing Action Asynchronously.
      */
-    private void executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Map<String, Object>> simpleCache)
+    private String executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Map<String, Object>> simpleCache)
     {
         Map<String, Object > currentStatus = new HashMap<>();
         currentStatus.put(STATUS,IN_PROGRESS.name());
-
         Action folderSizeAction = actionService.createAction(NodeSizeDetailActionExecutor.NAME);
+        currentStatus.put(ACTIONID,folderSizeAction.getId());
         folderSizeAction.setTrackStatus(true);
         folderSizeAction.setExecuteAsynchronously(true);
         folderSizeAction.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, defaultItems);
         simpleCache.put(nodeRef.getId(),currentStatus);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
+        return folderSizeAction.getId();
     }
 
     /**
      * Converting action executor response to their respective model class.
      */
-    private NodeSizeDetail executorResultToSizeDetail(final Map<String,Object> result)
+    private NodeSizeDetail executorResultToSizeDetail(final Map<String,Object> result, String nodeId, String jobId)
     {
-        if (result == null)
+        if(result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
         {
-            return new NodeSizeDetail(null, null, null, null, NOT_INITIATED.name());
-        }
-        else if(result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
-        {
-            return new NodeSizeDetail(null, 0L, null, 0, COMPLETED.name());
+            return new NodeSizeDetail(nodeId, COMPLETED.name());
         }
 
         // Check for the presence of "size" key.
@@ -155,11 +163,31 @@ public class SizeDetailImpl implements SizeDetail
 
         if (hasSizeKey)
         {
-            return new NodeSizeDetail((String) result.get("nodeId"), (Long) result.get("size"), (String) result.get("calculatedAt"), (Integer) result.get("numberOfFiles"), COMPLETED.name());
+            NodeSizeDetail nodeSizeDetail = new NodeSizeDetail((String) result.get("nodeId"),
+                    (Long) result.get("size"),
+                    (String) result.get("calculatedAt"),
+                    (Integer) result.get("numberOfFiles"),
+                    COMPLETED.name(),
+                    (String) result.get(ACTIONID));
+
+            if(!nodeSizeDetail.getJobId().equalsIgnoreCase(jobId)) {
+                throw new UnprocessableContentException(INVALID_JOBID);
+            }
+            return nodeSizeDetail;
         }
         else
         {
-            return new NodeSizeDetail(null, null, null, null, IN_PROGRESS.name());
+            return new NodeSizeDetail(nodeId, IN_PROGRESS.name());
+        }
+    }
+
+    private void validateType(NodeRef nodeRef) throws InvalidNodeTypeException
+    {
+        QName qName = nodeService.getType(nodeRef);
+        validatePermissions(nodeRef, nodeRef.getId());
+        if(!FOLDER.equalsIgnoreCase(qName.getLocalName()))
+        {
+            throw new InvalidNodeTypeException(INVALID_NODEID);
         }
     }
 
@@ -170,12 +198,10 @@ public class SizeDetailImpl implements SizeDetail
     {
         Node nodeInfo = nodes.getNode(nodeId);
         NodePermissions nodePerms = nodeInfo.getPermissions();
-
         // Validate permissions.
         if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
         {
             throw new AccessDeniedException("permissions.err_access_denied");
         }
     }
-
 }

@@ -1171,7 +1171,6 @@
     <bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
         <property name="nodes" ref="Nodes" />
         <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
-        <property name="sizeDetail" ref="sizeDetail" />
     </bean>
 	
     <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">
@@ -1793,5 +1792,10 @@
                 <idref bean="legacyExceptionInterceptor" />
             </list>
         </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeSizeDetailsRelation">
+        <property name="nodes" ref="nodes" />
+        <property name="sizeDetail" ref="sizeDetail" />
     </bean>
 </beans>

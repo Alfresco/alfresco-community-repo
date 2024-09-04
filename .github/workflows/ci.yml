@@ -1135,12 +1135,29 @@ jobs:
           rp-use-static-launch-name: true
         continue-on-error: true
       - name: "Verify"
+        id: run-tests
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         env:
           RP_OPTS: ${{ github.ref_name == 'feature/ACS-6309_Bump_TestNG' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
           mvn --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt${{ matrix.part }} ${{ env.LOG_WARN }} "${args[@]}"
+        continue-on-error: true
+      - name: "Update GitHub Step Summary"
+        if: github.ref_name == 'feature/ACS-6309_Bump_TestNG'
+        run: |
+          echo "#### ⏱ After Tests: $(date -u +'%Y-%m-%d %H:%M:%S%:z')" >> $GITHUB_STEP_SUMMARY
+        continue-on-error: true
+      - name: "Summarize Report Portal"
+        if: github.ref_name == 'feature/ACS-6309_Bump_TestNG'
+        uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-summarize@v5.1.0
+        id: rp-summarize
+        with:
+          tests-outcome: ${{ steps.run-tests.outcome }}
+          rp-launch-key: ${{ steps.rp-prepare.outputs.key }}
+          rp-project: ${{ env.RP_PROJECT }}
+          rp-token: ${{ secrets.REPORT_PORTAL_TOKEN }}
+        continue-on-error: true
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

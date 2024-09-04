@@ -38,17 +38,13 @@ public class AuditRecord
     private final UserInfo userInfo;
     private final Map<String, ?> auditData;
 
-    public AuditRecord(boolean inTransaction,
-                       String auditedActionType,
-                       UserInfo userInfo,
-                       Map<String, ?> auditData,
-                       ZonedDateTime createdAt)
+    public AuditRecord(Builder builder)
     {
-        this.inTransaction = inTransaction;
-        this.auditedActionType = auditedActionType;
-        this.userInfo = userInfo;
-        this.auditData = auditData;
-        this.createdAt = createdAt;
+        this.inTransaction = builder.inTransaction;
+        this.auditedActionType = builder.auditedActionType;
+        this.userInfo = builder.userInfo;
+        this.auditData = builder.auditData;
+        this.createdAt = builder.createdAt;
     }
 
     public boolean isInTransaction()
@@ -74,6 +70,60 @@ public class AuditRecord
     public Map<String, ?> getAuditData()
     {
         return auditData;
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        public static final String BASIC_ACTION = "basic_action";
+        public static final String LOGIN = "login";
+        public static final String DOWNLOAD_CONTENT = "download-content";
+        public static final String API_CALL = "api-call";
+
+        private boolean inTransaction;
+        private String auditedActionType;
+        private UserInfo userInfo;
+        private Map<String, ?> auditData;
+        private ZonedDateTime createdAt;
+
+        public Builder setInTransaction(boolean inTransaction)
+        {
+            this.inTransaction = inTransaction;
+            return this;
+        }
+
+        public Builder setAuditedActionType(String auditedActionType)
+        {
+            this.auditedActionType = auditedActionType;
+            return this;
+        }
+
+        public Builder setUserInfo(UserInfo userInfo)
+        {
+            this.userInfo = userInfo;
+            return this;
+        }
+
+        public Builder setAuditData(Map<String, ?> auditData)
+        {
+            this.auditData = auditData;
+            return this;
+        }
+
+        public Builder setCreatedAt(ZonedDateTime createdAt)
+        {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public AuditRecord build()
+        {
+            return new AuditRecord(this);
+        }
     }
 
 }

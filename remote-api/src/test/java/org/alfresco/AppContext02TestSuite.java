@@ -25,7 +25,6 @@
  */
 package org.alfresco;
 
-import org.alfresco.rest.api.tests.NodeSizeDetailsTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;

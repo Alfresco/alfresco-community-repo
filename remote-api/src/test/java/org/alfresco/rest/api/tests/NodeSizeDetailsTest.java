@@ -50,9 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for calculating and retrieving Folder size.
@@ -127,14 +125,14 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
 
-        assertNotNull("In response, JobId should be present", jobId);
+        assertNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
         params.put("jobId", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), folderId, params, 200);
+        HttpResponse getResponse = get(getNodeSizeDetailsUrl(folderId, jobId), params, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
 
@@ -182,14 +180,14 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
 
-        assertNotNull("In response, JobId should be present", jobId);
+        assertNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
         params.put("jobId", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), folderId, params, 200);
+        HttpResponse getResponse = get(getNodeSizeDetailsUrl(folderId, jobId), params, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
 

@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class NodeSizeDetailActionExecutorTest extends BaseSpringTest
+public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
 {
     /**
      * The test node reference

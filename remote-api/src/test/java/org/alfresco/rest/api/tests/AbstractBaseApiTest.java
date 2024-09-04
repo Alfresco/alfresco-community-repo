@@ -105,7 +105,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     private static final String URL_CHILDREN = "children";
     private static final String URL_CONTENT = "content";
-    private static final String URL_CALCULATEFOLDERSIZE = "request-size-detail";
+    private static final String URL_CALCULATEFOLDERSIZE = "size-details";
 
     protected static final String TYPE_CM_FOLDER = "cm:folder";
     protected static final String TYPE_CM_CONTENT = "cm:content";
@@ -1122,9 +1122,14 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         restDauConfig.setEnabled(false);
     }
 
-    protected String getCalculateFolderSizeUrl(String nodeId)
+    protected String generateNodeSizeDetailsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_CALCULATEFOLDERSIZE;
+    }
+
+    protected String getNodeSizeDetailsUrl(String nodeId, String jobId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_CALCULATEFOLDERSIZE + "/" + jobId;
     }
 }
 

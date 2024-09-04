@@ -26,7 +26,7 @@
 package org.alfresco;
 
 import org.alfresco.repo.web.scripts.TestWebScriptRepoServer;
-import org.alfresco.rest.api.impl.SizeDetailImplTest;
+import org.alfresco.rest.api.impl.SizeDetailsImplTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -79,7 +79,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
     org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
     org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class,
-    org.alfresco.rest.api.impl.SizeDetailImplTest.class
+    org.alfresco.rest.api.impl.SizeDetailsImplTest.class
 })
 public class AppContext04TestSuite
 {

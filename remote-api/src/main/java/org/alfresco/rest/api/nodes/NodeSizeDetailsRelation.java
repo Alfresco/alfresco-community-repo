@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,8 +27,8 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.SizeDetail;
-import org.alfresco.rest.api.model.NodeSizeDetail;
+import org.alfresco.rest.api.SizeDetails;
+import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.WebApiParameters;
@@ -47,22 +47,22 @@ import java.util.List;
 
 @RelationshipResource(name = "size-details", entityResource = NodesEntityResource.class, title = "Node Size Details")
 public class NodeSizeDetailsRelation implements
-        RelationshipResourceAction.ReadById<NodeSizeDetail>,
-        RelationshipResourceAction.Create<NodeSizeDetail>,
+        RelationshipResourceAction.ReadById<NodeSizeDetails>,
+        RelationshipResourceAction.Create<NodeSizeDetails>,
         InitializingBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsRelation.class);
     private Nodes nodes;
-    private SizeDetail sizeDetail;
+    private SizeDetails sizeDetails;
 
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
     }
 
-    public void setSizeDetail(SizeDetail sizeDetail)
+    public void setSizeDetails(SizeDetails sizeDetails)
     {
-        this.sizeDetail = sizeDetail;
+        this.sizeDetails = sizeDetails;
     }
 
     @Override
@@ -75,9 +75,10 @@ public class NodeSizeDetailsRelation implements
     @WebApiParam(name="nodeSizeEntity", title="Node Size Details Request", description="Request for processing Node Size.",
             kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
     @Override
-    public List<NodeSizeDetail> create(String nodeId, List<NodeSizeDetail> nodeSizeEntity, Parameters parameters) {
+    public List<NodeSizeDetails> create(String nodeId, List<NodeSizeDetails> nodeSizeEntity, Parameters parameters)
+    {
         LOG.debug(" Executing generateNodeSizeDetailsRequest method ");
-        return Arrays.asList(sizeDetail.generateNodeSizeDetailsRequest(nodeId));
+        return Arrays.asList(sizeDetails.generateNodeSizeDetailsRequest(nodeId));
     }
 
     @WebApiDescription(title = "Get Node Size Details", description = "Get the Node Size Details")
@@ -85,8 +86,9 @@ public class NodeSizeDetailsRelation implements
             @WebApiParam(name="nodeId", title="The unique id of the Node being addressed", description="A single node id"),
             @WebApiParam(name="jobId", title="Job Id to get the NodeSizeDetails", description="JobId")})
     @Override
-    public NodeSizeDetail readById(String nodeId, String jobId, Parameters parameters) throws RelationshipResourceNotFoundException {
+    public NodeSizeDetails readById(String nodeId, String jobId, Parameters parameters) throws RelationshipResourceNotFoundException
+    {
         LOG.debug(" Executing getNodeSizeDetails method ");
-        return sizeDetail.getNodeSizeDetails(nodeId,jobId);
+        return sizeDetails.getNodeSizeDetails(nodeId,jobId);
     }
 }

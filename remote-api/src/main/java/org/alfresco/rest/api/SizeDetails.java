@@ -25,15 +25,15 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.NodeSizeDetail;
+import org.alfresco.rest.api.model.NodeSizeDetails;
 
-public interface SizeDetail
+public interface SizeDetails
 {
      enum PROCESSINGSTATE
      {
           NOT_INITIATED, IN_PROGRESS, COMPLETED;
      }
 
-     NodeSizeDetail generateNodeSizeDetailsRequest(String nodeId);
-     NodeSizeDetail getNodeSizeDetails(String nodeId, String jobId);
+     NodeSizeDetails generateNodeSizeDetailsRequest(String nodeId);
+     NodeSizeDetails getNodeSizeDetails(String nodeId, String jobId);
 }

@@ -26,16 +26,15 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.Document;
-import org.alfresco.rest.api.tests.client.data.UserInfo;
-import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.*;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -62,9 +61,9 @@ import static org.junit.Assert.assertNull;
  */
 @FixMethodOrder (MethodSorters.NAME_ASCENDING)
 @RunWith (JUnit4.class)
-public class NodeSizeDetailTest extends AbstractBaseApiTest
+public class NodeSizeDetailsTest extends AbstractBaseApiTest
 {
-    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsTest.class);
 
     private Site userOneN1Site;
     private String folderId;
@@ -92,7 +91,7 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         }
         catch (Exception e)
         {
-            LOG.error("Exception occurred in NodeSizeDetailTest:addToDocumentLibrary {}", e.getMessage());
+            LOG.error("Exception occurred in NodeSizeDetailsTest:addToDocumentLibrary {}", e.getMessage());
         }
         return null;
     }
@@ -115,11 +114,13 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
     }
 
     /**
-     * Test case for POST/request-size-detail, which calculates and retrieve size of a folder.
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/request-size-detail}
+     * Test case for POST/size-details, which request and calculates the size of a folder.
+     * GET/size-details, which retrieve the SizeDetails of the folder Node.
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size-details}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size-details/<jobId>}
      */
     @Test
-    public void testPostAndGetFolderSize() throws Exception
+    public void testPostAndGetFolderSizeDetails() throws Exception
     {
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
@@ -127,14 +128,19 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         params.put("maxItems", "1000");
 
         // Perform POST request
-        HttpResponse postResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), toJsonAsStringNonNull(params), 202);
 
-        assertNull("After executing POST/request-size-detail first time, it will provide null with 202 status code",postResponse.getJsonResponse());
+        assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",postResponse.getJsonResponse());
 
-        HttpResponse getResponse = post(getCalculateFolderSizeUrl(folderId), toJsonAsStringNonNull(params), 200);
+        String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
+
+        assertNotNull("In response, JobId should be present", jobId);
+
+        HttpResponse getResponse = get(getNodeSizeDetailsUrl(folderId, jobId), params, 200);
+
+        assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
-        assertNotNull("JSON response should not be null", getJsonResponse);
 
         assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
     }
@@ -168,7 +174,7 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(500, nodes.size());
 
-        //Start Time before triggering POST/calculate-folder-size API
+        //Start Time before triggering POST/size-details API
         LocalTime expectedTime = LocalTime.now().plusSeconds(5);
 
         // Prepare parameters.
@@ -176,18 +182,23 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         params.put("nodeId", folderId);
 
         // Perform POST request
-        HttpResponse postResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), toJsonAsStringNonNull(params), 202);
 
-        assertNull("After executing POST/request-size-detail first time, it will provide null with 202 status code",postResponse.getJsonResponse());
+        assertNull("After executing POST/size-details first time, it will provide jobId with 202 status code",postResponse.getJsonResponse());
 
-        HttpResponse getResponse = post(getCalculateFolderSizeUrl(parentFolder), toJsonAsStringNonNull(params), 200);
+        String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
+
+        assertNotNull("In response, JobId should be present", jobId);
+
+        HttpResponse getResponse = get(getNodeSizeDetailsUrl(folderId, jobId), params, 200);
+
+        assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
-        assertNotNull("JSON response should not be null", getJsonResponse);
 
         assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
 
-        //current Time after executing GET/request-size-details
+        //current Time after executing GET/size-details
         LocalTime actualTime = LocalTime.now();
         assertTrue("Calculating folder node is taking time greater than 5 seconds ",actualTime.isBefore(expectedTime));
     }
@@ -199,12 +210,12 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
     public void testHTTPStatus() throws Exception
     {
         setRequestContext(null);
-        delete(getCalculateFolderSizeUrl(folderId), folderId, null, 401);
+        delete(generateNodeSizeDetailsUrl(folderId), folderId, null, 401);
 
         setRequestContext(user1);
         String folderName = "folder0" + System.currentTimeMillis();
 
-        HttpResponse responseForNotFound = post(getCalculateFolderSizeUrl(folderName), null, 404);
+        HttpResponse responseForNotFound = post(generateNodeSizeDetailsUrl(folderName), null, 404);
         assertNotNull(responseForNotFound);
 
         folderName = "folder1" + System.currentTimeMillis();
@@ -219,7 +230,7 @@ public class NodeSizeDetailTest extends AbstractBaseApiTest
         params.put("maxItems", "1000");
 
         // Perform POST request
-        HttpResponse responseForInvalidNode = post(getCalculateFolderSizeUrl(n1Id), toJsonAsStringNonNull(params), 422);
+        HttpResponse responseForInvalidNode = post(generateNodeSizeDetailsUrl(n1Id), toJsonAsStringNonNull(params), 422);
         assertNotNull(responseForInvalidNode);
     }
 

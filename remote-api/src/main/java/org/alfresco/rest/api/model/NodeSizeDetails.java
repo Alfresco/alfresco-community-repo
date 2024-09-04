@@ -25,9 +25,11 @@
  */
 package org.alfresco.rest.api.model;
 
+import org.json.simple.JSONObject;
+
 import java.util.Objects;
 
-public class NodeSizeDetail
+public class NodeSizeDetails
 {
     private String nodeId;
     private Long size;
@@ -36,16 +38,18 @@ public class NodeSizeDetail
     private String status;
     private String jobId;
 
-    public NodeSizeDetail(String jobId) {
+    public NodeSizeDetails(String jobId)
+    {
         this.jobId = jobId;
     }
 
-    public NodeSizeDetail(String nodeId, String status) {
+    public NodeSizeDetails(String nodeId, String status)
+    {
         this.nodeId = nodeId;
         this.status = status;
     }
 
-    public NodeSizeDetail(String nodeId, Long size, String calculatedAt, Integer numberOfFiles, String status, String jobId)
+    public NodeSizeDetails(String nodeId, Long size, String calculatedAt, Integer numberOfFiles, String status, String jobId)
     {
         this.nodeId = nodeId;
         this.size = size;
@@ -105,26 +109,46 @@ public class NodeSizeDetail
         this.status = status;
     }
 
-    public String getJobId() { return jobId; }
+    public String getJobId()
+    {
+        return jobId;
+    }
 
-    public void setJobId(String jobId) { this.jobId = jobId; }
+    public void setJobId(String jobId)
+    {
+        this.jobId = jobId;
+    }
+
+    public static String parseJson(JSONObject jsonObject)
+    {
+        if (jsonObject == null)
+        {
+            return null;
+        }
+
+        String jobId = (String)jsonObject.get("jobId");
+        return jobId;
+    }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        NodeSizeDetail that = (NodeSizeDetail) o;
+        NodeSizeDetails that = (NodeSizeDetails) o;
         return Objects.equals(nodeId, that.nodeId) && Objects.equals(size, that.size) && Objects.equals(calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles) && Objects.equals(status, that.status) && Objects.equals(jobId, that.jobId);
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(nodeId, size, calculatedAt, numberOfFiles, status, jobId);
     }
 
     @Override
-    public String toString() {
-        return "NodeSizeDetail{" +
+    public String toString()
+    {
+        return "NodeSizeDetails{" +
                 "nodeId='" + nodeId + '\'' +
                 ", size=" + size +
                 ", calculatedAt='" + calculatedAt + '\'' +

@@ -996,7 +996,7 @@
         </property>
     </bean>
 
-    <bean id="sizeDetailImpl" class="org.alfresco.rest.api.impl.SizeDetailImpl">
+    <bean id="sizeDetailsImpl" class="org.alfresco.rest.api.impl.SizeDetailsImpl">
         <property name="nodes" ref="nodes" />
         <property name="nodeService" ref="NodeService" />
         <property name="permissionService" ref="permissionService"/>
@@ -1005,12 +1005,12 @@
         <property name="defaultItems" value="${alfresco.restApi.calculateFolderSize.items}"/>
     </bean>
 
-    <bean id="sizeDetail" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <bean id="sizeDetails" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
-            <value>org.alfresco.rest.api.SizeDetail</value>
+            <value>org.alfresco.rest.api.SizeDetails</value>
         </property>
         <property name="target">
-            <ref bean="sizeDetailImpl" />
+            <ref bean="sizeDetailsImpl" />
         </property>
         <property name="interceptorNames">
             <list>
@@ -1796,6 +1796,6 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeSizeDetailsRelation">
         <property name="nodes" ref="nodes" />
-        <property name="sizeDetail" ref="sizeDetail" />
+        <property name="sizeDetails" ref="sizeDetails" />
     </bean>
 </beans>

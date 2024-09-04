@@ -29,10 +29,10 @@ import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.SizeDetail;
+import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodePermissions;
-import org.alfresco.rest.api.model.NodeSizeDetail;
+import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.UnprocessableContentException;
 import org.alfresco.service.cmr.action.Action;
@@ -48,13 +48,13 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.HashMap;
 
-import static org.alfresco.rest.api.SizeDetail.PROCESSINGSTATE.COMPLETED;
-import static org.alfresco.rest.api.SizeDetail.PROCESSINGSTATE.NOT_INITIATED;
-import static org.alfresco.rest.api.SizeDetail.PROCESSINGSTATE.IN_PROGRESS;
+import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.COMPLETED;
+import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.NOT_INITIATED;
+import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.IN_PROGRESS;
 
-public class SizeDetailImpl implements SizeDetail
+public class SizeDetailsImpl implements SizeDetails
 {
-    private static final Logger LOG = LoggerFactory.getLogger(SizeDetailImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SizeDetailsImpl.class);
     private static final String STATUS = "status";
     private static final String ACTIONID = "actionId";
     private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
@@ -97,37 +97,41 @@ public class SizeDetailImpl implements SizeDetail
         this.defaultItems = defaultItems;
     }
 
+    /**
+     * generateNodeSizeDetailsRequest : providing HTTP STATUS 202 with jobId.
+     */
     @Override
-    public NodeSizeDetail generateNodeSizeDetailsRequest(String nodeId) {
+    public NodeSizeDetails generateNodeSizeDetailsRequest(String nodeId)
+    {
         NodeRef nodeRef = nodes.validateNode(nodeId);
         validateType(nodeRef);
         String actionId;
         if(simpleCache.get(nodeId) == null)
         {
             actionId = executeAction(nodeRef, defaultItems, simpleCache);
-        } else {
+        } else
+        {
             Map<String, Object> result = simpleCache.get(nodeRef.getId());
             actionId = (String)result.get(ACTIONID);
         }
-        return new NodeSizeDetail(actionId);
+        return new NodeSizeDetails(actionId);
     }
 
     /**
-     * calculateNodeSize : providing HTTP STATUS 202 which signifies REQUEST ACCEPTED.
-     *                     HTTP STATUS 200 will provide the size details response from cache.
+     * getNodeSizeDetails : providing HTTP STATUS 200 with NodeSizeDetails data from cache.
      */
     @Override
-    public NodeSizeDetail getNodeSizeDetails(final String nodeId, final String jobId)
+    public NodeSizeDetails getNodeSizeDetails(final String nodeId, final String jobId)
     {
         NodeRef nodeRef = nodes.validateNode(nodeId);
         validateType(nodeRef);
 
         if(simpleCache.get(nodeId) == null)
         {
-            return new NodeSizeDetail(nodeId, NOT_INITIATED.name());
+            return new NodeSizeDetails(nodeId, NOT_INITIATED.name());
         }
 
-        LOG.debug("Executing NodeSizeDetailActionExecuter from calculateNodeSize method");
+        LOG.debug("Executing executorResultToSizeDetail  method");
         return executorResultToSizeDetail(simpleCache.get(nodeId), nodeId, jobId);
     }
 
@@ -151,11 +155,11 @@ public class SizeDetailImpl implements SizeDetail
     /**
      * Converting action executor response to their respective model class.
      */
-    private NodeSizeDetail executorResultToSizeDetail(final Map<String,Object> result, String nodeId, String jobId)
+    private NodeSizeDetails executorResultToSizeDetail(final Map<String,Object> result, String nodeId, String jobId)
     {
         if(result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
         {
-            return new NodeSizeDetail(nodeId, COMPLETED.name());
+            return new NodeSizeDetails(nodeId, COMPLETED.name());
         }
 
         // Check for the presence of "size" key.
@@ -163,21 +167,22 @@ public class SizeDetailImpl implements SizeDetail
 
         if (hasSizeKey)
         {
-            NodeSizeDetail nodeSizeDetail = new NodeSizeDetail((String) result.get("nodeId"),
+            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails((String) result.get("nodeId"),
                     (Long) result.get("size"),
                     (String) result.get("calculatedAt"),
                     (Integer) result.get("numberOfFiles"),
                     COMPLETED.name(),
                     (String) result.get(ACTIONID));
 
-            if(!nodeSizeDetail.getJobId().equalsIgnoreCase(jobId)) {
+            if(!nodeSizeDetails.getJobId().equalsIgnoreCase(jobId))
+            {
                 throw new UnprocessableContentException(INVALID_JOBID);
             }
-            return nodeSizeDetail;
+            return nodeSizeDetails;
         }
         else
         {
-            return new NodeSizeDetail(nodeId, IN_PROGRESS.name());
+            return new NodeSizeDetails(nodeId, IN_PROGRESS.name());
         }
     }
 

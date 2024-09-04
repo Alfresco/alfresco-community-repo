@@ -133,8 +133,14 @@ public class NodeSizeDetails
     @Override
     public boolean equals(Object o)
     {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
         NodeSizeDetails that = (NodeSizeDetails) o;
         return Objects.equals(nodeId, that.nodeId) && Objects.equals(size, that.size) && Objects.equals(calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles) && Objects.equals(status, that.status) && Objects.equals(jobId, that.jobId);
     }

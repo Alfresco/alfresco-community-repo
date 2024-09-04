@@ -125,10 +125,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // Prepare parameters
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
-        params.put("maxItems", "1000");
+        params.put("nodeSizeEntity", null);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), toJsonAsStringNonNull(params), 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",postResponse.getJsonResponse());
 
@@ -180,9 +180,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
+        params.put("nodeSizeEntity", null);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), toJsonAsStringNonNull(params), 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), null, 202);
 
         assertNull("After executing POST/size-details first time, it will provide jobId with 202 status code",postResponse.getJsonResponse());
 
@@ -224,13 +225,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         Node nodeResp = createNode(folderId, folderName, nodeType, null);
         String n1Id = nodeResp.getId();
 
-        // Prepare parameters
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", n1Id);
-        params.put("maxItems", "1000");
-
         // Perform POST request
-        HttpResponse responseForInvalidNode = post(generateNodeSizeDetailsUrl(n1Id), toJsonAsStringNonNull(params), 422);
+        HttpResponse responseForInvalidNode = post(generateNodeSizeDetailsUrl(n1Id), null, 422);
         assertNotNull(responseForInvalidNode);
     }
 

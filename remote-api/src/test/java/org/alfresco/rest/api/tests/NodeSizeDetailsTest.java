@@ -134,7 +134,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         params.put("nodeId", folderId);
         params.put("jobId", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId),folderId, params, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
 
@@ -189,7 +189,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         params.put("nodeId", folderId);
         params.put("jobId", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), folderId, params, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
 

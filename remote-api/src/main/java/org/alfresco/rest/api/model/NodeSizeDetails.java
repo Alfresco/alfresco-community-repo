@@ -127,6 +127,7 @@ public class NodeSizeDetails
         }
 
         String jobId = (String)jsonObject.get("jobId");
+        jobId = jobId.replace("<", "").replace(">", "");
         return jobId;
     }
 

@@ -26,7 +26,6 @@
 package org.alfresco;
 
 import org.alfresco.repo.web.scripts.TestWebScriptRepoServer;
-import org.alfresco.rest.api.impl.SizeDetailsImplTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;

@@ -50,7 +50,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * V1 REST API tests for calculating and retrieving Folder size.
@@ -125,7 +127,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
 
-        assertNull("In response, JobId should be present", jobId);
+        assertNotNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
@@ -180,7 +182,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
 
-        assertNull("In response, JobId should be present", jobId);
+        assertNotNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();

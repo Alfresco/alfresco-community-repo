@@ -122,11 +122,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     @Test
     public void testPostAndGetFolderSizeDetails() throws Exception
     {
-        // Prepare parameters
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", folderId);
-        params.put("nodeSizeEntity", null);
-
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
 
@@ -135,6 +130,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
 
         assertNotNull("In response, JobId should be present", jobId);
+
+        // Prepare parameters.
+        Map<String, String> params = new HashMap<>();
+        params.put("nodeId", folderId);
+        params.put("jobId", jobId);
 
         HttpResponse getResponse = get(getNodeSizeDetailsUrl(folderId, jobId), params, 200);
 
@@ -177,11 +177,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         //Start Time before triggering POST/size-details API
         LocalTime expectedTime = LocalTime.now().plusSeconds(5);
 
-        // Prepare parameters.
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", folderId);
-        params.put("nodeSizeEntity", null);
-
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), null, 202);
 
@@ -190,6 +185,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
 
         assertNotNull("In response, JobId should be present", jobId);
+
+        // Prepare parameters.
+        Map<String, String> params = new HashMap<>();
+        params.put("nodeId", folderId);
+        params.put("jobId", jobId);
 
         HttpResponse getResponse = get(getNodeSizeDetailsUrl(folderId, jobId), params, 200);
 

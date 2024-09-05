@@ -46,6 +46,8 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.UrlUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Action to execute a JavaScript. The script has access to the default model.
@@ -56,6 +58,8 @@ import org.alfresco.util.UrlUtil;
  */
 public class ScriptActionExecuter extends ActionExecuterAbstractBase
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptActionExecuter.class);
+
     public static final String NAME = "script";
     public static final String PARAM_SCRIPTREF = "script-ref";
     
@@ -152,8 +156,11 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
             {
                 // get the references we need to build the default scripting data-model
                 String userName = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
-                NodeRef personRef = this.personService.getPerson(userName);
-                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+                LOGGER.debug("Current user is {}", userName);
+                NodeRef personRef = this.personService.getPersonOrNull(userName);
+                LOGGER.debug("PersonRef for this user {}", personRef);
+                NodeRef homeSpaceRef = personRef == null ? null : (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+                LOGGER.debug("HomeSpace of this user {}", homeSpaceRef);
                 
                 // the default scripting model provides access to well known objects and searching
                 // facilities - it also provides basic create/update/delete/copy/move services

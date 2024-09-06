@@ -49,7 +49,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
@@ -74,7 +74,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v7.0.0
@@ -102,7 +102,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v7.0.0
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -157,7 +157,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - uses: Alfresco/ya-pmd-scan@v4.0.0
         with:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
@@ -195,7 +195,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare Report Portal"
@@ -280,7 +280,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -363,7 +363,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: Run MariaDB ${{ matrix.version }} database
@@ -439,7 +439,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MariaDB 10.6 database"
@@ -515,7 +515,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run MySQL 8 database"
@@ -590,7 +590,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 13.12 database"
@@ -665,7 +665,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 14.9 database"
@@ -740,7 +740,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run PostgreSQL 15.4 database"
@@ -813,7 +813,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run ActiveMQ"
@@ -918,7 +918,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Set transformers tag"
@@ -1036,7 +1036,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -1122,7 +1122,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Run Postgres 15.4 database"
@@ -1201,7 +1201,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -1252,7 +1252,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -1299,7 +1299,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
@@ -1394,7 +1394,7 @@ jobs:
           java-version: "21"
       - name: "print java runtime version"
         run: |
-          bash java -version
+          java -version
       - name: "Build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |

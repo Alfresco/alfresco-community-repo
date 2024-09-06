@@ -59,7 +59,6 @@ import org.slf4j.LoggerFactory;
 public class ScriptActionExecuter extends ActionExecuterAbstractBase
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScriptActionExecuter.class);
-
     public static final String NAME = "script";
     public static final String PARAM_SCRIPTREF = "script-ref";
     private static final String SYSTEM_USER = "System";

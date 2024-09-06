@@ -70,7 +70,7 @@ public interface DownloadService
      * @param downloadNodeName Download node name
      * @return Reference to node which will eventually contain the archive file
      */
-    public NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive, String downloadNodeName);
+    NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive, String downloadNodeName);
     
     /**
      * Get the status of the of the download identified by downloadNode.

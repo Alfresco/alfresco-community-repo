@@ -358,7 +358,7 @@ public class DownloadServiceIntegrationTest
         testNodes.addNodeRef(downloadNode);
 
         // Validate that the download node has been persisted correctly.
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Object>()
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<>()
         {
 
             @Override

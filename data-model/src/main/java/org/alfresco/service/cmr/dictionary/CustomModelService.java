@@ -247,7 +247,7 @@ public interface CustomModelService
      *            included or not
      * @return reference to the node which will contain the archive file
      */
-    public NodeRef createDownloadNode(String modelName, boolean withAssociatedForm, String downloadNodeNameString);
+    NodeRef createDownloadNode(String modelName, boolean withAssociatedForm, String downloadNodeName);
 
     /**
      * Compiles the {@link M2Model}.

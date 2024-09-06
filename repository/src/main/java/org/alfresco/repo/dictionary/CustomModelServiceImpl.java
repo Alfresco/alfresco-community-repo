@@ -1143,7 +1143,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
         try
         {
-            NodeRef archiveNodeRef = downloadService.createDownload(nodesToBeDownloaded.toArray(new NodeRef[nodesToBeDownloaded.size()]), false, downloadNodeName);
+            NodeRef archiveNodeRef = downloadService.createDownload(nodesToBeDownloaded.toArray(new NodeRef[0]), false, downloadNodeName);
 
             if (logger.isDebugEnabled())
             {

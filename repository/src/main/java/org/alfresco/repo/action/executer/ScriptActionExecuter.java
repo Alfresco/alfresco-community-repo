@@ -62,6 +62,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
 
     public static final String NAME = "script";
     public static final String PARAM_SCRIPTREF = "script-ref";
+    private static final String SYSTEM_USER = "System";
     
     private ServiceRegistry serviceRegistry;
     private SysAdminParams sysAdminParams;
@@ -156,11 +157,13 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
             {
                 // get the references we need to build the default scripting data-model
                 String userName = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
-                LOGGER.debug("Current user is {}", userName);
-                NodeRef personRef = this.personService.getPersonOrNull(userName);
-                LOGGER.debug("PersonRef for this user {}", personRef);
-                NodeRef homeSpaceRef = personRef == null ? null : (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-                LOGGER.debug("HomeSpace of this user {}", homeSpaceRef);
+                if(SYSTEM_USER.equals(userName))
+                {
+                    LOGGER.info("Skipping Script Execution for the System user.");
+                    return;
+                }
+                NodeRef personRef = this.personService.getPerson(userName);
+                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
                 
                 // the default scripting model provides access to well known objects and searching
                 // facilities - it also provides basic create/update/delete/copy/move services

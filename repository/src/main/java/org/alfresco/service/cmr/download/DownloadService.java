@@ -53,7 +53,7 @@ public interface DownloadService
      * @param recursive Recurse into container nodes
      * @return Reference to node which will eventually contain the archive file
      */
-    public NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive);
+    NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive);
 
     /**
      * Start the creation of a downlaodable archive file containing the content

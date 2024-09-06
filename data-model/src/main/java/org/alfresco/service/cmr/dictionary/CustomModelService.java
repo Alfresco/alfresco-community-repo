@@ -239,6 +239,17 @@ public interface CustomModelService
     public NodeRef createDownloadNode(String modelName, boolean withAssociatedForm);
 
     /**
+     * Creates a downloadable archive file containing the custom model file and
+     * if specified, its associated Share extension module file.
+     *
+     * @param modelName the model name to be exported
+     * @param withAssociatedForm whether Share extension module file should be
+     *            included or not
+     * @return reference to the node which will contain the archive file
+     */
+    public NodeRef createDownloadNode(String modelName, boolean withAssociatedForm, String downloadNodeNameString);
+
+    /**
      * Compiles the {@link M2Model}.
      *
      * @param m2Model the model

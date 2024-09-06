@@ -712,8 +712,7 @@ public class CustomModelsImpl implements CustomModels
         boolean withForm = Boolean.valueOf(propName);
         try
         {
-            NodeRef nodeRef = customModelService.createDownloadNode(modelName, withForm);
-            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, modelName + DownloadsImpl.DEFAULT_ARCHIVE_EXTENSION);
+            NodeRef nodeRef = customModelService.createDownloadNode(modelName, withForm, modelName + DownloadsImpl.DEFAULT_ARCHIVE_EXTENSION);
             return new CustomModelDownload(nodeRef);
         }
         catch (Exception ex)

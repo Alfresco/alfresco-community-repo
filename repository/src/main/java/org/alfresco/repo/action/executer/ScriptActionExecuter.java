@@ -156,7 +156,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
             {
                 // get the references we need to build the default scripting data-model
                 String userName = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
-                if(SYSTEM_USER.equals(userName))
+                if (SYSTEM_USER.equals(userName))
                 {
                     LOGGER.info("Skipping Script Execution for the System user.");
                     return;

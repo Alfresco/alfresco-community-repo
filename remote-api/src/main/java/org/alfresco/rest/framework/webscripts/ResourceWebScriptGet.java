@@ -244,6 +244,10 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         {
                             throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
                         }
+                        if (!RelationshipResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                        {
+                            throw new UnsupportedResourceOperationException();
+                        }
                         RelationshipResourceAction.ReadWithResponse<?> relationGetter = (RelationshipResourceAction.ReadWithResponse<?>) resource.getResource();
                         CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params,withResponse);
                         return relations;

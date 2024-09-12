@@ -31,6 +31,11 @@
          <cm:description>Configuration information for the Records Management application.</cm:description>
       </view:properties>
 
+      <view:aspects>
+         <sys:undeletable/>
+         <sys:unmovable/>
+      </view:aspects>
+
       <view:associations>
          <cm:contains>
 

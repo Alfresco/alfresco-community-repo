@@ -34,6 +34,7 @@
 <%@ page import="org.alfresco.service.cmr.module.ModuleDetails" %>
 <%@ page import="org.alfresco.service.cmr.module.ModuleInstallState" %>
 <%@ page import="java.util.Calendar" %>
+<%@ page import="org.owasp.encoder.Encode" %>
 
 <!-- Enterprise index-jsp placeholder -->
 <%
@@ -88,7 +89,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
             <p></p>
             <p><a href="./s/index">Alfresco WebScripts Home</a> (admin only - INTERNAL)</p>
             <p></p>
-            <p><a href="<%=UrlUtil.getApiExplorerUrl(sysAdminParams, request.getRequestURL().toString(), request.getRequestURI())%>">Alfresco API Explorer</a></p>
+            <p><a href="<%=Encode.forHtmlAttribute(UrlUtil.getApiExplorerUrl(sysAdminParams, request.getRequestURL().toString(), request.getRequestURI()))%>">Alfresco API Explorer</a></p>
 <%
    if (descriptorService.getLicenseDescriptor() == null && transactionService.isReadOnly())
    {

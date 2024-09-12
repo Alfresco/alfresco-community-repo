@@ -125,7 +125,7 @@
          parent="declarativeCapability">
       <property name="name" value="DeleteRecordFolder"/>
       <property name="private" value="true"/>
-      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="permission" value="DeleteRecords"/>
       <property name="kinds">
          <list>
             <value>RECORD_FOLDER</value>

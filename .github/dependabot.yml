@@ -52,3 +52,7 @@ updates:
     interval: "daily"
     time: "22:00"
     timezone: Africa/Abidjan
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "monthly"

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -102,20 +102,21 @@ public class CrcHelper
         {
             throw new RuntimeException("UTF-8 encoding is not supported");
         }
-        // Get the short value (case-sensitive or not)
+        // Crc Value will change based on the case-sensitive, So we need to get the short value based on case-sensitive
         String valueShort = null;
-        int valueLen = valueLowerCase.length();
+        String currentValue = caseSensitive ? value : valueLowerCase;
+        int valueLen = currentValue.length();
         if (valueLen < dataLength)
         {
-            valueShort = valueLowerCase;
+            valueShort = currentValue;
         }
         else if (useCharsFromStart)
         {
-            valueShort = valueLowerCase.substring(0, dataLength - 1);
+            valueShort = currentValue.substring(0, dataLength - 1);
         }
         else
         {
-            valueShort = valueLowerCase.substring(valueLen - dataLength);
+            valueShort = currentValue.substring(valueLen - dataLength);
         }
         return new Pair<String, Long>(valueShort, valueCrc);
     }

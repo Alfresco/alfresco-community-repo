@@ -4,6 +4,8 @@
              view:childName="app:messages">
     <view:aspects>
       <app:uifacets></app:uifacets>
+      <sys:undeletable/>
+      <sys:unmovable/>
     </view:aspects>
     <view:properties>
       <cm:description>${spaces.messages.description}</cm:description>

@@ -58,10 +58,13 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.RemoteJWKSet;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jose.util.ResourceRetriever;
@@ -129,6 +132,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentityServiceFacade>
 {
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
+
+    private static final JOSEObjectType AT_JWT = new JOSEObjectType("at+jwt");
+
     private boolean enabled;
     private SpringBasedIdentityServiceFacadeFactory factory;
 
@@ -554,12 +560,20 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
     static class JwtDecoderProvider
     {
-        private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.RS256;
+        private static final SignatureAlgorithm DEFAULT_SIGNATURE_ALGORITHM = SignatureAlgorithm.RS256;
         private final IdentityServiceConfig config;
+        private final Set<SignatureAlgorithm> signatureAlgorithms;
 
         JwtDecoderProvider(IdentityServiceConfig config)
         {
             this.config = requireNonNull(config);
+            this.signatureAlgorithms = ofNullable(config.getSignatureAlgorithms())
+                .filter(not(Set::isEmpty))
+                .orElseGet(() -> {
+                    LOGGER.warn("Unable to find any valid signature algorithms in the configuration. "
+                        + "Using the default signature algorithm: " + DEFAULT_SIGNATURE_ALGORITHM.getName() + ".");
+                    return Set.of(DEFAULT_SIGNATURE_ALGORITHM);
+                });
         }
 
         public JwtDecoder createJwtDecoder(RestOperations rest, ProviderDetails providerDetails)
@@ -587,13 +601,13 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             {
                 final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
                 return NimbusJwtDecoder.withPublicKey(publicKey)
-                    .signatureAlgorithm(SIGNATURE_ALGORITHM)
+                    .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
                     .build();
             }
-
             final String jwkSetUri = requireValidJwkSetUri(providerDetails);
-            return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
-                .jwsAlgorithm(SIGNATURE_ALGORITHM)
+            final NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri);
+            signatureAlgorithms.forEach(decoderBuilder::jwsAlgorithm);
+            return decoderBuilder
                 .restOperations(rest)
                 .jwtProcessorCustomizer(this::reconfigureJWKSCache)
                 .build();
@@ -633,8 +647,11 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
                 resourceRetriever.get(), cache);
 
             jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
-                JWSAlgorithm.parse(SIGNATURE_ALGORITHM.getName()),
+                signatureAlgorithms.stream()
+                    .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
+                    .collect(Collectors.toSet()),
                 cachingJWKSource));
+            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
         }
 
         private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)
@@ -759,7 +776,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
     }
 
-
     static class CustomClientHttpRequestFactory extends HttpComponentsClientHttpRequestFactory
     {
         CustomClientHttpRequestFactory(HttpClient httpClient)
@@ -781,9 +797,22 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
     }
 
+    static class CustomJOSEObjectTypeVerifier extends DefaultJOSEObjectTypeVerifier<SecurityContext>
+    {
+        public CustomJOSEObjectTypeVerifier(JOSEObjectType... allowedTypes)
+        {
+            super(Set.of(allowedTypes));
+        }
+
+        @Override
+        public void verify(JOSEObjectType type, SecurityContext context) throws BadJOSEException
+        {
+            super.verify(type, context);
+        }
+    }
+
     private static boolean isDefined(String value)
     {
         return value != null && !value.isBlank();
     }
-
 }

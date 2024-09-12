@@ -89,6 +89,9 @@
    <!-- Import RM Audit -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-audit-context.xml"/>
 
+   <!-- Import RM Bulk -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-bulk-context.xml"/>
+
    <!--  Import RM query context -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/query/rm-query-context.xml" />
 

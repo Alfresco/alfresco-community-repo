@@ -4,6 +4,8 @@
              view:childName="app:webclient_extension">
     <view:aspects>
       <app:uifacets></app:uifacets>
+      <sys:undeletable/>
+      <sys:unmovable/>
     </view:aspects>
     <view:properties>
       <cm:description>${spaces.web.client.extension.description}</cm:description>

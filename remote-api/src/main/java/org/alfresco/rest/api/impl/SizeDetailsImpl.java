@@ -25,61 +25,39 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.rest.api.SizeDetails.ProcessingState.COMPLETED;
+import static org.alfresco.rest.api.SizeDetails.ProcessingState.IN_PROGRESS;
+import static org.alfresco.rest.api.SizeDetails.ProcessingState.NOT_INITIATED;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.SizeDetails;
-import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.UnprocessableContentException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.alfresco.service.cmr.repository.NodeRef;
-import java.io.Serializable;
-import java.util.Map;
-import java.util.HashMap;
-
-import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.COMPLETED;
-import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.NOT_INITIATED;
-import static org.alfresco.rest.api.SizeDetails.PROCESSINGSTATE.IN_PROGRESS;
 
 public class SizeDetailsImpl implements SizeDetails
 {
-    private static final Logger LOG = LoggerFactory.getLogger(SizeDetailsImpl.class);
-    private static final String STATUS = "status";
-    private static final String ACTIONID = "actionId";
-    private static final String INVALID_NODEID = "Invalid parameter: value of nodeId is invalid";
-    private static final String INVALID_JOBID = "Invalid parameter: value of jobId is invalid";
-    private static final String FOLDER = "folder";
+    private static final String ACTION_ID = "actionId";
     private Nodes nodes;
-    private NodeService nodeService;
-    private PermissionService permissionService;
+    private NodeRef nodeRef;
     private ActionService actionService;
-    private SimpleCache<Serializable,Map<String, Object>> simpleCache;
+    private SimpleCache<Serializable, Map<String, Object>> simpleCache;
     private int defaultItems;
 
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
-    }
-
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     public void setActionService(ActionService actionService)
@@ -103,16 +81,17 @@ public class SizeDetailsImpl implements SizeDetails
     @Override
     public NodeSizeDetails generateNodeSizeDetailsRequest(String nodeId)
     {
-        NodeRef nodeRef = nodes.validateNode(nodeId);
+        nodeRef = nodes.validateOrLookupNode(nodeId);
         validateType(nodeRef);
         String actionId;
-        if(simpleCache.get(nodeId) == null)
+        if (!simpleCache.contains(nodeId))
         {
-            actionId = executeAction(nodeRef, defaultItems, simpleCache);
-        } else
+            actionId = executeAction();
+        }
+        else
         {
             Map<String, Object> result = simpleCache.get(nodeRef.getId());
-            actionId = (String)result.get(ACTIONID);
+            actionId = (String) result.get(ACTION_ID);
         }
         return new NodeSizeDetails(actionId);
     }
@@ -123,29 +102,27 @@ public class SizeDetailsImpl implements SizeDetails
     @Override
     public NodeSizeDetails getNodeSizeDetails(final String nodeId, final String jobId)
     {
-        NodeRef nodeRef = nodes.validateNode(nodeId);
+        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
         validateType(nodeRef);
 
-        if(simpleCache.get(nodeId) == null)
+        if (!simpleCache.contains(nodeId))
         {
             return new NodeSizeDetails(nodeId, NOT_INITIATED.name());
         }
 
-        LOG.debug("Executing executorResultToSizeDetail  method");
         return executorResultToSizeDetail(simpleCache.get(nodeId), nodeId, jobId);
     }
 
     /**
      * Executing Action Asynchronously.
      */
-    private String executeAction(NodeRef nodeRef, int defaultItems, SimpleCache<Serializable, Map<String, Object>> simpleCache)
+    private String executeAction()
     {
         Map<String, Object > currentStatus = new HashMap<>();
-        currentStatus.put(STATUS,IN_PROGRESS.name());
+        currentStatus.put("status",IN_PROGRESS.name());
         Action folderSizeAction = actionService.createAction(NodeSizeDetailActionExecutor.NAME);
-        currentStatus.put(ACTIONID,folderSizeAction.getId());
+        currentStatus.put(ACTION_ID,folderSizeAction.getId());
         folderSizeAction.setTrackStatus(true);
-        folderSizeAction.setExecuteAsynchronously(true);
         folderSizeAction.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, defaultItems);
         simpleCache.put(nodeRef.getId(),currentStatus);
         actionService.executeAction(folderSizeAction, nodeRef, false, true);
@@ -155,28 +132,24 @@ public class SizeDetailsImpl implements SizeDetails
     /**
      * Converting action executor response to their respective model class.
      */
-    private NodeSizeDetails executorResultToSizeDetail(final Map<String,Object> result, String nodeId, String jobId)
+    private NodeSizeDetails executorResultToSizeDetail(final Map<String, Object> result, String nodeId, String jobId)
     {
-        if(result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
+        if (result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
         {
             return new NodeSizeDetails(nodeId, COMPLETED.name());
         }
 
-        // Check for the presence of "size" key.
-        boolean hasSizeKey = result.containsKey("size");
-
-        if (hasSizeKey)
+        if (result.containsKey("size"))
         {
-            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails((String) result.get("nodeId"),
-                    (Long) result.get("size"),
-                    (String) result.get("calculatedAt"),
-                    (Integer) result.get("numberOfFiles"),
-                    COMPLETED.name(),
-                    (String) result.get(ACTIONID));
+            NodeSizeDetails nodeSizeDetails =
+                        new NodeSizeDetails((String) result.get("nodeId"), (Long) result.get("size"),
+                                            (Date) result.get("calculatedAt"), (Integer) result.get("numberOfFiles"),
+                                            COMPLETED.name(), (String) result.get(ACTION_ID));
 
-            if(!nodeSizeDetails.getJobId().equalsIgnoreCase(jobId))
+            if (!nodeSizeDetails.getJobId()
+                        .equalsIgnoreCase(jobId))
             {
-                throw new UnprocessableContentException(INVALID_JOBID);
+                throw new UnprocessableContentException("Invalid parameter: value of jobId is invalid");
             }
             return nodeSizeDetails;
         }
@@ -188,25 +161,9 @@ public class SizeDetailsImpl implements SizeDetails
 
     private void validateType(NodeRef nodeRef) throws InvalidNodeTypeException
     {
-        QName qName = nodeService.getType(nodeRef);
-        validatePermissions(nodeRef, nodeRef.getId());
-        if(!FOLDER.equalsIgnoreCase(qName.getLocalName()))
+        if (!nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false))
         {
-            throw new InvalidNodeTypeException(INVALID_NODEID);
-        }
-    }
-
-    /**
-     * Validating node permission [i.e. READ permission should be there ]
-     */
-    private void validatePermissions(NodeRef nodeRef, String nodeId)
-    {
-        Node nodeInfo = nodes.getNode(nodeId);
-        NodePermissions nodePerms = nodeInfo.getPermissions();
-        // Validate permissions.
-        if (nodePerms != null && permissionService.hasPermission(nodeRef, PermissionService.READ) == AccessStatus.DENIED)
-        {
-            throw new AccessDeniedException("permissions.err_access_denied");
+            throw new InvalidNodeTypeException("Invalid parameter: value of nodeId is invalid");
         }
     }
 }

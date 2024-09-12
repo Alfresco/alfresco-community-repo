@@ -998,8 +998,6 @@
 
     <bean id="sizeDetailsImpl" class="org.alfresco.rest.api.impl.SizeDetailsImpl">
         <property name="nodes" ref="nodes" />
-        <property name="nodeService" ref="NodeService" />
-        <property name="permissionService" ref="permissionService"/>
         <property name="actionService" ref="ActionService"/>
         <property name="simpleCache" ref="folderSizeSharedCache" />
         <property name="defaultItems" value="${alfresco.restApi.calculateFolderSize.items}"/>

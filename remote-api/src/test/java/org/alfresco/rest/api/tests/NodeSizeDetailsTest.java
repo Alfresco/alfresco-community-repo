@@ -25,12 +25,24 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.alfresco.rest.api.tests.client.data.*;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
+import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -45,20 +57,11 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
 /**
  * V1 REST API tests for calculating and retrieving Folder size.
  */
-@FixMethodOrder (MethodSorters.NAME_ASCENDING)
-@RunWith (JUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@RunWith(JUnit4.class)
 public class NodeSizeDetailsTest extends AbstractBaseApiTest
 {
     private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsTest.class);
@@ -102,7 +105,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
-        this.userOneN1Site = createSite("RN"+RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+        this.userOneN1Site = createSite("RN" + RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
@@ -123,9 +126,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
 
-        assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",postResponse.getJsonResponse());
+        assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
+                      postResponse.getJsonResponse());
 
-        String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
+        String jobId = NodeSizeDetails.parseJson((JSONObject) postResponse.getJsonResponse()
+                    .get("entry"));
 
         assertNotNull("In response, JobId should be present", jobId);
 
@@ -136,11 +141,13 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
-        assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
+        assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
+                      getResponse.getJsonResponse());
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
 
-        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
+        assertTrue("We are not getting correct response " + getJsonResponse,
+                   getJsonResponse.contains("size") || getJsonResponse.contains("status"));
     }
 
     @Test
@@ -149,14 +156,14 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
         UserInfo userInfo = new UserInfo(user1);
 
-        String folder0Name = "f0-testParentFolder-"+RUNID;
-        String parentFolder = createFolder(tDocLibNodeId, folder0Name,null).getId();
+        String folder0Name = "f0-testParentFolder-" + RUNID;
+        String parentFolder = createFolder(tDocLibNodeId, folder0Name, null).getId();
 
-        for(int i=1;i<=500;i++)
+        for (int i = 1; i <= 500; i++)
         {
-            String folderBName = "folder"+i+RUNID + "_B";
+            String folderBName = "folder" + i + RUNID + "_B";
             String folderBId = createFolder(parentFolder, folderBName, null).getId();
-            String fileName = "content"+i+ RUNID + ".txt";
+            String fileName = "content" + i + RUNID + ".txt";
             Document d1 = new Document();
             d1.setIsFolder(false);
             d1.setParentId(folderBId);
@@ -173,14 +180,17 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertEquals(500, nodes.size());
 
         //Start Time before triggering POST/size-details API
-        LocalTime expectedTime = LocalTime.now().plusSeconds(5);
+        LocalTime expectedTime = LocalTime.now()
+                    .plusSeconds(5);
 
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), null, 202);
 
-        assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",postResponse.getJsonResponse());
+        assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
+                      postResponse.getJsonResponse());
 
-        String jobId = NodeSizeDetails.parseJson((JSONObject)postResponse.getJsonResponse().get("entry"));
+        String jobId = NodeSizeDetails.parseJson((JSONObject) postResponse.getJsonResponse()
+                    .get("entry"));
 
         assertNotNull("In response, JobId should be present", jobId);
 
@@ -191,15 +201,17 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
-        assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",getResponse.getJsonResponse());
+        assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
+                      getResponse.getJsonResponse());
 
         String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
 
-        assertTrue("We are not getting correct response "+getJsonResponse,getJsonResponse.contains("size") || getJsonResponse.contains("status"));
+        assertTrue("We are not getting correct response " + getJsonResponse,
+                   getJsonResponse.contains("size") || getJsonResponse.contains("status"));
 
         //current Time after executing GET/size-details
         LocalTime actualTime = LocalTime.now();
-        assertTrue("Calculating folder node is taking time greater than 5 seconds ",actualTime.isBefore(expectedTime));
+        assertTrue("Calculating folder node is taking time greater than 5 seconds ", actualTime.isBefore(expectedTime));
     }
 
     /**

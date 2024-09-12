@@ -29,11 +29,12 @@ import org.alfresco.rest.api.model.NodeSizeDetails;
 
 public interface SizeDetails
 {
-     enum PROCESSINGSTATE
-     {
-          NOT_INITIATED, IN_PROGRESS, COMPLETED;
-     }
+    NodeSizeDetails generateNodeSizeDetailsRequest(String nodeId);
 
-     NodeSizeDetails generateNodeSizeDetailsRequest(String nodeId);
-     NodeSizeDetails getNodeSizeDetails(String nodeId, String jobId);
+    NodeSizeDetails getNodeSizeDetails(String nodeId, String jobId);
+
+    enum ProcessingState
+    {
+        NOT_INITIATED, PENDING, IN_PROGRESS, COMPLETED
+    }
 }

@@ -25,6 +25,13 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.rest.api.Nodes;
@@ -39,27 +46,19 @@ import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 /**
  * Unit tests for {@link SizeDetailsImpl} class.
- *
  */
 public class SizeDetailsImplTest
 {
     private final static int DEFAULT_ITEMS = 1000;
+    private static final String NAMESPACE = "http://www.alfresco.org/test/NodeSizeDetailsTest";
+    private static final QName TYPE_FOLDER = QName.createQName(NAMESPACE, "folder");
     private SizeDetailsImpl sizeDetailsImpl;
     private Nodes nodes;
     private NodeService nodeService;
     private ActionService actionService;
     private Action action;
-    private static final String NAMESPACE = "http://www.alfresco.org/test/NodeSizeDetailsTest";
-    private static final QName TYPE_FOLDER = QName.createQName(NAMESPACE, "folder");
 
     @Before
     public void setUp()
@@ -70,7 +69,7 @@ public class SizeDetailsImplTest
         PermissionService permissionService = mock(PermissionService.class);
         actionService = mock(ActionService.class);
         action = mock(Action.class);
-        SimpleCache<Serializable, Map<String, Object>> simpleCache  = mock(SimpleCache.class);
+        SimpleCache<Serializable, Map<String, Object>> simpleCache = mock(SimpleCache.class);
 
         sizeDetailsImpl.setNodes(nodes);
         sizeDetailsImpl.setNodeService(nodeService);
@@ -106,7 +105,7 @@ public class SizeDetailsImplTest
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);
         assertNotNull("After executing POST/size-details, it will provide with 202 status code", requestSizeDetails);
 
-        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.getNodeSizeDetails(nodeId,jobId);
+        NodeSizeDetails nodeSizeDetails = sizeDetailsImpl.getNodeSizeDetails(nodeId, jobId);
         assertNotNull("After executing GET/size-details, it will provide with 200 status code", nodeSizeDetails);
 
     }

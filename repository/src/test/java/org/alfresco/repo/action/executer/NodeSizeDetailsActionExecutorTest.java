@@ -46,26 +46,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
 {
     /**
+     * Id used to identify the test action created
+     */
+    private final static String ID = GUID.generate();
+    /**
      * The test node reference
      */
     private NodeRef nodeRef;
-
     /**
      * The folder Size executer
      */
     private NodeSizeDetailActionExecutor executer;
-
-    /**
-     * Id used to identify the test action created
-     */
-    private final static String ID = GUID.generate();
-
     /**
      * Set the simpleCache service
      *
      * @param simpleCache  the cache service
      */
-    private SimpleCache<Serializable, Map<String,Object>> simpleCache;
+    private SimpleCache<Serializable, Map<String, Object>> simpleCache;
 
     /**
      * Called at the begining of all tests.
@@ -73,29 +70,26 @@ public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
     @Before
     public void before() throws Exception
     {
-        NodeService nodeService = (NodeService)this.applicationContext.getBean("nodeService");
+        NodeService nodeService = (NodeService) this.applicationContext.getBean("nodeService");
         StoreRef testStoreRef;
         NodeRef rootNodeRef;
 
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        AuthenticationComponent authenticationComponent =
+                    (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
 
         // Create the store and get the root node
-        testStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_"
-                + System.currentTimeMillis());
+        testStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(testStoreRef);
 
         // Create the node used for tests
-        this.nodeRef = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName("{test}testnode"),
-                ContentModel.TYPE_CONTENT).getChildRef();
+        this.nodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                                              QName.createQName("{test}testnode"), ContentModel.TYPE_CONTENT).getChildRef();
 
         // Get the executer instance.
-        this.executer = (NodeSizeDetailActionExecutor)this.applicationContext.getBean(NodeSizeDetailActionExecutor.NAME);
+        this.executer = (NodeSizeDetailActionExecutor) this.applicationContext.getBean(NodeSizeDetailActionExecutor.NAME);
 
-        simpleCache = (SimpleCache<Serializable, Map<String,Object>>) this.applicationContext.getBean("folderSizeSharedCache");
+        simpleCache = (SimpleCache<Serializable, Map<String, Object>>) this.applicationContext.getBean("folderSizeSharedCache");
     }
 
     /**
@@ -109,7 +103,7 @@ public class NodeSizeDetailsActionExecutorTest extends BaseSpringTest
         action.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, maxItems);
         this.executer.executeImpl(action, this.nodeRef);
         Object resultAction = simpleCache.get(this.nodeRef.getId());
-        Map<String, Object> mapResult = (Map<String, Object>)resultAction;
-        assertTrue(mapResult != null);
+        Map<String, Object> mapResult = (Map<String, Object>) resultAction;
+        assertNotNull(mapResult);
     }
 }

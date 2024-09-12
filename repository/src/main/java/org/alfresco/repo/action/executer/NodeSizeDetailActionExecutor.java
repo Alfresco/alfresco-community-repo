@@ -25,6 +25,17 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.io.Serializable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
@@ -34,23 +45,14 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
- *   NodeSizeDetailActionExecutor
- *   Executing Alfresco FTS Query to find size of Folder Node
+ * NodeSizeDetailActionExecutor
+ * Executing Alfresco FTS Query to find size of Folder Node
  */
 
 public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
@@ -63,16 +65,20 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
      */
     public static final String NAME = "folder-size";
     public static final String EXCEPTION = "Exception";
+
+    public static final String IN_PROGRESS = "IN_PROGRESS";
     public static final String DEFAULT_SIZE = "default-size";
+    private static final String STATUS = "status";
+    private static final String ACTION_ID = "actionId";
     private static final String FIELD_FACET = "content.size";
-    private static final String FACET_QUERY = "content.size:[0 TO "+Integer.MAX_VALUE+"] \"label\": \"large\",\"group\":\"Size\"";
+    private static final String FACET_QUERY = "content.size:[0 TO " + Integer.MAX_VALUE + "] \"label\": \"large\",\"group\":\"Size\"";
     private SearchService searchService;
     private SimpleCache<Serializable, Map<String, Object>> simpleCache;
 
     /**
      * Set the search service
      *
-     * @param searchService  the search service
+     * @param searchService the search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -82,7 +88,7 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
     /**
      * Set the simpleCache service
      *
-     * @param simpleCache  the cache service
+     * @param simpleCache the cache service
      */
     public void setSimpleCache(SimpleCache<Serializable, Map<String, Object>> simpleCache)
     {
@@ -97,7 +103,10 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
     {
         Serializable serializable = nodeAction.getParameterValue(DEFAULT_SIZE);
         int defaultItems;
-        Map<String,Object> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
+        response.put(STATUS, IN_PROGRESS);
+        response.put(ACTION_ID, nodeAction.getId());
+        simpleCache.put(actionedUponNodeRef.getId(), response);
 
         try
         {
@@ -106,8 +115,9 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
         catch (NumberFormatException numberFormatException)
         {
             LOG.error("Exception occurred while parsing String to INT: {} ", numberFormatException.getMessage());
-            response.put(EXCEPTION,"Exception occurred while parsing String to INT: {} " + numberFormatException.getMessage());
-            simpleCache.put(actionedUponNodeRef.getId(),response);
+            response.put(EXCEPTION,
+                         "Exception occurred while parsing String to INT: {} " + numberFormatException.getMessage());
+            simpleCache.put(actionedUponNodeRef.getId(), response);
             throw numberFormatException;
         }
 
@@ -122,38 +132,30 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
         {
             // executing Alfresco FTS facet query.
             results = facetQuery(nodeRef);
-            totalItems = Math.min(results.getFieldFacet(FIELD_FACET).size(), defaultItems);
-            // Using AtomicLong to accumulate the total size.
-            AtomicLong resultSize = new AtomicLong(0);
+            totalItems = Math.min(results.getFieldFacet(FIELD_FACET)
+                                              .size(), defaultItems);
 
             while (!isCalculationCompleted)
             {
-                List<Pair<String, Integer>> pairSizes = results.getFieldFacet(FIELD_FACET).subList(skipCount, totalItems);
-                pairSizes.parallelStream().forEach(id -> {
-                    try
-                    {
-                        if(id.getSecond()>0)
-                        {
-                            resultSize.addAndGet(Long.valueOf(id.getFirst()) * id.getSecond());
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        resultSize.addAndGet(0);
-                    }
-                });
+                List<Pair<String, Integer>> pairSizes = results.getFieldFacet(FIELD_FACET)
+                            .subList(skipCount, totalItems);
+                long total = pairSizes.parallelStream()
+                            .mapToLong(id -> Long.parseLong(id.getFirst()) * id.getSecond())
+                            .sum();
 
-                totalSizeFromFacet+=resultSize.longValue();
-                resultSize.set(0);
+                totalSizeFromFacet += total;
 
-                if (results.getFieldFacet(FIELD_FACET).size() <= totalItems || results.getFieldFacet(FIELD_FACET).size() <= defaultItems)
+                if (results.getFieldFacet(FIELD_FACET)
+                            .size() <= totalItems || results.getFieldFacet(FIELD_FACET)
+                            .size() <= defaultItems)
                 {
                     isCalculationCompleted = true;
                 }
                 else
                 {
                     skipCount += defaultItems;
-                    int remainingItems = results.getFieldFacet(FIELD_FACET).size() - totalItems;
+                    int remainingItems = results.getFieldFacet(FIELD_FACET)
+                                .size() - totalItems;
                     totalItems += Math.min(remainingItems, defaultItems);
                 }
             }
@@ -161,8 +163,9 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
         catch (RuntimeException runtimeException)
         {
             LOG.error("Exception occurred in NodeSizeDetailActionExecutor:results {} ", runtimeException.getMessage());
-            response.put(EXCEPTION,"Exception occurred in NodeSizeDetailActionExecutor:results {} "+runtimeException.getMessage());
-            simpleCache.put(nodeRef.getId(),response);
+            response.put(EXCEPTION, "Exception occurred in NodeSizeDetailActionExecutor:results {} "
+                        + runtimeException.getMessage());
+            simpleCache.put(nodeRef.getId(), response);
             throw runtimeException;
         }
 
@@ -170,23 +173,27 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
         final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
         String formattedTimestamp = eventTimestamp.format(formatter);
+
+        Date date = Calendar.getInstance()
+                    .getTime();
+        String dateStr = ISO8601DateFormat.format(date);
+
         response.put("nodeId", nodeRef.getId());
         response.put("size", totalSizeFromFacet);
-        response.put("calculatedAt", formattedTimestamp);
-        response.put("numberOfFiles", results != null ? results.getNodeRefs().size() : 0);
+        response.put("calculatedAt", dateStr);
+        response.put("numberOfFiles", results != null ? results.getNodeRefs()
+                    .size() : 0);
         response.put("actionId", nodeAction.getId());
 
-        if(isCalculationCompleted)
+        if (isCalculationCompleted)
         {
-            simpleCache.put(nodeRef.getId(),response);
+            simpleCache.put(nodeRef.getId(), response);
         }
     }
 
     protected ResultSet facetQuery(NodeRef nodeRef)
     {
-        StringBuilder aftsQuery = new StringBuilder();
-        aftsQuery.append("ANCESTOR:\"").append(nodeRef).append("\" AND TYPE:content");
-        String query = aftsQuery.toString();
+        String query = "ANCESTOR:\"" + nodeRef + "\" AND TYPE:content";
 
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -196,7 +203,8 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
 
         searchParameters.addFacetQuery(FACET_QUERY);
         final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(FIELD_FACET);
-        ff.setLimitOrNull(resultsWithoutFacet.getNodeRefs().size());
+        ff.setLimitOrNull(resultsWithoutFacet.getNodeRefs()
+                                      .size());
         searchParameters.addFieldFacet(ff);
         resultsWithoutFacet.close();
         return searchService.query(searchParameters);

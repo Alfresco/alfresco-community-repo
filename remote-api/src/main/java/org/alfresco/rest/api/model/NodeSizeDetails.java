@@ -25,17 +25,17 @@
  */
 package org.alfresco.rest.api.model;
 
-import org.json.simple.JSONObject;
-
+import java.util.Date;
 import java.util.Objects;
+
+import org.json.simple.JSONObject;
 
 public class NodeSizeDetails
 {
-    private String nodeId;
-    private Long size;
-    private String calculatedAt;
+    private String id;
+    private Long sizeInBytes;
+    private Date calculatedAt;
     private Integer numberOfFiles;
-    private String status;
     private String jobId;
 
     public NodeSizeDetails(String jobId)
@@ -43,48 +43,62 @@ public class NodeSizeDetails
         this.jobId = jobId;
     }
 
-    public NodeSizeDetails(String nodeId, String status)
+    public NodeSizeDetails(String id, String currentStatus)
     {
-        this.nodeId = nodeId;
-        this.status = status;
+        this.id = id;
+        NodeSizeDetails.status.valueOf(currentStatus);
     }
 
-    public NodeSizeDetails(String nodeId, Long size, String calculatedAt, Integer numberOfFiles, String status, String jobId)
+    public NodeSizeDetails(String id, Long sizeInBytes, Date calculatedAt, Integer numberOfFiles, String currentStatus,
+                           String jobId)
     {
-        this.nodeId = nodeId;
-        this.size = size;
+        this.id = id;
+        this.sizeInBytes = sizeInBytes;
         this.calculatedAt = calculatedAt;
         this.numberOfFiles = numberOfFiles;
-        this.status = status;
+        NodeSizeDetails.status.valueOf(currentStatus);
         this.jobId = jobId;
     }
 
-    public String getNodeId()
+    public static String parseJson(JSONObject jsonObject)
     {
-        return nodeId;
+        if (jsonObject == null)
+        {
+            return null;
+        }
+
+        String jobId = (String) jsonObject.get("jobId");
+        jobId = jobId.replace("<", "")
+                    .replace(">", "");
+        return jobId;
     }
 
-    public void setNodeId(String nodeId)
+    public String getId()
     {
-        this.nodeId = nodeId;
+        return id;
     }
 
-    public Long getSize()
+    public void setId(String id)
     {
-        return size;
+        this.id = id;
     }
 
-    public void setSize(Long size)
+    public Long getSizeInBytes()
     {
-        this.size = size;
+        return sizeInBytes;
     }
 
-    public String getCalculatedAt()
+    public void setSizeInBytes(Long sizeInBytes)
+    {
+        this.sizeInBytes = sizeInBytes;
+    }
+
+    public Date getCalculatedAt()
     {
         return calculatedAt;
     }
 
-    public void setCalculatedAt(String calculatedAt)
+    public void setCalculatedAt(Date calculatedAt)
     {
         this.calculatedAt = calculatedAt;
     }
@@ -99,16 +113,6 @@ public class NodeSizeDetails
         this.numberOfFiles = numberOfFiles;
     }
 
-    public String getStatus()
-    {
-        return status;
-    }
-
-    public void setStatus(String status)
-    {
-        this.status = status;
-    }
-
     public String getJobId()
     {
         return jobId;
@@ -117,18 +121,6 @@ public class NodeSizeDetails
     public void setJobId(String jobId)
     {
         this.jobId = jobId;
-    }
-
-    public static String parseJson(JSONObject jsonObject)
-    {
-        if (jsonObject == null)
-        {
-            return null;
-        }
-
-        String jobId = (String)jsonObject.get("jobId");
-        jobId = jobId.replace("<", "").replace(">", "");
-        return jobId;
     }
 
     @Override
@@ -143,25 +135,27 @@ public class NodeSizeDetails
             return false;
         }
         NodeSizeDetails that = (NodeSizeDetails) o;
-        return Objects.equals(nodeId, that.nodeId) && Objects.equals(size, that.size) && Objects.equals(calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles) && Objects.equals(status, that.status) && Objects.equals(jobId, that.jobId);
+        return Objects.equals(id, that.id) && Objects.equals(sizeInBytes, that.sizeInBytes) && Objects.equals(
+                    calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles)
+                    && Objects.equals(jobId, that.jobId);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(nodeId, size, calculatedAt, numberOfFiles, status, jobId);
+        return Objects.hash(id, sizeInBytes, calculatedAt, numberOfFiles, jobId);
     }
 
     @Override
     public String toString()
     {
-        return "NodeSizeDetails{" +
-                "nodeId='" + nodeId + '\'' +
-                ", size=" + size +
-                ", calculatedAt='" + calculatedAt + '\'' +
-                ", numberOfFiles=" + numberOfFiles +
-                ", status='" + status + '\'' +
-                ", jobId='" + jobId + '\'' +
-                '}';
+        return "NodeSizeDetails{" + "id='" + id + '\'' + ", sizeInBytes=" + sizeInBytes + ", calculatedAt="
+                    + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + '}';
     }
+
+    private enum status
+    {
+        NOT_INITIATED, PENDING, IN_PROGRESS, COMPLETED
+    }
+
 }

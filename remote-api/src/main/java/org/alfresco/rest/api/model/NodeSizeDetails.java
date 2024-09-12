@@ -46,7 +46,7 @@ public class NodeSizeDetails
     public NodeSizeDetails(String id, String currentStatus)
     {
         this.id = id;
-        NodeSizeDetails.status.valueOf(currentStatus);
+        NodeSizeDetails.STATUS.valueOf(currentStatus);
     }
 
     public NodeSizeDetails(String id, Long sizeInBytes, Date calculatedAt, Integer numberOfFiles, String currentStatus,
@@ -56,7 +56,7 @@ public class NodeSizeDetails
         this.sizeInBytes = sizeInBytes;
         this.calculatedAt = calculatedAt;
         this.numberOfFiles = numberOfFiles;
-        NodeSizeDetails.status.valueOf(currentStatus);
+        NodeSizeDetails.STATUS.valueOf(currentStatus);
         this.jobId = jobId;
     }
 
@@ -153,7 +153,7 @@ public class NodeSizeDetails
                     + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + '}';
     }
 
-    private enum status
+    private enum STATUS
     {
         NOT_INITIATED, PENDING, IN_PROGRESS, COMPLETED
     }

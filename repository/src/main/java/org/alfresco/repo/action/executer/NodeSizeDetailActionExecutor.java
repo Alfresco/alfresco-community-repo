@@ -170,17 +170,12 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
         }
 
         LOG.debug(" Calculating size of Folder Node - NodeSizeDetailActionExecutor:executeImpl ");
-        final LocalDateTime eventTimestamp = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
-        String formattedTimestamp = eventTimestamp.format(formatter);
 
-        Date date = Calendar.getInstance()
-                    .getTime();
-        String dateStr = ISO8601DateFormat.format(date);
+        Date date = new Date(System.currentTimeMillis());
 
         response.put("nodeId", nodeRef.getId());
         response.put("size", totalSizeFromFacet);
-        response.put("calculatedAt", dateStr);
+        response.put("calculatedAt", date);
         response.put("numberOfFiles", results != null ? results.getNodeRefs()
                     .size() : 0);
         response.put("actionId", nodeAction.getId());

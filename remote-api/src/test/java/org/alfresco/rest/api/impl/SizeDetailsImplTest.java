@@ -32,6 +32,7 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.rest.api.Nodes;
@@ -91,7 +92,7 @@ public class SizeDetailsImplTest
         node.setNodeId(nodeRef.getId());
 
         when(nodes.validateOrLookupNode(nodeId)).thenReturn(nodeRef);
-        when(nodes.getNode(nodeId)).thenReturn(node);
+        when(nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false)).thenReturn(true);
         when(actionService.createAction(NodeSizeDetailActionExecutor.NAME)).thenReturn(action);
 
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);

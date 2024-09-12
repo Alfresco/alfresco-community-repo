@@ -26,34 +26,47 @@
  
 package org.alfresco.rest.framework.tests.core;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.rest.framework.core.ResourceMetadata.RESOURCE_TYPE.RELATIONSHIP;
+
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
+import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
-import org.alfresco.rest.framework.core.exceptions.*;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
+import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
+import org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver;
+import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tests.api.mocks.CowEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.Goat;
 import org.alfresco.rest.framework.tests.api.mocks.Grass;
+import org.alfresco.rest.framework.tests.api.mocks.GrassEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.Sheep;
 import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
+import org.alfresco.rest.framework.webscripts.ResourceWebScriptGet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
@@ -335,6 +348,46 @@ public class ExecutionTests extends AbstractContextTest implements ResponseWrite
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.EntityNotFound\""));
         assertTrue(errorMessage.contains("\"statusCode\":404"));
         assertFalse("Only 500 errors should have a logId", errorMessage.contains("\"logId\":\" \""));
+    }
+
+    @Test
+    public void testSuccessfulReadByIdRequest() throws Throwable
+    {
+        ResourceWebScriptGet extractor = new ResourceWebScriptGet();
+        ResourceWithMetadata resource = mock(ResourceWithMetadata.class);
+        RelationshipResourceAction.ReadById<GrassEntityResource> readByIdEntity = mock(RelationshipResourceAction.ReadById.class);
+        when(resource.getResource()).thenReturn(readByIdEntity);
+        ResourceMetadata resourceMetadata = mock(ResourceMetadata.class);
+        when(resourceMetadata.getType()).thenReturn(RELATIONSHIP);
+        when(resource.getMetaData()).thenReturn(resourceMetadata);
+
+        Params params = mock(Params.class);
+        when(params.getEntityId()).thenReturn("farms/1234/fields");
+        when(params.getRelationshipId()).thenReturn("5678");
+
+        GrassEntityResource entity = new GrassEntityResource();
+        when(readByIdEntity.readById("farms/1234/fields", "5678", params)).thenReturn(entity);
+
+        Object response = extractor.executeAction(resource, params, null);
+
+        assertEquals("Unexpected entity returned", entity, response);
+    }
+
+    @Test(expected = UnsupportedResourceOperationException.class)
+    public void testReadAllAgainstResourceSupportingReadById() throws Throwable
+    {
+        ResourceWebScriptGet extractor = new ResourceWebScriptGet();
+        ResourceWithMetadata resource = mock(ResourceWithMetadata.class);
+        RelationshipResourceAction.ReadById<GrassEntityResource> readByIdEntity = mock(RelationshipResourceAction.ReadById.class);
+        when(resource.getResource()).thenReturn(readByIdEntity);
+        ResourceMetadata resourceMetadata = mock(ResourceMetadata.class);
+        when(resourceMetadata.getType()).thenReturn(RELATIONSHIP);
+        when(resource.getMetaData()).thenReturn(resourceMetadata);
+
+        Params params = mock(Params.class);
+        when(params.getRelationshipId()).thenReturn(null);
+
+        extractor.executeAction(resource, params, null);
     }
 
     private WebScriptResponse mockResponse() throws IOException

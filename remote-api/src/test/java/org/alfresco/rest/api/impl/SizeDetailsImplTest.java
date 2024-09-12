@@ -40,8 +40,6 @@ import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +54,6 @@ public class SizeDetailsImplTest
     private static final QName TYPE_FOLDER = QName.createQName(NAMESPACE, "folder");
     private SizeDetailsImpl sizeDetailsImpl;
     private Nodes nodes;
-    private NodeService nodeService;
     private ActionService actionService;
     private Action action;
 
@@ -65,15 +62,11 @@ public class SizeDetailsImplTest
     {
         sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
-        nodeService = mock(NodeService.class);
-        PermissionService permissionService = mock(PermissionService.class);
         actionService = mock(ActionService.class);
         action = mock(Action.class);
         SimpleCache<Serializable, Map<String, Object>> simpleCache = mock(SimpleCache.class);
 
         sizeDetailsImpl.setNodes(nodes);
-        sizeDetailsImpl.setNodeService(nodeService);
-        sizeDetailsImpl.setPermissionService(permissionService);
         sizeDetailsImpl.setActionService(actionService);
         sizeDetailsImpl.setSimpleCache(simpleCache);
         sizeDetailsImpl.setDefaultItems(DEFAULT_ITEMS);
@@ -97,9 +90,8 @@ public class SizeDetailsImplTest
         node.setNodeType(TYPE_FOLDER.getLocalName());
         node.setNodeId(nodeRef.getId());
 
-        when(nodes.validateNode(nodeId)).thenReturn(nodeRef);
+        when(nodes.validateOrLookupNode(nodeId)).thenReturn(nodeRef);
         when(nodes.getNode(nodeId)).thenReturn(node);
-        when(nodeService.getType(nodeRef)).thenReturn(TYPE_FOLDER);
         when(actionService.createAction(NodeSizeDetailActionExecutor.NAME)).thenReturn(action);
 
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);

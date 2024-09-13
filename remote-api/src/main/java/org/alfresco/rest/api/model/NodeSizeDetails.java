@@ -37,6 +37,7 @@ public class NodeSizeDetails
     private Date calculatedAt;
     private Integer numberOfFiles;
     private String jobId;
+    private STATUS status;
 
     public NodeSizeDetails(String jobId)
     {
@@ -46,7 +47,7 @@ public class NodeSizeDetails
     public NodeSizeDetails(String id, String currentStatus)
     {
         this.id = id;
-        NodeSizeDetails.STATUS.valueOf(currentStatus);
+        this.status = STATUS.valueOf(currentStatus);
     }
 
     public NodeSizeDetails(String id, Long sizeInBytes, Date calculatedAt, Integer numberOfFiles, String currentStatus,
@@ -56,7 +57,7 @@ public class NodeSizeDetails
         this.sizeInBytes = sizeInBytes;
         this.calculatedAt = calculatedAt;
         this.numberOfFiles = numberOfFiles;
-        NodeSizeDetails.STATUS.valueOf(currentStatus);
+        this.status = STATUS.valueOf(currentStatus);
         this.jobId = jobId;
     }
 
@@ -121,6 +122,16 @@ public class NodeSizeDetails
     public void setJobId(String jobId)
     {
         this.jobId = jobId;
+    }
+
+    public STATUS getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(STATUS status)
+    {
+        this.status = status;
     }
 
     @Override

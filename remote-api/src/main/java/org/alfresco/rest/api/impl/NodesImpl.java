@@ -2401,6 +2401,8 @@ public class NodesImpl implements Nodes
         NodePermissions nodePerms = nodeInfo.getPermissions();
         if (nodePerms != null)
         {
+            String siteManagerAuthority = getSiteManagerAuthority(nodeRef);
+
             // Cannot set inherited permissions, only direct (locally set) permissions can be set
             if ((nodePerms.getInherited() != null) && (nodePerms.getInherited().size() > 0))
             {
@@ -2411,7 +2413,7 @@ public class NodesImpl implements Nodes
             if (nodePerms.getIsInheritanceEnabled() != null)
             {
                 // If inheritance flag is being disabled, the site manager needs to have permission
-                setSiteManagerPermission(nodeRef, nodePerms);
+                setSiteManagerPermission(nodeRef, nodePerms, siteManagerAuthority);
 
                 if (nodePerms.getIsInheritanceEnabled() != permissionService.getInheritParentPermissions(nodeRef))
                 {
@@ -2776,7 +2778,21 @@ public class NodesImpl implements Nodes
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
     }
 
-    private void setSiteManagerPermission(NodeRef nodeRef, NodePermissions nodePerms)
+    private String getSiteManagerAuthority(NodeRef nodeRef) {
+        return AuthenticationUtil.runAsSystem(() -> {
+            SiteInfo containingSite = siteService.getSite(nodeRef);
+
+            if (containingSite != null)
+            {
+                String thisSiteGroupPrefix = siteService.getSiteGroup(containingSite.getShortName());
+                return thisSiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
+            }
+
+            return null;
+        });
+    }
+
+    private void setSiteManagerPermission(NodeRef nodeRef, NodePermissions nodePerms, String siteManagerAuthority)
     {
         if (nodeRef != null && nodePerms != null)
         {
@@ -2784,16 +2800,9 @@ public class NodesImpl implements Nodes
             {
                 if (nodePerms.getIsInheritanceEnabled() != null && !nodePerms.getIsInheritanceEnabled())
                 {
-                    SiteInfo containingSite = siteService.getSite(nodeRef);
-
-                    if (containingSite != null)
+                    if (siteManagerAuthority != null)
                     {
-                        String thisSiteGroupPrefix = siteService.getSiteGroup(containingSite.getShortName());
-                        final String siteManagerAuthority = thisSiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
-                        AuthenticationUtil.runAsSystem(() -> {
-                            permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
-                            return null;
-                        });
+                        permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
                     }
                 }
             }

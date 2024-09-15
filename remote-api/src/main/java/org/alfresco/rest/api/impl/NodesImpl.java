@@ -2512,8 +2512,15 @@ public class NodesImpl implements Nodes
                 }
 
                 // remove any remaining direct perms
+                boolean isInheritanceEnabled = permissionService.getInheritParentPermissions(nodeRef);                
                 for (AccessPermission accessPerm : directPerms)
                 {
+                    // prevents deletion of site manager permissions when inheritance is disabled
+                    boolean isSiteManagerAuthority = siteManagerAuthority != null && siteManagerAuthority.equals(accessPerm.getAuthority());
+                    if (!isInheritanceEnabled && isSiteManagerAuthority)
+                    {
+                        continue;
+                    }                    
                     permissionService.deletePermission(nodeRef, accessPerm.getAuthority(), accessPerm.getPermission());
                 }
             }

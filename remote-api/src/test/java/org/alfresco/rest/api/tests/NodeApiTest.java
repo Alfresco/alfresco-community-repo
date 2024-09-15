@@ -62,6 +62,7 @@ import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.ConstraintDefinition;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.NodePermissions;
+import org.alfresco.rest.api.model.NodePermissions.NodePermission;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.api.model.Site;
@@ -6394,6 +6395,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Node nodeUpdate = new Node();
         NodePermissions nodePerms = new NodePermissions();
         nodePerms.setIsInheritanceEnabled(false);
+        NodePermission permission = new NodePermission("GROUP_site_" + site1Id + "_SiteConsumer", SiteRole.SiteConsumer.toString(), AccessStatus.ALLOWED.toString());
+        List<NodePermission> locallySet = new ArrayList<>();
+        locallySet.add(permission);
+        nodePerms.setLocallySet(locallySet);
         nodeUpdate.setPermissions(nodePerms);
         put(URL_NODES, content1_Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
 

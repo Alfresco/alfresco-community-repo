@@ -2798,12 +2798,9 @@ public class NodesImpl implements Nodes
         {
             try
             {
-                if (nodePerms.getIsInheritanceEnabled() != null && !nodePerms.getIsInheritanceEnabled())
+                if (nodePerms.getIsInheritanceEnabled() != null && !nodePerms.getIsInheritanceEnabled() && siteManagerAuthority != null)
                 {
-                    if (siteManagerAuthority != null)
-                    {
-                        permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
-                    }
+                    permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
                 }
             }
             catch (Exception e)

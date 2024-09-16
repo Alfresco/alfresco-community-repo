@@ -2519,7 +2519,10 @@ public class NodesImpl implements Nodes
                     boolean isSiteManagerAuthority = siteManagerAuthority != null && siteManagerAuthority.equals(accessPerm.getAuthority());
                     if (!isInheritanceEnabled && isSiteManagerAuthority)
                     {
-                        logger.debug("Site manager permissions will be kept since inheritance flag is disabled: " + nodeRef.getId());
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Site manager permissions will be kept since inheritance flag is disabled: " + nodeRef.getId());
+                        }
                         continue;
                     }
                     permissionService.deletePermission(nodeRef, accessPerm.getAuthority(), accessPerm.getPermission());

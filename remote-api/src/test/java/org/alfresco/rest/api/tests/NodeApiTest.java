@@ -35,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6521,12 +6522,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         delete(URL_NODES, folderId, 204);
     }
 
-    private void disableSiteNodeInheritanceAsShare(String siteId, String nodeId) throws Exception
+    private void disableSiteNodeInheritanceAsShare(String siteId, String nodeId) throws IOException
     {
         setSiteNodeInheritance(siteId, nodeId, false, true);
     }
 
-    private void setSiteNodeInheritance(String siteId, String nodeId, boolean inheritanceFlag, boolean addSiteManager) throws Exception
+    private void setSiteNodeInheritance(String siteId, String nodeId, boolean inheritanceFlag, boolean addSiteManager) throws IOException
     {
         Node node = new Node();
         NodePermissions perms = new NodePermissions();
@@ -6537,7 +6538,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             perms.setLocallySet(locallySet);
         }
         node.setPermissions(perms);
-        put(URL_NODES, nodeId, toJsonAsStringNonNull(node), null, 200);
+        try {
+            put(URL_NODES, nodeId, toJsonAsStringNonNull(node), null, 200);
+        } catch (Exception e) {
+            throw new IOException("Failed to update permissions: " + e.getMessage(), e);
+        }
     }
 }
 

@@ -64,7 +64,7 @@ services:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
       - KC_DB=dev-mem
-    command: ["start-dev", "--import-realm", "--http-relative-path=/auth", "--hostname=http://localhost:8999/auth", "--http-enabled=true"]
+    command: ["start-dev", "--import-realm", "--http-relative-path=/auth", "--hostname=localhost", "--http-enabled=true"]
     volumes:
       - ../../../repository/src/test/resources/realms/alfresco-realm.json:/opt/keycloak/data/import/alfresco-realm.json
     ports:

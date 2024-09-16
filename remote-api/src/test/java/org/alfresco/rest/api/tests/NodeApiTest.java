@@ -62,6 +62,7 @@ import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.ConstraintDefinition;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.NodePermissions;
+import org.alfresco.rest.api.model.NodePermissions.NodePermission;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.api.model.Site;
@@ -6409,6 +6410,76 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         deleteSite(site1Id, true, 204);
     }
 
+    /**
+     * Test if inheritance flag is correctly set on a node placed inside a site
+     */
+    @Test
+    public void testSiteNodeInheritance_MNT24282() throws Exception
+    {
+        // Change to User1 context
+        setRequestContext(user1);
+
+        // user1 creates a site
+        String site1Title = "site-testSiteInheritanceFlag_DocLib-" + RUNID;
+        String site1Id = createSite(site1Title, SiteVisibility.PUBLIC).getId();
+        String site1DocLibNodeId = getSiteContainerNodeId(site1Id, "documentLibrary");
+
+        // user1 adds user2 as a site consumer to the created site
+        addSiteMember(site1Id, user2, SiteRole.SiteConsumer);
+
+        // user1 creates folder hierarchy: folderA/folderB/folderC
+        Folder folderA = createFolder(site1DocLibNodeId, "folderA");
+        Folder folderB = createFolder(folderA.getId(), "folderB");
+        Folder folderC = createFolder(folderB.getId(), "folderC");
+
+        // user1 disables inheritance flag on folder B
+        disableSiteNodeInheritanceAsShare(site1Id, folderB.getId());
+
+        // user1 disables inheritance flag on folder C
+        disableSiteNodeInheritanceAsShare(site1Id, folderC.getId());
+
+        // user1 gives SiteManager permissions to user2 in folderC
+        Node nodeC = new Node();
+        NodePermissions permsC = new NodePermissions();
+        List<NodePermission> locallySet = new ArrayList<>();
+        locallySet.add(new NodePermission(user2, SiteRole.SiteManager.toString(), AccessStatus.ALLOWED.toString()));
+        permsC.setLocallySet(locallySet);
+        nodeC.setPermissions(permsC);
+        put(URL_NODES, folderC.getId(), toJsonAsStringNonNull(nodeC), null, 200);
+
+        // Change to User2 context
+        setRequestContext(user2);
+
+        // user2 creates folderD inside folderC
+        Folder folderD = createFolder(folderC.getId(), "folderD");
+
+        // user2 disables inheritance flag on folder D
+        disableSiteNodeInheritanceAsShare(site1Id, folderD.getId());
+
+        // user2 enables inheritance flag on folder D
+        setSiteNodeInheritance(site1Id, folderD.getId(), true, false);
+
+        // user2 disables inheritance flag on folder D
+        disableSiteNodeInheritanceAsShare(site1Id, folderD.getId());
+
+        // user2 should be able to re-enable and disable the inheritance flag without causing a permission denied error
+        setSiteNodeInheritance(site1Id, folderD.getId(), true, false);
+        setSiteNodeInheritance(site1Id, folderD.getId(), false, false);
+
+        // user2 checks if has access to the folder
+        Map<String, String> params = new HashMap<>();
+        params.put("include", "permissions");
+        HttpResponse response = getSingle(NodesEntityResource.class, folderD.getId(), params, 200);
+        Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertNotNull(node);
+        assertEquals(node.getId(), folderD.getId());
+        assertFalse("Folder D inheritance flag should be false", node.getPermissions().getIsInheritanceEnabled());
+
+        // cleanup
+        setRequestContext(user1);
+        deleteSite(site1Id, true, 204);
+    }
+
     @Test
     public void testRuleAspectAfterUpdate() throws Exception
     {
@@ -6444,6 +6515,25 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Cleanup
         delete(URL_NODES, folderId, 204);
+    }
+
+    private void disableSiteNodeInheritanceAsShare(String siteId, String nodeId) throws Exception
+    {
+        setSiteNodeInheritance(siteId, nodeId, false, true);
+    }
+
+    private void setSiteNodeInheritance(String siteId, String nodeId, boolean inheritanceFlag, boolean addSiteManager) throws Exception
+    {
+        Node node = new Node();
+        NodePermissions perms = new NodePermissions();
+        perms.setIsInheritanceEnabled(inheritanceFlag);
+        if (!inheritanceFlag && addSiteManager) {
+            List<NodePermission> locallySet = new ArrayList<>();
+            locallySet.add(new NodePermission("GROUP_site_" + siteId + "_SiteManager", SiteRole.SiteManager.toString(), AccessStatus.ALLOWED.toString()));
+            perms.setLocallySet(locallySet);
+        }
+        node.setPermissions(perms);
+        put(URL_NODES, nodeId, toJsonAsStringNonNull(node), null, 200);
     }
 }
 

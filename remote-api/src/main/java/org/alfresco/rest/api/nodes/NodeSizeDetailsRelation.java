@@ -26,7 +26,6 @@
 
 package org.alfresco.rest.api.nodes;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.rest.api.Nodes;
@@ -49,13 +48,7 @@ public class NodeSizeDetailsRelation implements RelationshipResourceAction.ReadB
                                                 RelationshipResourceAction.Create<NodeSizeDetails>, InitializingBean
 {
 
-    private Nodes nodes;
     private SizeDetails sizeDetails;
-
-    public void setNodes(Nodes nodes)
-    {
-        this.nodes = nodes;
-    }
 
     public void setSizeDetails(SizeDetails sizeDetails)
     {

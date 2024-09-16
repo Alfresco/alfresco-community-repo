@@ -26,11 +26,6 @@
 package org.alfresco.repo.action.executer;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +40,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,8 +192,7 @@ public class NodeSizeDetailActionExecutor extends ActionExecuterAbstractBase
 
         searchParameters.addFacetQuery(FACET_QUERY);
         final SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet(FIELD_FACET);
-        ff.setLimitOrNull(resultsWithoutFacet.getNodeRefs()
-                                      .size());
+        ff.setLimitOrNull((int) resultsWithoutFacet.getNumberFound());
         searchParameters.addFieldFacet(ff);
         resultsWithoutFacet.close();
         return searchService.query(searchParameters);

@@ -28,6 +28,7 @@ package org.alfresco.rest.api.impl;
 import static org.alfresco.rest.api.SizeDetails.ProcessingState.COMPLETED;
 import static org.alfresco.rest.api.SizeDetails.ProcessingState.IN_PROGRESS;
 import static org.alfresco.rest.api.SizeDetails.ProcessingState.NOT_INITIATED;
+import static org.alfresco.rest.api.SizeDetails.ProcessingState.PENDING;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -41,7 +42,7 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
-import org.alfresco.rest.framework.core.exceptions.UnprocessableContentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -119,7 +120,7 @@ public class SizeDetailsImpl implements SizeDetails
     private String executeAction()
     {
         Map<String, Object > currentStatus = new HashMap<>();
-        currentStatus.put("status",IN_PROGRESS.name());
+        currentStatus.put("status",PENDING.name());
         Action folderSizeAction = actionService.createAction(NodeSizeDetailActionExecutor.NAME);
         currentStatus.put(ACTION_ID,folderSizeAction.getId());
         folderSizeAction.setTrackStatus(true);
@@ -149,7 +150,7 @@ public class SizeDetailsImpl implements SizeDetails
             if (!nodeSizeDetails.getJobId()
                         .equalsIgnoreCase(jobId))
             {
-                throw new UnprocessableContentException("Invalid parameter: value of jobId is invalid");
+                throw new NotFoundException("JobId does not exist");
             }
             return nodeSizeDetails;
         }

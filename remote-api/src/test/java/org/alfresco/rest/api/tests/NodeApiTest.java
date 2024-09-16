@@ -6369,7 +6369,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
      * Tests if site manager permissions are kept after inheritance flag is disabled
      */
     @Test
-    public void testSiteManagerPermission() throws Exception
+    public void testSiteManagerPermission_MNT23379() throws Exception
     {
         // Change to User1 context
         setRequestContext(user1);
@@ -6395,6 +6395,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Node nodeUpdate = new Node();
         NodePermissions nodePerms = new NodePermissions();
         nodePerms.setIsInheritanceEnabled(false);
+        NodePermission permission = new NodePermission("GROUP_site_" + site1Id + "_SiteConsumer", SiteRole.SiteConsumer.toString(), AccessStatus.ALLOWED.toString());
+        List<NodePermission> locallySet = new ArrayList<>();
+        locallySet.add(permission);
+        nodePerms.setLocallySet(locallySet);
         nodeUpdate.setPermissions(nodePerms);
         put(URL_NODES, content1_Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
 

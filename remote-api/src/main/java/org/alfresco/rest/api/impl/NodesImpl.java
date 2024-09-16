@@ -2512,8 +2512,16 @@ public class NodesImpl implements Nodes
                 }
 
                 // remove any remaining direct perms
+                boolean isInheritanceEnabled = permissionService.getInheritParentPermissions(nodeRef);
                 for (AccessPermission accessPerm : directPerms)
                 {
+                    // prevents deletion of site manager permissions when inheritance is disabled
+                    boolean isSiteManagerAuthority = siteManagerAuthority != null && siteManagerAuthority.equals(accessPerm.getAuthority());
+                    if (!isInheritanceEnabled && isSiteManagerAuthority)
+                    {
+                        logger.debug("Site manager permissions will be kept since inheritance flag is disabled: " + nodeRef.getId());
+                        continue;
+                    }
                     permissionService.deletePermission(nodeRef, accessPerm.getAuthority(), accessPerm.getPermission());
                 }
             }
@@ -2794,11 +2802,11 @@ public class NodesImpl implements Nodes
 
     private void setSiteManagerPermission(NodeRef nodeRef, NodePermissions nodePerms, String siteManagerAuthority)
     {
-        if (nodeRef != null && nodePerms != null)
+        if (nodeRef != null && nodePerms != null && nodePerms.getIsInheritanceEnabled() != null && siteManagerAuthority != null)
         {
             try
             {
-                if (nodePerms.getIsInheritanceEnabled() != null && !nodePerms.getIsInheritanceEnabled() && siteManagerAuthority != null)
+                if (!nodePerms.getIsInheritanceEnabled())
                 {
                     permissionService.setPermission(nodeRef, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
                 }

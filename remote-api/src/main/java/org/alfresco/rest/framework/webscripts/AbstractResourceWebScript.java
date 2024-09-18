@@ -228,7 +228,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
 
     protected void resetRequest(WebScriptRequest req)
     {
-        if (req != null && req instanceof BufferedRequest)
+        if (req instanceof BufferedRequest)
         {
             BufferedRequest bufferedRequest = (BufferedRequest) req;
             bufferedRequest.reset();

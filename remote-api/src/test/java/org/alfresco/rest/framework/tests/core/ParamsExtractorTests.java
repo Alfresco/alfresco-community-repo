@@ -36,6 +36,8 @@ import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.rest.framework.core.ResourceMetadata.RESOURCE_TYPE.RELATIONSHIP;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -460,13 +462,7 @@ public class ParamsExtractorTests
         
         testExtractAddressedParams(templateVars, request, extractor);
     }
-    
-    @Test
-    public void testHeaderParsing() throws IOException
-    {
-    	
-    }
-    
+
     @Test
     public void testSpecialChars() throws IOException
     {
@@ -510,6 +506,7 @@ public class ParamsExtractorTests
        assertTrue(pVal.equals("香 香蕉"));
        
     }
+
     /**
      * Mocks a Entity Resource
      * @return ResourceMetadata a Entity
@@ -557,7 +554,7 @@ public class ParamsExtractorTests
         ResourceMetadata resourceMock = mock(ResourceMetadata.class);
         ResourceOperation resourceOperation = mock(ResourceOperation.class);
         when(resourceMock.getOperation(notNull())).thenReturn(resourceOperation);
-        when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.RELATIONSHIP);
+        when(resourceMock.getType()).thenReturn(RELATIONSHIP);
         when(resourceMock.getObjectType(notNull())).thenReturn(Farmer.class);
         return resourceMock;
     }

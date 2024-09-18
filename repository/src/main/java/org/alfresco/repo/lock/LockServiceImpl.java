@@ -997,7 +997,7 @@ public class LockServiceImpl implements LockService,
         }
         
         // Never return a null LockState
-        Assert.notNull(lockState, "The lockState should not be null");
+        Assert.notNull(lockState);
         return lockState;
     }
 

@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface DownloadService
 {
     /**
-     * Start the creation of a downlaodable archive file containing the content
+     * Start the creation of a downloadable archive file containing the content
      * from the given nodeRefs.
      * 
      * Implementations are expected to do this asynchronously, with clients 
@@ -56,7 +56,7 @@ public interface DownloadService
     NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive);
 
     /**
-     * Start the creation of a downlaodable archive file containing the content
+     * Start the creation of a downloadable archive file containing the content
      * from the given nodeRefs.
      *
      * Implementations are expected to do this asynchronously, with clients

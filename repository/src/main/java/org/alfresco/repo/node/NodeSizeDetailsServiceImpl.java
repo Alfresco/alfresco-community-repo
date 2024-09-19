@@ -71,6 +71,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         this.searchService = searchService;
     }
 
+    @Override
     public SimpleCache<Serializable, NodeSizeDetails> getSimpleCache()
     {
         return simpleCache;
@@ -96,6 +97,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         this.defaultItems = defaultItems;
     }
 
+    @Override
     public void invokeSizeDetailsExecutor(NodeRef nodeRef, String jobId)
     {
         try

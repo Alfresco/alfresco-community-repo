@@ -157,8 +157,8 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 // the default scripting model provides access to well known objects and searching
                 // facilities - it also provides basic create/update/delete/copy/move services
                 Map<String, Object> model = this.serviceRegistry.getScriptService().buildDefaultModel(
-                            null,
-                        null,
+                        personRef,
+                        getCompanyHome(),
                         homeSpaceRef,
                         scriptRef,
                         actionedUponNodeRef,

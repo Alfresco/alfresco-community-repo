@@ -276,7 +276,9 @@ public class NodeSizeDetailsService implements InitializingBean
             String id = (String) jsonObject.get("id");
             String status = (String) jsonObject.get("status");
             String sizeInBytes = (String) jsonObject.get("sizeInBytes");
-            return new NodeSizeDetails(id, Long.parseLong(sizeInBytes), jobId, STATUS.valueOf(status));
+            return new NodeSizeDetails(id, sizeInBytes != null
+                                           ? Long.parseLong(sizeInBytes)
+                                           : 0L, jobId, STATUS.valueOf(status));
         }
 
         public String getId()

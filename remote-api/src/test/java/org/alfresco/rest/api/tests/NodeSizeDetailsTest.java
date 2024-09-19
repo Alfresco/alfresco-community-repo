@@ -128,11 +128,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                       postResponse.getJsonResponse());
 
-        NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails(
-                    (JSONObject) postResponse.getJsonResponse()
-                                .get("entry"));
+        JSONObject jsonObject = (JSONObject) postResponse.getJsonResponse()
+                    .get("entry");
 
-        String jobId = nodeSizeDetails.getJobId();
+        String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
@@ -145,7 +144,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                       getResponse.getJsonResponse());
 
-        nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails((JSONObject) getResponse.getJsonResponse()
+        NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails((JSONObject) getResponse.getJsonResponse()
                     .get("entry"));
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
@@ -190,11 +189,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                       postResponse.getJsonResponse());
 
-        NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails(
-                    (JSONObject) postResponse.getJsonResponse()
-                                .get("entry"));
+        JSONObject jsonObject = (JSONObject) postResponse.getJsonResponse()
+                                .get("entry");
 
-        String jobId = nodeSizeDetails.getJobId();
+        String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
@@ -207,7 +205,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                       getResponse.getJsonResponse());
 
-        nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails((JSONObject) getResponse.getJsonResponse()
+        NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails((JSONObject) getResponse.getJsonResponse()
                     .get("entry"));
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());

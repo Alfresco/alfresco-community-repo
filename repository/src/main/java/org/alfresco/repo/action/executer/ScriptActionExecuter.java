@@ -197,6 +197,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
+    @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         if (scriptLocation == null)

@@ -30,16 +30,18 @@ import java.io.Serializable;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeSizeDetailsService;
-import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
-import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails.STATUS;
+import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails;
+import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
+import org.alfresco.util.ParameterCheck;
+import org.springframework.beans.factory.InitializingBean;
 
-public class SizeDetailsImpl implements SizeDetails
+public class SizeDetailsImpl implements SizeDetails, InitializingBean
 {
     private Nodes nodes;
     private NodeRef nodeRef;
@@ -49,11 +51,6 @@ public class SizeDetailsImpl implements SizeDetails
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
-    }
-
-    public void setSimpleCache(SimpleCache<Serializable, NodeSizeDetailsService.NodeSizeDetails> simpleCache)
-    {
-        this.simpleCache = simpleCache;
     }
 
     public void setNodeSizeDetailsService(NodeSizeDetailsService nodeSizeDetailsService)
@@ -128,4 +125,13 @@ public class SizeDetailsImpl implements SizeDetails
             throw new InvalidNodeTypeException("Invalid parameter: value of nodeId is invalid");
         }
     }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        ParameterCheck.mandatory("nodes", this.nodes);
+        ParameterCheck.mandatory("nodeSizeDetailsServiceImpl", this.nodeSizeDetailsService);
+        this.simpleCache = nodeSizeDetailsService.getSimpleCache();
+    }
+
 }

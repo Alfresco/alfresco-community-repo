@@ -27,6 +27,7 @@ package org.alfresco.rest.api.impl;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
@@ -34,8 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.NodeSizeDetailsService;
-import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
+import org.alfresco.repo.node.NodeSizeDetailsServiceImpl;
+import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,22 +56,24 @@ public class SizeDetailsImplTest
     private Nodes nodes;
 
     @Before
-    public void setUp()
+    public void setUp() throws Exception
     {
         sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
         SearchService searchService = mock(SearchService.class);
-        NodeSizeDetailsService nodeSizeDetailsService = mock(NodeSizeDetailsService.class);
+        NodeSizeDetailsServiceImpl nodeSizeDetailsServiceImpl = mock(NodeSizeDetailsServiceImpl.class);
         ThreadPoolExecutor threadPoolExecutor = mock(ThreadPoolExecutor.class);
         SimpleCache<Serializable, NodeSizeDetails> simpleCache = mock(SimpleCache.class);
 
-        nodeSizeDetailsService.setSearchService(searchService);
-        nodeSizeDetailsService.setDefaultItems(1000);
-        nodeSizeDetailsService.setSimpleCache(simpleCache);
-        nodeSizeDetailsService.setThreadPoolExecutor(threadPoolExecutor);
+        nodeSizeDetailsServiceImpl.setSearchService(searchService);
+        nodeSizeDetailsServiceImpl.setDefaultItems(1000);
+        nodeSizeDetailsServiceImpl.setSimpleCache(simpleCache);
+        nodeSizeDetailsServiceImpl.setThreadPoolExecutor(threadPoolExecutor);
         sizeDetailsImpl.setNodes(nodes);
-        sizeDetailsImpl.setSimpleCache(simpleCache);
-        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsService);
+        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
+        when(nodeSizeDetailsServiceImpl.getSimpleCache()).thenReturn(simpleCache);
+        sizeDetailsImpl.afterPropertiesSet();
+        verify(nodeSizeDetailsServiceImpl).setSimpleCache(simpleCache);
     }
 
     @Test

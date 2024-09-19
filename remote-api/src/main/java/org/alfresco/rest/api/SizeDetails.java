@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
+import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 
 public interface SizeDetails
 {
@@ -33,8 +33,4 @@ public interface SizeDetails
 
     NodeSizeDetails getNodeSizeDetails(String nodeId, String jobId);
 
-    enum ProcessingState
-    {
-        NOT_INITIATED, PENDING, IN_PROGRESS, COMPLETED
-    }
 }

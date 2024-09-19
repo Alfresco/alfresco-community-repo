@@ -344,7 +344,7 @@
         </property>
     </bean>
 
-    <bean id="NodeSizeDetailsService" class="org.alfresco.repo.node.NodeSizeDetailsService">
+    <bean id="NodeSizeDetailsServiceImpl" class="org.alfresco.repo.node.NodeSizeDetailsServiceImpl">
         <property name="searchService" ref="SearchService"/>
         <property name="simpleCache" ref="folderSizeSharedCache" />
         <property name="transactionService" ref="transactionService"/>
@@ -352,6 +352,17 @@
             <ref bean="nodeSizeThreadPool"/>
         </property>
         <property name="defaultItems" value="${default.async.folder.items}"/>
+    </bean>
+
+    <bean id="NodeSizeDetailsService" class="org.springframework.aop.framework.ProxyFactoryBean" >
+        <property name="targetName">
+            <value>NodeSizeDetailsServiceImpl</value>
+        </property>
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.node.NodeSizeDetailsService</value>
+            </list>
+        </property>
     </bean>
        
 </beans>

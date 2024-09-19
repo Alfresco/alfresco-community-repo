@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
+import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;

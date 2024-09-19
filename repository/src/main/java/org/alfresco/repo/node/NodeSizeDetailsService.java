@@ -154,8 +154,6 @@ public class NodeSizeDetailsService implements InitializingBean
         try
         {
             ResultSet results = facetQuery(nodeRef);
-            LOG.debug(" Number of folder nodes found in results " + results.getNumberFound());
-
             int resultsSize = results.getFieldFacet(FIELD_FACET)
                         .size();
 
@@ -197,8 +195,10 @@ public class NodeSizeDetailsService implements InitializingBean
         {
             SearchParameters searchParameters = createSearchParameters(nodeRef);
             ResultSet resultsWithoutFacet = searchService.query(searchParameters);
-
-            LOG.debug(" After Executing query, no. of records " + resultsWithoutFacet.getNumberFound());
+            if (LOG.isDebugEnabled())
+            {
+                LOG.debug(" After Executing facet query, no. of records found " + resultsWithoutFacet.getNumberFound());
+            }
 
             searchParameters.addFacetQuery(FACET_QUERY);
             FieldFacet fieldFacet = new FieldFacet(FIELD_FACET);
@@ -274,9 +274,9 @@ public class NodeSizeDetailsService implements InitializingBean
 
             String jobId = (String) jsonObject.get("jobId");
             String id = (String) jsonObject.get("id");
-            STATUS status = (STATUS) jsonObject.get("status");
-            Long sizeInBytes = (Long) jsonObject.get("sizeInBytes");
-            return new NodeSizeDetails(id, sizeInBytes, jobId, status);
+            String status = (String) jsonObject.get("status");
+            String sizeInBytes = (String) jsonObject.get("sizeInBytes");
+            return new NodeSizeDetails(id, Long.parseLong(sizeInBytes), jobId, STATUS.valueOf(status));
         }
 
         public String getId()

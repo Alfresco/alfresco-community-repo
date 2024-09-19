@@ -45,7 +45,6 @@ public class SizeDetailsImpl implements SizeDetails
     private NodeRef nodeRef;
     private SimpleCache<Serializable, NodeSizeDetails> simpleCache;
     private NodeSizeDetailsService nodeSizeDetailsService;
-    private NodeSizeDetails nodeSizeDetails;
 
     public void setNodes(Nodes nodes)
     {
@@ -77,7 +76,7 @@ public class SizeDetailsImpl implements SizeDetails
         }
         else
         {
-            nodeSizeDetails = simpleCache.get(nodeId);
+            NodeSizeDetails nodeSizeDetails = simpleCache.get(nodeId);
             actionId = nodeSizeDetails.getJobId();
         }
         return new NodeSizeDetails(null, null, actionId, null);
@@ -94,12 +93,12 @@ public class SizeDetailsImpl implements SizeDetails
 
         if (!simpleCache.contains(nodeId))
         {
-            nodeSizeDetails = new NodeSizeDetails(nodeId, null, null, STATUS.NOT_INITIATED);
+            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeId, null, null, STATUS.NOT_INITIATED);
             return nodeSizeDetails;
         }
         else
         {
-            nodeSizeDetails = simpleCache.get(nodeId);
+            NodeSizeDetails nodeSizeDetails = simpleCache.get(nodeId);
             String cachedJobId = nodeSizeDetails.getJobId();
             if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
             {
@@ -117,7 +116,7 @@ public class SizeDetailsImpl implements SizeDetails
     {
         String jobId = GUID.generate();
         nodeSizeDetailsService.invokeSizeDetailsExecutor(nodeRef, jobId);
-        nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.PENDING);
+        NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.PENDING);
         simpleCache.put(nodeRef.getId(), nodeSizeDetails);
         return jobId;
     }

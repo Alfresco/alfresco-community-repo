@@ -53,20 +53,15 @@ public class SizeDetailsImplTest
     private static final QName TYPE_FOLDER = QName.createQName(NAMESPACE, "folder");
     private SizeDetailsImpl sizeDetailsImpl;
     private Nodes nodes;
-    private NodeSizeDetailsService nodeSizeDetailsService;
-    private NodeSizeDetails nodeSizeDetails;
-    private SearchService searchService;
-    private ThreadPoolExecutor threadPoolExecutor;
 
     @Before
     public void setUp()
     {
         sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
-        searchService = mock(SearchService.class);
-        nodeSizeDetailsService = mock(NodeSizeDetailsService.class);
-        nodeSizeDetails = mock(NodeSizeDetails.class);
-        threadPoolExecutor = mock(ThreadPoolExecutor.class);
+        SearchService searchService = mock(SearchService.class);
+        NodeSizeDetailsService nodeSizeDetailsService = mock(NodeSizeDetailsService.class);
+        ThreadPoolExecutor threadPoolExecutor = mock(ThreadPoolExecutor.class);
         SimpleCache<Serializable, NodeSizeDetails> simpleCache = mock(SimpleCache.class);
 
         nodeSizeDetailsService.setSearchService(searchService);

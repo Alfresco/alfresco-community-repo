@@ -998,9 +998,8 @@
 
     <bean id="sizeDetailsImpl" class="org.alfresco.rest.api.impl.SizeDetailsImpl">
         <property name="nodes" ref="nodes" />
-        <property name="actionService" ref="ActionService"/>
         <property name="simpleCache" ref="folderSizeSharedCache" />
-        <property name="defaultItems" value="${alfresco.restApi.calculateFolderSize.items}"/>
+        <property name="nodeSizeDetailsService" ref="NodeSizeDetailsService" />
     </bean>
 
     <bean id="sizeDetails" class="org.springframework.aop.framework.ProxyFactoryBean">

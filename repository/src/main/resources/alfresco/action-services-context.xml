@@ -788,10 +788,5 @@
             <ref bean="AuthorityService" />
         </property>
     </bean>
-
-    <bean id="folder-size" class="org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor" parent="action-executer">
-        <property name="searchService" ref="SearchService"/>
-        <property name="simpleCache" ref="folderSizeSharedCache" />
-    </bean>
     
 </beans>

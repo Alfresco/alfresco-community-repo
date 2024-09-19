@@ -25,55 +25,41 @@
  */
 package org.alfresco.rest.api.impl;
 
-import static org.alfresco.rest.api.SizeDetails.ProcessingState.COMPLETED;
-import static org.alfresco.rest.api.SizeDetails.ProcessingState.IN_PROGRESS;
-import static org.alfresco.rest.api.SizeDetails.ProcessingState.NOT_INITIATED;
-import static org.alfresco.rest.api.SizeDetails.ProcessingState.PENDING;
-
 import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.node.NodeSizeDetailsService;
+import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
+import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails.STATUS;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.SizeDetails;
-import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 
 public class SizeDetailsImpl implements SizeDetails
 {
-    private static final String ACTION_ID = "actionId";
     private Nodes nodes;
     private NodeRef nodeRef;
-    private ActionService actionService;
-    private SimpleCache<Serializable, Map<String, Object>> simpleCache;
-    private int defaultItems;
+    private SimpleCache<Serializable, NodeSizeDetails> simpleCache;
+    private NodeSizeDetailsService nodeSizeDetailsService;
+    private NodeSizeDetails nodeSizeDetails;
 
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
     }
 
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
-    }
-
-    public void setSimpleCache(SimpleCache<Serializable, Map<String, Object>> simpleCache)
+    public void setSimpleCache(SimpleCache<Serializable, NodeSizeDetailsService.NodeSizeDetails> simpleCache)
     {
         this.simpleCache = simpleCache;
     }
 
-    public void setDefaultItems(int defaultItems)
+    public void setNodeSizeDetailsService(NodeSizeDetailsService nodeSizeDetailsService)
     {
-        this.defaultItems = defaultItems;
+        this.nodeSizeDetailsService = nodeSizeDetailsService;
     }
 
     /**
@@ -87,14 +73,14 @@ public class SizeDetailsImpl implements SizeDetails
         String actionId;
         if (!simpleCache.contains(nodeId))
         {
-            actionId = executeAction();
+            actionId = executeSizeDetails();
         }
         else
         {
-            Map<String, Object> result = simpleCache.get(nodeRef.getId());
-            actionId = (String) result.get(ACTION_ID);
+            nodeSizeDetails = simpleCache.get(nodeId);
+            actionId = nodeSizeDetails.getJobId();
         }
-        return new NodeSizeDetails(actionId);
+        return new NodeSizeDetails(null, null, actionId, null);
     }
 
     /**
@@ -108,56 +94,32 @@ public class SizeDetailsImpl implements SizeDetails
 
         if (!simpleCache.contains(nodeId))
         {
-            return new NodeSizeDetails(nodeId, NOT_INITIATED.name());
-        }
-
-        return executorResultToSizeDetail(simpleCache.get(nodeId), nodeId, jobId);
-    }
-
-    /**
-     * Executing Action Asynchronously.
-     */
-    private String executeAction()
-    {
-        Map<String, Object > currentStatus = new HashMap<>();
-        currentStatus.put("status",PENDING.name());
-        Action folderSizeAction = actionService.createAction(NodeSizeDetailActionExecutor.NAME);
-        currentStatus.put(ACTION_ID,folderSizeAction.getId());
-        folderSizeAction.setTrackStatus(true);
-        folderSizeAction.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, defaultItems);
-        simpleCache.put(nodeRef.getId(),currentStatus);
-        actionService.executeAction(folderSizeAction, nodeRef, false, true);
-        return folderSizeAction.getId();
-    }
-
-    /**
-     * Converting action executor response to their respective model class.
-     */
-    private NodeSizeDetails executorResultToSizeDetail(final Map<String, Object> result, String nodeId, String jobId)
-    {
-        if (result.containsKey(NodeSizeDetailActionExecutor.EXCEPTION))
-        {
-            return new NodeSizeDetails(nodeId, COMPLETED.name());
-        }
-
-        if (result.containsKey("size"))
-        {
-            NodeSizeDetails nodeSizeDetails =
-                        new NodeSizeDetails((String) result.get("nodeId"), (Long) result.get("size"),
-                                            (Date) result.get("calculatedAt"), (Integer) result.get("numberOfFiles"),
-                                            COMPLETED.name(), (String) result.get(ACTION_ID));
-
-            if (!nodeSizeDetails.getJobId()
-                        .equalsIgnoreCase(jobId))
-            {
-                throw new NotFoundException("JobId does not exist");
-            }
+            nodeSizeDetails = new NodeSizeDetails(nodeId, null, null, STATUS.NOT_INITIATED);
             return nodeSizeDetails;
         }
         else
         {
-            return new NodeSizeDetails(nodeId, IN_PROGRESS.name());
+            nodeSizeDetails = simpleCache.get(nodeId);
+            String cachedJobId = nodeSizeDetails.getJobId();
+            if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
+            {
+                throw new NotFoundException("jobId does not exist");
+            }
         }
+
+        return simpleCache.get(nodeId);
+    }
+
+    /**
+     * Executing Asynchronously.
+     */
+    private String executeSizeDetails()
+    {
+        String jobId = GUID.generate();
+        nodeSizeDetailsService.invokeSizeDetailsExecutor(nodeRef, jobId);
+        nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.PENDING);
+        simpleCache.put(nodeRef.getId(), nodeSizeDetails);
+        return jobId;
     }
 
     private void validateType(NodeRef nodeRef) throws InvalidNodeTypeException

@@ -30,17 +30,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.executer.NodeSizeDetailActionExecutor;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.node.NodeSizeDetailsService;
+import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.NodeSizeDetails;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,27 +49,33 @@ import org.junit.Test;
  */
 public class SizeDetailsImplTest
 {
-    private final static int DEFAULT_ITEMS = 1000;
     private static final String NAMESPACE = "http://www.alfresco.org/test/NodeSizeDetailsTest";
     private static final QName TYPE_FOLDER = QName.createQName(NAMESPACE, "folder");
     private SizeDetailsImpl sizeDetailsImpl;
     private Nodes nodes;
-    private ActionService actionService;
-    private Action action;
+    private NodeSizeDetailsService nodeSizeDetailsService;
+    private NodeSizeDetails nodeSizeDetails;
+    private SearchService searchService;
+    private ThreadPoolExecutor threadPoolExecutor;
 
     @Before
     public void setUp()
     {
         sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
-        actionService = mock(ActionService.class);
-        action = mock(Action.class);
-        SimpleCache<Serializable, Map<String, Object>> simpleCache = mock(SimpleCache.class);
+        searchService = mock(SearchService.class);
+        nodeSizeDetailsService = mock(NodeSizeDetailsService.class);
+        nodeSizeDetails = mock(NodeSizeDetails.class);
+        threadPoolExecutor = mock(ThreadPoolExecutor.class);
+        SimpleCache<Serializable, NodeSizeDetails> simpleCache = mock(SimpleCache.class);
 
+        nodeSizeDetailsService.setSearchService(searchService);
+        nodeSizeDetailsService.setDefaultItems(1000);
+        nodeSizeDetailsService.setSimpleCache(simpleCache);
+        nodeSizeDetailsService.setThreadPoolExecutor(threadPoolExecutor);
         sizeDetailsImpl.setNodes(nodes);
-        sizeDetailsImpl.setActionService(actionService);
         sizeDetailsImpl.setSimpleCache(simpleCache);
-        sizeDetailsImpl.setDefaultItems(DEFAULT_ITEMS);
+        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsService);
     }
 
     @Test
@@ -80,9 +85,6 @@ public class SizeDetailsImplTest
         String nodeId = "node-id";
         String jobId = "job-id";
         NodeRef nodeRef = new NodeRef("protocol", "identifier", nodeId);
-        action.setTrackStatus(true);
-        action.setExecuteAsynchronously(true);
-        action.setParameterValue(NodeSizeDetailActionExecutor.DEFAULT_SIZE, DEFAULT_ITEMS);
 
         Node node = new Node();
         node.setIsFolder(true);
@@ -93,7 +95,6 @@ public class SizeDetailsImplTest
 
         when(nodes.validateOrLookupNode(nodeId)).thenReturn(nodeRef);
         when(nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false)).thenReturn(true);
-        when(actionService.createAction(NodeSizeDetailActionExecutor.NAME)).thenReturn(action);
 
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);
         assertNotNull("After executing POST/size-details, it will provide with 202 status code", requestSizeDetails);

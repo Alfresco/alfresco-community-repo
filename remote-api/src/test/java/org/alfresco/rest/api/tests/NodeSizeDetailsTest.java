@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.NodeSizeDetails;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -65,7 +65,6 @@ import org.slf4j.LoggerFactory;
 public class NodeSizeDetailsTest extends AbstractBaseApiTest
 {
     private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsTest.class);
-
     private Site userOneN1Site;
     private String folderId;
     private PermissionService permissionService;
@@ -129,9 +128,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                       postResponse.getJsonResponse());
 
-        String jobId = NodeSizeDetails.parseJson((JSONObject) postResponse.getJsonResponse()
-                    .get("entry"));
+        NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails(
+                    (JSONObject) postResponse.getJsonResponse()
+                                .get("entry"));
 
+        String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
@@ -144,10 +145,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                       getResponse.getJsonResponse());
 
-        String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
+        nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails((JSONObject) getResponse.getJsonResponse()
+                    .get("entry"));
 
-        assertTrue("We are not getting correct response " + getJsonResponse,
-                   getJsonResponse.contains("size") || getJsonResponse.contains("status"));
+        assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
     }
 
     @Test
@@ -189,9 +190,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                       postResponse.getJsonResponse());
 
-        String jobId = NodeSizeDetails.parseJson((JSONObject) postResponse.getJsonResponse()
-                    .get("entry"));
+        NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails(
+                    (JSONObject) postResponse.getJsonResponse()
+                                .get("entry"));
 
+        String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
         // Prepare parameters.
@@ -204,10 +207,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                       getResponse.getJsonResponse());
 
-        String getJsonResponse = String.valueOf(getResponse.getJsonResponse());
+        nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails((JSONObject) getResponse.getJsonResponse()
+                    .get("entry"));
 
-        assertTrue("We are not getting correct response " + getJsonResponse,
-                   getJsonResponse.contains("size") || getJsonResponse.contains("status"));
+        assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
 
         //current Time after executing GET/size-details
         LocalTime actualTime = LocalTime.now();

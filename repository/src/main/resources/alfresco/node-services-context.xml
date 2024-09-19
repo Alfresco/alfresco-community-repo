@@ -330,6 +330,28 @@
         <property name="nodeService" ref="nodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="searchTrackingComponent" ref="searchTrackingComponent" />
-    </bean>   
+    </bean>
+
+    <bean id="nodeSizeThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>defaultThreadPool</value>
+        </property>
+        <property name="corePoolSize">
+            <value>5</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>10</value>
+        </property>
+    </bean>
+
+    <bean id="NodeSizeDetailsService" class="org.alfresco.repo.node.NodeSizeDetailsService">
+        <property name="searchService" ref="SearchService"/>
+        <property name="simpleCache" ref="folderSizeSharedCache" />
+        <property name="transactionService" ref="transactionService"/>
+        <property name="threadPoolExecutor">
+            <ref bean="nodeSizeThreadPool"/>
+        </property>
+        <property name="defaultItems" value="${default.async.folder.items}"/>
+    </bean>
        
 </beans>

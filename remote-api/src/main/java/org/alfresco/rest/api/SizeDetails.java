@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.NodeSizeDetails;
+import org.alfresco.repo.node.NodeSizeDetailsService.NodeSizeDetails;
 
 public interface SizeDetails
 {

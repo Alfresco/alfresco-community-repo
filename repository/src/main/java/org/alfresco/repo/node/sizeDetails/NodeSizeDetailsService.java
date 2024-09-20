@@ -23,12 +23,12 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.node;
+package org.alfresco.repo.node.sizeDetails;
 
 import java.io.Serializable;
 
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails;
+import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface NodeSizeDetailsService

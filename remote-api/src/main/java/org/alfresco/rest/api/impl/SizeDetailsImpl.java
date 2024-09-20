@@ -29,9 +29,9 @@ import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.NodeSizeDetailsService;
-import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails;
-import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
+import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsService;
+import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
+import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;

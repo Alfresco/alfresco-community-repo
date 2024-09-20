@@ -35,8 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.NodeSizeDetailsServiceImpl;
-import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails;
+import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl;
+import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.service.cmr.repository.NodeRef;

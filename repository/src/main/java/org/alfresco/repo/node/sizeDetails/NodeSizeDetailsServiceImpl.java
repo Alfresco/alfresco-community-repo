@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.node;
+package org.alfresco.repo.node.sizeDetails;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -32,7 +32,7 @@ import java.util.Objects;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
+import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,8 +48,6 @@ import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
-
-import net.sf.acegisecurity.Authentication;
 
 /**
  * NodeSizeDetailsServiceImpl
@@ -113,7 +111,6 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 
     private void executeSizeCalculation(NodeRef nodeRef, String jobId)
     {
-        final Authentication fullAuthentication = AuthenticationUtil.getFullAuthentication();
         RetryingTransactionCallback<NodeSizeDetails> executionCallback = () -> {
 
             try
@@ -133,7 +130,6 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 
             try
             {
-                AuthenticationUtil.setFullAuthentication(fullAuthentication);
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                 nodeSizeDetails = AuthenticationUtil.runAs(() -> transactionService.getRetryingTransactionHelper()
                             .doInTransaction(executionCallback, true), AuthenticationUtil.getSystemUserName());

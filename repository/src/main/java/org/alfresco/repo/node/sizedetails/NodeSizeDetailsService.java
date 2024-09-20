@@ -23,18 +23,19 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.node.sizeDetails;
+package org.alfresco.repo.node.sizedetails;
 
-import java.io.Serializable;
-
-import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
+import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface NodeSizeDetailsService
 {
     void invokeSizeDetailsExecutor(NodeRef nodeRef, String jobId);
 
-    SimpleCache<Serializable, NodeSizeDetails> getSimpleCache();
+    void putSizeDetailsInCache(String id, NodeSizeDetails NodeSizeDetails);
+
+    NodeSizeDetails getSizeDetailsFromCache(String id);
+
+    boolean checkSizeDetailsExist(String id);
 
 }

@@ -35,8 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl;
-import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
+import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl;
+import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,6 +54,8 @@ public class SizeDetailsImplTest
     private static final QName TYPE_FOLDER = QName.createQName(NAMESPACE, "folder");
     private SizeDetailsImpl sizeDetailsImpl;
     private Nodes nodes;
+    private NodeSizeDetailsServiceImpl nodeSizeDetailsServiceImpl;
+    private NodeSizeDetails nodeSizeDetails;
 
     @Before
     public void setUp() throws Exception
@@ -61,19 +63,18 @@ public class SizeDetailsImplTest
         sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
         SearchService searchService = mock(SearchService.class);
-        NodeSizeDetailsServiceImpl nodeSizeDetailsServiceImpl = mock(NodeSizeDetailsServiceImpl.class);
+        nodeSizeDetailsServiceImpl = mock(NodeSizeDetailsServiceImpl.class);
         ThreadPoolExecutor threadPoolExecutor = mock(ThreadPoolExecutor.class);
         SimpleCache<Serializable, NodeSizeDetails> simpleCache = mock(SimpleCache.class);
+        nodeSizeDetails = mock(NodeSizeDetails.class);
 
         nodeSizeDetailsServiceImpl.setSearchService(searchService);
         nodeSizeDetailsServiceImpl.setDefaultItems(1000);
         nodeSizeDetailsServiceImpl.setSimpleCache(simpleCache);
+        verify(nodeSizeDetailsServiceImpl).setSimpleCache(simpleCache);
         nodeSizeDetailsServiceImpl.setThreadPoolExecutor(threadPoolExecutor);
         sizeDetailsImpl.setNodes(nodes);
         sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
-        when(nodeSizeDetailsServiceImpl.getSimpleCache()).thenReturn(simpleCache);
-        sizeDetailsImpl.afterPropertiesSet();
-        verify(nodeSizeDetailsServiceImpl).setSimpleCache(simpleCache);
     }
 
     @Test
@@ -93,6 +94,7 @@ public class SizeDetailsImplTest
 
         when(nodes.validateOrLookupNode(nodeId)).thenReturn(nodeRef);
         when(nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false)).thenReturn(true);
+        when(nodeSizeDetailsServiceImpl.getSizeDetailsFromCache(nodeId)).thenReturn(nodeSizeDetails);
 
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);
         assertNotNull("After executing POST/size-details, it will provide with 202 status code", requestSizeDetails);

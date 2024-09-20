@@ -344,7 +344,7 @@
         </property>
     </bean>
 
-    <bean id="NodeSizeDetailsServiceImpl" class="org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl">
+    <bean id="NodeSizeDetailsServiceImpl" class="org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl">
         <property name="searchService" ref="SearchService"/>
         <property name="simpleCache" ref="folderSizeSharedCache" />
         <property name="transactionService" ref="transactionService"/>
@@ -360,7 +360,7 @@
         </property>
         <property name="proxyInterfaces">
             <list>
-                <value>org.alfresco.repo.node.sizeDetails.NodeSizeDetailsService</value>
+                <value>org.alfresco.repo.node.sizedetails.NodeSizeDetailsService</value>
             </list>
         </property>
     </bean>

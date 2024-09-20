@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.node.sizeDetails;
+package org.alfresco.repo.node.sizedetails;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -32,7 +32,7 @@ import java.util.Objects;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
+import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -70,9 +70,15 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     }
 
     @Override
-    public SimpleCache<Serializable, NodeSizeDetails> getSimpleCache()
+    public NodeSizeDetails getSizeDetailsFromCache(String id)
     {
-        return simpleCache;
+        return simpleCache.get(id);
+    }
+
+    @Override
+    public boolean checkSizeDetailsExist(String id)
+    {
+        return simpleCache.contains(id);
     }
 
     public void setSimpleCache(SimpleCache<Serializable, NodeSizeDetails> simpleCache)
@@ -109,6 +115,12 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 
     }
 
+    @Override
+    public void putSizeDetailsInCache(String id, NodeSizeDetails nodeSizeDetails)
+    {
+        simpleCache.put(id, nodeSizeDetails);
+    }
+
     private void executeSizeCalculation(NodeRef nodeRef, String jobId)
     {
         RetryingTransactionCallback<NodeSizeDetails> executionCallback = () -> {
@@ -126,7 +138,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 
         threadPoolExecutor.execute(() -> {
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.IN_PROGRESS);
-            simpleCache.put(nodeRef.getId(), nodeSizeDetails);
+            putSizeDetailsInCache(nodeRef.getId(), nodeSizeDetails);
 
             try
             {
@@ -141,7 +153,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             finally
             {
-                simpleCache.put(nodeRef.getId(), nodeSizeDetails);
+                putSizeDetailsInCache(nodeRef.getId(), nodeSizeDetails);
                 AuthenticationUtil.clearCurrentSecurityContext();
             }
         });

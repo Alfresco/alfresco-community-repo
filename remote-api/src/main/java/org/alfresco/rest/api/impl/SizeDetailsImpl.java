@@ -25,13 +25,10 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.io.Serializable;
-
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsService;
-import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
-import org.alfresco.repo.node.sizeDetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
+import org.alfresco.repo.node.sizedetails.NodeSizeDetailsService;
+import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
+import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.framework.core.exceptions.InvalidNodeTypeException;
@@ -45,7 +42,6 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
 {
     private Nodes nodes;
     private NodeRef nodeRef;
-    private SimpleCache<Serializable, NodeSizeDetails> simpleCache;
     private NodeSizeDetailsService nodeSizeDetailsService;
 
     public void setNodes(Nodes nodes)
@@ -67,13 +63,13 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
         nodeRef = nodes.validateOrLookupNode(nodeId);
         validateType(nodeRef);
         String actionId;
-        if (!simpleCache.contains(nodeId))
+        if (!nodeSizeDetailsService.checkSizeDetailsExist(nodeId))
         {
             actionId = executeSizeDetails();
         }
         else
         {
-            NodeSizeDetails nodeSizeDetails = simpleCache.get(nodeId);
+            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetailsFromCache(nodeId);
             actionId = nodeSizeDetails.getJobId();
         }
         return new NodeSizeDetails(null, null, actionId, null);
@@ -88,14 +84,14 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
         validateType(nodeRef);
 
-        if (!simpleCache.contains(nodeId))
+        if (!nodeSizeDetailsService.checkSizeDetailsExist(nodeId))
         {
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeId, null, null, STATUS.NOT_INITIATED);
             return nodeSizeDetails;
         }
         else
         {
-            NodeSizeDetails nodeSizeDetails = simpleCache.get(nodeId);
+            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetailsFromCache(nodeId);
             String cachedJobId = nodeSizeDetails.getJobId();
             if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
             {
@@ -103,7 +99,7 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
             }
         }
 
-        return simpleCache.get(nodeId);
+        return nodeSizeDetailsService.getSizeDetailsFromCache(nodeId);
     }
 
     /**
@@ -114,7 +110,7 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
         String jobId = GUID.generate();
         nodeSizeDetailsService.invokeSizeDetailsExecutor(nodeRef, jobId);
         NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.PENDING);
-        simpleCache.put(nodeRef.getId(), nodeSizeDetails);
+        nodeSizeDetailsService.putSizeDetailsInCache(nodeRef.getId(), nodeSizeDetails);
         return jobId;
     }
 
@@ -131,7 +127,6 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
     {
         ParameterCheck.mandatory("nodes", this.nodes);
         ParameterCheck.mandatory("nodeSizeDetailsServiceImpl", this.nodeSizeDetailsService);
-        this.simpleCache = nodeSizeDetailsService.getSimpleCache();
     }
 
 }

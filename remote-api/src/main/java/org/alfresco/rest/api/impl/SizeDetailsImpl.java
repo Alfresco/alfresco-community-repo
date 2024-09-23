@@ -69,10 +69,10 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
         }
         else
         {
-            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetailsFromCache(nodeId);
+            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
             actionId = nodeSizeDetails.getJobId();
         }
-        return new NodeSizeDetails(null, null, actionId, null);
+        return new NodeSizeDetails(actionId);
     }
 
     /**
@@ -86,12 +86,12 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
 
         if (!nodeSizeDetailsService.checkSizeDetailsExist(nodeId))
         {
-            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeId, null, null, STATUS.NOT_INITIATED);
+            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeId,STATUS.NOT_INITIATED);
             return nodeSizeDetails;
         }
         else
         {
-            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetailsFromCache(nodeId);
+            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
             String cachedJobId = nodeSizeDetails.getJobId();
             if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
             {
@@ -99,7 +99,7 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
             }
         }
 
-        return nodeSizeDetailsService.getSizeDetailsFromCache(nodeId);
+        return nodeSizeDetailsService.getSizeDetails(nodeId);
     }
 
     /**
@@ -108,9 +108,9 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
     private String executeSizeDetails()
     {
         String jobId = GUID.generate();
-        nodeSizeDetailsService.invokeSizeDetailsExecutor(nodeRef, jobId);
         NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.PENDING);
-        nodeSizeDetailsService.putSizeDetailsInCache(nodeRef.getId(), nodeSizeDetails);
+        nodeSizeDetailsService.putSizeDetails(nodeRef.getId(), nodeSizeDetails);
+        nodeSizeDetailsService.invokeSizeDetailsExecutor(nodeRef, jobId);
         return jobId;
     }
 

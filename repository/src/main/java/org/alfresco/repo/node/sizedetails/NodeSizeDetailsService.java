@@ -32,9 +32,9 @@ public interface NodeSizeDetailsService
 {
     void invokeSizeDetailsExecutor(NodeRef nodeRef, String jobId);
 
-    void putSizeDetailsInCache(String id, NodeSizeDetails nodeSizeDetails);
+    void putSizeDetails(String id, NodeSizeDetails nodeSizeDetails);
 
-    NodeSizeDetails getSizeDetailsFromCache(String id);
+    NodeSizeDetails getSizeDetails(String id);
 
     boolean checkSizeDetailsExist(String id);
 

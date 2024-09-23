@@ -70,7 +70,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     }
 
     @Override
-    public NodeSizeDetails getSizeDetailsFromCache(String id)
+    public NodeSizeDetails getSizeDetails(String id)
     {
         return simpleCache.get(id);
     }
@@ -116,7 +116,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     }
 
     @Override
-    public void putSizeDetailsInCache(String id, NodeSizeDetails nodeSizeDetails)
+    public void putSizeDetails(String id, NodeSizeDetails nodeSizeDetails)
     {
         simpleCache.put(id, nodeSizeDetails);
     }
@@ -138,7 +138,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 
         threadPoolExecutor.execute(() -> {
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.IN_PROGRESS);
-            putSizeDetailsInCache(nodeRef.getId(), nodeSizeDetails);
+            putSizeDetails(nodeRef.getId(), nodeSizeDetails);
 
             try
             {
@@ -153,7 +153,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             finally
             {
-                putSizeDetailsInCache(nodeRef.getId(), nodeSizeDetails);
+                putSizeDetails(nodeRef.getId(), nodeSizeDetails);
                 AuthenticationUtil.clearCurrentSecurityContext();
             }
         });
@@ -260,6 +260,17 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         private Integer numberOfFiles;
         private String jobId;
         private STATUS status;
+
+        public NodeSizeDetails(String jobId)
+        {
+            this.jobId = jobId;
+        }
+
+        public NodeSizeDetails(String id, STATUS status)
+        {
+            this.id = id;
+            this.status = status;
+        }
 
         public NodeSizeDetails(String id, Long sizeInBytes, String jobId, STATUS status)
         {

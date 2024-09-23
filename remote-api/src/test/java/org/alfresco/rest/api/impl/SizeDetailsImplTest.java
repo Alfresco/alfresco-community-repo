@@ -94,7 +94,7 @@ public class SizeDetailsImplTest
 
         when(nodes.validateOrLookupNode(nodeId)).thenReturn(nodeRef);
         when(nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false)).thenReturn(true);
-        when(nodeSizeDetailsServiceImpl.getSizeDetailsFromCache(nodeId)).thenReturn(nodeSizeDetails);
+        when(nodeSizeDetailsServiceImpl.getSizeDetails(nodeId)).thenReturn(nodeSizeDetails);
 
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);
         assertNotNull("After executing POST/size-details, it will provide with 202 status code", requestSizeDetails);

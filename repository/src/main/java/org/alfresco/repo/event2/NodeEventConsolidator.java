@@ -67,6 +67,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     private List<String> primaryHierarchyBefore;
     private List<String> secondaryParentsBefore;
     private boolean resourceBeforeAllFieldsNull = true;
+    protected boolean isArchived = false;
 
     public NodeEventConsolidator(NodeResourceHelper nodeResourceHelper)
     {
@@ -92,6 +93,11 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
         if (eventType == EventType.NODE_UPDATED)
         {
             eventDataBuilder.setResourceBefore(buildNodeResourceBeforeDelta(resource));
+        }
+
+        if (eventType == EventType.NODE_DELETED && !isArchived)
+        {
+            eventDataBuilder.setResourceBefore(NodeResource.builder().build());
         }
 
         return eventDataBuilder.build();
@@ -194,6 +200,14 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     {
         eventTypes.add(EventType.NODE_DELETED);
         createBuilderIfAbsent(nodeRef);
+    }
+
+    @Override
+    public void beforeArchiveNode(NodeRef nodeRef)
+    {
+        eventTypes.add(EventType.NODE_DELETED);
+        createBuilderIfAbsent(nodeRef);
+        isArchived = true;
     }
 
     @Override
@@ -515,4 +529,5 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     protected void setResourceBeforeAllFieldsNull(boolean resourceBeforeAllFieldsNull){
         this.resourceBeforeAllFieldsNull = resourceBeforeAllFieldsNull;
     }
+
 }

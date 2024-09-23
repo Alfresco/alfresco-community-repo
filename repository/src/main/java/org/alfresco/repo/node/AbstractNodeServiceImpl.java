@@ -111,6 +111,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected TransactionService transactionService;
     protected TenantService tenantService;
     protected Set<String> storesToIgnorePolicies = Collections.emptySet();
+    protected String archiveStore;
 
     /*
      * Policy delegates
@@ -172,6 +173,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     public void setStoresToIgnorePolicies(Set<String> storesToIgnorePolicies)
     {
         this.storesToIgnorePolicies = storesToIgnorePolicies;
+    }
+
+    public void setArchiveStore(String archiveStore)
+    {
+        this.archiveStore = archiveStore;
     }
 
     /**
@@ -243,6 +249,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private boolean ignorePolicy(NodeRef nodeRef)
     {
         return (storesToIgnorePolicies.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()));
+    }
+
+    private boolean isInArchiveStore(NodeRef nodeRef)
+    {
+        return archiveStore.equals(tenantService.getBaseName(nodeRef.getStoreRef()).toString());
     }
     
     /**
@@ -479,7 +490,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeDeleteNode(NodeRef nodeRef)
     {
-        if (ignorePolicy(nodeRef))
+        if (ignorePolicy(nodeRef) && !isInArchiveStore(nodeRef))
         {
             return;
         }

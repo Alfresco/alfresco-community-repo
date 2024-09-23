@@ -48,6 +48,7 @@ import org.alfresco.repo.event2.filter.ChildAssociationTypeFilter;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.EventUserFilter;
 import org.alfresco.repo.event2.filter.NodeTypeFilter;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeArchiveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
@@ -155,6 +156,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     {
         setClassBehaviour(OnCreateNodePolicy.QNAME, "onCreateNode");
         setClassBehaviour(BeforeDeleteNodePolicy.QNAME, "beforeDeleteNode");
+        setClassBehaviour(BeforeArchiveNodePolicy.QNAME, "beforeArchiveNode");
         setClassBehaviour(OnUpdatePropertiesPolicy.QNAME, "onUpdateProperties");
         setClassBehaviour(OnSetNodeTypePolicy.QNAME, "onSetNodeType");
         setClassBehaviour(OnAddAspectPolicy.QNAME, "onAddAspect");
@@ -547,6 +549,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     protected void onShutdown(ApplicationEvent applicationEvent)
     {
         //NOOP
+    }
+
+    @Override
+    public void beforeArchiveNode(NodeRef nodeRef)
+    {
+        getEventConsolidator(nodeRef).beforeArchiveNode(nodeRef);
     }
 
     protected class EventTransactionListener extends TransactionListenerAdapter

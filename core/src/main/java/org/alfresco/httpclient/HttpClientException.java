@@ -30,6 +30,6 @@ public class HttpClientException extends AlfrescoRuntimeException
 
     public HttpClientException(String msgId, Throwable cause)
     {
-        super(msgId,cause);
+        super(msgId, cause);
     }
 }

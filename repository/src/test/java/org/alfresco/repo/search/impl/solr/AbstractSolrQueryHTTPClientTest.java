@@ -162,7 +162,7 @@ public class AbstractSolrQueryHTTPClientTest
                 assertThrows(HttpClientException.class, () -> abstractSolrQueryHTTPClient.postQuery(httpClient, URL, body));
 
         String exceptionMessage = expectedException.getMessage();
-        assertTrue(exceptionMessage.endsWith("[%s] %s".formatted((abstractSolrQueryHTTPClient.getClass().getSimpleName()), messageFromHttp)));
+        assertTrue(exceptionMessage.endsWith("[%s] %s".formatted(abstractSolrQueryHTTPClient.getClass().getSimpleName(), messageFromHttp)));
     }
 
     /** Create an input stream containing the given string. */

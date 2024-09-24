@@ -144,7 +144,7 @@ public abstract class AbstractSolrQueryHTTPClient
         }
         catch (IOException e)
         {
-            throw new HttpClientException("[%s] %s".formatted(this.getClass().getSimpleName(), e.getMessage()));
+            throw new HttpClientException("[%s] %s".formatted(this.getClass().getSimpleName(), e.getMessage()), e);
         }
         finally
         {

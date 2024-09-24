@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set +x
+
 if [[ -z ${GITHUB_MODIFIED_FILES} ]]
 then
   modified_files=$(git diff --cached --name-only --diff-filter=ACMR)
@@ -14,7 +16,7 @@ do
 done
 include_list=${include_list:1}
 
-mvn spotless:apply validate -DlicenseUpdateHeaders=true -Dspotless-include-list="${include_list}" > /dev/null
+mvn spotless:apply validate -DlicenseUpdateHeaders=true -Dspotless-include-list="${include_list}" > /dev/null || true
 
 all_nonconformant_files=$(git diff --name-only --diff-filter=ACMR)
 
@@ -34,3 +36,5 @@ do
     git checkout -- "${file}"
   fi
 done
+
+set -x

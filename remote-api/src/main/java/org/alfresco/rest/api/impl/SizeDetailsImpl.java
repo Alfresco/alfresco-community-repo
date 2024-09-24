@@ -108,7 +108,7 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
     private String executeSizeDetails()
     {
         String jobId = GUID.generate();
-        NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.PENDING);
+        NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), jobId, STATUS.PENDING);
         nodeSizeDetailsService.putSizeDetails(nodeRef.getId(), nodeSizeDetails);
         nodeSizeDetailsService.invokeSizeDetailsExecutor(nodeRef, jobId);
         return jobId;

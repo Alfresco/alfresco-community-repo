@@ -72,7 +72,20 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     @Override
     public NodeSizeDetails getSizeDetails(String id)
     {
-        return simpleCache.get(id);
+        try
+        {
+            NodeSizeDetails details = simpleCache.get(id);
+            if (details == null)
+            {
+                throw new NullPointerException("No size details found for ID: " + id);
+            }
+            return details;
+        }
+        catch (Exception e)
+        {
+            LOG.error("Error retrieving size details for ID " + id + ": " + e.getMessage());
+            throw new RuntimeException("Failed to get size details for ID: " + id, e);
+        }
     }
 
     @Override
@@ -123,6 +136,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 
     private void executeSizeCalculation(NodeRef nodeRef, String jobId)
     {
+        String authenticatedUserName = AuthenticationUtil.getFullyAuthenticatedUser();
         RetryingTransactionCallback<NodeSizeDetails> executionCallback = () -> {
 
             try
@@ -137,14 +151,13 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         };
 
         threadPoolExecutor.execute(() -> {
-            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), null, jobId, STATUS.IN_PROGRESS);
+            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), jobId, STATUS.IN_PROGRESS);
             putSizeDetails(nodeRef.getId(), nodeSizeDetails);
 
             try
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                 nodeSizeDetails = AuthenticationUtil.runAs(() -> transactionService.getRetryingTransactionHelper()
-                            .doInTransaction(executionCallback, true), AuthenticationUtil.getSystemUserName());
+                            .doInTransaction(executionCallback, true), authenticatedUserName);
             }
             catch (Exception e)
             {
@@ -269,6 +282,13 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         public NodeSizeDetails(String id, STATUS status)
         {
             this.id = id;
+            this.status = status;
+        }
+
+        public NodeSizeDetails(String id, String jobId, STATUS status)
+        {
+            this.id = id;
+            this.jobId = jobId;
             this.status = status;
         }
 

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -72,20 +73,15 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     @Override
     public NodeSizeDetails getSizeDetails(String id)
     {
-        try
+        NodeSizeDetails details = simpleCache.get(id);
+
+        if (details == null)
         {
-            NodeSizeDetails details = simpleCache.get(id);
-            if (details == null)
-            {
-                throw new NullPointerException("No size details found for ID: " + id);
-            }
-            return details;
+            LOG.error("No size details found for ID: " + id);
+            throw new AlfrescoRuntimeException("Failed to get size details for ID: " + id);
         }
-        catch (Exception e)
-        {
-            LOG.error("Error retrieving size details for ID " + id + ": " + e.getMessage());
-            throw new RuntimeException("Failed to get size details for ID: " + id, e);
-        }
+
+        return details;
     }
 
     @Override

@@ -1,0 +1,32 @@
+repos:
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: fix-byte-order-marker
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: detect-aws-credentials
+        args:
+          - --allow-missing-credentials
+      - id: detect-private-key
+      - id: check-case-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: check-xml
+  - repo: local
+    hooks:
+      - id: check-format-and-headers
+        name: Check format and headers and fix if necessary
+        entry: ./scripts/hooks/check-format-and-headers.sh
+        language: script
+        files: ".*.java"
+        pass_filenames: false
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace

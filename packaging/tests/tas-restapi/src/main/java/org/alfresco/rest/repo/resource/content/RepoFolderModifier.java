@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,8 +38,8 @@ import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FolderModel;
 
 public class RepoFolderModifier
-    extends ContentModifier<FolderModel, Modifier.FolderModifier>
-    implements Modifier.FolderModifier
+        extends ContentModifier<FolderModel, Modifier.FolderModifier>
+        implements Modifier.FolderModifier
 {
 
     private final RestWrapper restClient;
@@ -66,14 +66,13 @@ public class RepoFolderModifier
     public Specifier.MultiContentSpecifier add()
     {
         return (Specifier.MultiContentSpecifier) new MultiContentCreator(dataContent, restClient, files, foldersCache)
-            .underFolder(contentModel).withinSite(site).asUser(user);
+                .underFolder(contentModel).withinSite(site).asUser(user);
     }
 
     @Override
     public Specifier.AssociationSpecifier remove()
     {
-        return new Specifier.AssociationSpecifier()
-        {
+        return new Specifier.AssociationSpecifier() {
             @Override
             public void secondaryContent(ContentModel content)
             {

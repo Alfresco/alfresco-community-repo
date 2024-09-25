@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,8 +25,9 @@
  */
 package org.alfresco.rest.repo.resource.content;
 
-import static org.alfresco.rest.repo.resource.Folders.FOLDER_NAME_PREFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import static org.alfresco.rest.repo.resource.Folders.FOLDER_NAME_PREFIX;
 
 import java.util.Map;
 
@@ -38,8 +39,8 @@ import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.model.FolderModel;
 
 public class RepoFolderCreator
-    extends ContentCreator<FolderModel, Creator.FolderCreator>
-    implements Creator.FolderCreator, Specifier.FolderSpecifier
+        extends ContentCreator<FolderModel, Creator.FolderCreator>
+        implements Creator.FolderCreator, Specifier.FolderSpecifier
 {
 
     private final DataContent dataContent;

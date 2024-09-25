@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,8 +25,9 @@
  */
 package org.alfresco.rest.repo.resource.content;
 
-import static org.alfresco.rest.repo.resource.Folders.FOLDER_NAME_PREFIX;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+
+import static org.alfresco.rest.repo.resource.Folders.FOLDER_NAME_PREFIX;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +40,8 @@ import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.model.FolderModel;
 
 public class SerialFoldersCreator
-    extends MultipleContentsCreator<FolderModel, MultiCreator.FoldersCreator>
-    implements MultiCreator.FoldersCreator
+        extends MultipleContentsCreator<FolderModel, MultiCreator.FoldersCreator>
+        implements MultiCreator.FoldersCreator
 {
 
     private final DataContent dataContent;
@@ -81,14 +82,14 @@ public class SerialFoldersCreator
     protected FolderModel createFolder(String folderName, String title, String description, FolderModel parent, String alias)
     {
         return new RepoFolderCreator(dataContent, foldersCache)
-            .withAlias(alias)
-            .withName(folderName)
-            .withTitle(title)
-            .withDescription(description)
-            .underFolder(parent)
-            .withinSite(site)
-            .asUser(user)
-            .create();
+                .withAlias(alias)
+                .withName(folderName)
+                .withTitle(title)
+                .withDescription(description)
+                .underFolder(parent)
+                .withinSite(site)
+                .asUser(user)
+                .create();
     }
 
     private List<FolderModel> createRawFoldersUnder(FolderModel parent, List<String> folderNames)

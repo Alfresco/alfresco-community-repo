@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,9 +25,10 @@
  */
 package org.alfresco.rest.repo.resource.category;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 import static org.alfresco.rest.repo.resource.Categories.CATEGORY_NAME_PREFIX;
 import static org.alfresco.rest.repo.resource.Categories.ROOT_CATEGORY;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +41,8 @@ import org.alfresco.rest.repo.resource.general.MultiCreator;
 import org.alfresco.rest.repo.resource.general.MultipleResourcesCreator;
 
 public class SerialCategoriesCreator
-    extends MultipleResourcesCreator<RestCategoryModel, MultiCreator.CategoriesCreator>
-    implements MultiCreator.CategoriesCreator
+        extends MultipleResourcesCreator<RestCategoryModel, MultiCreator.CategoriesCreator>
+        implements MultiCreator.CategoriesCreator
 {
 
     private final RestWrapper restClient;
@@ -101,10 +102,10 @@ public class SerialCategoriesCreator
     protected RestCategoryModel createCategory(String name, String alias, RestCategoryModel parent)
     {
         return new RepoCategoryCreator(restClient, this.categoriesCache)
-            .withAlias(alias)
-            .withName(name)
-            .underCategory(parent)
-            .asUser(user)
-            .create();
+                .withAlias(alias)
+                .withName(name)
+                .underCategory(parent)
+                .asUser(user)
+                .create();
     }
 }

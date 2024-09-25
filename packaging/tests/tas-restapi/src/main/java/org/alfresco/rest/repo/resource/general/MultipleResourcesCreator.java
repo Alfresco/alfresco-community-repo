@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -34,16 +34,17 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.Node;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 
 public abstract class MultipleResourcesCreator<RESOURCE extends TestModel, SELF extends MultiCreator<RESOURCE, ?>>
-    implements MultiCreator<RESOURCE, SELF>
+        implements MultiCreator<RESOURCE, SELF>
 {
 
     protected UserModel user;
@@ -74,10 +75,9 @@ public abstract class MultipleResourcesCreator<RESOURCE extends TestModel, SELF 
 
         AtomicInteger i = new AtomicInteger();
         return withNames(prefixes.stream()
-            .map(this::generateRandomNameWith)
-            .map(name -> name + suffixes.get(i.getAndIncrement()))
-            .toArray(String[]::new)
-        );
+                .map(this::generateRandomNameWith)
+                .map(name -> name + suffixes.get(i.getAndIncrement()))
+                .toArray(String[]::new));
     }
 
     public SELF withRandomNames(int namesCount)

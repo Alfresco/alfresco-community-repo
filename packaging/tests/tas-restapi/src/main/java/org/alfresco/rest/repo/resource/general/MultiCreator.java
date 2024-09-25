@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -40,8 +40,10 @@ import org.alfresco.utility.model.UserModel;
 /**
  * Declares actions, which can be performed to create multiple repository resources.
  *
- * @param <RESOURCE> repository resource, e.g. folder, category, etc.
- * @param <SELF> return type - this interface extension or implementation
+ * @param <RESOURCE>
+ *            repository resource, e.g. folder, category, etc.
+ * @param <SELF>
+ *            return type - this interface extension or implementation
  */
 public interface MultiCreator<RESOURCE extends TestModel, SELF extends MultiCreator<RESOURCE, ?>>
 {

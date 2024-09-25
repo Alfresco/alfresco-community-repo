@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,8 +36,10 @@ import org.alfresco.utility.model.UserModel;
 /**
  * Declares operations, which can be performed on repository resource.
  *
- * @param <RESOURCE> repository resource, e.g. folder, category, etc.
- * @param <SELF> return type - this interface extension or implementation
+ * @param <RESOURCE>
+ *            repository resource, e.g. folder, category, etc.
+ * @param <SELF>
+ *            return type - this interface extension or implementation
  */
 public interface Modifier<RESOURCE extends TestModel, SELF extends Modifier<RESOURCE, ?>>
 {
@@ -48,7 +50,7 @@ public interface Modifier<RESOURCE extends TestModel, SELF extends Modifier<RESO
     void delete();
 
     interface ContentModifier<CONTENT extends ContentModel, SELF extends Modifier<CONTENT, ?>>
-        extends Modifier<CONTENT, SELF>
+            extends Modifier<CONTENT, SELF>
     {
         <FOLDER extends FolderModel> void moveTo(FOLDER target);
 
@@ -70,13 +72,13 @@ public interface Modifier<RESOURCE extends TestModel, SELF extends Modifier<RESO
     }
 
     interface FolderModifier extends ContentModifier<FolderModel, FolderModifier>,
-        ResourceIntroducer<Specifier.MultiContentSpecifier>, ResourceRemover<Specifier.AssociationSpecifier>
+            ResourceIntroducer<Specifier.MultiContentSpecifier>, ResourceRemover<Specifier.AssociationSpecifier>
     {}
 
     interface FileModifier extends ContentModifier<FileModel, FileModifier>
     {}
 
     interface CategoryModifier extends Modifier<RestCategoryModel, CategoryModifier>,
-        ResourceIntroducer<Specifier.CategoriesSpecifier>
+            ResourceIntroducer<Specifier.CategoriesSpecifier>
     {}
 }

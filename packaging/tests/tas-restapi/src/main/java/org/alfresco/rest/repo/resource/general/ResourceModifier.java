@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,7 +32,7 @@ import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
 
 public abstract class ResourceModifier<RESOURCE extends TestModel, SELF extends Modifier<RESOURCE, ?>>
-    implements Modifier<RESOURCE, SELF>
+        implements Modifier<RESOURCE, SELF>
 {
 
     protected UserModel user;

@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,19 +27,20 @@ package org.alfresco.rest.repo.resource;
 
 import java.util.Map;
 
-import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.RestCategoryModel;
-import org.alfresco.rest.repo.resource.category.RepoCategoryCreator;
-import org.alfresco.rest.repo.resource.category.RepoCategoryModifier;
-import org.alfresco.rest.repo.resource.cache.MultiKeyResourceMap;
-import org.alfresco.rest.repo.resource.general.Modifier;
-import org.alfresco.rest.repo.resource.general.Specifier;
-import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
+import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.RestCategoryModel;
+import org.alfresco.rest.repo.resource.cache.MultiKeyResourceMap;
+import org.alfresco.rest.repo.resource.category.RepoCategoryCreator;
+import org.alfresco.rest.repo.resource.category.RepoCategoryModifier;
+import org.alfresco.rest.repo.resource.general.Modifier;
+import org.alfresco.rest.repo.resource.general.Specifier;
+import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.UserModel;
 
 /**
  * Helper class simplifying things related with repository categories management.
@@ -73,7 +74,7 @@ public class Categories implements ResourceManager<RestCategoryModel, Specifier.
     public Specifier.CategoriesSpecifier add()
     {
         return (Specifier.CategoriesSpecifier) new RepoCategoryCreator(restClient, categoriesCache)
-            .underCategory(ROOT_CATEGORY).asUser(user);
+                .underCategory(ROOT_CATEGORY).asUser(user);
     }
 
     @Override

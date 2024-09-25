@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,16 +32,19 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.alfresco.utility.model.TestModel;
 import org.apache.commons.lang3.StringUtils;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Allows to store data in map and find it using three keys - id, name and alias.
- * @param <RESOURCE> repository resource, e.g. folder, category, etc.
+ * 
+ * @param <RESOURCE>
+ *            repository resource, e.g. folder, category, etc.
  */
 public class MultiKeyResourceMap<RESOURCE extends TestModel> extends HashMap<String, RESOURCE>
 {
-    private static final String ID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+    private static final String UUID_PATTERN = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
 
     private final Map<String, String> keys = new HashMap<>();
     private final Function<RESOURCE, String> idSupplier;
@@ -96,7 +99,7 @@ public class MultiKeyResourceMap<RESOURCE extends TestModel> extends HashMap<Str
         RESOURCE resource = this.get(key);
         if (resource == null)
         {
-            return  null;
+            return null;
         }
 
         String id = idSupplier.apply(resource);
@@ -108,18 +111,19 @@ public class MultiKeyResourceMap<RESOURCE extends TestModel> extends HashMap<Str
     private Object findKey(Object key)
     {
         Object realKey = key;
-        if (key instanceof String k && (!Pattern.compile(ID_PATTERN).matcher(k).matches() || !super.containsKey(k)))
+        if (key instanceof String k && (!Pattern.compile(UUID_PATTERN).matcher(k).matches() || !super.containsKey(k)))
         {
             realKey = keys.getOrDefault(k, k);
         }
         return realKey;
     }
 
-    public Set<String> findKeysFor(Object id) {
+    public Set<String> findKeysFor(Object id)
+    {
         return keys.entrySet()
-            .stream()
-            .filter(entry -> id.equals(entry.getValue()))
-            .map(Entry::getKey)
-            .collect(Collectors.toSet());
+                .stream()
+                .filter(entry -> id.equals(entry.getValue()))
+                .map(Entry::getKey)
+                .collect(Collectors.toSet());
     }
 }

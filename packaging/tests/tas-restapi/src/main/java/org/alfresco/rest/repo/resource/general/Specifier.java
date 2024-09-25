@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,7 +27,6 @@ package org.alfresco.rest.repo.resource.general;
 
 import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.utility.model.ContentModel;
-import org.alfresco.utility.model.FileType;
 
 /**
  * Specifies repository resource to perform an operation on, like: add, modify, remove.

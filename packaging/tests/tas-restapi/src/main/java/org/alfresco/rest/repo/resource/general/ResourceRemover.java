@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,7 +28,8 @@ package org.alfresco.rest.repo.resource.general;
 /**
  * Declares an action, which removes repository resource like association.
  *
- * @param <SPECIFIER> repository resource specifier, see {@link Specifier}
+ * @param <SPECIFIER>
+ *            repository resource specifier, see {@link Specifier}
  */
 public interface ResourceRemover<SPECIFIER extends Specifier>
 {

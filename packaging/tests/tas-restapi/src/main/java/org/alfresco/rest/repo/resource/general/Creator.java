@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,6 +29,8 @@ import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 import org.alfresco.rest.model.RestCategoryModel;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
@@ -37,13 +39,14 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * Declares operations, which can be performed to create repository resource.
  *
- * @param <RESOURCE> repository resource, e.g. folder, category, etc.
- * @param <SELF> return type - this interface extension or implementation
+ * @param <RESOURCE>
+ *            repository resource, e.g. folder, category, etc.
+ * @param <SELF>
+ *            return type - this interface extension or implementation
  */
 public interface Creator<RESOURCE extends TestModel, SELF extends Creator<RESOURCE, ?>>
 {
@@ -54,7 +57,7 @@ public interface Creator<RESOURCE extends TestModel, SELF extends Creator<RESOUR
     RESOURCE create();
 
     interface ContentCreator<CONTENT extends ContentModel, SELF extends ContentCreator<CONTENT, ?>>
-        extends Creator<CONTENT, SELF>
+            extends Creator<CONTENT, SELF>
     {
         SELF withTitle(String title);
 
@@ -92,8 +95,8 @@ public interface Creator<RESOURCE extends TestModel, SELF extends Creator<RESOUR
         default FileCreator withRandomContent(int wordsNumber, int wordsMaxLength)
         {
             return withContent(IntStream.range(0, wordsNumber)
-                .mapToObj(i -> RandomStringUtils.randomAlphanumeric(1, wordsMaxLength))
-                .collect(Collectors.joining(" ")));
+                    .mapToObj(i -> RandomStringUtils.randomAlphanumeric(1, wordsMaxLength))
+                    .collect(Collectors.joining(" ")));
         }
     }
 

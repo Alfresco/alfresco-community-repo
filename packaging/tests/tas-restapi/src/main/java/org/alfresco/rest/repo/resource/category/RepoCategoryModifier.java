@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,8 +35,8 @@ import org.alfresco.rest.repo.resource.general.Specifier;
 import org.alfresco.utility.model.UserModel;
 
 public class RepoCategoryModifier
-    extends ResourceModifier<RestCategoryModel, Modifier.CategoryModifier>
-    implements Modifier.CategoryModifier
+        extends ResourceModifier<RestCategoryModel, Modifier.CategoryModifier>
+        implements Modifier.CategoryModifier
 {
 
     private final RestWrapper restClient;
@@ -61,14 +61,14 @@ public class RepoCategoryModifier
     public Specifier.CategoriesSpecifier add()
     {
         return (Specifier.CategoriesSpecifier) new RepoCategoryCreator(restClient, categoriesCache)
-            .underCategory(category).asUser(user);
+                .underCategory(category).asUser(user);
     }
 
     @Override
     public RestCategoryModel get(String id)
     {
         return buildCategoryRestRequest(restClient, user, RestCategoryModel.builder().id(id).create())
-            .getCategory();
+                .getCategory();
     }
 
     @Override

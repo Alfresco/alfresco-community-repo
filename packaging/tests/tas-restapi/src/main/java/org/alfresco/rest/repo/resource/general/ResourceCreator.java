@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,15 +29,16 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.Node;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.commons.lang3.RandomStringUtils;
 
 public abstract class ResourceCreator<RESOURCE extends TestModel, SELF extends Creator<RESOURCE, ?>>
-    implements Creator<RESOURCE, SELF>
+        implements Creator<RESOURCE, SELF>
 {
 
     protected UserModel user;

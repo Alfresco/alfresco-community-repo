@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -33,12 +33,15 @@ import org.alfresco.utility.model.TestModel;
 /**
  * Declares operations introducing new, or allowing to manage repository resources like: folders, files, categories, associations, etc.
  *
- * @param <RESOURCE>> repository resource, e.g. folder, file, category, etc.
- * @param <SPECIFIER> repository resource specifier, see {@link Specifier}
- * @param <MODIFIER>> repository resource modifier, see {@link Modifier}
+ * @param <RESOURCE>>
+ *            repository resource, e.g. folder, file, category, etc.
+ * @param <SPECIFIER>
+ *            repository resource specifier, see {@link Specifier}
+ * @param <MODIFIER>>
+ *            repository resource modifier, see {@link Modifier}
  */
 public interface ResourceManager<RESOURCE extends TestModel, SPECIFIER extends Specifier, MODIFIER extends Modifier<RESOURCE, ?>>
-    extends ResourceIntroducer<SPECIFIER>
+        extends ResourceIntroducer<SPECIFIER>
 {
     RESOURCE get(String id);
 

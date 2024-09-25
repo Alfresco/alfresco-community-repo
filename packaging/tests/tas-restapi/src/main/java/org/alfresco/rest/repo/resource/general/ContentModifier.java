@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -44,8 +44,8 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 
 public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends Modifier.ContentModifier<CONTENT, ?>>
-    extends ResourceModifier<CONTENT, SELF>
-    implements Modifier.ContentModifier<CONTENT, SELF>
+        extends ResourceModifier<CONTENT, SELF>
+        implements Modifier.ContentModifier<CONTENT, SELF>
 {
     protected SiteModel site;
     private final DataContent dataContent;
@@ -80,7 +80,7 @@ public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends
     }
 
     @Override
-    public  <FOLDER extends FolderModel> void moveTo(FOLDER target)
+    public <FOLDER extends FolderModel> void moveTo(FOLDER target)
     {
         RestNodeBodyMoveCopyModel moveModel = new RestNodeBodyMoveCopyModel();
         moveModel.setTargetParentId(target.getNodeRef());
@@ -120,9 +120,7 @@ public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends
     @SafeVarargs
     public final <FOLDER extends FolderModel> void linkTo(FOLDER... secondaryParents)
     {
-        Stream.of(secondaryParents).forEach(secondaryParent ->
-            buildNodeRestRequest(restClient, secondaryParent).addSecondaryChildren(contentModel)
-        );
+        Stream.of(secondaryParents).forEach(secondaryParent -> buildNodeRestRequest(restClient, secondaryParent).addSecondaryChildren(contentModel));
     }
 
     @Override
@@ -135,8 +133,7 @@ public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends
     public <CATEGORY extends RestCategoryModel> void linkTo(CATEGORY category)
     {
         buildNodeRestRequest(restClient, contentModel).linkToCategory(
-            RestCategoryLinkBodyModel.builder().categoryId(category.getId()).create()
-        );
+                RestCategoryLinkBodyModel.builder().categoryId(category.getId()).create());
     }
 
     @Override
@@ -144,10 +141,9 @@ public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends
     public final <CATEGORY extends RestCategoryModel> void linkTo(CATEGORY... categories)
     {
         buildNodeRestRequest(restClient, contentModel).linkToCategories(
-            Stream.of(categories)
-                .map(category -> RestCategoryLinkBodyModel.builder().categoryId(category.getId()).create())
-                .collect(Collectors.toList())
-        );
+                Stream.of(categories)
+                        .map(category -> RestCategoryLinkBodyModel.builder().categoryId(category.getId()).create())
+                        .collect(Collectors.toList()));
     }
 
     @Override
@@ -160,22 +156,22 @@ public abstract class ContentModifier<CONTENT extends ContentModel, SELF extends
     {
         return Stream.concat(
                 Stream.of(pathMap)
-                    .filter(Objects::nonNull)
-                    .filter(path -> path instanceof Map)
-                    .map(Map.class::cast)
-                    .map(path -> path.get("elements"))
-                    .filter(Objects::nonNull)
-                    .filter(elements -> elements instanceof List)
-                    .map(List.class::cast)
-                    .flatMap(elements -> (Stream<?>) elements.stream())
-                    .skip(1)
-                    .filter(element -> element instanceof Map)
-                    .map(Map.class::cast)
-                    .map(element -> element.get("name"))
-                    .filter(Objects::nonNull)
-                    .filter(elementName -> elementName instanceof String)
-                    .map(String.class::cast),
+                        .filter(Objects::nonNull)
+                        .filter(path -> path instanceof Map)
+                        .map(Map.class::cast)
+                        .map(path -> path.get("elements"))
+                        .filter(Objects::nonNull)
+                        .filter(elements -> elements instanceof List)
+                        .map(List.class::cast)
+                        .flatMap(elements -> (Stream<?>) elements.stream())
+                        .skip(1)
+                        .filter(element -> element instanceof Map)
+                        .map(Map.class::cast)
+                        .map(element -> element.get("name"))
+                        .filter(Objects::nonNull)
+                        .filter(elementName -> elementName instanceof String)
+                        .map(String.class::cast),
                 Stream.of(name))
-            .collect(Collectors.joining("/", "/", "/"));
+                .collect(Collectors.joining("/", "/", "/"));
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,9 +25,10 @@
  */
 package org.alfresco.rest.repo.resource.category;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 import static org.alfresco.rest.repo.resource.Categories.CATEGORY_NAME_PREFIX;
 import static org.alfresco.rest.repo.resource.Categories.ROOT_CATEGORY;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 import java.util.Map;
 
@@ -39,8 +40,8 @@ import org.alfresco.rest.repo.resource.general.ResourceCreator;
 import org.alfresco.rest.repo.resource.general.Specifier;
 
 public class RepoCategoryCreator
-    extends ResourceCreator<RestCategoryModel, Creator.CategoryCreator>
-    implements Creator.CategoryCreator, Specifier.CategoriesSpecifier
+        extends ResourceCreator<RestCategoryModel, Creator.CategoryCreator>
+        implements Creator.CategoryCreator, Specifier.CategoriesSpecifier
 {
 
     private final RestWrapper restClient;
@@ -120,6 +121,7 @@ public class RepoCategoryCreator
         withAlias(prefix);
         return super.withRandomName(prefix);
     }
+
     @Override
     public CategoryCreator underCategory(RestCategoryModel parent)
     {
@@ -131,7 +133,7 @@ public class RepoCategoryCreator
     public RestCategoryModel create()
     {
         RestCategoryModel category = restClient.authenticateUser(user).withCoreAPI().usingCategory(parent)
-            .createSingleCategory(RestCategoryModel.builder().name(name).create());
+                .createSingleCategory(RestCategoryModel.builder().name(name).create());
 
         categoriesCache.put(alias, category);
 

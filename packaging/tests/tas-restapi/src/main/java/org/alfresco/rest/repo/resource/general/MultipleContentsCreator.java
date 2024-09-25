@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -31,16 +31,17 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.RandomStringUtils;
 
 public abstract class MultipleContentsCreator<CONTENT extends ContentModel, SELF extends MultiCreator.ContentsCreator<CONTENT, ?>>
-    extends MultipleResourcesCreator<CONTENT, SELF>
-    implements MultiCreator.ContentsCreator<CONTENT, SELF>
+        extends MultipleResourcesCreator<CONTENT, SELF>
+        implements MultiCreator.ContentsCreator<CONTENT, SELF>
 {
 
     protected FolderModel parent;

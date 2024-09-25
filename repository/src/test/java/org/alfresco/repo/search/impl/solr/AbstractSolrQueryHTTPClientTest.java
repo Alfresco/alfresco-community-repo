@@ -137,7 +137,7 @@ public class AbstractSolrQueryHTTPClientTest
 
     /** Check that a redirect can be followed if the endpoint reports that it's moved. */
     @Test
-    public void testPostQuery_httpServerException() throws Exception
+    public void testPostQuery_moved() throws Exception
     {
         when(body.toString()).thenReturn("Example body");
         // Report "moved" for the first invocation and then OK for subsequent requests.

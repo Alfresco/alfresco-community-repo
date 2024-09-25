@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.model;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -38,13 +38,17 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
     private String id;
     @JsonProperty(required = true)
     private String displayName;
+    @JsonProperty()
+    private String description;
     @JsonProperty(required = true)
     private Boolean isRoot;
+    @JsonProperty()
+    private Boolean hasSubgroups;
 
     @JsonProperty("parentIds")
-    private ArrayList<String> parentIds;
+    private List<String> parentIds;
     @JsonProperty("zones")
-    private ArrayList<String> zones;
+    private List<String> zones;
 
     @JsonProperty(value = "entry")
     RestGroupsModel model;
@@ -75,6 +79,22 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
         this.displayName = displayName;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getHasSubgroups() {
+        return hasSubgroups;
+    }
+
+    public void setHasSubgroups(Boolean hasSubgroups) {
+        this.hasSubgroups = hasSubgroups;
+    }
+
     public Boolean getIsRoot()
     {
         return isRoot;
@@ -85,22 +105,22 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
         this.isRoot = isRoot;
     }
 
-    public ArrayList<String> getParentIds()
+    public List<String> getParentIds()
     {
         return parentIds;
     }
 
-    public void setParentIds(ArrayList<String> parentIds)
+    public void setParentIds(List<String> parentIds)
     {
         this.parentIds = parentIds;
     }
 
-    public ArrayList<String> getZones()
+    public List<String> getZones()
     {
         return zones;
     }
 
-    public void setZones(ArrayList<String> zones)
+    public void setZones(List<String> zones)
     {
         this.zones = zones;
     }

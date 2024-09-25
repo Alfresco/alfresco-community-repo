@@ -102,11 +102,11 @@ public class SearchSQLApiWebscript extends AbstractWebScript implements Recogniz
         {
             if (exception instanceof QueryParserException)
             {
-                renderException(exception,res,assistant);
+                renderException(exception,res,webScriptRequest,assistant);
             }
             else
             {
-                renderException(new WebScriptException(400, exception.getMessage()), res, assistant);
+                renderException(new WebScriptException(400, exception.getMessage()), res, webScriptRequest, assistant);
             }
         }
     }

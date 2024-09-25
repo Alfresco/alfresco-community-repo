@@ -538,6 +538,11 @@
                <type>d:text</type>
                <mandatory>true</mandatory>
             </property>
+            <property name="rma:holdDeletionReason">
+               <title>Hold Deletion Reason</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
          </properties>
 
          <associations>

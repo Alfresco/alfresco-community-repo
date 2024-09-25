@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,6 +37,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.HoldsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
@@ -46,6 +47,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.TransferAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RetentionScheduleAPI;
 
 /**
  * Defines the entire GS Core API
@@ -189,5 +191,12 @@ public class GSCoreAPI extends RMModelRequest
     public ActionsExecutionAPI usingActionsExecutionsAPI()
     {
         return new ActionsExecutionAPI(getRmRestWrapper());
+    }
+
+    public HoldsAPI usingHoldsAPI() { return new HoldsAPI(getRmRestWrapper()); }
+
+    public RetentionScheduleAPI usingRetentionScheduleAPI()
+    {
+        return new RetentionScheduleAPI(getRmRestWrapper());
     }
 }

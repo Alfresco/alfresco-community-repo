@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -93,15 +93,15 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity);
 
         assertEquals("Add To Hold", addToHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("add to hold", addToHoldPropertyStringValueEntity.getStringEndLower());
+        assertEquals("add to hold", addToHoldPropertyStringValueEntity.getStringLower());
         assertEquals(Long.valueOf(770_786_109L), addToHoldPropertyStringValueEntity.getStringCrc());
 
         assertEquals("Remove From Hold", removeFromHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("remove from hold", removeFromHoldPropertyStringValueEntity.getStringEndLower());
+        assertEquals("remove from hold", removeFromHoldPropertyStringValueEntity.getStringLower());
         assertEquals(Long.valueOf(2_967_613_012L), removeFromHoldPropertyStringValueEntity.getStringCrc());
 
         assertEquals("Delete Hold", deleteHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("delete hold", deleteHoldPropertyStringValueEntity.getStringEndLower());
+        assertEquals("delete hold", deleteHoldPropertyStringValueEntity.getStringLower());
         assertEquals(Long.valueOf(132_640_810L), deleteHoldPropertyStringValueEntity.getStringCrc());
     }
 

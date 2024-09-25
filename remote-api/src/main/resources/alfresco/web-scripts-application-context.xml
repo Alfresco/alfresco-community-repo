@@ -213,6 +213,7 @@
       <property name="authenticationComponent" ref="authenticationComponent" />
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
       <property name="remoteUserMapper" ref="RemoteUserMapper" />
+      <property name="adminConsoleAuthenticator" ref="AdminConsoleAuthenticator" />
       <property name="alwaysAllowBasicAuthForAdminConsole">
          <value>${authentication.alwaysAllowBasicAuthForAdminConsole.enabled}</value>
       </property>

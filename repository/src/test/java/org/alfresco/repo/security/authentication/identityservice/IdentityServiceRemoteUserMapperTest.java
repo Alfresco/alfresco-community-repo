@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
-import static java.util.Optional.ofNullable;
-
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper.USERNAME_CLAIM;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -38,13 +35,15 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.function.Supplier;
 
-import jakarta.servlet.http.HttpServletRequest;
+import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 
+import jakarta.servlet.http.HttpServletRequest;
 import junit.framework.TestCase;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 
 /**
@@ -92,16 +91,20 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
 
     private IdentityServiceRemoteUserMapper givenMapper(Map<String, Supplier<String>> tokenToUser)
     {
+        final TransactionService transactionService = mock(TransactionService.class);
         final IdentityServiceFacade facade = mock(IdentityServiceFacade.class);
+        final PersonService personService = mock(PersonService.class);
+        final IdentityServiceConfig identityServiceConfig = mock(IdentityServiceConfig.class);
+        when(transactionService.isReadOnly()).thenReturn(true);
         when(facade.decodeToken(anyString()))
                 .thenAnswer(i -> new TestDecodedToken(tokenToUser.get(i.getArgument(0, String.class))));
 
-        final PersonService personService = mock(PersonService.class);
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
 
+        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService, transactionService, identityServiceConfig);
+
         final IdentityServiceRemoteUserMapper mapper = new IdentityServiceRemoteUserMapper();
-        mapper.setIdentityServiceFacade(facade);
-        mapper.setPersonService(personService);
+        mapper.setJitProvisioningHandler(jitProvisioning);
         mapper.setActive(true);
         mapper.setBearerTokenResolver(new DefaultBearerTokenResolver());
 
@@ -160,7 +163,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         @Override
         public Object getClaim(String claim)
         {
-            return USERNAME_CLAIM.equals(claim) ? usernameSupplier.get() : null;
+            return PersonClaims.PREFERRED_USERNAME_CLAIM_NAME.equals(claim) ? usernameSupplier.get() : null;
         }
     }
 }

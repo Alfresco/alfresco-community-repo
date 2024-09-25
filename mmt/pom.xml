@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>23.2.0.11-SNAPSHOT</version>
+        <version>23.4.0.26-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15to18</artifactId>
+            <artifactId>bcprov-jdk18on</artifactId>
         </dependency>
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
@@ -44,6 +44,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.epam.reportportal</groupId>
+            <artifactId>agent-java-testng</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -79,7 +84,7 @@
                             <include>org.alfresco:alfresco-core</include>
                             <include>org.alfresco:alfresco-repository</include>
                             <include>org.apache.commons:commons-compress</include>
-                            <include>org.safehaus.jug:jug</include>
+                            <include>com.fasterxml.uuid:java-uuid-generator</include>
                             <include>org.alfresco.surf:spring-surf-core</include>
                             <include>org.tukaani:xz</include>
                             <include>org.apache.maven:maven-artifact</include>

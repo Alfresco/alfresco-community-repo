@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>23.2.0.11-SNAPSHOT</version>
+      <version>23.4.0.26-SNAPSHOT</version>
    </parent>
 
    <build>
@@ -75,6 +75,22 @@
          <version>1.1</version>
       </dependency>
       <dependency>
+         <groupId>com.epam.reportportal</groupId>
+         <artifactId>agent-java-testng</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.squareup.okhttp3</groupId>
+         <artifactId>okhttp</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.awaitility</groupId>
+         <artifactId>awaitility</artifactId>
+         <version>${dependency.awaitility.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>org.apache.commons</groupId>
          <artifactId>commons-collections4</artifactId>
          <version>4.4</version>
@@ -82,7 +98,7 @@
       <dependency>
          <groupId>com.github.docker-java</groupId>
          <artifactId>docker-java</artifactId>
-         <version>3.3.2</version>
+         <version>3.4.0</version>
          <exclusions>
             <exclusion>
                <groupId>org.bouncycastle</groupId>
@@ -96,11 +112,11 @@
       </dependency>
       <dependency>
          <groupId>org.bouncycastle</groupId>
-         <artifactId>bcprov-jdk15to18</artifactId>
+         <artifactId>bcprov-jdk18on</artifactId>
       </dependency>
       <dependency>
          <groupId>org.bouncycastle</groupId>
-         <artifactId>bcpkix-jdk15to18</artifactId>
+         <artifactId>bcpkix-jdk18on</artifactId>
       </dependency>
    </dependencies>
 </project>

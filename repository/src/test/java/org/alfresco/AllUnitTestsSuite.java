@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,9 +25,14 @@
  */
 package org.alfresco;
 
+import org.alfresco.repo.security.authentication.identityservice.ClientRegistrationProviderUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBeanTest;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandlerUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.LazyInstantiatingIdentityServiceFacadeUnitTest;
 import org.alfresco.repo.security.authentication.identityservice.SpringBasedIdentityServiceFacadeUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesServiceUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleHttpServletRequestWrapperUnitTest;
+import org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticatorUnitTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -143,6 +148,11 @@ import org.junit.runners.Suite;
     IdentityServiceFacadeFactoryBeanTest.class,
     LazyInstantiatingIdentityServiceFacadeUnitTest.class,
     SpringBasedIdentityServiceFacadeUnitTest.class,
+    IdentityServiceJITProvisioningHandlerUnitTest.class,
+    AdminConsoleAuthenticationCookiesServiceUnitTest.class,
+    AdminConsoleHttpServletRequestWrapperUnitTest.class,
+    IdentityServiceAdminConsoleAuthenticatorUnitTest.class,
+    ClientRegistrationProviderUnitTest.class,
     org.alfresco.repo.security.authentication.CompositePasswordEncoderTest.class,
     org.alfresco.repo.security.authentication.PasswordHashingTest.class,
     org.alfresco.repo.security.authority.script.ScriptAuthorityService_RegExTest.class,
@@ -251,7 +261,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
 
     org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class,
-    org.alfresco.repo.tagging.TaggingServiceImplUnitTest.class
+    org.alfresco.repo.tagging.TaggingServiceImplUnitTest.class,
+    org.alfresco.repo.serviceaccount.ServiceAccountRegistryImplTest.class
 })
 public class AllUnitTestsSuite
 {

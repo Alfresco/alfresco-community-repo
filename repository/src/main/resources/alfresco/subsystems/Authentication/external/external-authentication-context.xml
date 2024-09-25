@@ -89,6 +89,8 @@
       </property>
    </bean>
 
+   <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.external.DefaultAdminConsoleAuthenticator" />
+
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
       <property name="nodeService" ref="nodeService" />
       <property name="authorityService" ref="authorityService" />

@@ -24,6 +24,9 @@
       <property name="identityServiceFacade">
          <ref bean="identityServiceFacade"/>
       </property>
+      <property name="jitProvisioningHandler">
+         <ref bean="jitProvisioningHandler" />
+      </property>
    </bean>
 
    <bean name="identityServiceFacade" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean">
@@ -86,6 +89,12 @@
    </bean>
 
    <bean name="identityServiceConfig" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig">
+      <property name="issuerUrl">
+         <value>${identity-service.issuer-url:#{null}}</value>
+      </property>
+      <property name="audience">
+         <value>${identity-service.audience:#{null}}</value>
+      </property>
       <property name="realm">
          <value>${identity-service.realm}</value>
       </property>
@@ -137,8 +146,20 @@
       <property name="publicClient">
          <value>${identity-service.public-client:false}</value>
       </property>
+      <property name="principalAttribute">
+         <value>${identity-service.principal-attribute:preferred_username}</value>
+      </property>
+      <property name="clientIdValidationDisabled">
+         <value>${identity-service.client-id.validation.disabled:true}</value>
+      </property>
+      <property name="adminConsoleRedirectPath">
+         <value>${identity-service.admin-console.redirect-path}</value>
+      </property>
+      <property name="signatureAlgorithms">
+         <value>${identity-service.signature-algorithms:RS256,PS256}</value>
+      </property>
    </bean>
-   
+
    <!-- Enable control over mapping between request and user ID -->
    <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapper">
       <property name="active">
@@ -147,15 +168,42 @@
       <property name="validationFailureSilent">
          <value>${identity-service.authentication.validation.failure.silent}</value>
       </property>
-      <property name="personService">
-         <ref bean="PersonService" />
-      </property>
       <property name="bearerTokenResolver">
          <bean class="org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver" />
       </property>
-      <property name="identityServiceFacade">
-         <ref bean="identityServiceFacade" />
+      <property name="jitProvisioningHandler">
+         <ref bean="jitProvisioningHandler" />
       </property>
+   </bean>
+
+   <bean id="adminConsoleAuthenticationCookiesService" class="org.alfresco.repo.security.authentication.identityservice.admin.AdminConsoleAuthenticationCookiesService">
+      <constructor-arg ref="sysAdminParams" />
+      <constructor-arg value="${admin.console.cookie.lifetime:86400}" />
+   </bean>
+
+   <bean id="adminConsoleAuthenticator" class="org.alfresco.repo.security.authentication.identityservice.admin.IdentityServiceAdminConsoleAuthenticator">
+      <property name="active">
+         <value>${identity-service.authentication.enabled}</value>
+      </property>
+      <property name="identityServiceFacade">
+         <ref bean="identityServiceFacade"/>
+      </property>
+      <property name="cookiesService">
+         <ref bean="adminConsoleAuthenticationCookiesService" />
+      </property>
+      <property name="remoteUserMapper">
+         <ref bean="remoteUserMapper" />
+      </property>
+      <property name="identityServiceConfig">
+         <ref bean="identityServiceConfig" />
+      </property>
+   </bean>
+
+   <bean id="jitProvisioningHandler" class="org.alfresco.repo.security.authentication.identityservice.IdentityServiceJITProvisioningHandler">
+      <constructor-arg ref="PersonService"/>
+      <constructor-arg ref="identityServiceFacade"/>
+      <constructor-arg ref="transactionService"/>
+      <constructor-arg ref="identityServiceConfig"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

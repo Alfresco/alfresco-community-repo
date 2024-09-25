@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,6 +39,7 @@ import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.HoldsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
@@ -48,6 +49,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.TransferAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.TransferContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RetentionScheduleAPI;
 import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
@@ -242,5 +244,25 @@ public class RestAPIFactory
     public ActionsExecutionAPI getActionsAPI()
     {
         return getGSCoreAPI(null).usingActionsExecutionsAPI();
+    }
+
+    public HoldsAPI getHoldsAPI()
+    {
+        return getGSCoreAPI(null).usingHoldsAPI();
+    }
+
+    public HoldsAPI getHoldsAPI(UserModel userModel)
+    {
+        return getGSCoreAPI(userModel).usingHoldsAPI();
+    }
+
+    public RetentionScheduleAPI getRetentionScheduleAPI()
+    {
+        return getGSCoreAPI(null).usingRetentionScheduleAPI();
+    }
+
+    public RetentionScheduleAPI getRetentionScheduleAPI(UserModel userModel)
+    {
+        return getGSCoreAPI(userModel).usingRetentionScheduleAPI();
     }
 }

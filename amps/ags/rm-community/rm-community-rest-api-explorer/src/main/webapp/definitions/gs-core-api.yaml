@@ -38,6 +38,10 @@ tags:
     description: Retrieve and manage unfiled records containers
   - name: unfiled-record-folders
     description: Retrieve and manage unfiled record folders
+  - name: holds
+    description: Retrieve and manage holds
+  - name: retention-schedules
+    description: Perform retention schedule specific operations
 
 paths:
   ## GS sites
@@ -418,6 +422,124 @@ paths:
           description: New name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
+  '/file-plans/{filePlanId}/holds':
+    get:
+      tags:
+        - file-plans
+      summary: Get all holds in a file plan
+      description: |
+        Returns a list of holds.
+      operationId: getHolds
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **filePlanId**
+        '404':
+          description: "**filePlanId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - file-plans
+      summary: Create holds for a file plan
+      description: |
+        Creates a new hold.
+
+        You must specify at least a **name** and a **reason** property.
+
+        **Note:** You can create more than one hold by specifying a list of holds in the JSON body.
+        For example, the following JSON body creates two holds:
+        ```JSON
+        [
+        {
+          "name":"Hold1",
+          "description": "Description1",
+          "reason": "Reason1"
+        },
+        {
+          "name":"Hold2",
+          "description": "Description2",
+          "reason": "Reason2"
+        }
+        ]
+        ```
+
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: addHold
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - in: body
+          name: nodeBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldCreateBodyModel'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldModelEntry'
+        '400':
+          description: |
+            Invalid parameter: **filePlanId** is not a valid format or **HoldCreateBodyModel** is not valid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to create a hold
+        '404':
+          description: |
+            **filePlanId** does not exist
+        '409':
+          description: A hold with the name **name** already exists
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   ## Unfiled records containers
   '/unfiled-containers/{unfiledContainerId}':
     get:
@@ -2092,7 +2214,618 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  ## Holds
+  '/holds/{holdId}':
+    get:
+      tags:
+        - holds
+      summary: Get a hold
+      description: |
+        Gets information for hold with id **holdId**.
+      operationId: getHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldModelEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - holds
+      summary: Update a hold
+      description: |
+        Updates the hold with id **holdId**. For example, you can rename a hold:
+        ```JSON
+        {
+          "name":"My new name",
+          "description":"Existing description",
+          "reason":"Existing reason"
+        }
+        ```
+      operationId: updateHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdBodyUpdate
+          description: The hold information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldCreateBodyModel'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldModelEntry'
+        '400':
+          description: |
+            Invalid parameter: the update request is invalid or **holdId** is not a valid format or **holdBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        '409':
+          description: Updated name clashes with an existing node in the current parent folder
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - holds
+      summary: Delete a hold
+      description: |
+        Deletes the hold with id **holdId**.
+      operationId: deleteHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses':
+    get:
+      tags:
+        - holds
+      operationId: listBulkStatuses
+      summary: Get bulk statuses
+      description: |
+        Gets bulk statuses for hold with id **holdId**.
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkStatusPaging'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses/{bulkStatusId}':
+    get:
+      tags:
+        - holds
+      operationId: getBulkStatus
+      summary: Get a bulk status
+      description: |
+        Gets a bulk status specified by **bulkStatusId** for **holdId**.
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/bulkStatusId'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkStatus'
+        '400':
+          description: |
+            Invalid parameter: **holdId** or **bulkStatusId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** or **bulkStatusId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk-statuses/{bulkStatusId}/cancel':
+    post:
+      tags:
+        - holds
+      operationId: cancelBulkStatus
+      summary: Cancel the bulk operation
+      description: |
+        Cancels the bulk operation specified by **bulkStatusId** for **holdId**.
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/bulkStatusId'
+        - in: body
+          name: cancelReason
+          description: Cancel reason.
+          required: false
+          schema:
+            $ref: '#/definitions/BulkBodyCancel'
+      responses:
+        '200':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdId** or **bulkStatusId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to cancel the bulk process for **holdId** and **bulkStatusId**
+        '404':
+          description: "**holdId** or **bulkStatusId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/bulk':
+    post:
+      tags:
+        - holds
+      operationId: startHoldBulkProcess
+      summary: Start the hold bulk process
+      description: |
+        Start the asynchronous bulk process for a hold with id **holdId** based on search query results.
+        
+        ```JSON
+        For example, the following JSON body starts the bulk process to add search query results
+        as children of a hold.
+        
+        {
+          "query": {
+            "query": "SITE:swsdp and TYPE:content",
+            "language": "afts"
+          },
+          "op": "ADD"
+        }
+        ```
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdBulkOperation
+          description: Bulk operation.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldBulkOperation'
+      responses:
+        '202':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldBulkOperationEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format or **HoldBulkOperation** is not valid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to start the bulk process for **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/delete':
+    post:
+      tags:
+        - holds
+      summary: Delete a hold with a reason
+      description: |
+        Deletes the hold with id **holdId** and stores a reason for deletion in the audit log.
+        
+        A **reason** must be specified in the request body.
+      operationId: deleteHoldWithReason
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: holdDeletionReason
+          description: Reason for deletion.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldDeletionReason'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldDeletionReasonEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update or delete **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/children':
+    post:
+      tags:
+        - holds
+      summary: Add children to a hold
+      description: |
+        Add a child of a hold with id **holdId**.
 
+        You must specify the child **id**.
+        
+        The API returns a 201 Created if the child is already a child of the hold. 
+
+        **Note:** You can add more than one child by specifying a list of children in the JSON body.
+        For example, the following JSON body adds two children:
+        ```JSON
+        [
+          {
+            "id":"a7c10f46-b85b-4de5-af1c-930056b736a7"
+          },
+          {
+            "id":"e0d79b71-be2b-4ce7-a846-a7c50cba20fb"
+          }
+        ]
+        ```
+
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: addChildToHold
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - in: body
+          name: nodeId
+          description: The node id.
+          required: true
+          schema:
+            $ref: '#/definitions/HoldChild'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldChildEntry'
+        '400':
+          description: |
+            Invalid parameter: **holdId** is not a valid format or **HoldChild** is not valid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to add items to the hold
+        '404':
+          description: |
+            **holdId** does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - holds
+      summary: Get children of a hold
+      description: |
+        Returns a list of children of a hold with id **holdId**.
+      operationId: getHoldChildren
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/HoldChildPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **holdId**
+        '404':
+          description: "**holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/holds/{holdId}/children/{holdChildId}':
+    delete:
+      tags:
+        - holds
+      summary: Delete a child of a hold
+      description: |
+        Deletes the relationship between a child with id **holdChildId** and a parent hold with id **holdId**.
+      operationId: removeHoldChild
+      parameters:
+        - $ref: '#/parameters/holdIdParam'
+        - $ref: '#/parameters/holdChildIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **holdChildId** or **holdId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **holdChildId**
+        '404':
+          description: " **holdChildId** or **holdId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  ##retention-schedule
+  '/record-categories/{recordCategoryId}/retention-schedules':
+    post:
+      tags:
+        - retention-schedules
+      summary: Create a retention schedule
+      description: |
+        Create a retention schedule.
+        
+        For example, using the following JSON body will create a retention schedule:
+        ```JSON
+          {
+              "authority": "Retention Authority",
+              "instructions": "Retention Instructions",
+              "isRecordLevel": false
+          }
+        ```
+
+      operationId: createRetentionSchedule
+      parameters:
+        - $ref: '#/parameters/recordCategoryIdParam'
+        - in: body
+          name: retentionNodeBodyCreate
+          description: |
+            The retention schedule information to create.
+          schema:
+            $ref: '#/definitions/RetentionNodeBodyCreate'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionScheduleResponse'
+        '400':
+          description: |
+            Invalid parameter: value of recordCategoryId is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to create retention schedule
+        '404':
+          description: recordCategoryId does not exist
+        '409':
+          description: Retention schedule already exist for the given recordCategoryId
+        '422':
+          description: Record level retention schedule cannot be created for a record category having folder associated
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - retention-schedules
+      summary: Get the retention schedule for a record category
+      description: |
+        Get the retention schedule for a record category.
+        
+        You can use the **include** parameter (include=actions) to return additional information.
+
+      operationId: getRetentionScheduleList
+      parameters:
+        - $ref: '#/parameters/recordCategoryIdParam'
+        - $ref: '#/parameters/retentionScheduleIncludeParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionScheduleResponseList'
+        '400':
+          description: |
+            Invalid parameter: value of recordCategoryId is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to get retention schedule
+        '404':
+          description: recordCategoryId does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/retention-schedules/{retentionScheduleId}/retention-steps':
+    post:
+      tags:
+        - retention-schedules
+      summary: Create a step in the retention schedule
+      description: |
+        Create a step in the retention schedule.
+        
+        Order of steps:
+          * "**retain**" or "**cutoff**" should be first
+          * can't use "**cutoff**" after "**transfer**" or "**accession**"
+          * only the "**transfer**" action is allowed multiple times
+          * no steps are allowed after "**destroy**"    
+        
+        For example, the following JSON body will create a step in the retention schedule:
+        ```JSON
+          {
+              "name":"accession",
+              "description":"Step Description",
+              "periodAmount": 2,
+              "period":"month",
+              "periodProperty":"cm:created",
+              "combineRetentionStepConditions": false,
+              "events":["versioned"],
+              "eligibleOnFirstCompleteEvent": true              
+          }
+        ```
+      operationId: createRetentionScheduleAction
+      parameters:
+        - $ref: '#/parameters/retentionScheduleIdParam'
+        - in: body
+          name: nodeBodyCreate
+          description: |
+            The retention schedule steps information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/RetentionStepNodeBodyCreate'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionStepNodeBodyResponse'
+        '400':
+          description: |
+            Invalid parameter: value of retentionScheduleId is invalid
+            Invalid parameter (e.g. event, period, periodProperty)
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to create retention schedule step
+        '404':
+          description: retentionScheduleId does not exist
+        '409':
+          description: |
+            * Invalid Step - Can't use Cut Off after Transfer or Accession
+            * Invalid Step - Destroy action already completed. Can't do any other Action
+            * Invalid Step - This step already exists. You can’t create this step [Transfer action is allowed many times]
+        '422':
+          description: Cut Off or Retain should be the first step
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      tags:
+        - retention-schedules
+      summary: Get the list of steps in the retention schedule
+      description: |
+        Get the list of steps in the retention schedule.
+      operationId: getRetentionScheduleActionList
+      parameters:
+        - $ref: '#/parameters/retentionScheduleIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RetentionStepsNodeBodyResponse'
+        '400':
+          description: |
+            Invalid parameter: value of retentionScheduleId is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to get retention schedule steps
+        '404':
+          description: retentionScheduleId does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 parameters:
   ## File plans
   filePlanEntryIncludeParam:
@@ -2175,7 +2908,7 @@ parameters:
     description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **unfiledContainerId**
     required: false
     type: boolean
-## Unfiled record folders
+  ## Unfiled record folders
   unfiledRecordFolderIdParam:
     name: unfiledRecordFolderId
     in: path
@@ -2446,6 +3179,25 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  # Holds
+  holdIdParam:
+    name: holdId
+    in: path
+    description: The identifier of a hold.
+    required: true
+    type: string
+  holdChildIdParam:
+    name: holdChildId
+    in: path
+    description: The identifier of a child of a hold.
+    required: true
+    type: string
+  bulkStatusId:
+    name: bulkStatusId
+    in: path
+    description: The identifier of a bulk process.
+    required: true
+    type: string
   ## Record
   recordIdParam:
     name: recordId
@@ -2539,6 +3291,22 @@ parameters:
       If true, then  a name clash will cause an attempt to auto rename by finding a unique name using an integer suffix.
     required: false
     type: boolean
+  ## RetentionSchedule
+  retentionScheduleIdParam:
+    name: retentionScheduleId
+    in: path
+    description:
+      The identifier of a retention schedule.
+    required: true
+    type: string
+  retentionScheduleIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the retention schedule actions. Any optional field from the response model can be requested. For example:
+      * actions
+    required: false
+    type: string
 definitions:
   FilePlanComponentBodyUpdate:
     type: object
@@ -3519,6 +4287,406 @@ definitions:
         properties:
           association:
             $ref: '#/definitions/ChildAssociationInfo'
+  ## Holds
+  HoldModelEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldModel'
+  HoldModel:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      reason:
+        type: string
+  HoldCreateBodyModel:
+    type: object
+    required:
+      - name
+      - reason
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      reason:
+        type: string
+  HoldPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldModelEntry'
+  HoldChild:
+    type: object
+    required:
+      - id
+    properties:
+      id:
+        type: string
+  HoldChildEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldChild'
+  HoldChildPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldChildEntry'
+  HoldDeletionReasonEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldDeletionReason'
+  HoldDeletionReason:
+    type: object
+    required:
+      - reason
+    properties:
+      reason:
+        type: string
+  SearchRequestQuery:
+    type: object
+    required:
+      - query
+    properties:
+      language:
+        description: The query language in which the query is written.
+        type: string
+        default: afts
+        enum:
+          - afts
+          - lucene
+          - cmis
+      userQuery:
+        description: The search request typed in by the user
+        type: string
+      query:
+        description: The query which may have been generated in some way from the userQuery
+        type: string
+  HoldBulkOperation:
+    type: object
+    properties:
+      query:
+        $ref: '#/definitions/SearchRequestQuery'
+      op:
+        description: The operation type.
+        type: string
+        default: ADD
+        enum:
+          - ADD
+  HoldBulkOperationEntry:
+    type: object
+    properties:
+      bulkStatusId:
+        type: string
+      totalItems:
+        type: integer
+        format: int64
+  BulkBodyCancel:
+    type: object
+    properties:
+      reason:
+        type: string
+  HoldBulkStatus:
+    type: object
+    properties:
+      bulkStatusId:
+        type: string
+      startTime:
+        type: string
+        format: date-time
+      endTime:
+        type: string
+        format: date-time
+      processedItems:
+        type: integer
+        format: int64
+      errorsCount:
+        type: integer
+        format: int64
+      totalItems:
+        type: integer
+        format: int64
+      lastError:
+        type: string
+      status:
+        type: string
+        enum:
+          - PENDING
+          - IN PROGRESS
+          - DONE
+          - CANCELLED
+      cancellationReason:
+        type: string
+      holdBulkOperation:
+        $ref: '#/definitions/HoldBulkOperation'
+  HoldBulkStatusEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/HoldBulkStatus'
+  HoldBulkStatusPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/HoldBulkStatusEntry'
+  RetentionNodeBodyCreate:
+    type: object
+    properties:
+      authority:
+        type: string
+        description: |
+          Authority name for the retention schedule.
+      instructions:
+        type: string
+        description: |
+          Required instructions for the retention schedule.
+      isRecordLevel:
+        type: boolean
+        default: false
+        description: |
+          This field is used to specify whether the retention schedule needs to be applied in the folder level or record level.
+          True will cause the the retention schedule to apply to records and false will cause the retention schedule to apply to record folders.
+          This cannot be changed once items start being managed by the retention schedule.
+  RetentionScheduleResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      authority:
+        type: string
+      instructions:
+        type: string
+      isRecordLevel:
+        type: boolean
+      unpublishedUpdates:
+        type: boolean
+  RetentionScheduleResponseList:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/FullRetentionScheduleResponse'
+  FullRetentionScheduleResponse:
+    type: object
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      authority:
+        type: string
+      instructions:
+        type: string
+      isRecordLevel:
+        type: boolean
+      unpublishedUpdates:
+        type: boolean
+      actions:
+        type: array
+        items:
+          $ref: '#/definitions/Actions'
+  Actions:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      description:
+        type: string
+      periodAmount:
+        type: integer
+      period:
+        type: string
+      periodProperty:
+        type: string
+      combineRetentionStepConditions:
+        type: boolean
+        default: false
+      eligibleOnFirstCompleteEvent:
+        type: boolean
+        default: true
+      retainRecordMetadataAfterDestruction:
+        type: boolean
+      location:
+        type: string
+      events:
+        type: array
+        items:
+          type: string
+      index:
+        type: integer
+  RetentionStepNodeBodyCreate:
+    type: object
+    required:
+      - name
+      - description
+    properties:
+      name:
+        type: string
+        description: |
+          The valid names are:
+          * retain
+          * cutoff
+          * accession
+          * transfer
+          * destroyContent
+          * destroyNode
+          
+          destroyNode step can be used to destroy content along with record metadata. 
+          In case, record metadata needs to be retained, then destroyContent step should be used.
+      description:
+        type: string
+        description: |
+          This property is used to provide the step description.
+      periodAmount:
+        type: integer
+        description: |
+          This property is only applicable for the following period values.
+          * day
+          * month
+          * quarter
+          * week
+          * duration
+          * year
+      period:
+        type: string
+        description: |
+          Valid values for the period.
+          * day = Day
+          * fmend = End Of Financial Month
+          * fqend = End Of Financial Quarter
+          * fyend = End Of Financial Year
+          * immediately = Immediately
+          * monthend = End Of Month
+          * quarterend = End Of Quarter
+          * yearend = End Of Year
+          * month = Month
+          * none = None
+          * quarter = Quarter
+          * week = Week
+          * duration = XML Duration
+          * year = Year
+          
+          If you provide XML Duration for the period value, you need to specify a time interval using XML syntax.
+          The syntax should take the form of:
+          P = Period (required)
+          nY = Number of years
+          nM = Number of months
+          nD = Number of days
+          T = Start time of a time section (required if specifying hours, minutes, or seconds)
+          nH = Number of hours
+          nM = Number of minutes
+          nS = Number of seconds
+          For example, ‘P2M10D’ represents two months and ten days.
+      periodProperty:
+        type: string
+        default: cm:created
+        description: |
+          Valid values for the periodProperty property
+          * cm:created = Created Date (defult value) 
+          * rma:cutOffDate = Cut Off Date
+          * rma:dispositionAsOf = Retention Action
+      combineRetentionStepConditions:
+        type: boolean
+        description: |
+          This property is only valid for **accession** step.
+          This is used to specify whether to combine the period condition and events for the step execution or only consider one of them.
+          For example:
+          **periodCondition**: After a period of 2 months
+          **eventsCondition**: Case Closed event
+          This flag can be used to consider only (**periodCondition** or **eventsCondition**) or both of them at once.
+      events:
+        type: array
+        items:
+          type: string
+        description: |
+          Valid values for the events property
+          * case_closed = Case Closed
+          * abolished = Abolished
+          * re_designated = Redesignated
+          * no_longer_needed = No Longer Needed
+          * superseded = Superseded
+          * versioned = Versioned
+          * study_complete = Study Complete
+          * training_complete = Training Complete
+          * related_record_trasfered_inactive_storage = Related Record Transferred to Inactive Storage
+          * obsolete = Obsolete
+          * all_allowances_granted_are_terminated = All Allowances Granted are Terminated
+          * WGI_action_complete = WGI Action Complete
+          * separation = Separation
+          * case_complete = Case Complete
+          * declassification_review = Declassification Review
+      eligibleOnFirstCompleteEvent:
+        type: boolean
+        description: |
+          * false = When all events have happened
+          * true = Whichever event is earlier
+      location:
+        type: string
+        description: |
+          This property is only valid for transfer step
+  RetentionStepNodeBodyResponse:
+    type: object
+    properties:
+      actions:
+        $ref: '#/definitions/Actions'
+  RetentionStepsNodeBodyResponse:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RetentionStepNodeBodyResponse'
   ##
   RequestBodyFile:
     type: object

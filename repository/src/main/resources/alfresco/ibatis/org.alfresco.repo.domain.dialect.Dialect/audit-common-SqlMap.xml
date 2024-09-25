@@ -318,13 +318,13 @@
     <select id="select_MinMaxAuditEntryId" parameterMap="parameter_IdMinMaxMap" resultMap="result_minMaxMap">
         select
         <if test="max != null">
-            max(alf_audit_entry.id)
+            max(alf_audit_entry.id) as max
         </if>
         <if test="max != null and min != null">
             ,
         </if>
         <if test="min != null">
-            min(alf_audit_entry.id)
+            min(alf_audit_entry.id) as min
         </if>
         from
         alf_audit_entry

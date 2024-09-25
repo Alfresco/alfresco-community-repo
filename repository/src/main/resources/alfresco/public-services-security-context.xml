@@ -102,6 +102,9 @@
             <list>
                 <ref bean="ownerDynamicAuthority" />
                 <ref bean="lockOwnerDynamicAuthority" />
+                <ref bean="adminServiceAccountAuthority"/>
+                <ref bean="collaboratorServiceAccountAuthority"/>
+                <ref bean="editorServiceAccountAuthority"/>
             </list>
         </property>
         <property name="fixedAclUpdater">
@@ -118,6 +121,8 @@
         <property name="maxItemBatchSize" value="${system.fixedACLsUpdater.maxItemBatchSize}"/>
         <property name="numThreads" value="${system.fixedACLsUpdater.numThreads}"/>
         <property name="forceSharedACL" value="${system.fixedACLsUpdater.forceSharedACL}"/>
+        <property name="maxItems" value="${system.fixedACLsUpdater.maxItems}"/>
+        <property name="orderNodes" value="${system.fixedACLsUpdater.orderNodes}"/>
         <property name="lockTimeToLive" value="${system.fixedACLsUpdater.lockTTL}"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="policyIgnoreUtil" ref="policyIgnoreUtil"/>
@@ -145,6 +150,23 @@
                 <value>CancelCheckOut</value>
             </list>
         </property>
+    </bean>
+
+    <!-- Service account authority beans -->
+    <bean id="baseServiceAccountAuthority" abstract="true">
+        <property name="serviceAccountRegistry" ref="serviceAccountRegistry"/>
+    </bean>
+    <bean id="adminServiceAccountAuthority" class="org.alfresco.repo.security.permissions.dynamic.ServiceAccountAuthority"
+          parent="baseServiceAccountAuthority">
+        <property name="authority" value="#{T(org.alfresco.service.cmr.security.PermissionService).ADMIN_SVC_AUTHORITY}"/>
+    </bean>
+    <bean id="collaboratorServiceAccountAuthority" class="org.alfresco.repo.security.permissions.dynamic.ServiceAccountAuthority"
+          parent="baseServiceAccountAuthority">
+        <property name="authority" value="#{T(org.alfresco.service.cmr.security.PermissionService).COLLABORATOR_SVC_AUTHORITY}"/>
+    </bean>
+    <bean id="editorServiceAccountAuthority" class="org.alfresco.repo.security.permissions.dynamic.ServiceAccountAuthority"
+          parent="baseServiceAccountAuthority">
+        <property name="authority" value="#{T(org.alfresco.service.cmr.security.PermissionService).EDITOR_SVC_AUTHORITY}"/>
     </bean>
 
     <!-- =========================== -->
@@ -821,6 +843,8 @@
                 org.alfresco.service.cmr.security.AuthorityService.authorityExists=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.setAuthorityDisplayName=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthorityService.getAuthorityDisplayName=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.setAuthorityDisplayNameAndDescription=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthorityService.getAuthorityDisplayNameAndDescription=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getOrCreateZone=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthorityService.getZone=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getAuthorityZones=ACL_ALLOW

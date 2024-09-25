@@ -40,8 +40,10 @@ public interface Groups
 {
     String PARAM_ID = "id";
     String PARAM_DISPLAY_NAME = "displayName";
+    String PARAM_INCLUDE_DESCRIPTION = "description";
     String PARAM_INCLUDE_PARENT_IDS = "parentIds";
     String PARAM_INCLUDE_ZONES = "zones";
+    String PARAM_INCLUDE_HAS_SUBGROUPS = "hasSubgroups";
     String PARAM_IS_ROOT = "isRoot";
     String PARAM_CASCADE = "cascade";
     String PARAM_MEMBER_TYPE = "memberType";

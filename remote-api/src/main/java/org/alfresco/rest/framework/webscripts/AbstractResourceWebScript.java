@@ -110,22 +110,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 @Override
                 public Object execute() throws Throwable
                 {
-                    try
-                    {
-                        final Params params = paramsExtractor.extractParams(resource.getMetaData(), req);
-                        return AbstractResourceWebScript.this.execute(resource, params, res, isReadOnly);
-                    }
-                    catch (Exception e)
-                    {
-                        if (req instanceof BufferedRequest)
-                        {
-                            // Reset the request in case of a transaction retry
-                            ((BufferedRequest) req).reset();
-                        }
-
-                        // re-throw original exception for retry
-                        throw e;
-                    }
+                    // Reset the request so that it can be read again in case of retry
+                    resetRequest(req);
+                    final Params params = paramsExtractor.extractParams(resource.getMetaData(), req);
+                    return AbstractResourceWebScript.this.execute(resource, params, res, isReadOnly);
                 }
             };
 
@@ -180,15 +168,15 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         }
         catch (ContentIOException cioe)
         {
-            handleContentIOException(res, cioe); 
+            handleContentIOException(res, req, cioe);
         }
         catch (AlfrescoRuntimeException | ApiException | WebScriptException xception )
         {
-            renderException(xception, res, assistant);
+            renderException(xception, res, req, assistant);
         }
         catch (RuntimeException runtimeException)
         {
-            renderException(runtimeException, res, assistant);
+            renderException(runtimeException, res, req, assistant);
         }
         finally
         {
@@ -224,17 +212,26 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         return toReturn;
     }
 
-    private void handleContentIOException(final WebScriptResponse res, ContentIOException exception) throws IOException
+    private void handleContentIOException(final WebScriptResponse res, final WebScriptRequest req, ContentIOException exception) throws IOException
     {
         // If the Content-Length is not set back to -1 any client will expect to receive binary and will hang until it times out
         res.setHeader(HEADER_CONTENT_LENGTH, String.valueOf(-1));
         if (exception instanceof ArchivedIOException)
         {
-            renderException(new ArchivedContentException(exception.getMsgId(), exception), res, assistant);
+            renderException(new ArchivedContentException(exception.getMsgId(), exception), res, req, assistant);
         }
         else
         {
-            renderException(exception, res, assistant);
+            renderException(exception, res, req, assistant);
+        }
+    }
+
+    protected void resetRequest(WebScriptRequest req)
+    {
+        if (req instanceof BufferedRequest)
+        {
+            BufferedRequest bufferedRequest = (BufferedRequest) req;
+            bufferedRequest.reset();
         }
     }
 

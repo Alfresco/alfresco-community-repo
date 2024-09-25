@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +33,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -53,6 +55,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -65,7 +68,6 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
     public static final String GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX + "ALFRESCO_SYSTEM_ADMINISTRATORS";
-
     private static Set<String> DEFAULT_ZONES = new HashSet<String>();
     
     static
@@ -543,6 +545,15 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     {
         return createAuthority(type, shortName, shortName, getDefaultZones());
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String createAuthority(AuthorityType type, String shortName, Map<QName, Serializable> properties)
+    {
+        return createAuthority(type, shortName, shortName, getDefaultZones(), properties);
+    }
     
     /**
      * {@inheritDoc}
@@ -644,11 +655,20 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
             Set<String> authorityZones)
     {
+        return createAuthority(type, shortName, authorityDisplayName, authorityZones, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String createAuthority(AuthorityType type, String shortName, String authorityDisplayName,
+                                  Set<String> authorityZones, Map<QName, Serializable> properties)
+    {
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
+        authorityDAO.createAuthority(name, authorityDisplayName, authorityZones, properties);
 
-        authorityDAO.createAuthority(name, authorityDisplayName, authorityZones);
-       
         return name;
     }
     
@@ -673,6 +693,31 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         AuthorityType type = AuthorityType.getAuthorityType(authorityName);
         checkTypeIsMutable(type);
         authorityDAO.setAuthorityDisplayName(authorityName, authorityDisplayName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Pair<String, String> getAuthorityDisplayNameAndDescription(String name)
+    {
+        Pair<String, String> displayNameAndDescription = authorityDAO.getAuthorityDisplayNameAndDescription(name);
+        if(displayNameAndDescription.getFirst() == null)
+        {
+            displayNameAndDescription.setFirst(getShortName(name));
+        }
+        return displayNameAndDescription;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description)
+    {
+        AuthorityType type = AuthorityType.getAuthorityType(authorityName);
+        checkTypeIsMutable(type);
+        authorityDAO.setAuthorityDisplayNameAndDescription(authorityName, authorityDisplayName, description);
     }
     
     /**

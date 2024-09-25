@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 import org.alfresco.rest.core.v0.APIUtils;
 import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.rm.community.model.hold.HoldEntry;
+import org.alfresco.rest.rm.community.model.hold.v0.HoldEntry;
 import org.alfresco.rest.rm.community.util.PojoUtility;
 import org.alfresco.utility.model.UserModel;
 import org.apache.http.HttpResponse;

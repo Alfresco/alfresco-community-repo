@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,9 +27,9 @@ package org.alfresco.repo.event2;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
+@TestPropertySource(properties = {"repo.event2.queue.skip=false"})
 public class EnqueuingEventGeneratorTest extends EventGeneratorTest
 {
     @Autowired
@@ -38,7 +38,7 @@ public class EnqueuingEventGeneratorTest extends EventGeneratorTest
     @Test
     public void testIfEnqueuingSenderIsSetInEventGenerator()
     {
-        assertFalse(skipEventQueue);
+        assertEquals(EnqueuingEventSender.class, enqueuingEventSender.getClass());
         assertEquals(enqueuingEventSender, eventGenerator.getEventSender());
     }
 }

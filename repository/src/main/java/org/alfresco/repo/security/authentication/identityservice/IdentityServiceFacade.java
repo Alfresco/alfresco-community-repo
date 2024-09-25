@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -30,6 +30,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
+
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
 /**
  * Allows to interact with the Identity Service
@@ -52,6 +55,20 @@ public interface IdentityServiceFacade
      */
     DecodedAccessToken decodeToken(String token) throws TokenDecodingException;
 
+    /**
+     * Gets claims about the authenticated user,
+     * such as name and email address, via the UserInfo endpoint of the OpenID provider.
+     * @param token {@link String} with encoded access token value.
+     * @param principalAttribute {@link String} the attribute name used to access the user's name from the user info response.
+     * @return {@link OIDCUserInfo} containing user claims.
+     */
+    Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute);
+
+    /**
+     * Gets a client registration
+     */
+    ClientRegistration getClientRegistration();
+
     class IdentityServiceFacadeException extends RuntimeException
     {
         public IdentityServiceFacadeException(String message)
@@ -73,6 +90,20 @@ public interface IdentityServiceFacade
         }
 
         AuthorizationException(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
+    }
+
+    class UserInfoException extends IdentityServiceFacadeException
+    {
+
+        UserInfoException(String message)
+        {
+            super(message);
+        }
+
+        UserInfoException(String message, Throwable cause)
         {
             super(message, cause);
         }
@@ -193,8 +224,14 @@ public interface IdentityServiceFacade
         @Override
         public boolean equals(Object o)
         {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
             AuthorizationGrant that = (AuthorizationGrant) o;
             return Objects.equals(username, that.username) &&
                     Objects.equals(password, that.password) &&

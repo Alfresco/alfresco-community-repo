@@ -27,8 +27,8 @@ fi
 # The second parameter can be used to avoid doing a clean up if we are doing a restart test.
 if [ "$CLEAN_UP" != "no-clean-up" ]
 then
-  docker-compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") kill
-  docker-compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") rm -f
+  docker compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") kill
+  docker compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") rm -f
 
   export GENERATED_IMAGES=$(docker images | grep '^environment_' | awk '{ print $3 }')
   if [ -n "$GENERATED_IMAGES" ]
@@ -42,8 +42,7 @@ echo "Starting ACS stack in ${DOCKER_COMPOSE_PATH}"
 export TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)
 export TRANSFORM_ROUTER_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-service.version -q -DforceStdout)
 
-# .env files are picked up from project directory correctly on docker-compose 1.23.0+
-docker-compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") up -d
+docker compose ${DOCKER_COMPOSES} --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") up -d
 
 if [ $? -eq 0 ]
 then

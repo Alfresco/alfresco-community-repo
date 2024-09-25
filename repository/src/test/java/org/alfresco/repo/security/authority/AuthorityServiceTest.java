@@ -83,9 +83,11 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.FixMethodOrder;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
@@ -581,7 +583,40 @@ public class AuthorityServiceTest extends TestCase
             // Ignore since we where expecting this
         }
     }
-        
+
+    @Test
+    public void testCreateGroupAuthWithProperties()
+    {
+        String auth;
+        String groupName = "TESTGROUP";
+        String prefixedGroupName = "GROUP_TESTGROUP";
+        String description = "testDesc";
+        String title = "testTitle";
+        Map<QName, Serializable> props = new HashMap<>();
+        props.put(ContentModel.PROP_DESCRIPTION, description);
+        props.put(ContentModel.PROP_TITLE, title);
+
+        // create authority with properties and default zones
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, groupName, props);
+        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));
+        NodeRef nodeRef = pubAuthorityService.getAuthorityNodeRef(auth);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION), description);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE), title);
+        pubAuthorityService.deleteAuthority(auth);
+
+        // create authority with zones and properties
+        Set<String> zones = new HashSet<>();
+        zones.add("Test1");
+        zones.add("Test2");
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, groupName, prefixedGroupName, zones, props);
+        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));
+        nodeRef = pubAuthorityService.getAuthorityNodeRef(auth);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_DESCRIPTION), description);
+        assertEquals(nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE), title);
+        assertEquals(2, pubAuthorityService.getAuthorityZones(auth).size());
+        pubAuthorityService.deleteAuthority(auth);
+    }
+
     public void testCreateOwnerAuth()
     {
         try
@@ -1373,7 +1408,6 @@ public class AuthorityServiceTest extends TestCase
         properties.put(ContentModel.PROP_ORGID, orgId);
         return properties;
     }
-
     public void testAuthorityDisplayNames()
     {
         String authOne = pubAuthorityService.createAuthority(AuthorityType.GROUP, "One");

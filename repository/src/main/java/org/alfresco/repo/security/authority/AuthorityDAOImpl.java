@@ -92,6 +92,7 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.SearchLanguageConversion;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -378,27 +379,38 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
     }
 
-    public void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones)
+    @Override
+    public void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones) {
+        createAuthority(name, authorityDisplayName, authorityZones, null);
+    }
+
+    @Override
+    public void createAuthority(String name, String authorityDisplayName, Set<String> authorityZones, Map<QName, Serializable> properties)
     {
-        HashMap<QName, Serializable> props = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> props = new HashMap<>();
         /* MNT-11749 : Alfresco allows to create authorities with different char cases, but disallow duplicates */
         props.put(ContentModel.PROP_NAME, DigestUtils.md5Hex(name));
         props.put(ContentModel.PROP_AUTHORITY_NAME, name);
         props.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
+        if (properties != null)
+        {
+            props.putAll(properties);
+        }
         NodeRef childRef;
         NodeRef authorityContainerRef = getAuthorityContainer();
+        logger.info("AuthorityDAO before create node");
         childRef = nodeService.createNode(authorityContainerRef, ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver),
                 ContentModel.TYPE_AUTHORITY_CONTAINER, props).getChildRef();
         if (authorityZones != null)
         {
-            Set<NodeRef> zoneRefs = new HashSet<NodeRef>(authorityZones.size() * 2);
+            Set<NodeRef> zoneRefs = new HashSet<>(authorityZones.size() * 2);
             String currentUserDomain = tenantService.getCurrentUserDomain();
             for (String authorityZone : authorityZones)
             {
                 zoneRefs.add(getOrCreateZone(authorityZone));
-                zoneAuthorityCache.remove(new Pair<String, String>(currentUserDomain, authorityZone));
+                zoneAuthorityCache.remove(new Pair<>(currentUserDomain, authorityZone));
             }
-            zoneAuthorityCache.remove(new Pair<String, String>(currentUserDomain, null));
+            zoneAuthorityCache.remove(new Pair<>(currentUserDomain, null));
             nodeService.addChild(zoneRefs, childRef, ContentModel.ASSOC_IN_ZONE, QName.createQName("cm", name, namespacePrefixResolver));
         }
         authorityLookupCache.put(cacheKey(name), childRef);
@@ -1431,7 +1443,33 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             return;
         }
         nodeService.setProperty(ref, ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
+    }
 
+    @Override
+    public Pair<String, String> getAuthorityDisplayNameAndDescription(String authorityName)
+    {
+        NodeRef ref = getAuthorityOrNull(authorityName);
+        if (ref == null)
+        {
+            return Pair.nullPair();
+        }
+        String displayName = getAuthorityDisplayName(authorityName);
+        Serializable description = nodeService.getProperty(ref, ContentModel.PROP_DESCRIPTION);
+        return new Pair<>(displayName, DefaultTypeConverter.INSTANCE.convert(String.class, description));
+    }
+
+    @Override
+    public void setAuthorityDisplayNameAndDescription(String authorityName, String authorityDisplayName, String description)
+    {
+        NodeRef ref = getAuthorityOrNull(authorityName);
+        if (ref == null)
+        {
+            return;
+        }
+        Map<QName, Serializable> properties = nodeService.getProperties(ref);
+        properties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME, authorityDisplayName);
+        properties.put(ContentModel.PROP_DESCRIPTION, description);
+        nodeService.setProperties(ref, properties);
     }
 
     public NodeRef getOrCreateZone(String zoneName)

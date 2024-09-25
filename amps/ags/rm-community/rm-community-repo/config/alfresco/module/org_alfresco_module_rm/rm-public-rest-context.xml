@@ -31,6 +31,7 @@
         <property name="personService" ref="PersonService"/>
         <property name="dispositionService" ref="DispositionService"/>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
     </bean>
 
     <bean id="searchTypesFactory" class="org.alfresco.rm.rest.api.impl.SearchTypesFactory">
@@ -69,7 +70,40 @@
        <property name="transactionService" ref="transactionService" />
     </bean>
 
-    <bean class="org.alfresco.rm.rest.api.unfiledcontainers.UnfiledContainerEntityResource">
+   <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanHoldsRelation">
+      <property name="apiUtils" ref="apiUtils" />
+      <property name="nodesModelFactory" ref="nodesModelFactory" />
+      <property name="holdService" ref="HoldService" />
+      <property name="fileFolderService" ref="FileFolderService" />
+      <property name="transactionService" ref="transactionService" />
+   </bean>
+
+   <bean class="org.alfresco.rm.rest.api.holds.HoldsEntityResource" >
+      <property name="holdService" ref="HoldService" />
+      <property name="apiUtils" ref="apiUtils" />
+      <property name="nodesModelFactory" ref="nodesModelFactory" />
+      <property name="fileFolderService" ref="FileFolderService" />
+      <property name="transactionService" ref="transactionService" />
+      <property name="holdBulkService" ref="holdBulkService" />
+   </bean>
+
+   <bean class="org.alfresco.rm.rest.api.holds.HoldsBulkStatusesRelation" >
+      <property name="holdBulkMonitor" ref="holdBulkMonitor" />
+      <property name="holdBulkService" ref="holdBulkService" />
+      <property name="apiUtils" ref="apiUtils" />
+      <property name="permissionService" ref="PermissionService" />
+   </bean>
+
+   <bean class="org.alfresco.rm.rest.api.holds.HoldsChildrenRelation">
+      <property name="holdService" ref="HoldService" />
+      <property name="apiUtils" ref="apiUtils" />
+      <property name="nodesModelFactory" ref="nodesModelFactory" />
+      <property name="fileFolderService" ref="FileFolderService" />
+      <property name="transactionService" ref="transactionService" />
+      <property name="permissionService" ref="PermissionService" />
+   </bean>
+
+   <bean class="org.alfresco.rm.rest.api.unfiledcontainers.UnfiledContainerEntityResource">
        <property name="apiUtils" ref="apiUtils" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
@@ -112,6 +146,20 @@
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
        <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.retentionschedule.RetentionScheduleRelation">
+        <property name="apiUtils" ref="apiUtils" />
+        <property name="nodesModelFactory" ref="nodesModelFactory" />
+        <property name="dispositionService" ref="DispositionService"/>
+        <property name="nodeService" ref="NodeService"/>
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.retentionschedule.RetentionScheduleActionRelation">
+        <property name="apiUtils" ref="apiUtils" />
+        <property name="nodesModelFactory" ref="nodesModelFactory" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderEntityResource">

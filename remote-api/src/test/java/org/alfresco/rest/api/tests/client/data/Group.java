@@ -58,7 +58,9 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
 
         AssertUtil.assertEquals("id", getId(), other.getId());
         AssertUtil.assertEquals("displayName", getDisplayName(), other.getDisplayName());
+        AssertUtil.assertEquals("description", getDescription(), other.getDescription());
         AssertUtil.assertEquals("isRoot", getIsRoot(), other.getIsRoot());
+        AssertUtil.assertEquals("hasSubgroups", getHasSubgroups(), other.getHasSubgroups());
         AssertUtil.assertEquals("parentIds", getParentIds(), other.getParentIds());
         AssertUtil.assertEquals("zones", getZones(), other.getZones());
     }
@@ -73,9 +75,19 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
 
         groupJson.put("displayName", getDisplayName());
 
+        if (getDescription() != null)
+        {
+            groupJson.put("description", getDescription());
+        }
+
         if (getIsRoot() != null)
         {
             groupJson.put("isRoot", getIsRoot());
+        }
+
+        if (getHasSubgroups() != null)
+        {
+            groupJson.put("hasSubgroups", getHasSubgroups());
         }
 
         if (getParentIds() != null)
@@ -95,16 +107,19 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
     {
         String id = (String) jsonObject.get("id");
         String displayName = (String) jsonObject.get("displayName");
+        String description = (String) jsonObject.get("description");
         Boolean isRoot = (Boolean) jsonObject.get("isRoot");
+        Boolean hasSubgroups = (Boolean) jsonObject.get("hasSubgroups");
         List<String> parentIds = (List<String>) jsonObject.get("parentIds");
         List<String> zones = (List<String>) jsonObject.get("zones");
-
         Group group = new Group();
         group.setId(id);
         group.setDisplayName(displayName);
+        group.setDescription(description);
         group.setIsRoot(isRoot);
-        group.setParentIds(parentIds != null ? new HashSet<String>(parentIds) : null);
-        group.setZones(zones != null ? new HashSet<String>(zones) : null);
+        group.setHasSubgroups(hasSubgroups);
+        group.setParentIds(parentIds != null ? new HashSet<>(parentIds) : null);
+        group.setZones(zones != null ? new HashSet<>(zones) : null);
 
         return group;
     }

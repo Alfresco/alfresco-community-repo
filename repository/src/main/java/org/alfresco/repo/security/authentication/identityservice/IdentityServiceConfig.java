@@ -2,31 +2,37 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.security.authentication.identityservice;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -34,12 +40,15 @@ import org.springframework.web.util.UriComponentsBuilder;
  *
  * @author Gavin Cornwell
  */
+@SuppressWarnings("PMD.ExcessivePublicCount")
 public class IdentityServiceConfig
 {
     private static final String REALMS = "realms";
 
     private int clientConnectionTimeout;
     private int clientSocketTimeout;
+    private String issuerUrl;
+    private String audience;
     // client id
     private String resource;
     private String clientSecret;
@@ -56,6 +65,10 @@ public class IdentityServiceConfig
     private String realmKey;
     private int publicKeyCacheTtl;
     private boolean publicClient;
+    private String principalAttribute;
+    private boolean clientIdValidationDisabled;
+    private String adminConsoleRedirectPath;
+    private String signatureAlgorithms;
 
     /**
      *
@@ -103,9 +116,36 @@ public class IdentityServiceConfig
         return connectionPoolSize;
     }
 
+    public String getIssuerUrl()
+    {
+        return issuerUrl;
+    }
+
+    public void setIssuerUrl(String issuerUrl)
+    {
+        this.issuerUrl = issuerUrl;
+    }
+
+    public String getAudience()
+    {
+        return audience;
+    }
+
+    public void setAudience(String audience)
+    {
+        this.audience = audience;
+    }
+
     public String getAuthServerUrl()
     {
-        return authServerUrl;
+        return Optional.ofNullable(realm)
+            .filter(StringUtils::isNotBlank)
+            .filter(realm -> StringUtils.isNotBlank(authServerUrl))
+            .map(realm -> UriComponentsBuilder.fromUriString(authServerUrl)
+                .pathSegment(REALMS, realm)
+                .build()
+                .toString())
+            .orElse(authServerUrl);
     }
 
     public void setAuthServerUrl(String authServerUrl)
@@ -141,15 +181,7 @@ public class IdentityServiceConfig
     public String getClientSecret()
     {
         return Optional.ofNullable(clientSecret)
-                       .orElse("");
-    }
-
-    public String getIssuerUrl()
-    {
-        return UriComponentsBuilder.fromUriString(getAuthServerUrl())
-                                   .pathSegment(REALMS, getRealm())
-                                   .build()
-                                   .toString();
+            .orElse("");
     }
 
     public void setAllowAnyHostname(boolean allowAnyHostname)
@@ -250,5 +282,49 @@ public class IdentityServiceConfig
     public boolean isPublicClient()
     {
         return publicClient;
+    }
+
+    public String getPrincipalAttribute()
+    {
+        return principalAttribute;
+    }
+
+    public void setPrincipalAttribute(String principalAttribute)
+    {
+        this.principalAttribute = principalAttribute;
+    }
+
+    public boolean isClientIdValidationDisabled()
+    {
+        return clientIdValidationDisabled;
+    }
+
+    public void setClientIdValidationDisabled(boolean clientIdValidationDisabled)
+    {
+        this.clientIdValidationDisabled = clientIdValidationDisabled;
+    }
+
+    public String getAdminConsoleRedirectPath()
+    {
+        return adminConsoleRedirectPath;
+    }
+
+    public void setAdminConsoleRedirectPath(String adminConsoleRedirectPath)
+    {
+        this.adminConsoleRedirectPath = adminConsoleRedirectPath;
+    }
+
+    public Set<SignatureAlgorithm> getSignatureAlgorithms()
+    {
+        return Stream.of(signatureAlgorithms.split(","))
+            .map(String::trim)
+            .map(SignatureAlgorithm::from)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setSignatureAlgorithms(String signatureAlgorithms)
+    {
+        this.signatureAlgorithms = signatureAlgorithms;
     }
 }

@@ -349,6 +349,29 @@ public class DownloadServiceIntegrationTest
         validateEntries(entryNames, allEntries, true);
     }
 
+    @Test public void createDownloadWithName() throws IOException, InterruptedException
+    {
+        // Initiate the download
+        final NodeRef downloadNode = DOWNLOAD_SERVICE.createDownload(new NodeRef[] {rootFile}, false, "test.zip");
+        Assert.assertNotNull(downloadNode);
+
+        testNodes.addNodeRef(downloadNode);
+
+        // Validate that the download node has been persisted correctly.
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+
+            @Override
+            public Object execute() throws Throwable
+            {
+                Map<QName, Serializable> properties = NODE_SERVICE.getProperties(downloadNode);
+                Assert.assertEquals(Boolean.FALSE, properties.get(DownloadModel.PROP_RECURSIVE));
+                Assert.assertEquals("test.zip",properties.get(ContentModel.PROP_NAME));
+                return null;
+            }
+        });
+    }
+
     private void validateEntries(final Set<String> entryNames, final Set<String> expectedEntries, boolean onlyExpected)
     {
         Set<String> copy = new TreeSet<String>(entryNames);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jakarta.transaction.UserTransaction;
 
@@ -60,6 +61,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -157,30 +159,41 @@ public class AuditDAOTest extends TestCase
         doAuditEntryImpl(1000);
     }
 
+    @Test
+    public void testAuditMinMaxByApp() throws Exception
+    {
+        final String[] expectedExtremes = {"min", "max"};
+        final AuditApplicationInfo appInfo = doAuditEntryImpl(12);
+
+        final Map<String, Long> minMax = auditDAO.getAuditMinMaxByApp(appInfo.getId(), List.of(expectedExtremes));
+
+        assertEquals(Set.of(expectedExtremes), minMax.keySet());
+        assertNotNull(minMax.get(expectedExtremes[0]));
+        assertNotNull(minMax.get(expectedExtremes[1]));
+    }
+
     /**
      * @return              Returns the name of the application
      */
-    private String doAuditEntryImpl(final int count) throws Exception
+    private AuditApplicationInfo doAuditEntryImpl(final int count) throws Exception
     {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
         final URL url = new URL("file:" + file.getAbsolutePath());
         final String appName = getName() + "." + System.currentTimeMillis();
 
-        RetryingTransactionCallback<Long> createAppCallback = new RetryingTransactionCallback<Long>()
+        RetryingTransactionCallback<AuditApplicationInfo> createAppCallback = () ->
         {
-            public Long execute() throws Throwable
+            AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
+            if (appInfo == null)
             {
-                AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
-                if (appInfo == null)
-                {
-                    Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
-                    appInfo = auditDAO.createAuditApplication(appName, modelId);
-                }
-                return appInfo.getId();
+                Long modelId = auditDAO.getOrCreateAuditModel(url).getFirst();
+                appInfo = auditDAO.createAuditApplication(appName, modelId);
             }
+            return appInfo;
         };
-        final Long sessionId = txnHelper.doInTransaction(createAppCallback);
+        final AuditApplicationInfo appInfo = txnHelper.doInTransaction(createAppCallback);
+        final Long sessionId = appInfo.getId();
         
         final String username = "alexi";
         RetryingTransactionCallback<Void> createEntryCallback = new RetryingTransactionCallback<Void>()
@@ -203,7 +216,7 @@ public class AuditDAOTest extends TestCase
                 "Time for " + count + " entry creations was " +
                 ((double)(after - before)/(10E6)) + "ms");
         // Done
-        return appName;
+        return appInfo;
     }
 
     public synchronized void testAuditQuery() throws Exception
@@ -476,7 +489,7 @@ public class AuditDAOTest extends TestCase
         };
 
         // Some entries
-        final String appName = doAuditEntryImpl(1);
+        final String appName = doAuditEntryImpl(1).getName();
 
         final AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(appName);
@@ -501,8 +514,8 @@ public class AuditDAOTest extends TestCase
      */
     public void testAuditDeleteEntriesForApplication() throws Exception
     {
-        final String app1 = doAuditEntryImpl(6);
-        final String app2 = doAuditEntryImpl(18);
+        final String app1 = doAuditEntryImpl(6).getName();
+        final String app2 = doAuditEntryImpl(18).getName();
         
         final AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
         

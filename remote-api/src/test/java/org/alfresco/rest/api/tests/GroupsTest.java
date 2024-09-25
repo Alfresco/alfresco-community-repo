@@ -43,17 +43,20 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.GUID;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
@@ -69,13 +72,13 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
     protected AuthorityService authorityService;
 
-    private String rootGroupName = null;
-    private Group rootGroup = null;
-    private Group groupA = null;
-    private Group groupB = null;
-    private GroupMember groupMemberA = null;
-    private GroupMember groupMemberB = null;
-    private GroupMember personMember = null;
+    private String rootGroupName;
+    private Group rootGroup;
+    private Group groupA;
+    private Group groupB;
+    private GroupMember groupMemberA;
+    private GroupMember groupMemberB;
+    private GroupMember personMember;
     @Mock
     private ResultSetRow groupAResultSetRow;
     @Mock
@@ -670,6 +673,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Optionally included.
             assertNull(group.getParentIds());
             assertNull(group.getZones());
+            assertNull(group.getHasSubgroups());
         }
     }
 
@@ -956,7 +960,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             expected.retainAll(respPostProcess.getList());
 
             // If this assertion fails, then the tests aren't providing any value - change them!
-            assertTrue("List doesn't contain enough items for test to be conclusive.", expected.size() > 0);
+            assertTrue("List doesn't contain enough items for test to be conclusive.", !expected.isEmpty());
             checkList(expected, respPostProcess.getPaging(), respPostProcess);
         }
 
@@ -977,7 +981,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             expected.retainAll(respPostProcess.getList());
 
             // If this assertion fails, then the tests aren't providing any value - change them!
-            assertTrue("List doesn't contain enough items for test to be conclusive.", expected.size() > 0);
+            assertTrue("List doesn't contain enough items for test to be conclusive.", !expected.isEmpty());
             checkList(expected, respPostProcess.getPaging(), respPostProcess);
         }
 
@@ -1154,7 +1158,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
         // -ve test: invalid zones clause
         {
-            Paging paging = getPaging(0, Integer.MAX_VALUE);
             Map<String, String> otherParams = new HashMap<>();
             otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
 
@@ -1418,16 +1421,17 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
             Map<String, String> otherParams = new HashMap<>();
-            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_HAS_SUBGROUPS);
 
             Group group = generateGroup();
 
-            Group createdGroup01 = groupsProxy.createGroup(group, null, HttpServletResponse.SC_CREATED);
+            Group createdGroup01 = groupsProxy.createGroup(group, otherParams, HttpServletResponse.SC_CREATED);
 
             assertNotNull(createdGroup01);
             assertNotNull(createdGroup01.getId());
             assertTrue(createdGroup01.getIsRoot());
             assertNull(createdGroup01.getParentIds());
+            assertFalse(createdGroup01.getHasSubgroups());
 
             Set<String> subGroup01Parents = new HashSet<>();
             subGroup01Parents.add(createdGroup01.getId());
@@ -1435,12 +1439,18 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Group subGroup01 = generateGroup();
             subGroup01.setParentIds(subGroup01Parents);
 
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS + "," + org.alfresco.rest.api.Groups.PARAM_INCLUDE_HAS_SUBGROUPS);
             Group createdSubGroup01 = groupsProxy.createGroup(subGroup01, otherParams, HttpServletResponse.SC_CREATED);
             assertNotNull(createdSubGroup01);
             assertNotNull(createdSubGroup01.getId());
             assertFalse(createdSubGroup01.getIsRoot());
             assertNotNull(createdSubGroup01.getParentIds());
             assertEquals(subGroup01Parents, createdSubGroup01.getParentIds());
+            assertFalse(createdSubGroup01.getHasSubgroups());
+
+            //validate if parent group now has any subgroup
+            Group group01 = groupsProxy.getGroup(createdGroup01.getId(), otherParams, HttpServletResponse.SC_OK);
+            assertTrue(group01.getHasSubgroups());
         }
 
         // Group id is missing.

@@ -152,9 +152,11 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
             {
                 // get the references we need to build the default scripting data-model
                 String userName = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
-                NodeRef personRef = this.personService.getPerson(userName);
-                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-                
+
+                // When a script is executed as a system user, there will no person or home space for providing to the scripting framework.
+                NodeRef personRef = this.personService.getPersonOrNull(userName);
+                NodeRef homeSpaceRef = personRef == null ? null : (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+
                 // the default scripting model provides access to well known objects and searching
                 // facilities - it also provides basic create/update/delete/copy/move services
                 Map<String, Object> model = this.serviceRegistry.getScriptService().buildDefaultModel(
@@ -198,6 +200,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
+    @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         if (scriptLocation == null)

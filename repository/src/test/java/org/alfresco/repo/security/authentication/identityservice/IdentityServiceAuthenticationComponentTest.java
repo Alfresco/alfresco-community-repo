@@ -30,6 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
+import java.util.Optional;
 
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
@@ -66,6 +67,8 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     @Autowired
     private PersonService personService;
 
+
+    private IdentityServiceJITProvisioningHandler jitProvisioning;
     private IdentityServiceFacade mockIdentityServiceFacade;
 
     @Before
@@ -77,7 +80,9 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
         authComponent.setNodeService(nodeService);
         authComponent.setPersonService(personService);
 
+        jitProvisioning = mock(IdentityServiceJITProvisioningHandler.class);
         mockIdentityServiceFacade = mock(IdentityServiceFacade.class);
+        authComponent.setJitProvisioningHandler(jitProvisioning);
         authComponent.setIdentityServiceFacade(mockIdentityServiceFacade);
     }
 
@@ -134,8 +139,13 @@ public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
     {
         final AuthorizationGrant grant = AuthorizationGrant.password("username", "password");
         AccessTokenAuthorization authorization = mock(AccessTokenAuthorization.class);
+        IdentityServiceFacade.AccessToken accessToken = mock(IdentityServiceFacade.AccessToken.class);
 
+        when(authorization.getAccessToken()).thenReturn(accessToken);
+        when(accessToken.getTokenValue()).thenReturn("JWT_TOKEN");
         when(mockIdentityServiceFacade.authorize(grant)).thenReturn(authorization);
+        when(jitProvisioning.extractUserInfoAndCreateUserIfNeeded("JWT_TOKEN"))
+                    .thenReturn(Optional.of(new OIDCUserInfo("username", "", "", "")));
 
         authComponent.authenticateImpl("username", "password".toCharArray());
 

@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.module.tool;
 
+import com.fasterxml.uuid.Generators;
 import de.schlichtherle.truezip.file.*;
 import de.schlichtherle.truezip.fs.FsSyncException;
 import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
@@ -34,7 +35,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
-import org.safehaus.uuid.UUIDGenerator;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -916,7 +916,7 @@ public class ModuleManagementTool implements LogOutput
      */
     private static String generateGuid()
     {
-        return UUIDGenerator.getInstance().generateTimeBasedUUID().toString();
+        return Generators.timeBasedGenerator().generate().toString();
     }
 
     /**

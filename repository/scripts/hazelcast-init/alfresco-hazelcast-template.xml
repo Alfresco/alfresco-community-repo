@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hazelcast xmlns="http://www.hazelcast.com/schema/config"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.hazelcast.com/schema/config
+           http://www.hazelcast.com/schema/config/hazelcast-config-5.3.xsd">
+
+   <cluster-name>Replace this with a secure value</cluster-name>
+   <management-center data-access-enabled="${alfresco.hazelcast.mancenter.enabled}">
+      <trusted-interfaces>
+         <interface>${alfresco.hazelcast.mancenter.url}</interface>
+      </trusted-interfaces>
+   </management-center>
+   <!-- Ephemeral lock store map definition -->
+   <map name="lockStore">
+      <backup-count>1</backup-count>
+      <!-- No overall size limit, since this would result in ephemeral locks being evicted. -->
+      <merge-policy>com.hazelcast.spi.merge.PutIfAbsentMergePolicy</merge-policy>
+      <eviction eviction-policy="NONE" max-size-policy="PER_NODE" size="0"/>
+      <!-- TTL here must match LockServiceImpl.MAX_EPHEMERAL_LOCK_SECONDS -->
+      <time-to-live-seconds>172800</time-to-live-seconds>
+      <max-idle-seconds>0</max-idle-seconds>
+   </map>
+   <!-- CACHES DEFINITION (DO NOT REMOVE THIS PLACEHOLDER) -->
+</hazelcast>

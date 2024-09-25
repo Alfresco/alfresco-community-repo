@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,12 +36,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.httpclient.HttpClientException;
-import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.URI;
@@ -50,6 +48,9 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import org.alfresco.httpclient.HttpClientException;
+import org.alfresco.repo.search.QueryParserException;
 
 /** Tests for the {@link AbstractSolrQueryHTTPClient}. */
 public class AbstractSolrQueryHTTPClientTest
@@ -158,8 +159,7 @@ public class AbstractSolrQueryHTTPClientTest
         String messageFromHttp = "Some IO Exception";
         when(httpClient.executeMethod(any())).thenThrow(new IOException(messageFromHttp));
 
-        HttpClientException expectedException =
-                assertThrows(HttpClientException.class, () -> abstractSolrQueryHTTPClient.postQuery(httpClient, URL, body));
+        HttpClientException expectedException = assertThrows(HttpClientException.class, () -> abstractSolrQueryHTTPClient.postQuery(httpClient, URL, body));
 
         String exceptionMessage = expectedException.getMessage();
         assertTrue(exceptionMessage.endsWith("[%s] %s".formatted(abstractSolrQueryHTTPClient.getClass().getSimpleName(), messageFromHttp)));

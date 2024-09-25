@@ -30,11 +30,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.httpclient.HttpClientException;
-import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
@@ -47,6 +44,9 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import org.alfresco.httpclient.HttpClientException;
+import org.alfresco.repo.search.QueryParserException;
 
 public abstract class AbstractSolrQueryHTTPClient
 {

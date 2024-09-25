@@ -33,6 +33,7 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.alfresco.httpclient.HttpClientException;
 import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -139,8 +140,11 @@ public abstract class AbstractSolrQueryHTTPClient
 
             Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
             // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
-            JSONObject json = new JSONObject(new JSONTokener(reader));
-            return json;
+            return new JSONObject(new JSONTokener(reader));
+        }
+        catch (IOException e)
+        {
+            throw new HttpClientException("[%s] %s".formatted(this.getClass().getSimpleName(), e.getMessage()), e);
         }
         finally
         {

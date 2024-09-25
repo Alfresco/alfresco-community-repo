@@ -27,4 +27,9 @@ public class HttpClientException extends AlfrescoRuntimeException
     {
         super(msgId);
     }
+
+    public HttpClientException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
+    }
 }

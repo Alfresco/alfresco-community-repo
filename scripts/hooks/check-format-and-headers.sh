@@ -16,7 +16,7 @@ do
 done
 include_list=${include_list:1}
 
-mvn spotless:apply validate -DlicenseUpdateHeaders=true -Dspotless-include-list="${include_list}" > /dev/null || true
+mvn spotless:apply validate -DlicenseUpdateHeaders=true -Pags,all-tas-tests -Dspotless-include-list="${include_list}" > /dev/null || true
 
 all_nonconformant_files=$(git diff --name-only --diff-filter=ACMR)
 

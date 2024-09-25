@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.event2.EventGenerator;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeArchiveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
@@ -111,6 +112,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected TransactionService transactionService;
     protected TenantService tenantService;
     protected Set<String> storesToIgnorePolicies = Collections.emptySet();
+    protected EventGenerator eventGenerator;
     protected String archiveStore;
 
     /*
@@ -178,6 +180,11 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     public void setArchiveStore(String archiveStore)
     {
         this.archiveStore = archiveStore;
+    }
+
+    public void setEventGenerator(EventGenerator eventGenerator)
+    {
+        this.eventGenerator = eventGenerator;
     }
 
     /**
@@ -490,11 +497,15 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      */
     protected void invokeBeforeDeleteNode(NodeRef nodeRef)
     {
-        if (ignorePolicy(nodeRef) && !isInArchiveStore(nodeRef))
+        if(isInArchiveStore(nodeRef))
+        {
+            eventGenerator.beforeDeleteNode(nodeRef);
+            return;
+        }
+        if (ignorePolicy(nodeRef))
         {
             return;
         }
-        
         // get qnames to invoke against
         Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
         // execute policy for node type and aspects

@@ -42,12 +42,11 @@ jobs:
       !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - id: changed-files
         uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v6.1.0
         with:

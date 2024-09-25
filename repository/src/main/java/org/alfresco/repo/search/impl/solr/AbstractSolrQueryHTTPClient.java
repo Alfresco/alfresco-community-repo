@@ -99,7 +99,7 @@ public abstract class AbstractSolrQueryHTTPClient
         try
         {
             httpClient.executeMethod(post);
-            if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+            if (post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
             {
                 Header locationHeader = post.getResponseHeader("location");
                 if (locationHeader != null)

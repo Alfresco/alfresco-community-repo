@@ -158,8 +158,7 @@ public class AbstractSolrQueryHTTPClientTest
         String messageFromHttp = "Some IO Exception";
         when(httpClient.executeMethod(any())).thenThrow(new IOException(messageFromHttp));
 
-        HttpClientException expectedException =
-                assertThrows(HttpClientException.class, () -> abstractSolrQueryHTTPClient.postQuery(httpClient, URL, body));
+        HttpClientException expectedException = assertThrows(HttpClientException.class, () -> abstractSolrQueryHTTPClient.postQuery(httpClient, URL, body));
 
         String exceptionMessage = expectedException.getMessage();
         assertTrue(exceptionMessage.endsWith("[%s] %s".formatted(abstractSolrQueryHTTPClient.getClass().getSimpleName(), messageFromHttp)));

@@ -1078,6 +1078,12 @@ public class CustomModelServiceImpl implements CustomModelService
     @Override
     public NodeRef createDownloadNode(final String modelFileName, boolean withAssociatedForm)
     {
+        return createDownloadNode(modelFileName, withAssociatedForm, null);
+    }
+
+    @Override
+    public NodeRef createDownloadNode(final String modelFileName, boolean withAssociatedForm, String downloadNodeName)
+    {
         List<NodeRef> nodesToBeDownloaded = new ArrayList<>(2);
 
         NodeRef customModelNodeRef = getModelNodeRef(modelFileName);
@@ -1137,7 +1143,7 @@ public class CustomModelServiceImpl implements CustomModelService
 
         try
         {
-            NodeRef archiveNodeRef = downloadService.createDownload(nodesToBeDownloaded.toArray(new NodeRef[nodesToBeDownloaded.size()]), false);
+            NodeRef archiveNodeRef = downloadService.createDownload(nodesToBeDownloaded.toArray(new NodeRef[0]), false, downloadNodeName);
 
             if (logger.isDebugEnabled())
             {

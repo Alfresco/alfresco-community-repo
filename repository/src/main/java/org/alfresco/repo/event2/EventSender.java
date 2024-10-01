@@ -50,6 +50,15 @@ public interface EventSender
         //no initialization by default
     }
 
+    /**
+     * It's called when the application context is closing, allowing
+     * {@link org.alfresco.repo.event2.EventGenerator} to perform cleanup operations.
+     */
+    default void destroy()
+    {
+        //no initialization by default
+    }
+
     default boolean shouldParticipateInTransaction()
     {
         return false;

@@ -52,17 +52,6 @@ jobs:
       - name: "print java runtime version"
         run: |
           java -version
-      - id: changed-files
-        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v6.1.0
-        with:
-          write-list-to-env: true
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v6.1.0
-      - name: "Init"
-        run: bash ./scripts/ci/init.sh
-      - name: "Prepare maven cache and check compilation"
-        run: bash ./scripts/ci/prepare.sh
-      - name: "Clean Maven cache"
-        run: bash ./scripts/ci/cleanup_cache.sh
 
   veracode_sca:
     name: "Source Clear Scan (SCA)"

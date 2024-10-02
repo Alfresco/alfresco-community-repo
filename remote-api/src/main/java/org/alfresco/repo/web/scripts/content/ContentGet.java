@@ -25,14 +25,23 @@
  */
 package org.alfresco.repo.web.scripts.content;
 
+import static java.util.Optional.ofNullable;
+import static java.util.function.Predicate.not;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.web.context.ServletContextAware;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.MimeTypeUtil;
@@ -42,13 +51,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.web.context.ServletContextAware;
-
 
 /**
  * Content Retrieval Service
@@ -62,7 +64,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
     // Logger
     @SuppressWarnings("unused")
     private static final Log logger = LogFactory.getLog(ContentGet.class);
-    
+
     // Component dependencies
     private ServletContext servletContext;
     private DictionaryService dictionaryService;
@@ -72,18 +74,19 @@ public class ContentGet extends StreamContent implements ServletContextAware
     private List<String> nonAttachContentTypes = Collections.emptyList();
 
     /**
-     * @param nonAttachContentTypes List<String>
+     * @param nonAttachContentTypes
+     *            List<String>
      */
     public void setNonAttachContentTypes(List<String> nonAttachContentTypes)
     {
-        if (nonAttachContentTypes != null && !nonAttachContentTypes.isEmpty())
-        {
-            this.nonAttachContentTypes = nonAttachContentTypes;
-        }
+        this.nonAttachContentTypes = ofNullable(nonAttachContentTypes)
+                .map(types -> types.stream().filter(not(String::isBlank)).toList())
+                .orElse(Collections.emptyList());
     }
 
     /**
-     * @param servletContext ServletContext
+     * @param servletContext
+     *            ServletContext
      */
     public void setServletContext(ServletContext servletContext)
     {
@@ -91,23 +94,26 @@ public class ContentGet extends StreamContent implements ServletContextAware
     }
 
     /**
-     * @param dictionaryService DictionaryService
+     * @param dictionaryService
+     *            DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
-        this.dictionaryService = dictionaryService; 
+        this.dictionaryService = dictionaryService;
     }
 
     /**
-     * @param namespaceService NamespaceService
+     * @param namespaceService
+     *            NamespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
-        this.namespaceService = namespaceService; 
+        this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @param contentService ContentService
+     * @param contentService
+     *            ContentService
      */
     public void setContentService(ContentService contentService)
     {
@@ -118,7 +124,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
      * @see org.springframework.extensions.webscripts.WebScript#execute(WebScriptRequest, WebScriptResponse)
      */
     public void execute(WebScriptRequest req, WebScriptResponse res)
-        throws IOException
+            throws IOException
     {
         // create map of args
         String[] names = req.getParameterNames();
@@ -127,10 +133,10 @@ public class ContentGet extends StreamContent implements ServletContextAware
         {
             args.put(name, req.getParameter(name));
         }
-        
+
         // create map of template vars
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        
+
         // create object reference from url
         ObjectReference reference = createObjectReferenceFromUrl(args, templateVars);
         NodeRef nodeRef = reference.getNodeRef();
@@ -139,7 +145,6 @@ public class ContentGet extends StreamContent implements ServletContextAware
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find " + reference.toString());
         }
 
-        
         // render content
         QName propertyQName = ContentModel.PROP_CONTENT;
         String contentPart = templateVars.get("property");
@@ -186,7 +191,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
         if (attach && rfc5987Supported)
         {
             String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            
+
             // maintain the original name of the node during the download - do not modify it - see MNT-16510
             streamContent(req, res, nodeRef, propertyQName, attach, name, model);
         }

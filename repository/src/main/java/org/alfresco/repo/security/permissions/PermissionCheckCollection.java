@@ -144,7 +144,8 @@ public interface PermissionCheckCollection<T>
             // Create the advisor
             IntroductionAdvisor advisor = new DefaultIntroductionAdvisor(mixin, PermissionCheckCollection.class);
             // Proxy
-            ProxyFactory pf = new ProxyFactory(collection);
+            ProxyFactory pf = new ProxyFactory(Collection.class);
+            pf.setTarget(collection);
             pf.addAdvisor(advisor);
             Object proxiedObject = pf.getProxy();
             

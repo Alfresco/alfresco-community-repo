@@ -56,7 +56,7 @@ public interface EventSender
      */
     default void destroy()
     {
-        //no initialization by default
+        //no destruction by default
     }
 
     default boolean shouldParticipateInTransaction()

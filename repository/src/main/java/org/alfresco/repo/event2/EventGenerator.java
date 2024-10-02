@@ -38,6 +38,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.TransactionEntity;
 import org.alfresco.repo.event.v1.model.DataAttributes;
@@ -81,11 +87,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.TriPredicate;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Generates events and sends them to an event topic.
@@ -93,8 +94,8 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * @author Jamal Kaabi-Mofrad
  */
 public class EventGenerator extends AbstractLifecycleBean implements InitializingBean, EventSupportedPolicies,
-                                                                     ChildAssociationEventSupportedPolicies,
-                                                                     PeerAssociationEventSupportedPolicies
+        ChildAssociationEventSupportedPolicies,
+        PeerAssociationEventSupportedPolicies
 {
     private static final Log LOGGER = LogFactory.getLog(EventGenerator.class);
 
@@ -354,7 +355,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
     protected ChildAssociationEventConsolidator createChildAssociationEventConsolidator(
-                ChildAssociationRef childAssociationRef)
+            ChildAssociationRef childAssociationRef)
     {
         return new ChildAssociationEventConsolidator(childAssociationRef, nodeResourceHelper);
     }
@@ -417,8 +418,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
     /**
-     * @return the {@link NodeEventConsolidator} for the supplied {@code nodeRef} from
-     * the current transaction context.
+     * @return the {@link NodeEventConsolidator} for the supplied {@code nodeRef} from the current transaction context.
      */
     protected NodeEventConsolidator getEventConsolidator(NodeRef nodeRef)
     {
@@ -438,7 +438,6 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         return eventConsolidator;
     }
 
-
     protected Consolidators getTxnConsolidators(Object resourceKey)
     {
         Consolidators consolidators = AlfrescoTransactionSupport.getResource(resourceKey);
@@ -451,8 +450,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
     /**
-     * @return the {@link ChildAssociationEventConsolidator} for the supplied {@code childAssociationRef} from
-     * the current transaction context.
+     * @return the {@link ChildAssociationEventConsolidator} for the supplied {@code childAssociationRef} from the current transaction context.
      */
     private ChildAssociationEventConsolidator getEventConsolidator(ChildAssociationRef childAssociationRef)
     {
@@ -473,8 +471,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     }
 
     /**
-     * @return the {@link PeerAssociationEventConsolidator} for the supplied {@code peerAssociationRef} from
-     * the current transaction context.
+     * @return the {@link PeerAssociationEventConsolidator} for the supplied {@code peerAssociationRef} from the current transaction context.
      */
     private PeerAssociationEventConsolidator getEventConsolidator(AssociationRef peerAssociationRef)
     {
@@ -507,10 +504,10 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     protected EventInfo getEventInfo(String user)
     {
         return new EventInfo().setTimestamp(getCurrentTransactionTimestamp())
-                              .setId(UUID.randomUUID().toString())
-                              .setTxnId(AlfrescoTransactionSupport.getTransactionId())
-                              .setPrincipal(user)
-                              .setSource(URI.create("/" + descriptorService.getCurrentRepositoryDescriptor().getId()));
+                .setId(UUID.randomUUID().toString())
+                .setTxnId(AlfrescoTransactionSupport.getTransactionId())
+                .setPrincipal(user)
+                .setSource(URI.create("/" + descriptorService.getCurrentRepositoryDescriptor().getId()));
     }
 
     private ZonedDateTime getCurrentTransactionTimestamp()
@@ -523,13 +520,12 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     private static ChildAssociationRef childAssociationWithoutParentOf(ChildAssociationRef childAssociationRef)
     {
         return new ChildAssociationRef(
-            null,
-            null,
-            childAssociationRef.getQName(),
-            childAssociationRef.getChildRef(),
-            childAssociationRef.isPrimary(),
-            childAssociationRef.getNthSibling()
-        );
+                null,
+                null,
+                childAssociationRef.getQName(),
+                childAssociationRef.getChildRef(),
+                childAssociationRef.isPrimary(),
+                childAssociationRef.getNthSibling());
     }
 
     @Override
@@ -546,7 +542,10 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     @Override
     protected void onShutdown(ApplicationEvent applicationEvent)
     {
-        //NOOP
+        if (eventSender != null)
+        {
+            eventSender.destroy();
+        }
     }
 
     protected class EventTransactionListener extends TransactionListenerAdapter
@@ -586,8 +585,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         }
 
         /**
-         * @return true if a node transaction is not only active, but also committed with modifications.
-         * This means that a {@link TransactionEntity} object was created.
+         * @return true if a node transaction is not only active, but also committed with modifications. This means that a {@link TransactionEntity} object was created.
          */
         protected boolean isTransactionCommitted()
         {
@@ -601,7 +599,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                 try
                 {
                     sendEvents();
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     // Must consume the exception to protect other TransactionListeners
                     LOGGER.error("Unexpected error while sending repository events", e);
@@ -650,14 +649,19 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         /**
          * Handles all kinds of events and sends them within dedicated transaction.
          *
-         * @param entityReference - reference to an entity (e.g. node, child association, peer association)
-         * @param eventConsolidator - object encapsulating events occurred in a transaction
-         * @param entityToEventEligibilityVerifier - allows to verify if entity is eligible to generate an even. If null no verification is necessary
-         * @param <REF> - entity reference type (e.g. {@link NodeRef}, {@link AssociationRef}, {@link ChildAssociationRef})
-         * @param <CON> - event consolidator type - extension of {@link EventConsolidator}
+         * @param entityReference
+         *            - reference to an entity (e.g. node, child association, peer association)
+         * @param eventConsolidator
+         *            - object encapsulating events occurred in a transaction
+         * @param entityToEventEligibilityVerifier
+         *            - allows to verify if entity is eligible to generate an even. If null no verification is necessary
+         * @param <REF>
+         *            - entity reference type (e.g. {@link NodeRef}, {@link AssociationRef}, {@link ChildAssociationRef})
+         * @param <CON>
+         *            - event consolidator type - extension of {@link EventConsolidator}
          */
-        private  <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> void sendEvent(
-            final REF entityReference, final CON eventConsolidator, final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
+        private <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> void sendEvent(
+                final REF entityReference, final CON eventConsolidator, final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
         {
             final EventInfo eventInfo = getEventInfo(AuthenticationUtil.getFullyAuthenticatedUser());
             if (isSendingEventBeforeCommitRequired())
@@ -676,16 +680,22 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         /**
          * Creates events from various kinds of entities.
          *
-         * @param entityReference - reference to an entity (e.g. node, child association, peer association)
-         * @param eventConsolidator - object encapsulating events occurred in a transaction
-         * @param eventInfo - object holding the event information
-         * @param entityToEventEligibilityVerifier - allows to verify if entity is eligible to generate an even. If null no verification is necessary
-         * @param <REF> - entity reference type (e.g. {@link NodeRef}, {@link AssociationRef}, {@link ChildAssociationRef})
-         * @param <CON> - event consolidator type - extension of {@link EventConsolidator}
+         * @param entityReference
+         *            - reference to an entity (e.g. node, child association, peer association)
+         * @param eventConsolidator
+         *            - object encapsulating events occurred in a transaction
+         * @param eventInfo
+         *            - object holding the event information
+         * @param entityToEventEligibilityVerifier
+         *            - allows to verify if entity is eligible to generate an even. If null no verification is necessary
+         * @param <REF>
+         *            - entity reference type (e.g. {@link NodeRef}, {@link AssociationRef}, {@link ChildAssociationRef})
+         * @param <CON>
+         *            - event consolidator type - extension of {@link EventConsolidator}
          */
         private <REF extends EntityRef, CON extends EventConsolidator<REF, ? extends Resource>> Optional<RepoEvent<?>> createEvent(
-            final REF entityReference, final CON eventConsolidator, final EventInfo eventInfo,
-            final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
+                final REF entityReference, final CON eventConsolidator, final EventInfo eventInfo,
+                final TriPredicate<REF, CON, EventInfo> entityToEventEligibilityVerifier)
         {
             if (eventConsolidator.isTemporaryEntity())
             {
@@ -719,8 +729,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                     if (LOGGER.isTraceEnabled())
                     {
                         LOGGER.trace("EventFilter - Excluding node: '" + nodeReference + "' of type: '"
-                            + ((nodeType == null) ? "Unknown' " : nodeType.toPrefixString())
-                            + "' created by: " + user);
+                                + ((nodeType == null) ? "Unknown' " : nodeType.toPrefixString())
+                                + "' created by: " + user);
                     }
                     return false;
                 }
@@ -747,8 +757,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                     if (LOGGER.isTraceEnabled())
                     {
                         LOGGER.trace("EventFilter - Excluding child association: '" + childAssociationReference + "' of type: '"
-                            + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
-                            + "' created by: " + user);
+                                + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
+                                + "' created by: " + user);
                     }
                     return false;
                 }
@@ -757,8 +767,8 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
                     if (LOGGER.isTraceEnabled())
                     {
                         LOGGER.trace("EventFilter - Excluding primary child association: '" + childAssociationReference + "' of type: '"
-                            + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
-                            + "' created by: " + user);
+                                + ((childAssocType == null) ? "Unknown' " : childAssocType.toPrefixString())
+                                + "' created by: " + user);
                     }
                     return false;
                 }
@@ -804,7 +814,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         {
             if (peerAssocs == null)
             {
-                 peerAssocs = new LinkedHashMap<>(29);
+                peerAssocs = new LinkedHashMap<>(29);
             }
             return peerAssocs;
         }

@@ -47,8 +47,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -66,11 +64,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
-      - name: "print java runtime version"
-        run: |
-          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v7.0.0
@@ -94,11 +87,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
-      - name: "print java runtime version"
-        run: |
-          java -version
       - uses: Alfresco/alfresco-build-tools/.github/actions/github-download-file@v7.0.0
         with:
           token: ${{ secrets.BOT_GITHUB_TOKEN }}
@@ -149,11 +137,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
-      - name: "print java runtime version"
-        run: |
-          java -version
       - uses: Alfresco/ya-pmd-scan@v4.0.0
         with:
           classpath-build-command: "mvn test-compile -ntp -Pags -pl \"-:alfresco-community-repo-docker\""
@@ -187,11 +170,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
-      - name: "print java runtime version"
-        run: |
-          java -version
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare Report Portal"
@@ -212,6 +190,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -271,9 +255,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -304,6 +285,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -355,8 +342,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -384,6 +369,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -431,8 +422,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -460,6 +449,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -507,8 +502,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -536,6 +529,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -582,8 +581,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -611,6 +608,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -657,8 +660,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -686,6 +687,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -732,8 +739,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -761,6 +766,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -805,8 +816,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -832,6 +841,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -910,8 +925,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -952,6 +965,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: run-tests
         env:
@@ -1028,8 +1047,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -1063,6 +1080,12 @@ jobs:
           RP_URL: ${{ steps.rp-prepare.outputs.url }}
         run: bash scripts/ci/add_step_summary.sh
         continue-on-error: true
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
+        with:
+          java-version: "21"
+      - name: "print java runtime version"
+        run: |
+          java -version
       - name: "Run tests"
         id: tests
         env:
@@ -1114,8 +1137,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -1193,8 +1214,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -1244,8 +1263,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -1291,8 +1308,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version
@@ -1386,8 +1401,6 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v7.0.0
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-        with:
-          java-version: "21"
       - name: "print java runtime version"
         run: |
           java -version

@@ -26,6 +26,7 @@
 package org.alfresco.repo.security.permissions;
 
 import java.util.Collection;
+import java.util.Deque;
 
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.framework.ProxyFactory;
@@ -144,9 +145,9 @@ public interface PermissionCheckCollection<T>
             // Create the advisor
             IntroductionAdvisor advisor = new DefaultIntroductionAdvisor(mixin, PermissionCheckCollection.class);
             // Proxy
-            ProxyFactory pf = new ProxyFactory(Collection.class);
-            pf.setTarget(collection);
+            ProxyFactory pf = new ProxyFactory(collection);
             pf.addAdvisor(advisor);
+            pf.removeInterface(Deque.class);
             Object proxiedObject = pf.getProxy();
             
             // Done

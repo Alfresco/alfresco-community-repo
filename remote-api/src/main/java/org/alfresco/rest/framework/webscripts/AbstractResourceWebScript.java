@@ -110,22 +110,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 @Override
                 public Object execute() throws Throwable
                 {
-                    try
-                    {
-                        final Params params = paramsExtractor.extractParams(resource.getMetaData(), req);
-                        return AbstractResourceWebScript.this.execute(resource, params, res, isReadOnly);
-                    }
-                    catch (Exception e)
-                    {
-                        if (req instanceof BufferedRequest)
-                        {
-                            // Reset the request in case of a transaction retry
-                            ((BufferedRequest) req).reset();
-                        }
-
-                        // re-throw original exception for retry
-                        throw e;
-                    }
+                    // Reset the request so that it can be read again in case of retry
+                    resetRequest(req);
+                    final Params params = paramsExtractor.extractParams(resource.getMetaData(), req);
+                    return AbstractResourceWebScript.this.execute(resource, params, res, isReadOnly);
                 }
             };
 
@@ -235,6 +223,15 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         else
         {
             renderException(exception, res, req, assistant);
+        }
+    }
+
+    protected void resetRequest(WebScriptRequest req)
+    {
+        if (req instanceof BufferedRequest)
+        {
+            BufferedRequest bufferedRequest = (BufferedRequest) req;
+            bufferedRequest.reset();
         }
     }
 

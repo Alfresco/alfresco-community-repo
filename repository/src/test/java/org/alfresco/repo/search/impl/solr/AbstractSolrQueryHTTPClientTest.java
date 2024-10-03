@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,17 +26,20 @@
 package org.alfresco.repo.search.impl.solr;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.search.QueryParserException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.URI;
@@ -46,6 +49,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import org.alfresco.httpclient.HttpClientException;
+import org.alfresco.repo.search.QueryParserException;
+
 /** Tests for the {@link AbstractSolrQueryHTTPClient}. */
 public class AbstractSolrQueryHTTPClientTest
 {
@@ -53,7 +59,7 @@ public class AbstractSolrQueryHTTPClientTest
     private static final String URL = "http://this/is/a/url";
 
     /** The abstract class under test. */
-    private AbstractSolrQueryHTTPClient abstractSolrQueryHTTPClient = spy(AbstractSolrQueryHTTPClient.class);
+    private final AbstractSolrQueryHTTPClient abstractSolrQueryHTTPClient = spy(AbstractSolrQueryHTTPClient.class);
     @Mock
     private HttpClient httpClient;
     @Mock
@@ -145,6 +151,18 @@ public class AbstractSolrQueryHTTPClientTest
 
         verify(postMethod).setURI(new URI("http://new/URL", true));
         assertEquals("Unexpected JSON response received.", "{}", response.toString());
+    }
+
+    @Test
+    public void testPostQuery_handlesIOException() throws Exception
+    {
+        String messageFromHttp = "Some IO Exception";
+        when(httpClient.executeMethod(any())).thenThrow(new IOException(messageFromHttp));
+
+        HttpClientException expectedException = assertThrows(HttpClientException.class, () -> abstractSolrQueryHTTPClient.postQuery(httpClient, URL, body));
+
+        String exceptionMessage = expectedException.getMessage();
+        assertTrue(exceptionMessage.endsWith("[%s] %s".formatted(abstractSolrQueryHTTPClient.getClass().getSimpleName(), messageFromHttp)));
     }
 
     /** Create an input stream containing the given string. */

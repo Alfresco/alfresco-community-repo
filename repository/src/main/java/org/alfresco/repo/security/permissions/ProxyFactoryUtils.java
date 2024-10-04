@@ -45,11 +45,9 @@ public class ProxyFactoryUtils
     {
         Class<?>[] proxiedInterfaces = proxyFactory.getProxiedInterfaces();
 
-        boolean isConflicting = Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(List.class));
-        if (isConflicting)
+        if (Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(List.class)))
         {
-            isConflicting = Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(Deque.class));
-            if (isConflicting)
+            if (Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(Deque.class)))
             {
                 proxyFactory.removeInterface(Deque.class);
             }

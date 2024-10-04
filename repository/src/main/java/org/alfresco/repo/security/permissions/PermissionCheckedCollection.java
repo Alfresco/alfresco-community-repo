@@ -65,11 +65,12 @@ public interface PermissionCheckedCollection<T>
      *
      * @param <T>
      *            the type of the <code>Collection</code> in use
+     *
      * @author Derek Hulley
      * @since 4.0
      */
     @SuppressWarnings("serial")
-    class PermissionCheckedCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckedCollection<T>
+    public static class PermissionCheckedCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckedCollection<T>
     {
         private final boolean isCutOff;
         private final int sizeUnchecked;
@@ -81,6 +82,24 @@ public interface PermissionCheckedCollection<T>
             this.isCutOff = isCutOff;
             this.sizeUnchecked = sizeUnchecked;
             this.sizeOriginal = sizeOriginal;
+        }
+
+        @Override
+        public boolean isCutOff()
+        {
+            return isCutOff;
+        }
+
+        @Override
+        public int sizeUnchecked()
+        {
+            return sizeUnchecked;
+        }
+
+        @Override
+        public int sizeOriginal()
+        {
+            return sizeOriginal;
         }
 
         /**
@@ -97,8 +116,9 @@ public interface PermissionCheckedCollection<T>
         public static final <TT> Collection<TT> create(
                 Collection<TT> collection, Collection<?> checkedSource)
         {
-            if (checkedSource instanceof PermissionCheckedCollection<?> source)
+            if (checkedSource instanceof PermissionCheckedCollection)
             {
+                PermissionCheckedCollection<?> source = (PermissionCheckedCollection<?>) checkedSource;
                 return create(collection, source.isCutOff(), source.sizeUnchecked(), source.sizeOriginal());
             }
             else
@@ -136,24 +156,6 @@ public interface PermissionCheckedCollection<T>
             IntroductionAdvisor advisor = new DefaultIntroductionAdvisor(mixin, PermissionCheckedCollection.class);
             // Create Proxy
             return (Collection<TT>) ProxyFactoryUtils.createProxy(collection, advisor);
-        }
-
-        @Override
-        public boolean isCutOff()
-        {
-            return isCutOff;
-        }
-
-        @Override
-        public int sizeUnchecked()
-        {
-            return sizeUnchecked;
-        }
-
-        @Override
-        public int sizeOriginal()
-        {
-            return sizeOriginal;
         }
     }
 }

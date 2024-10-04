@@ -28,7 +28,6 @@ package org.alfresco.repo.security.permissions;
 import java.util.Collection;
 
 import org.springframework.aop.IntroductionAdvisor;
-import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.DefaultIntroductionAdvisor;
 import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 

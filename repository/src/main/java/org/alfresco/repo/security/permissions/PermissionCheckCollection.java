@@ -28,7 +28,6 @@ package org.alfresco.repo.security.permissions;
 import java.util.Collection;
 
 import org.springframework.aop.IntroductionAdvisor;
-import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.support.DefaultIntroductionAdvisor;
 import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 
@@ -128,7 +127,7 @@ public interface PermissionCheckCollection<T>
          *                          {@link PermissionCheckCollection} interface
          */
         @SuppressWarnings("unchecked")
-        public static <TT> Collection<TT> create(
+        public static final <TT> Collection<TT> create(
                 Collection<TT> collection,
                 int targetResultCount, long cutOffAfterTimeMs, int cutOffAfterCount)
         {

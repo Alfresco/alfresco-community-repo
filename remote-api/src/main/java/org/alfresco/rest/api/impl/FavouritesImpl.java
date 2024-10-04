@@ -38,9 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
@@ -89,8 +86,6 @@ import org.alfresco.util.Pair;
  */
 public class FavouritesImpl implements Favourites
 {
-    private static final Log logger = LogFactory.getLog(FavouritesImpl.class);
-
     private static final List<String> ALLOWED_INCLUDES = List.of(PARAM_INCLUDE_PROPERTIES, PARAM_INCLUDE_ASPECTNAMES);
 
     private People people;
@@ -139,7 +134,7 @@ public class FavouritesImpl implements Favourites
 
     private Target getTarget(PersonFavourite personFavourite, Parameters parameters)
     {
-        Target target = null;
+        Target target;
         NodeRef nodeRef = personFavourite.getNodeRef();
         Type type = personFavourite.getType();
         if (type.equals(Type.FILE))
@@ -181,12 +176,12 @@ public class FavouritesImpl implements Favourites
         final List<String> paramsInclude = parameters.getInclude();
         if (!Collections.disjoint(paramsInclude, ALLOWED_INCLUDES))
         {
-            final List<String> includes = ALLOWED_INCLUDES.stream().filter(a -> paramsInclude.contains(a)).collect(Collectors.toList());
+            final List<String> includes = ALLOWED_INCLUDES.stream().filter(paramsInclude::contains).collect(Collectors.toList());
             // get node representation with only properties included
             Node node = nodes.getFolderOrDocument(personFavourite.getNodeRef(), null, null, includes, null);
             // Create a map from node properties excluding properties already in this Favorite
             Map<String, Object> filteredNodeProperties = filterProps(node.getProperties(), EXCLUDED_PROPS);
-            if (filteredNodeProperties.size() > 0 && paramsInclude.contains(PARAM_INCLUDE_PROPERTIES))
+            if (!filteredNodeProperties.isEmpty() && paramsInclude.contains(PARAM_INCLUDE_PROPERTIES))
             {
                 fav.setProperties(filteredNodeProperties);
             }
@@ -210,7 +205,7 @@ public class FavouritesImpl implements Favourites
     private CollectionWithPagingInfo<Favourite> wrap(Paging paging, PagingResults<PersonFavourite> personFavourites, Parameters parameters)
     {
         final List<PersonFavourite> page = personFavourites.getPage();
-        final List<Favourite> list = new AbstractList<Favourite>() {
+        final List<Favourite> list = new AbstractList<>() {
             @Override
             public Favourite get(int index)
             {
@@ -364,7 +359,7 @@ public class FavouritesImpl implements Favourites
 
         List<Pair<FavouritesService.SortFields, Boolean>> sortProps = getSortProps(parameters);
 
-        final Set<Type> filteredByClientQuery = new HashSet<Type>();
+        final Set<Type> filteredByClientQuery = new HashSet<>();
         Set<Type> filterTypes = FavouritesService.Type.ALL_FILTER_TYPES; // Default all
 
         // filterType is of the form 'target.<site|file|folder>'
@@ -382,7 +377,7 @@ public class FavouritesImpl implements Favourites
             {
                 if (filteredByClient != null)
                 {
-                    int idx = filteredByClient.lastIndexOf("/");
+                    int idx = filteredByClient.lastIndexOf('/');
                     if (idx == -1 || idx == filteredByClient.length())
                     {
                         throw new InvalidArgumentException();
@@ -397,7 +392,7 @@ public class FavouritesImpl implements Favourites
             }
         });
 
-        if (filteredByClientQuery.size() > 0)
+        if (!filteredByClientQuery.isEmpty())
         {
             filterTypes = filteredByClientQuery;
         }
@@ -431,7 +426,7 @@ public class FavouritesImpl implements Favourites
     {
         List<Pair<FavouritesService.SortFields, Boolean>> sortProps = new ArrayList<>();
         List<SortColumn> sortCols = parameters.getSorting();
-        if ((sortCols != null) && (sortCols.size() > 0))
+        if (sortCols != null && !sortCols.isEmpty())
         {
             for (SortColumn sortCol : sortCols)
             {
@@ -444,7 +439,7 @@ public class FavouritesImpl implements Favourites
                 {
                     throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
                 }
-                sortProps.add(new Pair<>(sortField, (sortCol.asc ? Boolean.TRUE : Boolean.FALSE)));
+                sortProps.add(new Pair<>(sortField, sortCol.asc ? Boolean.TRUE : Boolean.FALSE));
             }
         }
         else

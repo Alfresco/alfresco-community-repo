@@ -36,22 +36,22 @@ public class RestPersonFavoritesModel extends TestModel implements IRestModel<Re
 {
     @JsonProperty(value = "entry")
     RestPersonFavoritesModel model;
-    
+
     @Override
-    public RestPersonFavoritesModel onModel() 
-    {     
-      return model;
+    public RestPersonFavoritesModel onModel()
+    {
+        return model;
     }
 
     private String targetGuid;
     private String createdAt;
+    private List<String> aspectNames;
     private List<String> allowableOperations;
-    
+
     private RestTargetModel target;
 
     public RestPersonFavoritesModel()
-    {
-    }
+    {}
 
     public RestPersonFavoritesModel(String targetGuid, String createdAt)
     {
@@ -69,7 +69,7 @@ public class RestPersonFavoritesModel extends TestModel implements IRestModel<Re
     {
         this.targetGuid = targetGuid;
     }
-    
+
     public RestTargetModel getTarget()
     {
         return target;
@@ -90,11 +90,23 @@ public class RestPersonFavoritesModel extends TestModel implements IRestModel<Re
         this.createdAt = createdAt;
     }
 
-    public List<String> getAllowableOperations() {
+    public List<String> getAspectNames()
+    {
+        return aspectNames;
+    }
+
+    public void setAspectNames(List<String> aspectNames)
+    {
+        this.aspectNames = aspectNames;
+    }
+
+    public List<String> getAllowableOperations()
+    {
         return allowableOperations;
     }
 
-    public void setAllowableOperations(List<String> allowableOperations) {
+    public void setAllowableOperations(List<String> allowableOperations)
+    {
         this.allowableOperations = allowableOperations;
     }
 }

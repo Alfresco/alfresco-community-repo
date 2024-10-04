@@ -25,11 +25,11 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import java.util.Collection;
+
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.support.DefaultIntroductionAdvisor;
 import org.springframework.aop.support.DelegatingIntroductionInterceptor;
-
-import java.util.Collection;
 
 /**
  * Interface for collection-based results that carry extra information about the state of permission cut-offs.
@@ -42,14 +42,12 @@ public interface PermissionCheckedCollection<T>
     /**
      * Check if the results have been truncated by permission check limits.
      *
-     * @return <tt>true</tt> - if the results (usually a collection) have been
-     *         cut off by permission check limits
+     * @return <tt>true</tt> - if the results (usually a collection) have been cut off by permission check limits
      */
     boolean isCutOff();
 
     /**
-     * Get the number of objects in the original (unfiltered) collection that did
-     * <b>not</b> have any permission checks.
+     * Get the number of objects in the original (unfiltered) collection that did <b>not</b> have any permission checks.
      *
      * @return number of entries from the original collection that were not checked
      */
@@ -66,7 +64,7 @@ public interface PermissionCheckedCollection<T>
      * Helper 'introduction' to allow simple addition of the {@link PermissionCheckedCollection} interface to existing collections.
      *
      * @param <T>
-     *         the type of the <code>Collection</code> in use
+     *            the type of the <code>Collection</code> in use
      * @author Derek Hulley
      * @since 4.0
      */
@@ -86,14 +84,14 @@ public interface PermissionCheckedCollection<T>
         }
 
         /**
-         * Helper method to create a {@link PermissionCheckedCollection} from an existing <code>Collection</code> by applying the same values as present on a potentially permission-checked source.  If the existing checked source is <b>NOT</b> permission-checked, then the collection will not be decorated.
+         * Helper method to create a {@link PermissionCheckedCollection} from an existing <code>Collection</code> by applying the same values as present on a potentially permission-checked source. If the existing checked source is <b>NOT</b> permission-checked, then the collection will not be decorated.
          *
          * @param <TT>
-         *         the type of the <code>Collection</code>
+         *            the type of the <code>Collection</code>
          * @param collection
-         *         the <code>Collection</code> to proxy
+         *            the <code>Collection</code> to proxy
          * @param checkedSource
-         *         a collection that might implement {@link PermissionCheckedCollection}
+         *            a collection that might implement {@link PermissionCheckedCollection}
          * @return a <code>Collection</code> of the same type but including the {@link PermissionCheckedCollection} interface
          */
         public static final <TT> Collection<TT> create(
@@ -113,15 +111,15 @@ public interface PermissionCheckedCollection<T>
          * Helper method to create a {@link PermissionCheckedCollection} from an existing <code>Collection</code>
          *
          * @param <TT>
-         *         the type of the <code>Collection</code>
+         *            the type of the <code>Collection</code>
          * @param collection
-         *         the <code>Collection</code> to proxy
+         *            the <code>Collection</code> to proxy
          * @param isCutOff
-         *         <tt>true</tt> if permission checking was cut off before completion
+         *            <tt>true</tt> if permission checking was cut off before completion
          * @param sizeUnchecked
-         *         number of entries from the original collection that were not checked
+         *            number of entries from the original collection that were not checked
          * @param sizeOriginal
-         *         number of entries in the original, pre-checked collection
+         *            number of entries in the original, pre-checked collection
          * @return a <code>Collection</code> of the same type but including the {@link PermissionCheckedCollection} interface
          */
         @SuppressWarnings("unchecked")
@@ -133,8 +131,7 @@ public interface PermissionCheckedCollection<T>
             DelegatingIntroductionInterceptor mixin = new PermissionCheckedCollectionMixin<Integer>(
                     isCutOff,
                     sizeUnchecked,
-                    sizeOriginal
-            );
+                    sizeOriginal);
             // Create the advisor
             IntroductionAdvisor advisor = new DefaultIntroductionAdvisor(mixin, PermissionCheckedCollection.class);
             // Create Proxy

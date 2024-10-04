@@ -34,15 +34,16 @@ import org.springframework.aop.framework.ProxyFactory;
 
 class ProxyFactoryUtils
 {
-    private ProxyFactoryUtils() {}
+    private ProxyFactoryUtils()
+    {}
 
     /**
      * Delegate creation of {@link ProxyFactory} and proxy to have control over it in one place.
      *
      * @param collection
-     *         given collection for ProxyFactory.
+     *            given collection for ProxyFactory.
      * @param advisor
-     *         given advisor for ProxyFactory.
+     *            given advisor for ProxyFactory.
      * @return the proxy object.
      */
     protected static Object createProxy(Collection<?> collection, IntroductionAdvisor advisor)

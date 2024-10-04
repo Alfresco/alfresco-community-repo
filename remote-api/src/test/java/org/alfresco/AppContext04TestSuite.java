@@ -36,8 +36,6 @@ import org.alfresco.util.testing.category.NonBuildTests;
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
 @Suite.SuiteClasses({
-        // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context-test.xml,
-        // classpath:alfresco/web-scripts-application-context.xml]
         org.alfresco.repo.web.scripts.quickshare.QuickShareRestApiTest.class,
         org.alfresco.repo.web.scripts.admin.AdminWebScriptTest.class,
         org.alfresco.repo.web.scripts.audit.AuditWebScriptTest.class,
@@ -78,6 +76,7 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.repo.web.scripts.node.NodeWebScripTest.class,
         org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
         org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
+        org.alfresco.rest.api.impl.FavouritesImplUnitTest.class,
         org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class
 })
 public class AppContext04TestSuite

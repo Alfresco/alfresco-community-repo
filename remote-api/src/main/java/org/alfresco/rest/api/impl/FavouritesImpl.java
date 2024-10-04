@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.impl;
 
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -92,7 +93,7 @@ public class FavouritesImpl implements Favourites
 {
     private static final Log logger = LogFactory.getLog(FavouritesImpl.class);
 
-    private static final List<String> ALLOWED_INCLUDES = List.of(PARAM_INCLUDE_PROPERTIES, PARAM_INCLUDE_ALLOWABLEOPERATIONS);
+    private static final List<String> ALLOWED_INCLUDES = List.of(PARAM_INCLUDE_PROPERTIES, PARAM_INCLUDE_ASPECTNAMES, PARAM_INCLUDE_ALLOWABLEOPERATIONS);
 
     private People people;
     private Sites sites;
@@ -190,6 +191,10 @@ public class FavouritesImpl implements Favourites
             if (filteredNodeProperties.size() > 0 && paramsInclude.contains(PARAM_INCLUDE_PROPERTIES))
             {
                 fav.setProperties(filteredNodeProperties);
+            }
+            if (paramsInclude.contains(PARAM_INCLUDE_ASPECTNAMES))
+            {
+                fav.setAspectNames(node.getAspectNames());
             }
             final List<String> allowableOperations = node.getAllowableOperations();
             if (CollectionUtils.isNotEmpty(allowableOperations) && paramsInclude.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))

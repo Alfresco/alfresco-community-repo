@@ -29,6 +29,7 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 public class GetFavoritesTests extends RestTest
 {
     private static final String ALLOWABLE_OPERATIONS = "allowableOperations";
+    private static final String ASPECT_NAMES = "aspectNames";
     private UserModel adminUserModel, userModel;
     private SiteModel firstSiteModel;
     private SiteModel secondSiteModel;
@@ -588,5 +589,18 @@ public class GetFavoritesTests extends RestTest
             restClient.authenticateUser(adminUserModel).withSearchAPI().search(query);
             restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.notNullValue());
         });
+    }
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
+            description = "Verify if get favorites response returns aspectNames when requested")
+    public void checkResponsesForGetFavoritesWithAspectNames()
+    {
+        final RestPersonFavoritesModelsCollection adminFavorites = restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ASPECT_NAMES).getFavorites();
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+
+        adminFavorites.getEntries().stream()
+                .map(RestPersonFavoritesModel::onModel)
+                .forEach(m -> m.assertThat().field(ASPECT_NAMES).isNotEmpty());
     }
 }

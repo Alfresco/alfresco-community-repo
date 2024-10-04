@@ -128,7 +128,7 @@ public interface PermissionCheckCollection<T>
          *                          {@link PermissionCheckCollection} interface
          */
         @SuppressWarnings("unchecked")
-        public static final <TT> Collection<TT> create(
+        public static <TT> Collection<TT> create(
                 Collection<TT> collection,
                 int targetResultCount, long cutOffAfterTimeMs, int cutOffAfterCount)
         {
@@ -143,14 +143,8 @@ public interface PermissionCheckCollection<T>
                     cutOffAfterCount);
             // Create the advisor
             IntroductionAdvisor advisor = new DefaultIntroductionAdvisor(mixin, PermissionCheckCollection.class);
-            // Proxy
-            ProxyFactory pf = new ProxyFactory(collection);
-            pf.addAdvisor(advisor);
-            ProxyFactoryUtils.removeConflictingInterfaces(pf);
-            Object proxiedObject = pf.getProxy();
-            
-            // Done
-            return (Collection<TT>) proxiedObject;
+            // Create Proxy
+            return (Collection<TT>) ProxyFactoryUtils.createProxy(collection, advisor);
         }
     }
 }

@@ -150,14 +150,8 @@ public interface PermissionCheckedCollection<T>
                     );
             // Create the advisor
             IntroductionAdvisor advisor = new DefaultIntroductionAdvisor(mixin, PermissionCheckedCollection.class);
-            // Proxy
-            ProxyFactory pf = new ProxyFactory(collection);
-            pf.addAdvisor(advisor);
-            ProxyFactoryUtils.removeConflictingInterfaces(pf);
-            Object proxiedObject = pf.getProxy();
-            
-            // Done
-            return (Collection<TT>) proxiedObject;
+            // Create Proxy
+            return (Collection<TT>) ProxyFactoryUtils.createProxy(collection, advisor);
         }
     }
 }

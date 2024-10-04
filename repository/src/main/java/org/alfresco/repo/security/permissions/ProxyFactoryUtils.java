@@ -25,15 +25,30 @@
  */
 package org.alfresco.repo.security.permissions;
 
+import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.framework.ProxyFactory;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 import java.util.function.Predicate;
 
 public class ProxyFactoryUtils
 {
+    /**
+     * Delegate creation of {@link ProxyFactory} and proxy to have control over it in one place.
+     * @param collection given collection for ProxyFactory.
+     * @param advisor given advisor for ProxyFactory.
+     * @return the proxy object.
+     */
+    protected static Object createProxy(Collection<?> collection, IntroductionAdvisor advisor)
+    {
+        ProxyFactory pf = new ProxyFactory(collection);
+        pf.addAdvisor(advisor);
+        removeConflictingInterfaces(pf);
+        return pf.getProxy();
+    }
 
     /**
      * Utility method provided for Java 21 compliance.
@@ -41,7 +56,7 @@ public class ProxyFactoryUtils
      * between them since Java 21. See {@code List.reversed()} and {@code Deque.reversed()}.
      * @param proxyFactory given {@link ProxyFactory} for modification.
      */
-    protected static void removeConflictingInterfaces(ProxyFactory proxyFactory)
+    private static void removeConflictingInterfaces(ProxyFactory proxyFactory)
     {
         Class<?>[] proxiedInterfaces = proxyFactory.getProxiedInterfaces();
 
@@ -53,4 +68,6 @@ public class ProxyFactoryUtils
             }
         }
     }
+
+
 }

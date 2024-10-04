@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.model;
 
+import java.util.Objects;
+
 /**
  * A document target favourite.
  * 
@@ -62,4 +64,24 @@ public class DocumentTarget extends Target
         return "DocumentTarget [file=" + file + "]";
     }
 
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        DocumentTarget that = (DocumentTarget) o;
+        return Objects.equals(file, that.file);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hashCode(file);
+    }
 }

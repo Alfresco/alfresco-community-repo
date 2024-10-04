@@ -25,13 +25,14 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
+
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +90,8 @@ import org.alfresco.util.Pair;
 public class FavouritesImpl implements Favourites
 {
     private static final Log logger = LogFactory.getLog(FavouritesImpl.class);
+
+    private static final List<String> ALLOWED_INCLUDES = List.of(PARAM_INCLUDE_PROPERTIES, PARAM_INCLUDE_ASPECTNAMES);
 
     private People people;
     private Sites sites;
@@ -175,17 +178,21 @@ public class FavouritesImpl implements Favourites
         fav.setTarget(target);
 
         // REPO-1147 allow retrieving additional properties
-        if (parameters.getInclude().contains(PARAM_INCLUDE_PROPERTIES))
+        final List<String> paramsInclude = parameters.getInclude();
+        if (!Collections.disjoint(paramsInclude, ALLOWED_INCLUDES))
         {
-            List<String> includeProperties = new LinkedList<>();
-            includeProperties.add(PARAM_INCLUDE_PROPERTIES);
+            final List<String> includes = ALLOWED_INCLUDES.stream().filter(a -> paramsInclude.contains(a)).collect(Collectors.toList());
             // get node representation with only properties included
-            Node node = nodes.getFolderOrDocument(personFavourite.getNodeRef(), null, null, includeProperties, null);
+            Node node = nodes.getFolderOrDocument(personFavourite.getNodeRef(), null, null, includes, null);
             // Create a map from node properties excluding properties already in this Favorite
             Map<String, Object> filteredNodeProperties = filterProps(node.getProperties(), EXCLUDED_PROPS);
-            if (filteredNodeProperties.size() > 0)
+            if (filteredNodeProperties.size() > 0 && paramsInclude.contains(PARAM_INCLUDE_PROPERTIES))
             {
                 fav.setProperties(filteredNodeProperties);
+            }
+            if (paramsInclude.contains(PARAM_INCLUDE_ASPECTNAMES))
+            {
+                fav.setAspectNames(node.getAspectNames());
             }
         }
 

@@ -52,7 +52,7 @@ public class ProxyFactoryUtils
 
     /**
      * Utility method provided for Java 21 compliance.
-     * If {@code proxyFactory} contains both {@link List} and {@link Deque} second will be removed as there is conflict
+     * If {@code proxyFactory} contains both {@link List} and {@link Deque} interfaces second will be removed as there is conflict
      * between them since Java 21. See {@code List.reversed()} and {@code Deque.reversed()}.
      * @param proxyFactory given {@link ProxyFactory} for modification.
      */

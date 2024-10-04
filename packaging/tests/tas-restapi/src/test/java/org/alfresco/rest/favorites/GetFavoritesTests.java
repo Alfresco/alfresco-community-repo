@@ -2,6 +2,11 @@ package org.alfresco.rest.favorites;
 
 import java.util.List;
 
+import org.hamcrest.Matchers;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestErrorModel;
@@ -20,10 +25,6 @@ import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-import org.hamcrest.Matchers;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 public class GetFavoritesTests extends RestTest
 {
@@ -56,7 +57,7 @@ public class GetFavoritesTests extends RestTest
         firstSiteUsers = dataUser.addUsersWithRolesToSite(firstSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
                 UserRole.SiteContributor);
         secondSiteUsers = dataUser.addUsersWithRolesToSite(secondSiteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer,
-            UserRole.SiteContributor);
+                UserRole.SiteContributor);
 
         restClient.authenticateUser(userModel);
         restClient.withCoreAPI().usingUser(userModel).addSiteToFavorites(firstSiteModel);
@@ -64,9 +65,9 @@ public class GetFavoritesTests extends RestTest
         restClient.withCoreAPI().usingUser(userModel).addSiteToFavorites(thirdSiteModel);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.SANITY,
             description = "Verify Manager user gets favorites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY})
     public void managerIsAbleToRetrieveFavorites()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteManager));
@@ -79,10 +80,10 @@ public class GetFavoritesTests extends RestTest
                 .assertThat().entriesListContains("targetGuid", secondSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.SANITY,
             description = "Verify user gets status code 401 if authentication call fails")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY })
-//    @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.SANITY})
+    // @Bug(id = "MNT-16904", description = "It fails only on environment with tenants")
     public void userIsNotAbleToRetrieveFavoritesIfAuthenticationFails()
     {
         UserModel siteManager = firstSiteUsers.getOneUserWithRole(UserRole.SiteManager);
@@ -91,44 +92,44 @@ public class GetFavoritesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets favorites sites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void adminIsAbleToRetrieveFavoritesSites()
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(firstSiteModel);
         restClient.withCoreAPI().usingUser(adminUserModel).addSiteToFavorites(secondSiteModel);
-        
+
         userFavorites = restClient.withCoreAPI()
                 .usingAuthUser().where().targetSiteExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         userFavorites.assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
-                  .and().entriesListContains("targetGuid", secondSiteModel.getGuid());    
+                .and().entriesListContains("targetGuid", secondSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets favorites folders with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void adminIsAbleToRetrieveFavoritesFolders()
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).addFolderToFavorites(firstFolderModel);
         restClient.withCoreAPI().usingUser(adminUserModel).addFolderToFavorites(secondFolderModel);
-        
+
         userFavorites = restClient.withCoreAPI()
                 .usingAuthUser().where().targetFolderExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         userFavorites.assertThat().entriesListContains("targetGuid", firstFolderModel.getNodeRef())
-                  .and().entriesListContains("targetGuid", secondFolderModel.getNodeRef());    
+                .and().entriesListContains("targetGuid", secondFolderModel.getNodeRef());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Admin user gets favorites files with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void adminIsAbleToRetrieveFavoritesFiles()
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(adminUserModel).addFileToFavorites(firstFileModel);
         restClient.withCoreAPI().usingUser(adminUserModel).addFileToFavorites(secondFileModel);
-        
+
         userFavorites = restClient.withCoreAPI()
                 .usingAuthUser().where().targetFileExist().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
@@ -136,87 +137,87 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListContains("targetGuid", secondFileModel.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Collaborator user gets favorites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void collaboratorIsAbleToRetrieveFavorites()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
+                .withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
-        
+
         userFavorites = restClient.withCoreAPI().usingAuthUser().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         userFavorites.assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
-                  .and().entriesListContains("targetGuid", secondSiteModel.getGuid());
+                .and().entriesListContains("targetGuid", secondSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Contributor user gets favorites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void contributorIsAbleToRetrieveFavorites()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteContributor))
-                  .withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
+                .withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
-        
+
         userFavorites = restClient.withCoreAPI().usingAuthUser().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         userFavorites.assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid()).and()
-                  .entriesListContains("targetGuid", secondSiteModel.getGuid());
+                .entriesListContains("targetGuid", secondSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify Consumer user gets favorites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void consumerIsAbleToRetrieveFavorites()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteConsumer))
-                  .withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
+                .withCoreAPI().usingAuthUser().addSiteToFavorites(firstSiteModel);
         restClient.withCoreAPI().usingAuthUser().addSiteToFavorites(secondSiteModel);
-        
+
         userFavorites = restClient.withCoreAPI().usingAuthUser().getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         userFavorites.assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid())
-                  .assertThat().entriesListContains("targetGuid", secondSiteModel.getGuid());    
+                .assertThat().entriesListContains("targetGuid", secondSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user doesn't have permission to get favorites of another user with Rest API and status code is 404")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsNotAbleToRetrieveFavoritesOfAnotherUser()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteConsumer))
-                  .withCoreAPI().usingUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).getFavorites();
+                .withCoreAPI().usingUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator)).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
                 .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify user doesn't have permission to get favorites of admin user with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION  })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsNotAbleToRetrieveFavoritesOfAdminUser()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteConsumer)).withCoreAPI()
-                  .usingUser(adminUserModel).getFavorites();
+                .usingUser(adminUserModel).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                  .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, adminUserModel.getUsername()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, adminUserModel.getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin user doesn't have permission to get favorites of another user with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void adminIsNotAbleToRetrieveFavoritesOfAnotherUser()
     {
         restClient.authenticateUser(adminUserModel).withCoreAPI().usingUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator))
-                  .getFavorites();
+                .getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                  .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
+                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator).getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets only favorites sites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToRetrieveOnlyFavoritesSites()
     {
         restClient.authenticateUser(secondSiteUsers.getOneUserWithRole(UserRole.SiteManager));
@@ -232,9 +233,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", firstFolderModel.getNodeRef());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets only favorites files with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToRetrieveOnlyFavoritesFiles()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -250,9 +251,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", firstFolderModel.getNodeRef());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets only favorites folders with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToRetrieveOnlyFavoritesFolders()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -268,9 +269,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", firstFileModel.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets only favorites files or folders with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToRetrieveFavoritesFilesOrFolders()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteConsumer));
@@ -289,9 +290,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", firstSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets only favorites files or sites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToRetrieveFavoritesFilesOrSites()
     {
         restClient.authenticateUser(secondSiteUsers.getOneUserWithRole(UserRole.SiteManager));
@@ -310,9 +311,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", firstFolderModel.getNodeRef());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets only favorites folders or sites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToRetrieveFavoritesFoldersOrSites()
     {
         restClient.authenticateUser(secondSiteUsers.getOneUserWithRole(UserRole.SiteManager));
@@ -331,9 +332,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", firstFileModel.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets all favorites with Rest API and status code is 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToRetrieveAllFavorites()
     {
         restClient.authenticateUser(secondSiteUsers.getOneUserWithRole(UserRole.SiteCollaborator));
@@ -362,9 +363,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", secondFileModel.getNodeRefWithoutVersion());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify request for a user with no favorites returns status 200")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userHasNoFavorites()
     {
         restClient.authenticateUser(secondSiteUsers.getOneUserWithRole(UserRole.SiteContributor));
@@ -374,9 +375,9 @@ public class GetFavoritesTests extends RestTest
         userFavorites.assertThat().entriesListIsEmpty().and().paginationField("totalItems").is("0");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify request using invalid where parameter returns status 400")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void getFavoritesUsingInvalidWhereParameter()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteConsumer));
@@ -390,9 +391,9 @@ public class GetFavoritesTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify User gets correct favorites after deleting a favorite")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void checkFavoriteFolderIsRemoved()
     {
         restClient.authenticateUser(firstSiteUsers.getOneUserWithRole(UserRole.SiteManager));
@@ -408,9 +409,9 @@ public class GetFavoritesTests extends RestTest
                 .and().paginationField("totalItems").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites specifying -me- string in place of <personid> for request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToGetFavoritesWhenUsingMeAsUsername()
     {
         userFavorites = restClient.authenticateUser(userModel).withCoreAPI().usingMe().getFavorites();
@@ -418,9 +419,9 @@ public class GetFavoritesTests extends RestTest
         userFavorites.assertThat().entriesListContains("targetGuid", firstSiteModel.getGuid()).and().entriesListContains("targetGuid", secondSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites using empty for where parameter for request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToGetFavoritesWhenUsingEmptyWhereParameter()
     {
         userFavorites = restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().where().getFavorites();
@@ -428,27 +429,27 @@ public class GetFavoritesTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that for invalid maxItems parameter status code returned is 400.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void checkInvalidMaxItemsStatusCode()
     {
         restClient.authenticateUser(adminUserModel).withParams("maxItems=AB").withCoreAPI().usingUser(adminUserModel).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Invalid paging parameter");
     }
 
-    @TestRail(section = { TestGroup.REST_API,TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify that for invalid skipCount parameter status code returned is 400.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void checkInvalidSkipCountStatusCode()
     {
         restClient.authenticateUser(adminUserModel).withParams("skipCount=AB").withCoreAPI().usingUser(adminUserModel).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary("Invalid paging parameter");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites when using invalid network id for non-tenant user")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void getFavoritesWhenNetworkIdIsInvalid()
     {
         UserModel networkUserModel = dataUser.createRandomTestUser();
@@ -457,9 +458,9 @@ public class GetFavoritesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND).assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, networkUserModel.getUsername()));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites using AND instead of OR in where parameter for request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsNotAbleToGetFavoritesWhenUsingANDInWhereParameter()
     {
         userFavorites = restClient.withCoreAPI().usingAuthUser().where().targetFolderExist().invalidWhereParameter("AND").targetFileExist().getFavorites();
@@ -467,9 +468,9 @@ public class GetFavoritesTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites using wrong name instead of EXISTS in where parameter for request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsNotAbleToGetFavoritesWhenUsingWrongWhereParameter()
     {
         userFavorites = restClient.withCoreAPI().usingAuthUser().where().invalidWhereParameter("EXIST((target/site))").targetFileExist().getFavorites();
@@ -477,9 +478,9 @@ public class GetFavoritesTests extends RestTest
                 .assertLastError().containsSummary(String.format(RestErrorModel.INVALID_ARGUMENT, "WHERE query"));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites except the first one for request")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToGetFavoritesExceptTheFirstOne()
     {
         userFavorites = restClient.authenticateUser(userModel).withParams("skipCount=1").withCoreAPI().usingUser(userModel).getFavorites();
@@ -490,9 +491,9 @@ public class GetFavoritesTests extends RestTest
                 .and().entriesListDoesNotContain("targetGuid", thirdSiteModel.getGuid());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get first two favorites sites")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToGetFirstTwoFavorites()
     {
         userFavorites = restClient.authenticateUser(userModel).withParams("maxItems=2").withCoreAPI().usingUser(userModel).getFavorites();
@@ -506,9 +507,9 @@ public class GetFavoritesTests extends RestTest
                 .and().field("count").is("2");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify get favorites sites when using empty values for skipCount and maxItems")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToGetFavoritesWhenSkipCountAndMaxItemsAreEmpty()
     {
         restClient.authenticateUser(userModel).withParams("skipCount= ").withCoreAPI().usingUser(userModel).getFavorites();
@@ -518,9 +519,9 @@ public class GetFavoritesTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST).assertLastError().containsSummary(String.format(RestErrorModel.INVALID_MAXITEMS, " "));
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify the get favorites request for a high value for skipCount parameter")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToGetFavoritesWithHighSkipCount()
     {
         userFavorites = restClient.authenticateUser(userModel).withParams("skipCount=999999999").withCoreAPI().usingUser(userModel).getFavorites();
@@ -529,9 +530,9 @@ public class GetFavoritesTests extends RestTest
         userFavorites.assertThat().entriesListIsEmpty().assertThat().paginationField("skipCount").is("999999999");
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION,
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify the get favorites request with properties parameter applied")
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
     public void userIsAbleToGetFavoritesWithPropertiesParamApplied()
     {
         userFavorites = restClient.authenticateUser(userModel).withParams("properties=targetGuid").withCoreAPI().usingUser(userModel).getFavorites();
@@ -541,8 +542,8 @@ public class GetFavoritesTests extends RestTest
         restPersonFavoritesModel.assertThat().field("targetGuid").is(thirdSiteModel.getGuid()).and().field("createdAt").isNull();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.FAVORITES }, executionType = ExecutionType.REGRESSION, description = "Verify entry details for get favorites response with Rest API")
+    @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION, description = "Verify entry details for get favorites response with Rest API")
     public void checkResponseSchemaForGetFavorites()
     {
         userFavorites = restClient.authenticateUser(userModel).withCoreAPI().usingAuthUser().getFavorites();
@@ -564,8 +565,7 @@ public class GetFavoritesTests extends RestTest
             description = "Verify if get favorites response returns allowableOperations object when requested")
     public void checkResponsesForGetFavoritesWithAllowableOperations()
     {
-        final RestPersonFavoritesModelsCollection adminFavorites =
-                restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ALLOWABLE_OPERATIONS).getFavorites();
+        final RestPersonFavoritesModelsCollection adminFavorites = restClient.authenticateUser(adminUserModel).withCoreAPI().usingAuthUser().include(ALLOWABLE_OPERATIONS).getFavorites();
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
         adminFavorites.getEntries().stream()
@@ -576,18 +576,17 @@ public class GetFavoritesTests extends RestTest
     @TestRail(section = {TestGroup.REST_API, TestGroup.FAVORITES}, executionType = ExecutionType.REGRESSION,
             description = "Verify the get favorites request with properties parameter applied")
     @Test(groups = {TestGroup.REST_API, TestGroup.FAVORITES, TestGroup.REGRESSION})
-    public void checkSearchResponseContainsIsFavoriteWhenRequested() throws InterruptedException {
+    public void checkSearchResponseContainsIsFavoriteWhenRequested() throws InterruptedException
+    {
         final SearchRequest query = new SearchRequest();
         final RestRequestQueryModel queryReq = new RestRequestQueryModel();
         queryReq.setQuery(firstFileModel.getName());
         query.setQuery(queryReq);
         query.setInclude(List.of("isFavorite"));
 
-        Utility.sleep(500, 60000, () ->
-                {
-                    restClient.authenticateUser(adminUserModel).withSearchAPI().search(query);
-                    restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.notNullValue());
-                }
-        );
+        Utility.sleep(500, 60000, () -> {
+            restClient.authenticateUser(adminUserModel).withSearchAPI().search(query);
+            restClient.onResponse().assertThat().body("list.entries.entry[0].isFavorite", Matchers.notNullValue());
+        });
     }
 }

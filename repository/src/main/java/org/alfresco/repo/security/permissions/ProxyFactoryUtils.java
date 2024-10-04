@@ -60,12 +60,10 @@ public class ProxyFactoryUtils
     {
         Class<?>[] proxiedInterfaces = proxyFactory.getProxiedInterfaces();
 
-        if (Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(List.class)))
+        if (Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(List.class)) &&
+                Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(Deque.class)))
         {
-            if (Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(Deque.class)))
-            {
                 proxyFactory.removeInterface(Deque.class);
-            }
         }
     }
 }

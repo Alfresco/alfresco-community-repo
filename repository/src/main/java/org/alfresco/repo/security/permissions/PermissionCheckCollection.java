@@ -71,7 +71,7 @@ public interface PermissionCheckCollection<T>
      * @since 4.0
      */
     @SuppressWarnings("serial")
-    public static class PermissionCheckCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckCollection<T>
+    class PermissionCheckCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckCollection<T>
     {
         private final int targetResultCount;
         private final long cutOffAfterTimeMs;
@@ -127,7 +127,7 @@ public interface PermissionCheckCollection<T>
          * @return a <code>Collection</code> of the same type but including the {@link PermissionCheckCollection} interface
          */
         @SuppressWarnings("unchecked")
-        public static final <TT> Collection<TT> create(
+        public static <TT> Collection<TT> create(
                 Collection<TT> collection,
                 int targetResultCount, long cutOffAfterTimeMs, int cutOffAfterCount)
         {
@@ -136,7 +136,7 @@ public interface PermissionCheckCollection<T>
                 targetResultCount = collection.size();
             }
             // Create the mixin
-            DelegatingIntroductionInterceptor mixin = new PermissionCheckCollectionMixin<Integer>(
+            DelegatingIntroductionInterceptor mixin = new PermissionCheckCollectionMixin<>(
                     targetResultCount,
                     cutOffAfterTimeMs,
                     cutOffAfterCount);

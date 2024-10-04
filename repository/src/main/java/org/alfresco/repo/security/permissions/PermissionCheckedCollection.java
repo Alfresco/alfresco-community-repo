@@ -70,7 +70,7 @@ public interface PermissionCheckedCollection<T>
      * @since 4.0
      */
     @SuppressWarnings("serial")
-    public static class PermissionCheckedCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckedCollection<T>
+    class PermissionCheckedCollectionMixin<T> extends DelegatingIntroductionInterceptor implements PermissionCheckedCollection<T>
     {
         private final boolean isCutOff;
         private final int sizeUnchecked;
@@ -113,7 +113,7 @@ public interface PermissionCheckedCollection<T>
          *            a collection that might implement {@link PermissionCheckedCollection}
          * @return a <code>Collection</code> of the same type but including the {@link PermissionCheckedCollection} interface
          */
-        public static final <TT> Collection<TT> create(
+        public static <TT> Collection<TT> create(
                 Collection<TT> collection, Collection<?> checkedSource)
         {
             if (checkedSource instanceof PermissionCheckedCollection)
@@ -143,12 +143,12 @@ public interface PermissionCheckedCollection<T>
          * @return a <code>Collection</code> of the same type but including the {@link PermissionCheckedCollection} interface
          */
         @SuppressWarnings("unchecked")
-        public static final <TT> Collection<TT> create(
+        public static <TT> Collection<TT> create(
                 Collection<TT> collection,
                 boolean isCutOff, int sizeUnchecked, int sizeOriginal)
         {
             // Create the mixin
-            DelegatingIntroductionInterceptor mixin = new PermissionCheckedCollectionMixin<Integer>(
+            DelegatingIntroductionInterceptor mixin = new PermissionCheckedCollectionMixin<>(
                     isCutOff,
                     sizeUnchecked,
                     sizeOriginal);

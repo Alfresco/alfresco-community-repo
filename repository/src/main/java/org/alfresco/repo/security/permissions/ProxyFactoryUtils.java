@@ -28,14 +28,14 @@ package org.alfresco.repo.security.permissions;
 import org.springframework.aop.IntroductionAdvisor;
 import org.springframework.aop.framework.ProxyFactory;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
-import java.util.function.Predicate;
 
-public class ProxyFactoryUtils
+class ProxyFactoryUtils
 {
+    private ProxyFactoryUtils() {}
+
     /**
      * Delegate creation of {@link ProxyFactory} and proxy to have control over it in one place.
      * @param collection given collection for ProxyFactory.
@@ -46,24 +46,10 @@ public class ProxyFactoryUtils
     {
         ProxyFactory pf = new ProxyFactory(collection);
         pf.addAdvisor(advisor);
-        removeConflictingInterfaces(pf);
-        return pf.getProxy();
-    }
-
-    /**
-     * Utility method provided for Java 21 compliance.
-     * If {@code proxyFactory} contains both {@link List} and {@link Deque} interfaces second will be removed as there is conflict
-     * between them since Java 21. See {@code List.reversed()} and {@code Deque.reversed()}.
-     * @param proxyFactory given {@link ProxyFactory} for modification.
-     */
-    private static void removeConflictingInterfaces(ProxyFactory proxyFactory)
-    {
-        Class<?>[] proxiedInterfaces = proxyFactory.getProxiedInterfaces();
-
-        if (Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(List.class)) &&
-                Arrays.stream(proxiedInterfaces).anyMatch(Predicate.isEqual(Deque.class)))
+        if (pf.isInterfaceProxied(List.class) && pf.isInterfaceProxied(Deque.class))
         {
-                proxyFactory.removeInterface(Deque.class);
+            pf.removeInterface(Deque.class);
         }
+        return pf.getProxy();
     }
 }

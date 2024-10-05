@@ -94,7 +94,13 @@ public class RMContainerCacheManager implements RecordsManagementModel
      */
     public Set<NodeRef> get(StoreRef storeRef)
     {
-        return cache.get(getKey(storeRef));
+        Set<NodeRef> cachedNodes = cache.get(getKey(storeRef));
+        if (cachedNodes != null)
+        {
+            // prevent outside modification of set in cache
+            cachedNodes = new HashSet<>(cachedNodes);
+        }
+        return cachedNodes;
     }
 
     /**

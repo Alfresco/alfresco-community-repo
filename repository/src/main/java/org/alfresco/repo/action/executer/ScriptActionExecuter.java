@@ -46,8 +46,6 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.UrlUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Action to execute a JavaScript. The script has access to the default model.
@@ -58,10 +56,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ScriptActionExecuter extends ActionExecuterAbstractBase
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ScriptActionExecuter.class);
     public static final String NAME = "script";
     public static final String PARAM_SCRIPTREF = "script-ref";
-    private static final String SYSTEM_USER = "System";
     
     private ServiceRegistry serviceRegistry;
     private SysAdminParams sysAdminParams;
@@ -156,14 +152,11 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
             {
                 // get the references we need to build the default scripting data-model
                 String userName = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
-                if (SYSTEM_USER.equals(userName))
-                {
-                    LOGGER.info("Skipping Script Execution for the System user.");
-                    return;
-                }
-                NodeRef personRef = this.personService.getPerson(userName);
-                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
-                
+
+                // When a script is executed as a system user, there will no person or home space for providing to the scripting framework.
+                NodeRef personRef = this.personService.getPersonOrNull(userName);
+                NodeRef homeSpaceRef = personRef == null ? null : (NodeRef)nodeService.getProperty(personRef, ContentModel.PROP_HOMEFOLDER);
+
                 // the default scripting model provides access to well known objects and searching
                 // facilities - it also provides basic create/update/delete/copy/move services
                 Map<String, Object> model = this.serviceRegistry.getScriptService().buildDefaultModel(
@@ -207,6 +200,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
+    @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         if (scriptLocation == null)

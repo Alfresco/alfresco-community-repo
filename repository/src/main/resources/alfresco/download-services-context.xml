@@ -115,6 +115,7 @@
       <property name="actionServiceHelper" ref="downloadActionServiceHelper"/>
       <property name="downloadStorage" ref="downloadStorage"/>
       <property name="transactionHelper" ref="retryingTransactionHelper"/>
+      <property name="nodeService" ref="NodeService"/>
    </bean>
 
     <bean id="downloadCleanerSchedulerAccessor" class="org.springframework.scheduling.quartz.SchedulerAccessorBean">

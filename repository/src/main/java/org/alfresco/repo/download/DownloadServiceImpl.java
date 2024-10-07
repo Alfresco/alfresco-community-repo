@@ -28,12 +28,14 @@ package org.alfresco.repo.download;
 import java.util.Date;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.download.cannedquery.DownloadEntity;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.download.DownloadService;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ParameterCheck;
 
 /**
@@ -50,6 +52,7 @@ public class DownloadServiceImpl implements DownloadService {
     private ActionServiceHelper actionServiceHelper;
     private DownloadStorage downloadStorage;
     private RetryingTransactionHelper transactionHelper;
+    private NodeService nodeService;
     
     // Dependency setters
     public void setActionServiceHelper(ActionServiceHelper actionServiceHelper)
@@ -66,9 +69,19 @@ public class DownloadServiceImpl implements DownloadService {
     {
         this.downloadStorage = downloadStorage;
     }
-    
-	@Override
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    @Override
 	public NodeRef createDownload(final NodeRef[] requestedNodes, final boolean recursive) {
+        return createDownload(requestedNodes, recursive, null);
+    }
+
+	@Override
+	public NodeRef createDownload(final NodeRef[] requestedNodes, final boolean recursive, String downloadNodeName) {
 	    ParameterCheck.mandatory("nodeRefs", requestedNodes);
 	    if (requestedNodes.length < 1)
 	    {
@@ -91,7 +104,12 @@ public class DownloadServiceImpl implements DownloadService {
                 {
                    downloadStorage.addNodeToDownload(downloadNode, node);
                 }
-                
+
+                if (downloadNodeName != null)
+                {
+                    nodeService.setProperty(downloadNode, ContentModel.PROP_NAME, downloadNodeName);
+                }
+
                 return downloadNode;
             }
         }, false, true);

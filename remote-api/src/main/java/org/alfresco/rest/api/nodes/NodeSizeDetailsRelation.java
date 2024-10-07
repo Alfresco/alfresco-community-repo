@@ -27,7 +27,6 @@
 package org.alfresco.rest.api.nodes;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.SizeDetails;

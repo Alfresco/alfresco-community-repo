@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.model.ContentModel;
@@ -60,7 +61,6 @@ public class SizeDetailsImplTest
     @Before
     public void setUp() throws Exception
     {
-        sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
         SearchService searchService = mock(SearchService.class);
         nodeSizeDetailsServiceImpl = mock(NodeSizeDetailsServiceImpl.class);
@@ -73,8 +73,9 @@ public class SizeDetailsImplTest
         nodeSizeDetailsServiceImpl.setSimpleCache(simpleCache);
         verify(nodeSizeDetailsServiceImpl).setSimpleCache(simpleCache);
         nodeSizeDetailsServiceImpl.setThreadPoolExecutor(threadPoolExecutor);
-        sizeDetailsImpl.setNodes(nodes);
-        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
+        sizeDetailsImpl = new SizeDetailsImpl(nodes, nodeSizeDetailsServiceImpl);
+//        sizeDetailsImpl.setNodes(nodes);
+//        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
     }
 
     @Test
@@ -94,7 +95,7 @@ public class SizeDetailsImplTest
 
         when(nodes.validateOrLookupNode(nodeId)).thenReturn(nodeRef);
         when(nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false)).thenReturn(true);
-        when(nodeSizeDetailsServiceImpl.getSizeDetails(nodeId)).thenReturn(nodeSizeDetails);
+        when(nodeSizeDetailsServiceImpl.getSizeDetails(nodeId)).thenReturn(Optional.ofNullable(nodeSizeDetails));
 
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);
         assertNotNull("After executing POST/size-details, it will provide with 202 status code", requestSizeDetails);

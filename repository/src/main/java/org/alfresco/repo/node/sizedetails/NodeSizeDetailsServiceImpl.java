@@ -29,9 +29,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -71,23 +71,14 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     }
 
     @Override
-    public NodeSizeDetails getSizeDetails(String id)
+    public Optional<NodeSizeDetails> getSizeDetails(String id)
     {
         NodeSizeDetails details = simpleCache.get(id);
-
-        if (details == null)
-        {
-            LOG.error("No size details found for ID: " + id);
-            throw new AlfrescoRuntimeException("Failed to get size details for ID: " + id);
-        }
-
-        return details;
-    }
-
-    @Override
-    public boolean checkSizeDetailsExist(String id)
-    {
-        return simpleCache.contains(id);
+        return Optional.ofNullable(details)
+                    .or(() -> {
+                        LOG.error("No size details found for ID: " + id);
+                        return Optional.empty();
+                    });
     }
 
     public void setSimpleCache(SimpleCache<Serializable, NodeSizeDetails> simpleCache)

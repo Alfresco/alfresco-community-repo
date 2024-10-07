@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.node.sizedetails;
 
+import java.util.Optional;
+
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -34,8 +36,6 @@ public interface NodeSizeDetailsService
 
     void putSizeDetails(String id, NodeSizeDetails nodeSizeDetails);
 
-    NodeSizeDetails getSizeDetails(String id);
-
-    boolean checkSizeDetailsExist(String id);
+    Optional<NodeSizeDetails> getSizeDetails(String id);
 
 }

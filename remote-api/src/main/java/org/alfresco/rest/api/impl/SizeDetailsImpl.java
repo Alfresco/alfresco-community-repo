@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.util.Optional;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsService;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
@@ -40,17 +42,12 @@ import org.springframework.beans.factory.InitializingBean;
 
 public class SizeDetailsImpl implements SizeDetails, InitializingBean
 {
-    private Nodes nodes;
-    private NodeRef nodeRef;
-    private NodeSizeDetailsService nodeSizeDetailsService;
+    private final Nodes nodes;
+    private final NodeSizeDetailsService nodeSizeDetailsService;
 
-    public void setNodes(Nodes nodes)
+    public SizeDetailsImpl(Nodes nodes, NodeSizeDetailsService nodeSizeDetailsService)
     {
         this.nodes = nodes;
-    }
-
-    public void setNodeSizeDetailsService(NodeSizeDetailsService nodeSizeDetailsService)
-    {
         this.nodeSizeDetailsService = nodeSizeDetailsService;
     }
 
@@ -60,18 +57,13 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
     @Override
     public NodeSizeDetails generateNodeSizeDetailsRequest(String nodeId)
     {
-        nodeRef = nodes.validateOrLookupNode(nodeId);
+        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
         validateType(nodeRef);
-        String actionId;
-        if (!nodeSizeDetailsService.checkSizeDetailsExist(nodeId))
-        {
-            actionId = executeSizeDetails();
-        }
-        else
-        {
-            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
-            actionId = nodeSizeDetails.getJobId();
-        }
+
+        Optional<NodeSizeDetails> nodeSizeDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
+        String actionId = nodeSizeDetails.map(NodeSizeDetails::getJobId)
+                    .orElseGet(() -> executeSizeDetails(nodeRef));
+
         return new NodeSizeDetails(actionId);
     }
 
@@ -84,28 +76,20 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId);
         validateType(nodeRef);
 
-        if (!nodeSizeDetailsService.checkSizeDetailsExist(nodeId))
-        {
-            NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeId,STATUS.NOT_INITIATED);
-            return nodeSizeDetails;
-        }
-        else
-        {
-            NodeSizeDetails nodeSizeDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
-            String cachedJobId = nodeSizeDetails.getJobId();
-            if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
-            {
+        Optional<NodeSizeDetails> optionalDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
+        return optionalDetails.map(details -> {
+            String cachedJobId = details.getJobId();
+            if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId)) {
                 throw new NotFoundException("jobId does not exist");
             }
-        }
-
-        return nodeSizeDetailsService.getSizeDetails(nodeId);
+            return details;
+        }).orElseGet(() -> new NodeSizeDetails(nodeId, STATUS.NOT_INITIATED));
     }
 
     /**
      * Executing Asynchronously.
      */
-    private String executeSizeDetails()
+    private String executeSizeDetails(NodeRef nodeRef)
     {
         String jobId = GUID.generate();
         NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), jobId, STATUS.PENDING);
@@ -118,7 +102,7 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
     {
         if (!nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false))
         {
-            throw new InvalidNodeTypeException("Invalid parameter: value of nodeId is invalid");
+            throw new InvalidNodeTypeException("Node id " + nodeRef.getId() + " does not represent a folder.");
         }
     }
 

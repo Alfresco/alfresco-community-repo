@@ -77,7 +77,8 @@ import org.alfresco.util.testing.category.NonBuildTests;
         org.alfresco.rest.api.impl.CommentsImplUnitTest.class,
         org.alfresco.rest.api.impl.DownloadsImplCheckArchiveStatusUnitTest.class,
         org.alfresco.rest.api.impl.FavouritesImplUnitTest.class,
-        org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class
+        org.alfresco.rest.api.impl.RestApiDirectUrlConfigUnitTest.class,
+        org.alfresco.rest.api.impl.SizeDetailsImplTest.class
 })
 public class AppContext04TestSuite
 {

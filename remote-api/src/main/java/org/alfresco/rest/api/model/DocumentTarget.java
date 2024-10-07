@@ -33,33 +33,33 @@ package org.alfresco.rest.api.model;
  */
 public class DocumentTarget extends Target
 {
-	private Document file;
+    private Document file;
 
-	public DocumentTarget()
-	{
-		super();
-	}
+    public DocumentTarget()
+    {
+        super();
+    }
 
-	public DocumentTarget(Document file)
-	{
-		super();
-		this.file = file;
-	}
+    public DocumentTarget(Document file)
+    {
+        super();
+        this.file = file;
+    }
 
-	public void setDocument(Document file)
-	{
-		this.file = file;
-	}
+    public void setDocument(Document file)
+    {
+        this.file = file;
+    }
 
-	public Document getFile()
-	{
-		return file;
-	}
+    public Document getFile()
+    {
+        return file;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "DocumentTarget [file=" + file + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "DocumentTarget [file=" + file + "]";
+    }
 
 }

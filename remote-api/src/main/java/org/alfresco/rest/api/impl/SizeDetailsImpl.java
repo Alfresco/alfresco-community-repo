@@ -44,6 +44,7 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
 {
     private final Nodes nodes;
     private final NodeSizeDetailsService nodeSizeDetailsService;
+
     public SizeDetailsImpl(Nodes nodes, NodeSizeDetailsService nodeSizeDetailsService)
     {
         this.nodes = nodes;

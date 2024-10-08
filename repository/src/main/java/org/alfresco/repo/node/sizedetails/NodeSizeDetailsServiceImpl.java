@@ -32,6 +32,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -45,14 +50,9 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.json.simple.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
- * NodeSizeDetailsServiceImpl
- * Executing Alfresco FTS Query to find size details of Folder Node
+ * NodeSizeDetailsServiceImpl Executing Alfresco FTS Query to find size details of Folder Node
  */
 public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, InitializingBean
 {
@@ -75,10 +75,10 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     {
         NodeSizeDetails details = simpleCache.get(id);
         return Optional.ofNullable(details)
-                    .or(() -> {
-                        LOG.error("No size details found for ID: " + id);
-                        return Optional.empty();
-                    });
+                .or(() -> {
+                    LOG.error("No Size details found for ID: " + id);
+                    return Optional.empty();
+                });
     }
 
     public void setSimpleCache(SimpleCache<Serializable, NodeSizeDetails> simpleCache)
@@ -144,7 +144,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             try
             {
                 nodeSizeDetails = AuthenticationUtil.runAs(() -> transactionService.getRetryingTransactionHelper()
-                            .doInTransaction(executionCallback, true), authenticatedUserName);
+                        .doInTransaction(executionCallback, true), authenticatedUserName);
             }
             catch (Exception e)
             {
@@ -170,15 +170,15 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         {
             ResultSet results = facetQuery(nodeRef);
             int resultsSize = results.getFieldFacet(FIELD_FACET)
-                        .size();
+                    .size();
 
             while (!isCalculationCompleted)
             {
                 List<Pair<String, Integer>> facetPairs = results.getFieldFacet(FIELD_FACET)
-                            .subList(skipCount, Math.min(totalItems, resultsSize));
+                        .subList(skipCount, Math.min(totalItems, resultsSize));
                 totalSizeFromFacet += facetPairs.parallelStream()
-                            .mapToLong(pair -> Long.parseLong(pair.getFirst()) * pair.getSecond())
-                            .sum();
+                        .mapToLong(pair -> Long.parseLong(pair.getFirst()) * pair.getSecond())
+                        .sum();
 
                 if (resultsSize <= totalItems || resultsSize <= defaultItems)
                 {
@@ -193,8 +193,9 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             Date calculationDate = new Date(System.currentTimeMillis());
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), totalSizeFromFacet, calculationDate,
-                                                                  results.getNodeRefs()
-                                                                              .size(), STATUS.COMPLETED, jobId);
+                    results.getNodeRefs()
+                            .size(),
+                    STATUS.COMPLETED, jobId);
             return nodeSizeDetails;
         }
         catch (Exception e)
@@ -288,7 +289,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         }
 
         public NodeSizeDetails(String id, Long sizeInBytes, Date calculatedAt, Integer numberOfFiles,
-                               STATUS currentStatus, String jobId)
+                STATUS currentStatus, String jobId)
         {
             this.id = id;
             this.sizeInBytes = sizeInBytes;
@@ -385,8 +386,8 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             NodeSizeDetails that = (NodeSizeDetails) o;
             return Objects.equals(id, that.id) && Objects.equals(sizeInBytes, that.sizeInBytes) && Objects.equals(
-                        calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles)
-                        && Objects.equals(jobId, that.jobId);
+                    calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles)
+                    && Objects.equals(jobId, that.jobId);
         }
 
         @Override
@@ -399,7 +400,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         public String toString()
         {
             return "NodeSizeDetails{" + "id='" + id + '\'' + ", sizeInBytes=" + sizeInBytes + ", calculatedAt="
-                        + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + '}';
+                    + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + '}';
         }
 
         public enum STATUS

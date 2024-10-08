@@ -74,8 +74,8 @@ public class SizeDetailsImplTest
         verify(nodeSizeDetailsServiceImpl).setSimpleCache(simpleCache);
         nodeSizeDetailsServiceImpl.setThreadPoolExecutor(threadPoolExecutor);
         sizeDetailsImpl = new SizeDetailsImpl(nodes, nodeSizeDetailsServiceImpl);
-//        sizeDetailsImpl.setNodes(nodes);
-//        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
+        //        sizeDetailsImpl.setNodes(nodes);
+        //        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
     }
 
     @Test

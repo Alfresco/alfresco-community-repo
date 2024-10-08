@@ -78,12 +78,14 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
 
         Optional<NodeSizeDetails> optionalDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
         return optionalDetails.map(details -> {
-            String cachedJobId = details.getJobId();
-            if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId)) {
-                throw new NotFoundException("jobId does not exist");
-            }
-            return details;
-        }).orElseGet(() -> new NodeSizeDetails(nodeId, STATUS.NOT_INITIATED));
+                        String cachedJobId = details.getJobId();
+                        if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
+                        {
+                            throw new NotFoundException("jobId does not exist");
+                        }
+                        return details;
+                    })
+                    .orElseGet(() -> new NodeSizeDetails(nodeId, STATUS.NOT_INITIATED));
     }
 
     /**

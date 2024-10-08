@@ -34,6 +34,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.simple.JSONObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
@@ -46,16 +57,6 @@ import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.json.simple.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * V1 REST API tests for calculating and retrieving Folder size.
@@ -100,7 +101,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     public void setup() throws Exception
     {
         super.setup();
-
         setRequestContext(user1);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
@@ -114,10 +114,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     }
 
     /**
-     * Test case for POST/size-details, which request and calculates the size of a folder.
-     * GET/size-details, which retrieve the SizeDetails of the folder Node.
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size-details}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size-details/<jobId>}
+     * Test case for POST/size-details, which request and calculates the size of a folder. GET/size-details, which retrieve the SizeDetails of the folder Node. {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size-details} {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/size-details/<jobId>}
      */
     @Test
     public void testPostAndGetFolderSizeDetails() throws Exception
@@ -126,10 +123,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
-                      postResponse.getJsonResponse());
+                postResponse.getJsonResponse());
 
         JSONObject jsonObject = (JSONObject) postResponse.getJsonResponse()
-                    .get("entry");
+                .get("entry");
 
         String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
@@ -142,11 +139,11 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
-                      getResponse.getJsonResponse());
+                getResponse.getJsonResponse());
 
         NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails(
-                    (JSONObject) getResponse.getJsonResponse()
-                                .get("entry"));
+                (JSONObject) getResponse.getJsonResponse()
+                        .get("entry"));
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
     }
@@ -180,18 +177,18 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(500, nodes.size());
 
-        //Start Time before triggering POST/size-details API
+        // Start Time before triggering POST/size-details API
         LocalTime expectedTime = LocalTime.now()
-                    .plusSeconds(5);
+                .plusSeconds(5);
 
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
-                      postResponse.getJsonResponse());
+                postResponse.getJsonResponse());
 
         JSONObject jsonObject = (JSONObject) postResponse.getJsonResponse()
-                    .get("entry");
+                .get("entry");
 
         String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
@@ -204,15 +201,15 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
-                      getResponse.getJsonResponse());
+                getResponse.getJsonResponse());
 
         NodeSizeDetails nodeSizeDetails = NodeSizeDetails.parseNodeSizeDetails(
-                    (JSONObject) getResponse.getJsonResponse()
-                                .get("entry"));
+                (JSONObject) getResponse.getJsonResponse()
+                        .get("entry"));
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
 
-        //current Time after executing GET/size-details
+        // current Time after executing GET/size-details
         LocalTime actualTime = LocalTime.now();
         assertTrue("Calculating folder node is taking time greater than 5 seconds ", actualTime.isBefore(expectedTime));
     }

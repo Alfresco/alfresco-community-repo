@@ -34,6 +34,9 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl;
@@ -43,8 +46,6 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit tests for {@link SizeDetailsImpl} class.
@@ -74,8 +75,6 @@ public class SizeDetailsImplTest
         verify(nodeSizeDetailsServiceImpl).setSimpleCache(simpleCache);
         nodeSizeDetailsServiceImpl.setThreadPoolExecutor(threadPoolExecutor);
         sizeDetailsImpl = new SizeDetailsImpl(nodes, nodeSizeDetailsServiceImpl);
-        //        sizeDetailsImpl.setNodes(nodes);
-        //        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
     }
 
     @Test

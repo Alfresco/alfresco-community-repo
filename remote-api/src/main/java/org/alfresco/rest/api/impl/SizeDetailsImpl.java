@@ -27,6 +27,8 @@ package org.alfresco.rest.api.impl;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsService;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
@@ -38,7 +40,6 @@ import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 public class SizeDetailsImpl implements SizeDetails, InitializingBean
 {
@@ -62,7 +63,7 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
 
         Optional<NodeSizeDetails> nodeSizeDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
         String actionId = nodeSizeDetails.map(NodeSizeDetails::getJobId)
-                    .orElseGet(() -> executeSizeDetails(nodeRef));
+                .orElseGet(() -> executeSizeDetails(nodeRef));
 
         return new NodeSizeDetails(actionId);
     }
@@ -78,14 +79,14 @@ public class SizeDetailsImpl implements SizeDetails, InitializingBean
 
         Optional<NodeSizeDetails> optionalDetails = nodeSizeDetailsService.getSizeDetails(nodeId);
         return optionalDetails.map(details -> {
-                        String cachedJobId = details.getJobId();
-                        if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
-                        {
-                            throw new NotFoundException("jobId does not exist");
-                        }
-                        return details;
-                    })
-                    .orElseGet(() -> new NodeSizeDetails(nodeId, STATUS.NOT_INITIATED));
+            String cachedJobId = details.getJobId();
+            if (cachedJobId != null && !jobId.equalsIgnoreCase(cachedJobId))
+            {
+                throw new NotFoundException("jobId does not exist");
+            }
+            return details;
+        })
+                .orElseGet(() -> new NodeSizeDetails(nodeId, STATUS.NOT_INITIATED));
     }
 
     /**

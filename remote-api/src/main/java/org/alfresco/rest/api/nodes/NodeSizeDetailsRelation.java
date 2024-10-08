@@ -28,6 +28,9 @@ package org.alfresco.rest.api.nodes;
 
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.Status;
+
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.SizeDetails;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -39,12 +42,10 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.Status;
 
 @RelationshipResource(name = "size-details", entityResource = NodesEntityResource.class, title = "Node Size Details")
 public class NodeSizeDetailsRelation implements RelationshipResourceAction.ReadById<NodeSizeDetails>,
-                                                RelationshipResourceAction.Create<NodeSizeDetails>, InitializingBean
+        RelationshipResourceAction.Create<NodeSizeDetails>, InitializingBean
 {
 
     private SizeDetails sizeDetails;
@@ -62,8 +63,8 @@ public class NodeSizeDetailsRelation implements RelationshipResourceAction.ReadB
 
     @WebApiDescription(title = "Create node-size details request", successStatus = Status.STATUS_ACCEPTED)
     @WebApiParam(name = "nodeSizeEntity", title = "Node Size Details Request",
-                 description = "Request for processing Node Size.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT,
-                 allowMultiple = false)
+            description = "Request for processing Node Size.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT,
+            allowMultiple = false)
     @Override
     public List<NodeSizeDetails> create(String nodeId, List<NodeSizeDetails> nodeSizeEntity, Parameters parameters)
     {
@@ -71,12 +72,12 @@ public class NodeSizeDetailsRelation implements RelationshipResourceAction.ReadB
     }
 
     @WebApiDescription(title = "Get Node Size Details", description = "Get the Node Size Details")
-    @WebApiParameters({ @WebApiParam(name = "nodeId", title = "The unique id of the Node being addressed",
-                                     description = "A single node id"),
-                @WebApiParam(name = "jobId", title = "Job Id to get the NodeSizeDetails", description = "JobId") })
+    @WebApiParameters({@WebApiParam(name = "nodeId", title = "The unique id of the Node being addressed",
+            description = "A single Node id"),
+            @WebApiParam(name = "jobId", title = "Job Id to get the NodeSizeDetails", description = "JobId")})
     @Override
     public NodeSizeDetails readById(String nodeId, String jobId, Parameters parameters)
-                throws RelationshipResourceNotFoundException
+            throws RelationshipResourceNotFoundException
     {
         return sizeDetails.getNodeSizeDetails(nodeId, jobId);
     }

@@ -26,7 +26,9 @@
 package org.alfresco.rest.api.model;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.rest.framework.resource.UniqueId;
 
@@ -38,56 +40,93 @@ import org.alfresco.rest.framework.resource.UniqueId;
  */
 public class Favourite
 {
-	private String targetGuid;
-	private Date createdAt;
-	private Target target;
-	private Map<String, Object> properties;
+    private String targetGuid;
+    private Date createdAt;
+    private Target target;
+    private Map<String, Object> properties;
+    private List<String> aspectNames;
 
-	public Date getCreatedAt()
-	{
-		return createdAt;
-	}
+    public Date getCreatedAt()
+    {
+        return createdAt;
+    }
 
-	public void setCreatedAt(Date createdAt)
-	{
-		this.createdAt = createdAt;
-	}
+    public void setCreatedAt(Date createdAt)
+    {
+        this.createdAt = createdAt;
+    }
 
-	@UniqueId(name="targetGuid")
-	public String getTargetGuid()
-	{
-		return targetGuid;
-	}
-	
-	public void setTargetGuid(String targetGuid)
-	{
-	    this.targetGuid = targetGuid;
-	}
-	
-	public Target getTarget()
-	{
-		return target;
-	}
+    @UniqueId(name = "targetGuid")
+    public String getTargetGuid()
+    {
+        return targetGuid;
+    }
 
-	public void setTarget(Target target)
-	{
-		this.target = target;
-	}
+    public void setTargetGuid(String targetGuid)
+    {
+        this.targetGuid = targetGuid;
+    }
 
-	public Map<String, Object> getProperties()
-	{
-		return properties;
-	}
+    public Target getTarget()
+    {
+        return target;
+    }
 
-	public void setProperties(Map<String, Object> properties)
-	{
-		this.properties = properties;
-	}
+    public void setTarget(Target target)
+    {
+        this.target = target;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "Favourite [targetGuid=" + targetGuid
-				+ ", createdAt=" + createdAt + ", target=" + target + ", properties=" + properties + "]";
-	}
+    public Map<String, Object> getProperties()
+    {
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties)
+    {
+        this.properties = properties;
+    }
+
+    public List<String> getAspectNames()
+    {
+        return aspectNames;
+    }
+
+    public void setAspectNames(List<String> aspectNames)
+    {
+        this.aspectNames = aspectNames;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Favourite{" +
+                "targetGuid='" + targetGuid + '\'' +
+                ", createdAt=" + createdAt +
+                ", target=" + target +
+                ", properties=" + properties +
+                ", aspectNames=" + aspectNames +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        Favourite favourite = (Favourite) o;
+        return Objects.equals(targetGuid, favourite.targetGuid) && Objects.equals(createdAt, favourite.createdAt) && Objects.equals(target, favourite.target) && Objects.equals(properties, favourite.properties) && Objects.equals(aspectNames, favourite.aspectNames);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(targetGuid, createdAt, target, properties, aspectNames);
+    }
 }

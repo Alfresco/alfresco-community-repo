@@ -25,12 +25,15 @@
  */
 package org.alfresco.repo.cache.lookup;
 
+import static org.junit.Assert.*;
+
 import java.sql.Savepoint;
 import java.util.Map;
 import java.util.TreeMap;
 
 import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -49,7 +52,7 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.2
  */
-public class EntityLookupCacheTest extends TestCase implements EntityLookupCallbackDAO<Long, Object, String>
+public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Object, String>
 {
     SimpleCache<Long, Object> cache;
     private EntityLookupCache<Long, Object, String> entityLookupCacheA;
@@ -57,7 +60,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
     private TreeMap<Long, String> database;
     private ControlDAO controlDAO;
 
-    @Override
+    @Before
     protected void setUp() throws Exception
     {
         cache = new MemoryCache<Long, Object>();
@@ -69,6 +72,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         Mockito.when(controlDAO.createSavepoint(Mockito.anyString())).thenReturn(Mockito.mock(Savepoint.class));
     }
 
+    @Test
     public void testLookupsUsingIncorrectValue() throws Exception
     {
         try
@@ -82,6 +86,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         }
     }
 
+    @Test
     public void testLookupAgainstEmpty() throws Exception
     {
         TestValue value = new TestValue("AAA");
@@ -112,6 +117,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals("Looked-up type value incorrect", value, entityPair.getSecond());
     }
 
+    @Test
     public void testLookupAgainstExisting() throws Exception
     {
         // Put some values in the "database"
@@ -134,6 +140,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals("ID is incorrect", Long.valueOf(3), entityPair.getFirst());
     }
 
+    @Test
     public void testRegions() throws Exception
     {
         TestValue valueAAA = new TestValue("AAA");
@@ -155,6 +162,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(8, cache.getKeys().size());
     }
 
+    @Test
     public void testNullLookups() throws Exception
     {
         TestValue valueNull = null;
@@ -172,9 +180,10 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(entityPairNull, entityPairCheck);
     }
 
+    @Test
     public void testGetOrCreate() throws Exception
     {
-        TestValue valueOne = new TestValue(getName() + "-ONE");
+        TestValue valueOne = new TestValue(getClass().getName() + "-ONE");
         Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();
@@ -186,9 +195,10 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(id, entityPairOneCheck.getFirst());
     }
 
+    @Test
     public void testCreateOrGet() throws Exception
     {
-        TestValue valueOne = new TestValue(getName() + "-ONE");
+        TestValue valueOne = new TestValue(getClass().getName() + "-ONE");
         Pair<Long, Object> entityPairOne = entityLookupCacheA.createOrGetByValue(valueOne, controlDAO);
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();
@@ -201,10 +211,11 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(id, entityPairOneCheck.getFirst());
     }
 
+    @Test
     public void testUpdate() throws Exception
     {
-        TestValue valueOne = new TestValue(getName() + "-ONE");
-        TestValue valueTwo = new TestValue(getName() + "-TWO");
+        TestValue valueOne = new TestValue(getClass().getName() + "-ONE");
+        TestValue valueTwo = new TestValue(getClass().getName() + "-TWO");
         Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();
@@ -218,9 +229,10 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(2, cache.getKeys().size());
     }
 
+    @Test
     public void testDeleteByKey() throws Exception
     {
-        TestValue valueOne = new TestValue(getName() + "-ONE");
+        TestValue valueOne = new TestValue(getClass().getName() + "-ONE");
         Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();
@@ -234,9 +246,10 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(0, cache.getKeys().size());
     }
 
+    @Test
     public void testDeleteByValue() throws Exception
     {
-        TestValue valueOne = new TestValue(getName() + "-ONE");
+        TestValue valueOne = new TestValue(getClass().getName() + "-ONE");
         Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();
@@ -250,9 +263,10 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(0, cache.getKeys().size());
     }
 
+    @Test
     public void testClear() throws Exception
     {
-        TestValue valueOne = new TestValue(getName() + "-ONE");
+        TestValue valueOne = new TestValue(getClass().getName() + "-ONE");
         Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();
@@ -265,10 +279,11 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertEquals(0, cache.getKeys().size()); // ... but cache must be empty
     }
 
+    @Test
     public void testGetCachedValue() throws Exception
     {
         // Create a new value
-        TestValue valueCached = new TestValue(getName() + "-CACHED");
+        TestValue valueCached = new TestValue(getClass().getName() + "-CACHED");
         Pair<Long, Object> entityPairOne = entityLookupCacheA.createOrGetByValue(valueCached, controlDAO);
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();

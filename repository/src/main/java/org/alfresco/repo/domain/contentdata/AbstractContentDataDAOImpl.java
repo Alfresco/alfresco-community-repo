@@ -21,7 +21,7 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- * #L%
+ * #L% 
  */
 package org.alfresco.repo.domain.contentdata;
 
@@ -30,6 +30,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
@@ -45,19 +50,13 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Abstract implementation for ContentData DAO.
  * <p>
- * This provides basic services such as caching, but defers to the underlying implementation
- * for CRUD operations.
+ * This provides basic services such as caching, but defers to the underlying implementation for CRUD operations.
  * <p>
- * The DAO deals in {@link ContentData} instances.  The cache is primarily present to decode
- * IDs into <code>ContentData</code> instances.
+ * The DAO deals in {@link ContentData} instances. The cache is primarily present to decode IDs into <code>ContentData</code> instances.
  * 
  * @author Derek Hulley
  * @author sglover
@@ -74,7 +73,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     private static final String KEY_PRE_COMMIT_CONTENT_URL_DELETIONS = "AbstractContentDataDAOImpl.PreCommitContentUrlDeletions";
 
     private static Log logger = LogFactory.getLog(AbstractContentDataDAOImpl.class);
-    
+
     private final ContentDataCallbackDAO contentDataCallbackDAO;
     private final ContentUrlCallbackDAO contentUrlCallbackDAO;
     protected ControlDAO controlDAO;
@@ -127,7 +126,8 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     /**
      * Set this property to enable eager cleanup of orphaned content.
      * 
-     * @param contentStoreCleaner       an eager cleaner (may be <tt>null</tt>)
+     * @param contentStoreCleaner
+     *            an eager cleaner (may be <tt>null</tt>)
      */
     public void setContentStoreCleaner(EagerContentStoreCleaner contentStoreCleaner)
     {
@@ -135,7 +135,8 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     }
 
     /**
-     * @param contentDataCache              the cache of IDs to ContentData and vice versa
+     * @param contentDataCache
+     *            the cache of IDs to ContentData and vice versa
      */
     public void setContentDataCache(SimpleCache<Long, ContentData> contentDataCache)
     {
@@ -154,8 +155,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     }
 
     /**
-     * A <b>content_url</b> entity was dereferenced.  This makes no assumptions about the
-     * current references - dereference deletion is handled in the commit phase.
+     * A <b>content_url</b> entity was dereferenced. This makes no assumptions about the current references - dereference deletion is handled in the commit phase.
      */
     protected void registerDereferencedContentUrl(String contentUrl)
     {
@@ -205,7 +205,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             throw new IllegalArgumentException("Cannot look up ContentData by null ID.");
         }
         Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByValue(contentUrl);
-        if(pair != null)
+        if (pair != null)
         {
             result = contentUrlCache.updateValue(pair.getFirst(), contentUrl);
         }
@@ -246,7 +246,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         for (ContentDataEntity entity : getContentDataEntitiesForNodes(nodeIds))
         {
             contentDataCache.setValue(entity.getId(), makeContentData(entity));
-        }        
+        }
     }
 
     @Override
@@ -325,7 +325,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             ContentDataEntity contentDataEntity = getContentDataEntity(key);
             if (contentDataEntity == null)
             {
-                return 0;           // The client (outer-level code) will decide if this is an error
+                return 0; // The client (outer-level code) will decide if this is an error
             }
             return updateContentDataEntity(contentDataEntity, value);
         }
@@ -343,7 +343,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     private class ContentUrlCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, ContentUrlEntity, String>
     {
         /**
-         * @return                  Returns the Node's NodeRef
+         * @return Returns the Node's NodeRef
          */
         @Override
         public String getValueKey(ContentUrlEntity value)
@@ -393,7 +393,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             ContentUrlEntity contentUrlEntity = getContentUrlEntity(id);
             if (contentUrlEntity == null)
             {
-                return 0;           // The client (outer-level code) will decide if this is an error
+                return 0; // The client (outer-level code) will decide if this is an error
             }
             return updateContentUrlEntity(contentUrlEntity, value);
         }
@@ -413,7 +413,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         // Decode content URL
         Long contentUrlId = contentDataEntity.getContentUrlId();
         String contentUrl = null;
-        if(contentUrlId != null)
+        if (contentUrlId != null)
         {
             Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(contentUrlId);
             if (entityPair == null)
@@ -495,13 +495,13 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             localeId = localeDAO.getOrCreateLocalePair(locale).getFirst();
         }
-        
+
         // Create ContentDataEntity
         ContentDataEntity contentDataEntity = createContentDataEntity(contentUrlId, mimetypeId, encodingId, localeId);
         // Done
         return contentDataEntity;
     }
-    
+
     /**
      * Translates the {@link ContentData} into persistable values using the helper DAOs
      */
@@ -510,7 +510,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         // Resolve the content URL
         Long oldContentUrlId = contentDataEntity.getContentUrlId();
         ContentUrlEntity contentUrlEntity = null;
-        if(oldContentUrlId != null)
+        if (oldContentUrlId != null)
         {
             Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(oldContentUrlId);
             if (entityPair == null)
@@ -526,12 +526,12 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             if (oldContentUrl != null)
             {
-                // We have a changed value.  The old content URL has been dereferenced.
+                // We have a changed value. The old content URL has been dereferenced.
                 registerDereferencedContentUrl(oldContentUrl);
             }
             if (newContentUrl != null)
             {
-                if(contentUrlEntity == null)
+                if (contentUrlEntity == null)
                 {
                     contentUrlEntity = new ContentUrlEntity();
                     contentUrlEntity.setContentUrl(newContentUrl);
@@ -595,7 +595,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         boolean success = true;
 
         ContentUrlEntity existing = getContentUrl(contentUrlId);
-        if(existing != null)
+        if (existing != null)
         {
             ContentUrlEntity entity = ContentUrlEntity.setContentUrlKey(existing, contentUrlKey);
             updateContentUrl(entity);
@@ -638,36 +638,40 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     }
 
     /**
-     * @param contentUrl    the content URL to create or search for
+     * @param contentUrl
+     *            the content URL to create or search for
      */
     protected abstract ContentUrlEntity createContentUrlEntity(String contentUrl, long size, ContentUrlKeyEntity contentUrlKey);
 
     /**
-     * @param id            the ID of the <b>content url</b> entity
-     * @return              Return the entity or <tt>null</tt> if it doesn't exist
+     * @param id
+     *            the ID of the <b>content url</b> entity
+     * @return Return the entity or <tt>null</tt> if it doesn't exist
      */
     protected abstract ContentUrlEntity getContentUrlEntity(Long id);
 
     protected abstract ContentUrlEntity getContentUrlEntity(String contentUrl);
 
-    
     /**
-     * @param contentUrl    the URL of the <b>content url</b> entity
-     * @return              Return the entity or <tt>null</tt> if it doesn't exist or is still
-     *                      referenced by a <b>content_data</b> entity
+     * @param contentUrl
+     *            the URL of the <b>content url</b> entity
+     * @return Return the entity or <tt>null</tt> if it doesn't exist or is still referenced by a <b>content_data</b> entity
      */
     protected abstract ContentUrlEntity getContentUrlEntityUnreferenced(String contentUrl);
-    
+
     /**
      * Update a content URL with the given orphan time
      * 
-     * @param id            the unique ID of the entity 
-     * @param orphanTime    the time (ms since epoch) that the entity was orphaned
-     * @param oldOrphanTime the orphan time we expect to update for optimistic locking (may be <tt>null</tt>)
-     * @return              Returns the number of rows updated
+     * @param id
+     *            the unique ID of the entity
+     * @param orphanTime
+     *            the time (ms since epoch) that the entity was orphaned
+     * @param oldOrphanTime
+     *            the orphan time we expect to update for optimistic locking (may be <tt>null</tt>)
+     * @return Returns the number of rows updated
      */
     protected abstract int updateContentUrlOrphanTime(Long id, Long orphanTime, Long oldOrphanTime);
-    
+
     /**
      * Create the row for the <b>alf_content_data</b>
      */
@@ -676,35 +680,39 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             Long mimetypeId,
             Long encodingId,
             Long localeId);
-    
+
     /**
-     * @param id            the entity ID
-     * @return              Returns the entity or <tt>null</tt> if it doesn't exist
+     * @param id
+     *            the entity ID
+     * @return Returns the entity or <tt>null</tt> if it doesn't exist
      */
     protected abstract ContentDataEntity getContentDataEntity(Long id);
 
     /**
-     * @param nodeIds       the node ID
-     * @return              Returns the associated entities or <tt>null</tt> if none exist
+     * @param nodeIds
+     *            the node ID
+     * @return Returns the associated entities or <tt>null</tt> if none exist
      */
-    protected abstract List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds);    
+    protected abstract List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds);
 
     /**
      * Update an existing <b>alf_content_data</b> entity
      * 
-     * @param entity        the existing entity that will be updated
-     * @return              Returns the number of rows updated (should be 1)
+     * @param entity
+     *            the existing entity that will be updated
+     * @return Returns the number of rows updated (should be 1)
      */
     protected abstract int updateContentDataEntity(ContentDataEntity entity);
 
     /**
      * Delete the entity with the given ID
      * 
-     * @return              Returns the number of rows deleted
+     * @return Returns the number of rows deleted
      */
     protected abstract int deleteContentDataEntity(Long id);
 
     protected abstract int deleteContentUrlEntity(long id);
+
     protected abstract int updateContentUrlEntity(ContentUrlEntity existing, ContentUrlEntity entity);
 
     /**
@@ -738,7 +746,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                 {
                     // We mark the URL as orphaned.
                     // The content binary is not scheduled for immediate removal so just mark the
-                    // row's orphan time.  Concurrently, it is possible for multiple references
+                    // row's orphan time. Concurrently, it is possible for multiple references
                     // to be made WHILE the orphan time is set, but we handle that separately.
                     Long contentUrlId = contentUrlEntity.getId();
                     Long oldOrphanTime = contentUrlEntity.getOrphanTime();

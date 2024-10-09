@@ -193,7 +193,8 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertNotNull(entityPairOne);
         Long id = entityPairOne.getFirst();
         assertEquals(valueOne.val, database.get(id));
-        assertEquals(1, cache.getKeys().size());
+        // We cache both by value and by key, so we should have 2 entries
+        assertEquals(2, cache.getKeys().size());
 
         Pair<Long, Object> entityPairOneCheck = entityLookupCacheA.createOrGetByValue(valueOne, controlDAO);
         assertNotNull(entityPairOneCheck);
@@ -262,6 +263,29 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         entityLookupCacheA.clear();
         assertEquals(valueOne.val, database.get(id)); // Must still be in database
         assertEquals(0, cache.getKeys().size()); // ... but cache must be empty
+    }
+
+    public void testGetCachedValue() throws Exception
+    {
+        // Create a new value
+        TestValue valueCached = new TestValue(getName() + "-CACHED");
+        Pair<Long, Object> entityPairOne = entityLookupCacheA.createOrGetByValue(valueCached, controlDAO);
+        assertNotNull(entityPairOne);
+        Long id = entityPairOne.getFirst();
+        // We cache both by value and by key, so we should have 2 entries
+        assertEquals(2, cache.getKeys().size());
+
+        // Check the cache for the previously created value
+        Pair<Long, Object> entityPairCacheCheck = entityLookupCacheA.getCachedEntityByValue(valueCached);
+        assertNotNull(entityPairCacheCheck);
+        assertEquals(id, entityPairCacheCheck.getFirst());
+
+        // Clear the cache and attempt to retrieve it again
+        entityLookupCacheA.clear();
+        entityPairCacheCheck = entityLookupCacheA.getCachedEntityByValue(valueCached);
+
+        // Since we are only retrieving from cache, the value should not be found
+        assertNull(entityPairCacheCheck);
     }
 
     /**

@@ -470,7 +470,15 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
             contentUrlEntity.setContentUrl(contentUrl);
             contentUrlEntity.setSize(size);
-            Pair<Long, ContentUrlEntity> pair = contentUrlCache.createOrGetByValue(contentUrlEntity, controlDAO);
+
+            // Attempt to get the data from cache
+            Pair<Long, ContentUrlEntity> pair = contentUrlCache.getCachedEntityByValue(contentUrlEntity);
+
+            if (pair == null)
+            {
+                pair = contentUrlCache.createOrGetByValue(contentUrlEntity, controlDAO);
+            }
+
             contentUrlId = pair.getFirst();
         }
 

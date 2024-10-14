@@ -31,7 +31,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -42,8 +46,6 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit tests for {@link SizeDetailsImpl} class.
@@ -60,7 +62,6 @@ public class SizeDetailsImplTest
     @Before
     public void setUp() throws Exception
     {
-        sizeDetailsImpl = new SizeDetailsImpl();
         nodes = mock(Nodes.class);
         SearchService searchService = mock(SearchService.class);
         nodeSizeDetailsServiceImpl = mock(NodeSizeDetailsServiceImpl.class);
@@ -73,8 +74,7 @@ public class SizeDetailsImplTest
         nodeSizeDetailsServiceImpl.setSimpleCache(simpleCache);
         verify(nodeSizeDetailsServiceImpl).setSimpleCache(simpleCache);
         nodeSizeDetailsServiceImpl.setThreadPoolExecutor(threadPoolExecutor);
-        sizeDetailsImpl.setNodes(nodes);
-        sizeDetailsImpl.setNodeSizeDetailsService(nodeSizeDetailsServiceImpl);
+        sizeDetailsImpl = new SizeDetailsImpl(nodes, nodeSizeDetailsServiceImpl);
     }
 
     @Test
@@ -94,7 +94,7 @@ public class SizeDetailsImplTest
 
         when(nodes.validateOrLookupNode(nodeId)).thenReturn(nodeRef);
         when(nodes.isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false)).thenReturn(true);
-        when(nodeSizeDetailsServiceImpl.getSizeDetails(nodeId)).thenReturn(nodeSizeDetails);
+        when(nodeSizeDetailsServiceImpl.getSizeDetails(nodeId)).thenReturn(Optional.ofNullable(nodeSizeDetails));
 
         NodeSizeDetails requestSizeDetails = sizeDetailsImpl.generateNodeSizeDetailsRequest(nodeId);
         assertNotNull("After executing POST/size-details, it will provide with 202 status code", requestSizeDetails);

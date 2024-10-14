@@ -997,8 +997,8 @@
     </bean>
 
     <bean id="sizeDetailsImpl" class="org.alfresco.rest.api.impl.SizeDetailsImpl">
-        <property name="nodes" ref="nodes" />
-        <property name="NodeSizeDetailsService" ref="NodeSizeDetailsService" />
+        <constructor-arg name="nodes" ref="nodes" />
+        <constructor-arg name="nodeSizeDetailsService" ref="NodeSizeDetailsService" />
     </bean>
 
     <bean id="sizeDetails" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -337,10 +337,13 @@
             <value>defaultThreadPool</value>
         </property>
         <property name="corePoolSize">
-            <value>5</value>
+            <value>${default.nodeSize.corePoolSize}</value>
         </property>
         <property name="maximumPoolSize">
-            <value>10</value>
+            <value>${default.nodeSize.maximumPoolSize}</value>
+        </property>
+        <property name="workQueueSize">
+            <value>${default.nodeSize.workQueueSize}</value>
         </property>
     </bean>
 

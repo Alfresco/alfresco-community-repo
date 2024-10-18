@@ -147,13 +147,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
 
-        Thread.sleep(500);
-
-        // Prepare parameters.
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", childFolder);
-        params.put("jobId", jobId);
-
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
@@ -236,7 +229,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         LocalTime actualTime = LocalTime.now();
         assertTrue("Calculating folder node is taking time greater than 5 seconds ", actualTime.isBefore(expectedTime));
         assertEquals("SizeDetails hasn't been calculated yet, current status -" + nodeSizeDetails.getStatus().name() + "]", status, nodeSizeDetails.getStatus().name());
-        assertTrue("We are not getting size greater than 0", nodeSizeDetails.getSizeInBytes() > 0L);
+        assertTrue("We are not getting size greater than 0 " + nodeSizeDetails, nodeSizeDetails.getSizeInBytes() > 0L);
         Long defaultSize = 22250000L;
         assertEquals(nodeSizeDetails.getSizeInBytes(), defaultSize);
     }

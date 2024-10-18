@@ -30,9 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.junit.After;
@@ -206,13 +204,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
-
-        Thread.sleep(500);
-
-        // Prepare parameters.
-        Map<String, String> params = new HashMap<>();
-        params.put("nodeId", folderId);
-        params.put("jobId", jobId);
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(parentFolder, jobId), null, 200);
 

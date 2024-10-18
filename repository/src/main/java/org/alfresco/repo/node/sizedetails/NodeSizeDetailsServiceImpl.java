@@ -372,20 +372,21 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             NodeSizeDetails that = (NodeSizeDetails) o;
             return Objects.equals(id, that.id) && Objects.equals(sizeInBytes, that.sizeInBytes) && Objects.equals(
                     calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles)
-                    && Objects.equals(jobId, that.jobId);
+                    && Objects.equals(jobId, that.jobId) && status == that.status;
         }
 
         @Override
         public int hashCode()
         {
-            return Objects.hash(id, sizeInBytes, calculatedAt, numberOfFiles, jobId);
+            return Objects.hash(id, sizeInBytes, calculatedAt, numberOfFiles, jobId, status);
         }
 
         @Override
         public String toString()
         {
             return "NodeSizeDetails{" + "id='" + id + '\'' + ", sizeInBytes=" + sizeInBytes + ", calculatedAt="
-                    + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + '}';
+                    + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + ", status="
+                    + status + '}';
         }
 
         public enum STATUS

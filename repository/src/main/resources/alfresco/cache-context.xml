@@ -514,4 +514,10 @@
     <bean name="ldapInitialDirContextCache" factory-bean="cacheFactory" factory-method="createCache">
         <constructor-arg value="cache.ldapInitialDirContextCache"/>
     </bean>
+
+   <!-- The shared cache for Folder Node -->
+   <bean name="folderSizeSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.folderSizeSharedCache"/>
+   </bean>
+
 </beans>

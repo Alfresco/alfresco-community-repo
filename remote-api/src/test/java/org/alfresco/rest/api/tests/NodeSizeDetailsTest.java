@@ -120,8 +120,23 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     @Test
     public void testPostAndGetFolderSizeDetails() throws Exception
     {
+
+        UserInfo userInfo = new UserInfo(user1);
+
+        String folder0Name = "f0-testParentFolder-" + RUNID;
+        String fileName = "content" + RUNID + ".txt";
+        String childFolder = createFolder(folderId, folder0Name, null).getId();
+        Document d1 = new Document();
+        d1.setIsFolder(false);
+        d1.setParentId(childFolder);
+        d1.setName(fileName);
+        d1.setNodeType(TYPE_CM_CONTENT);
+        d1.setContent(createContentInfo());
+        d1.setCreatedByUser(userInfo);
+        d1.setModifiedByUser(userInfo);
+
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(childFolder), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -136,10 +151,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
-        params.put("nodeId", folderId);
+        params.put("nodeId", childFolder);
         params.put("jobId", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());
@@ -160,7 +175,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
         UserInfo userInfo = new UserInfo(user1);
 
-        String folder0Name = "f0-testParentFolder-" + RUNID;
+        String folder0Name = "f1-testParentFolder-" + RUNID;
         String parentFolder = createFolder(tDocLibNodeId, folder0Name, null).getId();
 
         for (int i = 1; i <= 500; i++)
@@ -206,7 +221,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         params.put("nodeId", folderId);
         params.put("jobId", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(parentFolder, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());

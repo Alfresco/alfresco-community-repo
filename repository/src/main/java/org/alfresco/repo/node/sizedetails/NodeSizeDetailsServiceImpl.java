@@ -32,7 +32,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -297,20 +296,6 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             this.numberOfFiles = numberOfFiles;
             this.status = currentStatus;
             this.jobId = jobId;
-        }
-
-        public static NodeSizeDetails parseNodeSizeDetails(JSONObject jsonObject)
-        {
-            if (jsonObject == null)
-            {
-                return null;
-            }
-
-            String jobId = (String) jsonObject.get("jobId");
-            String id = (String) jsonObject.get("id");
-            String status = (String) jsonObject.get("status");
-            Long sizeInBytes = (Long) jsonObject.get("sizeInBytes");
-            return new NodeSizeDetails(id, sizeInBytes != null ? sizeInBytes : 0L, jobId, STATUS.valueOf(status));
         }
 
         public String getId()

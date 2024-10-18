@@ -46,7 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
-import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails.STATUS;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -71,8 +70,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     private String folderId;
     private PermissionService permissionService;
     private Nodes nodes;
-    private final String STATUS = "COMPLETED";
-    private final Long DEFAULT_SIZE = 22250000L;
+    private final String status = "COMPLETED";
 
     // Method to create content info
     private ContentInfo createContentInfo()
@@ -134,6 +132,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
 
+        Thread.sleep(500);
+
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
@@ -149,7 +149,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
                         .get("entry"));
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
-        assertEquals(STATUS, nodeSizeDetails.getStatus().name(), "SizeDetails hasn't been calculated yet, with COMPLETED status");
+
+        assertEquals(status, nodeSizeDetails.getStatus().name(), "SizeDetails hasn't been calculated yet, with COMPLETED status [Current status -" + nodeSizeDetails.getStatus().name() + "]");
         assertTrue("We are not getting size greater than 0", nodeSizeDetails.getSizeInBytes() > 0L);
 
     }
@@ -199,6 +200,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
 
+        Thread.sleep(500);
+
         // Prepare parameters.
         Map<String, String> params = new HashMap<>();
         params.put("nodeId", folderId);
@@ -218,9 +221,10 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // current Time after executing GET/size-details
         LocalTime actualTime = LocalTime.now();
         assertTrue("Calculating folder node is taking time greater than 5 seconds ", actualTime.isBefore(expectedTime));
-        assertEquals(STATUS, nodeSizeDetails.getStatus().name(), "SizeDetails hasn't been calculated yet, with COMPLETED status");
+        assertEquals(status, nodeSizeDetails.getStatus().name(), "SizeDetails hasn't been calculated yet, with COMPLETED status [Current status -" + nodeSizeDetails.getStatus().name() + "]");
         assertTrue("We are not getting size greater than 0", nodeSizeDetails.getSizeInBytes() > 0L);
-        assertEquals(nodeSizeDetails.getSizeInBytes(), DEFAULT_SIZE);
+        Long defaultSize = 22250000L;
+        assertEquals(nodeSizeDetails.getSizeInBytes(), defaultSize);
     }
 
     /**

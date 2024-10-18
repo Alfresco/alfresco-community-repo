@@ -149,8 +149,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
                         .get("entry"));
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
-
-        assertEquals(status, nodeSizeDetails.getStatus().name(), "SizeDetails hasn't been calculated yet, with COMPLETED status [Current status -" + nodeSizeDetails.getStatus().name() + "]");
+        assertEquals("SizeDetails hasn't been calculated yet, current status -" + nodeSizeDetails.getStatus().name() + "]", status, nodeSizeDetails.getStatus().name());
         assertTrue("We are not getting size greater than 0", nodeSizeDetails.getSizeInBytes() > 0L);
 
     }
@@ -221,7 +220,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         // current Time after executing GET/size-details
         LocalTime actualTime = LocalTime.now();
         assertTrue("Calculating folder node is taking time greater than 5 seconds ", actualTime.isBefore(expectedTime));
-        assertEquals(status, nodeSizeDetails.getStatus().name(), "SizeDetails hasn't been calculated yet, with COMPLETED status [Current status -" + nodeSizeDetails.getStatus().name() + "]");
+        assertEquals("SizeDetails hasn't been calculated yet, current status -" + nodeSizeDetails.getStatus().name() + "]", status, nodeSizeDetails.getStatus().name());
         assertTrue("We are not getting size greater than 0", nodeSizeDetails.getSizeInBytes() > 0L);
         Long defaultSize = 22250000L;
         assertEquals(nodeSizeDetails.getSizeInBytes(), defaultSize);

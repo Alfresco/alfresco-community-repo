@@ -156,7 +156,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
         assertEquals("SizeDetails hasn't been calculated yet, current status -" + nodeSizeDetails.getStatus().name() + "]", status, nodeSizeDetails.getStatus().name());
-        assertTrue("We are not getting size greater than 0", nodeSizeDetails.getSizeInBytes() > 0L);
+        assertTrue("We are not getting size greater than 0 " + nodeSizeDetails, nodeSizeDetails.getSizeInBytes() > 0L);
 
     }
 
@@ -204,6 +204,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String jobId = (String) jsonObject.get("jobId");
         assertNotNull("In response, JobId should be present", jobId);
+
+        Thread.sleep(500);
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(parentFolder, jobId), null, 200);
 

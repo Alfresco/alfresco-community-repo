@@ -149,7 +149,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());
 
-        nodeSizeDetails = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), NodeSizeDetails.class);
+        nodeSizeDetails = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), NodeSizeDetails.class);
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
         assertEquals("SizeDetails hasn't been calculated yet, current status -" + nodeSizeDetails.getStatus().name() + "]", status, nodeSizeDetails.getStatus().name());

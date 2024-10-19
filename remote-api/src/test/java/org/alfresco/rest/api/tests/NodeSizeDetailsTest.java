@@ -139,10 +139,9 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
 
-        JSONObject jsonObject = (JSONObject) postResponse.getJsonResponse()
-                .get("entry");
+        NodeSizeDetails nodeSizeDetails = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), NodeSizeDetails.class);
 
-        String jobId = (String) jsonObject.get("jobId");
+        String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
@@ -150,9 +149,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());
 
-        NodeSizeDetails nodeSizeDetails = parseNodeSizeDetails(
-                (JSONObject) getResponse.getJsonResponse()
-                        .get("entry"));
+        nodeSizeDetails = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), NodeSizeDetails.class);
 
         assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
         assertEquals("SizeDetails hasn't been calculated yet, current status -" + nodeSizeDetails.getStatus().name() + "]", status, nodeSizeDetails.getStatus().name());

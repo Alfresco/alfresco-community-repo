@@ -261,6 +261,9 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         private String jobId;
         private STATUS status;
 
+        public NodeSizeDetails()
+        {}
+
         public NodeSizeDetails(String jobId)
         {
             this.jobId = jobId;

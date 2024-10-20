@@ -30,6 +30,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +157,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         props.put("cm:owner", user1);
 
         d1.setProperties(props);
+        d1.setAspectNames(Arrays.asList("cm:auditable", "cm:titled", "cm:versionable", "cm:author", "cm:ownable"));
         d1.expected(documentResp);
 
         // Perform POST request

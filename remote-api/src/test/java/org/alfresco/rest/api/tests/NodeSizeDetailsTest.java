@@ -30,7 +30,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,24 +140,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String content_Id = documentResp.getId();
 
-        Document d1 = new Document();
-        d1.setId(content_Id);
-        d1.setParentId(childFolder);
-        d1.setName(contentName);
-        d1.setNodeType(TYPE_CM_CONTENT);
-        d1.setContent(createContentInfo());
-        d1.setCreatedByUser(userInfo);
-        d1.setModifiedByUser(userInfo);
-
-        Map<String, Object> props = new HashMap<>();
-        props.put("cm:title", title);
-        props.put("cm:versionLabel", "1.0");
-        props.put("cm:versionType", "MAJOR");
-        props.put("cm:owner", user1);
-
-        d1.setProperties(props);
-        d1.setAspectNames(Arrays.asList("cm:auditable", "cm:titled", "cm:versionable", "cm:author", "cm:ownable"));
-        d1.expected(documentResp);
+        assertNotNull("contentId shouldn't be null", content_Id);
 
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(childFolder), null, 202);

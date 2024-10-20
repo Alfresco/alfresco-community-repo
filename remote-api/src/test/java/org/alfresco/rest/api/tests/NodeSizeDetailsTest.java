@@ -30,7 +30,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.junit.After;
@@ -46,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -122,18 +125,41 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         UserInfo userInfo = new UserInfo(user1);
 
         String folder0Name = "f0-testParentFolder-" + RUNID;
-        String fileName = "content" + RUNID + ".txt";
         String childFolder = createFolder(folderId, folder0Name, null).getId();
+
+        String title = "test title";
+        Map<String, String> docProps = new HashMap<>();
+        docProps.put("cm:title", title);
+        docProps.put("cm:owner", user1);
+        String contentName = "content " + RUNID + ".txt";
+        String content1Id = createTextFile(childFolder, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
+
+        Thread.sleep(3000);
+        // get node info.
+        HttpResponse response = getSingle(NodesEntityResource.class, content1Id, null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String content_Id = documentResp.getId();
+
         Document d1 = new Document();
-        d1.setIsFolder(false);
+        d1.setId(content_Id);
         d1.setParentId(childFolder);
-        d1.setName(fileName);
+        d1.setName(contentName);
+        d1.setNodeType(TYPE_CM_CONTENT);
         d1.setContent(createContentInfo());
         d1.setCreatedByUser(userInfo);
         d1.setModifiedByUser(userInfo);
 
+        Map<String, Object> props = new HashMap<>();
+        props.put("cm:title", title);
+        props.put("cm:versionLabel", "1.0");
+        props.put("cm:versionType", "MAJOR");
+        props.put("cm:owner", user1);
+
+        d1.setProperties(props);
+        d1.expected(documentResp);
+
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(childFolder), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -143,7 +169,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());

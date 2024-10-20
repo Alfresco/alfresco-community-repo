@@ -128,13 +128,12 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         d1.setIsFolder(false);
         d1.setParentId(childFolder);
         d1.setName(fileName);
-        d1.setNodeType(TYPE_CM_CONTENT);
         d1.setContent(createContentInfo());
         d1.setCreatedByUser(userInfo);
         d1.setModifiedByUser(userInfo);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(childFolder), null, 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -144,7 +143,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());

@@ -132,6 +132,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String contentName = "content " + RUNID + ".txt";
         String content1Id = createTextFile(folderB_Ref.getId(), contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
 
+        Thread.sleep(5000);
+
         HttpResponse response = getSingle(NodesEntityResource.class, content1Id, null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("DocumentId must be equal", documentResp.getId(), content1Id);
@@ -206,7 +208,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        Thread.sleep(4000);
+        Thread.sleep(10000);
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(parentFolder, jobId), null, 200);
 

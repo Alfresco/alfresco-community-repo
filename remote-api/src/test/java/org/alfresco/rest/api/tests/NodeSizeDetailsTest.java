@@ -147,6 +147,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
+        Thread.sleep(6000);
+
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderB_Ref.getId(), jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",

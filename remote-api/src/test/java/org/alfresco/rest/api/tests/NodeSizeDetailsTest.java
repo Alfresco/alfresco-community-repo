@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +37,6 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -115,26 +113,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         nodes = applicationContext.getBean("Nodes", Nodes.class);
-    }
-
-    @BeforeClass
-    public static void testRestartSearchReindexing() throws IOException
-    {
-        try
-        {
-            ProcessBuilder processBuilder = new ProcessBuilder("docker-compose", "restart", "search-reindexing");
-            processBuilder.redirectErrorStream(true);
-
-            Process process = processBuilder.start();
-            int exitCode = process.waitFor();
-
-            assertTrue("Docker Compose command failed", exitCode == 0);
-        }
-        catch (IOException | InterruptedException e)
-        {
-            e.printStackTrace();
-            assertTrue("Exception occurred while executing Docker command", false);
-        }
     }
 
     /**

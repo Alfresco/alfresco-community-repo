@@ -32,7 +32,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import org.json.simple.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -262,6 +261,9 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         private String jobId;
         private STATUS status;
 
+        public NodeSizeDetails()
+        {}
+
         public NodeSizeDetails(String jobId)
         {
             this.jobId = jobId;
@@ -297,20 +299,6 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             this.numberOfFiles = numberOfFiles;
             this.status = currentStatus;
             this.jobId = jobId;
-        }
-
-        public static NodeSizeDetails parseNodeSizeDetails(JSONObject jsonObject)
-        {
-            if (jsonObject == null)
-            {
-                return null;
-            }
-
-            String jobId = (String) jsonObject.get("jobId");
-            String id = (String) jsonObject.get("id");
-            String status = (String) jsonObject.get("status");
-            Long sizeInBytes = (Long) jsonObject.get("sizeInBytes");
-            return new NodeSizeDetails(id, sizeInBytes != null ? sizeInBytes : 0L, jobId, STATUS.valueOf(status));
         }
 
         public String getId()
@@ -387,20 +375,21 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             NodeSizeDetails that = (NodeSizeDetails) o;
             return Objects.equals(id, that.id) && Objects.equals(sizeInBytes, that.sizeInBytes) && Objects.equals(
                     calculatedAt, that.calculatedAt) && Objects.equals(numberOfFiles, that.numberOfFiles)
-                    && Objects.equals(jobId, that.jobId);
+                    && Objects.equals(jobId, that.jobId) && status == that.status;
         }
 
         @Override
         public int hashCode()
         {
-            return Objects.hash(id, sizeInBytes, calculatedAt, numberOfFiles, jobId);
+            return Objects.hash(id, sizeInBytes, calculatedAt, numberOfFiles, jobId, status);
         }
 
         @Override
         public String toString()
         {
             return "NodeSizeDetails{" + "id='" + id + '\'' + ", sizeInBytes=" + sizeInBytes + ", calculatedAt="
-                    + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + '}';
+                    + calculatedAt + ", numberOfFiles=" + numberOfFiles + ", jobId='" + jobId + '\'' + ", status="
+                    + status + '}';
         }
 
         public enum STATUS

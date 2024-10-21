@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,9 +112,29 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
+        folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         nodes = applicationContext.getBean("Nodes", Nodes.class);
+    }
+
+    @BeforeClass
+    public static void testRestartSearchReindexing() throws IOException
+    {
+        try
+        {
+            ProcessBuilder processBuilder = new ProcessBuilder("docker-compose", "restart", "search-reindexing");
+            processBuilder.redirectErrorStream(true);
+
+            Process process = processBuilder.start();
+            int exitCode = process.waitFor();
+
+            assertTrue("Docker Compose command failed", exitCode == 0);
+        }
+        catch (IOException | InterruptedException e)
+        {
+            e.printStackTrace();
+            assertTrue("Exception occurred while executing Docker command", false);
+        }
     }
 
     /**
@@ -121,8 +143,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     @Test
     public void testPostAndGetFolderSizeDetails() throws Exception
     {
-
-        UserInfo userInfo = new UserInfo(user1);
 
         String folder0Name = "f0-testParentFolder-" + RUNID;
         String childFolder = createFolder(folderId, folder0Name, null).getId();
@@ -143,7 +163,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("contentId shouldn't be null", content_Id);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(childFolder), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -153,7 +173,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());
@@ -173,7 +193,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         UserInfo userInfo = new UserInfo(user1);
 
         String folder0Name = "f1-testParentFolder-" + RUNID;
-        String parentFolder = createFolder(tDocLibNodeId, folder0Name, null).getId();
+        String parentFolder = createFolder(folderId, folder0Name, null).getId();
 
         for (int i = 1; i <= 500; i++)
         {
@@ -205,24 +225,21 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
 
-        JSONObject jsonObject = (JSONObject) postResponse.getJsonResponse()
-                .get("entry");
+        NodeSizeDetails nodeSizeDetails = RestApiUtil.parseRestApiEntry(postResponse.getJsonResponse(), NodeSizeDetails.class);
 
-        String jobId = (String) jsonObject.get("jobId");
+        String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        Thread.sleep(500);
+        Thread.sleep(4000);
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(parentFolder, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());
 
-        NodeSizeDetails nodeSizeDetails = parseNodeSizeDetails(
-                (JSONObject) getResponse.getJsonResponse()
-                        .get("entry"));
+        nodeSizeDetails = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), NodeSizeDetails.class);
 
-        assertNotNull("We are not getting correct response " + nodeSizeDetails, nodeSizeDetails.getStatus());
+        assertNotNull("We are not getting correct response ", nodeSizeDetails.getStatus());
 
         // current Time after executing GET/size-details
         LocalTime actualTime = LocalTime.now();

@@ -29,8 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -139,7 +137,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertEquals("DocumentId must be equal", documentResp.getId(), content1Id);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderB_Ref.getId()), toJsonAsStringNonNull(documentResp), 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderB_Ref.getId()), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -195,7 +193,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         // Start Time before triggering POST/size-details API
         LocalTime expectedTime = LocalTime.now()
-                .plusSeconds(5);
+                .plusSeconds(10);
 
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), null, 202);

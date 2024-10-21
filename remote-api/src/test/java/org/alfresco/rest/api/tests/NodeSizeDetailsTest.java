@@ -55,7 +55,6 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -108,8 +107,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite(siteTitle, SiteVisibility.PUBLIC);
-        // userOneN1Site = createSite("RN" + RUNID, siteTitle, siteTitle, SiteVisibility.PUBLIC, 201);
-        addSiteMember(userOneN1Site.getId(), user1, SiteRole.SiteManager);
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();

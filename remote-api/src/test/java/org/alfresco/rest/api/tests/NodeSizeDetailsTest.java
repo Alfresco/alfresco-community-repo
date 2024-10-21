@@ -29,6 +29,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl.NodeSizeDetails;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -54,9 +55,11 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
@@ -69,8 +72,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsTest.class);
     private Site userOneN1Site;
     private String folderId;
-    private PermissionService permissionService;
-    private Nodes nodes;
     private final String status = "COMPLETED";
 
     // Method to create content info
@@ -106,13 +107,12 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
-        this.userOneN1Site = createSite("RN" + RUNID, siteTitle, siteTitle, SiteVisibility.PRIVATE, 201);
+        userOneN1Site = createSite("RN" + RUNID, siteTitle, siteTitle, SiteVisibility.PUBLIC, 201);
+        addSiteMember(userOneN1Site.getId(), user1, SiteRole.SiteCollaborator);
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
         folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
-        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
-        nodes = applicationContext.getBean("Nodes", Nodes.class);
     }
 
     /**
@@ -121,27 +121,25 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
     @Test
     public void testPostAndGetFolderSizeDetails() throws Exception
     {
+        setRequestContext(user1);
 
         String folder0Name = "f0-testParentFolder-" + RUNID;
-        String childFolder = createFolder(folderId, folder0Name, null).getId();
+        String folderB = createFolder(folderId, folder0Name, null).getId();
+        NodeRef folderB_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB);
 
         String title = "test title";
         Map<String, String> docProps = new HashMap<>();
         docProps.put("cm:title", title);
         docProps.put("cm:owner", user1);
         String contentName = "content " + RUNID + ".txt";
-        String content1Id = createTextFile(childFolder, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
+        String content1Id = createTextFile(folderB_Ref.getId(), contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
 
-        Thread.sleep(3000);
-        // get node info.
         HttpResponse response = getSingle(NodesEntityResource.class, content1Id, null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        String content_Id = documentResp.getId();
-
-        assertNotNull("contentId shouldn't be null", content_Id);
+        assertEquals("DocumentId must be equal", documentResp.getId(), content1Id);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(childFolder), null, 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderB_Ref.getId()), toJsonAsStringNonNull(documentResp), 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -151,7 +149,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderB_Ref.getId(), jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());

@@ -107,8 +107,9 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         setRequestContext(user1);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
-        userOneN1Site = createSite("RN" + RUNID, siteTitle, siteTitle, SiteVisibility.PUBLIC, 201);
-        addSiteMember(userOneN1Site.getId(), user1, SiteRole.SiteCollaborator);
+        userOneN1Site = createSite(siteTitle, SiteVisibility.PUBLIC);
+        // userOneN1Site = createSite("RN" + RUNID, siteTitle, siteTitle, SiteVisibility.PUBLIC, 201);
+        addSiteMember(userOneN1Site.getId(), user1, SiteRole.SiteManager);
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();

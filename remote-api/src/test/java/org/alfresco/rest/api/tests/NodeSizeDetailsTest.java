@@ -110,7 +110,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
-        folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER);
+        folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_CONTENT);
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
         nodes = applicationContext.getBean("Nodes", Nodes.class);
     }
@@ -143,7 +143,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertNotNull("contentId shouldn't be null", content_Id);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(childFolder), null, 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderId), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -153,7 +153,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(childFolder, jobId), null, 200);
+        HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderId, jobId), null, 200);
 
         assertNotNull("After executing GET/size-details, it will provide NodeSizeDetails with 200 status code",
                 getResponse.getJsonResponse());

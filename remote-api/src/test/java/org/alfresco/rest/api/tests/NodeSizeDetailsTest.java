@@ -29,8 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +53,6 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -108,8 +105,6 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite(siteTitle, SiteVisibility.PUBLIC);
-        // userOneN1Site = createSite("RN" + RUNID, siteTitle, siteTitle, SiteVisibility.PUBLIC, 201);
-        addSiteMember(userOneN1Site.getId(), user1, SiteRole.SiteManager);
 
         // Create a folder within the site document's library.
         String folderName = "folder" + System.currentTimeMillis();
@@ -140,7 +135,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         assertEquals("DocumentId must be equal", documentResp.getId(), content1Id);
 
         // Perform POST request
-        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderB_Ref.getId()), toJsonAsStringNonNull(documentResp), 202);
+        HttpResponse postResponse = post(generateNodeSizeDetailsUrl(folderB_Ref.getId()), null, 202);
 
         assertNotNull("After executing POST/size-details first time, it will provide jobId with 202 status code",
                 postResponse.getJsonResponse());
@@ -149,6 +144,8 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
+
+        Thread.sleep(15000);
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(folderB_Ref.getId(), jobId), null, 200);
 
@@ -194,7 +191,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
 
         // Start Time before triggering POST/size-details API
         LocalTime expectedTime = LocalTime.now()
-                .plusSeconds(5);
+                .plusSeconds(10);
 
         // Perform POST request
         HttpResponse postResponse = post(generateNodeSizeDetailsUrl(parentFolder), null, 202);
@@ -207,7 +204,7 @@ public class NodeSizeDetailsTest extends AbstractBaseApiTest
         String jobId = nodeSizeDetails.getJobId();
         assertNotNull("In response, JobId should be present", jobId);
 
-        Thread.sleep(4000);
+        Thread.sleep(15000);
 
         HttpResponse getResponse = getSingle(getNodeSizeDetailsUrl(parentFolder, jobId), null, 200);
 

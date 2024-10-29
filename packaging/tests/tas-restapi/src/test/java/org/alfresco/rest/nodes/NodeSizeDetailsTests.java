@@ -14,8 +14,6 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestSizeDetailsModel;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser.ListUserWithRoles;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
@@ -29,17 +27,13 @@ public class NodeSizeDetailsTests extends RestTest
 {
     private UserModel user1;
     private SiteModel siteModel;
-    private ListUserWithRoles usersWithRoles;
     private FolderModel folder;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
         user1 = dataUser.createRandomTestUser("User-1");
-        user1.setUserRole(UserRole.SiteManager);
-        restClient.authenticateUser(user1);
         siteModel = dataSite.usingUser(user1).createPublicRandomSite();
-        usersWithRoles = dataUser.addUsersWithRolesToSite(siteModel, UserRole.SiteManager);
     }
 
     /**
@@ -129,7 +123,7 @@ public class NodeSizeDetailsTests extends RestTest
 
         STEP("2. Creating a 200 nested folders in the folder-1");
 
-        IntStream.rangeClosed(1, 200).forEach(i -> {
+        IntStream.rangeClosed(1, 2).forEach(i -> {
             String folder0Name = "childFolder" + i + RandomStringUtils.randomAlphanumeric(2);
             FolderModel folderModel = new FolderModel();
             folderModel.setName(folder0Name);

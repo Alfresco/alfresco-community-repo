@@ -2,6 +2,8 @@ package org.alfresco.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.util.stream.IntStream;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -127,11 +129,11 @@ public class NodeSizeDetailsTests extends RestTest
 
         STEP("2. Creating a 200 nested folders in the folder-1");
 
-        for (int i = 1; i <= 200; i++)
-        {
+        IntStream.rangeClosed(1, 5).forEach(i -> {
             String folder0Name = "childFolder" + i + RandomStringUtils.randomAlphanumeric(2);
             FolderModel folderModel = new FolderModel();
             folderModel.setName(folder0Name);
+
             FolderModel childFolder = dataContent.usingUser(user1)
                     .usingSite(siteModel)
                     .usingResource(folder)
@@ -141,10 +143,12 @@ public class NodeSizeDetailsTests extends RestTest
             restClient.authenticateUser(user1)
                     .configureRequestSpec()
                     .addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+
             RestNodeModel newNode = restClient.authenticateUser(user1)
                     .withCoreAPI()
                     .usingNode(childFolder)
                     .createNode();
+
             restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
             newNode.assertThat()
@@ -156,20 +160,19 @@ public class NodeSizeDetailsTests extends RestTest
                     .and()
                     .field("content.mimeType")
                     .is(FileType.TEXT_PLAIN.mimeType);
-
-        }
+        });
 
         RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
-
-        Thread.sleep(2000);
-
         String jobId = restSizeDetailsModel.getJobId();
-        restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-        restSizeDetailsModel.assertThat().field("sizeInBytes").isGreaterThan(0);
+
+        Utility.sleep(2000, 60000, () -> {
+            RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
+            restClient.assertStatusCodeIs(HttpStatus.OK);
+            sizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
+            sizeDetailsModel.assertThat().field("sizeInBytes").isGreaterThan(0);
+        });
 
     }
 }

@@ -123,7 +123,7 @@ public class NodeSizeDetailsTests extends RestTest
 
         STEP("2. Creating a 200 nested folders in the folder-1");
 
-        IntStream.rangeClosed(1, 2).forEach(i -> {
+        IntStream.rangeClosed(1, 200).forEach(i -> {
             String folder0Name = "childFolder" + i + RandomStringUtils.randomAlphanumeric(2);
             FolderModel folderModel = new FolderModel();
             folderModel.setName(folder0Name);

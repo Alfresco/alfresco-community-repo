@@ -123,7 +123,7 @@ public class NodeSizeDetailsTests extends RestTest
         STEP("1. Create a parent folder in the test site.");
         FolderModel folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
-        STEP("2. Creating a 50 nested folders in the folder-1");
+        STEP("2. Creating a 51 nested folders in the folder-1");
 
         IntStream.rangeClosed(1, 51).forEach(i -> {
             String folder0Name = "childFolder" + i + RandomStringUtils.randomAlphanumeric(2);

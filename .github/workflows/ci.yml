@@ -984,6 +984,9 @@ jobs:
       - name: "Build TAS integration tests"
         if: ${{ matrix.test-name }} == 'Integration TAS tests'
         run: mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
+      - name: Setup tmate session
+        if: ${{ matrix.test-name }} == 'REST API TAS tests part3'
+        uses: mxschmitt/action-tmate@v3
       - name: "Prepare Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v7.1.0

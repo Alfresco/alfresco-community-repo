@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -49,11 +50,11 @@ public class NodeSizeDetailsTests extends RestTest
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
         STEP("Upload a text document to the folder.");
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleContent.txt"));
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         fileNode.assertThat().field("id").isNotNull()
-                .and().field("name").is("sampleContent.txt")
+                .and().field("name").is("sampleLargeContent.txt")
                 .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
@@ -64,7 +65,8 @@ public class NodeSizeDetailsTests extends RestTest
         restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-        restSizeDetailsModel.assertThat().field("sizeInBytes").isGreaterThan(0);
+        Assert.assertTrue((restSizeDetailsModel.getSizeInBytes() > 8200), "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is less than expected 8200");
+        Assert.assertTrue((restSizeDetailsModel.getSizeInBytes() < 8500), "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is greater than expected 8500");
 
     }
 
@@ -121,9 +123,9 @@ public class NodeSizeDetailsTests extends RestTest
         STEP("1. Create a parent folder in the test site.");
         FolderModel folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
-        STEP("2. Creating a 200 nested folders in the folder-1");
+        STEP("2. Creating a 51 nested folders in the folder-1");
 
-        IntStream.rangeClosed(1, 200).forEach(i -> {
+        IntStream.rangeClosed(1, 51).forEach(i -> {
             String folder0Name = "childFolder" + i + RandomStringUtils.randomAlphanumeric(2);
             FolderModel folderModel = new FolderModel();
             folderModel.setName(folder0Name);
@@ -161,11 +163,13 @@ public class NodeSizeDetailsTests extends RestTest
         restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
         String jobId = restSizeDetailsModel.getJobId();
 
-        Utility.sleep(2000, 60000, () -> {
+        Utility.sleep(4000, 60000, () -> {
             RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             sizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-            sizeDetailsModel.assertThat().field("sizeInBytes").isGreaterThan(0);
+            Assert.assertTrue(sizeDetailsModel.getSizeInBytes() > 410000, "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is less than expected " + 410000);
+            Assert.assertTrue(sizeDetailsModel.getSizeInBytes() < 420000, "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is less than expected " + 420000);
+
         });
 
     }

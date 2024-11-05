@@ -65,8 +65,8 @@ public class NodeSizeDetailsTests extends RestTest
         restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-        Assert.assertTrue((restSizeDetailsModel.getSizeInBytes() > 52000), "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is less than expected 52000");
-        Assert.assertTrue((restSizeDetailsModel.getSizeInBytes() < 55000), "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is greater than expected 55000");
+        Assert.assertTrue((restSizeDetailsModel.getSizeInBytes() > 8200), "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is less than expected 8200");
+        Assert.assertTrue((restSizeDetailsModel.getSizeInBytes() < 8500), "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is greater than expected 8500");
 
     }
 
@@ -167,8 +167,8 @@ public class NodeSizeDetailsTests extends RestTest
             RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
             restClient.assertStatusCodeIs(HttpStatus.OK);
             sizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-            Assert.assertTrue(sizeDetailsModel.getSizeInBytes() > 2600000, "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is less than expected " + 2600000);
-            Assert.assertTrue(sizeDetailsModel.getSizeInBytes() < 2800000, "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is less than expected " + 2800000);
+            Assert.assertTrue(sizeDetailsModel.getSizeInBytes() > 410000, "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is less than expected " + 410000);
+            Assert.assertTrue(sizeDetailsModel.getSizeInBytes() < 420000, "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is less than expected " + 420000);
 
         });
 

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -204,13 +204,11 @@ public class MessageServiceImpl implements MessageService
         {
             if (! tenantResourceBundleBaseNames.contains(resBundlePath))
             {
-            	tenantResourceBundleBaseNames.add(resBundlePath);
-            	putResourceBundleBaseNames(tenantDomain, tenantResourceBundleBaseNames);
+                tenantResourceBundleBaseNames.add(resBundlePath);
+                reloadResourceBundles(tenantResourceBundleBaseNames);
             }
 
             logger.info("Registered message bundle '" + resBundlePath + "'");
-            
-            clearLoadedResourceBundles(tenantDomain); // force re-load of message cache
         }
         finally
         {
@@ -288,61 +286,64 @@ public class MessageServiceImpl implements MessageService
         Map<Locale, Set<String>> loadedResourceBundlesForAllLocales;
         Map<Locale, Map<String, String>> cachedMessagesForAllLocales;
         Set<String> resourceBundleBaseNamesForAllLocales;
-        
+
         String tenantDomain = getTenantDomain();
-        LockHelper.tryLock(readLock, tryLockTimeout, "getting loaded resource bundles, messages and base names in 'MessageServiceImpl.unregisterResourceBundle()'");
+        LockHelper.tryLock(readLock, tryLockTimeout,
+                "getting loaded resource bundles, messages and base names in 'MessageServiceImpl.unregisterResourceBundle()'");
         try
         {
             // all locales
             loadedResourceBundlesForAllLocales = getLoadedResourceBundles(tenantDomain, false);
             cachedMessagesForAllLocales = getMessages(tenantDomain, false);
             resourceBundleBaseNamesForAllLocales = getResourceBundleBaseNames(tenantDomain, false, true);
-        }    
+        }
         finally
         {
             readLock.unlock();
         }
-        
-        LockHelper.tryLock(writeLock, tryLockTimeout, "removing resource bundle by path in 'MessageServiceImpl.unregisterResourceBundle()'");
+
+        LockHelper.tryLock(writeLock, tryLockTimeout,
+                "removing resource bundle by path in 'MessageServiceImpl.unregisterResourceBundle()'");
         try
         {
             // unload resource bundles for each locale (by tenant, if applicable)        
             if ((loadedResourceBundlesForAllLocales != null) && (cachedMessagesForAllLocales != null))
             {
                 Iterator<Locale> itr = loadedResourceBundlesForAllLocales.keySet().iterator();
-                
+
                 while (itr.hasNext())
-                {   
+                {
                     Locale locale = itr.next();
-                    
+
                     Set<String> loadedBundles = loadedResourceBundlesForAllLocales.get(locale);
                     Map<String, String> props = cachedMessagesForAllLocales.get(locale);
-                    
+
                     if ((loadedBundles != null) && (props != null))
                     {
                         if (loadedBundles.contains(resBundlePath))
                         {
                             ResourceBundle resourcebundle = null;
-                
+
                             int idx1 = resBundlePath.indexOf(StoreRef.URI_FILLER);
-                           
+
                             if (idx1 != -1)
                             {
                                 // load from repository
-                                int idx2 = resBundlePath.indexOf("/", idx1+3);
-                
+                                int idx2 = resBundlePath.indexOf("/", idx1 + 3);
+
                                 String store = resBundlePath.substring(0, idx2);
                                 String path = resBundlePath.substring(idx2);
-                
+
                                 StoreRef storeRef = tenantService.getName(new StoreRef(store));
-                                
+
                                 try
                                 {
                                     resourcebundle = getRepoResourceBundle(storeRef, path, locale);
                                 }
                                 catch (IOException ioe)
                                 {
-                                    throw new AlfrescoRuntimeException("Failed to read message resource bundle from repository " + resBundlePath + " : " + ioe);
+                                    throw new AlfrescoRuntimeException("Failed to read message resource bundle from repository "
+                                            + resBundlePath + " : " + ioe);
                                 }
                             }
                             else
@@ -350,7 +351,7 @@ public class MessageServiceImpl implements MessageService
                                 // load from classpath
                                 resourcebundle = ResourceBundle.getBundle(resBundlePath, locale);
                             }
-                
+
                             if (resourcebundle != null)
                             {
                                 // unload from the cached messages
@@ -361,21 +362,20 @@ public class MessageServiceImpl implements MessageService
                                     props.remove(key);
                                 }
                             }
-                
+
                             loadedBundles.remove(resBundlePath);
                         }
                     }
                 }
             }
-            
+
             // unregister resource bundle
             if (resourceBundleBaseNamesForAllLocales != null)
             {
                 resourceBundleBaseNamesForAllLocales.remove(resBundlePath);
+                reloadResourceBundles(resourceBundleBaseNamesForAllLocales);
                 logger.info("Unregistered message bundle '" + resBundlePath + "'");
             }
-                     
-            clearLoadedResourceBundles(tenantDomain); // force re-load of message cache
         }
         finally
         {
@@ -383,6 +383,14 @@ public class MessageServiceImpl implements MessageService
         }
     }
     
+    private void reloadResourceBundles(Set<String> newResourceBundles)
+    {
+        logger.debug("Reloading message bundles ...");
+        String tenantDomain = getTenantDomain();
+        putResourceBundleBaseNames(tenantDomain, newResourceBundles);
+        clearLoadedResourceBundles(tenantDomain); // force re-load of message cache
+    }
+
     /**
      * Get the messages for a locale.
      * <p>
@@ -465,7 +473,7 @@ public class MessageServiceImpl implements MessageService
                 Set<String> resBundleBaseNames = getResourceBundleBaseNames(tenantDomain, true, false);
 
                 int count = 0;
-                
+
                 // load resource bundles for given locale (by tenant, if applicable)
                 for (String resBundlePath : resBundleBaseNames)
                 {
@@ -474,24 +482,25 @@ public class MessageServiceImpl implements MessageService
                         ResourceBundle resourcebundle = null;
 
                         int idx1 = resBundlePath.indexOf(StoreRef.URI_FILLER);
-                       
+
                         if (idx1 != -1)
                         {
                             // load from repository
-                            int idx2 = resBundlePath.indexOf("/", idx1+3);
+                            int idx2 = resBundlePath.indexOf("/", idx1 + 3);
 
                             String store = resBundlePath.substring(0, idx2);
                             String path = resBundlePath.substring(idx2);
 
                             StoreRef storeRef = tenantService.getName(new StoreRef(store));
-                            
+
                             try
                             {
                                 resourcebundle = getRepoResourceBundle(storeRef, path, locale);
                             }
                             catch (IOException ioe)
                             {
-                                throw new AlfrescoRuntimeException("Failed to read message resource bundle from repository " + resBundlePath + " : " + ioe);
+                                throw new AlfrescoRuntimeException(
+                                        "Failed to read message resource bundle from repository " + resBundlePath + " : " + ioe);
                             }
                         }
                         else
@@ -508,13 +517,13 @@ public class MessageServiceImpl implements MessageService
                                 String key = enumKeys.nextElement();
                                 props.put(key, resourcebundle.getString(key));
                             }
-    
+
                             loadedBundles.add(resBundlePath);
                             count++;
                         }
                     }
                 }
-                
+
                 logger.info("Message bundles (x " + count + ") loaded for locale " + locale);
             }
             finally

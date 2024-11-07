@@ -26,6 +26,7 @@ public class NodeSizeDetailsTests extends RestTest
     {
         user1 = dataUser.createRandomTestUser("User-1");
         siteModel = dataSite.usingUser(user1).createPublicRandomSite();
+        folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
     }
 
     /**

@@ -18,7 +18,6 @@ do
     fi
 done
 include_list=${include_list:1}
-echo $include_list
 
 mvn spotless:apply validate -DlicenseUpdateHeaders=true -Pags,all-tas-tests -Dspotless-include-list="${include_list}" > /dev/null || true
 

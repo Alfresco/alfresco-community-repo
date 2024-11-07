@@ -57,7 +57,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 {
     private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsServiceImpl.class);
     private static final String FIELD_FACET = "content.size";
-    private static final String FACET_QUERY = "content.size:[0 TO " + Integer.MAX_VALUE + "] \"label\": \"large\",\"group\":\"Size\"";
+    private static final String FACET_QUERY = "{!afts}content.size:[0 TO " + Integer.MAX_VALUE + "]";
     private SearchService searchService;
     private SimpleCache<Serializable, NodeSizeDetails> simpleCache;
     private TransactionService transactionService;
@@ -153,7 +153,6 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             finally
             {
                 putSizeDetails(nodeRef.getId(), nodeSizeDetails);
-                AuthenticationUtil.clearCurrentSecurityContext();
             }
         });
     }
@@ -214,7 +213,6 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             {
                 LOG.debug(" After Executing facet query, no. of records found " + resultsWithoutFacet.getNumberFound());
             }
-
             searchParameters.addFacetQuery(FACET_QUERY);
             FieldFacet fieldFacet = new FieldFacet(FIELD_FACET);
             fieldFacet.setLimitOrNull((int) resultsWithoutFacet.getNumberFound());
@@ -234,7 +232,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         SearchParameters searchParameters = new SearchParameters();
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-        searchParameters.setQuery("ANCESTOR:\"" + nodeRef + "\" AND TYPE:content");
+        searchParameters.setQuery("ANCESTOR:\"" + nodeRef + "\" AND TYPE:\"cm:content\"");
         searchParameters.setTrackTotalHits(-1);
         return searchParameters;
     }

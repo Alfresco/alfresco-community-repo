@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,59 +26,34 @@
 
 package org.alfresco.rest.requests;
 
-import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
-import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 import static org.springframework.http.HttpMethod.PUT;
 
-import jakarta.json.JsonArrayBuilder;
+import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
+import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
+import jakarta.json.JsonArrayBuilder;
 
 import io.restassured.http.ContentType;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.testng.reporters.Files;
+
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
-import org.alfresco.rest.model.RestCategoryLinkBodyModel;
-import org.alfresco.rest.model.RestCategoryModel;
-import org.alfresco.rest.model.RestCategoryModelsCollection;
-import org.alfresco.rest.model.RestCommentModel;
-import org.alfresco.rest.model.RestCommentModelsCollection;
-import org.alfresco.rest.model.RestNodeAssocTargetModel;
-import org.alfresco.rest.model.RestNodeAssociationModel;
-import org.alfresco.rest.model.RestNodeAssociationModelCollection;
-import org.alfresco.rest.model.RestNodeAssociationTypeModel;
-import org.alfresco.rest.model.RestNodeBodyModel;
-import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
-import org.alfresco.rest.model.RestNodeChildAssocModelCollection;
-import org.alfresco.rest.model.RestNodeChildAssociationModel;
-import org.alfresco.rest.model.RestNodeModel;
-import org.alfresco.rest.model.RestNodeModelsCollection;
-import org.alfresco.rest.model.RestRatingModel;
-import org.alfresco.rest.model.RestRatingModelsCollection;
-import org.alfresco.rest.model.RestRenditionInfoModel;
-import org.alfresco.rest.model.RestRenditionInfoModelCollection;
-import org.alfresco.rest.model.RestRuleExecutionModel;
-import org.alfresco.rest.model.RestRuleSetLinkModel;
-import org.alfresco.rest.model.RestRuleSetModel;
-import org.alfresco.rest.model.RestRuleSetModelsCollection;
-import org.alfresco.rest.model.RestTagModel;
-import org.alfresco.rest.model.RestTagModelsCollection;
-import org.alfresco.rest.model.RestVersionModel;
-import org.alfresco.rest.model.RestVersionModelsCollection;
+import org.alfresco.rest.model.*;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.RepoTestModel;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.testng.reporters.Files;
 
 /**
  * Declares all Rest API under the /nodes path
@@ -294,6 +269,7 @@ public class Node extends ModelRequest<Node>
     /**
      * 
      * Get fivestar rating of a document using GET call on "nodes/{nodeId}/ratings/{ratingId}"
+     * 
      * @return
      */
     public RestRatingModel getFiveStarRating()
@@ -335,7 +311,6 @@ public class Node extends ModelRequest<Node>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/tags", repoModel.getNodeRef());
         return restWrapper.processModels(RestTagModelsCollection.class, request);
     }
-
 
     /**
      * Deletes a tag for a specific content node using DELETE call on nodes/{nodeId}/tags/{tagId}
@@ -381,6 +356,7 @@ public class Node extends ModelRequest<Node>
      * You need to specify first the multipart call {@link RestWrapper#usingMultipartFile(java.io.File)}
      *
      * <code>usingMultipartFile(new File("your-local-file.txt")).withCoreAPI().usingNode(ContentModel.my()).createNode();</code>
+     * 
      * @return
      */
     public RestNodeModel createNode()
@@ -415,7 +391,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Create node rendition using POST call on '/nodes/{nodeId}/renditions'
      *
-     * @param renditionId id of rendition to be created
+     * @param renditionId
+     *            id of rendition to be created
      * @return
      */
     public void createNodeRendition(String renditionId)
@@ -428,8 +405,10 @@ public class Node extends ModelRequest<Node>
     /**
      * Create node version rendition using POST call on '/nodes/{nodeId}/versions/{versionId}/renditions'
      *
-     * @param renditionId id of rendition to be created
-     * @param versionId version id of node
+     * @param renditionId
+     *            id of rendition to be created
+     * @param versionId
+     *            version id of node
      * @return
      */
     public void createNodeVersionRendition(String renditionId, String versionId)
@@ -442,10 +421,10 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Check if specified rendition exists and if not
-     * create node rendition using POST call on '/nodes/{nodeId}/renditions'
+     * Check if specified rendition exists and if not create node rendition using POST call on '/nodes/{nodeId}/renditions'
      *
-     * @param renditionId id of rendition to be created
+     * @param renditionId
+     *            id of rendition to be created
      * @return
      */
     public void createNodeRenditionIfNotExists(String renditionId)
@@ -460,9 +439,10 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get  node rendition using GET call on '/nodes/{nodeId}/renditions/{renditionId}
+     * Get node rendition using GET call on '/nodes/{nodeId}/renditions/{renditionId}
      *
-     * @param renditionId id of rendition to be retrieved
+     * @param renditionId
+     *            id of rendition to be retrieved
      * @return
      */
     public RestRenditionInfoModel getNodeRendition(String renditionId)
@@ -474,8 +454,10 @@ public class Node extends ModelRequest<Node>
     /**
      * Get node version rendition using GET call on '/nodes/{nodeId}/versions/{versionId}renditions/{renditionId}
      *
-     * @param renditionId id of rendition to be retrieved
-     * @param versionId versionId of the node
+     * @param renditionId
+     *            id of rendition to be retrieved
+     * @param versionId
+     *            versionId of the node
      * @return
      */
     public RestRenditionInfoModel getNodeVersionRendition(String renditionId, String versionId)
@@ -487,8 +469,7 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get node rendition using GET call on 'nodes/{nodeId}/renditions/{renditionId} Please note that it retries to get
-     * the renditions response several times because on the alfresco server the rendition can take a while to be created.
+     * Get node rendition using GET call on 'nodes/{nodeId}/renditions/{renditionId} Please note that it retries to get the renditions response several times because on the alfresco server the rendition can take a while to be created.
      *
      * @return
      */
@@ -510,8 +491,7 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get node version rendition using GET call on 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId} Please note that it retries to get
-     * the renditions response several times because on the alfresco server the rendition can take a while to be created.
+     * Get node version rendition using GET call on 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId} Please note that it retries to get the renditions response several times because on the alfresco server the rendition can take a while to be created.
      *
      * @return
      */
@@ -533,10 +513,7 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get node rendition content using GET call on
-     * 'nodes/{nodeId}/renditions/{renditionId}/content Please note that it
-     * retries to get the renditions response several times because on the
-     * alfresco server the rendition can take a while to be created.
+     * Get node rendition content using GET call on 'nodes/{nodeId}/renditions/{renditionId}/content Please note that it retries to get the renditions response several times because on the alfresco server the rendition can take a while to be created.
      *
      * @return
      */
@@ -546,7 +523,7 @@ public class Node extends ModelRequest<Node>
                 renditionId);
         RestResponse response = restWrapper.process(request);
         int retry = 0;
-        //Multiplied by '8' because AI rendition test cases need more time (~30 seconds) - see ACS-2158
+        // Multiplied by '8' because AI rendition test cases need more time (~30 seconds) - see ACS-2158
         while (!Integer.valueOf(response.getStatusCode()).equals(HttpStatus.OK.value()) && retry < (8 * Utility.retryCountSeconds))
         {
             Utility.waitToLoopTime(1);
@@ -558,10 +535,7 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get node version rendition content using GET call on
-     * 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content Please note that it
-     * retries to get the renditions response several times because on the
-     * alfresco server the rendition can take a while to be created.
+     * Get node version rendition content using GET call on 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content Please note that it retries to get the renditions response several times because on the alfresco server the rendition can take a while to be created.
      *
      * @return
      */
@@ -582,8 +556,7 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get node rendition content using GET call on
-     * 'nodes/{nodeId}/renditions/{renditionId}/content
+     * Get node rendition content using GET call on 'nodes/{nodeId}/renditions/{renditionId}/content
      *
      * @return
      */
@@ -595,8 +568,7 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get node version rendition content using GET call on
-     * 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
+     * Get node version rendition content using GET call on 'nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
      *
      * @return
      */
@@ -608,8 +580,8 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get rendition information for available renditions for the node using GET call on
-     * 'nodes/{nodeId}/renditions'
+     * Get rendition information for available renditions for the node using GET call on 'nodes/{nodeId}/renditions'
+     * 
      * @return
      */
     public RestRenditionInfoModelCollection getNodeRenditionsInfo()
@@ -620,8 +592,8 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Get rendition information for available renditions for the node version using GET call on
-     * 'nodes/{nodeId}/versions/{versionId}/renditions'
+     * Get rendition information for available renditions for the node version using GET call on 'nodes/{nodeId}/versions/{versionId}/renditions'
+     * 
      * @return
      */
     public RestRenditionInfoModelCollection getNodeVersionRenditionsInfo(String versionId)
@@ -631,11 +603,11 @@ public class Node extends ModelRequest<Node>
         return restWrapper.processModels(RestRenditionInfoModelCollection.class, request);
     }
 
-
     /**
      * Delete the rendition identified by renditionId using DELETE call on "/nodes/{nodeId}/renditions/{renditionId}"
      *
-     * @param renditionId id of rendition to delete
+     * @param renditionId
+     *            id of rendition to delete
      */
     public void deleteNodeRendition(String renditionId)
     {
@@ -657,7 +629,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Move a node to a target folder
      *
-     * @param moveBody a {@link RestNodeBodyMoveCopyModel} containing at least the target parent id
+     * @param moveBody
+     *            a {@link RestNodeBodyMoveCopyModel} containing at least the target parent id
      * @return the moved node's new information
      */
     public RestNodeModel move(RestNodeBodyMoveCopyModel moveBody)
@@ -669,7 +642,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Copy a node to a target folder
      *
-     * @param copyBody a {@link RestNodeBodyMoveCopyModel} containing at least the target parent id
+     * @param copyBody
+     *            a {@link RestNodeBodyMoveCopyModel} containing at least the target parent id
      * @return the moved node's new information
      */
     public RestNodeModel copy(RestNodeBodyMoveCopyModel copyBody)
@@ -678,7 +652,6 @@ public class Node extends ModelRequest<Node>
                 "nodes/{nodeId}/copy?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModel(RestNodeModel.class, request);
     }
-
 
     /**
      * Lock a specific node using POST call on "nodes/{nodeId}/lock"
@@ -747,8 +720,7 @@ public class Node extends ModelRequest<Node>
     }
 
     /**
-     * Delete a target for a specific node using DELETE call on
-     * nodes/{nodeId}/targets/{targetId}
+     * Delete a target for a specific node using DELETE call on nodes/{nodeId}/targets/{targetId}
      *
      * @param target
      */
@@ -830,7 +802,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Creates a secondary child association using POST call to: 'nodes/{nodeId}/secondary-children'.
      *
-     * @param secondaryChild - node, which should become a secondary child
+     * @param secondaryChild
+     *            - node, which should become a secondary child
      * @return a node's parent-child association
      */
     public RestNodeChildAssociationModel addSecondaryChild(RepoTestModel secondaryChild)
@@ -841,8 +814,10 @@ public class Node extends ModelRequest<Node>
     /**
      * Creates a secondary child association using POST call to: 'nodes/{nodeId}/secondary-children'.
      *
-     * @param associationType - type of secondary parent-child relationship association
-     * @param secondaryChild - node, which should become a secondary child
+     * @param associationType
+     *            - type of secondary parent-child relationship association
+     * @param secondaryChild
+     *            - node, which should become a secondary child
      * @return a node's parent-child association
      */
     public RestNodeChildAssociationModel addSecondaryChild(String associationType, RepoTestModel secondaryChild)
@@ -853,7 +828,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Creates a secondary child association using POST call to: 'nodes/{nodeId}/secondary-children'.
      *
-     * @param secondaryChildAssociation - node's secondary parent-child association model
+     * @param secondaryChildAssociation
+     *            - node's secondary parent-child association model
      * @return a node's parent-child association
      */
     public RestNodeChildAssociationModel addSecondaryChild(RestNodeChildAssociationModel secondaryChildAssociation)
@@ -865,7 +841,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Creates a secondary children association using POST call to: 'nodes/{nodeId}/secondary-children'.
      *
-     * @param secondaryChildren - nodes, which should become secondary children
+     * @param secondaryChildren
+     *            - nodes, which should become secondary children
      * @return a collection of node's parent-child associations
      */
     public RestNodeChildAssocModelCollection addSecondaryChildren(RepoTestModel... secondaryChildren)
@@ -876,21 +853,24 @@ public class Node extends ModelRequest<Node>
     /**
      * Creates a secondary children association using POST call to: 'nodes/{nodeId}/secondary-children'.
      *
-     * @param associationType - type of secondary parent-child relationship association
-     * @param secondaryChildren - nodes, which should become secondary children
+     * @param associationType
+     *            - type of secondary parent-child relationship association
+     * @param secondaryChildren
+     *            - nodes, which should become secondary children
      * @return a collection of node's parent-child associations
      */
     public RestNodeChildAssocModelCollection addSecondaryChildren(String associationType, RepoTestModel... secondaryChildren)
     {
         return addSecondaryChildren(Stream.of(secondaryChildren)
-            .map(child -> new RestNodeChildAssociationModel(child.getNodeRef(), associationType))
-            .toArray(RestNodeChildAssociationModel[]::new));
+                .map(child -> new RestNodeChildAssociationModel(child.getNodeRef(), associationType))
+                .toArray(RestNodeChildAssociationModel[]::new));
     }
 
     /**
      * Creates a secondary children association using POST call to: 'nodes/{nodeId}/secondary-children'.
      *
-     * @param secondaryChildrenAssociations - node's secondary parent-child association models
+     * @param secondaryChildrenAssociations
+     *            - node's secondary parent-child association models
      * @return a collection of node's parent-child associations
      */
     public RestNodeChildAssocModelCollection addSecondaryChildren(RestNodeChildAssociationModel... secondaryChildrenAssociations)
@@ -903,7 +883,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Removes secondary child association using DELETE call 'nodes/{nodeId}/secondary-children/{childId}'.
      *
-     * @param secondaryChild - node, which should NOT be a secondary child anymore
+     * @param secondaryChild
+     *            - node, which should NOT be a secondary child anymore
      */
     public void removeSecondaryChild(RepoTestModel secondaryChild)
     {
@@ -913,8 +894,10 @@ public class Node extends ModelRequest<Node>
     /**
      * Removes secondary child association using DELETE call 'nodes/{nodeId}/secondary-children/{childId}'.
      *
-     * @param associationType - type of secondary parent-child relationship association
-     * @param secondaryChild - node, which should NOT be a secondary child anymore
+     * @param associationType
+     *            - type of secondary parent-child relationship association
+     * @param secondaryChild
+     *            - node, which should NOT be a secondary child anymore
      */
     public void removeSecondaryChild(String associationType, RepoTestModel secondaryChild)
     {
@@ -932,13 +915,12 @@ public class Node extends ModelRequest<Node>
     /**
      * Removes secondary child association using DELETE call 'nodes/{nodeId}/secondary-children/{childId}'.
      *
-     * @param secondaryChildAssociation - node's secondary parent-child association to remove
+     * @param secondaryChildAssociation
+     *            - node's secondary parent-child association to remove
      */
     public void removeSecondaryChild(RestNodeAssociationModel secondaryChildAssociation)
     {
-        String parameters = StringUtils.isNotEmpty(secondaryChildAssociation.getAssociation().getAssocType()) ?
-            "assocType=" + secondaryChildAssociation.getAssociation().getAssocType() + "&" + restWrapper.getParameters() :
-            restWrapper.getParameters();
+        String parameters = StringUtils.isNotEmpty(secondaryChildAssociation.getAssociation().getAssocType()) ? "assocType=" + secondaryChildAssociation.getAssociation().getAssocType() + "&" + restWrapper.getParameters() : restWrapper.getParameters();
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/secondary-children/{childId}?{parameters}", repoModel.getNodeRef(), secondaryChildAssociation.getId(), parameters);
         restWrapper.processEmptyModel(request);
     }
@@ -1013,7 +995,6 @@ public class Node extends ModelRequest<Node>
         deleteNode(nodeModel.getId());
     }
 
-
     /**
      * Delete a specific node using DELETE call on nodes/{nodeId}
      *
@@ -1035,6 +1016,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get Direct Access URL for a node
+     * 
      * @param postBody
      * @return
      */
@@ -1055,6 +1037,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get Direct Access URL for a specific node rendition E.g "pdf"
+     * 
      * @param renditionId
      * @return
      */
@@ -1067,6 +1050,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get Direct Access URL for a specific node version. E.g "1.1"
+     * 
      * @param versionId
      * @return
      */
@@ -1079,6 +1063,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get Direct Access URL for a specific node version rendition. E.g ("1.1", "pdf")
+     * 
      * @param versionId
      * @param renditionId
      * @return
@@ -1132,7 +1117,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Get the specified rule set from a folder.
      *
-     * @param ruleSetId The id of the rule set.
+     * @param ruleSetId
+     *            The id of the rule set.
      * @return The specified rule set.
      */
     public RestRuleSetModel getRuleSet(String ruleSetId)
@@ -1145,7 +1131,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Update a rule set on this folder - for example to reorder the rules.
      *
-     * @param ruleSet The updated rule set.
+     * @param ruleSet
+     *            The updated rule set.
      * @return The updated rule set returned by the server.
      */
     public RestRuleSetModel updateRuleSet(RestRuleSetModel ruleSet)
@@ -1188,7 +1175,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Try to delete a ruleset link performing a DELETE call on "/nodes/{folderNodeId}/rule-set-links/{rulesetId}"
      *
-     * @param ruleSetId the id of the ruleset to be unlinked from the folder
+     * @param ruleSetId
+     *            the id of the ruleset to be unlinked from the folder
      * @return
      */
     public void unlinkRuleSet(String ruleSetId)
@@ -1200,7 +1188,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Trigger rules on a folder performing POST call on "/nodes/{folderNodeId}/rule-executions"
      *
-     * @param body - rules execution request
+     * @param body
+     *            - rules execution request
      * @return execution result
      */
     public RestRuleExecutionModel executeRules(RestRuleExecutionModel body)
@@ -1223,7 +1212,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Link content to category performing POST call on "/nodes/{nodeId}/category-links"
      *
-     * @param categoryLink - contains category ID
+     * @param categoryLink
+     *            - contains category ID
      * @return linked to category
      */
     public RestCategoryModel linkToCategory(RestCategoryLinkBodyModel categoryLink)
@@ -1235,7 +1225,8 @@ public class Node extends ModelRequest<Node>
     /**
      * Link content to many categories performing POST call on "/nodes/{nodeId}/category-links"
      *
-     * @param categoryLinks - contains categories IDs
+     * @param categoryLinks
+     *            - contains categories IDs
      * @return linked to categories
      */
     public RestCategoryModelsCollection linkToCategories(List<RestCategoryLinkBodyModel> categoryLinks)
@@ -1247,11 +1238,34 @@ public class Node extends ModelRequest<Node>
     /**
      * Unlink content from a category performing a DELETE call on "nodes/{nodeId}/category-links/{categoryId}"
      *
-     * @param categoryId the id of the category to be unlinked from content
+     * @param categoryId
+     *            the id of the category to be unlinked from content
      */
     public void unlinkFromCategory(String categoryId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/category-links/{categoryId}", repoModel.getNodeRef(), categoryId);
         restWrapper.processEmptyModel(request);
+    }
+
+    /**
+     * In order to retrieve folder size details using POST call on "nodes/{nodeId}/size-details"
+     *
+     * @return
+     */
+    public RestSizeDetailsModel executeSizeDetails()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, "nodes/{nodeId}/size-details", repoModel.getNodeRef());
+        return restWrapper.processModel(RestSizeDetailsModel.class, request);
+    }
+
+    /**
+     * Getting Folder size details using GET call on "nodes/{nodeId}/size-details/{jobId}"
+     *
+     * @return
+     */
+    public RestSizeDetailsModel getSizeDetails(String jobId)
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/size-details/{jobId}", repoModel.getNodeRef(), jobId);
+        return restWrapper.processModel(RestSizeDetailsModel.class, request);
     }
 }

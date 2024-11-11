@@ -10,12 +10,15 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
+
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
+
 import static org.alfresco.utility.report.log.Step.STEP;
 
 public class NodeSizeDetailsTests extends RestTest
@@ -27,7 +30,7 @@ public class NodeSizeDetailsTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-        user1=dataUser.getAdminUser();
+        user1 = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(user1).createPublicRandomSite();
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
     }
@@ -75,7 +78,7 @@ public class NodeSizeDetailsTests extends RestTest
 
     /**
      *
-     * Performance testCase
+     * calculateNodeSizeForMultipleFiles testCase
      */
     @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY)
     @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
@@ -97,7 +100,7 @@ public class NodeSizeDetailsTests extends RestTest
                     .usingResource(folder)
                     .createFolder(folderModel);
 
-            STEP("Upload a text document to the childFolders.");
+            STEP("3. Upload a text document to the childFolders.");
             restClient.authenticateUser(user1)
                     .configureRequestSpec()
                     .addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
@@ -120,7 +123,7 @@ public class NodeSizeDetailsTests extends RestTest
                     .is(FileType.TEXT_PLAIN.mimeType);
         });
 
-        STEP("Wait for 30 seconds so that the content is indexed in Search Service.");
+        STEP("4. Wait for 30 seconds so that the content is indexed in Search Service.");
         Thread.sleep(30000);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient
@@ -134,7 +137,7 @@ public class NodeSizeDetailsTests extends RestTest
 
         String jobId = restSizeDetailsModel.getJobId();
 
-        STEP("Wait for 3 seconds for the processing to complete.");
+        STEP("5. Wait for 3 seconds for the processing to complete.");
         Thread.sleep(3000);
 
         RestSizeDetailsModel sizeDetailsModel = restClient

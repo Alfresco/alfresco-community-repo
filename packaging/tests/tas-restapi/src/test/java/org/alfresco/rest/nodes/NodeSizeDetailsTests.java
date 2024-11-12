@@ -114,8 +114,8 @@ public class NodeSizeDetailsTests extends RestTest
                 .and().field("name").is("sampleLargeContent.txt")
                 .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
 
-        STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
-        Thread.sleep(20000);
+        STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
+        Utility.waitToLoopTime(30);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
@@ -126,7 +126,7 @@ public class NodeSizeDetailsTests extends RestTest
         jobId += RandomStringUtils.randomAlphanumeric(2);
 
         STEP("5. Wait for 3 seconds for the processing to complete.");
-        Thread.sleep(3000);
+        Utility.waitToLoopTime(3);
 
         restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
@@ -155,8 +155,8 @@ public class NodeSizeDetailsTests extends RestTest
                 .and().field("name").is("sampleLargeContent.txt")
                 .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
 
-        STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
-        Thread.sleep(20000);
+        STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
+        Utility.waitToLoopTime(30);
 
         STEP("4. Checking nodeSizeDetails without executing POST:nodes/{nodeId}/size-details endpoint");
         RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
@@ -253,7 +253,7 @@ public class NodeSizeDetailsTests extends RestTest
         });
 
         STEP("4. Wait for 30 seconds so that the content is indexed in Search Service.");
-        Thread.sleep(30000);
+        Utility.waitToLoopTime(30);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient
                 .authenticateUser(user1)
@@ -267,7 +267,7 @@ public class NodeSizeDetailsTests extends RestTest
         String jobId = restSizeDetailsModel.getJobId();
 
         STEP("5. Wait for 3 seconds for the processing to complete.");
-        Thread.sleep(3000);
+        Utility.waitToLoopTime(3);
 
         RestSizeDetailsModel sizeDetailsModel = restClient
                 .withCoreAPI()
@@ -325,7 +325,7 @@ public class NodeSizeDetailsTests extends RestTest
         });
 
         STEP("4. Wait for 30 seconds so that the content is indexed in Search Service.");
-        Thread.sleep(30000);
+        Utility.waitToLoopTime(30);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient
                 .authenticateUser(user1)
@@ -339,7 +339,7 @@ public class NodeSizeDetailsTests extends RestTest
         String jobId = restSizeDetailsModel.getJobId();
 
         STEP("5. Wait for 3 seconds for the processing to complete.");
-        Thread.sleep(3000);
+        Utility.waitToLoopTime(3);
 
         RestSizeDetailsModel sizeDetailsModel = restClient
                 .withCoreAPI()

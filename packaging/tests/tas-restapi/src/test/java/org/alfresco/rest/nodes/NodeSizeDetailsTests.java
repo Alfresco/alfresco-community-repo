@@ -60,7 +60,7 @@ public class NodeSizeDetailsTests extends RestTest
         fileSize = Utility.getResourceTestDataFile("sampleLargeContent.txt").length();
 
         STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
-        Thread.sleep(30000);
+        Utility.waitToLoopTime(30);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
@@ -69,7 +69,7 @@ public class NodeSizeDetailsTests extends RestTest
         jobId = restSizeDetailsModel.getJobId();
 
         STEP("4. Wait for 3 seconds for the processing to complete.");
-        Thread.sleep(3000);
+        Utility.waitToLoopTime(3);
 
         restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
         restClient.assertStatusCodeIs(HttpStatus.OK);

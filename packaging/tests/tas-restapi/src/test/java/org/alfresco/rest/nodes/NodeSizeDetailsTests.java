@@ -59,8 +59,8 @@ public class NodeSizeDetailsTests extends RestTest
                 .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
         fileSize = Utility.getResourceTestDataFile("sampleLargeContent.txt").length();
 
-        STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
-        Thread.sleep(20000);
+        STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
+        Thread.sleep(30000);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);

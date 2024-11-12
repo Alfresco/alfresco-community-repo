@@ -26,6 +26,7 @@ public class NodeSizeDetailsTests extends RestTest
     private UserModel user1;
     private SiteModel siteModel;
     private FolderModel folder;
+    private String jobId;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
@@ -33,6 +34,137 @@ public class NodeSizeDetailsTests extends RestTest
         user1 = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(user1).createPublicRandomSite();
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
+    }
+
+    /**
+     * calculateNodeSizeForSingleFile testcase
+     */
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY)
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    public void calculateNodeSizeForSingleFile() throws Exception
+    {
+
+        STEP("1. Create a folder in the test site.");
+        folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("2. Upload a text document to the folder.");
+        long fileSize;
+
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        fileNode.assertThat().field("id").isNotNull()
+                    .and().field("name").is("sampleLargeContent.txt")
+                    .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+        fileSize = Utility.getResourceTestDataFile("sampleLargeContent.txt").length();
+
+        STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
+        Thread.sleep(20000);
+
+        RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
+
+        jobId = restSizeDetailsModel.getJobId();
+
+        STEP("4. Wait for 3 seconds for the processing to complete.");
+        Thread.sleep(3000);
+
+        restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restSizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
+        Assert.assertEquals(restSizeDetailsModel.getSizeInBytes(), fileSize, "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is not equal to " + fileSize);
+
+    }
+
+    /**
+     * checkJobIdPresentInCache testcase
+     */
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY)
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    public void checkJobIdPresentInCache() throws Exception
+    {
+        STEP("1. Verifying that same JobId is coming or not");
+        RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
+        Assert.assertEquals(restSizeDetailsModel.getJobId(), jobId, "jobId should be present in cache, actual :" + restSizeDetailsModel.getJobId() + " expected: " + jobId);
+    }
+
+    /**
+     * checkSizeDetailsWithInvalidJobId testcase
+     */
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY)
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    public void checkSizeDetailsWithInvalidJobId() throws Exception
+    {
+
+        STEP("1. Create a folder in the test site.");
+        folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("2. Upload a text document to the folder.");
+
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        fileNode.assertThat().field("id").isNotNull()
+                    .and().field("name").is("sampleLargeContent.txt")
+                    .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+
+        STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
+        Thread.sleep(20000);
+
+        RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).executeSizeDetails();
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
+        jobId = restSizeDetailsModel.getJobId();
+
+        STEP("4. Adding random content to jobId ");
+        jobId+=RandomStringUtils.randomAlphanumeric(2);
+
+        STEP("5. Wait for 3 seconds for the processing to complete.");
+        Thread.sleep(3000);
+
+        restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
+        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+
+    }
+
+    /**
+     * checkSizeDetailsWithoutExecuteSizeDetails testcase
+     */
+
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY)
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    public void checkSizeDetailsWithoutExecuteSizeDetails() throws Exception
+    {
+
+        STEP("1. Create a folder in the test site.");
+        folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("2. Upload a text document to the folder.");
+        String status = "NOT_INITIATED";
+
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+        fileNode.assertThat().field("id").isNotNull()
+                    .and().field("name").is("sampleLargeContent.txt")
+                    .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+
+        STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
+        Thread.sleep(20000);
+
+        STEP("4. Checking nodeSizeDetails without executing POST:nodes/{nodeId}/size-details endpoint");
+        RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        restSizeDetailsModel.assertThat().field("status").isNotEmpty();
+        Assert.assertEquals(restSizeDetailsModel.getStatus().toString(), status, "Value of status should be same, actual :" + restSizeDetailsModel.getStatus().toString() + " expected: " + status);
+
+
     }
 
     /**
@@ -85,7 +217,7 @@ public class NodeSizeDetailsTests extends RestTest
         STEP("1. Create a parent folder in the test site.");
         FolderModel folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
-        STEP("2. Creating a 51 nested folders in the folder-1");
+        STEP("2. Creating a 5 nested folders in the folder-1");
         AtomicLong fileSize = new AtomicLong(0);
 
         IntStream.rangeClosed(1, 5).forEach(i -> {
@@ -146,6 +278,78 @@ public class NodeSizeDetailsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
         Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), fileSize.get(), "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is not equal to " + fileSize);
+    }
+
+    /**
+     *
+     * checkNumberOfFiles testCase
+     */
+    @TestRail(section = {TestGroup.REST_API, TestGroup.NODES}, executionType = ExecutionType.SANITY)
+    @Test(groups = {TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY})
+    public void checkNumberOfFiles() throws InterruptedException
+    {
+        STEP("1. Create a parent folder in the test site.");
+        FolderModel folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
+
+        STEP("2. Creating a 10 nested folders in the folder-1");
+
+        IntStream.rangeClosed(1, 10).forEach(i -> {
+            String folder0Name = "childFolder" + i + RandomStringUtils.randomAlphanumeric(2);
+            FolderModel folderModel = new FolderModel();
+            folderModel.setName(folder0Name);
+
+            FolderModel childFolder = dataContent.usingUser(user1)
+                        .usingSite(siteModel)
+                        .usingResource(folder)
+                        .createFolder(folderModel);
+
+            STEP("3. Upload a text document to the childFolders.");
+            restClient.authenticateUser(user1)
+                        .configureRequestSpec()
+                        .addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+            RestNodeModel newNode = restClient.authenticateUser(user1)
+                        .withCoreAPI()
+                        .usingNode(childFolder)
+                        .createNode();
+
+            restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+            newNode.assertThat()
+                        .field("id")
+                        .isNotNull()
+                        .and()
+                        .field("name")
+                        .is("sampleLargeContent.txt")
+                        .and()
+                        .field("content.mimeType")
+                        .is(FileType.TEXT_PLAIN.mimeType);
+        });
+
+        STEP("4. Wait for 30 seconds so that the content is indexed in Search Service.");
+        Thread.sleep(30000);
+
+        RestSizeDetailsModel restSizeDetailsModel = restClient
+                    .authenticateUser(user1)
+                    .withCoreAPI()
+                    .usingNode(folder)
+                    .executeSizeDetails();
+
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
+
+        String jobId = restSizeDetailsModel.getJobId();
+
+        STEP("5. Wait for 3 seconds for the processing to complete.");
+        Thread.sleep(3000);
+
+        RestSizeDetailsModel sizeDetailsModel = restClient
+                    .withCoreAPI()
+                    .usingNode(folder)
+                    .getSizeDetails(jobId);
+
+        restClient.assertStatusCodeIs(HttpStatus.OK);
+        sizeDetailsModel.assertThat().field("numberOfFiles").isNotEmpty();
+        Assert.assertEquals(sizeDetailsModel.getNumberOfFiles(), 10, "Value of NumberOfFiles " + sizeDetailsModel.getNumberOfFiles() + " is not equal to " + 10);
     }
 
     @AfterClass(alwaysRun = true)

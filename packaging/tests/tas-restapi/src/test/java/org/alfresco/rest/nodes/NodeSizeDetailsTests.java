@@ -1,9 +1,10 @@
 package org.alfresco.rest.nodes;
 
-import org.alfresco.rest.model.RestNodeModel;
-import org.alfresco.rest.model.RestSizeDetailsModel;
-import org.alfresco.utility.Utility;
-import org.alfresco.utility.model.*;
+import static org.alfresco.utility.report.log.Step.STEP;
+
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
+
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
@@ -13,13 +14,12 @@ import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.RestSizeDetailsModel;
+import org.alfresco.utility.Utility;
+import org.alfresco.utility.model.*;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
-
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.IntStream;
-
-import static org.alfresco.utility.report.log.Step.STEP;
 
 public class NodeSizeDetailsTests extends RestTest
 {
@@ -36,7 +36,6 @@ public class NodeSizeDetailsTests extends RestTest
     }
 
     /**
-     *
      * Unauthenticated user not able to execute POST /nodes/{nodeId}/size-details: 401 STATUS CODE
      */
 
@@ -146,10 +145,10 @@ public class NodeSizeDetailsTests extends RestTest
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-        Assert.assertEquals(sizeDetailsModel.getSizeInBytes(),fileSize.get(),"Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is not equal to " + fileSize);
+        Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), fileSize.get(), "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is not equal to " + fileSize);
     }
 
-    @AfterClass(alwaysRun=true)
+    @AfterClass(alwaysRun = true)
     public void cleanup() throws Exception
     {
         dataSite.usingAdmin().deleteSite(siteModel);

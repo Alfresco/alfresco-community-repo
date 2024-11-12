@@ -63,7 +63,6 @@ public class NodeSizeDetailsTests extends RestTest
     }
 
     /**
-     *
      * Value of nodeId is invalid: 422 STATUS CODE
      */
 

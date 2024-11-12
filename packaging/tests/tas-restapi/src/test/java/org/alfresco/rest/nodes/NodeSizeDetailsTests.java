@@ -55,8 +55,8 @@ public class NodeSizeDetailsTests extends RestTest
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         fileNode.assertThat().field("id").isNotNull()
-                    .and().field("name").is("sampleLargeContent.txt")
-                    .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+                .and().field("name").is("sampleLargeContent.txt")
+                .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
         fileSize = Utility.getResourceTestDataFile("sampleLargeContent.txt").length();
 
         STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
@@ -111,8 +111,8 @@ public class NodeSizeDetailsTests extends RestTest
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         fileNode.assertThat().field("id").isNotNull()
-                    .and().field("name").is("sampleLargeContent.txt")
-                    .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+                .and().field("name").is("sampleLargeContent.txt")
+                .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
 
         STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
         Thread.sleep(20000);
@@ -123,7 +123,7 @@ public class NodeSizeDetailsTests extends RestTest
         jobId = restSizeDetailsModel.getJobId();
 
         STEP("4. Adding random content to jobId ");
-        jobId+=RandomStringUtils.randomAlphanumeric(2);
+        jobId += RandomStringUtils.randomAlphanumeric(2);
 
         STEP("5. Wait for 3 seconds for the processing to complete.");
         Thread.sleep(3000);
@@ -152,8 +152,8 @@ public class NodeSizeDetailsTests extends RestTest
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         fileNode.assertThat().field("id").isNotNull()
-                    .and().field("name").is("sampleLargeContent.txt")
-                    .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+                .and().field("name").is("sampleLargeContent.txt")
+                .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
 
         STEP("3. Wait for 20 seconds so that the content is indexed in Search Service.");
         Thread.sleep(20000);
@@ -163,7 +163,6 @@ public class NodeSizeDetailsTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         restSizeDetailsModel.assertThat().field("status").isNotEmpty();
         Assert.assertEquals(restSizeDetailsModel.getStatus().toString(), status, "Value of status should be same, actual :" + restSizeDetailsModel.getStatus().toString() + " expected: " + status);
-
 
     }
 
@@ -299,40 +298,40 @@ public class NodeSizeDetailsTests extends RestTest
             folderModel.setName(folder0Name);
 
             FolderModel childFolder = dataContent.usingUser(user1)
-                        .usingSite(siteModel)
-                        .usingResource(folder)
-                        .createFolder(folderModel);
+                    .usingSite(siteModel)
+                    .usingResource(folder)
+                    .createFolder(folderModel);
 
             STEP("3. Upload a text document to the childFolders.");
             restClient.authenticateUser(user1)
-                        .configureRequestSpec()
-                        .addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+                    .configureRequestSpec()
+                    .addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
             RestNodeModel newNode = restClient.authenticateUser(user1)
-                        .withCoreAPI()
-                        .usingNode(childFolder)
-                        .createNode();
+                    .withCoreAPI()
+                    .usingNode(childFolder)
+                    .createNode();
 
             restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
             newNode.assertThat()
-                        .field("id")
-                        .isNotNull()
-                        .and()
-                        .field("name")
-                        .is("sampleLargeContent.txt")
-                        .and()
-                        .field("content.mimeType")
-                        .is(FileType.TEXT_PLAIN.mimeType);
+                    .field("id")
+                    .isNotNull()
+                    .and()
+                    .field("name")
+                    .is("sampleLargeContent.txt")
+                    .and()
+                    .field("content.mimeType")
+                    .is(FileType.TEXT_PLAIN.mimeType);
         });
 
         STEP("4. Wait for 30 seconds so that the content is indexed in Search Service.");
         Thread.sleep(30000);
 
         RestSizeDetailsModel restSizeDetailsModel = restClient
-                    .authenticateUser(user1)
-                    .withCoreAPI()
-                    .usingNode(folder)
-                    .executeSizeDetails();
+                .authenticateUser(user1)
+                .withCoreAPI()
+                .usingNode(folder)
+                .executeSizeDetails();
 
         restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         restSizeDetailsModel.assertThat().field("jobId").isNotEmpty();
@@ -343,9 +342,9 @@ public class NodeSizeDetailsTests extends RestTest
         Thread.sleep(3000);
 
         RestSizeDetailsModel sizeDetailsModel = restClient
-                    .withCoreAPI()
-                    .usingNode(folder)
-                    .getSizeDetails(jobId);
+                .withCoreAPI()
+                .usingNode(folder)
+                .getSizeDetails(jobId);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
         sizeDetailsModel.assertThat().field("numberOfFiles").isNotEmpty();

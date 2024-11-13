@@ -2,10 +2,13 @@ package org.alfresco.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.awaitility.Awaitility;
+import org.awaitility.Durations;
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -31,7 +34,7 @@ public class NodeSizeDetailsTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-        user1 = dataUser.getAdminUser();
+        user1 = dataUser.createRandomTestUser("User-1");
         siteModel = dataSite.usingUser(user1).createPublicRandomSite();
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
     }
@@ -68,14 +71,25 @@ public class NodeSizeDetailsTests extends RestTest
 
         jobId = restSizeDetailsModel.getJobId();
 
-        STEP("4. Wait for 3 seconds for the processing to complete.");
-        Utility.waitToLoopTime(3);
-
-        restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-        Assert.assertEquals(restSizeDetailsModel.getSizeInBytes(), fileSize, "Value of sizeInBytes " + restSizeDetailsModel.getSizeInBytes() + " is not equal to " + fileSize);
-
+        STEP("4. Wait for 10 seconds for the processing to complete.");
+        Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                            .withCoreAPI()
+                            .usingNode(folder)
+                            .getSizeDetails(jobId);
+                    restClient.assertStatusCodeIs(HttpStatus.OK);
+                    sizeDetailsModel.assertThat()
+                            .field("sizeInBytes")
+                            .isNotEmpty();
+                    Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), fileSize,
+                            "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes()
+                                    + " is not equal to " + fileSize);
+                });
     }
 
     /**
@@ -125,11 +139,19 @@ public class NodeSizeDetailsTests extends RestTest
         STEP("4. Adding random content to jobId ");
         jobId += RandomStringUtils.randomAlphanumeric(2);
 
-        STEP("5. Wait for 3 seconds for the processing to complete.");
-        Utility.waitToLoopTime(3);
-
-        restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+        STEP("5. Wait for 10 seconds for the processing to complete.");
+        Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                            .withCoreAPI()
+                            .usingNode(folder)
+                            .getSizeDetails(jobId);
+                    restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
+                });
 
     }
 
@@ -156,13 +178,21 @@ public class NodeSizeDetailsTests extends RestTest
                 .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
 
         STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
-        Utility.waitToLoopTime(30);
-
-        STEP("4. Checking nodeSizeDetails without executing POST:nodes/{nodeId}/size-details endpoint");
-        RestSizeDetailsModel restSizeDetailsModel = restClient.authenticateUser(user1).withCoreAPI().usingNode(folder).getSizeDetails(jobId);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        restSizeDetailsModel.assertThat().field("status").isNotEmpty();
-        Assert.assertEquals(restSizeDetailsModel.getStatus().toString(), status, "Value of status should be same, actual :" + restSizeDetailsModel.getStatus().toString() + " expected: " + status);
+        Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(30))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                            .withCoreAPI()
+                            .usingNode(folder)
+                            .getSizeDetails(jobId);
+                    restClient.assertStatusCodeIs(HttpStatus.OK);
+                    restClient.assertStatusCodeIs(HttpStatus.OK);
+                    sizeDetailsModel.assertThat().field("status").isNotEmpty();
+                    Assert.assertEquals(sizeDetailsModel.getStatus().toString(), status, "Value of status should be same, actual :" + sizeDetailsModel.getStatus().toString() + " expected: " + status);
+                });
 
     }
 
@@ -266,17 +296,25 @@ public class NodeSizeDetailsTests extends RestTest
 
         String jobId = restSizeDetailsModel.getJobId();
 
-        STEP("5. Wait for 3 seconds for the processing to complete.");
-        Utility.waitToLoopTime(3);
-
-        RestSizeDetailsModel sizeDetailsModel = restClient
-                .withCoreAPI()
-                .usingNode(folder)
-                .getSizeDetails(jobId);
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        sizeDetailsModel.assertThat().field("sizeInBytes").isNotEmpty();
-        Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), fileSize.get(), "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes() + " is not equal to " + fileSize);
+        STEP("5. Wait for 5 seconds for the processing to complete.");
+        Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(5))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                            .withCoreAPI()
+                            .usingNode(folder)
+                            .getSizeDetails(jobId);
+                    restClient.assertStatusCodeIs(HttpStatus.OK);
+                    sizeDetailsModel.assertThat()
+                            .field("sizeInBytes")
+                            .isNotEmpty();
+                    Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), fileSize.get(),
+                            "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes()
+                                    + " is not equal to " + fileSize.get());
+                });
     }
 
     /**
@@ -338,17 +376,21 @@ public class NodeSizeDetailsTests extends RestTest
 
         String jobId = restSizeDetailsModel.getJobId();
 
-        STEP("5. Wait for 3 seconds for the processing to complete.");
-        Utility.waitToLoopTime(3);
-
-        RestSizeDetailsModel sizeDetailsModel = restClient
-                .withCoreAPI()
-                .usingNode(folder)
-                .getSizeDetails(jobId);
-
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        sizeDetailsModel.assertThat().field("numberOfFiles").isNotEmpty();
-        Assert.assertEquals(sizeDetailsModel.getNumberOfFiles(), 10, "Value of NumberOfFiles " + sizeDetailsModel.getNumberOfFiles() + " is not equal to " + 10);
+        STEP("5. Wait for 10 seconds for the processing to complete.");
+        Awaitility
+                .await()
+                .atMost(Duration.ofSeconds(10))
+                .pollInterval(Durations.ONE_SECOND)
+                .ignoreExceptions()
+                .untilAsserted(() -> {
+                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                            .withCoreAPI()
+                            .usingNode(folder)
+                            .getSizeDetails(jobId);
+                    restClient.assertStatusCodeIs(HttpStatus.OK);
+                    sizeDetailsModel.assertThat().field("numberOfFiles").isNotEmpty();
+                    Assert.assertEquals(sizeDetailsModel.getNumberOfFiles(), 10, "Value of NumberOfFiles " + sizeDetailsModel.getNumberOfFiles() + " is not equal to " + 10);
+                });
     }
 
     @AfterClass(alwaysRun = true)

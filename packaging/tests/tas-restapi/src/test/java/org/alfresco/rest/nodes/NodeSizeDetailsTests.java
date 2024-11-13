@@ -396,6 +396,6 @@ public class NodeSizeDetailsTests extends RestTest
     @AfterClass(alwaysRun = true)
     public void cleanup() throws Exception
     {
-        dataSite.usingAdmin().deleteSite(siteModel);
+        dataSite.usingUser(user1).deleteSite(siteModel);
     }
 }

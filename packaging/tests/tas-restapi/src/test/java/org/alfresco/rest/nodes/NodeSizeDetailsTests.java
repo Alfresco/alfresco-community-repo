@@ -146,7 +146,7 @@ public class NodeSizeDetailsTests extends RestTest
                 .pollInterval(Durations.ONE_SECOND)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
-                    RestSizeDetailsModel sizeDetailsModel = restClient.authenticateUser(user1)
+                    restClient.authenticateUser(user1)
                             .withCoreAPI()
                             .usingNode(folder)
                             .getSizeDetails(jobId);

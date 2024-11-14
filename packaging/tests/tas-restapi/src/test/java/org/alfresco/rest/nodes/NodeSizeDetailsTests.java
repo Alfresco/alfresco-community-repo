@@ -57,8 +57,6 @@ public class NodeSizeDetailsTests extends RestTest
     public void calculateNodeSizeForSingleFile() throws Exception
     {
 
-        long fileSize;
-
         STEP("1. Create a folder in the test site.");
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
@@ -189,7 +187,6 @@ public class NodeSizeDetailsTests extends RestTest
                             .withCoreAPI()
                             .usingNode(folder)
                             .getSizeDetails(jobId);
-                    restClient.assertStatusCodeIs(HttpStatus.OK);
                     restClient.assertStatusCodeIs(HttpStatus.OK);
                     sizeDetailsModel.assertThat().field("status").isNotEmpty();
                     Assert.assertEquals(sizeDetailsModel.getStatus().toString(), status, "Value of status should be same, actual :" + sizeDetailsModel.getStatus().toString() + " expected: " + status);

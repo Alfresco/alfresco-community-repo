@@ -171,10 +171,11 @@ public class NodeSizeDetailsTests extends RestTest
         STEP("2. Upload a text document to the folder.");
         String status = "NOT_INITIATED";
 
-        dataContent.usingUser(user1)
+        FileModel fileModel = dataContent.usingUser(user1)
                 .usingSite(siteModel)
                 .usingResource(folder)
                 .createContent(sampleFileToCreate);
+        Assert.assertNotNull(fileModel, "fileModel should not be null");
 
         STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
         Awaitility
@@ -188,7 +189,6 @@ public class NodeSizeDetailsTests extends RestTest
                             .usingNode(folder)
                             .getSizeDetails(jobId);
                     restClient.assertStatusCodeIs(HttpStatus.OK);
-                    Assert.assertNotNull(sizeDetailsModel, "SizeDetailsModel should not be null");
                     sizeDetailsModel.assertThat().field("status").isNotEmpty();
                     Assert.assertEquals(sizeDetailsModel.getStatus().toString(), status, "Value of status should be same, actual :" + sizeDetailsModel.getStatus().toString() + " expected: " + status);
                 });

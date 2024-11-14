@@ -1,10 +1,11 @@
 package org.alfresco.rest.nodes;
 
+import static java.util.Objects.requireNonNull;
+
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
@@ -20,7 +21,6 @@ import org.testng.annotations.Test;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.model.RestSizeDetailsModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.*;
@@ -33,7 +33,8 @@ public class NodeSizeDetailsTests extends RestTest
     private SiteModel siteModel;
     private FolderModel folder;
     private String jobId;
-    private File sampleFile;
+    private FileModel sampleFileToCreate;
+    private long sampleFileSize;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws IOException
@@ -42,8 +43,9 @@ public class NodeSizeDetailsTests extends RestTest
         siteModel = dataSite.usingUser(user1).createPublicRandomSite();
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
         String fileName = "sampleLargeContent.txt";
-        URL sampleFileURL = getSampleFileURL(fileName);
-        sampleFile = new File(sampleFileURL.getFile());
+        final byte[] sampleFileContent = getSampleFileContent(fileName);
+        sampleFileSize = sampleFileContent.length;
+        sampleFileToCreate = new FileModel(fileName, FileType.TEXT_PLAIN, new String(sampleFileContent));
     }
 
     /**
@@ -61,14 +63,10 @@ public class NodeSizeDetailsTests extends RestTest
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
         STEP("2. Upload a text document to the folder.");
-
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", sampleFile);
-        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        fileNode.assertThat().field("id").isNotNull()
-                .and().field("name").is("sampleLargeContent.txt")
-                .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
-        fileSize = sampleFile.length();
+        dataContent.usingUser(user1)
+                .usingSite(siteModel)
+                .usingResource(folder)
+                .createContent(sampleFileToCreate);
 
         STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
         Utility.waitToLoopTime(30);
@@ -79,10 +77,10 @@ public class NodeSizeDetailsTests extends RestTest
 
         jobId = restSizeDetailsModel.getJobId();
 
-        STEP("4. Wait for 10 seconds for the processing to complete.");
+        STEP("4. Wait for 5 seconds for the processing to complete.");
         Awaitility
                 .await()
-                .atMost(Duration.ofSeconds(10))
+                .atMost(Duration.ofSeconds(5))
                 .pollInterval(Durations.ONE_SECOND)
                 .ignoreExceptions()
                 .untilAsserted(() -> {
@@ -94,9 +92,9 @@ public class NodeSizeDetailsTests extends RestTest
                     sizeDetailsModel.assertThat()
                             .field("sizeInBytes")
                             .isNotEmpty();
-                    Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), fileSize,
+                    Assert.assertEquals(sizeDetailsModel.getSizeInBytes(), sampleFileSize,
                             "Value of sizeInBytes " + sizeDetailsModel.getSizeInBytes()
-                                    + " is not equal to " + fileSize);
+                                    + " is not equal to " + sampleFileSize);
                 });
     }
 
@@ -128,13 +126,10 @@ public class NodeSizeDetailsTests extends RestTest
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
         STEP("2. Upload a text document to the folder.");
-
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", sampleFile);
-        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        fileNode.assertThat().field("id").isNotNull()
-                .and().field("name").is("sampleLargeContent.txt")
-                .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+        dataContent.usingUser(user1)
+                .usingSite(siteModel)
+                .usingResource(folder)
+                .createContent(sampleFileToCreate);
 
         STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
         Utility.waitToLoopTime(30);
@@ -178,12 +173,10 @@ public class NodeSizeDetailsTests extends RestTest
         STEP("2. Upload a text document to the folder.");
         String status = "NOT_INITIATED";
 
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", sampleFile);
-        RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        fileNode.assertThat().field("id").isNotNull()
-                .and().field("name").is("sampleLargeContent.txt")
-                .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
+        dataContent.usingUser(user1)
+                .usingSite(siteModel)
+                .usingResource(folder)
+                .createContent(sampleFileToCreate);
 
         STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
         Awaitility
@@ -268,26 +261,11 @@ public class NodeSizeDetailsTests extends RestTest
                     .createFolder(folderModel);
 
             STEP("3. Upload a text document to the childFolders.");
-            restClient.authenticateUser(user1)
-                    .configureRequestSpec()
-                    .addMultiPart("filedata", sampleFile);
-            fileSize.addAndGet(sampleFile.length());
-            RestNodeModel newNode = restClient.authenticateUser(user1)
-                    .withCoreAPI()
-                    .usingNode(childFolder)
-                    .createNode();
-
-            restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-            newNode.assertThat()
-                    .field("id")
-                    .isNotNull()
-                    .and()
-                    .field("name")
-                    .is("sampleLargeContent.txt")
-                    .and()
-                    .field("content.mimeType")
-                    .is(FileType.TEXT_PLAIN.mimeType);
+            dataContent.usingUser(user1)
+                    .usingSite(siteModel)
+                    .usingResource(childFolder)
+                    .createContent(sampleFileToCreate);
+            fileSize.addAndGet(sampleFileSize);
         });
 
         STEP("4. Wait for 30 seconds so that the content is indexed in Search Service.");
@@ -349,25 +327,10 @@ public class NodeSizeDetailsTests extends RestTest
                     .createFolder(folderModel);
 
             STEP("3. Upload a text document to the childFolders.");
-            restClient.authenticateUser(user1)
-                    .configureRequestSpec()
-                    .addMultiPart("filedata", sampleFile);
-            RestNodeModel newNode = restClient.authenticateUser(user1)
-                    .withCoreAPI()
-                    .usingNode(childFolder)
-                    .createNode();
-
-            restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-            newNode.assertThat()
-                    .field("id")
-                    .isNotNull()
-                    .and()
-                    .field("name")
-                    .is("sampleLargeContent.txt")
-                    .and()
-                    .field("content.mimeType")
-                    .is(FileType.TEXT_PLAIN.mimeType);
+            dataContent.usingUser(user1)
+                    .usingSite(siteModel)
+                    .usingResource(childFolder)
+                    .createContent(sampleFileToCreate);
         });
 
         STEP("4. Wait for 30 seconds so that the content is indexed in Search Service.");
@@ -401,10 +364,14 @@ public class NodeSizeDetailsTests extends RestTest
                 });
     }
 
-    private URL getSampleFileURL(String templateName) throws IOException
+    private byte[] getSampleFileContent(String templateName) throws IOException
     {
         final String templateClasspathLocation = "/shared-resources/testdata/" + templateName;
-        return getClass().getResource(templateClasspathLocation);
+        try (InputStream templateStream = getClass().getResourceAsStream(templateClasspathLocation))
+        {
+            requireNonNull(templateStream, "Couldn't locate `" + templateClasspathLocation + "`");
+            return templateStream.readAllBytes();
+        }
     }
 
     @AfterClass(alwaysRun = true)

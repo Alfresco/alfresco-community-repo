@@ -362,13 +362,13 @@ public class NodeSizeDetailsTests extends RestTest
                 });
     }
 
-    private byte[] getSampleFileContent(String templateName) throws IOException
+    private byte[] getSampleFileContent(String fileName) throws IOException
     {
-        final String templateClasspathLocation = "/shared-resources/testdata/" + templateName;
-        try (InputStream templateStream = getClass().getResourceAsStream(templateClasspathLocation))
+        final String fileClasspathLocation = "/shared-resources/testdata/" + fileName;
+        try (InputStream fileStream = getClass().getResourceAsStream(fileClasspathLocation))
         {
-            requireNonNull(templateStream, "Couldn't locate `" + templateClasspathLocation + "`");
-            return templateStream.readAllBytes();
+            requireNonNull(fileStream, "Couldn't locate `" + fileClasspathLocation + "`");
+            return fileStream.readAllBytes();
         }
     }
 

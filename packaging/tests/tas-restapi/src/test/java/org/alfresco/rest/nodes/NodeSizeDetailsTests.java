@@ -2,6 +2,9 @@ package org.alfresco.rest.nodes;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
@@ -30,13 +33,17 @@ public class NodeSizeDetailsTests extends RestTest
     private SiteModel siteModel;
     private FolderModel folder;
     private String jobId;
+    private File sampleFile;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation()
+    public void dataPreparation() throws IOException
     {
         user1 = dataUser.createRandomTestUser("User-1");
         siteModel = dataSite.usingUser(user1).createPublicRandomSite();
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
+        String fileName = "sampleLargeContent.txt";
+        URL sampleFileURL = getSampleFileURL(fileName);
+        sampleFile = new File(sampleFileURL.getFile());
     }
 
     /**
@@ -48,19 +55,20 @@ public class NodeSizeDetailsTests extends RestTest
     public void calculateNodeSizeForSingleFile() throws Exception
     {
 
+        long fileSize;
+
         STEP("1. Create a folder in the test site.");
         folder = dataContent.usingUser(user1).usingSite(siteModel).createFolder(FolderModel.getRandomFolderModel());
 
         STEP("2. Upload a text document to the folder.");
-        long fileSize;
 
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", sampleFile);
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         fileNode.assertThat().field("id").isNotNull()
                 .and().field("name").is("sampleLargeContent.txt")
                 .and().field("content.mimeType").is(FileType.TEXT_PLAIN.mimeType);
-        fileSize = Utility.getResourceTestDataFile("sampleLargeContent.txt").length();
+        fileSize = sampleFile.length();
 
         STEP("3. Wait for 30 seconds so that the content is indexed in Search Service.");
         Utility.waitToLoopTime(30);
@@ -121,7 +129,7 @@ public class NodeSizeDetailsTests extends RestTest
 
         STEP("2. Upload a text document to the folder.");
 
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", sampleFile);
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         fileNode.assertThat().field("id").isNotNull()
@@ -170,7 +178,7 @@ public class NodeSizeDetailsTests extends RestTest
         STEP("2. Upload a text document to the folder.");
         String status = "NOT_INITIATED";
 
-        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+        restClient.authenticateUser(user1).configureRequestSpec().addMultiPart("filedata", sampleFile);
         RestNodeModel fileNode = restClient.withCoreAPI().usingNode(folder).createNode();
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         fileNode.assertThat().field("id").isNotNull()
@@ -262,8 +270,8 @@ public class NodeSizeDetailsTests extends RestTest
             STEP("3. Upload a text document to the childFolders.");
             restClient.authenticateUser(user1)
                     .configureRequestSpec()
-                    .addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
-            fileSize.addAndGet(Utility.getResourceTestDataFile("sampleLargeContent.txt").length());
+                    .addMultiPart("filedata", sampleFile);
+            fileSize.addAndGet(sampleFile.length());
             RestNodeModel newNode = restClient.authenticateUser(user1)
                     .withCoreAPI()
                     .usingNode(childFolder)
@@ -343,7 +351,7 @@ public class NodeSizeDetailsTests extends RestTest
             STEP("3. Upload a text document to the childFolders.");
             restClient.authenticateUser(user1)
                     .configureRequestSpec()
-                    .addMultiPart("filedata", Utility.getResourceTestDataFile("sampleLargeContent.txt"));
+                    .addMultiPart("filedata", sampleFile);
             RestNodeModel newNode = restClient.authenticateUser(user1)
                     .withCoreAPI()
                     .usingNode(childFolder)
@@ -391,6 +399,12 @@ public class NodeSizeDetailsTests extends RestTest
                     sizeDetailsModel.assertThat().field("numberOfFiles").isNotEmpty();
                     Assert.assertEquals(sizeDetailsModel.getNumberOfFiles(), 10, "Value of NumberOfFiles " + sizeDetailsModel.getNumberOfFiles() + " is not equal to " + 10);
                 });
+    }
+
+    private URL getSampleFileURL(String templateName) throws IOException
+    {
+        final String templateClasspathLocation = "/shared-resources/testdata/" + templateName;
+        return getClass().getResource(templateClasspathLocation);
     }
 
     @AfterClass(alwaysRun = true)

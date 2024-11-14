@@ -188,6 +188,7 @@ public class NodeSizeDetailsTests extends RestTest
                             .usingNode(folder)
                             .getSizeDetails(jobId);
                     restClient.assertStatusCodeIs(HttpStatus.OK);
+                    Assert.assertNotNull(sizeDetailsModel, "SizeDetailsModel should not be null");
                     sizeDetailsModel.assertThat().field("status").isNotEmpty();
                     Assert.assertEquals(sizeDetailsModel.getStatus().toString(), status, "Value of status should be same, actual :" + sizeDetailsModel.getStatus().toString() + " expected: " + status);
                 });

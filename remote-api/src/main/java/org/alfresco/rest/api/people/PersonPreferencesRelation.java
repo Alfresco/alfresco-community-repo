@@ -28,6 +28,7 @@ package org.alfresco.rest.api.people;
 import org.alfresco.rest.api.Preferences;
 import org.alfresco.rest.api.model.Preference;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -38,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name = "preferences", entityResource = PeopleEntityResource.class, title = "Person Preferences")
-public class PersonPreferencesRelation implements RelationshipResourceAction.Read<Preference>, RelationshipResourceAction.ReadById<Preference>, InitializingBean
+public class PersonPreferencesRelation implements RelationshipResourceAction.Read<Preference>, RelationshipResourceAction.ReadById<Preference>, RelationshipResourceAction.Update<Preference>, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(PersonPreferencesRelation.class);
 
@@ -90,4 +91,14 @@ public class PersonPreferencesRelation implements RelationshipResourceAction.Rea
     	return preferences.getPreference(personId, preferenceName);
 	}
 
+	@Override
+	@WebApiDescription(title = "Upsert preference value for person 'personId'.")
+	public Preference update(String personId, Preference preference, Parameters parameters)
+	{
+		if (preference.getName() == null || preference.getName().isBlank())
+		{
+			throw new InvalidArgumentException();
+		}
+		return preferences.updatePreference(personId, preference);
+	}
 }

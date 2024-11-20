@@ -111,7 +111,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 else
                 {
                     ResourceWebScriptHelper.setUniqueId(putRel,relationshipId);
-                    return Params.valueOf(entityId, params, putRel, req);
+                    return Params.valueOf(entityId, relationshipId, params, putRel, req);
                 }
             case PROPERTY:
                 final String resourceName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);

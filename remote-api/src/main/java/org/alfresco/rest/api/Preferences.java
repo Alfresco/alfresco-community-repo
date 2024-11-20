@@ -31,6 +31,7 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 
 public interface Preferences
 {
-	public Preference getPreference(String personId, String preferenceName);
-	public CollectionWithPagingInfo<Preference> getPreferences(String personId, Paging paging);
+	Preference getPreference(String personId, String preferenceName);
+	CollectionWithPagingInfo<Preference> getPreferences(String personId, Paging paging);
+	Preference updatePreference(String personId, Preference preference);
 }

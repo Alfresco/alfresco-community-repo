@@ -27,7 +27,9 @@ package org.alfresco.rest.api.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.query.PagingResults;
 import org.alfresco.rest.api.People;
@@ -87,5 +89,24 @@ public class PreferencesImpl implements Preferences
 		}
 
         return CollectionWithPagingInfo.asPaged(paging, ret, preferences.hasMoreItems(), preferences.getTotalResultCount().getFirst());
+	}
+
+	@Override
+	public Preference updatePreference(String personId, Preference preference)
+	{
+		personId = people.validatePerson(personId, true);
+		final Map<String, Serializable> preferencesToSet;
+		if (preference.getValue() == null || "".equals(preference.getValue()))
+		{
+			preferencesToSet = new HashMap<>(1);
+			preferencesToSet.put(preference.getName(), null);
+		}
+		else
+		{
+			preferencesToSet = Map.of(preference.getName(), preference.getValue());
+		}
+
+		preferenceService.setPreferences(personId, preferencesToSet);
+		return new Preference(preference.getName(), preferenceService.getPreference(personId, preference.getName()));
 	}
 }

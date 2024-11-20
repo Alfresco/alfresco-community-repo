@@ -25,6 +25,20 @@
  */
 package org.alfresco.rest.framework.webscripts;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Locale;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -42,19 +56,6 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.framework.tools.RequestReader;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * Handles the HTTP PUT for a Resource, equivalent to CRUD Update
@@ -131,7 +132,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 }
 
             }
-            //Fall through to unsupported.
+            // Fall through to unsupported.
         default:
             throw new UnsupportedResourceOperationException("PUT not supported for this request.");
         }
@@ -141,7 +142,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
      * Returns the basic content info from the request.
      *
      * @param req
-     *         WebScriptRequest
+     *            WebScriptRequest
      * @return BasicContentInfo
      */
     private BasicContentInfo getContentInfo(WebScriptRequest req)
@@ -167,7 +168,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
      * Returns the input stream for the request
      *
      * @param req
-     *         WebScriptRequest
+     *            WebScriptRequest
      * @return InputStream
      */
     private InputStream getStream(WebScriptRequest req)
@@ -196,9 +197,9 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
      * Executes the action on the resource
      *
      * @param resource
-     *         ResourceWithMetadata
+     *            ResourceWithMetadata
      * @param params
-     *         parameters to use
+     *            parameters to use
      * @return anObject the result of the execute
      */
     @Override

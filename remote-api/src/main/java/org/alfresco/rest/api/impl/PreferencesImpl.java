@@ -25,6 +25,12 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.query.PagingResults;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Preferences;
@@ -34,12 +40,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.util.Pair;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Centralises access to preference services and maps between representations.

@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.api.people;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.rest.api.Preferences;
 import org.alfresco.rest.api.model.Preference;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -34,9 +38,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 @RelationshipResource(name = "preferences", entityResource = PeopleEntityResource.class, title = "Person Preferences")
 public class PersonPreferencesRelation implements RelationshipResourceAction.Read<Preference>, RelationshipResourceAction.ReadById<Preference>, RelationshipResourceAction.Update<Preference>, InitializingBean

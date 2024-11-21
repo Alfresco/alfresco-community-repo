@@ -238,6 +238,7 @@ Java Runtime Env + redistributable components   http://java.oracle.com/
 === Public Domain License ===
 AOP Alliance    http://aopalliance.sourceforge.net/
 XZ  http://tukaani.org/xz/
+XMLPULL http://www.xmlpull.org/
 
 
 === Sun Public License ===

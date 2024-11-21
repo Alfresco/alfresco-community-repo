@@ -118,6 +118,18 @@
             <groupId>org.jibx</groupId>
             <artifactId>jibx-run</artifactId>
             <version>1.4.2</version>
+            <exclusions>
+                <!-- [ACS-5371] Excluded to avoid conflict in JDK9+ as it includes javax.xml-->
+                <exclusion>
+                    <groupId>xpp3</groupId>
+                    <artifactId>xpp3</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>xmlpull</groupId>
+            <artifactId>xmlpull</artifactId>
+            <version>${dependency.xmlpull.version}</version>
         </dependency>
         <dependency> 
             <groupId>com.fasterxml.jackson.core</groupId> 

@@ -58,18 +58,18 @@
 
         <dependency.aspectj.version>1.9.22.1</dependency.aspectj.version>
         <dependency.spring.version>6.1.14</dependency.spring.version>
-        <dependency.spring-security.version>6.3.4</dependency.spring-security.version>
+        <dependency.spring-security.version>6.4.1</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.17.2</dependency.jackson.version>
         <dependency.cxf.version>4.0.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>9.4</dependency.webscripts.version>
-        <dependency.bouncycastle.version>1.78.1</dependency.bouncycastle.version>
+        <dependency.bouncycastle.version>1.79</dependency.bouncycastle.version>
         <dependency.mockito-core.version>5.14.1</dependency.mockito-core.version>
         <dependency.assertj.version>3.26.3</dependency.assertj.version>
         <dependency.org-json.version>20240303</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.12.0</dependency.commons-dbcp.version>
-        <dependency.commons-io.version>2.17.0</dependency.commons-io.version>
+        <dependency.commons-io.version>2.18.0</dependency.commons-io.version>
         <dependency.gson.version>2.11.0</dependency.gson.version>
         <dependency.guava.version>33.3.1-jre</dependency.guava.version>
         <dependency.httpclient.version>4.5.14</dependency.httpclient.version>
@@ -80,7 +80,7 @@
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>2.0.16</dependency.slf4j.version>
         <dependency.log4j.version>2.23.1</dependency.log4j.version>
-        <dependency.groovy.version>3.0.22</dependency.groovy.version>
+        <dependency.groovy.version>3.0.23</dependency.groovy.version>
         <dependency.tika.version>2.9.2</dependency.tika.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.3.0</dependency.poi.version>
@@ -372,7 +372,7 @@
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
-                <version>2.3.2</version>
+                <version>2.5.0</version>
                 <!-- exclude c3p0 -->
                 <!-- see https://issues.alfresco.com/jira/browse/REPO-3447 -->
                 <exclusions>
@@ -466,7 +466,7 @@
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>5.2.1</version>
+                <version>5.2.2</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>
@@ -704,7 +704,7 @@
             <dependency>
                 <groupId>com.networknt</groupId>
                 <artifactId>json-schema-validator</artifactId>
-                <version>1.5.1</version>
+                <version>1.5.3</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -951,7 +951,7 @@
             <dependency>
                 <groupId>org.projectlombok</groupId>
                 <artifactId>lombok</artifactId>
-                <version>1.18.34</version>
+                <version>1.18.36</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -1016,7 +1016,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.5.1</version>
+                    <version>3.5.2</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
@@ -1029,7 +1029,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.10.1</version>
+                    <version>3.11.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

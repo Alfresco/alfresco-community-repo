@@ -146,6 +146,7 @@ libgif  http://giflib.sourceforge.net/
 libfreetype http://www.freetype.org/
 PostgreSQL  http://www.postgresql.org/
 PostgreSQL JDBC Driver  http://www.postgresql.org/
+kXML 2 	http://kxml.sourceforge.net/
 
 
 === CDDL 1.0 ===
@@ -238,7 +239,6 @@ Java Runtime Env + redistributable components   http://java.oracle.com/
 === Public Domain License ===
 AOP Alliance    http://aopalliance.sourceforge.net/
 XZ  http://tukaani.org/xz/
-XMLPULL http://www.xmlpull.org/
 
 
 === Sun Public License ===

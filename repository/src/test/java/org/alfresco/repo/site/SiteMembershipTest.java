@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,10 +29,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.UUID;
 
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
  * Test Membership constructor logs. Based on REPO-2520
@@ -56,10 +57,10 @@ public class SiteMembershipTest
     @Before
     public void createSite()
     {
-        String sitePreset = "testSiteMembershipPreset";
-        String shortName = "testSiteMembershipShortName";
-        String title = "testSiteMembershipTile";
-        String description = "testSiteMembershipDescription";
+        var sitePreset = "testSiteMembershipPreset";
+        var shortName = "testSiteMembershipShortName";
+        var title = "testSiteMembershipTile";
+        var description = "testSiteMembershipDescription";
         siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description,
                 SiteVisibility.PUBLIC, null);
     }

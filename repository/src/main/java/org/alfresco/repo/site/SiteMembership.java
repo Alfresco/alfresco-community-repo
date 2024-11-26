@@ -32,6 +32,7 @@ import org.alfresco.util.Pair;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Conveys information for a member of a site.

@@ -29,10 +29,10 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang.StringUtils;
+
 import java.util.Comparator;
 import java.util.List;
-
+import java.util.Optional;
 
 /**
  * Conveys information for a member of a site.
@@ -78,8 +78,7 @@ public class SiteMembership extends AbstractSiteMembership
                     "FirstName required building site membership of " + siteInfo.getShortName());
         }
         this.firstName = firstName;
-       // this.lastName =  Optional.of(lastName).orElse("");
-        this.lastName= StringUtils.isBlank(lastName) ? StringUtils.EMPTY : lastName;
+        this.lastName = Optional.ofNullable(lastName).orElse("");
         this.isMemberOfGroup = isMemberOfGroup;
     }
 

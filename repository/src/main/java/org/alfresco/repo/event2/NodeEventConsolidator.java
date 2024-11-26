@@ -86,30 +86,25 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     @Override
     protected DataAttributes<NodeResource> buildEventData(EventInfo eventInfo, NodeResource resource, EventType eventType)
     {
-        EventData.Builder<NodeResource> eventDataBuilder = EventData.<NodeResource>builder()
-                    .setEventGroupId(eventInfo.getTxnId())
-                    .setResource(resource);
+        EventData.Builder<NodeResource> eventDataBuilder = EventData.<NodeResource> builder()
+                .setEventGroupId(eventInfo.getTxnId())
+                .setResource(resource);
 
         if (eventType == EventType.NODE_UPDATED)
         {
             eventDataBuilder.setResourceBefore(buildNodeResourceBeforeDelta(resource));
         }
 
-        if (eventType == EventType.NODE_DELETED && !isArchived)
-        {
-            eventDataBuilder.setResourceBefore(NodeResource.builder().build());
-        }
-
         return eventDataBuilder.build();
     }
 
     /**
-     * Creates a builder instance if absent or {@code forceUpdate} is requested.
-     * It also, sets the required fields.
+     * Creates a builder instance if absent or {@code forceUpdate} is requested. It also, sets the required fields.
      *
-     * @param nodeRef     the nodeRef in the txn
-     * @param forceUpdate if {@code true}, will get the latest node info and ignores
-     *                    the existing builder object.
+     * @param nodeRef
+     *            the nodeRef in the txn
+     * @param forceUpdate
+     *            if {@code true}, will get the latest node info and ignores the existing builder object.
      */
     protected void createBuilderIfAbsent(NodeRef nodeRef, boolean forceUpdate)
     {
@@ -124,7 +119,8 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     /**
      * Creates a builder instance if absent, and sets the required fields.
      *
-     * @param nodeRef the nodeRef in the txn
+     * @param nodeRef
+     *            the nodeRef in the txn
      */
     protected void createBuilderIfAbsent(NodeRef nodeRef)
     {
@@ -163,7 +159,7 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 // on create secondary child association event takes place - recreate secondary parents previous state
                 secondaryParents.remove(newChildAssocRef.getParentRef().getId());
             }
-            else if(oldChildAssocRef.getParentRef() != null && !secondaryParents.contains(oldChildAssocRef.getParentRef().getId()))
+            else if (oldChildAssocRef.getParentRef() != null && !secondaryParents.contains(oldChildAssocRef.getParentRef().getId()))
             {
                 // before remove secondary child association event takes place - recreate secondary parents previous state
                 secondaryParents.add(oldChildAssocRef.getParentRef().getId());
@@ -304,6 +300,11 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
                 createBuilderIfAbsent(entityReference, true);
             }
         }
+        else
+        {
+            resourceBuilder.setIsPermanentlyDeleted(!isArchived);
+        }
+
         // Now create an instance of NodeResource
         return resourceBuilder.build();
     }
@@ -525,8 +526,9 @@ public class NodeEventConsolidator extends EventConsolidator<NodeRef, NodeResour
     {
         return this.getDerivedEvent().getType().equals(eventType.getType());
     }
-    
-    protected void setResourceBeforeAllFieldsNull(boolean resourceBeforeAllFieldsNull){
+
+    protected void setResourceBeforeAllFieldsNull(boolean resourceBeforeAllFieldsNull)
+    {
         this.resourceBeforeAllFieldsNull = resourceBeforeAllFieldsNull;
     }
 

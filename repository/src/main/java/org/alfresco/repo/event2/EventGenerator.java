@@ -54,6 +54,7 @@ import org.alfresco.repo.event2.filter.ChildAssociationTypeFilter;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.EventUserFilter;
 import org.alfresco.repo.event2.filter.NodeTypeFilter;
+import org.alfresco.repo.node.NodeArchiveServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeArchiveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy;
@@ -96,7 +97,8 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
  */
 public class EventGenerator extends AbstractLifecycleBean implements InitializingBean, EventSupportedPolicies,
         ChildAssociationEventSupportedPolicies,
-        PeerAssociationEventSupportedPolicies
+        PeerAssociationEventSupportedPolicies,
+        NodeArchiveServicePolicies.BeforePurgeNodePolicy
 {
     private static final Log LOGGER = LogFactory.getLog(EventGenerator.class);
 
@@ -163,6 +165,7 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
         setClassBehaviour(OnAddAspectPolicy.QNAME, "onAddAspect");
         setClassBehaviour(OnRemoveAspectPolicy.QNAME, "onRemoveAspect");
         setClassBehaviour(OnMoveNodePolicy.QNAME, "onMoveNode");
+        setClassBehaviour(NodeArchiveServicePolicies.BeforePurgeNodePolicy.QNAME, "beforePurgeNode");
         setAssociationBehaviour(OnCreateChildAssociationPolicy.QNAME, "onCreateChildAssociation");
         setAssociationBehaviour(BeforeDeleteChildAssociationPolicy.QNAME, "beforeDeleteChildAssociation");
         setAssociationBehaviour(OnCreateAssociationPolicy.QNAME, "onCreateAssociation");
@@ -544,16 +547,19 @@ public class EventGenerator extends AbstractLifecycleBean implements Initializin
     @Override
     protected void onShutdown(ApplicationEvent applicationEvent)
     {
-        if (eventSender != null)
-        {
-            eventSender.destroy();
-        }
+        // NOOP
     }
 
     @Override
     public void beforeArchiveNode(NodeRef nodeRef)
     {
         getEventConsolidator(nodeRef).beforeArchiveNode(nodeRef);
+    }
+
+    @Override
+    public void beforePurgeNode(NodeRef nodeRef)
+    {
+        getEventConsolidator(nodeRef).beforeDeleteNode(nodeRef);
     }
 
     protected class EventTransactionListener extends TransactionListenerAdapter

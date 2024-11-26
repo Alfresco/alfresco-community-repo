@@ -76,13 +76,8 @@ public class SiteMembership extends AbstractSiteMembership
             throw new java.lang.IllegalArgumentException(
                     "FirstName required building site membership of " + siteInfo.getShortName());
         }
-        if (lastName == null)
-        {
-            throw new java.lang.IllegalArgumentException(
-                    "LastName required building site membership of " + siteInfo.getShortName());
-        }
         this.firstName = firstName;
-        this.lastName = lastName;
+        this.lastName = Optional.ofNullable(lastName).orElse("");
         this.isMemberOfGroup = isMemberOfGroup;
     }
 

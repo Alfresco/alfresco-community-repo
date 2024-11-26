@@ -146,6 +146,7 @@ libgif  http://giflib.sourceforge.net/
 libfreetype http://www.freetype.org/
 PostgreSQL  http://www.postgresql.org/
 PostgreSQL JDBC Driver  http://www.postgresql.org/
+kXML 2 	http://kxml.sourceforge.net/
 
 
 === CDDL 1.0 ===

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>23.4.0.11-SNAPSHOT</version>
+        <version>25.1.0.4-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -850,12 +850,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <complianceLevel>1.8</complianceLevel>
+                    <complianceLevel>17</complianceLevel>
                     <outxml>false</outxml>
                     <verbose>true</verbose>
                     <showWeaveInfo>true</showWeaveInfo>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>
+                    <target>17</target>
                     <additionalCompilerArgs>
                         <arg>-parameters</arg>
                     </additionalCompilerArgs>

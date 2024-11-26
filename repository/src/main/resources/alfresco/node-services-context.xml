@@ -332,6 +332,42 @@
         <property name="nodeService" ref="nodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="searchTrackingComponent" ref="searchTrackingComponent" />
-    </bean>   
+    </bean>
+
+    <bean id="nodeSizeThreadPool" class="org.alfresco.util.ThreadPoolExecutorFactoryBean">
+        <property name="poolName">
+            <value>defaultThreadPool</value>
+        </property>
+        <property name="corePoolSize">
+            <value>${default.nodeSize.corePoolSize}</value>
+        </property>
+        <property name="maximumPoolSize">
+            <value>${default.nodeSize.maximumPoolSize}</value>
+        </property>
+        <property name="workQueueSize">
+            <value>${default.nodeSize.workQueueSize}</value>
+        </property>
+    </bean>
+
+    <bean id="NodeSizeDetailsServiceImpl" class="org.alfresco.repo.node.sizedetails.NodeSizeDetailsServiceImpl">
+        <property name="searchService" ref="SearchService"/>
+        <property name="simpleCache" ref="folderSizeSharedCache" />
+        <property name="transactionService" ref="transactionService"/>
+        <property name="threadPoolExecutor">
+            <ref bean="nodeSizeThreadPool"/>
+        </property>
+        <property name="defaultItems" value="${default.async.folder.items}"/>
+    </bean>
+
+    <bean id="NodeSizeDetailsService" class="org.springframework.aop.framework.ProxyFactoryBean" >
+        <property name="targetName">
+            <value>NodeSizeDetailsServiceImpl</value>
+        </property>
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.node.sizedetails.NodeSizeDetailsService</value>
+            </list>
+        </property>
+    </bean>
        
 </beans>

@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface DownloadService
 {
     /**
-     * Start the creation of a downlaodable archive file containing the content
+     * Start the creation of a downloadable archive file containing the content
      * from the given nodeRefs.
      * 
      * Implementations are expected to do this asynchronously, with clients 
@@ -50,10 +50,27 @@ public interface DownloadService
      * extended in the future, to support additional archive types.
      * 
      * @param nodeRefs NodeRefs of content to be added to the archive file
-     * @param recusirsive Recurse into container nodes
+     * @param recursive Recurse into container nodes
      * @return Reference to node which will eventually contain the archive file
      */
-    public NodeRef createDownload(NodeRef[] nodeRefs, boolean recusirsive);
+    NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive);
+
+    /**
+     * Start the creation of a downloadable archive file containing the content
+     * from the given nodeRefs.
+     *
+     * Implementations are expected to do this asynchronously, with clients
+     * using the returned NodeRef to check on progress.
+
+     * Initially, only zip files will be supported, however this could be
+     * extended in the future, to support additional archive types.
+     *
+     * @param nodeRefs NodeRefs of content to be added to the archive file
+     * @param recursive Recurse into container nodes
+     * @param downloadNodeName Download node name
+     * @return Reference to node which will eventually contain the archive file
+     */
+    NodeRef createDownload(NodeRef[] nodeRefs, boolean recursive, String downloadNodeName);
     
     /**
      * Get the status of the of the download identified by downloadNode.

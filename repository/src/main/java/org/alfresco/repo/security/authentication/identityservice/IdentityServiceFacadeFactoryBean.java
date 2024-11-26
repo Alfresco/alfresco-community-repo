@@ -654,7 +654,6 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
             validators.add(new JwtTimestampValidator(Duration.of(0, ChronoUnit.MILLIS)));
             validators.add(new JwtIssuerValidator(providerDetails.getIssuerUri()));
             validators.add(new JwtClaimValidator<String>("scope", scope -> scope != null && scope.contains("openid")));
-
             if (!config.isClientIdValidationDisabled())
             {
                 validators.add(new JwtClaimValidator<String>("azp", config.getResource()::equals));

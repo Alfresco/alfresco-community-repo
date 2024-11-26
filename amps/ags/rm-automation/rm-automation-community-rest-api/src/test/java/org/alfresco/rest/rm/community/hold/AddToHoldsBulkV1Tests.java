@@ -75,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
+//Testing execution via github actions
 /**
  * API tests for adding items to holds via the bulk process
  */
@@ -177,7 +177,6 @@ public class AddToHoldsBulkV1Tests extends BaseRMRestTest
         assertEquals(Arrays.asList(holdBulkStatus),
             holdBulkStatusCollection.getEntries().stream().map(HoldBulkStatusEntry::getEntry).toList());
     }
-
     /**
      * Given a user with the add to hold capability and hold filing permission
      * When the user adds content from a folder and all subfolders to a hold using the bulk API

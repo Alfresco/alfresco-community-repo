@@ -25,14 +25,14 @@
  */
 package org.alfresco.repo.site;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.util.Pair;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Conveys information for a member of a site.

@@ -29,10 +29,10 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.util.Pair;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-
 
 /**
  * Conveys information for a member of a site.
@@ -159,7 +159,6 @@ public class SiteMembership extends AbstractSiteMembership
                 + ", firstName=" + firstName + ", lastName=" + lastName + ", role=" + role +
                 ", isMemberOfGroup = " + isMemberOfGroup + "]";
     }
-
 
     static int compareTo(List<Pair<? extends Object, CannedQuerySortDetails.SortOrder>> sortPairs, SiteMembership o1, SiteMembership o2)
     {

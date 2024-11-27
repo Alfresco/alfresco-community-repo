@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2014 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -53,7 +53,7 @@ public class SiteMembership extends AbstractSiteMembership
     public SiteMembership(SiteInfo siteInfo, String id, String firstName, String lastName,
             String role)
     {
-        super(siteInfo,id, role);
+        super(siteInfo, id, role);
         if (firstName == null)
         {
             throw new java.lang.IllegalArgumentException(
@@ -78,7 +78,7 @@ public class SiteMembership extends AbstractSiteMembership
                     "FirstName required building site membership of " + siteInfo.getShortName());
         }
         this.firstName = firstName;
-        this.lastName =  Optional.of(lastName).orElse("");
+        this.lastName = Optional.of(lastName).orElse("");
         this.isMemberOfGroup = isMemberOfGroup;
     }
 

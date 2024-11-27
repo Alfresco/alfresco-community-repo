@@ -78,7 +78,7 @@ public class SiteMembership extends AbstractSiteMembership
                     "FirstName required building site membership of " + siteInfo.getShortName());
         }
         this.firstName = firstName;
-        this.lastName = Optional.of(lastName).orElse("");
+        this.lastName = Optional.ofNullable(lastName).orElse("");
         this.isMemberOfGroup = isMemberOfGroup;
     }
 

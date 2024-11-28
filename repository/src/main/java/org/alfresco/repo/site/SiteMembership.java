@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,13 +25,14 @@
  */
 package org.alfresco.repo.site;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.util.Pair;
-
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * Conveys information for a member of a site.
@@ -52,7 +53,7 @@ public class SiteMembership extends AbstractSiteMembership
     public SiteMembership(SiteInfo siteInfo, String id, String firstName, String lastName,
             String role)
     {
-        super(siteInfo,id, role);
+        super(siteInfo, id, role);
         if (firstName == null)
         {
             throw new java.lang.IllegalArgumentException(
@@ -76,13 +77,8 @@ public class SiteMembership extends AbstractSiteMembership
             throw new java.lang.IllegalArgumentException(
                     "FirstName required building site membership of " + siteInfo.getShortName());
         }
-        if (lastName == null)
-        {
-            throw new java.lang.IllegalArgumentException(
-                    "LastName required building site membership of " + siteInfo.getShortName());
-        }
         this.firstName = firstName;
-        this.lastName = lastName;
+        this.lastName = Optional.ofNullable(lastName).orElse("");
         this.isMemberOfGroup = isMemberOfGroup;
     }
 
@@ -163,7 +159,6 @@ public class SiteMembership extends AbstractSiteMembership
                 + ", firstName=" + firstName + ", lastName=" + lastName + ", role=" + role +
                 ", isMemberOfGroup = " + isMemberOfGroup + "]";
     }
-
 
     static int compareTo(List<Pair<? extends Object, CannedQuerySortDetails.SortOrder>> sortPairs, SiteMembership o1, SiteMembership o2)
     {

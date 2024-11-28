@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -60,7 +60,7 @@ import org.alfresco.util.Pair;
 
 /**
  * Handler for exporting node content to a ZIP file
- * 
+ *
  * @author Alex Miller
  */
 public class ZipDownloadExporter extends BaseExporter
@@ -114,7 +114,10 @@ public class ZipDownloadExporter extends BaseExporter
      * @param totalFileCount
      *            long
      */
-    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService, RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService, DownloadStorage downloadStorage, DictionaryService dictionaryService, NodeRef downloadNodeRef, long total, long totalFileCount)
+    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService,
+            RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService,
+            DownloadStorage downloadStorage, DictionaryService dictionaryService,
+            NodeRef downloadNodeRef, long total, long totalFileCount)
     {
         super(checkOutCheckInService, nodeService);
         try
@@ -179,7 +182,8 @@ public class ZipDownloadExporter extends BaseExporter
         // if the content stream to output is empty, then just return content descriptor as is
         if (content == null)
         {
-            log.info("Archiving content has been removed or modified for the specified NodeReference: " + nodeRef + ", and the size of the content is " + contentData.getSize());
+            log.info("Archiving content has been removed or modified for the specified NodeReference: " + nodeRef
+                    + ", and the size of the content is " + contentData.getSize());
             return;
         }
 
@@ -187,7 +191,8 @@ public class ZipDownloadExporter extends BaseExporter
         {
             if (log.isDebugEnabled())
             {
-                log.debug("Archiving content for nodeRef: " + nodeRef + " with contentURL: " + contentData.getContentUrl());
+                log.debug("Archiving content for nodeRef: " + nodeRef + " with contentURL: "
+                        + contentData.getContentUrl());
             }
             // ALF-2016
             ZipArchiveEntry zipEntry = new ZipArchiveEntry(getPath());
@@ -253,15 +258,14 @@ public class ZipDownloadExporter extends BaseExporter
 
     /**
      * Copy input stream to output stream
-     * 
+     *
      * @param output
      *            output stream
      * @param in
      *            input stream
      * @throws IOException
      */
-    private void copyStream(OutputStream output, InputStream in)
-            throws IOException
+    private void copyStream(OutputStream output, InputStream in) throws IOException
     {
         byte[] buffer = new byte[2048 * 10];
         int read = in.read(buffer, 0, 2048 * 10);

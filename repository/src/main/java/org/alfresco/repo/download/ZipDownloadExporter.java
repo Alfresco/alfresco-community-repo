@@ -180,7 +180,7 @@ public class ZipDownloadExporter extends BaseExporter
         if (content == null)
         {
             log.info("Archiving content has been removed or modified for the specified NodeReference: " + nodeRef
-                    + ", and the size of the content is " + contentData.getSize());
+                                 + ", and the size of the content is " + contentData.getSize());
             return;
         }
 
@@ -262,7 +262,7 @@ public class ZipDownloadExporter extends BaseExporter
      * @throws IOException
      */
     private void copyStream(OutputStream output, InputStream in)
-            throws IOException
+                throws IOException
     {
         byte[] buffer = new byte[2048 * 10];
         int read = in.read(buffer, 0, 2048 * 10);

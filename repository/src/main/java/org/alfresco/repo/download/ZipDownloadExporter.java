@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -60,13 +60,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Handler for exporting node content to a ZIP file
- * 
+ *
  * @author Alex Miller
  */
 public class ZipDownloadExporter extends BaseExporter
 {
     private static Logger log = LoggerFactory.getLogger(ZipDownloadExporter.class);
-    
+
     private static final String PATH_SEPARATOR = "/";
 
     protected ZipArchiveOutputStream zipStream;
@@ -77,7 +77,7 @@ public class ZipDownloadExporter extends BaseExporter
     private long done;
     private long totalFileCount;
     private long filesAddedCount;
-    
+
     private RetryingTransactionHelper transactionHelper;
     private DownloadStorage downloadStorage;
     private DictionaryService dictionaryService;
@@ -114,7 +114,7 @@ public class ZipDownloadExporter extends BaseExporter
             this.transactionHelper = transactionHelper;
             this.downloadStorage = downloadStorage;
             this.dictionaryService = dictionaryService;
-            
+
             this.downloadNodeRef = downloadNodeRef;
             this.total = total;
             this.totalFileCount = totalFileCount;
@@ -162,16 +162,18 @@ public class ZipDownloadExporter extends BaseExporter
             }
         }
     }
-    
+
     @Override
     public void contentImpl(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
         // if the content stream to output is empty, then just return content descriptor as is
         if (content == null)
         {
+            log.info("Archiving content has been removed or modified for the specified NodeReference: " + nodeRef
+                         + ", and the size of the content is " + contentData.getSize());
             return;
         }
-        
+
         try
         {
             if (log.isDebugEnabled())
@@ -184,10 +186,10 @@ public class ZipDownloadExporter extends BaseExporter
             zipEntry.setCreationTime(FileTime.fromMillis(zipTimestampCreated.getTime()));
             zipEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestampModified.getTime()));
             zipStream.putArchiveEntry(zipEntry);
-            
+
             // copy export stream to zip
             copyStream(zipStream, content);
-            
+
             zipStream.closeArchiveEntry();
             filesAddedCount = filesAddedCount + 1;
         }
@@ -196,7 +198,7 @@ public class ZipDownloadExporter extends BaseExporter
             throw new ExporterException("Failed to zip export stream", e);
         }
     }
-    
+
     @Override
     public void endNode(NodeRef nodeRef)
     {
@@ -218,31 +220,31 @@ public class ZipDownloadExporter extends BaseExporter
 
     private String getPath()
     {
-        if (path.size() < 1) 
+        if (path.size() < 1)
         {
-            throw new IllegalStateException("No elements in path!");    
+            throw new IllegalStateException("No elements in path!");
         }
-        
+
         Iterator<Pair<String, NodeRef>> iter = path.descendingIterator();
         StringBuilder pathBuilder = new StringBuilder();
-        
+
         while (iter.hasNext())
         {
             Pair<String, NodeRef> element = iter.next();
-            
+
             pathBuilder.append(element.getFirst());
             if (iter.hasNext())
             {
                 pathBuilder.append(PATH_SEPARATOR);
             }
         }
-        
+
         return pathBuilder.toString();
     }
 
     /**
      * Copy input stream to output stream
-     * 
+     *
      * @param output  output stream
      * @param in  input stream
      * @throws IOException
@@ -257,18 +259,18 @@ public class ZipDownloadExporter extends BaseExporter
         {
             output.write(buffer, 0, read);
             done = done + read;
-            
+
             // ALF-16289 - only update the status every 10MB
             if (i++%500 == 0)
             {
                 updateStatus();
                 checkCancelled();
             }
-            
+
             read = in.read(buffer, 0, 2048 *10);
         }
     }
-    
+
     private void checkCancelled()
     {
         boolean downloadCancelled = transactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>()
@@ -276,7 +278,7 @@ public class ZipDownloadExporter extends BaseExporter
             @Override
             public Boolean execute() throws Throwable
             {
-                return downloadStorage.isCancelled(downloadNodeRef);                
+                return downloadStorage.isCancelled(downloadNodeRef);
             }
         }, true, true);
 
@@ -295,7 +297,7 @@ public class ZipDownloadExporter extends BaseExporter
             public Object execute() throws Throwable
             {
                 DownloadStatus status = new DownloadStatus(Status.IN_PROGRESS, done, total, filesAddedCount, totalFileCount);
-                
+
                 updateService.update(downloadNodeRef, status, getNextSequenceNumber());
                 return null;
             }

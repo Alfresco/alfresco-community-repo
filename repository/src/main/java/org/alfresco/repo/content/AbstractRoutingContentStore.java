@@ -461,7 +461,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         }
         final String message = "Restoring content from archive: ";
         logExecution(contentUrl, contentStore, message);
-        return ContentStore.super.requestRestoreContentFromArchive(contentUrl, restoreParams);
+        return contentStore.requestRestoreContentFromArchive(contentUrl, restoreParams);
     }
 
     private void logExecution(final String contentUrl, final ContentStore contentStore, final String message)

@@ -114,10 +114,7 @@ public class ZipDownloadExporter extends BaseExporter
      * @param totalFileCount
      *            long
      */
-    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService,
-            RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService,
-            DownloadStorage downloadStorage, DictionaryService dictionaryService,
-            NodeRef downloadNodeRef, long total, long totalFileCount)
+    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService, RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService, DownloadStorage downloadStorage, DictionaryService dictionaryService, NodeRef downloadNodeRef, long total, long totalFileCount)
     {
         super(checkOutCheckInService, nodeService);
         try
@@ -183,7 +180,7 @@ public class ZipDownloadExporter extends BaseExporter
         if (content == null)
         {
             log.info("Archiving content has been removed or modified for the specified NodeReference: " + nodeRef
-                    + ", and the size of the content is " + contentData.getSize());
+                                 + ", and the size of the content is " + contentData.getSize());
             return;
         }
 
@@ -191,8 +188,7 @@ public class ZipDownloadExporter extends BaseExporter
         {
             if (log.isDebugEnabled())
             {
-                log.debug("Archiving content for nodeRef: " + nodeRef + " with contentURL: "
-                        + contentData.getContentUrl());
+                log.debug("Archiving content for nodeRef: " + nodeRef + " with contentURL: " + contentData.getContentUrl());
             }
             // ALF-2016
             ZipArchiveEntry zipEntry = new ZipArchiveEntry(getPath());
@@ -265,7 +261,8 @@ public class ZipDownloadExporter extends BaseExporter
      *            input stream
      * @throws IOException
      */
-    private void copyStream(OutputStream output, InputStream in) throws IOException
+    private void copyStream(OutputStream output, InputStream in)
+                throws IOException
     {
         byte[] buffer = new byte[2048 * 10];
         int read = in.read(buffer, 0, 2048 * 10);

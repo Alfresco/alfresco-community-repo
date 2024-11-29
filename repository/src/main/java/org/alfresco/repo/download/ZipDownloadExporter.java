@@ -23,788 +23,319 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authentication.identityservice;
+package org.alfresco.repo.download;
 
-import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
-import static java.util.function.Predicate.not;
-
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.AUDIENCE;
-import static org.alfresco.repo.security.authentication.identityservice.IdentityServiceMetadataKey.SCOPES_SUPPORTED;
-
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.interfaces.RSAPublicKey;
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.io.OutputStream;
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.LinkedList;
 
-import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.source.DefaultJWKSetCache;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.jwk.source.RemoteJWKSet;
-import com.nimbusds.jose.proc.BadJOSEException;
-import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
-import com.nimbusds.jose.proc.JWSVerificationKeySelector;
-import com.nimbusds.jose.proc.SecurityContext;
-import com.nimbusds.jose.util.ResourceRetriever;
-import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
-import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.id.Identifier;
-import com.nimbusds.oauth2.sdk.id.Issuer;
-import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.config.ConnectionConfig;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
-import org.apache.hc.client5.http.ssl.TrustAllStrategy;
-import org.apache.hc.core5.ssl.SSLContextBuilder;
-import org.apache.hc.core5.ssl.SSLContexts;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequest;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.security.converter.RsaKeyConverters;
-import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
-import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
-import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
-import org.springframework.security.oauth2.core.converter.ClaimTypeConverter;
-import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimNames;
-import org.springframework.security.oauth2.jwt.JwtClaimValidator;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.IdentityServiceFacadeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.download.DownloadStatus;
+import org.alfresco.service.cmr.download.DownloadStatus.Status;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.view.ExporterContext;
+import org.alfresco.service.cmr.view.ExporterException;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
- * Creates an instance of {@link IdentityServiceFacade}. <br>
- * This factory can return a null if it is disabled.
+ * Handler for exporting node content to a ZIP file
+ *
+ * @author Alex Miller
  */
-public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentityServiceFacade>
+public class ZipDownloadExporter extends BaseExporter
 {
-    private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
+    private static Logger log = LoggerFactory.getLogger(ZipDownloadExporter.class);
 
-    private static final JOSEObjectType AT_JWT = new JOSEObjectType("at+jwt");
+    private static final String PATH_SEPARATOR = "/";
 
-    private boolean enabled;
-    private SpringBasedIdentityServiceFacadeFactory factory;
+    protected ZipArchiveOutputStream zipStream;
 
-    public void setEnabled(boolean enabled)
+    private NodeRef downloadNodeRef;
+    private int sequenceNumber = 1;
+    private long total;
+    private long done;
+    private long totalFileCount;
+    private long filesAddedCount;
+
+    private RetryingTransactionHelper transactionHelper;
+    private DownloadStorage downloadStorage;
+    private DictionaryService dictionaryService;
+    private DownloadStatusUpdateService updateService;
+
+    private Deque<Pair<String, NodeRef>> path = new LinkedList<Pair<String, NodeRef>>();
+    private String currentName;
+
+    private OutputStream outputStream;
+    private Date zipTimestampCreated;
+    private Date zipTimestampModified;
+
+    /**
+     * Construct
+     *
+     * @param zipFile
+     *            File
+     * @param checkOutCheckInService
+     *            CheckOutCheckInService
+     * @param nodeService
+     *            NodeService
+     * @param transactionHelper
+     *            RetryingTransactionHelper
+     * @param updateService
+     *            DownloadStatusUpdateService
+     * @param downloadStorage
+     *            DownloadStorage
+     * @param dictionaryService
+     *            DictionaryService
+     * @param downloadNodeRef
+     *            NodeRef
+     * @param total
+     *            long
+     * @param totalFileCount
+     *            long
+     */
+    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService, RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService, DownloadStorage downloadStorage, DictionaryService dictionaryService, NodeRef downloadNodeRef, long total, long totalFileCount)
     {
-        this.enabled = enabled;
-    }
+        super(checkOutCheckInService, nodeService);
+        try
+        {
+            this.outputStream = new FileOutputStream(zipFile);
+            this.updateService = updateService;
+            this.transactionHelper = transactionHelper;
+            this.downloadStorage = downloadStorage;
+            this.dictionaryService = dictionaryService;
 
-    public void setIdentityServiceConfig(IdentityServiceConfig identityServiceConfig)
-    {
-        factory = new SpringBasedIdentityServiceFacadeFactory(
-                new HttpClientProvider(identityServiceConfig)::createHttpClient,
-                new ClientRegistrationProvider(identityServiceConfig)::createClientRegistration,
-                new JwtDecoderProvider(identityServiceConfig)::createJwtDecoder);
+            this.downloadNodeRef = downloadNodeRef;
+            this.total = total;
+            this.totalFileCount = totalFileCount;
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new ExporterException("Failed to create zip file", e);
+        }
     }
 
     @Override
-    public IdentityServiceFacade getObject() throws Exception
+    public void start(final ExporterContext context)
     {
-        // The creation of the client can be disabled for testing or when the username/password authentication is not required,
-        // for instance when Identity Service is configured for 'bearer only' authentication or Direct Access Grants are disabled.
-        if (!enabled)
-        {
-            return null;
-        }
-
-        return new LazyInstantiatingIdentityServiceFacade(factory::createIdentityServiceFacade);
+        zipStream = new ZipArchiveOutputStream(outputStream);
+        // NOTE: This encoding allows us to workaround bug...
+        // http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
+        zipStream.setEncoding("UTF-8");
+        zipStream.setCreateUnicodeExtraFields(UnicodeExtraFieldPolicy.ALWAYS);
+        zipStream.setUseLanguageEncodingFlag(true);
+        zipStream.setFallbackToUTF8(true);
     }
 
     @Override
-    public Class<?> getObjectType()
+    public void startNode(NodeRef nodeRef)
     {
-        return IdentityServiceFacade.class;
+        this.currentName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        this.zipTimestampCreated = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
+        this.zipTimestampModified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        path.push(new Pair<String, NodeRef>(currentName, nodeRef));
+        if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER))
+        {
+            String path = getPath() + PATH_SEPARATOR;
+            ZipArchiveEntry archiveEntry = new ZipArchiveEntry(path);
+            try
+            {
+                archiveEntry.setTime(zipTimestampCreated.getTime());
+                archiveEntry.setCreationTime(FileTime.fromMillis(zipTimestampCreated.getTime()));
+                archiveEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestampModified.getTime()));
+                zipStream.putArchiveEntry(archiveEntry);
+                zipStream.closeArchiveEntry();
+            }
+            catch (IOException e)
+            {
+                throw new ExporterException("Unexpected IOException adding folder entry", e);
+            }
+        }
     }
 
     @Override
-    public boolean isSingleton()
+    public void contentImpl(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
-        return true;
-    }
-
-    private static IdentityServiceFacadeException authorizationServerCantBeUsedException(RuntimeException cause)
-    {
-        return new IdentityServiceFacadeException("Unable to use the Authorization Server.", cause);
-    }
-
-    // The target facade is created lazily to improve resiliency on Identity Service
-    // (Keycloak/Authorization Server) failures when Spring Context is starting up.
-    static class LazyInstantiatingIdentityServiceFacade implements IdentityServiceFacade
-    {
-        private final AtomicReference<IdentityServiceFacade> targetFacade = new AtomicReference<>();
-        private final Supplier<IdentityServiceFacade> targetFacadeCreator;
-
-        LazyInstantiatingIdentityServiceFacade(Supplier<IdentityServiceFacade> targetFacadeCreator)
+        // if the content stream to output is empty, then just return content descriptor as is
+        if (content == null)
         {
-            this.targetFacadeCreator = requireNonNull(targetFacadeCreator);
+            log.info("Archiving content has been removed or modified for the specified NodeReference: " + nodeRef
+                    + ", and the size of the content is " + contentData.getSize());
+            return;
         }
 
-        @Override
-        public AccessTokenAuthorization authorize(AuthorizationGrant grant) throws AuthorizationException
+        try
         {
-            return getTargetFacade().authorize(grant);
-        }
-
-        @Override
-        public DecodedAccessToken decodeToken(String token) throws TokenDecodingException
-        {
-            return getTargetFacade().decodeToken(token);
-        }
-
-        @Override
-        public Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute)
-        {
-            return getTargetFacade().getUserInfo(token, principalAttribute);
-        }
-
-        @Override
-        public ClientRegistration getClientRegistration()
-        {
-            return getTargetFacade().getClientRegistration();
-        }
-
-        private IdentityServiceFacade getTargetFacade()
-        {
-            return ofNullable(targetFacade.get())
-                    .orElseGet(() -> targetFacade.updateAndGet(prev -> ofNullable(prev).orElseGet(this::createTargetFacade)));
-        }
-
-        private IdentityServiceFacade createTargetFacade()
-        {
-            try
+            if (log.isDebugEnabled())
             {
-                return targetFacadeCreator.get();
+                log.debug("Archiving content for nodeRef: " + nodeRef + " with contentURL: " + contentData.getContentUrl());
             }
-            catch (IdentityServiceFacadeException e)
-            {
-                throw e;
-            }
-            catch (RuntimeException e)
-            {
-                LOGGER.warn("Failed to instantiate IdentityServiceFacade.", e);
-                throw authorizationServerCantBeUsedException(e);
-            }
+            // ALF-2016
+            ZipArchiveEntry zipEntry = new ZipArchiveEntry(getPath());
+            zipEntry.setTime(zipTimestampCreated.getTime());
+            zipEntry.setCreationTime(FileTime.fromMillis(zipTimestampCreated.getTime()));
+            zipEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestampModified.getTime()));
+            zipStream.putArchiveEntry(zipEntry);
+
+            // copy export stream to zip
+            copyStream(zipStream, content);
+
+            zipStream.closeArchiveEntry();
+            filesAddedCount = filesAddedCount + 1;
+        }
+        catch (IOException e)
+        {
+            throw new ExporterException("Failed to zip export stream", e);
         }
     }
 
-    private static class SpringBasedIdentityServiceFacadeFactory
+    @Override
+    public void endNode(NodeRef nodeRef)
     {
-        private final Supplier<HttpClient> httpClientProvider;
-        private final Function<RestOperations, ClientRegistration> clientRegistrationProvider;
-        private final BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider;
+        path.pop();
+    }
 
-        SpringBasedIdentityServiceFacadeFactory(
-                Supplier<HttpClient> httpClientProvider,
-                Function<RestOperations, ClientRegistration> clientRegistrationProvider,
-                BiFunction<RestOperations, ProviderDetails, JwtDecoder> jwtDecoderProvider)
+    @Override
+    public void end()
+    {
+        try
         {
-            this.httpClientProvider = requireNonNull(httpClientProvider);
-            this.clientRegistrationProvider = requireNonNull(clientRegistrationProvider);
-            this.jwtDecoderProvider = requireNonNull(jwtDecoderProvider);
+            zipStream.close();
         }
-
-        private IdentityServiceFacade createIdentityServiceFacade()
+        catch (IOException error)
         {
-            // Here we preserve the behaviour of previously used Keycloak Adapter
-            // * Client is authenticating itself using basic auth
-            // * Resource Owner Password Credentials Flow is used to authenticate Resource Owner
-
-            final ClientHttpRequestFactory httpRequestFactory = new CustomClientHttpRequestFactory(
-                    httpClientProvider.get());
-            final RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-            final ClientRegistration clientRegistration = clientRegistrationProvider.apply(restTemplate);
-            final JwtDecoder jwtDecoder = jwtDecoderProvider.apply(restTemplate,
-                    clientRegistration.getProviderDetails());
-
-            return new SpringBasedIdentityServiceFacade(createOAuth2RestTemplate(httpRequestFactory),
-                    clientRegistration, jwtDecoder);
-        }
-
-        private RestTemplate createOAuth2RestTemplate(ClientHttpRequestFactory requestFactory)
-        {
-            final RestTemplate restTemplate = new RestTemplate(
-                    Arrays.asList(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()));
-            restTemplate.setRequestFactory(requestFactory);
-            restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
-
-            return restTemplate;
+            throw new ExporterException("Unexpected error closing zip stream!", error);
         }
     }
 
-    private static class HttpClientProvider
+    private String getPath()
     {
-        private final IdentityServiceConfig config;
-
-        private HttpClientProvider(IdentityServiceConfig config)
+        if (path.size() < 1)
         {
-            this.config = requireNonNull(config);
+            throw new IllegalStateException("No elements in path!");
         }
 
-        private HttpClient createHttpClient()
+        Iterator<Pair<String, NodeRef>> iter = path.descendingIterator();
+        StringBuilder pathBuilder = new StringBuilder();
+
+        while (iter.hasNext())
         {
-            try
+            Pair<String, NodeRef> element = iter.next();
+
+            pathBuilder.append(element.getFirst());
+            if (iter.hasNext())
             {
-                HttpClientBuilder clientBuilder = HttpClients.custom();
-                applyConfiguration(clientBuilder);
-                return clientBuilder.build();
-            }
-            catch (Exception e)
-            {
-                throw new IllegalStateException("Failed to create ClientHttpRequestFactory. " + e.getMessage(), e);
+                pathBuilder.append(PATH_SEPARATOR);
             }
         }
 
-        private void applyConfiguration(HttpClientBuilder builder) throws Exception
+        return pathBuilder.toString();
+    }
+
+    /**
+     * Copy input stream to output stream
+     *
+     * @param output
+     *            output stream
+     * @param in
+     *            input stream
+     * @throws IOException
+     */
+    private void copyStream(OutputStream output, InputStream in)
+            throws IOException
+    {
+        byte[] buffer = new byte[2048 * 10];
+        int read = in.read(buffer, 0, 2048 * 10);
+        int i = 0;
+        while (read != -1)
         {
-            final PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder.create();
+            output.write(buffer, 0, read);
+            done = done + read;
 
-            applyConnectionConfiguration(connectionManagerBuilder);
-            applySSLConfiguration(connectionManagerBuilder);
-
-            builder.setConnectionManager(connectionManagerBuilder.build());
-        }
-
-        private void applyConnectionConfiguration(PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder)
-        {
-            final ConnectionConfig connectionConfig = ConnectionConfig.custom()
-                    .setConnectTimeout(config.getClientConnectionTimeout(), TimeUnit.MILLISECONDS)
-                    .setSocketTimeout(config.getClientSocketTimeout(), TimeUnit.MILLISECONDS)
-                    .build();
-
-            connectionManagerBuilder.setMaxConnTotal(config.getConnectionPoolSize());
-            connectionManagerBuilder.setDefaultConnectionConfig(connectionConfig);
-        }
-
-        private void applySSLConfiguration(PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder)
-                throws Exception
-        {
-            SSLContextBuilder sslContextBuilder = null;
-            if (config.isDisableTrustManager())
+            // ALF-16289 - only update the status every 10MB
+            if (i++ % 500 == 0)
             {
-                sslContextBuilder = SSLContexts.custom()
-                        .loadTrustMaterial(TrustAllStrategy.INSTANCE);
-
-            }
-            else if (isDefined(config.getTruststore()))
-            {
-                final char[] truststorePassword = asCharArray(config.getTruststorePassword(), null);
-                sslContextBuilder = SSLContexts.custom()
-                        .loadTrustMaterial(new File(config.getTruststore()), truststorePassword);
+                updateStatus();
+                checkCancelled();
             }
 
-            if (isDefined(config.getClientKeystore()))
-            {
-                if (sslContextBuilder == null)
-                {
-                    sslContextBuilder = SSLContexts.custom();
-                }
-                final char[] keystorePassword = asCharArray(config.getClientKeystorePassword(), null);
-                final char[] keyPassword = asCharArray(config.getClientKeyPassword(), keystorePassword);
-                sslContextBuilder.loadKeyMaterial(new File(config.getClientKeystore()), keystorePassword, keyPassword);
-            }
-
-            final SSLConnectionSocketFactoryBuilder sslConnectionSocketFactoryBuilder = SSLConnectionSocketFactoryBuilder.create();
-
-            if (sslContextBuilder != null)
-            {
-                sslConnectionSocketFactoryBuilder.setSslContext(sslContextBuilder.build());
-            }
-
-            if (config.isDisableTrustManager() || config.isAllowAnyHostname())
-            {
-                sslConnectionSocketFactoryBuilder.setHostnameVerifier(NoopHostnameVerifier.INSTANCE);
-            }
-            final SSLConnectionSocketFactory sslConnectionSocketFactory = sslConnectionSocketFactoryBuilder.build();
-            connectionManagerBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
-        }
-
-        private char[] asCharArray(String value, char... nullValue)
-        {
-            return ofNullable(value)
-                    .filter(not(String::isBlank))
-                    .map(String::toCharArray)
-                    .orElse(nullValue);
+            read = in.read(buffer, 0, 2048 * 10);
         }
     }
 
-    static class ClientRegistrationProvider
+    private void checkCancelled()
     {
-        private final IdentityServiceConfig config;
+        boolean downloadCancelled = transactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>() {
+            @Override
+            public Boolean execute() throws Throwable
+            {
+                return downloadStorage.isCancelled(downloadNodeRef);
+            }
+        }, true, true);
 
-        private static final Set<String> SCOPES = Set.of("openid", "profile", "email");
-
-        ClientRegistrationProvider(IdentityServiceConfig config)
+        if (downloadCancelled == true)
         {
-            this.config = requireNonNull(config);
-        }
-
-        public ClientRegistration createClientRegistration(final RestOperations rest)
-        {
-            return possibleMetadataURIs()
-                    .stream()
-                    .map(u -> extractMetadata(rest, u))
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .findFirst()
-                    .map(this::validateDiscoveryDocument)
-                    .map(this::createBuilder)
-                    .map(this::configureClientAuthentication)
-                    .map(Builder::build)
-                    .orElseThrow(() -> new IllegalStateException("Failed to create ClientRegistration."));
-        }
-
-        private OIDCProviderMetadata validateDiscoveryDocument(OIDCProviderMetadata metadata)
-        {
-            validateOIDCEndpoint(metadata.getTokenEndpointURI(), "Token");
-            validateOIDCEndpoint(metadata.getAuthorizationEndpointURI(), "Authorization");
-            validateOIDCEndpoint(metadata.getUserInfoEndpointURI(), "User Info");
-            validateOIDCEndpoint(metadata.getJWKSetURI(), "JWK Set");
-
-            if (metadata.getIssuer() != null)
-            {
-                try
-                {
-                    URI metadataIssuerURI = new URI(metadata.getIssuer().getValue());
-                    validateOIDCEndpoint(metadataIssuerURI, "Issuer");
-                    if (StringUtils.isNotBlank(config.getIssuerUrl()) &&
-                            !metadataIssuerURI.equals(URI.create(config.getIssuerUrl())))
-                    {
-                        throw new IdentityServiceException("Failed to create ClientRegistration. "
-                                + "The Issuer value from the OIDC Discovery Endpoint does not align with the provided Issuer. Expected `%s` but found `%s`"
-                                        .formatted(config.getIssuerUrl(), metadata.getIssuer().getValue()));
-                    }
-                }
-                catch (URISyntaxException e)
-                {
-                    throw new IdentityServiceException("The provided Issuer value could not be parsed as a URI reference.", e);
-                }
-            }
-            else
-            {
-                throw new IdentityServiceException("The Issuer retrieved from the OIDC Discovery Endpoint cannot be null.");
-            }
-
-            return metadata;
-        }
-
-        private void validateOIDCEndpoint(URI value, String endpointName)
-        {
-            if (value == null || value.toASCIIString().isBlank())
-            {
-                throw new IdentityServiceException("The `%s` Endpoint retrieved from the OIDC Discovery Endpoint cannot be empty.".formatted(endpointName));
-            }
-        }
-
-        private ClientRegistration.Builder createBuilder(OIDCProviderMetadata metadata)
-        {
-            final String authUri = Optional.of(metadata)
-                    .map(OIDCProviderMetadata::getAuthorizationEndpointURI)
-                    .map(URI::toASCIIString)
-                    .orElse(null);
-
-            final String issuerUri = Optional.of(metadata)
-                    .map(OIDCProviderMetadata::getIssuer)
-                    .map(Issuer::getValue)
-                    .orElseGet(() -> (StringUtils.isNotBlank(config.getRealm()) && StringUtils.isBlank(config.getIssuerUrl())) ? config.getAuthServerUrl() : config.getIssuerUrl());
-
-            return ClientRegistration
-                    .withRegistrationId("ids")
-                    .authorizationUri(authUri)
-                    .tokenUri(metadata.getTokenEndpointURI().toASCIIString())
-                    .jwkSetUri(metadata.getJWKSetURI().toASCIIString())
-                    .issuerUri(issuerUri)
-                    .userInfoUri(metadata.getUserInfoEndpointURI().toASCIIString())
-                    .scope(getSupportedScopes(metadata.getScopes()))
-                    .providerConfigurationMetadata(createMetadata(metadata))
-                    .authorizationGrantType(AuthorizationGrantType.PASSWORD);
-        }
-
-        private Map<String, Object> createMetadata(OIDCProviderMetadata metadata)
-        {
-            Map<String, Object> configurationMetadata = new LinkedHashMap<>();
-            if (metadata.getScopes() != null)
-            {
-                configurationMetadata.put(SCOPES_SUPPORTED.getValue(), metadata.getScopes());
-            }
-            if (StringUtils.isNotBlank(config.getAudience()))
-            {
-                configurationMetadata.put(AUDIENCE.getValue(), config.getAudience());
-            }
-            return configurationMetadata;
-        }
-
-        private Builder configureClientAuthentication(Builder builder)
-        {
-            builder.clientId(config.getResource());
-            if (config.isPublicClient())
-            {
-                return builder.clientSecret(null)
-                        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
-            }
-            return builder.clientSecret(config.getClientSecret())
-                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
-        }
-
-        private Set<String> getSupportedScopes(Scope scopes)
-        {
-            return scopes.stream().filter(scope -> SCOPES.contains(scope.getValue()))
-                    .map(Identifier::getValue)
-                    .collect(Collectors.toSet());
-        }
-
-        private Optional<OIDCProviderMetadata> extractMetadata(RestOperations rest, URI metadataUri)
-        {
-            final String response;
-            try
-            {
-                final ResponseEntity<String> r = rest.exchange(RequestEntity.get(metadataUri).build(), String.class);
-                if (r.getStatusCode() != HttpStatus.OK || !r.hasBody())
-                {
-                    LOGGER.warn("Unexpected response from " + metadataUri + ". Status code: " + r.getStatusCode()
-                            + ", has body: " + r.hasBody() + ".");
-                    return Optional.empty();
-                }
-                response = r.getBody();
-            }
-            catch (Exception e)
-            {
-                LOGGER.warn("Failed to get response from " + metadataUri + ". " + e.getMessage(), e);
-                return Optional.empty();
-            }
-            try
-            {
-                return Optional.of(OIDCProviderMetadata.parse(response));
-            }
-            catch (Exception e)
-            {
-                LOGGER.warn("Failed to parse metadata. " + e.getMessage(), e);
-                return Optional.empty();
-            }
-        }
-
-        private Collection<URI> possibleMetadataURIs()
-        {
-            if (StringUtils.isBlank(config.getAuthServerUrl()) && StringUtils.isBlank(config.getIssuerUrl()))
-            {
-                throw new IdentityServiceException(
-                        "Failed to create ClientRegistration. The values of issuer url and auth server url cannot both be empty.");
-            }
-
-            String baseUrl = StringUtils.isNotBlank(config.getAuthServerUrl()) ? config.getAuthServerUrl() : config.getIssuerUrl();
-
-            return List.of(UriComponentsBuilder.fromUriString(baseUrl)
-                    .pathSegment(".well-known", "openid-configuration")
-                    .build().toUri());
+            log.debug("Download cancelled");
+            throw new DownloadCancelledException();
         }
     }
 
-    static class JwtDecoderProvider
+    private void updateStatus()
     {
-        private static final SignatureAlgorithm DEFAULT_SIGNATURE_ALGORITHM = SignatureAlgorithm.RS256;
-        private final IdentityServiceConfig config;
-        private final Set<SignatureAlgorithm> signatureAlgorithms;
-
-        JwtDecoderProvider(IdentityServiceConfig config)
-        {
-            this.config = requireNonNull(config);
-            this.signatureAlgorithms = ofNullable(config.getSignatureAlgorithms())
-                    .filter(not(Set::isEmpty))
-                    .orElseGet(() -> {
-                        LOGGER.warn("Unable to find any valid signature algorithms in the configuration. "
-                                + "Using the default signature algorithm: " + DEFAULT_SIGNATURE_ALGORITHM.getName() + ".");
-                        return Set.of(DEFAULT_SIGNATURE_ALGORITHM);
-                    });
-        }
-
-        public JwtDecoder createJwtDecoder(RestOperations rest, ProviderDetails providerDetails)
-        {
-            try
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
+            @Override
+            public Object execute() throws Throwable
             {
-                final NimbusJwtDecoder decoder = buildJwtDecoder(rest, providerDetails);
+                DownloadStatus status = new DownloadStatus(Status.IN_PROGRESS, done, total, filesAddedCount, totalFileCount);
 
-                decoder.setJwtValidator(createJwtTokenValidator(providerDetails));
-                decoder.setClaimSetConverter(
-                        new ClaimTypeConverter(OidcIdTokenDecoderFactory.createDefaultClaimTypeConverters()));
-
-                return decoder;
+                updateService.update(downloadNodeRef, status, getNextSequenceNumber());
+                return null;
             }
-            catch (RuntimeException e)
-            {
-                LOGGER.warn("Failed to create JwtDecoder.", e);
-                throw authorizationServerCantBeUsedException(e);
-            }
-        }
-
-        private NimbusJwtDecoder buildJwtDecoder(RestOperations rest, ProviderDetails providerDetails)
-        {
-            if (isDefined(config.getRealmKey()))
-            {
-                final RSAPublicKey publicKey = parsePublicKey(config.getRealmKey());
-                return NimbusJwtDecoder.withPublicKey(publicKey)
-                        .signatureAlgorithm(DEFAULT_SIGNATURE_ALGORITHM)
-                        .build();
-            }
-            final String jwkSetUri = requireValidJwkSetUri(providerDetails);
-            final NimbusJwtDecoder.JwkSetUriJwtDecoderBuilder decoderBuilder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri);
-            signatureAlgorithms.forEach(decoderBuilder::jwsAlgorithm);
-            return decoderBuilder
-                    .restOperations(rest)
-                    .jwtProcessorCustomizer(this::reconfigureJWKSCache)
-                    .build();
-        }
-
-        private void reconfigureJWKSCache(ConfigurableJWTProcessor<SecurityContext> jwtProcessor)
-        {
-            final Optional<RemoteJWKSet<SecurityContext>> jwkSource = ofNullable(jwtProcessor)
-                    .map(ConfigurableJWTProcessor::getJWSKeySelector)
-                    .filter(JWSVerificationKeySelector.class::isInstance)
-                    .map(o -> (JWSVerificationKeySelector<SecurityContext>) o)
-                    .map(JWSVerificationKeySelector::getJWKSource)
-                    .filter(RemoteJWKSet.class::isInstance).map(o -> (RemoteJWKSet<SecurityContext>) o);
-            if (jwkSource.isEmpty())
-            {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unexpected JWKSource.");
-                return;
-            }
-
-            final Optional<URL> jwkSetUrl = jwkSource.map(RemoteJWKSet::getJWKSetURL);
-            if (jwkSetUrl.isEmpty())
-            {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown JWKSetURL.");
-                return;
-            }
-
-            final Optional<ResourceRetriever> resourceRetriever = jwkSource.map(RemoteJWKSet::getResourceRetriever);
-            if (resourceRetriever.isEmpty())
-            {
-                LOGGER.warn("Not able to reconfigure the JWK Cache. Unknown ResourceRetriever.");
-                return;
-            }
-
-            final DefaultJWKSetCache cache = new DefaultJWKSetCache(config.getPublicKeyCacheTtl(), -1,
-                    TimeUnit.SECONDS);
-            final JWKSource<SecurityContext> cachingJWKSource = new RemoteJWKSet<>(jwkSetUrl.get(),
-                    resourceRetriever.get(), cache);
-
-            jwtProcessor.setJWSKeySelector(new JWSVerificationKeySelector<>(
-                    signatureAlgorithms.stream()
-                            .map(signatureAlgorithm -> JWSAlgorithm.parse(signatureAlgorithm.getName()))
-                            .collect(Collectors.toSet()),
-                    cachingJWKSource));
-            jwtProcessor.setJWSTypeVerifier(new CustomJOSEObjectTypeVerifier(JOSEObjectType.JWT, AT_JWT));
-        }
-
-        private OAuth2TokenValidator<Jwt> createJwtTokenValidator(ProviderDetails providerDetails)
-        {
-            List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
-            validators.add(new JwtTimestampValidator(Duration.of(0, ChronoUnit.MILLIS)));
-            validators.add(new JwtIssuerValidator(providerDetails.getIssuerUri()));
-            validators.add(new JwtClaimValidator<String>("scope", scope -> scope != null && scope.contains("openid")));
-            if (!config.isClientIdValidationDisabled())
-            {
-                validators.add(new JwtClaimValidator<String>("azp", config.getResource()::equals));
-            }
-            if (StringUtils.isNotBlank(config.getAudience()))
-            {
-                validators.add(new JwtAudienceValidator(config.getAudience()));
-            }
-            return new DelegatingOAuth2TokenValidator<>(validators);
-        }
-
-        private RSAPublicKey parsePublicKey(String pem)
-        {
-            try
-            {
-                return tryToParsePublicKey(pem);
-            }
-            catch (Exception e)
-            {
-                if (isPemFormatException(e))
-                {
-                    // For backward compatibility with Keycloak adapter
-                    return tryToParsePublicKey("-----BEGIN PUBLIC KEY-----\n" + pem + "\n-----END PUBLIC KEY-----");
-                }
-                throw e;
-            }
-        }
-
-        private RSAPublicKey tryToParsePublicKey(String pem)
-        {
-            final InputStream pemStream = new ByteArrayInputStream(pem.getBytes(StandardCharsets.UTF_8));
-            return RsaKeyConverters.x509().convert(pemStream);
-        }
-
-        private boolean isPemFormatException(Exception e)
-        {
-            return e.getMessage() != null && e.getMessage().contains("-----BEGIN PUBLIC KEY-----");
-        }
-
-        private String requireValidJwkSetUri(ProviderDetails providerDetails)
-        {
-            final String uri = providerDetails.getJwkSetUri();
-            if (!isDefined(uri))
-            {
-                OAuth2Error oauth2Error = new OAuth2Error("missing_signature_verifier",
-                        "Failed to find a Signature Verifier for: '"
-                                + providerDetails.getIssuerUri()
-                                + "'. Check to ensure you have configured the JwkSet URI.",
-                        null);
-                throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString());
-            }
-            return uri;
-        }
+        }, false, true);
     }
 
-    static class JwtIssuerValidator implements OAuth2TokenValidator<Jwt>
+    public int getNextSequenceNumber()
     {
-        private final String requiredIssuer;
-
-        public JwtIssuerValidator(String issuer)
-        {
-            this.requiredIssuer = requireNonNull(issuer, "issuer cannot be null");
-        }
-
-        @Override
-        public OAuth2TokenValidatorResult validate(Jwt token)
-        {
-            requireNonNull(token, "token cannot be null");
-            final Object issuer = token.getClaim(JwtClaimNames.ISS);
-            if (issuer != null && requiredIssuer.equals(issuer.toString()))
-            {
-                return OAuth2TokenValidatorResult.success();
-            }
-
-            final OAuth2Error error = new OAuth2Error(
-                    OAuth2ErrorCodes.INVALID_TOKEN,
-                    "The iss claim is not valid. Expected `%s` but got `%s`.".formatted(requiredIssuer, issuer),
-                    "https://tools.ietf.org/html/rfc6750#section-3.1");
-            return OAuth2TokenValidatorResult.failure(error);
-        }
-
+        return sequenceNumber++;
     }
 
-    static class JwtAudienceValidator implements OAuth2TokenValidator<Jwt>
+    public long getDone()
     {
-        private final String configuredAudience;
-
-        public JwtAudienceValidator(String configuredAudience)
-        {
-            this.configuredAudience = configuredAudience;
-        }
-
-        @Override
-        public OAuth2TokenValidatorResult validate(Jwt token)
-        {
-            requireNonNull(token, "token cannot be null");
-            final Object audience = token.getClaim(JwtClaimNames.AUD);
-            if (audience != null)
-            {
-                if (audience instanceof List && ((List<String>) audience).contains(configuredAudience))
-                {
-                    return OAuth2TokenValidatorResult.success();
-                }
-                if (audience instanceof String && audience.equals(configuredAudience))
-                {
-                    return OAuth2TokenValidatorResult.success();
-                }
-            }
-
-            final OAuth2Error error = new OAuth2Error(
-                    OAuth2ErrorCodes.INVALID_TOKEN,
-                    "The aud claim is not valid. Expected configured audience `%s` not found.".formatted(configuredAudience),
-                    "https://tools.ietf.org/html/rfc6750#section-3.1");
-            return OAuth2TokenValidatorResult.failure(error);
-        }
+        return done;
     }
 
-    static class CustomClientHttpRequestFactory extends HttpComponentsClientHttpRequestFactory
+    public long getTotal()
     {
-        CustomClientHttpRequestFactory(HttpClient httpClient)
-        {
-            super(httpClient);
-        }
-
-        @Override
-        public ClientHttpRequest createRequest(URI uri, HttpMethod httpMethod) throws IOException
-        {
-            /* This is to avoid the Brotli content encoding that is not well-supported by the combination of the Apache Http Client and the Spring RestTemplate */
-            ClientHttpRequest request = super.createRequest(uri, httpMethod);
-            request.getHeaders()
-                    .add("Accept-Encoding", "gzip, deflate");
-            return request;
-        }
+        return total;
     }
 
-    static class CustomJOSEObjectTypeVerifier extends DefaultJOSEObjectTypeVerifier<SecurityContext>
+    public long getFilesAdded()
     {
-        public CustomJOSEObjectTypeVerifier(JOSEObjectType... allowedTypes)
-        {
-            super(Set.of(allowedTypes));
-        }
-
-        @Override
-        public void verify(JOSEObjectType type, SecurityContext context) throws BadJOSEException
-        {
-            super.verify(type, context);
-        }
+        return filesAddedCount;
     }
 
-    private static boolean isDefined(String value)
+    public long getTotalFiles()
     {
-        return value != null && !value.isBlank();
+        return totalFileCount;
     }
 }

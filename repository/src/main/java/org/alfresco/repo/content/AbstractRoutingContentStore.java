@@ -21,7 +21,7 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- * #L%
+ * #L% 
  */
 package org.alfresco.repo.content;
 
@@ -33,6 +33,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -40,12 +43,9 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * A store providing support for content store implementations that provide
- * routing of content read and write requests based on context.
+ * A store providing support for content store implementations that provide routing of content read and write requests based on context.
  * 
  * @see ContentContext
  * 
@@ -55,12 +55,12 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractRoutingContentStore implements ContentStore
 {
     private static Log logger = LogFactory.getLog(AbstractRoutingContentStore.class);
-    
+
     private String instanceKey = GUID.generate();
     private SimpleCache<Pair<String, String>, ContentStore> storesByContentUrl;
     private ReadLock storesCacheReadLock;
     private WriteLock storesCacheWriteLock;
-    
+
     protected AbstractRoutingContentStore()
     {
         ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -69,7 +69,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @param storesCache       cache of stores used to access URLs 
+     * @param storesCache
+     *            cache of stores used to access URLs
      */
     public void setStoresCache(SimpleCache<Pair<String, String>, ContentStore> storesCache)
     {
@@ -77,27 +78,25 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @return          Returns a list of all possible stores available for reading or writing
+     * @return Returns a list of all possible stores available for reading or writing
      */
     protected abstract List<ContentStore> getAllStores();
-    
+
     /**
-     * Get a content store based on the context provided.  The applicability of the
-     * context and even the types of context allowed are up to the implementation, but
-     * normally there should be a fallback case for when the parameters are not adequate
-     * to make a decision.
+     * Get a content store based on the context provided. The applicability of the context and even the types of context allowed are up to the implementation, but normally there should be a fallback case for when the parameters are not adequate to make a decision.
      * 
-     * @param ctx       the context to use to make the choice
-     * @return          Returns the store most appropriate for the given context and
-     *                  <b>never <tt>null</tt></b>
+     * @param ctx
+     *            the context to use to make the choice
+     * @return Returns the store most appropriate for the given context and <b>never <tt>null</tt></b>
      */
     protected abstract ContentStore selectWriteStore(ContentContext ctx);
-    
+
     /**
      * Checks the cache for the store and ensures that the URL is in the store.
      * 
-     * @param contentUrl    the content URL to search for
-     * @return              Returns the store matching the content URL
+     * @param contentUrl
+     *            the content URL to search for
+     * @return Returns the store matching the content URL
      */
     private ContentStore selectReadStore(String contentUrl)
     {
@@ -122,12 +121,12 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 }
                 catch (UnsupportedContentUrlException e)
                 {
-                    // This is odd.  The store that previously supported the content URL
-                    // no longer does so.  I can't think of a reason why that would be.
+                    // This is odd. The store that previously supported the content URL
+                    // no longer does so. I can't think of a reason why that would be.
                     throw new AlfrescoRuntimeException(
                             "Found a content store that previously supported a URL, but no longer does: \n" +
-                            "   Store:       " + store + "\n" +
-                            "   Content URL: " + contentUrl);
+                                    "   Store:       " + store + "\n" +
+                                    "   Content URL: " + contentUrl);
                 }
             }
         }
@@ -148,8 +147,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 {
                     logger.debug(
                             "Found mapped store for content URL: \n" +
-                            "   Content URL: " + contentUrl + "\n" +
-                            "   Store:       " + store);
+                                    "   Content URL: " + contentUrl + "\n" +
+                                    "   Store:       " + store);
                 }
                 return store;
             }
@@ -195,8 +194,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
             {
                 logger.debug(
                         "Mapped content URL to store for reading: \n" +
-                        "   Content URL: " + contentUrl + "\n" +
-                        "   Store:       " + store);
+                                "   Content URL: " + contentUrl + "\n" +
+                                "   Store:       " + store);
             }
             return store;
         }
@@ -207,7 +206,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <tt>true</tt> if the URL is supported by any of the stores.
+     * @return Returns <tt>true</tt> if the URL is supported by any of the stores.
      */
     public boolean isContentUrlSupported(String contentUrl)
     {
@@ -230,7 +229,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <tt>true</tt> if write is supported by any of the stores.
+     * @return Returns <tt>true</tt> if write is supported by any of the stores.
      */
     public boolean isWriteSupported()
     {
@@ -253,7 +252,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <b>.</b> always
+     * @return Returns <b>.</b> always
      */
     public String getRootLocation()
     {
@@ -261,7 +260,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <tt>-1</tt> always
+     * @return Returns <tt>-1</tt> always
      */
     @Override
     public long getSpaceFree()
@@ -270,7 +269,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @return      Returns <tt>-1</tt> always
+     * @return Returns <tt>-1</tt> always
      */
     @Override
     public long getSpaceTotal()
@@ -288,8 +287,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * @return  Returns a valid reader from one of the stores otherwise
-     *          a {@link EmptyContentReader} is returned.
+     * @return Returns a valid reader from one of the stores otherwise a {@link EmptyContentReader} is returned.
      */
     public ContentReader getReader(String contentUrl) throws ContentIOException
     {
@@ -335,13 +333,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                 {
                     throw new ContentExistsException(this, contentUrl);
                 }
-                /*
-                 * We could go further and check each store for the existence of the URL,
-                 * but that would be overkill.  The main problem we need to prevent is
-                 * the simultaneous access of the same store.  The router represents
-                 * a single store and therefore if the URL is present in any of the stores,
-                 * it is effectively present in all of them.
-                 */
+                /* We could go further and check each store for the existence of the URL, but that would be overkill. The main problem we need to prevent is the simultaneous access of the same store. The router represents a single store and therefore if the URL is present in any of the stores, it is effectively present in all of them. */
             }
             finally
             {
@@ -355,15 +347,15 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         {
             throw new NullPointerException(
                     "Unable to find a writer.  'selectWriteStore' may not return null: \n" +
-                    "   Router: " + this + "\n" +
-                    "   Chose:  " + store);
+                            "   Router: " + this + "\n" +
+                            "   Chose:  " + store);
         }
         else if (!store.isWriteSupported())
         {
             throw new AlfrescoRuntimeException(
                     "A write store was chosen that doesn't support writes: \n" +
-                    "   Router: " + this + "\n" +
-                    "   Chose:  " + store);
+                            "   Router: " + this + "\n" +
+                            "   Chose:  " + store);
         }
         ContentWriter writer = store.getWriter(context);
         String newContentUrl = writer.getContentUrl();
@@ -383,9 +375,9 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         {
             logger.debug(
                     "Got writer and cache URL from store: \n" +
-                    "   Context: " + context + "\n" +
-                    "   Writer:  " + writer + "\n" +
-                    "   Store:   " + store);
+                            "   Context: " + context + "\n" +
+                            "   Writer:  " + writer + "\n" +
+                            "   Store:   " + store);
         }
         return writer;
     }
@@ -396,8 +388,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * This operation has to be performed on all the stores in order to maintain the
-     * {@link ContentStore#exists(String)} contract.
+     * This operation has to be performed on all the stores in order to maintain the {@link ContentStore#exists(String)} contract.
      */
     public boolean delete(String contentUrl) throws ContentIOException
     {
@@ -470,7 +461,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         }
         final String message = "Restoring content from archive: ";
         logExecution(contentUrl, contentStore, message);
-        return ContentStore.super.requestRestoreContentFromArchive(contentUrl, restoreParams);
+        return contentStore.requestRestoreContentFromArchive(contentUrl, restoreParams);
     }
 
     private void logExecution(final String contentUrl, final ContentStore contentStore, final String message)

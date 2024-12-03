@@ -281,8 +281,6 @@
          <ref bean="storesToIgnorePolicies"/>
       </property>
       <property name="enableTimestampPropagation" value="${system.enableTimestampPropagation}" />
-      <property name="archiveStore" value="${spaces.archive.store}" />
-      <property name="eventGenerator" ref="eventGeneratorV2"/>
    </bean>
    
    <bean id="nodeAuditor" class="org.alfresco.repo.node.NodeAuditor">

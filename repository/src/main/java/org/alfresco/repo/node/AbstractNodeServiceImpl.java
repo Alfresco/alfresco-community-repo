@@ -36,7 +36,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.event2.EventGenerator;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeArchiveNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeCreateNodePolicy;
@@ -110,8 +109,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     protected TransactionService transactionService;
     protected TenantService tenantService;
     protected Set<String> storesToIgnorePolicies = Collections.emptySet();
-    protected EventGenerator eventGenerator;
-    protected String archiveStore;
 
     /* Policy delegates */
     private ClassPolicyDelegate<BeforeCreateStorePolicy> beforeCreateStoreDelegate;
@@ -171,16 +168,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     public void setStoresToIgnorePolicies(Set<String> storesToIgnorePolicies)
     {
         this.storesToIgnorePolicies = storesToIgnorePolicies;
-    }
-
-    public void setArchiveStore(String archiveStore)
-    {
-        this.archiveStore = archiveStore;
-    }
-
-    public void setEventGenerator(EventGenerator eventGenerator)
-    {
-        this.eventGenerator = eventGenerator;
     }
 
     /**
@@ -252,11 +239,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     private boolean ignorePolicy(NodeRef nodeRef)
     {
         return (storesToIgnorePolicies.contains(tenantService.getBaseName(nodeRef.getStoreRef()).toString()));
-    }
-
-    private boolean isInArchiveStore(NodeRef nodeRef)
-    {
-        return archiveStore.equals(tenantService.getBaseName(nodeRef.getStoreRef()).toString());
     }
 
     /**

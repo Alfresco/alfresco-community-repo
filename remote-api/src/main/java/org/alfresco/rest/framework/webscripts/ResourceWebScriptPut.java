@@ -66,7 +66,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
         RecognizedParamsExtractor, RequestReader
 {
 
-    private static Log logger = LogFactory.getLog(ResourceWebScriptPut.class);
+    private static final Log logger = LogFactory.getLog(ResourceWebScriptPut.class);
 
     public ResourceWebScriptPut()
     {

@@ -62,6 +62,7 @@ public class PreferencesImpl implements Preferences
         this.preferenceService = preferenceService;
     }
 
+    @Override
     public Preference getPreference(String personId, String preferenceName)
     {
         personId = people.validatePerson(personId);
@@ -76,12 +77,13 @@ public class PreferencesImpl implements Preferences
         }
     }
 
+    @Override
     public CollectionWithPagingInfo<Preference> getPreferences(String personId, Paging paging)
     {
         personId = people.validatePerson(personId);
 
         PagingResults<Pair<String, Serializable>> preferences = preferenceService.getPagedPreferences(personId, null, Util.getPagingRequest(paging));
-        List<Preference> ret = new ArrayList<Preference>(preferences.getPage().size());
+        List<Preference> ret = new ArrayList<>(preferences.getPage().size());
         for (Pair<String, Serializable> prefEntity : preferences.getPage())
         {
             Preference pref = new Preference(prefEntity.getFirst(), prefEntity.getSecond());
@@ -91,6 +93,7 @@ public class PreferencesImpl implements Preferences
         return CollectionWithPagingInfo.asPaged(paging, ret, preferences.hasMoreItems(), preferences.getTotalResultCount().getFirst());
     }
 
+    @Override
     public Preference updatePreference(String personId, Preference preference)
     {
         personId = people.validatePerson(personId, true);

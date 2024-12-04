@@ -52,7 +52,7 @@ else
    echo "All started containers:"	
    docker ps -a	
    ALFCONTAINER=`docker ps -a | grep '\-alfresco' | awk '{ print $1 }'`
-   echo "Last -1 lines from alfresco.log on container $ALFCONTAINER:"
-   docker logs --tail=-1 $ALFCONTAINER
+   echo "Last 200 lines from alfresco.log on container $ALFCONTAINER:"
+   docker logs --tail=200 $ALFCONTAINER
    exit 1
 fi

@@ -1,7 +1,5 @@
 package org.alfresco.rest.people.preferences;
 
-import static org.testng.Assert.assertTrue;
-
 import java.nio.file.Paths;
 
 import org.springframework.http.HttpStatus;
@@ -210,16 +208,13 @@ public class GetPeoplePreferenceFullTests extends RestTest
         restClient.authenticateUser(newUser).withCoreAPI().usingAuthUser().updatePersonPreferenceInformation(preferenceId, updatedPreferenceModel);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         var personPreferences = restClient.authenticateUser(newUser).withCoreAPI().usingAuthUser().getPersonPreferences();
-        assertTrue(personPreferences.getEntries().stream()
-                .filter(refModel -> refModel.onModel().getId().equals(preferenceId))
-                .findAny()
-                .isEmpty());
+        personPreferences.assertThat().entriesListDoesNotContain("id", preferenceId);
     }
 
     @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES, TestGroup.REGRESSION})
     @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.PREFERENCES}, executionType = ExecutionType.REGRESSION,
             description = "Verify admin is not able to change regular user preferences")
-    public void adminIsNotAbleToChangeOtherRegularUserPreference() throws Exception
+    public void adminIsNotAbleToChangeRegularUserPreference() throws Exception
     {
         var newUser = dataUser.createRandomTestUser();
         var newSite = dataSite.usingUser(newUser).createPublicRandomSite();

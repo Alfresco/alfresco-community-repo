@@ -38,16 +38,17 @@ import java.util.Map;
 public interface AuditService
 {
     /**
-     * @return                  Returns <tt>true</tt> if auditing is globally enabled
+     * @return Returns <tt>true</tt> if auditing is globally enabled
      * 
      * @since 3.4
      */
     boolean isAuditEnabled();
-    
+
     /**
      * Enable or disable the global auditing state
      * 
-     * @param enable            <tt>true</tt> to enable auditing globally or <tt>false</tt> to disable
+     * @param enable
+     *            <tt>true</tt> to enable auditing globally or <tt>false</tt> to disable
      * 
      * @since 3.4
      */
@@ -64,6 +65,7 @@ public interface AuditService
         private final String name;
         private final String key;
         private final boolean enabled;
+
         /**
          * Constructor for final variables
          */
@@ -73,79 +75,90 @@ public interface AuditService
             this.key = key;
             this.enabled = enabled;
         }
+
         public String getName()
         {
             return name;
         }
+
         public String getKey()
         {
             return key;
         }
+
         public boolean isEnabled()
         {
             return enabled;
         }
     }
-    
+
     /**
      * Get all registered audit applications
      * 
-     * @return                  Returns a map of audit applications keyed by their name
+     * @return Returns a map of audit applications keyed by their name
      * 
      * @since 3.4
      */
     Map<String, AuditApplication> getAuditApplications();
-    
+
     /**
-     * @param applicationName   the name of the application to check 
-     * @param path              the path to check
-     * @return                  Returns <tt>true</tt> if auditing is enabled for the given path
+     * @param applicationName
+     *            the name of the application to check
+     * @param path
+     *            the path to check
+     * @return Returns <tt>true</tt> if auditing is enabled for the given path
      * 
      * @since 3.2
      */
     boolean isAuditEnabled(String applicationName, String path);
-    
+
     /**
      * Enable auditing for an application path
      * 
-     * @param applicationName   the name of the application to check 
-     * @param path              the path to enable
+     * @param applicationName
+     *            the name of the application to check
+     * @param path
+     *            the path to enable
      * 
      * @since 3.2
      */
     void enableAudit(String applicationName, String path);
-    
+
     /**
      * Disable auditing for an application path
      * 
-     * @param applicationName   the name of the application to check 
-     * @param path              the path to disable
+     * @param applicationName
+     *            the name of the application to check
+     * @param path
+     *            the path to disable
      * 
      * @since 3.2
      */
     void disableAudit(String applicationName, String path);
-    
+
     /**
      * Remove all audit entries for the given application
      * 
-     * @param applicationName   the name of the application for which to remove entries
-     * @return                  Returns the number of audit entries deleted
+     * @param applicationName
+     *            the name of the application for which to remove entries
+     * @return Returns the number of audit entries deleted
      * 
      * @since 3.2
      * 
-     * @deprecated          Use {@link #clearAudit(String, Long, Long)}
+     * @deprecated Use {@link #clearAudit(String, Long, Long)}
      */
     int clearAudit(String applicationName);
-    
+
     /**
-     * Remove audit entries for the given application between the time ranges.  If no start
-     * time is given then entries are deleted as far back as they exist.  If no end time is
-     * given then entries are deleted up until the current time.
+     * Remove audit entries for the given application between the time ranges. If no start time is given then entries are deleted as far back as they exist. If no end time is given then entries are deleted up until the current time.
      * 
-     * @param applicationName   the name of the application for which to remove entries
-     * @param fromTime          the start time of entries to remove (inclusive and optional)
-     * @param toTime            the end time of entries to remove (exclusive and optional)
-     * @return                  Returns the number of audit entries deleted
+     * @param applicationName
+     *            the name of the application for which to remove entries
+     * @param fromTime
+     *            the start time of entries to remove (inclusive and optional)
+     * @param toTime
+     *            the end time of entries to remove (exclusive and optional)
+     * @return Returns the number of audit entries deleted
      * 
      * @since 3.4
      */
@@ -154,10 +167,13 @@ public interface AuditService
     /**
      * Remove audit entries for the given application between the audit entry ids.
      *
-     * @param applicationName   the name of the application for which to remove entries
-     * @param fromId            the start time of entries to remove (inclusive and optional)
-     * @param toId              the end time of entries to remove (exclusive and optional)
-     * @return                  Returns the number of audit entries deleted
+     * @param applicationName
+     *            the name of the application for which to remove entries
+     * @param fromId
+     *            the start time of entries to remove (inclusive and optional)
+     * @param toId
+     *            the end time of entries to remove (exclusive and optional)
+     * @return Returns the number of audit entries deleted
      *
      * @since 5.2.2
      */
@@ -166,16 +182,16 @@ public interface AuditService
     /**
      * Delete a discrete list of audit entries.
      * <p/>
-     * This method should not be called <i>while</i> processing
-     * {@link #auditQuery(AuditQueryCallback, AuditQueryParameters, int) query results}.
+     * This method should not be called <i>while</i> processing {@link #auditQuery(AuditQueryCallback, AuditQueryParameters, int) query results}.
      * 
-     * @param auditEntryIds     the IDs of all audit entries to delete
-     * @return                  Returns the number of audit entries deleted
+     * @param auditEntryIds
+     *            the IDs of all audit entries to delete
+     * @return Returns the number of audit entries deleted
      * 
      * @since 3.4
      */
     int clearAudit(List<Long> auditEntryIds);
-    
+
     /**
      * The interface that will be used to give query results to the calling code.
      * 
@@ -184,22 +200,26 @@ public interface AuditService
     public static interface AuditQueryCallback
     {
         /**
-         * Determines whether this callback requires the values argument to be populated when {@link #handleAuditEntry}
-         * is called.
+         * Determines whether this callback requires the values argument to be populated when {@link #handleAuditEntry} is called.
          * 
          * @return <code>true</code> if this callback requires the values argument to be populated
          */
         boolean valuesRequired();
-        
+
         /**
          * Handle a row of audit entry data.
          * 
-         * @param entryId                   the unique audit entry ID
-         * @param applicationName           the name of the application
-         * @param user                      the user that logged the entry
-         * @param time                      the time of the entry
-         * @param values                    the values map as created
-         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
+         * @param entryId
+         *            the unique audit entry ID
+         * @param applicationName
+         *            the name of the application
+         * @param user
+         *            the user that logged the entry
+         * @param time
+         *            the time of the entry
+         * @param values
+         *            the values map as created
+         * @return Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
          */
         boolean handleAuditEntry(
                 Long entryId,
@@ -207,27 +227,33 @@ public interface AuditService
                 String user,
                 long time,
                 Map<String, Serializable> values);
-        
+
         /**
          * Handle audit entry failures
          * 
-         * @param entryId                   the entry ID
-         * @param errorMsg                  the error message
-         * @param error                     the exception causing the error (may be <tt>null</tt>)
-         * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
+         * @param entryId
+         *            the entry ID
+         * @param errorMsg
+         *            the error message
+         * @param error
+         *            the exception causing the error (may be <tt>null</tt>)
+         * @return Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
          */
         boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error);
     }
-    
+
     /**
-     * Issue an audit query using the given parameters and consuming results in the callback.
-     * Results are returned in entry order, corresponding to time order.
+     * Issue an audit query using the given parameters and consuming results in the callback. Results are returned in entry order, corresponding to time order.
      * 
-     * @param callback          the callback that will handle results
-     * @param parameters        the parameters for the query (may not be <tt>null</tt>)
-     * @param maxResults        the maximum number of results to retrieve (must be greater than 0)
+     * @param callback
+     *            the callback that will handle results
+     * @param parameters
+     *            the parameters for the query (may not be <tt>null</tt>)
+     * @param maxResults
+     *            the maximum number of results to retrieve (must be greater than 0)
      * 
-     * @throws IllegalArgumentException if maxResults less or equal to zero
+     * @throws IllegalArgumentException
+     *             if maxResults less or equal to zero
      * 
      * @since 3.3
      */
@@ -236,17 +262,20 @@ public interface AuditService
     /**
      * Issue an audit query to retrieve min / max audit record id for a given application.
      *
-     * @param applicationName               the name of the application
-     * @param extremes                      a list containing min/max or both
-     * @return                              a map containing min/max and the associated value
+     * @param applicationName
+     *            the name of the application
+     * @param extremes
+     *            a list containing min/max or both
+     * @return a map containing min/max and the associated value
      */
     HashMap<String, Long> getAuditMinMaxByApp(String applicationName, List<String> extremes);
 
     /**
      * Issue an audit query to retrieve min / max audit record id for a given application.
      *
-     * @param applicationName               the name of the application
-     * @return                              a map containing min/max and the associated value
+     * @param applicationName
+     *            the name of the application
+     * @return a map containing min/max and the associated value
      */
     default int getAuditEntriesCountByApp(String applicationName)
     {
@@ -256,12 +285,15 @@ public interface AuditService
     /**
      * Issue an audit query to retrieve min / max audit record id for a given application and properties
      *
-     * @param applicationName               the name of the application
-     * @param parameters                    audit parameters provided by the <code>where</code> clause on the ReST API
-     * @return                              a map containing min/max and the associated value
+     * @param applicationName
+     *            the name of the application
+     * @param parameters
+     *            audit parameters provided by the <code>where</code> clause on the ReST API
+     * @return a map containing min/max and the associated value
      */
     default int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
         return -1;
+
     }
 }

@@ -956,8 +956,8 @@ public class AuditComponentImpl implements AuditComponent
         return auditDAO.getAuditEntriesCountByApp(applicationId);
     }
 
-    @Override public int getAuditEntriesCountByAppAndProperties(AuditQueryParameters parameters)
+    @Override public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
-        return auditDAO.getAuditEntriesCountByAppAndProperties(parameters);
+        return auditDAO.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 }

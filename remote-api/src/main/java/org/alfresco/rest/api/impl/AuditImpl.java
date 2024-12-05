@@ -909,14 +909,16 @@ public class AuditImpl implements Audit
 
     public int getAuditEntriesCountByAppAndProperties(AuditService.AuditApplication auditApplication, AuditEntryQueryWalker propertyWalker)
     {
+        final String applicationName = auditApplication.getKey().substring(1);
+
         AuditQueryParameters parameters = new AuditQueryParameters();
-        parameters.setApplicationName(auditApplication.getName());
+        parameters.setApplicationName(applicationName);
         parameters.setFromTime(propertyWalker.getFromTime());
         parameters.setToTime(propertyWalker.getToTime());
         parameters.setFromId(propertyWalker.getFromId());
         parameters.setToId(propertyWalker.getToId());
         parameters.setUser(propertyWalker.getCreatedByUser());
 
-        return auditService.getAuditEntriesCountByAppAndProperties(parameters);
+        return auditService.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 }

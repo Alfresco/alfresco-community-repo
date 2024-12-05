@@ -102,21 +102,20 @@ public class CrcHelper
         {
             throw new RuntimeException("UTF-8 encoding is not supported");
         }
-        // Crc Value will change based on the case-sensitive, So we need to get the short value based on case-sensitive
+        // Get the short value (case-sensitive or not)
         String valueShort = null;
-        String currentValue = caseSensitive ? value : valueLowerCase;
-        int valueLen = currentValue.length();
+        int valueLen = valueLowerCase.length();
         if (valueLen < dataLength)
         {
-            valueShort = currentValue;
+            valueShort = valueLowerCase;
         }
         else if (useCharsFromStart)
         {
-            valueShort = currentValue.substring(0, dataLength - 1);
+            valueShort = valueLowerCase.substring(0, dataLength - 1);
         }
         else
         {
-            valueShort = currentValue.substring(valueLen - dataLength);
+            valueShort = valueLowerCase.substring(valueLen - dataLength);
         }
         return new Pair<String, Long>(valueShort, valueCrc);
     }

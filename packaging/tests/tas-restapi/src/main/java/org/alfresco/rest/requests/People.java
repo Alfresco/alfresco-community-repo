@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,6 +28,12 @@ package org.alfresco.rest.requests;
 import static io.restassured.RestAssured.given;
 
 import java.io.File;
+
+import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
+import io.restassured.response.ValidatableResponse;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
@@ -56,12 +62,6 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.ValidatableResponse;
 
 /**
  * Declares all Rest API under the /people path
@@ -97,9 +97,7 @@ public class People extends ModelRequest<People>
     }
 
     /**
-     * Retrieve list of activities for a specific person using GET call on "people/{personId}/activities"
-     * Please note that it retries to get the list of activities several times before returning the empty list. The list of activities are not displayed as
-     * they are created.
+     * Retrieve list of activities for a specific person using GET call on "people/{personId}/activities" Please note that it retries to get the list of activities several times before returning the empty list. The list of activities are not displayed as they are created.
      */
     public RestActivityModelsCollection getPersonActivitiesUntilEntriesCountIs(int expectedNoOfEntries)
     {
@@ -170,6 +168,15 @@ public class People extends ModelRequest<People>
     public RestPreferenceModel getPersonPreferenceInformation(String preferenceName)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/preferences/{preferenceName}?{parameters}", this.person.getUsername(), preferenceName, restWrapper.getParameters());
+        return restWrapper.processModel(RestPreferenceModel.class, request);
+    }
+
+    /**
+     * Updates a specific preference of a specific person using PUT call on "people/{personId}/preferences/{preferenceName}"
+     */
+    public RestPreferenceModel updatePersonPreferenceInformation(String preferenceName, RestPreferenceModel preferenceModel)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, preferenceModel.toJson(), "people/{personId}/preferences/{preferenceName}", this.person.getUsername(), preferenceName);
         return restWrapper.processModel(RestPreferenceModel.class, request);
     }
 
@@ -334,7 +341,7 @@ public class People extends ModelRequest<People>
      */
     public RestWrapper deleteSiteFromFavorites(SiteModel site)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "people/{personId}/favorites/{favoriteId}", this.person.getUsername(), site.getGuid()); 
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "people/{personId}/favorites/{favoriteId}", this.person.getUsername(), site.getGuid());
         restWrapper.processEmptyModel(request);
         return restWrapper;
     }
@@ -379,7 +386,7 @@ public class People extends ModelRequest<People>
     public RestNetworkModel getNetwork(UserModel tenant)
     {
         Utility.checkObjectIsInitialized(tenant.getDomain(), "tenant.getDomain()");
-        String personId = tenant.getUsername().contains("-me-@")? "-me-" : tenant.getUsername();
+        String personId = tenant.getUsername().contains("-me-@") ? "-me-" : tenant.getUsername();
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/networks/{networkId}?{parameters}", personId, tenant.getDomain(), restWrapper.getParameters());
         return restWrapper.processModel(RestNetworkModel.class, request);
     }
@@ -410,10 +417,9 @@ public class People extends ModelRequest<People>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, newPerson.toJson(), "people");
         return restWrapper.processModel(RestPersonModel.class, request);
     }
-    
+
     /**
-     * Get people avatar image using GET call on '/people/{personId}/avatar Please note that it retries to get the
-     * renditions response several times because on the alfresco server the rendition can take a while to be created.
+     * Get people avatar image using GET call on '/people/{personId}/avatar Please note that it retries to get the renditions response several times because on the alfresco server the rendition can take a while to be created.
      */
     public RestResponse downloadAvatarContent()
     {
@@ -456,17 +462,8 @@ public class People extends ModelRequest<People>
         return new WhereClause(this);
     }
 
-/**
-     * Construct the Where clause of getFavorites
-     * You can use the where parameter to restrict the list in the response to entries of a specific kind. The where parameter takes a value. The value is a
-     * single predicate that can include one or more EXISTS conditions. The EXISTS condition uses a single operand to limit the list to include entries that
-     * include that one property. The property values are:-
-     * target/file
-     * target/folder
-     * target/site
-     * Usage:
-     * where.. targetFileExist().or().targetSiteExist().filterAnd().getFavorites(...)
-     * At this point this method is working only with @link {@link RestFavoritesApi#getFavorites(UserModel) method.
+    /**
+     * Construct the Where clause of getFavorites You can use the where parameter to restrict the list in the response to entries of a specific kind. The where parameter takes a value. The value is a single predicate that can include one or more EXISTS conditions. The EXISTS condition uses a single operand to limit the list to include entries that include that one property. The property values are:- target/file target/folder target/site Usage: where.. targetFileExist().or().targetSiteExist().filterAnd().getFavorites(...) At this point this method is working only with @link {@link RestFavoritesApi#getFavorites(UserModel) method.
      * 
      * @author paul.brodner
      */

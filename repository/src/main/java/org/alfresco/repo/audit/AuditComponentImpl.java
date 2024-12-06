@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -65,7 +65,7 @@ import org.alfresco.util.PathMapper;
  * <strong>{@link #INBOUND_LOGGER org.alfresco.repo.audit.inbound}</strong>.
  * <p/>
  * TODO: Respect audit internal - at the moment audit internal is fixed to false.
- * 
+ *
  * @author Derek Hulley
  * @since 3.2 (in its current form)
  */
@@ -91,7 +91,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the registry holding the audit models
-     * 
+     *
      * @since 3.2
      */
     public void setAuditModelRegistry(AuditModelRegistryImpl auditModelRegistry)
@@ -101,7 +101,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the DAO for manipulating property values
-     * 
+     *
      * @since 3.2
      */
     public void setPropertyValueDAO(PropertyValueDAO propertyValueDAO)
@@ -111,7 +111,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Set the DAO for accessing audit data
-     * 
+     *
      * @since 3.2
      */
     public void setAuditDAO(AuditDAO auditDAO)
@@ -142,7 +142,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.2
      */
     public int deleteAuditEntries(String applicationName, Long fromTime, Long toTime)
@@ -166,7 +166,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 5.2.2
      */
     public int deleteAuditEntriesByIdRange(String applicationName, Long fromId, Long toId)
@@ -208,7 +208,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.2
      */
     @Override
@@ -246,7 +246,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.2
      */
     public boolean isAuditEnabled()
@@ -256,7 +256,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.4
      */
     @Override
@@ -276,7 +276,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.4
      */
     public Map<String, AuditApplication> getAuditApplications()
@@ -288,7 +288,7 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * <p/>
      * Note that if DEBUG is on for the the {@link #INBOUND_LOGGER}, then <tt>true</tt> will always be returned.
-     * 
+     *
      * @since 3.2
      */
     public boolean areAuditValuesRequired()
@@ -301,7 +301,7 @@ public class AuditComponentImpl implements AuditComponent
      * {@inheritDoc}
      * <p/>
      * Note that if DEBUG is on for the the {@link #INBOUND_LOGGER}, then <tt>true</tt> will always be returned.
-     * 
+     *
      * @since 3.4
      */
     @Override
@@ -314,7 +314,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.2
      */
     public boolean isAuditPathEnabled(String applicationName, String path)
@@ -369,7 +369,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.2
      */
     public void enableAudit(String applicationName, String path)
@@ -429,7 +429,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.2
      */
     public void disableAudit(String applicationName, String path)
@@ -511,7 +511,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @since 3.2
      */
     public void resetDisabledPaths(String applicationName)
@@ -672,7 +672,7 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Audit values for a given application. No path checking is done.
-     * 
+     *
      * @param application
      *            the audit application to audit to
      * @param disabledPaths
@@ -809,13 +809,13 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * Extracts data from a given map using data extractors from the given application.
-     * 
+     *
      * @param application
      *            the application providing the data extractors
      * @param values
      *            the data values from which to generate data
      * @return Returns a map of derived data keyed by full path
-     * 
+     *
      * @since 3.2
      */
     private Map<String, Serializable> extractData(
@@ -895,7 +895,7 @@ public class AuditComponentImpl implements AuditComponent
      * @param generators
      *            the data generators
      * @return Returns a map of generated data keyed by full path
-     * 
+     *
      * @since 3.2
      */
     private Map<String, Serializable> generateData(Map<String, DataGenerator> generators)

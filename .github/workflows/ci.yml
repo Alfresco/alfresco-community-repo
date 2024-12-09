@@ -879,7 +879,6 @@ jobs:
         run: |
           docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
           docker ps -a
-          docker logs -f docker-compose-keycloak-1&
       - name: "Prepare Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v8.2.0
@@ -903,6 +902,8 @@ jobs:
         env:
           RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
+          docker stats --no-stream
+          docker logs -f docker-compose-keycloak-1&
           eval "args=($RP_OPTS)"
           mvn -B test -pl repository -am -Dtest=${{ matrix.testSuite }} -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco ${{ matrix.mvn-options }} "${args[@]}"
         continue-on-error: true

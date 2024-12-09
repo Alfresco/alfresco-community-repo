@@ -323,8 +323,8 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         private void applyConnectionConfiguration(PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder)
         {
             final ConnectionConfig connectionConfig = ConnectionConfig.custom()
-                .setConnectTimeout(config.getClientConnectionTimeout(), TimeUnit.MILLISECONDS)
-                .setSocketTimeout(config.getClientSocketTimeout(), TimeUnit.MILLISECONDS)
+                .setConnectTimeout(config.getClientConnectionTimeout() * 10, TimeUnit.MILLISECONDS)
+                .setSocketTimeout(config.getClientSocketTimeout() * 10, TimeUnit.MILLISECONDS)
                 .build();
 
             connectionManagerBuilder.setMaxConnTotal(config.getConnectionPoolSize());

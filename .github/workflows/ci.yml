@@ -878,6 +878,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: |
           docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile ${{ matrix.compose-profile }} up -d
+          docker ps -a
           docker logs -f docker-compose-keycloak-1 &
       - name: "Prepare Report Portal"
         if: github.ref_name == 'master'

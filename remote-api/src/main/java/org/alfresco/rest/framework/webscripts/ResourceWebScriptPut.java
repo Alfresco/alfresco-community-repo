@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,6 +29,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
 import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.framework.core.ResourceLocator;
@@ -47,32 +56,25 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.framework.tools.RequestReader;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
+
 /**
  * Handles the HTTP PUT for a Resource, equivalent to CRUD Update
- * 
+ *
  * @author Gethin James
  */
 public class ResourceWebScriptPut extends AbstractResourceWebScript implements ParamsExtractor,
         RecognizedParamsExtractor, RequestReader
 {
 
-    private static Log logger = LogFactory.getLog(ResourceWebScriptPut.class);
-    
+    private static final Log logger = LogFactory.getLog(ResourceWebScriptPut.class);
+
     public ResourceWebScriptPut()
     {
-       super();
-       setHttpMethod(HttpMethod.PUT);
-       setParamsExtractor(this);
+        super();
+        setHttpMethod(HttpMethod.PUT);
+        setParamsExtractor(this);
     }
-    
+
     @Override
     public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req)
     {
@@ -86,96 +88,100 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
 
         switch (resourceMeta.getType())
         {
-            case ENTITY:
-                if (StringUtils.isBlank(entityId))
-                {
-                    throw new UnsupportedResourceOperationException("PUT is executed against the instance URL");                  
-                } else
-                {
+        case ENTITY:
+            if (StringUtils.isBlank(entityId))
+            {
+                throw new UnsupportedResourceOperationException("PUT is executed against the instance URL");
+            }
+            else
+            {
 
-                    Object putEnt = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
-                    return Params.valueOf(entityId,params,putEnt, req);
-                }
-            case RELATIONSHIP:
-                if (StringUtils.isBlank(relationshipId))
+                Object putEnt = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
+                return Params.valueOf(entityId, params, putEnt, req);
+            }
+        case RELATIONSHIP:
+            if (StringUtils.isBlank(relationshipId))
+            {
+                throw new UnsupportedResourceOperationException("PUT is executed against the instance URL");
+            }
+            Object putRel = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
+            if (StringUtils.isNotBlank(relationship2Id))
+            {
+                ResourceWebScriptHelper.setUniqueId(putRel, relationship2Id);
+                return Params.valueOf(false, entityId, relationshipId, relationship2Id,
+                        putRel, null, null, params, null, req);
+            }
+            else
+            {
+                ResourceWebScriptHelper.setUniqueId(putRel, relationshipId);
+                return Params.valueOf(entityId, relationshipId, params, putRel, req);
+            }
+        case PROPERTY:
+            final String resourceName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
+            final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);
+
+            if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
+            {
+                if (StringUtils.isNotBlank(propertyName))
                 {
-                    throw new UnsupportedResourceOperationException("PUT is executed against the instance URL");                  
-                }
-                Object putRel = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
-                if (StringUtils.isNotBlank(relationship2Id))
-                {
-                    ResourceWebScriptHelper.setUniqueId(putRel, relationship2Id);
-                    return Params.valueOf(false, entityId, relationshipId, relationship2Id,
-                            putRel, null, null, params, null, req);
+                    return Params.valueOf(entityId, relationshipId, null, getStream(req), propertyName, params, getContentInfo(req), req);
                 }
                 else
                 {
-                    ResourceWebScriptHelper.setUniqueId(putRel,relationshipId);
-                    return Params.valueOf(entityId, params, putRel, req);
+                    return Params.valueOf(entityId, null, null, getStream(req), resourceName, params, getContentInfo(req), req);
                 }
-            case PROPERTY:
-                final String resourceName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
-                final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);
 
-                if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
-                {
-                    if (StringUtils.isNotBlank(propertyName))
-                    {
-                        return Params.valueOf(entityId, relationshipId, null, getStream(req), propertyName, params, getContentInfo(req), req);
-                    }
-                    else
-                    {
-                        return Params.valueOf(entityId, null, null, getStream(req), resourceName, params, getContentInfo(req), req);
-                    }
-
-                }
-                //Fall through to unsupported.
-            default:
-                throw new UnsupportedResourceOperationException("PUT not supported for this request.");
+            }
+            // Fall through to unsupported.
+        default:
+            throw new UnsupportedResourceOperationException("PUT not supported for this request.");
         }
     }
 
-	/**
+    /**
      * Returns the basic content info from the request.
-     * @param req WebScriptRequest
+     *
+     * @param req
+     *            WebScriptRequest
      * @return BasicContentInfo
      */
-    private BasicContentInfo getContentInfo(WebScriptRequest req) {
-    	
-		String encoding = "UTF-8";
-		String contentType = MimetypeMap.MIMETYPE_BINARY;
-		
-		if (StringUtils.isNotEmpty(req.getContentType()))
-		{
-			MediaType media = MediaType.parseMediaType(req.getContentType());
-			contentType = media.getType()+'/'+media.getSubtype();
-			if (media.getCharset() != null)
-			{
-				encoding = media.getCharset().toString();
-			}			
-		}
+    private BasicContentInfo getContentInfo(WebScriptRequest req)
+    {
+
+        String encoding = "UTF-8";
+        String contentType = MimetypeMap.MIMETYPE_BINARY;
+
+        if (StringUtils.isNotEmpty(req.getContentType()))
+        {
+            MediaType media = MediaType.parseMediaType(req.getContentType());
+            contentType = media.getType() + '/' + media.getSubtype();
+            if (media.getCharset() != null)
+            {
+                encoding = media.getCharset().toString();
+            }
+        }
 
         return new ContentInfoImpl(contentType, encoding, -1, Locale.getDefault());
-	}
+    }
 
-	/**
+    /**
      * Returns the input stream for the request
-     * @param req WebScriptRequest
+     *
+     * @param req
+     *            WebScriptRequest
      * @return InputStream
      */
     private InputStream getStream(WebScriptRequest req)
     {
         try
         {
-            if (req instanceof WebScriptServletRequest)
+            if (req instanceof WebScriptServletRequest servletRequest)
             {
-                WebScriptServletRequest servletRequest = (WebScriptServletRequest) req;
                 return servletRequest.getHttpServletRequest().getInputStream();
             }
-            else if (req instanceof WrappingWebScriptRequest)
+            else if (req instanceof WrappingWebScriptRequest wrappedRequest)
             {
                 // eg. BufferredRequest
-                WrappingWebScriptRequest wrappedRequest = (WrappingWebScriptRequest) req;
                 return wrappedRequest.getContent().getInputStream();
             }
         }
@@ -186,11 +192,14 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
 
         return null;
     }
-    
+
     /**
      * Executes the action on the resource
-     * @param resource ResourceWithMetadata
-     * @param params parameters to use
+     *
+     * @param resource
+     *            ResourceWithMetadata
+     * @param params
+     *            parameters to use
      * @return anObject the result of the execute
      */
     @Override
@@ -198,87 +207,87 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
     {
         switch (resource.getMetaData().getType())
         {
-            case ENTITY:
-                if (EntityResourceAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
+        case ENTITY:
+            if (EntityResourceAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
+            {
+                if (resource.getMetaData().isDeleted(EntityResourceAction.Update.class))
                 {
-                    if (resource.getMetaData().isDeleted(EntityResourceAction.Update.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    EntityResourceAction.Update<Object> updateEnt = (EntityResourceAction.Update<Object>) resource.getResource();
-                    Object result = updateEnt.update(params.getEntityId(), params.getPassedIn(), params);
-                    return result;
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-                else
+                EntityResourceAction.Update<Object> updateEnt = (EntityResourceAction.Update<Object>) resource.getResource();
+                Object result = updateEnt.update(params.getEntityId(), params.getPassedIn(), params);
+                return result;
+            }
+            else
+            {
+                if (resource.getMetaData().isDeleted(EntityResourceAction.UpdateWithResponse.class))
                 {
-                    if (resource.getMetaData().isDeleted(EntityResourceAction.UpdateWithResponse.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    EntityResourceAction.UpdateWithResponse<Object> updateEnt = (EntityResourceAction.UpdateWithResponse<Object>) resource.getResource();
-                    Object result = updateEnt.update(params.getEntityId(), params.getPassedIn(), params, withResponse);
-                    return result;
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-            case RELATIONSHIP:
-                if (RelationshipResourceAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                EntityResourceAction.UpdateWithResponse<Object> updateEnt = (EntityResourceAction.UpdateWithResponse<Object>) resource.getResource();
+                Object result = updateEnt.update(params.getEntityId(), params.getPassedIn(), params, withResponse);
+                return result;
+            }
+        case RELATIONSHIP:
+            if (RelationshipResourceAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+            {
+                if (resource.getMetaData().isDeleted(RelationshipResourceAction.UpdateWithResponse.class))
                 {
-                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.UpdateWithResponse.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    RelationshipResourceAction.UpdateWithResponse<Object> relationUpdater = (RelationshipResourceAction.UpdateWithResponse<Object>) resource.getResource();
-                    Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params, withResponse);
-                    return relResult;
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-                else
+                RelationshipResourceAction.UpdateWithResponse<Object> relationUpdater = (RelationshipResourceAction.UpdateWithResponse<Object>) resource.getResource();
+                Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params, withResponse);
+                return relResult;
+            }
+            else
+            {
+                if (resource.getMetaData().isDeleted(RelationshipResourceAction.Update.class))
                 {
-                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.Update.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    RelationshipResourceAction.Update<Object> relationUpdater = (RelationshipResourceAction.Update<Object>) resource.getResource();
-                    Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params);
-                    return relResult;
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-            case PROPERTY:
-                if (BinaryResourceAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
+                RelationshipResourceAction.Update<Object> relationUpdater = (RelationshipResourceAction.Update<Object>) resource.getResource();
+                Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params);
+                return relResult;
+            }
+        case PROPERTY:
+            if (BinaryResourceAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
+            {
+                if (resource.getMetaData().isDeleted(BinaryResourceAction.Update.class))
                 {
-                    if (resource.getMetaData().isDeleted(BinaryResourceAction.Update.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    BinaryResourceAction.Update<Object> binUpdater = (BinaryResourceAction.Update<Object>) resource.getResource();
-                    return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params);
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-                if (BinaryResourceAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                BinaryResourceAction.Update<Object> binUpdater = (BinaryResourceAction.Update<Object>) resource.getResource();
+                return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params);
+            }
+            if (BinaryResourceAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+            {
+                if (resource.getMetaData().isDeleted(BinaryResourceAction.UpdateWithResponse.class))
                 {
-                    if (resource.getMetaData().isDeleted(BinaryResourceAction.UpdateWithResponse.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    BinaryResourceAction.UpdateWithResponse<Object> binUpdater = (BinaryResourceAction.UpdateWithResponse<Object>) resource.getResource();
-                    return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params, withResponse);
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-                if (RelationshipResourceBinaryAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
+                BinaryResourceAction.UpdateWithResponse<Object> binUpdater = (BinaryResourceAction.UpdateWithResponse<Object>) resource.getResource();
+                return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params, withResponse);
+            }
+            if (RelationshipResourceBinaryAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
+            {
+                if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Update.class))
                 {
-                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Update.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    RelationshipResourceBinaryAction.Update<Object> binUpdater = (RelationshipResourceBinaryAction.Update<Object>) resource.getResource();
-                    return binUpdater.updateProperty(params.getEntityId(), params.getRelationshipId(), params.getContentInfo(), params.getStream(), params);
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-                if (RelationshipResourceBinaryAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                RelationshipResourceBinaryAction.Update<Object> binUpdater = (RelationshipResourceBinaryAction.Update<Object>) resource.getResource();
+                return binUpdater.updateProperty(params.getEntityId(), params.getRelationshipId(), params.getContentInfo(), params.getStream(), params);
+            }
+            if (RelationshipResourceBinaryAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+            {
+                if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.UpdateWithResponse.class))
                 {
-                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.UpdateWithResponse.class))
-                    {
-                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
-                    }
-                    RelationshipResourceBinaryAction.UpdateWithResponse<Object> binUpdater = (RelationshipResourceBinaryAction.UpdateWithResponse<Object>) resource.getResource();
-                    return binUpdater.updateProperty(params.getEntityId(), params.getRelationshipId(), params.getContentInfo(), params.getStream(), params, withResponse);
+                    throw new DeletedResourceException("(UPDATE) " + resource.getMetaData().getUniqueId());
                 }
-            default:
-                throw new UnsupportedResourceOperationException("PUT not supported for Actions");
+                RelationshipResourceBinaryAction.UpdateWithResponse<Object> binUpdater = (RelationshipResourceBinaryAction.UpdateWithResponse<Object>) resource.getResource();
+                return binUpdater.updateProperty(params.getEntityId(), params.getRelationshipId(), params.getContentInfo(), params.getStream(), params, withResponse);
+            }
+        default:
+            throw new UnsupportedResourceOperationException("PUT not supported for Actions");
         }
     }
 

@@ -131,7 +131,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                                             if (hashIndicator.size() > 1 || !passwordEncoder.lastEncodingIsPreferred(hashIndicator))
                                             {
                                                 // add transaction listener to re-hash the users password
-                                                HashPasswordTransactionListener txListener = new HashPasswordTransactionListener(userName, password);
+                                                HashPasswordTransactionListener txListener = new HashPasswordTransactionListener(finalUserName, password);
                                                 txListener.setTransactionService(getTransactionService());
                                                 txListener.setAuthenticationDao(authenticationDao);
                                                 AlfrescoTransactionSupport.bindListener(txListener);

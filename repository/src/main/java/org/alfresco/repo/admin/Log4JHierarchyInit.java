@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -49,21 +48,21 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
- * Initialises Log4j's HierarchyDynamicMBean (refer to core-services-context.xml) and any overriding log4.properties files.
- * The actual implementation uses introspection to avoid any hard-coded references to Log4J classes.  If Log4J is
- * not present, this class will do nothing.
+ * Initialises Log4j's HierarchyDynamicMBean (refer to core-services-context.xml) and any overriding log4.properties files. The actual implementation uses introspection to avoid any hard-coded references to Log4J classes. If Log4J is not present, this class will do nothing.
  * <p>
- * Alfresco modules can provide their own log4j2.properties file, which augments/overrides the global log4j2.properties
- * within the Alfresco webapp. Within the module's source tree, suppose you create:
+ * Alfresco modules can provide their own log4j2.properties file, which augments/overrides the global log4j2.properties within the Alfresco webapp. Within the module's source tree, suppose you create:
+ * 
  * <pre>
  *      config/alfresco/module/{module.id}/log4j2.properties
  * </pre>
+ * 
  * At deployment time, this log4j2.properties file will be placed in:
+ * 
  * <pre>
  *      WEB-INF/classes/alfresco/module/{module.id}/log4j2.properties
  * </pre>
- * Where {module.id} is whatever value is set within the AMP's module.properties file. For details, see: <a
- * href='http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module'>Developing an Alfresco Module</a>
+ * 
+ * Where {module.id} is whatever value is set within the AMP's module.properties file. For details, see: <a href='http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module'>Developing an Alfresco Module</a>
  * <p>
  * For example, if {module.id} is "org.alfresco.module.someModule", then within your source code you'll have:
  *
@@ -72,6 +71,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * </pre>
  * <p>
  * This would be deployed to:
+ * 
  * <pre>
  * WEB - INF / classes / alfresco / module / org.alfresco.module.someModule / log4j2.properties
  * </pre>
@@ -82,6 +82,11 @@ public class Log4JHierarchyInit implements ApplicationContextAware
     private final List<String> extraLog4jUrls;
     private ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
+    static
+    {
+        System.setProperty("log4j2.disableJmx", "false");
+    }
+
     public Log4JHierarchyInit()
     {
         extraLog4jUrls = new ArrayList<>();
@@ -90,8 +95,7 @@ public class Log4JHierarchyInit implements ApplicationContextAware
     /**
      * Loads a set of augmenting/overriding log4j2.properties files from locations specified via an array of Spring URLS.
      * <p>
-     * This function supports Spring's syntax for retrieving multiple class path resources with the same name,
-     * via the "classpath&#042;:" prefix. For details, see: {@link PathMatchingResourcePatternResolver}.
+     * This function supports Spring's syntax for retrieving multiple class path resources with the same name, via the "classpath&#042;:" prefix. For details, see: {@link PathMatchingResourcePatternResolver}.
      */
     public void setExtraLog4jUrls(List<String> urls)
     {

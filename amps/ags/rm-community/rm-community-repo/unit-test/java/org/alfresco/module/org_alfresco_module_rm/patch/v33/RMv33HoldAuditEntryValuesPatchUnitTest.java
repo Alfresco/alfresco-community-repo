@@ -33,13 +33,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
-import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
+import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 
 /**
  * RM V3.3 Hold audit entries values patch unit test
@@ -54,7 +55,6 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
 
     @InjectMocks
     private RMv33HoldAuditEntryValuesPatch patch;
-
 
     @Before
     public void setUp()
@@ -89,6 +89,7 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(addToHoldPropertyStringValueEntity);
         verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("removeFromHold");
         verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(removeFromHoldPropertyStringValueEntity);
+
         verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("deleteHold");
         verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity);
 

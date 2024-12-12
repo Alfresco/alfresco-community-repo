@@ -97,7 +97,7 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         assertEquals("add to hold", addToHoldPropertyStringValueEntity.getStringEndLower());
         assertEquals(Long.valueOf(770_786_109L), addToHoldPropertyStringValueEntity.getStringCrc());
 
-        assertEquals("Remove From Hold", removeFromHoldPropertyStringValueEntity.getStrRvingValue());
+        assertEquals("Remove From Hold", removeFromHoldPropertyStringValueEntity.getStringValue());
         assertEquals("remove from hold", removeFromHoldPropertyStringValueEntity.getStringEndLower());
         assertEquals(Long.valueOf(2_967_613_012L), removeFromHoldPropertyStringValueEntity.getStringCrc());
 

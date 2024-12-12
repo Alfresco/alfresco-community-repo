@@ -190,8 +190,8 @@ public class AuditServiceImpl implements AuditService
     /**
      * {@inheritDoc}
      */
-    @Override public int getAuditEntriesCountByAppAndProperties(AuditQueryParameters parameters)
+    @Override public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
-        return auditComponent.getAuditEntriesCountByAppAndProperties(parameters);
+        return auditComponent.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 }

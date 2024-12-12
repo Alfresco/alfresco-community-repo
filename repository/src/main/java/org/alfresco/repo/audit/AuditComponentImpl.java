@@ -946,7 +946,7 @@ public class AuditComponentImpl implements AuditComponent
     public int getAuditEntriesCountByApp(String applicationName)
     {
         // Get the id for the application
-        AuditApplication app = auditModelRegistry.getAuditApplicationByName(applicationName);
+        AuditApplication app = auditModelRegistry.getAuditApplicationByKey(applicationName);
         Long applicationId = app.getApplicationId();
         if (applicationId == null)
         {
@@ -956,8 +956,8 @@ public class AuditComponentImpl implements AuditComponent
         return auditDAO.getAuditEntriesCountByApp(applicationId);
     }
 
-    @Override public int getAuditEntriesCountByAppAndProperties(AuditQueryParameters parameters)
+    @Override public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
-        return auditDAO.getAuditEntriesCountByAppAndProperties(parameters);
+        return auditDAO.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 }

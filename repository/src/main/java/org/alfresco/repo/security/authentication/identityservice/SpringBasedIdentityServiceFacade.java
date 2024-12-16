@@ -40,6 +40,7 @@ import java.util.function.Predicate;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import com.nimbusds.openid.connect.sdk.UserInfoSuccessResponse;
@@ -143,7 +144,18 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                 .flatMap(httpResponse -> {
                     try
                     {
-                        return Optional.of(UserInfoResponse.parse(httpResponse));
+                        UserInfoResponse userInfoResponse = UserInfoResponse.parse(httpResponse);
+                        if (userInfoResponse instanceof UserInfoErrorResponse)
+                        {
+                            UserInfoErrorResponse userInfoErrorResponse = (UserInfoErrorResponse) userInfoResponse;
+                            String errorMessage = userInfoErrorResponse.getErrorObject().getDescription();
+                            LOGGER.warn("User Info Request failed: " + errorMessage);
+                            throw new UserInfoException(errorMessage);
+                        }
+                        else
+                        {
+                            return Optional.of(userInfoResponse);
+                        }
                     }
                     catch (ParseException e)
                     {

@@ -131,11 +131,11 @@ public class SitesPermissionCleaner
                 String authority = entry.getAuthority();
 
                 String thisSiteGroupPrefix = siteServiceImpl.getSiteGroup(containingSite.getShortName(), true);
+                String anySiteGroupPrefix = thisSiteGroupPrefix.substring(0, thisSiteGroupPrefix.lastIndexOf(containingSite.getShortName()));
 
                 // If it's a group site permission for a site other than the current site
-                if (authority.startsWith(PermissionService.GROUP_PREFIX) &&
-                        // And it's not GROUP_EVERYONE
-                        !authority.startsWith(PermissionService.ALL_AUTHORITIES) && !authority.startsWith(thisSiteGroupPrefix) &&
+                if (authority.startsWith(anySiteGroupPrefix) &&
+                        !authority.startsWith(thisSiteGroupPrefix) &&
                         //  And if the current user has permissions to do it
                         publicServiceAccessService.hasAccess("PermissionService", "clearPermission", targetNode, authority) == AccessStatus.ALLOWED)
                 {

@@ -21,7 +21,7 @@
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- * #L%
+ * #L% 
  */
 package org.alfresco.repo.audit;
 
@@ -55,6 +55,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.4
      */
     public boolean isAuditEnabled()
@@ -64,6 +65,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.4
      */
     @Override
@@ -74,6 +76,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.4
      */
     @Override
@@ -95,6 +98,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.2
      */
     public boolean isAuditEnabled(String applicationName, String path)
@@ -104,6 +108,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.2
      */
     public void enableAudit(String applicationName, String path)
@@ -113,6 +118,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.2
      */
     public void disableAudit(String applicationName, String path)
@@ -122,6 +128,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.2
      */
     public int clearAudit(String applicationName)
@@ -132,6 +139,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.4
      */
     @Override
@@ -143,6 +151,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 5.2.2
      */
     @Override
@@ -153,6 +162,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.4
      */
     @Override
@@ -163,6 +173,7 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * 
      * @since 3.3
      */
     public void auditQuery(AuditQueryCallback callback, AuditQueryParameters parameters, int maxResults)
@@ -190,7 +201,8 @@ public class AuditServiceImpl implements AuditService
     /**
      * {@inheritDoc}
      */
-    @Override public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
+    @Override
+    public int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
         return auditComponent.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }

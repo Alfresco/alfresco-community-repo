@@ -22,7 +22,7 @@
  * -
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- * #L%
+ * #L% 
  */
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v33;
@@ -33,13 +33,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
-import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
+import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 
 /**
  * RM V3.3 Hold audit entries values patch unit test
@@ -54,7 +55,6 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
 
     @InjectMocks
     private RMv33HoldAuditEntryValuesPatch patch;
-
 
     @Before
     public void setUp()
@@ -93,15 +93,15 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity);
 
         assertEquals("Add To Hold", addToHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("add to hold", addToHoldPropertyStringValueEntity.getStringLower());
+        assertEquals("add to hold", addToHoldPropertyStringValueEntity.getStringEndLower());
         assertEquals(Long.valueOf(770_786_109L), addToHoldPropertyStringValueEntity.getStringCrc());
 
         assertEquals("Remove From Hold", removeFromHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("remove from hold", removeFromHoldPropertyStringValueEntity.getStringLower());
+        assertEquals("remove from hold", removeFromHoldPropertyStringValueEntity.getStringEndLower());
         assertEquals(Long.valueOf(2_967_613_012L), removeFromHoldPropertyStringValueEntity.getStringCrc());
 
         assertEquals("Delete Hold", deleteHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("delete hold", deleteHoldPropertyStringValueEntity.getStringLower());
+        assertEquals("delete hold", deleteHoldPropertyStringValueEntity.getStringEndLower());
         assertEquals(Long.valueOf(132_640_810L), deleteHoldPropertyStringValueEntity.getStringCrc());
     }
 
@@ -123,5 +123,3 @@ public class RMv33HoldAuditEntryValuesPatchUnitTest
         verify(mockedRecordsManagementQueryDAO, times(0)).updatePropertyStringValueEntity(any());
     }
 }
-
-

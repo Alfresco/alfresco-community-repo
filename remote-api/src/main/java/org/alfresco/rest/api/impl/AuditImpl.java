@@ -85,7 +85,7 @@ public class AuditImpl implements Audit
 
     // list of equals filter's auditEntry (via where clause)
     private final static Set<String> LIST_AUDIT_ENTRY_EQUALS_QUERY_PROPERTIES = new HashSet<>(
-            Arrays.asList(new String[] { CREATED_BY_USER, VALUES_KEY, VALUES_VALUE }));
+            Arrays.asList(new String[]{CREATED_BY_USER, VALUES_KEY, VALUES_VALUE}));
 
     // map of sort parameters for the moment one createdAt
     private final static Map<String, String> SORT_PARAMS_TO_NAMES;
@@ -295,23 +295,29 @@ public class AuditImpl implements Audit
         }
         else
         {
-            if (hasMoreItems) {
-                if (q != null) {
+            if (hasMoreItems)
+            {
+                if (q != null)
+                {
                     // filtering via "where" clause
                     AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
                     QueryHelper.walk(q, propertyWalker);
                     totalItems = getAuditEntriesCountByAppAndProperties(auditApplication, propertyWalker);
-                } else {
+                }
+                else
+                {
                     totalItems = getAuditEntriesCountByApp(auditApplication);
                 }
-            } else {
+            }
+            else
+            {
                 totalItems = totalRetrievedItems;
             }
         }
 
         entriesAudit = (skipCount >= totalRetrievedItems)
-                        ? Collections.emptyList()
-                        : entriesAudit.subList(skipCount, end);
+                ? Collections.emptyList()
+                : entriesAudit.subList(skipCount, end);
         return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
     }
 
@@ -475,8 +481,7 @@ public class AuditImpl implements Audit
         final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
 
         // create the callback for auditQuery method
-        final AuditQueryCallback callback = new AuditQueryCallback()
-        {
+        final AuditQueryCallback callback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return ((includeParam != null) && (includeParam.contains(PARAM_INCLUDE_VALUES)));
@@ -532,7 +537,7 @@ public class AuditImpl implements Audit
         params.setApplicationName(auditApplication.getName());
         params.setFromId(auditEntryId);
         params.setToId(auditEntryId + 1);
-        
+
         List<String> includeParam = new ArrayList<>();
         if (parameters != null)
         {
@@ -545,8 +550,7 @@ public class AuditImpl implements Audit
         final List<AuditEntry> results = new ArrayList<>();
 
         // create the callback for auditQuery method
-        final AuditQueryCallback callback = new AuditQueryCallback()
-        {
+        final AuditQueryCallback callback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return ((includeParam != null) && (includeParam.contains(PARAM_INCLUDE_VALUES)));
@@ -710,8 +714,7 @@ public class AuditImpl implements Audit
     @Override
     public CollectionWithPagingInfo<AuditEntry> listAuditEntriesByNodeId(String nodeId, Parameters parameters)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             public Void doWork() throws Exception
             {
                 checkEnabled();
@@ -772,8 +775,7 @@ public class AuditImpl implements Audit
         final List<AuditEntry> results = new ArrayList<>();
 
         String auditAppId = "alfresco-access";
-        String auditApplicationName = AuthenticationUtil.runAs(new RunAsWork<String>()
-        {
+        String auditApplicationName = AuthenticationUtil.runAs(new RunAsWork<String>() {
             public String doWork() throws Exception
             {
                 return findAuditAppByIdOr404(auditAppId).getName();
@@ -781,8 +783,7 @@ public class AuditImpl implements Audit
         }, AuthenticationUtil.getSystemUserName());
 
         // create the callback for auditQuery method
-        final AuditQueryCallback callback = new AuditQueryCallback()
-        {
+        final AuditQueryCallback callback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return ((includeParam != null) && (includeParam.contains(PARAM_INCLUDE_VALUES)));
@@ -808,8 +809,7 @@ public class AuditImpl implements Audit
         Long toTime = propertyWalker.getToTime();
         validateWhereBetween(nodeRef.getId(), fromTime, toTime);
 
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 // QueryParameters
@@ -820,7 +820,7 @@ public class AuditImpl implements Audit
                 pathParams.setFromTime(fromTime);
                 pathParams.setToTime(toTime);
                 pathParams.setApplicationName(auditApplicationName);
-                pathParams.addSearchKey("/"+auditAppId+"/transaction/path", nodePath);
+                pathParams.addSearchKey("/" + auditAppId + "/transaction/path", nodePath);
                 auditService.auditQuery(callback, pathParams, limit);
 
                 AuditQueryParameters copyFromPathParams = new AuditQueryParameters();
@@ -830,7 +830,7 @@ public class AuditImpl implements Audit
                 copyFromPathParams.setFromTime(fromTime);
                 copyFromPathParams.setToTime(toTime);
                 copyFromPathParams.setApplicationName(auditApplicationName);
-                copyFromPathParams.addSearchKey("/"+auditAppId+"/transaction/copy/from/path", nodePath);
+                copyFromPathParams.addSearchKey("/" + auditAppId + "/transaction/copy/from/path", nodePath);
                 auditService.auditQuery(callback, copyFromPathParams, limit);
 
                 AuditQueryParameters moveFromPathParams = new AuditQueryParameters();
@@ -840,7 +840,7 @@ public class AuditImpl implements Audit
                 moveFromPathParams.setFromTime(fromTime);
                 moveFromPathParams.setToTime(toTime);
                 moveFromPathParams.setApplicationName(auditApplicationName);
-                moveFromPathParams.addSearchKey("/"+auditAppId+"/transaction/move/from/path", nodePath);
+                moveFromPathParams.addSearchKey("/" + auditAppId + "/transaction/move/from/path", nodePath);
                 auditService.auditQuery(callback, moveFromPathParams, limit);
 
                 return null;
@@ -857,7 +857,7 @@ public class AuditImpl implements Audit
 
         public AuditEntriesByNodeIdQueryWalker()
         {
-            super(new HashSet<>(Arrays.asList(new String[] { CREATED_BY_USER })), null);
+            super(new HashSet<>(Arrays.asList(new String[]{CREATED_BY_USER})), null);
         }
 
         @Override

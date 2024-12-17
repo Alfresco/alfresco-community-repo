@@ -39,22 +39,21 @@ public class PropertyStringValueEntity
 {
     public static final String EMPTY_STRING = "";
     public static final String EMPTY_STRING_REPLACEMENT = ".empty";
-    
+
     private Long id;
     private String stringValue;
     private String stringEndLower;
     private Long stringCrc;
-    
+
     public PropertyStringValueEntity()
-    {
-    }
-    
+    {}
+
     @Override
     public int hashCode()
     {
         return (stringValue == null ? 0 : stringValue.hashCode());
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
@@ -72,18 +71,18 @@ public class PropertyStringValueEntity
             return false;
         }
     }
-    
+
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("PropertyStringValueEntity")
-          .append("[ ID=").append(id)
-          .append(", stringValue=").append(stringValue)
-          .append("]");
+                .append("[ ID=").append(id)
+                .append(", stringValue=").append(stringValue)
+                .append("]");
         return sb.toString();
     }
-    
+
     public Pair<Long, String> getEntityPair()
     {
         if (stringValue != null && stringValue.equals(PropertyStringValueEntity.EMPTY_STRING_REPLACEMENT))
@@ -95,7 +94,7 @@ public class PropertyStringValueEntity
             return new Pair<Long, String>(id, stringValue);
         }
     }
-    
+
     /**
      * Set the string and string-end values
      */
@@ -136,7 +135,7 @@ public class PropertyStringValueEntity
     {
         this.stringValue = stringValue;
     }
-    
+
     public String getStringEndLower()
     {
         return stringEndLower;

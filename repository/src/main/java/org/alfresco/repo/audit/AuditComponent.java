@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -276,10 +276,11 @@ public interface AuditComponent
     /**
      * Issue an audit query to retrieve count of records for a given application and properties
      *
+     * @param applicationName             the name of the application
      * @param parameters                  audit parameters provided by the <code>where</code> clause on the ReST API
      * @return                            a map containing min/max and the associated value
      */
-    default int getAuditEntriesCountByAppAndProperties(AuditQueryParameters parameters)
+    default int getAuditEntriesCountByAppAndProperties(String applicationName, AuditQueryParameters parameters)
     {
         return -1;
     }

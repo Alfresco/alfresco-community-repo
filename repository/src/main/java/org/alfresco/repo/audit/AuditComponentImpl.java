@@ -962,7 +962,7 @@ public class AuditComponentImpl implements AuditComponent
     public int getAuditEntriesCountByApp(String applicationName)
     {
         // Get the id for the application
-        AuditApplication app = auditModelRegistry.getAuditApplicationByKey(applicationName);
+        AuditApplication app = auditModelRegistry.getAuditApplicationByName(applicationName);
         Long applicationId = app.getApplicationId();
         if (applicationId == null)
         {

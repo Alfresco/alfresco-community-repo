@@ -152,10 +152,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                                     LOGGER.warn("User Info Request failed: " + errorMessage);
                                     throw new UserInfoException(errorMessage);
                                 }
-                                else
-                                {
-                                    return Optional.of(userInfoResponse);
-                                }
+                                return Optional.of(userInfoResponse);
                             }
                             catch (ParseException e)
                             {

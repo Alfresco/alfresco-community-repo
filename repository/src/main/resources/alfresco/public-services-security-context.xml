@@ -12,7 +12,8 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans.xsd">
+        http://www.springframework.org/schema/beans/spring-beans.xsd"
+       xmlns:aop="http://www.springframework.org/schema/aop">
 
     <!-- ===================== -->
     <!-- Permissions Model DAO -->
@@ -1277,4 +1278,6 @@
         </property>
     </bean>
 
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+    <aop:aspectj-autoproxy/>
 </beans>

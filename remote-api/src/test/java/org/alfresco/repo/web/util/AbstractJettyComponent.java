@@ -112,7 +112,7 @@ public abstract class AbstractJettyComponent implements JettyComponent
 	
 	public ConfigurableApplicationContext getApplicationContext()
 	{
-		return (ConfigurableApplicationContext)webAppContext.getServletContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+		return (ConfigurableApplicationContext)webAppContext.getContext().getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 	}
 	
 	protected abstract void configureWebAppContext(WebAppContext webAppContext);
@@ -210,7 +210,7 @@ public abstract class AbstractJettyComponent implements JettyComponent
 
 	    // arbitrary temporary file location
 	    File tmp = new File(TempFileProvider.getSystemTempDir(), String.valueOf(System.currentTimeMillis()));
-	    webAppContext.setResourceBase(tmp.getAbsolutePath());		
+	    webAppContext.setContextPath(tmp.getAbsolutePath());
 	}
 
 	/**

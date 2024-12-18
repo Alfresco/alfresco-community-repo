@@ -913,7 +913,7 @@ public class AuditImpl implements Audit
         final String applicationName = auditApplication.getKey().substring(1);
 
         AuditQueryParameters parameters = new AuditQueryParameters();
-        parameters.setApplicationName(applicationName);
+        parameters.setApplicationName(auditApplication.getName());
         parameters.setFromTime(propertyWalker.getFromTime());
         parameters.setToTime(propertyWalker.getToTime());
         parameters.setFromId(propertyWalker.getFromId());

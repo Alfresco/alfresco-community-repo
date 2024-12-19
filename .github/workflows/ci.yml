@@ -134,7 +134,7 @@ jobs:
           name: Veracode Pipeline-Scan Results (Human Readable)
           path: readable_output.zip
       - name: "Remove temporary directory"
-        run: bash rm -rfv temp-dir-for-sast
+        run: rm -rfv temp-dir-for-sast
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 

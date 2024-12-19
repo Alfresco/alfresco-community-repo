@@ -17,7 +17,7 @@ Alfresco Community Repository contains following libraries:
 ### Alfresco Core
 Core is a library packaged as a jar file which contains the following:
 
-* Various helpers and utils
+* Various helpers and utilities
 * Canned queries interface and supporting classes
 * Generic encryption supporting classes
 

@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
@@ -145,10 +146,11 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                             {
                                 UserInfoResponse userInfoResponse = UserInfoResponse.parse(httpResponse);
 
-                                if (userInfoResponse instanceof UserInfoErrorResponse)
+                                if (userInfoResponse instanceof UserInfoErrorResponse userInfoErrorResponse)
                                 {
-                                    UserInfoErrorResponse userInfoErrorResponse = (UserInfoErrorResponse) userInfoResponse;
-                                    String errorMessage = userInfoErrorResponse.getErrorObject().getDescription();
+                                    String errorMessage = Optional.ofNullable(userInfoErrorResponse.getErrorObject())
+                                            .map(ErrorObject::getDescription)
+                                            .orElse("No error description found");
                                     LOGGER.warn("User Info Request failed: " + errorMessage);
                                     throw new UserInfoException(errorMessage);
                                 }

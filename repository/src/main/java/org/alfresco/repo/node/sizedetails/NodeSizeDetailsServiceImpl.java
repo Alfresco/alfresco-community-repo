@@ -63,6 +63,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     private TransactionService transactionService;
     private ThreadPoolExecutor threadPoolExecutor;
     private int defaultItems;
+    private int totalFiles;
 
     public void setSearchService(SearchService searchService)
     {
@@ -98,6 +99,11 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
     public void setDefaultItems(int defaultItems)
     {
         this.defaultItems = defaultItems;
+    }
+
+    public int getTotalFiles()
+    {
+        return totalFiles;
     }
 
     @Override
@@ -191,8 +197,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             Date calculationDate = new Date(System.currentTimeMillis());
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), totalSizeFromFacet, calculationDate,
-                    results.getNodeRefs()
-                            .size(),
+                                                                  getTotalFiles(),
                     STATUS.COMPLETED, jobId);
             return nodeSizeDetails;
         }
@@ -215,7 +220,8 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             searchParameters.addFacetQuery(FACET_QUERY);
             FieldFacet fieldFacet = new FieldFacet(FIELD_FACET);
-            fieldFacet.setLimitOrNull((int) resultsWithoutFacet.getNumberFound());
+            totalFiles = (int) resultsWithoutFacet.getNumberFound();
+            fieldFacet.setLimitOrNull(totalFiles);
             searchParameters.addFieldFacet(fieldFacet);
             resultsWithoutFacet.close();
             return searchService.query(searchParameters);

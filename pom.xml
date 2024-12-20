@@ -118,7 +118,7 @@
         <alfresco.api-explorer.version>23.4.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
-        <license-maven-plugin.version>2.4.0</license-maven-plugin.version>
+        <license-maven-plugin.version>2.5.0</license-maven-plugin.version>
         <spotless-plugin.version>2.43.0</spotless-plugin.version>
         <!-- Do not match any files by default, but this can be overridden from the command line. -->
         <spotless-include-list>NO_AUTOMATED_FORMATTING</spotless-include-list>

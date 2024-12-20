@@ -197,7 +197,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             Date calculationDate = new Date(System.currentTimeMillis());
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), totalSizeFromFacet, calculationDate,
-                                                                  getTotalFiles(),
+                    getTotalFiles(),
                     STATUS.COMPLETED, jobId);
             return nodeSizeDetails;
         }

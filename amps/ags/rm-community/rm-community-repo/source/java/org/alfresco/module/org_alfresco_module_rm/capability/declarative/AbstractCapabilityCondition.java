@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
@@ -40,7 +42,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Abstract capability condition.
@@ -48,12 +49,12 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Roy Wetherall
  */
 public abstract class AbstractCapabilityCondition implements CapabilityCondition,
-                                                             BeanNameAware,
-                                                             RecordsManagementModel
+        BeanNameAware,
+        RecordsManagementModel
 {
     /** transaction cache key */
     private static final String KEY_EVALUATE = "rm.transaction.evaluate";
-    
+
     /** Capability condition name */
     protected String name;
 
@@ -65,12 +66,13 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     protected FilePlanService filePlanService;
     protected DispositionService dispositionService;
     protected RecordFolderService recordFolderService;
-    
+
     /** transaction resource helper */
     private TransactionalResourceHelper transactionalResourceHelper;
 
     /**
-     * @param recordService     record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -78,7 +80,8 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     }
 
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -86,7 +89,8 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -94,23 +98,26 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     }
 
     /**
-     * @param freezeService   freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
-       this.freezeService = freezeService;
+        this.freezeService = freezeService;
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @param dispositionService disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -118,15 +125,17 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     }
 
     /**
-     * @param recordFolderService record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
-     * @param transactionalResourceHelper transactional resource helper
+     * @param transactionalResourceHelper
+     *            transactional resource helper
      */
     public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
     {
@@ -141,7 +150,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
         return name;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -149,7 +158,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     public boolean evaluate(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         // check transaction cache
         Map<String, Boolean> map = transactionalResourceHelper.getMap(KEY_EVALUATE);
         String key = getName() + "|" + nodeRef.toString() + "|" + AuthenticationUtil.getRunAsUser();
@@ -162,10 +171,10 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
             result = evaluateImpl(nodeRef);
             map.put(key, result);
         }
-        
+
         return result;
     }
-    
+
     public abstract boolean evaluateImpl(NodeRef nodeRef);
 
     /**

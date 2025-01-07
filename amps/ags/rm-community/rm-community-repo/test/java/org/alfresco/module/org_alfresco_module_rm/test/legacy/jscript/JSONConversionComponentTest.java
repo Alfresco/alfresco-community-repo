@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,12 +29,13 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.jscript;
 
 import java.io.Serializable;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.repo.jscript.app.JSONConversionComponent;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang3.ArrayUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.jscript.app.JSONConversionComponent;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * @author Roy Wetherall
@@ -68,33 +69,25 @@ public class JSONConversionComponentTest extends BaseRMTestCase
 
     public void testJSON() throws Exception
     {
-        doTestInTransaction(new JSONTest
-        (
-           filePlan,
-           new String[]{"isRmNode", "true", "boolean"},
-           new String[]{"rmNode.kind", "FILE_PLAN"}
-        ){});
+        doTestInTransaction(new JSONTest(
+                filePlan,
+                new String[]{"isRmNode", "true", "boolean"},
+                new String[]{"rmNode.kind", "FILE_PLAN"}) {});
 
-        doTestInTransaction(new JSONTest
-        (
-           rmContainer,
-           new String[]{"isRmNode", "true", "boolean"},
-           new String[]{"rmNode.kind", "RECORD_CATEGORY"}
-        ){});
+        doTestInTransaction(new JSONTest(
+                rmContainer,
+                new String[]{"isRmNode", "true", "boolean"},
+                new String[]{"rmNode.kind", "RECORD_CATEGORY"}) {});
 
-        doTestInTransaction(new JSONTest
-        (
-           rmFolder,
-           new String[]{"isRmNode", "true", "boolean"},
-           new String[]{"rmNode.kind", "RECORD_FOLDER"}
-        ){});
+        doTestInTransaction(new JSONTest(
+                rmFolder,
+                new String[]{"isRmNode", "true", "boolean"},
+                new String[]{"rmNode.kind", "RECORD_FOLDER"}) {});
 
-        doTestInTransaction(new JSONTest
-        (
-           record,
-           new String[]{"isRmNode", "true", "boolean"},
-           new String[]{"rmNode.kind", "RECORD"}
-        ){});
+        doTestInTransaction(new JSONTest(
+                record,
+                new String[]{"isRmNode", "true", "boolean"},
+                new String[]{"rmNode.kind", "RECORD"}) {});
     }
 
     class JSONTest extends Test<JSONObject>
@@ -102,7 +95,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
         private NodeRef nodeRef;
         private String[][] testValues;
 
-        public JSONTest(NodeRef nodeRef, String[] ... testValues)
+        public JSONTest(NodeRef nodeRef, String[]... testValues)
         {
             this.nodeRef = nodeRef;
             this.testValues = testValues;
@@ -112,7 +105,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
         public JSONObject run() throws Exception
         {
             String json = converter.toJSON(nodeRef, true);
-            //System.out.println(json);
+            // System.out.println(json);
             return new JSONObject(json);
         }
 
@@ -128,7 +121,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
                     type = testValue[2];
                 }
                 Serializable value = convertValue(testValue[1], type);
-                Serializable actualValue = (Serializable)getValue(result, key);
+                Serializable actualValue = (Serializable) getValue(result, key);
 
                 assertEquals("The key " + key + " did not have the expected value.", value, actualValue);
             }
@@ -158,7 +151,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             else
             {
                 return getValue(jsonObject.getJSONObject(key[0]),
-                                (String[])ArrayUtils.subarray(key, 1, key.length));
+                        (String[]) ArrayUtils.subarray(key, 1, key.length));
             }
         }
     }

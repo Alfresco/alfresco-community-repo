@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,13 +37,13 @@ public abstract class IdentifierGeneratorBase implements IdentifierGenerator
 {
     /** Identifier service */
     private IdentifierService identifierService;
-    
+
     /** Node service */
     protected NodeService nodeService;
-    
+
     /** Content type */
-    private QName type;    
-    
+    private QName type;
+
     /**
      * Initialisation method
      */
@@ -51,37 +51,40 @@ public abstract class IdentifierGeneratorBase implements IdentifierGenerator
     {
         identifierService.register(this);
     }
-    
+
     /**
      * Set identifier service.
      * 
-     * @param identifierService     identifier service
+     * @param identifierService
+     *            identifier service
      */
     public void setIdentifierService(IdentifierService identifierService)
     {
         this.identifierService = identifierService;
     }
-    
+
     /**
      * Set the node service
      * 
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * Set type.
      * 
-     * @param type  content type
+     * @param type
+     *            content type
      */
     public void setTypeAsString(String type)
     {
         this.type = QName.createQName(type);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierGenerator#getType()
      */
@@ -90,12 +93,14 @@ public abstract class IdentifierGeneratorBase implements IdentifierGenerator
     {
         return type;
     }
-    
+
     /**
      * Function to pad a string with zero '0' characters to the required length
      * 
-     * @param s String to pad with leading zero '0' characters
-     * @param len Length to pad to
+     * @param s
+     *            String to pad with leading zero '0' characters
+     * @param len
+     *            Length to pad to
      * @return padded string or the original if already at &gt;=len characters
      */
     protected String padString(String s, int len)

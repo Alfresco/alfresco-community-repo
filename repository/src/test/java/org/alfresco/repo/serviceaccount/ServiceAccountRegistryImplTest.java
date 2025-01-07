@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,12 +25,13 @@
  */
 package org.alfresco.repo.serviceaccount;
 
-import static org.alfresco.service.cmr.security.PermissionService.ADMIN_SVC_AUTHORITY;
-import static org.alfresco.service.cmr.security.PermissionService.COLLABORATOR_SVC_AUTHORITY;
-import static org.alfresco.service.cmr.security.PermissionService.EDITOR_SVC_AUTHORITY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import static org.alfresco.service.cmr.security.PermissionService.ADMIN_SVC_AUTHORITY;
+import static org.alfresco.service.cmr.security.PermissionService.COLLABORATOR_SVC_AUTHORITY;
+import static org.alfresco.service.cmr.security.PermissionService.EDITOR_SVC_AUTHORITY;
 
 import java.util.Optional;
 import java.util.Properties;

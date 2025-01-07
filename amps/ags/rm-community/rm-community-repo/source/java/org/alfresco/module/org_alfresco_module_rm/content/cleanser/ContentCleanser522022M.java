@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -50,7 +50,7 @@ public class ContentCleanser522022M extends ContentCleanser
         {
             throw new ContentIOException("Unable to write to file: " + file);
         }
-        
+
         // Overwite file
         overwrite(file, overwriteOnes);
         overwrite(file, overwriteZeros);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,33 +44,34 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class FreezeAction extends RMActionExecuterAbstractBase
 {
-   /** Parameter names */
-   public static final String PARAM_REASON = "reason";
+    /** Parameter names */
+    public static final String PARAM_REASON = "reason";
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
-    */
-   @Override
-   protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-   {
-       paramList.add(new ParameterDefinitionImpl(PARAM_REASON, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REASON)));
-   }
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
+     */
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_REASON, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REASON)));
+    }
 
-   /**
-    * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-    */
-   @SuppressWarnings("deprecation")
-   @Override
-   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-   {
-       // NOTE: we can only freeze records and record folders so ignore everything else
-       if (getNodeService().exists(actionedUponNodeRef) &&
-           !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
-           (getRecordService().isRecord(actionedUponNodeRef) ||
-                   getRecordFolderService().isRecordFolder(actionedUponNodeRef)) &&
-                   !getFreezeService().isFrozen(actionedUponNodeRef))
-       {
-           getFreezeService().freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
-       }
-   }
+    /**
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    {
+        // NOTE: we can only freeze records and record folders so ignore everything else
+        if (getNodeService().exists(actionedUponNodeRef) &&
+                !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
+                (getRecordService().isRecord(actionedUponNodeRef) ||
+                        getRecordFolderService().isRecordFolder(actionedUponNodeRef))
+                &&
+                !getFreezeService().isFrozen(actionedUponNodeRef))
+        {
+            getFreezeService().freeze((String) action.getParameterValue(PARAM_REASON), actionedUponNodeRef);
+        }
+    }
 }

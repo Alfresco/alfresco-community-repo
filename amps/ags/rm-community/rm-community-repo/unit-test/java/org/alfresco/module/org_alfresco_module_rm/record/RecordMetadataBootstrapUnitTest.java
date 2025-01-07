@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,10 +32,11 @@ import static org.mockito.Mockito.verify;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Unit test for RecordMetadataBootstrap
@@ -45,8 +46,9 @@ import org.mockito.InjectMocks;
  */
 public class RecordMetadataBootstrapUnitTest extends BaseUnitTest
 {
-    @InjectMocks private RecordMetadataBootstrap bootstrap;
-    
+    @InjectMocks
+    private RecordMetadataBootstrap bootstrap;
+
     /**
      * Test init method to ensure set map will register correctly with record service.
      */
@@ -58,10 +60,10 @@ public class RecordMetadataBootstrapUnitTest extends BaseUnitTest
         map.put("rma:test1", "rma:filePlan");
         map.put("rma:test2", "rma:filePlan");
         bootstrap.setRecordMetadataAspects(map);
-        
+
         // call init
         bootstrap.init();
-        
+
         // verify that the metedata aspects where registered
         QName test1 = QName.createQName(RM_URI, "test1");
         QName test2 = QName.createQName(RM_URI, "test2");

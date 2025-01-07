@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
@@ -58,7 +60,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:record behaviour bean
@@ -66,18 +67,16 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:record"
-)
-public class RecordAspect extends    AbstractDisposableItem
-                          implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                     NodeServicePolicies.BeforeAddAspectPolicy,
-                                     RecordsManagementPolicies.OnCreateReference,
-                                     RecordsManagementPolicies.OnRemoveReference,
-                                     NodeServicePolicies.OnMoveNodePolicy,
-                                     CopyServicePolicies.OnCopyCompletePolicy,
-                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
+@BehaviourBean(
+        defaultType = "rma:record")
+public class RecordAspect extends AbstractDisposableItem
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.BeforeAddAspectPolicy,
+        RecordsManagementPolicies.OnCreateReference,
+        RecordsManagementPolicies.OnRemoveReference,
+        NodeServicePolicies.OnMoveNodePolicy,
+        CopyServicePolicies.OnCopyCompletePolicy,
+        ContentServicePolicies.OnContentPropertyUpdatePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -102,7 +101,8 @@ public class RecordAspect extends    AbstractDisposableItem
     private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
 
     /**
-     * @param extendedSecurityService   extended security service
+     * @param extendedSecurityService
+     *            extended security service
      */
     public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
     {
@@ -110,7 +110,8 @@ public class RecordAspect extends    AbstractDisposableItem
     }
 
     /**
-     * @param scriptService script service
+     * @param scriptService
+     *            script service
      */
     public void setScriptService(ScriptService scriptService)
     {
@@ -118,7 +119,8 @@ public class RecordAspect extends    AbstractDisposableItem
     }
 
     /**
-     * @param recordService     record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -136,7 +138,9 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /**
      * Setter for content duplication utility class
-     * @param contentBinDuplicationUtility ContentBinDuplicationUtility
+     * 
+     * @param contentBinDuplicationUtility
+     *            ContentBinDuplicationUtility
      */
     public void setContentBinDuplicationUtility(ContentBinDuplicationUtility contentBinDuplicationUtility)
     {
@@ -149,16 +153,13 @@ public class RecordAspect extends    AbstractDisposableItem
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION,
-       assocType = "rn:rendition",
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            assocType = "rn:rendition",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean bNew)
     {
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        authenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -188,11 +189,9 @@ public class RecordAspect extends    AbstractDisposableItem
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference#onCreateReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onCreateReference(final NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
@@ -200,8 +199,7 @@ public class RecordAspect extends    AbstractDisposableItem
         {
             // run as system, to apply the versioned aspect to the from node
             // as we can't be sure if the user has add aspect rights
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            authenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork() throws Exception
                 {
@@ -219,18 +217,15 @@ public class RecordAspect extends    AbstractDisposableItem
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRemoveReference#onRemoveReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onRemoveReference(final NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
         if (reference.equals(CUSTOM_REF_VERSIONS))
         {
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            authenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -249,15 +244,12 @@ public class RecordAspect extends    AbstractDisposableItem
     /**
      * Record copy callback
      */
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(final QName classRef, final CopyDetails copyDetails)
     {
-        return new DefaultCopyBehaviourCallback()
-        {
+        return new DefaultCopyBehaviourCallback() {
 
             @Override
             public Map<QName, Serializable> getCopyProperties(QName classRef, CopyDetails copyDetails,
@@ -284,24 +276,21 @@ public class RecordAspect extends    AbstractDisposableItem
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         // check the records parent has actually changed
         if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()) &&
-            isFilePlanComponent(oldChildAssocRef.getParentRef()))
+                isFilePlanComponent(oldChildAssocRef.getParentRef()))
         {
             final NodeRef record = newChildAssocRef.getChildRef();
-            authenticationUtil.runAsSystem(new RunAsWork<Object>()
-            {
+            authenticationUtil.runAsSystem(new RunAsWork<Object>() {
                 public Object doWork()
                 {
                     if (nodeService.exists(record) &&
-                        recordService.isFiled(record))
+                            recordService.isFiled(record))
                     {
                         // clean record
                         cleanDisposableItem(nodeService, record);
@@ -319,10 +308,14 @@ public class RecordAspect extends    AbstractDisposableItem
     /**
      * Executes a reference script if present
      *
-     * @param policy        policy
-     * @param reference     reference
-     * @param from          reference from
-     * @param to            reference to
+     * @param policy
+     *            policy
+     * @param reference
+     *            reference
+     * @param from
+     *            reference from
+     * @param to
+     *            reference to
      */
     private void executeReferenceScript(String policy, QName reference, NodeRef from, NodeRef to)
     {
@@ -351,41 +344,36 @@ public class RecordAspect extends    AbstractDisposableItem
      * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(QName, NodeRef, NodeRef, boolean, Map)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS)
     public void onCopyComplete(QName classRef,
-                               NodeRef sourceNodeRef,
-                               NodeRef targetNodeRef,
-                               boolean copyToNewNode,
-                               Map<NodeRef, NodeRef> copyMap)
+            NodeRef sourceNodeRef,
+            NodeRef targetNodeRef,
+            boolean copyToNewNode,
+            Map<NodeRef, NodeRef> copyMap)
     {
         // given the node exists and is a record
         if (nodeService.exists(targetNodeRef) &&
-            nodeService.hasAspect(targetNodeRef, ASPECT_RECORD))
+                nodeService.hasAspect(targetNodeRef, ASPECT_RECORD))
         {
             // then remove any extended security from the newly copied record
             extendedSecurityService.remove(targetNodeRef);
 
-            //create a new content URL for the copy
+            // create a new content URL for the copy
             contentBinDuplicationUtility.duplicate(targetNodeRef);
         }
     }
 
     /**
-     * Behaviour to remove the shared link before declare a record
-     * and to create new bin if the node is a copy or has copies
+     * Behaviour to remove the shared link before declare a record and to create new bin if the node is a copy or has copies
      *
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.namespace.QName)
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
     @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -408,11 +396,9 @@ public class RecordAspect extends    AbstractDisposableItem
     }
 
     @Override
-    @Behaviour
-    (
-        kind = BehaviourKind.CLASS,
-        notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue, ContentData afterValue)
     {
         // Allow creation of content but not update

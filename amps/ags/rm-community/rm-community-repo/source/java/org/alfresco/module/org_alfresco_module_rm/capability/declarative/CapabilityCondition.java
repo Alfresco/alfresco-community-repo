@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,15 +40,16 @@ public interface CapabilityCondition
     /**
      * Get capability condition name
      * 
-     * @return {@link String}   capability condition name
+     * @return {@link String} capability condition name
      */
     String getName();
-    
+
     /**
      * Evaluates capability condition.
      * 
-     * @param nodeRef   node reference
-     * @return boolean  true if evaluate success, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if evaluate success, false otherwise
      */
     boolean evaluate(NodeRef nodeRef);
 }

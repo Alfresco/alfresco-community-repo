@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,28 +37,33 @@ public class ScriptConstraintValue implements Serializable
      */
     private static final long serialVersionUID = -4659454215122271811L;
     private String value;
-    private List<ScriptAuthority>authorities;
-    
+    private List<ScriptAuthority> authorities;
+
     public void setAuthorities(List<ScriptAuthority> values)
     {
         this.authorities = values;
     }
+
     public List<ScriptAuthority> getAuthorities()
     {
         return authorities;
     }
+
     public void setValueName(String authorityName)
     {
         this.value = authorityName;
     }
+
     public String getValueName()
     {
         return value;
     }
+
     public void setValueTitle(String authorityName)
     {
         this.value = authorityName;
     }
+
     public String getValueTitle()
     {
         return value;

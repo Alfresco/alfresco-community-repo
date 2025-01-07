@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,7 +45,8 @@ public interface ReportService
     /**
      * Register a report generator with the report service.
      *
-     * @param reportGenerator   report generator
+     * @param reportGenerator
+     *            report generator
      */
     void registerReportGenerator(ReportGenerator reportGenerator);
 
@@ -59,9 +60,11 @@ public interface ReportService
     /**
      * Generate a report of the given type and reported upon node reference.
      *
-     * @param reportType            report type
-     * @param reportedUponNodeRef   reported upon node reference
-     * @return {@link Report}       generated report
+     * @param reportType
+     *            report type
+     * @param reportedUponNodeRef
+     *            reported upon node reference
+     * @return {@link Report} generated report
      */
     Report generateReport(QName reportType, NodeRef reportedUponNodeRef);
 
@@ -70,20 +73,24 @@ public interface ReportService
      *
      * @see #generateReport(QName, NodeRef)
      *
-     * @param reportType            report type
-     * @param reportedUponNodeRef   report upon node reference
-     * @param mimetype              report mimetype
-     * @return {@link Report}       generated report
+     * @param reportType
+     *            report type
+     * @param reportedUponNodeRef
+     *            report upon node reference
+     * @param mimetype
+     *            report mimetype
+     * @return {@link Report} generated report
      */
     Report generateReport(QName reportType, NodeRef reportedUponNodeRef, String mimetype);
 
     /**
-     * File report in the given destination. If the given node reference is a file plan node
-     * reference the report will be filed in the unfiled records container.
+     * File report in the given destination. If the given node reference is a file plan node reference the report will be filed in the unfiled records container.
      *
-     * @param nodeRef   node reference
-     * @param report    report
-     * @return NodeRef  node reference of the filed report
+     * @param nodeRef
+     *            node reference
+     * @param report
+     *            report
+     * @return NodeRef node reference of the filed report
      */
     NodeRef fileReport(NodeRef nodeRef, Report report);
 }

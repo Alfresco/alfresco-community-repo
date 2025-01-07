@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,9 +49,8 @@ import org.alfresco.util.GUID;
  */
 public class AlfMock
 {
-	/**
-     * Helper to generate random text value suitable for a property
-     * value or node name
+    /**
+     * Helper to generate random text value suitable for a property value or node name
      */
     public static String generateText()
     {
@@ -74,10 +73,10 @@ public class AlfMock
         return QName.createQName(uri, GUID.generate());
     }
 
-	/**
+    /**
      * Helper method to generate a node reference.
      *
-     * @return  {@link NodeRef} node reference that behaves like a node that exists in the spaces store
+     * @return {@link NodeRef} node reference that behaves like a node that exists in the spaces store
      */
     public static NodeRef generateNodeRef(NodeService mockedNodeService)
     {
@@ -87,9 +86,9 @@ public class AlfMock
     /**
      * Helper method to generate a node reference of a particular type.
      *
-     * @param type  content type qualified name
-     * @return {@link NodeRef}  node reference that behaves like a node that exists in the spaces store with
-     *                          the content type provided
+     * @param type
+     *            content type qualified name
+     * @return {@link NodeRef} node reference that behaves like a node that exists in the spaces store with the content type provided
      */
     public static NodeRef generateNodeRef(NodeService mockedNodeService, QName type)
     {
@@ -99,8 +98,9 @@ public class AlfMock
     /**
      * Helper method to generate a cm:content node reference with a given name.
      *
-     * @param name      content name
-     * @return NodeRef  node reference
+     * @param name
+     *            content name
+     * @return NodeRef node reference
      */
     public static NodeRef generateCmContent(NodeService mockedNodeService, String name)
     {
@@ -112,10 +112,11 @@ public class AlfMock
     /**
      * Helper method to generate a node reference of a particular type with a given existence characteristic.
      *
-     * @param type  content type qualified name
-     * @param exists indicates whether this node should behave like a node that exists or not
-     * @return {@link NodeRef}  node reference that behaves like a node that exists (or not) in the spaces store with
-     *                          the content type provided
+     * @param type
+     *            content type qualified name
+     * @param exists
+     *            indicates whether this node should behave like a node that exists or not
+     * @return {@link NodeRef} node reference that behaves like a node that exists (or not) in the spaces store with the content type provided
      */
     public static NodeRef generateNodeRef(NodeService mockedNodeService, QName type, boolean exists)
     {

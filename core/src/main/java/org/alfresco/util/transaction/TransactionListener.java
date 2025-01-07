@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2024 Alfresco Software Limited.
+ * Copyright (C) 2005-2025 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,50 +27,45 @@ package org.alfresco.util.transaction;
  */
 public interface TransactionListener
 {
-    
+
     /**
      * Called before a transaction is committed.
      * <p>
      * All transaction resources are still available.
      * 
-     * @param readOnly true if the transaction is read-only
+     * @param readOnly
+     *            true if the transaction is read-only
      */
     void beforeCommit(boolean readOnly);
-    
+
     /**
-     * Invoked before transaction commit/rollback.  Will be called after
-     * {@link #beforeCommit(boolean) } even if {@link #beforeCommit(boolean)}
-     * failed.
+     * Invoked before transaction commit/rollback. Will be called after {@link #beforeCommit(boolean) } even if {@link #beforeCommit(boolean)} failed.
      * <p>
      * All transaction resources are still available.
      */
     void beforeCompletion();
-    
+
     /**
      * Invoked after transaction commit.
      * <p>
-     * Any exceptions generated here will only be logged and will have no effect
-     * on the state of the transaction.
+     * Any exceptions generated here will only be logged and will have no effect on the state of the transaction.
      * <p>
-     * Although all transaction resources are still available, this method should
-     * be used only for cleaning up resources after a commit has occurred.
+     * Although all transaction resources are still available, this method should be used only for cleaning up resources after a commit has occurred.
      */
     void afterCommit();
 
     /**
      * Invoked after transaction rollback.
      * <p>
-     * Any exceptions generated here will only be logged and will have no effect
-     * on the state of the transaction.
+     * Any exceptions generated here will only be logged and will have no effect on the state of the transaction.
      * <p>
-     * Although all transaction resources are still available, this method should
-     * be used only for cleaning up resources after a rollback has occurred.
+     * Although all transaction resources are still available, this method should be used only for cleaning up resources after a rollback has occurred.
      */
     void afterRollback();
 
     /**
-     * Allows to provide a custom listener's order.
-     * See {@link org.alfresco.repo.transaction.AlfrescoTransactionSupport#COMMIT_ORDER_NORMAL}
+     * Allows to provide a custom listener's order. See {@link org.alfresco.repo.transaction.AlfrescoTransactionSupport#COMMIT_ORDER_NORMAL}
+     * 
      * @return custom order or null for the default one
      */
     default Integer getCustomOrder()

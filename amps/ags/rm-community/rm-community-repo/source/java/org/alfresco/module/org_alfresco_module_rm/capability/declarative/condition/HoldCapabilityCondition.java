@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,23 +43,25 @@ import org.alfresco.service.cmr.security.AccessStatus;
  * @author Roy Wetherall
  */
 public class HoldCapabilityCondition extends AbstractCapabilityCondition
-{  
+{
     /** indicates whether to evaluate holds that the node is within or not within */
     private boolean includedInHold = false;
-    
+
     /** hold service */
     private HoldService holdService;
-    
+
     /**
-     * @param includedInHold    true if holds node within, false otherwise
+     * @param includedInHold
+     *            true if holds node within, false otherwise
      */
     public void setIncludedInHold(boolean includedInHold)
     {
         this.includedInHold = includedInHold;
     }
-    
+
     /**
-     * @param holdService   hold service
+     * @param holdService
+     *            hold service
      */
     public void setHoldService(HoldService holdService)
     {
@@ -70,7 +72,7 @@ public class HoldCapabilityCondition extends AbstractCapabilityCondition
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
-      
+
         if (holdService.isHold(nodeRef))
         {
             result = AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, RMPermissionModel.FILING));
@@ -88,7 +90,7 @@ public class HoldCapabilityCondition extends AbstractCapabilityCondition
                 }
             }
         }
-        
+
         return result;
     }
 }

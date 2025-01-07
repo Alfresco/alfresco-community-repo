@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,24 +45,20 @@ public class TestRecordableVersionServiceImpl extends RecordableVersionServiceIm
 {
     @Override
     protected void invokeBeforeCreateVersion(NodeRef nodeRef)
-    {
-    }        
-    
+    {}
+
     @Override
     protected void invokeAfterCreateVersion(NodeRef nodeRef, Version version)
-    {
-    }
-    
+    {}
+
     @Override
     protected void invokeAfterVersionRevert(NodeRef nodeRef, Version version)
-    {
-    }
-    
+    {}
+
     @Override
-    protected void invokeOnCreateVersion(NodeRef nodeRef, Map<String, Serializable> versionProperties,PolicyScope nodeDetails)
-    {
-    }
-    
+    protected void invokeOnCreateVersion(NodeRef nodeRef, Map<String, Serializable> versionProperties, PolicyScope nodeDetails)
+    {}
+
     @Override
     protected String invokeCalculateVersionLabel(QName classRef, Version preceedingVersion, int versionNumber, Map<String, Serializable> versionProperties)
     {

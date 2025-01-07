@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,7 +26,6 @@
 package org.alfresco.repo.security.authentication.identityservice;
 
 import static com.nimbusds.jose.HeaderParameterNames.KEY_ID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,10 +50,6 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtAudienceValidator;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtDecoderProvider;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtIssuerValidator;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +61,10 @@ import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.web.client.RestOperations;
+
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtAudienceValidator;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtDecoderProvider;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacadeFactoryBean.JwtIssuerValidator;
 
 public class IdentityServiceFacadeFactoryBeanTest
 {
@@ -183,7 +182,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtIssuerValidator issuerValidator = new JwtIssuerValidator(EXPECTED_ISSUER);
 
         final OAuth2TokenValidatorResult validationResult = issuerValidator.validate(
-            tokenWithIssuer("different-issuer"));
+                tokenWithIssuer("different-issuer"));
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isTrue();
         assertThat(validationResult.getErrors()).hasSize(1);
@@ -225,7 +224,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
 
         final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(
-            tokenWithAudience(List.of("different-audience")));
+                tokenWithAudience(List.of("different-audience")));
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isTrue();
         assertThat(validationResult.getErrors()).hasSize(1);
@@ -256,7 +255,7 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
 
         final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(
-            tokenWithAudience(List.of(EXPECTED_AUDIENCE)));
+                tokenWithAudience(List.of(EXPECTED_AUDIENCE)));
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isFalse();
         assertThat(validationResult.getErrors()).isEmpty();
@@ -268,9 +267,9 @@ public class IdentityServiceFacadeFactoryBeanTest
         final JwtAudienceValidator audienceValidator = new JwtAudienceValidator(EXPECTED_AUDIENCE);
 
         final Jwt token = Jwt.withTokenValue(UUID.randomUUID().toString())
-            .claim("aud", EXPECTED_AUDIENCE)
-            .header("JUST", "FOR TESTING")
-            .build();
+                .claim("aud", EXPECTED_AUDIENCE)
+                .header("JUST", "FOR TESTING")
+                .build();
         final OAuth2TokenValidatorResult validationResult = audienceValidator.validate(token);
         assertThat(validationResult).isNotNull();
         assertThat(validationResult.hasErrors()).isFalse();
@@ -280,37 +279,37 @@ public class IdentityServiceFacadeFactoryBeanTest
     private static RSAKey getRsaKey() throws JOSEException
     {
         return new RSAKeyGenerator(2048)
-            .keyUse(KeyUse.SIGNATURE)
-            .algorithm(new Algorithm("PS256"))
-            .keyID(KEY_ID)
-            .generate();
+                .keyUse(KeyUse.SIGNATURE)
+                .algorithm(new Algorithm("PS256"))
+                .keyID(KEY_ID)
+                .generate();
     }
 
     private static SignedJWT getSignedJWT(RSAKey rsaKey, String type, String usernameClaim, String issuer)
     {
         final JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-            .issuer(issuer)
-            .claim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, usernameClaim)
-            .build();
+                .issuer(issuer)
+                .claim(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME, usernameClaim)
+                .build();
         return new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.PS256)
-            .type(new JOSEObjectType(type))
-            .keyID(rsaKey.getKeyID()).build(), claimsSet);
+                .type(new JOSEObjectType(type))
+                .keyID(rsaKey.getKeyID()).build(), claimsSet);
     }
 
     private Jwt tokenWithIssuer(String issuer)
     {
         return Jwt.withTokenValue(UUID.randomUUID().toString())
-            .issuer(issuer)
-            .header("JUST", "FOR TESTING")
-            .build();
+                .issuer(issuer)
+                .header("JUST", "FOR TESTING")
+                .build();
     }
 
     private Jwt tokenWithAudience(Collection<String> audience)
     {
         return Jwt.withTokenValue(UUID.randomUUID().toString())
-            .audience(audience)
-            .header("JUST", "FOR TESTING")
-            .build();
+                .audience(audience)
+                .header("JUST", "FOR TESTING")
+                .build();
     }
 
 }

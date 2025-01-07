@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,12 +46,12 @@ public class FillingCapabilityCondition extends AbstractCapabilityCondition
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS) != AccessStatus.DENIED)
         {
             result = true;
         }
-        
-        return result;     
+
+        return result;
     }
 }

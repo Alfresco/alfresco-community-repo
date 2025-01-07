@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,6 +37,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkCancellationRequest;
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
@@ -51,14 +55,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Hold bulk service integration test.
  */
-@SuppressWarnings({ "PMD.TestClassWithoutTestCases", "PMD.JUnit4TestShouldUseTestAnnotation" })
+@SuppressWarnings({"PMD.TestClassWithoutTestCases", "PMD.JUnit4TestShouldUseTestAnnotation"})
 public class HoldBulkServiceTest extends BaseRMTestCase
 {
     private static final int RECORD_COUNT = 10;
@@ -79,8 +80,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
 
     public void testCancelBulkOperation()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private HoldBulkStatus holdBulkStatus;
             private final ResultSet resultSet = mock(ResultSet.class);
@@ -90,11 +90,11 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 Mockito.when(resultSet.getNumberFound()).thenReturn(4L);
                 Mockito.when(resultSet.hasMore()).thenReturn(false).thenReturn(true).thenReturn(false);
                 Mockito.when(resultSet.getNodeRefs())
-                    .thenAnswer((Answer<List<NodeRef>>) invocationOnMock -> {
-                        await().pollDelay(1, SECONDS).until(() -> true);
-                        return List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
-                            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
-                    });
+                        .thenAnswer((Answer<List<NodeRef>>) invocationOnMock -> {
+                            await().pollDelay(1, SECONDS).until(() -> true);
+                            return List.of(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()),
+                                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
+                        });
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
             }
@@ -106,11 +106,11 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 holdBulkStatus = holdBulkService.execute(hold, bulkOperation);
                 // cancel the bulk operation
                 holdBulkMonitor.cancelBulkOperation(holdBulkStatus.bulkStatusId(),
-                    new BulkCancellationRequest("No reason"));
+                        new BulkCancellationRequest("No reason"));
                 await().atMost(10, SECONDS)
-                    .until(() -> Objects.equals(
-                        holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                        Status.CANCELLED.getValue()));
+                        .until(() -> Objects.equals(
+                                holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
+                                Status.CANCELLED.getValue()));
             }
 
             public void then()
@@ -119,17 +119,16 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 assertNotNull(holdBulkStatus.startTime());
                 assertNotNull(holdBulkStatus.endTime());
                 assertEquals(holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                    HoldBulkStatus.Status.CANCELLED.getValue());
+                        HoldBulkStatus.Status.CANCELLED.getValue());
                 assertEquals(holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).cancellationReason(),
-                    "No reason");
+                        "No reason");
             }
         });
     }
 
     public void testAddRecordsToHoldViaBulk()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordFolder;
             private HoldBulkStatus holdBulkStatus;
@@ -148,11 +147,11 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 for (int i = 0; i < RECORD_COUNT; i++)
                 {
                     records.add(
-                        recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT,
-                            null, null));
+                            recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT,
+                                    null, null));
                 }
                 Mockito.when(resultSet.getNodeRefs()).thenReturn(records).thenReturn(records)
-                    .thenReturn(Collections.emptyList());
+                        .thenReturn(Collections.emptyList());
 
                 // assert current states
                 assertFalse(freezeService.isFrozen(recordFolder));
@@ -173,9 +172,9 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 // execute the bulk operation
                 holdBulkStatus = holdBulkService.execute(hold, bulkOperation);
                 await().atMost(10, SECONDS)
-                    .until(() -> Objects.equals(
-                        holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                        Status.DONE.getValue()));
+                        .until(() -> Objects.equals(
+                                holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
+                                Status.DONE.getValue()));
             }
 
             public void then()
@@ -187,7 +186,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 assertEquals(RECORD_COUNT, holdBulkStatus.processedItems());
                 assertEquals(0, holdBulkStatus.errorsCount());
                 assertEquals(holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                    HoldBulkStatus.Status.DONE.getValue());
+                        HoldBulkStatus.Status.DONE.getValue());
 
                 // record is held
                 for (NodeRef record : records)
@@ -219,8 +218,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
 
     public void testAddRecordFolderToHoldViaBulk()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordFolder;
             private final List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
@@ -239,11 +237,11 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 for (int i = 0; i < RECORD_COUNT; i++)
                 {
                     records.add(
-                        recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT,
-                            null, null));
+                            recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT,
+                                    null, null));
                 }
                 Mockito.when(resultSet.getNodeRefs()).thenReturn(Collections.singletonList(recordFolder))
-                    .thenReturn(Collections.singletonList(recordFolder)).thenReturn(Collections.emptyList());
+                        .thenReturn(Collections.singletonList(recordFolder)).thenReturn(Collections.emptyList());
 
                 // assert current states
                 assertFalse(freezeService.isFrozen(recordFolder));
@@ -264,9 +262,9 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 // execute the bulk operation
                 holdBulkStatus = holdBulkService.execute(hold, bulkOperation);
                 await().atMost(10, SECONDS)
-                    .until(() -> Objects.equals(
-                        holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                        Status.DONE.getValue()));
+                        .until(() -> Objects.equals(
+                                holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
+                                Status.DONE.getValue()));
             }
 
             public void then()
@@ -278,7 +276,7 @@ public class HoldBulkServiceTest extends BaseRMTestCase
                 assertEquals(1, holdBulkStatus.processedItems());
                 assertEquals(0, holdBulkStatus.errorsCount());
                 assertEquals(holdBulkMonitor.getBulkStatus(holdBulkStatus.bulkStatusId()).getStatus(),
-                    HoldBulkStatus.Status.DONE.getValue());
+                        HoldBulkStatus.Status.DONE.getValue());
 
                 for (NodeRef record : records)
                 {

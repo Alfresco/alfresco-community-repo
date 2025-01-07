@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,10 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.recordableversion;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.NONE;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +66,8 @@ public class RecordableVersionConfigServiceImpl implements RecordableVersionConf
     /**
      * Sets the node service
      *
-     * @param nodeService The node service
+     * @param nodeService
+     *            The node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -109,8 +111,10 @@ public class RecordableVersionConfigServiceImpl implements RecordableVersionConf
     /**
      * Checks if the specified recordable version policy has been selected for the document
      *
-     * @param recordableVersionPolicy The recordable version policy
-     * @param nodeRef Node reference of the document
+     * @param recordableVersionPolicy
+     *            The recordable version policy
+     * @param nodeRef
+     *            Node reference of the document
      * @return <code>true</code> if the specified recordable version policy has been selected for the document, <code>false</code> otherwise
      */
     private boolean isVersionPolicySelected(RecordableVersionPolicy recordableVersionPolicy, NodeRef nodeRef)

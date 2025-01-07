@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -69,30 +69,11 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
     public void testRecordableVersionConfigAction()
     {
         // Uncommented due to the failures on bamboo. Also this is related to RM-1758
-        /*
-        doTestInTransaction(new Test<Void>()
-        {
-            final NodeRef document1 = fileFolderService.create(dmFolder, "aDocument", ContentModel.TYPE_CONTENT).getNodeRef();
-            public Void run()
-            {
-                Action action = actionService.createAction(NAME);
-                action.setParameterValue(PARAM_VERSION, MAJOR_ONLY.toString());
-                actionService.executeAction(action, document1);
-                return null;
-            }
+        /* doTestInTransaction(new Test<Void>() { final NodeRef document1 = fileFolderService.create(dmFolder, "aDocument", ContentModel.TYPE_CONTENT).getNodeRef(); public Void run() { Action action = actionService.createAction(NAME); action.setParameterValue(PARAM_VERSION, MAJOR_ONLY.toString()); actionService.executeAction(action, document1); return null; }
+         * 
+         * public void test(Void result) throws Exception { Serializable version = nodeService.getProperty(document1, PROP_RECORDABLE_VERSION_POLICY); assertNotNull(version); assertEquals(MAJOR_ONLY.toString(), (String) version); }; }, dmCollaborator); */
 
-            public void test(Void result) throws Exception
-            {
-                Serializable version = nodeService.getProperty(document1, PROP_RECORDABLE_VERSION_POLICY);
-                assertNotNull(version);
-                assertEquals(MAJOR_ONLY.toString(), (String) version);
-            };
-        },
-        dmCollaborator);
-        */
-
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 Action action = actionService.createAction(NAME);
@@ -106,11 +87,11 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
                 assertNull(nodeService.getProperty(dmFolder, PROP_RECORDABLE_VERSION_POLICY));
             }
         },
-        dmCollaborator);
+                dmCollaborator);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             final NodeRef document2 = fileFolderService.create(dmFolder, "another document", ContentModel.TYPE_CONTENT).getNodeRef();
+
             public Void run()
             {
                 Action action = actionService.createAction(NAME);
@@ -124,12 +105,11 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
                 assertNull(nodeService.getProperty(document2, PROP_RECORDABLE_VERSION_POLICY));
             }
         },
-        dmCollaborator);
+                dmCollaborator);
 
-
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             final NodeRef document3 = fileFolderService.create(dmFolder, "testfile.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+
             public Void run()
             {
                 Action createAction = actionService.createAction(CreateRecordAction.NAME);
@@ -147,6 +127,6 @@ public class RecordableVersionConfigActionTest extends BaseRMTestCase
                 assertNull(nodeService.getProperty(document3, PROP_RECORDABLE_VERSION_POLICY));
             }
         },
-        dmCollaborator);
+                dmCollaborator);
     }
 }

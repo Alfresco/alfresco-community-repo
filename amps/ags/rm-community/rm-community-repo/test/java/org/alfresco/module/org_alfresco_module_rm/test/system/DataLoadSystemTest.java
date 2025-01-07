@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -55,11 +61,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.webscripts.GUID;
 
 public class DataLoadSystemTest
 {
@@ -78,10 +79,9 @@ public class DataLoadSystemTest
     /** config locations */
     protected String[] getConfigLocations()
     {
-        return new String[]
-        {
-            "classpath:alfresco/application-context.xml",
-            "classpath:test-context.xml"
+        return new String[]{
+                "classpath:alfresco/application-context.xml",
+                "classpath:test-context.xml"
         };
     }
 
@@ -89,17 +89,17 @@ public class DataLoadSystemTest
     private static final int BATCH_SIZE = 100;
 
     /** file plan sizing */
-    private static final int ROOT_CATEGORY_COUNT    = 0;
-    private static final int RECORD_FOLDER_COUNT    = 0;
-    private static final int RECORD_COUNT           = 0;
+    private static final int ROOT_CATEGORY_COUNT = 0;
+    private static final int RECORD_FOLDER_COUNT = 0;
+    private static final int RECORD_COUNT = 0;
 
     /** rm user sizing */
-    private static final int RM_GROUP_COUNT         = 0;
-    private static final int RM_USER_COUNT          = 0;
+    private static final int RM_GROUP_COUNT = 0;
+    private static final int RM_USER_COUNT = 0;
 
     /** inplace sizing */
-    private static final int USER_COUNT             = 0;
-    private static final int INPLACE_RECORD_COUNT   = 5000;
+    private static final int USER_COUNT = 0;
+    private static final int INPLACE_RECORD_COUNT = 5000;
 
     /** application context */
     private ApplicationContext applicationContext;
@@ -116,181 +116,169 @@ public class DataLoadSystemTest
         applicationContext = ApplicationContextHelper.getApplicationContext(getConfigLocations());
         utils = new CommonRMTestUtils(applicationContext);
 
-        filePlanService = (FilePlanService)applicationContext.getBean("FilePlanService");
-        recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
-        recordService = (RecordService)applicationContext.getBean("RecordService");
-        transactionService = (TransactionService)applicationContext.getBean("transactionService");
-        authorityService = (AuthorityService)applicationContext.getBean("authorityService");
-        authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
-        personService = (PersonService)applicationContext.getBean("personService");
-        filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("filePlanRoleService");
-        siteService = (SiteService)applicationContext.getBean("siteService");
-        fileFolderService = (FileFolderService)applicationContext.getBean("fileFolderService");
+        filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
+        recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
+        recordService = (RecordService) applicationContext.getBean("RecordService");
+        transactionService = (TransactionService) applicationContext.getBean("transactionService");
+        authorityService = (AuthorityService) applicationContext.getBean("authorityService");
+        authenticationService = (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
+        personService = (PersonService) applicationContext.getBean("personService");
+        filePlanRoleService = (FilePlanRoleService) applicationContext.getBean("filePlanRoleService");
+        siteService = (SiteService) applicationContext.getBean("siteService");
+        fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
     }
 
     @Test
     public void loadAllData()
     {
-       loadFilePlanData();
-       loadRMUsersAndGroups();
-       loadInPlace();
+        loadFilePlanData();
+        loadRMUsersAndGroups();
+        loadInPlace();
     }
 
     private void loadInPlace()
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-           public Void doWork() throws Exception
-           {
-               final SiteInfo site = siteService.getSite("test");
-               if (site == null)
-               {
-                   throw new AlfrescoRuntimeException("The collab site test is not present.");
-               }
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
+            public Void doWork() throws Exception
+            {
+                final SiteInfo site = siteService.getSite("test");
+                if (site == null)
+                {
+                    throw new AlfrescoRuntimeException("The collab site test is not present.");
+                }
 
-               final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-               if (filePlan == null)
-               {
-                   Assert.fail("The default RM site is not present.");
-               }
+                final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                if (filePlan == null)
+                {
+                    Assert.fail("The default RM site is not present.");
+                }
 
-               // create users and add to site
-               repeatInTransactionBatches(new RunAsWork<Void>()
-               {
-                  public Void doWork() throws Exception
-                  {
-                      // create user
-                      String userName = GUID.generate();
-                      System.out.println("Creating user " + userName);
-                      createPerson(userName, true);
+                // create users and add to site
+                repeatInTransactionBatches(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // create user
+                        String userName = GUID.generate();
+                        System.out.println("Creating user " + userName);
+                        createPerson(userName, true);
 
-                      // add to collab site
-                      siteService.setMembership("test", userName, SiteRole.SiteCollaborator.toString());
+                        // add to collab site
+                        siteService.setMembership("test", userName, SiteRole.SiteCollaborator.toString());
 
-                      return null;
-                  }
-               }, USER_COUNT);
+                        return null;
+                    }
+                }, USER_COUNT);
 
-               // create content and declare as record
-               repeatInTransactionBatches(new RunAsWork<Void>()
-               {
-                  public Void doWork() throws Exception
-                  {
-                      // create document
-                      NodeRef docLib = siteService.getContainer(site.getShortName(), SiteService.DOCUMENT_LIBRARY);
-                      NodeRef document = fileFolderService.create(docLib, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                // create content and declare as record
+                repeatInTransactionBatches(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        // create document
+                        NodeRef docLib = siteService.getContainer(site.getShortName(), SiteService.DOCUMENT_LIBRARY);
+                        NodeRef document = fileFolderService.create(docLib, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
 
-                      recordService.createRecord(filePlan, document);
+                        recordService.createRecord(filePlan, document);
 
-                      return null;
-                  }
-               }, INPLACE_RECORD_COUNT);
+                        return null;
+                    }
+                }, INPLACE_RECORD_COUNT);
 
-               return null;
-           }
+                return null;
+            }
         }, AuthenticationUtil.getAdminUserName());
     }
 
-
     private void loadRMUsersAndGroups()
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-           public Void doWork() throws Exception
-           {
-               final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-               if (filePlan == null)
-               {
-                   Assert.fail("The default RM site is not present.");
-               }
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
+            public Void doWork() throws Exception
+            {
+                final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                if (filePlan == null)
+                {
+                    Assert.fail("The default RM site is not present.");
+                }
 
-               groups = new ArrayList<>();
+                groups = new ArrayList<>();
 
-               repeatInTransactionBatches(new RunAsWork<Void>()
-               {
-                  public Void doWork() throws Exception
-                  {
-                      String groupName = GUID.generate();
-                      System.out.println("Creating group " + groupName);
-                      groups.add("GROUP_" + authorityService.createAuthority(AuthorityType.GROUP, groupName));
-                      filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, groupName);
-                      return null;
-                  }
-               }, RM_GROUP_COUNT);
+                repeatInTransactionBatches(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        String groupName = GUID.generate();
+                        System.out.println("Creating group " + groupName);
+                        groups.add("GROUP_" + authorityService.createAuthority(AuthorityType.GROUP, groupName));
+                        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, groupName);
+                        return null;
+                    }
+                }, RM_GROUP_COUNT);
 
-               for (final String group : groups)
-               {
-                   repeatInTransactionBatches(new RunAsWork<Void>()
-                   {
-                      public Void doWork() throws Exception
-                      {
-                          String userName = GUID.generate();
-                          System.out.println("Creating user " + userName + " and adding to group " + group);
-                          createPerson(userName, true);
-                          authorityService.addAuthority(group, userName);
-                          return null;
-                      }
-                   }, RM_USER_COUNT);
-               }
+                for (final String group : groups)
+                {
+                    repeatInTransactionBatches(new RunAsWork<Void>() {
+                        public Void doWork() throws Exception
+                        {
+                            String userName = GUID.generate();
+                            System.out.println("Creating user " + userName + " and adding to group " + group);
+                            createPerson(userName, true);
+                            authorityService.addAuthority(group, userName);
+                            return null;
+                        }
+                    }, RM_USER_COUNT);
+                }
 
-               return null;
-           }
+                return null;
+            }
         });
     }
 
     private void loadFilePlanData()
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-           public Void doWork() throws Exception
-           {
-              final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-              if (filePlan == null)
-              {
-                  Assert.fail("The default RM site is not present.");
-              }
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
+            public Void doWork() throws Exception
+            {
+                final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                if (filePlan == null)
+                {
+                    Assert.fail("The default RM site is not present.");
+                }
 
-              // create root categories
-              recordCategories = new ArrayList<>(ROOT_CATEGORY_COUNT);
-              repeatInTransactionBatches(new RunAsWork<Void>()
-              {
-                 public Void doWork() throws Exception
-                 {
-                    recordCategories.add(filePlanService.createRecordCategory(filePlan, GUID.generate()));
-                    return null;
-                 }
-              }, ROOT_CATEGORY_COUNT);
-
-              // create record folders
-              recordFolders = new ArrayList<>(RECORD_FOLDER_COUNT);
-              for (final NodeRef recordCategory : recordCategories)
-              {
-                  repeatInTransactionBatches(new RunAsWork<Void>()
-                  {
-                     public Void doWork() throws Exception
-                     {
-                        recordFolders.add(recordFolderService.createRecordFolder(recordCategory, GUID.generate()));
+                // create root categories
+                recordCategories = new ArrayList<>(ROOT_CATEGORY_COUNT);
+                repeatInTransactionBatches(new RunAsWork<Void>() {
+                    public Void doWork() throws Exception
+                    {
+                        recordCategories.add(filePlanService.createRecordCategory(filePlan, GUID.generate()));
                         return null;
-                     }
-                  }, RECORD_FOLDER_COUNT);
-              }
+                    }
+                }, ROOT_CATEGORY_COUNT);
 
-              // create records
-              for (final NodeRef recordFolder : recordFolders)
-              {
-                  repeatInTransactionBatches(new RunAsWork<Void>()
-                  {
-                     public Void doWork() throws Exception
-                     {
-                        recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT, null, null);
-                        return null;
-                     }
-                  }, RECORD_COUNT);
-              }
+                // create record folders
+                recordFolders = new ArrayList<>(RECORD_FOLDER_COUNT);
+                for (final NodeRef recordCategory : recordCategories)
+                {
+                    repeatInTransactionBatches(new RunAsWork<Void>() {
+                        public Void doWork() throws Exception
+                        {
+                            recordFolders.add(recordFolderService.createRecordFolder(recordCategory, GUID.generate()));
+                            return null;
+                        }
+                    }, RECORD_FOLDER_COUNT);
+                }
 
+                // create records
+                for (final NodeRef recordFolder : recordFolders)
+                {
+                    repeatInTransactionBatches(new RunAsWork<Void>() {
+                        public Void doWork() throws Exception
+                        {
+                            recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT, null, null);
+                            return null;
+                        }
+                    }, RECORD_COUNT);
+                }
 
-              return null;
-           }
+                return null;
+            }
         });
     }
 
@@ -310,8 +298,7 @@ public class DataLoadSystemTest
         totalCount = 0;
         while (totalCount < count)
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
                     int batchSize = count - totalCount;
@@ -332,7 +319,7 @@ public class DataLoadSystemTest
                     return null;
                 }
             },
-            false, true);
+                    false, true);
         }
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,8 @@ package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -37,8 +39,6 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Create group capability implementation
@@ -54,7 +54,8 @@ public class CreateCapability extends DeclarativeCapability
     private RecordFolderService recordFolderService;
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -62,7 +63,8 @@ public class CreateCapability extends DeclarativeCapability
     }
 
     /**
-     * @param recordFolderService   record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -81,10 +83,14 @@ public class CreateCapability extends DeclarativeCapability
     /**
      * Evaluate capability.
      *
-     * @param destination   destination node reference
-     * @param linkee        linkee node reference, can be null
-     * @param assocType     association type, can be null
-     * @param recordType    record type, can be null
+     * @param destination
+     *            destination node reference
+     * @param linkee
+     *            linkee node reference, can be null
+     * @param assocType
+     *            association type, can be null
+     * @param recordType
+     *            record type, can be null
      * @return
      */
     public int evaluate(NodeRef destination, NodeRef linkee, QName assocType, QName recordType)
@@ -104,8 +110,8 @@ public class CreateCapability extends DeclarativeCapability
                 if (linkee == null)
                 {
                     if (recordService.isRecord(destination) &&
-                        !recordService.isDeclared(destination) &&
-                        permissionService.hasPermission(destination, FILE_RECORDS) == AccessStatus.ALLOWED)
+                            !recordService.isDeclared(destination) &&
+                            permissionService.hasPermission(destination, FILE_RECORDS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
                     }
@@ -132,7 +138,7 @@ public class CreateCapability extends DeclarativeCapability
 
             // if the destination folder is not a record folder and the user has filling capability on it, grant access to create the record
             if (checkConditions(destination, conditions) &&
-                   !recordFolderService.isRecordFolder(destination) &&
+                    !recordFolderService.isRecordFolder(destination) &&
                     permissionService.hasPermission(destination, CREATE_MODIFY_DESTROY_FILEPLAN_METADATA) == AccessStatus.ALLOWED)
             {
                 return AccessDecisionVoter.ACCESS_GRANTED;
@@ -182,7 +188,7 @@ public class CreateCapability extends DeclarativeCapability
         {
             return AccessDecisionVoter.ACCESS_GRANTED;
         }
-        if (((ChangeOrDeleteReferencesCapability)capabilityService.getCapability(CHANGE_OR_DELETE_REFERENCES)).evaluate(destination, linkee) == AccessDecisionVoter.ACCESS_GRANTED)
+        if (((ChangeOrDeleteReferencesCapability) capabilityService.getCapability(CHANGE_OR_DELETE_REFERENCES)).evaluate(destination, linkee) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             return AccessDecisionVoter.ACCESS_GRANTED;
         }

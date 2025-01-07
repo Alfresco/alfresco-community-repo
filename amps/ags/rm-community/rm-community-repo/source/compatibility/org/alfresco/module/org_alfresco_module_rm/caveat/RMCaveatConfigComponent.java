@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -65,7 +65,8 @@ public interface RMCaveatConfigComponent
     /**
      * Get RM constraint list
      *
-     * @param listName the name of the RMConstraintList
+     * @param listName
+     *            the name of the RMConstraintList
      */
     RMConstraintInfo getRMConstraint(String listName);
 
@@ -82,12 +83,12 @@ public interface RMCaveatConfigComponent
     /**
      * Update RM constraint values for given authority
      */
-    void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values);
+    void updateRMConstraintListAuthority(String listName, String authorityName, List<String> values);
 
     /**
      * Update RM constraint authorities for given value
      */
-    void updateRMConstraintListValue(String listName, String valueName, List<String>authorities);
+    void updateRMConstraintListValue(String listName, String valueName, List<String> authorities);
 
     /**
      * Remove RM constraint value (all authorities)
@@ -102,12 +103,14 @@ public interface RMCaveatConfigComponent
     /**
      * Delete RM Constraint
      *
-     * @param listName the name of the RMConstraintList
+     * @param listName
+     *            the name of the RMConstraintList
      */
     void deleteRMConstraint(String listName);
 
     /**
      * Get the details of a caveat list
+     * 
      * @param listName
      * @return
      */

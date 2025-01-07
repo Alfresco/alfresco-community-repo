@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,15 +31,15 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.repository.NodeRef;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Edit non records metadata capability unit test
@@ -50,25 +50,25 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 public class EditNonRecordsMetadataCapabilityUnitTest extends BaseUnitTest
 {
     /** mocked set */
-    @Mock private Set<Object> mockedSet;
-    
+    @Mock
+    private Set<Object> mockedSet;
+
     /** test capability */
-    @InjectMocks private EditNonRecordMetadataCapability capability;
-    
+    @InjectMocks
+    private EditNonRecordMetadataCapability capability;
+
     /**
-     * Given that the evaluated node is held in the transaction cache as new
-     * When evaluated
-     * Then access is granted
+     * Given that the evaluated node is held in the transaction cache as new When evaluated Then access is granted
      */
     @Test
     public void newRecord()
     {
         NodeRef nodeRef = generateNodeRef();
         when(mockedTransactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS))
-            .thenReturn(mockedSet);        
+                .thenReturn(mockedSet);
         when(mockedSet.contains(nodeRef))
-            .thenReturn(true);
-        
+                .thenReturn(true);
+
         Assert.assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(nodeRef));
-    }   
+    }
 }

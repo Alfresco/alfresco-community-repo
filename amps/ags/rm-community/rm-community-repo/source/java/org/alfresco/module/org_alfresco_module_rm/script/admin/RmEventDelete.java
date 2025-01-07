@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,12 +30,13 @@ package org.alfresco.module.org_alfresco_module_rm.script.admin;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 
 /**
  * Records management event delete web script
@@ -58,9 +59,7 @@ public class RmEventDelete extends DeclarativeWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *          org.springframework.extensions.webscripts.Status,
-     *          org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)

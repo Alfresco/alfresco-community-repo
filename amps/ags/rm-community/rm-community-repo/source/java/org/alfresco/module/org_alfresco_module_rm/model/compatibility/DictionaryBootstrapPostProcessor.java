@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -53,7 +53,7 @@ public class DictionaryBootstrapPostProcessor implements BeanFactoryPostProcesso
     {
         // if the site service bootstrap bean and the RM dictionary bean are present in the bean factory
         if (beanFactory.containsBean(BEAN_SITESERVICE_BOOTSTRAP) &&
-            beanFactory.containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP))
+                beanFactory.containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP))
         {
             // get the RM dictionary bootstrap bean definition
             BeanDefinition beanDef = beanFactory.getBeanDefinition(BEAN_RM_DICTIONARY_BOOTSTRAP);

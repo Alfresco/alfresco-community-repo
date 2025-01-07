@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,13 +29,14 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
 import java.io.IOException;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 
 /**
  * REST API Test for Email mapping keys

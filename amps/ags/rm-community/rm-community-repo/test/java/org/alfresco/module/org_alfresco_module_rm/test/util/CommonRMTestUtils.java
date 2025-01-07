@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
@@ -65,8 +68,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Common RM test utility methods.
@@ -104,7 +105,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Constructor
      *
-     * @param applicationContext application context
+     * @param applicationContext
+     *            application context
      */
     public CommonRMTestUtils(ApplicationContext applicationContext)
     {
@@ -122,8 +124,9 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Create a disposition schedule
      *
-     * @param container record category
-     * @return {@link DispositionSchedule}  created disposition schedule node reference
+     * @param container
+     *            record category
+     * @return {@link DispositionSchedule} created disposition schedule node reference
      */
     public DispositionSchedule createBasicDispositionSchedule(NodeRef container)
     {
@@ -219,9 +222,11 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder record folder
-     * @param name         name of record
-     * @return {@link NodeRef}  record node reference
+     * @param recordFolder
+     *            record folder
+     * @param name
+     *            name of record
+     * @return {@link NodeRef} record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name)
     {
@@ -231,10 +236,13 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder record folder
-     * @param name         name of the record
-     * @param title        title of the record
-     * @return {@link NodeRef}  record node reference
+     * @param recordFolder
+     *            record folder
+     * @param name
+     *            name of the record
+     * @param title
+     *            title of the record
+     * @return {@link NodeRef} record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name, String title)
     {
@@ -246,11 +254,15 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder record folder
-     * @param name         name of record
-     * @param properties   properties of the record
-     * @param content      content of the record
-     * @return {@link NodeRef}  record node reference
+     * @param recordFolder
+     *            record folder
+     * @param name
+     *            name of record
+     * @param properties
+     *            properties of the record
+     * @param content
+     *            content of the record
+     * @return {@link NodeRef} record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String content)
     {
@@ -269,11 +281,15 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a record in a record folder.
      *
-     * @param recordFolder record folder
-     * @param name         name of record
-     * @param properties   properties of the record
-     * @param content      content of the record
-     * @return {@link NodeRef}  record node reference
+     * @param recordFolder
+     *            record folder
+     * @param name
+     *            name of record
+     * @param properties
+     *            properties of the record
+     * @param content
+     *            content of the record
+     * @return {@link NodeRef} record node reference
      */
     public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String mimetype, InputStream content)
     {
@@ -313,10 +329,13 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a non-electronic record in a record folder.
      *
-     * @param recordFolder record folder
-     * @param name         name of the non-electronic record
-     * @param title        title of the non-electronic record
-     * @return {@link NodeRef}  non-electronic record node reference
+     * @param recordFolder
+     *            record folder
+     * @param name
+     *            name of the non-electronic record
+     * @param title
+     *            title of the non-electronic record
+     * @return {@link NodeRef} non-electronic record node reference
      */
     public NodeRef createNonElectronicRecord(NodeRef recordFolder, String name, String title)
     {
@@ -338,8 +357,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
      */
     public void completeRecord(final NodeRef record)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -364,8 +382,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
     public void closeFolder(final NodeRef recordFolder)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -402,8 +419,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to complete event on disposable item
      *
-     * @param disposableItem disposable item (record or record folder)
-     * @param eventName      event name
+     * @param disposableItem
+     *            disposable item (record or record folder)
+     * @param eventName
+     *            event name
      */
     public void completeEvent(NodeRef disposableItem, String eventName)
     {
@@ -418,9 +437,11 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to create a hold.
      *
-     * @param holdName   hold name
-     * @param holdReason hold reason
-     * @return NodeRef  hold node reference
+     * @param holdName
+     *            hold name
+     * @param holdReason
+     *            hold reason
+     * @return NodeRef hold node reference
      */
     public NodeRef createHold(NodeRef filePlan, String holdName, String holdReason)
     {
@@ -430,7 +451,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Helper method to delete a hold.
      *
-     * @param nodeRef hold node reference
+     * @param nodeRef
+     *            hold node reference
      */
     public void deleteHold(NodeRef nodeRef)
     {
@@ -440,8 +462,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Util method to add content to a hold.
      *
-     * @param holdNodeRef    hold node reference
-     * @param contentNodeRef content node reference
+     * @param holdNodeRef
+     *            hold node reference
+     * @param contentNodeRef
+     *            content node reference
      */
     public void addItemToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
     {
@@ -451,8 +475,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Util method to remove content from a hold.
      *
-     * @param holdNodeRef    hold node reference
-     * @param contentNodeRef content node reference
+     * @param holdNodeRef
+     *            hold node reference
+     * @param contentNodeRef
+     *            content node reference
      */
     public void removeItemFromHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
     {
@@ -462,8 +488,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
     /**
      * Util method to remove items from holds.
      *
-     * @param holdNodeRefs   the list {@link NodeRef}s of the holds
-     * @param contentNodeRef the list of items which will be removed from the given holds
+     * @param holdNodeRefs
+     *            the list {@link NodeRef}s of the holds
+     * @param contentNodeRef
+     *            the list of items which will be removed from the given holds
      */
     public void removeItemsFromHolds(List<NodeRef> holdNodeRefs, List<NodeRef> contentNodeRef)
     {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -44,10 +49,6 @@ import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipServi
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Implementation for Java backed webscript to get RM custom references for a node.
@@ -91,7 +92,8 @@ public class CustomRefsGet extends AbstractRmWebScript
     /**
      * Sets the relationship service instance
      *
-     * @param relationshipService The relationship service instance
+     * @param relationshipService
+     *            The relationship service instance
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -111,7 +113,8 @@ public class CustomRefsGet extends AbstractRmWebScript
     /**
      * Sets the capability service instance
      *
-     * @param capabilityService Capability service instance
+     * @param capabilityService
+     *            Capability service instance
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -119,9 +122,7 @@ public class CustomRefsGet extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -138,7 +139,8 @@ public class CustomRefsGet extends AbstractRmWebScript
     /**
      * Gets all the references that come 'out' from this node
      *
-     * @param nodeRef Node reference
+     * @param nodeRef
+     *            Node reference
      * @return All the references that come 'out' from this node
      */
     private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef)
@@ -152,7 +154,8 @@ public class CustomRefsGet extends AbstractRmWebScript
     /**
      * Gets all the references that come 'in' to this node
      *
-     * @param nodeRef Node reference
+     * @param nodeRef
+     *            Node reference
      * @return All the references that come 'in' to this node
      */
     private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef)
@@ -166,7 +169,8 @@ public class CustomRefsGet extends AbstractRmWebScript
     /**
      * Creates relationship data for the ftl template
      *
-     * @param relationships The relationships
+     * @param relationships
+     *            The relationships
      * @return The relationship data
      */
     private List<Map<String, String>> getRelationshipData(Set<Relationship> relationships)
@@ -205,8 +209,8 @@ public class CustomRefsGet extends AbstractRmWebScript
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.append("Unsupported relationship type '")
-                        .append(type)
-                        .append("'.");
+                            .append(type)
+                            .append("'.");
 
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, sb.toString());
                 }
@@ -225,7 +229,8 @@ public class CustomRefsGet extends AbstractRmWebScript
     /**
      * Determines whether the current user has view capabilities on the given node.
      *
-     * @param  nodeRef Node reference
+     * @param nodeRef
+     *            Node reference
      * @return boolean <code>true</code> if current user has view capability, <code>false</code> otherwise
      */
     private boolean hasView(NodeRef nodeRef)

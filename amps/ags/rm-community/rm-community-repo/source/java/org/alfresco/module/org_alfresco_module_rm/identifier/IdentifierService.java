@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,24 +47,28 @@ public interface IdentifierService
     /**
      * Register an identifier generator implementation with the service.
      *
-     * @param identifierGenerator   identifier generator implementation
+     * @param identifierGenerator
+     *            identifier generator implementation
      */
     void register(IdentifierGenerator identifierGenerator);
 
     /**
      * Generate an identifier for a node with the given type and parent.
      *
-     * @param type      type of the node
-     * @param parent    parent of the ndoe
-     * @return String   generated identifier
+     * @param type
+     *            type of the node
+     * @param parent
+     *            parent of the ndoe
+     * @return String generated identifier
      */
     String generateIdentifier(QName type, NodeRef parent);
 
     /**
      * Generate an identifier for the given node.
      *
-     * @param nodeRef   node reference
-     * @return String   generated identifier
+     * @param nodeRef
+     *            node reference
+     * @return String generated identifier
      */
     String generateIdentifier(NodeRef nodeRef);
 }

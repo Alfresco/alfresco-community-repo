@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -54,8 +57,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Freeze Service Implementation
@@ -64,9 +65,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class FreezeServiceImpl extends    ServiceBaseImpl
-                               implements FreezeService,
-                                          RecordsManagementModel
+public class FreezeServiceImpl extends ServiceBaseImpl
+        implements FreezeService,
+        RecordsManagementModel
 {
     /** I18N */
     private static final String MSG_HOLD_NAME = "rm.hold.name";
@@ -88,7 +89,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     private RecordService recordService;
 
     /**
-     * @param recordFolderService record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -96,7 +98,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -120,7 +123,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param filePlanService file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -128,7 +132,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param holdService hold service
+     * @param holdService
+     *            hold service
      */
     public void setHoldService(HoldService holdService)
     {
@@ -161,8 +166,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(java.lang.String,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     @Deprecated
@@ -174,8 +178,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     @Deprecated
@@ -188,8 +191,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(java.lang.String,
-     *      java.util.Set)
+     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(java.lang.String, java.util.Set)
      */
     @Override
     @Deprecated
@@ -206,8 +208,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.util.Set)
+     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#freeze(org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
      */
     @Override
     @Deprecated
@@ -272,8 +273,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#updateReason(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#updateReason(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
     @Deprecated
@@ -311,19 +311,17 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
             if (nodeService.hasAspect(nodeRef, ASPECT_HELD_CHILDREN))
             {
-                heldCount = (Integer)getInternalNodeService().getProperty(nodeRef, PROP_HELD_CHILDREN_COUNT);
+                heldCount = (Integer) getInternalNodeService().getProperty(nodeRef, PROP_HELD_CHILDREN_COUNT);
             }
             else
             {
-                final TransactionService transactionService = (TransactionService)applicationContext.getBean("transactionService");
+                final TransactionService transactionService = (TransactionService) applicationContext.getBean("transactionService");
 
-                heldCount = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>()
-                {
+                heldCount = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>() {
                     @Override
                     public Integer doWork()
                     {
-                        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>()
-                        {
+                        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>() {
                             public Integer execute() throws Throwable
                             {
                                 int heldCount = 0;
@@ -337,7 +335,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                                         final NodeRef childRef = childAssociationRef.getChildRef();
                                         if (childAssociationRef.isPrimary() && isFrozen(childRef))
                                         {
-                                            heldCount ++;
+                                            heldCount++;
                                         }
                                     }
                                 }
@@ -350,7 +348,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                                 return heldCount;
                             }
                         },
-                        false, true);
+                                false, true);
                     }
                 });
             }
@@ -373,7 +371,10 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         if (isFrozen(nodeRef))
         {
             Serializable property = nodeService.getProperty(nodeRef, PROP_FROZEN_AT);
-            if (property != null) { return (Date) property; }
+            if (property != null)
+            {
+                return (Date) property;
+            }
         }
 
         return null;
@@ -390,7 +391,10 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         if (isFrozen(nodeRef))
         {
             Serializable property = nodeService.getProperty(nodeRef, PROP_FROZEN_BY);
-            if (property != null) { return (String) property; }
+            if (property != null)
+            {
+                return (String) property;
+            }
         }
 
         return null;
@@ -403,8 +407,10 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     /**
      * Creates a hold using the given nodeRef and reason
      *
-     * @param nodeRef the nodeRef which will be frozen
-     * @param reason the reason why the record will be frozen
+     * @param nodeRef
+     *            the nodeRef which will be frozen
+     * @param reason
+     *            the reason why the record will be frozen
      * @return NodeRef of the created hold
      */
     private NodeRef createHold(NodeRef nodeRef, String reason)
@@ -424,7 +430,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     /**
      * Helper method to determine if a node is frozen or has frozen children
      *
-     * @param nodeRef Node to be checked
+     * @param nodeRef
+     *            Node to be checked
      * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
      */
     @Override

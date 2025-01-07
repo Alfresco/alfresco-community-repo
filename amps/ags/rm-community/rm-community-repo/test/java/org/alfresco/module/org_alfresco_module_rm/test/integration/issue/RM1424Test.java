@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,40 +49,38 @@ public class RM1424Test extends DeleteHoldTest
     {
         final List<NodeRef> listWithTwoHolds = new ArrayList<>(2);
 
-        doTestInTransaction(new Test<Void>()
-        {
-           @Override
-           public Void run()
-           {
-               // No holds
-               List<NodeRef> emptyHoldList = holdService.getHolds(filePlan);
-               assertNotNull(emptyHoldList);
-               assertTrue(emptyHoldList.isEmpty());
+        doTestInTransaction(new Test<Void>() {
+            @Override
+            public Void run()
+            {
+                // No holds
+                List<NodeRef> emptyHoldList = holdService.getHolds(filePlan);
+                assertNotNull(emptyHoldList);
+                assertTrue(emptyHoldList.isEmpty());
 
-               // Create 2 holds
-               createAndCheckHolds();
+                // Create 2 holds
+                createAndCheckHolds();
 
-               // Check the list of holds
-               listWithTwoHolds.addAll(holdService.getHolds(filePlan));
-               assertNotNull(listWithTwoHolds);
-               assertEquals(2, listWithTwoHolds.size());
+                // Check the list of holds
+                listWithTwoHolds.addAll(holdService.getHolds(filePlan));
+                assertNotNull(listWithTwoHolds);
+                assertEquals(2, listWithTwoHolds.size());
 
-               // Check the first hold
-               NodeRef hold1 = listWithTwoHolds.get(0);
-               assertEquals(RecordsManagementModel.TYPE_HOLD, nodeService.getType(hold1));
-               assertEquals(HOLD1_NAME, (String) nodeService.getProperty(hold1, PROP_NAME));
-               assertEquals(HOLD1_REASON, (String) nodeService.getProperty(hold1, PROP_HOLD_REASON));
-               assertEquals(HOLD1_DESC, (String) nodeService.getProperty(hold1, PROP_DESCRIPTION));
+                // Check the first hold
+                NodeRef hold1 = listWithTwoHolds.get(0);
+                assertEquals(RecordsManagementModel.TYPE_HOLD, nodeService.getType(hold1));
+                assertEquals(HOLD1_NAME, (String) nodeService.getProperty(hold1, PROP_NAME));
+                assertEquals(HOLD1_REASON, (String) nodeService.getProperty(hold1, PROP_HOLD_REASON));
+                assertEquals(HOLD1_DESC, (String) nodeService.getProperty(hold1, PROP_DESCRIPTION));
 
-               // Add the user to the RM Manager role
-               filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
+                // Add the user to the RM Manager role
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
-               return null;
-           }
+                return null;
+            }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -96,20 +94,18 @@ public class RM1424Test extends DeleteHoldTest
         }, userName);
 
         final NodeRef hold2 = listWithTwoHolds.get(1);
-        doTestInTransaction(new Test<Void>()
-        {
-           @Override
-           public Void run()
-           {
-               // Give the user read permissions on the hold
-               permissionService.setPermission(hold2, userName, RMPermissionModel.FILING, true);
+        doTestInTransaction(new Test<Void>() {
+            @Override
+            public Void run()
+            {
+                // Give the user read permissions on the hold
+                permissionService.setPermission(hold2, userName, RMPermissionModel.FILING, true);
 
-               return null;
-           }
+                return null;
+            }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

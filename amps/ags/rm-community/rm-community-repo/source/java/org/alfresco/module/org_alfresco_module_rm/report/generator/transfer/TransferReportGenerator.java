@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -43,7 +45,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Transfer report generator.
@@ -56,15 +57,16 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
 {
     /** dispotion service */
     protected DispositionService dispositionService;
-    
+
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.generator.DeclarativeReportGenerator#generateReportTemplateContext(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -88,7 +90,8 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     /**
      * Returns a list of transfer nodes
      *
-     * @param nodeRef The transfer object
+     * @param nodeRef
+     *            The transfer object
      * @return Transfer node list
      */
     private List<TransferNode> getTransferNodes(NodeRef nodeRef)
@@ -107,7 +110,8 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     /**
      * Helper method to get the properties of a transfer node
      *
-     * @param childRef  Node reference
+     * @param childRef
+     *            Node reference
      * @return Transfer node properties
      */
     private Map<String, Serializable> getTransferNodeProperties(NodeRef childRef)
@@ -134,7 +138,8 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     /**
      * Helper method to get the list of records (with their properties) within a folder
      *
-     * @param childRef  Node reference of the folder
+     * @param childRef
+     *            Node reference of the folder
      * @return List of records within the specified folder
      */
     private List<TransferNode> getRecords(NodeRef childRef)
@@ -157,8 +162,9 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     /**
      * Helper method to get the common transfer node properties
      *
-     * @param nodeRef   Node reference of the transfer node
-     * @return  Map of the common transfer node properties
+     * @param nodeRef
+     *            Node reference of the transfer node
+     * @return Map of the common transfer node properties
      */
     private Map<String, Serializable> getCommonProperties(NodeRef nodeRef)
     {
@@ -177,7 +183,8 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     /**
      * Helper method to get the folder specific properties
      *
-     * @param folder Node reference of the folder
+     * @param folder
+     *            Node reference of the folder
      * @return Map of the folder specific properties
      */
     private Map<String, Serializable> getFolderProperties(NodeRef folder)
@@ -195,7 +202,8 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     /**
      * Helper method to get the record folder properties
      *
-     * @param record Node reference of the record
+     * @param record
+     *            Node reference of the record
      * @return Map of the record specific properties
      */
     private Map<String, Serializable> getRecordProperties(NodeRef record)
@@ -219,7 +227,8 @@ public class TransferReportGenerator extends DeclarativeReportGenerator
     /**
      * Gets the disposition authority from the list of the transfer nodes
      *
-     * @param transferNodes   The transfer nodes
+     * @param transferNodes
+     *            The transfer nodes
      * @return Disposition authority
      */
     private String getDispositionAuthority(List<TransferNode> transferNodes)

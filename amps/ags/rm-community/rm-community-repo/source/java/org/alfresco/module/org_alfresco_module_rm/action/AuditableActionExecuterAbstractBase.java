@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,12 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Auditable action executer abstract base
@@ -79,7 +80,8 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     }
 
     /**
-     * @param auditable true if auditable, false otherwise
+     * @param auditable
+     *            true if auditable, false otherwise
      */
     public void setAuditable(boolean auditable)
     {
@@ -87,7 +89,8 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     }
 
     /**
-     * @param auditedImmediately true if to be audited immediately, false to be audited after transaction commits
+     * @param auditedImmediately
+     *            true if to be audited immediately, false to be audited after transaction commits
      */
     public void setAuditedImmediately(boolean auditedImmediately)
     {
@@ -104,7 +107,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     }
 
     /**
-     * @return  records management audit service
+     * @return records management audit service
      */
     private RecordsManagementAuditService getAuditService()
     {
@@ -142,7 +145,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
         }
     }
 
-	/**
+    /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#execute(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override

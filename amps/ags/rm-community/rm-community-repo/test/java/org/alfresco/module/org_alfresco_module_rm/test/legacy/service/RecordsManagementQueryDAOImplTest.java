@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,7 +49,7 @@ import org.alfresco.util.GUID;
 public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements RecordsManagementModel
 {
     protected RecordsManagementQueryDAO queryDAO;
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
      */
@@ -58,7 +58,7 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
     {
         super.initServices();
 
-        queryDAO = (RecordsManagementQueryDAO)applicationContext.getBean("recordsManagementQueryDAO");
+        queryDAO = (RecordsManagementQueryDAO) applicationContext.getBean("recordsManagementQueryDAO");
     }
 
     /**
@@ -77,33 +77,29 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
      */
     public void testGetRecordMetaDataAspects() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
                 int count = queryDAO.getCountRmaIdentifier("abc-123");
                 assertEquals(0, count);
-                
-                String existingID = (String)nodeService.getProperty(recordOne, PROP_IDENTIFIER);
+
+                String existingID = (String) nodeService.getProperty(recordOne, PROP_IDENTIFIER);
                 count = queryDAO.getCountRmaIdentifier(existingID);
-                assertEquals(1, count);    
-                
+                assertEquals(1, count);
+
                 return null;
             }
         });
     }
 
     /**
-     * Given a folder containing 3 files with distinct descriptions set
-     * When I get the children property values
-     * Then the answer contains all distinct property values set
+     * Given a folder containing 3 files with distinct descriptions set When I get the children property values Then the answer contains all distinct property values set
      */
     @org.junit.Test
     public void testGetChildrenWithPropertyValues_childrenWithValues() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef parentFolder;
             NodeRef file1;
             NodeRef file2;
@@ -153,15 +149,12 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
     }
 
     /**
-     * Given a folder containing 3 files only some have description set
-     * When I get the children property values
-     * Then the answer  contains only the descriptions set
+     * Given a folder containing 3 files only some have description set When I get the children property values Then the answer contains only the descriptions set
      */
     @org.junit.Test
     public void testGetChildrenWithPropertyValues_someChildrenWithValues() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef parentFolder;
             NodeRef file1;
             NodeRef file2;
@@ -169,7 +162,6 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
             String propValue1 = "descr1"; // set on file1
             String propValue2 = "descr2"; // set on file2
             Set<String> propertyValues;
-
 
             @Override
             public void given() throws Exception
@@ -210,15 +202,12 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
     }
 
     /**
-     * Given a folder containing 3 files with the descriptions unset
-     * When I get the children property values
-     * Then empty list is returned
+     * Given a folder containing 3 files with the descriptions unset When I get the children property values Then empty list is returned
      */
     @org.junit.Test
     public void testGetChildrenWithPropertyValues_propertyNotSetOnChildren() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef parentFolder;
             NodeRef file1;
             NodeRef file2;
@@ -260,15 +249,12 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
     }
 
     /**
-     * Given a folder with no children but the property set on itself
-     * When get the children property values
-     * Then the list is empty
+     * Given a folder with no children but the property set on itself When get the children property values Then the list is empty
      */
     @org.junit.Test
     public void testGetChildrenWithPropertyValues_noChildren() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef folder;
             String propValue = "descr";
             Set<String> propertyValues;
@@ -305,15 +291,12 @@ public class RecordsManagementQueryDAOImplTest extends BaseRMTestCase implements
     }
 
     /**
-     * Given a folder with children and an unused property
-     * When I get the property values for the unused property
-     * Then empty list is returned
+     * Given a folder with children and an unused property When I get the property values for the unused property Then empty list is returned
      */
     @org.junit.Test
     public void testGetChildrenWithPropertyValues_propertyNotUsed() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef parentFolder;
             QName property;
             Set<String> propertyValues;

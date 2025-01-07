@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,12 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -43,9 +39,12 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Implementation for Java backed webscript to remove RM custom property definitions
- * from the custom model.
+ * Implementation for Java backed webscript to remove RM custom property definitions from the custom model.
  *
  * @author Neil McErlean
  */
@@ -59,31 +58,29 @@ public class CustomPropertyDefinitionDelete extends AbstractRmWebScript
 
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
-		this.rmAdminService = rmAdminService;
-	}
+        this.rmAdminService = rmAdminService;
+    }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
-	@Override
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
+    @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> ftlModel = null;
         try
         {
-        	QName propQName = getPropertyFromReq(req);
-        	if (logger.isDebugEnabled())
-        	{
-        		StringBuilder msg = new StringBuilder();
-        		msg.append("Deleting property definition ").append(propQName);
-        		logger.debug(msg.toString());
-        	}
+            QName propQName = getPropertyFromReq(req);
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Deleting property definition ").append(propQName);
+                logger.debug(msg.toString());
+            }
             ftlModel = removePropertyDefinition(propQName);
         }
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         return ftlModel;
@@ -100,7 +97,7 @@ public class CustomPropertyDefinitionDelete extends AbstractRmWebScript
         if (!existingPropDefs.containsKey(propQName))
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
-                        "Requested property definition (id:" + propIdString + ") does not exist");
+                    "Requested property definition (id:" + propIdString + ") does not exist");
         }
 
         return propQName;
@@ -111,9 +108,9 @@ public class CustomPropertyDefinitionDelete extends AbstractRmWebScript
      */
     protected Map<String, Object> removePropertyDefinition(QName propQName) throws JSONException
     {
-    	Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
 
-    	rmAdminService.removeCustomPropertyDefinition(propQName);
+        rmAdminService.removeCustomPropertyDefinition(propQName);
 
         result.put("propertyqname", propQName.toPrefixString(getNamespaceService()));
 

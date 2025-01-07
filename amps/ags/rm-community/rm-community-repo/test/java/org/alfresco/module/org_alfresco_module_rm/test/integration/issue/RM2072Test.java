@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,18 +49,18 @@ import org.alfresco.service.cmr.rule.RuleType;
  */
 public class RM2072Test extends BaseRMTestCase
 {
-	private static final int NUMBER_OF_BATCHES = 1;
-	private static final int NUMBER_IN_BATCH = 500;
+    private static final int NUMBER_OF_BATCHES = 1;
+    private static final int NUMBER_IN_BATCH = 500;
 
-	private RuleService ruleService;
-	private NodeRef ruleFolder;
+    private RuleService ruleService;
+    private NodeRef ruleFolder;
 
     @Override
     protected void initServices()
     {
         super.initServices();
 
-        ruleService = (RuleService)applicationContext.getBean("RuleService");
+        ruleService = (RuleService) applicationContext.getBean("RuleService");
     }
 
     @Override
@@ -76,47 +76,42 @@ public class RM2072Test extends BaseRMTestCase
     }
 
     /**
-     * Given that I have auto declare configured
-     * And that I have auto file configured to a path where only the record folder needs to be created
-     * When I add lots of documents in the same transaction
-     * Then the rules should fire
-     * And the documents should be filed in the new record folder
+     * Given that I have auto declare configured And that I have auto file configured to a path where only the record folder needs to be created When I add lots of documents in the same transaction Then the rules should fire And the documents should be filed in the new record folder
      */
     public void testAutoDeclareAutoFileCreateRecordFolderOnly() throws Exception
     {
-    	doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
-            	// create the folder
-            	ruleFolder = fileFolderService.create(documentLibrary, "mytestfolder", ContentModel.TYPE_FOLDER).getNodeRef();
+                // create the folder
+                ruleFolder = fileFolderService.create(documentLibrary, "mytestfolder", ContentModel.TYPE_FOLDER).getNodeRef();
 
-            	// create record category
-            	NodeRef nodeRefA = filePlanService.createRecordCategory(filePlan, "A");
-            	NodeRef nodeRefB = filePlanService.createRecordCategory(nodeRefA, "B");
-            	filePlanService.createRecordCategory(nodeRefB, "C");
+                // create record category
+                NodeRef nodeRefA = filePlanService.createRecordCategory(filePlan, "A");
+                NodeRef nodeRefB = filePlanService.createRecordCategory(nodeRefA, "B");
+                filePlanService.createRecordCategory(nodeRefB, "C");
 
-            	Action action = actionService.createAction(CreateRecordAction.NAME);
-            	action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+                Action action = actionService.createAction(CreateRecordAction.NAME);
+                action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
 
-            	Rule rule = new Rule();
-            	rule.setRuleType(RuleType.INBOUND);
-            	rule.setTitle("my rule");
-            	rule.setAction(action);
-            	rule.setExecuteAsynchronously(true);
-            	ruleService.saveRule(ruleFolder, rule);
+                Rule rule = new Rule();
+                rule.setRuleType(RuleType.INBOUND);
+                rule.setTitle("my rule");
+                rule.setAction(action);
+                rule.setExecuteAsynchronously(true);
+                ruleService.saveRule(ruleFolder, rule);
 
-            	Action fileAction = actionService.createAction(FileToAction.NAME);
-            	fileAction.setParameterValue(FileToAction.PARAM_PATH, "/A/B/C/{date.year.long}/{date.month.long}/{date.day.month}");
-            	fileAction.setParameterValue(FileToAction.PARAM_CREATE_RECORD_PATH, true);
+                Action fileAction = actionService.createAction(FileToAction.NAME);
+                fileAction.setParameterValue(FileToAction.PARAM_PATH, "/A/B/C/{date.year.long}/{date.month.long}/{date.day.month}");
+                fileAction.setParameterValue(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
-            	Rule fileRule = new Rule();
-            	fileRule.setRuleType(RuleType.INBOUND);
-            	fileRule.setTitle("my rule");
-            	fileRule.setAction(fileAction);
-            	fileRule.setExecuteAsynchronously(true);
-            	ruleService.saveRule(filePlanService.getUnfiledContainer(filePlan), fileRule);
+                Rule fileRule = new Rule();
+                fileRule.setRuleType(RuleType.INBOUND);
+                fileRule.setTitle("my rule");
+                fileRule.setAction(fileAction);
+                fileRule.setExecuteAsynchronously(true);
+                ruleService.saveRule(filePlanService.getUnfiledContainer(filePlan), fileRule);
 
                 return null;
             }
@@ -124,67 +119,65 @@ public class RM2072Test extends BaseRMTestCase
             @Override
             public void test(Void result) throws Exception
             {
-            	assertFalse(ruleService.getRules(ruleFolder).isEmpty());
+                assertFalse(ruleService.getRules(ruleFolder).isEmpty());
             }
         });
 
-    	List<NodeRef> records = new ArrayList<>(NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
+        List<NodeRef> records = new ArrayList<>(NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
 
         for (int i = 0; i < NUMBER_OF_BATCHES; i++)
         {
-        	final int finali = i;
-	        records.addAll(doTestInTransaction(new Test<List<NodeRef>>()
-	        {
-	        	@Override
-	            public List<NodeRef> run() throws Exception
-	            {
-	        		List<NodeRef> records = new ArrayList<>(NUMBER_IN_BATCH);
-	        		for (int j = 0; j < NUMBER_IN_BATCH; j++)
-	                {
-	        			int count = (finali+1)*(j+1);
-	        			String name = "content" + count + ".txt";
-	        			System.out.println(name + " - creating");
+            final int finali = i;
+            records.addAll(doTestInTransaction(new Test<List<NodeRef>>() {
+                @Override
+                public List<NodeRef> run() throws Exception
+                {
+                    List<NodeRef> records = new ArrayList<>(NUMBER_IN_BATCH);
+                    for (int j = 0; j < NUMBER_IN_BATCH; j++)
+                    {
+                        int count = (finali + 1) * (j + 1);
+                        String name = "content" + count + ".txt";
+                        System.out.println(name + " - creating");
 
-	                	NodeRef record = fileFolderService.create(ruleFolder, name, ContentModel.TYPE_CONTENT).getNodeRef();
-	                	records.add(record);
-	                }
-	                return records;
-	            }
-	        }));
+                        NodeRef record = fileFolderService.create(ruleFolder, name, ContentModel.TYPE_CONTENT).getNodeRef();
+                        records.add(record);
+                    }
+                    return records;
+                }
+            }));
         }
 
         try
         {
-	        while(!records.isEmpty())
-	        {
-	        	Thread.sleep(1000);
+            while (!records.isEmpty())
+            {
+                Thread.sleep(1000);
 
-	        	final Iterator<NodeRef> temp = records.iterator();
-	        	doTestInTransaction(new Test<Void>()
-		        {
-		            @Override
-		            public Void run() throws Exception
-		            {
-			        	while (temp.hasNext())
-			        	{
-			        		NodeRef record = temp.next();
-			        		if (nodeService.hasAspect(record, ASPECT_RECORD) && recordService.isFiled(record))
-			        		{
-			        			String name = (String) nodeService.getProperty(record, ContentModel.PROP_NAME);
-			        			System.out.println(name + " - complete");
-			        			temp.remove();
-			        		}
-			        	}
+                final Iterator<NodeRef> temp = records.iterator();
+                doTestInTransaction(new Test<Void>() {
+                    @Override
+                    public Void run() throws Exception
+                    {
+                        while (temp.hasNext())
+                        {
+                            NodeRef record = temp.next();
+                            if (nodeService.hasAspect(record, ASPECT_RECORD) && recordService.isFiled(record))
+                            {
+                                String name = (String) nodeService.getProperty(record, ContentModel.PROP_NAME);
+                                System.out.println(name + " - complete");
+                                temp.remove();
+                            }
+                        }
 
-			        	return null;
-			        }
-		        });
-	        }
+                        return null;
+                    }
+                });
+            }
         }
         catch (Exception exception)
         {
-        	exception.printStackTrace();
-        	throw exception;
+            exception.printStackTrace();
+            throw exception;
         }
     }
 }

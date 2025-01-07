@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -66,12 +66,12 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
 
     public ScriptConstraint getConstraint(String listName)
     {
-        //TODO Temporary conversion
+        // TODO Temporary conversion
         String xxx = listName.replace("_", ":");
 
         RMConstraintInfo info = caveatConfigService.getRMConstraint(xxx);
 
-        if(info != null)
+        if (info != null)
         {
             return new ScriptConstraint(info, caveatConfigService, getAuthorityService());
         }
@@ -81,12 +81,12 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
 
     public ScriptConstraint[] getAllConstraints()
     {
-    	return getConstraints(true);
+        return getConstraints(true);
     }
 
     public ScriptConstraint[] getConstraintsWithoutEmptyList()
     {
-    	return getConstraints(false);
+        return getConstraints(false);
     }
 
     private ScriptConstraint[] getConstraints(boolean includeEmptyList)
@@ -94,19 +94,19 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
         Set<RMConstraintInfo> values = caveatConfigService.getAllRMConstraints();
 
         List<ScriptConstraint> vals = new ArrayList<>(values.size());
-        for(RMConstraintInfo value : values)
+        for (RMConstraintInfo value : values)
         {
             ScriptConstraint c = new ScriptConstraint(value, caveatConfigService, getAuthorityService());
             if (includeEmptyList)
             {
-            	vals.add(c);
+                vals.add(c);
             }
             else
             {
-            	if (c.getValues().length > 0)
-            	{
-            		vals.add(c);
-            	}
+                if (c.getValues().length > 0)
+                {
+                    vals.add(c);
+                }
             }
         }
 
@@ -115,44 +115,43 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
 
     /**
      * Delete list
+     * 
      * @param listName
-
+     * 
      */
     public void deleteConstraintList(String listName)
     {
-        //TODO Temporary conversion
+        // TODO Temporary conversion
         String xxx = listName.replace("_", ":");
         caveatConfigService.deleteRMConstraint(xxx);
     }
 
-
-
     /**
      * Update value
      */
-    public void updateConstraintValues(String listName, String authorityName, String[]values)
+    public void updateConstraintValues(String listName, String authorityName, String[] values)
     {
         List<String> vals = new ArrayList<>();
         caveatConfigService.updateRMConstraintListAuthority(listName, authorityName, vals);
     }
 
     /**
-     * Delete the constraint values.   i.e remove an authority from a constraint list
+     * Delete the constraint values. i.e remove an authority from a constraint list
      */
     public void deleteRMConstraintListAuthority(String listName, String authorityName)
     {
-        //TODO Temporary conversion
+        // TODO Temporary conversion
         String xxx = listName.replace("_", ":");
 
         caveatConfigService.removeRMConstraintListAuthority(xxx, authorityName);
     }
 
     /**
-     * Delete the constraint values.   i.e remove a value from a constraint list
+     * Delete the constraint values. i.e remove a value from a constraint list
      */
     public void deleteRMConstraintListValue(String listName, String valueName)
     {
-        //TODO Temporary conversion
+        // TODO Temporary conversion
         String xxx = listName.replace("_", ":");
 
         caveatConfigService.removeRMConstraintListValue(xxx, valueName);
@@ -161,8 +160,8 @@ public class ScriptRMCaveatConfigService extends BaseScopableProcessorExtension
 
     public ScriptConstraint createConstraint(String listName, String title, String[] allowedValues)
     {
-        //TODO Temporary conversion
-        if(listName != null)
+        // TODO Temporary conversion
+        if (listName != null)
         {
             listName = listName.replace("_", ":");
         }

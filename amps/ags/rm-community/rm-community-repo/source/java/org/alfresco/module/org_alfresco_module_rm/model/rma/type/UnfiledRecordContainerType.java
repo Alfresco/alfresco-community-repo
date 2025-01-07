@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,8 +48,8 @@ import org.alfresco.service.namespace.QName;
  */
 @BehaviourBean(defaultType = "rma:unfiledRecordContainer")
 public class UnfiledRecordContainerType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                       NodeServicePolicies.OnDeleteNodePolicy
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnDeleteNodePolicy
 {
     private static final String BEHAVIOUR_NAME = "onDeleteUnfiledRecordContainer";
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
@@ -90,11 +90,9 @@ public class UnfiledRecordContainerType extends BaseBehaviourBean
     }
 
     @Override
-    @Behaviour
-    (
-                kind = BehaviourKind.CLASS,
-                name = BEHAVIOUR_NAME
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            name = BEHAVIOUR_NAME)
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
         throw new IntegrityException("Operation failed. Deletion of Unfiled Record Container is not allowed.", null);

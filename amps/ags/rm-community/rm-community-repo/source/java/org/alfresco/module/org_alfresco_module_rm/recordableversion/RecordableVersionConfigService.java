@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,7 +45,8 @@ public interface RecordableVersionConfigService
     /**
      * Gets the recordable versions
      *
-     * @param nodeRef The node reference for which the recordable versions should be retrieved
+     * @param nodeRef
+     *            The node reference for which the recordable versions should be retrieved
      * @return The list of recordable versions
      */
     List<Version> getVersions(NodeRef nodeRef);
@@ -53,8 +54,10 @@ public interface RecordableVersionConfigService
     /**
      * Sets the recordable version for the given node
      *
-     * @param nodeRef The node reference for which the recorable version should be set
-     * @param version The version to be set
+     * @param nodeRef
+     *            The node reference for which the recorable version should be set
+     * @param version
+     *            The version to be set
      */
     void setVersion(NodeRef nodeRef, String version);
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,10 +27,13 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -38,12 +41,10 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
 
 /**
  * Unit test for RecordsManagementContainerType
+ * 
  * @author Ana Bozianu
  * @since 2.4
  */
@@ -68,22 +69,18 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Unfilled Record container and a non RM folder subtype node
-     * When adding a child association between the folder and the container
-     * Then the new folder should not be altered
+     * Having the Unfilled Record container and a non RM folder subtype node When adding a child association between the folder and the container Then the new folder should not be altered
      * 
      * Outlook creates a hidden folder subtype to store attachments and we don't want to change the type of those folders
      */
-     @Test
+    @Test
     public void testAddNonRMFolderSubtypeToRMContainer()
     {
         /* Having a RM container and a non RM folder subtype node */
         NodeRef rmContainer = generateRMContainer();
         NodeRef folder = generateNonRmFolderSubtypeNode();
 
-        /*
-         * When adding a child association between the folder and the container
-         */
+        /* When adding a child association between the folder and the container */
         ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rmContainer, ContentModel.ASSOC_CONTAINS, folder);
         recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
 
@@ -91,80 +88,73 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).setType(any(), any());
     }
 
-     /**
-      * Having the fileplan and a non RM folder node
-      * When adding a child association between the fileplan and the folder
-      * Then the new folder should be converted to a record category
-      */
-     @Test
-     public void testAddFolderInFilePlan()
-     {
-         NodeRef fileplan = generateNodeRef();
-         when(mockedNodeService.getType(fileplan)).thenReturn(TYPE_FILE_PLAN);
-         NodeRef folder = generateNonRmFolderNode();
+    /**
+     * Having the fileplan and a non RM folder node When adding a child association between the fileplan and the folder Then the new folder should be converted to a record category
+     */
+    @Test
+    public void testAddFolderInFilePlan()
+    {
+        NodeRef fileplan = generateNodeRef();
+        when(mockedNodeService.getType(fileplan)).thenReturn(TYPE_FILE_PLAN);
+        NodeRef folder = generateNonRmFolderNode();
 
-         ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, fileplan, ContentModel.ASSOC_CONTAINS, folder);
-         recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
+        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, fileplan, ContentModel.ASSOC_CONTAINS, folder);
+        recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
 
-         verify(mockedNodeService).setType(folder, TYPE_RECORD_CATEGORY);
-     }
+        verify(mockedNodeService).setType(folder, TYPE_RECORD_CATEGORY);
+    }
 
-     /**
-      * Having a record category and a non RM folder node
-      * When adding a child association between the record category and the folder
-      * Then the new folder should be converted to a record folder
-      */
-     @Test
-     public void testAddFolderInRecordCategory()
-     {
-         NodeRef category = generateNodeRef();
-         when(mockedNodeService.getType(category)).thenReturn(TYPE_RECORD_CATEGORY);
-         NodeRef folder = generateNonRmFolderNode();
+    /**
+     * Having a record category and a non RM folder node When adding a child association between the record category and the folder Then the new folder should be converted to a record folder
+     */
+    @Test
+    public void testAddFolderInRecordCategory()
+    {
+        NodeRef category = generateNodeRef();
+        when(mockedNodeService.getType(category)).thenReturn(TYPE_RECORD_CATEGORY);
+        NodeRef folder = generateNonRmFolderNode();
 
-         ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, category, ContentModel.ASSOC_CONTAINS, folder);
-         recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
+        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, category, ContentModel.ASSOC_CONTAINS, folder);
+        recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
 
-         verify(mockedNodeService).setType(folder, TYPE_RECORD_FOLDER);
-     }
+        verify(mockedNodeService).setType(folder, TYPE_RECORD_FOLDER);
+    }
 
-     /**
-      * Having an unfiled record container and a non RM folder node
-      * When adding a child association between the container and the folder
-      * Then the new folder should be converted to a unfiled record folder
-      */
-     @Test
-     public void testAddFolderInUnfiledRecordContainer()
-     {
-         NodeRef unfiledRecordContainer = generateNodeRef();
-         when(mockedNodeService.getType(unfiledRecordContainer)).thenReturn(TYPE_UNFILED_RECORD_CONTAINER);
-         NodeRef folder = generateNonRmFolderNode();
+    /**
+     * Having an unfiled record container and a non RM folder node When adding a child association between the container and the folder Then the new folder should be converted to a unfiled record folder
+     */
+    @Test
+    public void testAddFolderInUnfiledRecordContainer()
+    {
+        NodeRef unfiledRecordContainer = generateNodeRef();
+        when(mockedNodeService.getType(unfiledRecordContainer)).thenReturn(TYPE_UNFILED_RECORD_CONTAINER);
+        NodeRef folder = generateNonRmFolderNode();
 
-         ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, unfiledRecordContainer, ContentModel.ASSOC_CONTAINS, folder);
-         recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
+        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, unfiledRecordContainer, ContentModel.ASSOC_CONTAINS, folder);
+        recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
 
-         verify(mockedNodeService).setType(folder, TYPE_UNFILED_RECORD_FOLDER);
-     }
+        verify(mockedNodeService).setType(folder, TYPE_UNFILED_RECORD_FOLDER);
+    }
 
-     /**
-      * Having an unfiled record folder and a non RM folder node
-      * When adding a child association between the unfiled record folder and the regular folder
-      * Then the new folder should be converted to a unfiled record folder
-      */
-     @Test
-     public void testAddFolderInUnfiledRecordFolder()
-     {
-         NodeRef unfiledRecordFolder = generateNodeRef();
-         when(mockedNodeService.getType(unfiledRecordFolder)).thenReturn(TYPE_UNFILED_RECORD_FOLDER);
-         NodeRef folder = generateNonRmFolderNode();
+    /**
+     * Having an unfiled record folder and a non RM folder node When adding a child association between the unfiled record folder and the regular folder Then the new folder should be converted to a unfiled record folder
+     */
+    @Test
+    public void testAddFolderInUnfiledRecordFolder()
+    {
+        NodeRef unfiledRecordFolder = generateNodeRef();
+        when(mockedNodeService.getType(unfiledRecordFolder)).thenReturn(TYPE_UNFILED_RECORD_FOLDER);
+        NodeRef folder = generateNonRmFolderNode();
 
-         ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, unfiledRecordFolder, ContentModel.ASSOC_CONTAINS, folder);
-         recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
+        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, unfiledRecordFolder, ContentModel.ASSOC_CONTAINS, folder);
+        recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
 
-         verify(mockedNodeService).setType(folder, TYPE_UNFILED_RECORD_FOLDER);
-     }
+        verify(mockedNodeService).setType(folder, TYPE_UNFILED_RECORD_FOLDER);
+    }
 
     /**
      * Generates a record management container
+     * 
      * @return reference to the generated container
      */
     private NodeRef generateRMContainer()
@@ -176,12 +166,13 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
 
     /**
      * Generates a non RM folder subtype node
+     * 
      * @return reference to the created folder
      */
     private NodeRef generateNonRmFolderSubtypeNode()
     {
         NodeRef nonRmFolder = generateNodeRef();
-        
+
         when(mockedNodeService.getType(nonRmFolder)).thenReturn(TestModel.NOT_RM_FOLDER_TYPE);
         when(mockedNodeService.exists(nonRmFolder)).thenReturn(true);
         when(mockedNodeService.hasAspect(nonRmFolder, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(false);
@@ -190,6 +181,7 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
 
     /**
      * Generates a non RM folder node
+     * 
      * @return reference to the created folder
      */
     private NodeRef generateNonRmFolderNode()

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction;
@@ -42,8 +44,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
 
 /**
  *
@@ -52,15 +52,15 @@ import org.junit.Before;
  */
 public class RM1914Test extends BaseRMTestCase
 {
-    //Fields required across transactions
+    // Fields required across transactions
     NodeRef record1, transferFolder;
 
     public void testRM1914() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
 
-            public void given(){
+            public void given()
+            {
 
                 // create test holds
                 NodeRef category1 = filePlanService.createRecordCategory(filePlan, GUID.generate());
@@ -120,23 +120,22 @@ public class RM1914Test extends BaseRMTestCase
                 rmActionService.executeRecordsManagementAction(record2, CutOffAction.NAME, null);
 
                 transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(record2, TransferAction.NAME)
-                    .getValue();
-                
+                        .getValue();
+
             }
 
             public void when()
             {
 
-
                 rmActionService.executeRecordsManagementAction(transferFolder, TransferCompleteAction.NAME);
-                
+
             }
 
             public void then()
             {
-                // 9. Verify Record1 
+                // 9. Verify Record1
                 assertTrue(dispositionService.isNextDispositionActionEligible(record1));
-              
+
             }
         });
     }

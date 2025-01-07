@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import org.springframework.aop.framework.ProxyFactoryBean;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
@@ -34,7 +36,6 @@ import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.aop.framework.ProxyFactoryBean;
 
 /**
  * RM action proxy factory bean.
@@ -88,7 +89,8 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
     }
 
     /**
-     * @param transactionService    transaction service
+     * @param transactionService
+     *            transaction service
      * @since 2.4.a
      */
     public void setTransactionService(TransactionService transactionService)
@@ -101,15 +103,13 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
      */
     public void registerAction()
     {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             public Void doWork()
             {
-                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-                {
+                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
                     public Void execute() throws Throwable
                     {
-                        RecordsManagementAction action = (RecordsManagementAction)getObject();
+                        RecordsManagementAction action = (RecordsManagementAction) getObject();
                         recordsManagementActionService.register(action);
 
                         return null;

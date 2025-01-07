@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,8 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
+import org.apache.commons.lang3.StringUtils;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -42,7 +44,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Util class for the request info workflow
@@ -83,9 +84,9 @@ public final class RequestInfoUtils
     /**
      * Helper method to extract the record name from the task
      *
-     * @param delegateTask  The delegate task
-     * @return Returns the name of the record or an empty string if the record name could not be found
-               (may be because the record has been deleted in the mean time)
+     * @param delegateTask
+     *            The delegate task
+     * @return Returns the name of the record or an empty string if the record name could not be found (may be because the record has been deleted in the mean time)
      */
     public static String getRecordName(DelegateTask delegateTask)
     {
@@ -99,7 +100,7 @@ public final class RequestInfoUtils
 
         if (childAssocs.size() > 0)
         {
-            NodeRef docRef= childAssocs.get(0).getChildRef();
+            NodeRef docRef = childAssocs.get(0).getChildRef();
             recordName = (String) nodeService.getProperty(docRef, ContentModel.PROP_NAME);
         }
 
@@ -109,12 +110,9 @@ public final class RequestInfoUtils
     /**
      * Helper method to extract the initiator from the task
      *
-     * @param delegateTask  The delegate task
-     * @return Returns the initiator of the workflow. First it will be checked if
-     * a rule creator exists, which means the the workflow was started via rule.
-     * In this case the creator of the rule will receive the review task.
-     * If a rule creator cannot be found the code will try to find the initiator
-     * of the workflow. If also this is not the case the admin user will be returned.
+     * @param delegateTask
+     *            The delegate task
+     * @return Returns the initiator of the workflow. First it will be checked if a rule creator exists, which means the the workflow was started via rule. In this case the creator of the rule will receive the review task. If a rule creator cannot be found the code will try to find the initiator of the workflow. If also this is not the case the admin user will be returned.
      */
     public static String getInitiator(DelegateTask delegateTask)
     {

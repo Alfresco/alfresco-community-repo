@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,8 +36,7 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Records management action condition who's implementation is delegated to an existing
- * action condition.
+ * Records management action condition who's implementation is delegated to an existing action condition.
  * <p>
  * Useful for creating a RM version of an existing action condition implementation.
  *
@@ -52,7 +51,8 @@ public class DelegateActionCondition extends RecordsManagementActionConditionEva
     /**
      * Sets the action condition evaluator
      *
-     * @param actionConditionEvaluator The action condition evaluator
+     * @param actionConditionEvaluator
+     *            The action condition evaluator
      */
     public void setActionConditionEvaluator(ActionConditionEvaluator actionConditionEvaluator)
     {

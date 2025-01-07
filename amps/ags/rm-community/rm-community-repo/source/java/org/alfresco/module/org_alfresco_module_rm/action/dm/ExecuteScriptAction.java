@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 /**
  * Executes a JavaScript
  * 
- * Note:  This is a 'normal' dm action, rather than a records management action.
+ * Note: This is a 'normal' dm action, rather than a records management action.
  * 
  * @author Craig Tan
  */

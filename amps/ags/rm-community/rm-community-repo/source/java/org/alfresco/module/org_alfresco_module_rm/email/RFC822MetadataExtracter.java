@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,8 +41,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Extended RFC822 Metadata Extractor that is sensitive to whether we are in a RM
- * site or not.
+ * Extended RFC822 Metadata Extractor that is sensitive to whether we are in a RM site or not.
  *
  * @author Roy Wetherall
  */
@@ -56,7 +55,9 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
 
     /**
      * Sets the node service
-     * @param nodeService   node service
+     * 
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -71,7 +72,7 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
     protected void filterSystemProperties(Map<QName, Serializable> systemProperties, Map<QName, Serializable> targetProperties)
     {
         NodeRef nodeRef = getNodeRef(targetProperties);
-        if(nodeRef == null)
+        if (nodeRef == null)
         {
             return;
         }
@@ -116,21 +117,23 @@ public class RFC822MetadataExtracter extends org.alfresco.repo.content.metadata.
 
     /**
      * Given a set of properties, try and retrieve the node reference
-     * @param properties    node properties
-     * @return NodeRef      null if none, otherwise valid node reference
+     * 
+     * @param properties
+     *            node properties
+     * @return NodeRef null if none, otherwise valid node reference
      */
     private NodeRef getNodeRef(Map<QName, Serializable> properties)
     {
         NodeRef result = null;
 
         // Get the elements of the node reference
-        String storeProto = (String)properties.get(ContentModel.PROP_STORE_PROTOCOL);
-        String storeId = (String)properties.get(ContentModel.PROP_STORE_IDENTIFIER);
-        String nodeId = (String)properties.get(ContentModel.PROP_NODE_UUID);
+        String storeProto = (String) properties.get(ContentModel.PROP_STORE_PROTOCOL);
+        String storeId = (String) properties.get(ContentModel.PROP_STORE_IDENTIFIER);
+        String nodeId = (String) properties.get(ContentModel.PROP_NODE_UUID);
 
         if (storeProto != null && storeProto.length() != 0 &&
-            storeId != null && storeId.length() != 0 &&
-            nodeId != null && nodeId.length() != 0)
+                storeId != null && storeId.length() != 0 &&
+                nodeId != null && nodeId.length() != 0)
 
         {
             // Create the node reference

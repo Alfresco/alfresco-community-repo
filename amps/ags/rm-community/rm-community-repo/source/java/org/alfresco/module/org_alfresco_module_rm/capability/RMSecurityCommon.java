@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,13 @@ package org.alfresco.module.org_alfresco_module_rm.capability;
 
 import java.util.Map;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.aopalliance.intercept.MethodInvocation;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -44,14 +51,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
-import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
-
 
 /**
  * Common security functions.
@@ -70,7 +69,7 @@ public class RMSecurityCommon implements ApplicationContextAware
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
 
     /** Services */
-    //This is the internal NodeService -- no permission checks
+    // This is the internal NodeService -- no permission checks
     protected NodeService nodeService;
     protected PermissionService permissionService;
     protected RMCaveatConfigComponent caveatConfigComponent;
@@ -85,11 +84,12 @@ public class RMSecurityCommon implements ApplicationContextAware
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
     {
-    	this.applicationContext = applicationContext;
+        this.applicationContext = applicationContext;
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -97,7 +97,8 @@ public class RMSecurityCommon implements ApplicationContextAware
     }
 
     /**
-     * @param permissionService permission service
+     * @param permissionService
+     *            permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -105,7 +106,8 @@ public class RMSecurityCommon implements ApplicationContextAware
     }
 
     /**
-     * @param caveatConfigComponent caveat config service
+     * @param caveatConfigComponent
+     *            caveat config service
      */
     public void setCaveatConfigComponent(RMCaveatConfigComponent caveatConfigComponent)
     {
@@ -113,16 +115,16 @@ public class RMSecurityCommon implements ApplicationContextAware
     }
 
     /**
-     * @return	FilePlanService	file plan service
+     * @return FilePlanService file plan service
      */
     protected FilePlanService getFilePlanService()
     {
-    	if (filePlanService == null)
-    	{
-    		filePlanService = (FilePlanService)applicationContext.getBean("filePlanService");
-    	}
-		return filePlanService;
-	}
+        if (filePlanService == null)
+        {
+            filePlanService = (FilePlanService) applicationContext.getBean("filePlanService");
+        }
+        return filePlanService;
+    }
 
     /**
      * Sets a value into the transaction cache
@@ -152,8 +154,8 @@ public class RMSecurityCommon implements ApplicationContextAware
         StringBuffer key = new StringBuffer(prefix)
                 .append(nodeRef)
                 .append(AuthenticationUtil.getRunAsUser());
-        
-        Integer value = (Integer)AlfrescoTransactionSupport.getResource(key);
+
+        Integer value = (Integer) AlfrescoTransactionSupport.getResource(key);
         if (value != null)
         {
             result = value.intValue();
@@ -209,7 +211,7 @@ public class RMSecurityCommon implements ApplicationContextAware
             }
             else
             {
-                result =  AccessDecisionVoter.ACCESS_GRANTED;
+                result = AccessDecisionVoter.ACCESS_GRANTED;
             }
         }
 
@@ -219,81 +221,83 @@ public class RMSecurityCommon implements ApplicationContextAware
     /**
      * Core RM read check
      *
-     * @param nodeRef	node reference
-     * @return int		see {@link AccessDecisionVoter}
+     * @param nodeRef
+     *            node reference
+     * @return int see {@link AccessDecisionVoter}
      */
     public int checkRmRead(NodeRef nodeRef)
     {
-    	int result = AccessDecisionVoter.ACCESS_ABSTAIN;
+        int result = AccessDecisionVoter.ACCESS_ABSTAIN;
 
-    	Map<Pair<String, NodeRef>, Integer> transactionCache = TransactionalResourceHelper.getMap("rm.security.checkRMRead");
-    	Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), nodeRef);
+        Map<Pair<String, NodeRef>, Integer> transactionCache = TransactionalResourceHelper.getMap("rm.security.checkRMRead");
+        Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), nodeRef);
 
-    	if (transactionCache.containsKey(key))
-    	{
-    		result = transactionCache.get(key);
-    	}
-    	else
-    	{
-	        if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
-	        {
-	            if (logger.isDebugEnabled())
-	            {
-	                logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-	            }
-	            result = AccessDecisionVoter.ACCESS_DENIED;
-	        }
-	        else
-	        {
-		        // Get the file plan for the node
-		        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-		        if (filePlan != null &&
-		            hasViewCapability(filePlan) == AccessStatus.DENIED)
-		        {
-		            if (logger.isDebugEnabled())
-		            {
-		                logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-		            }
-		            result = AccessDecisionVoter.ACCESS_DENIED;
-		        }
-		        else if (!caveatConfigComponent.hasAccess(nodeRef))
-		        {
-		            result = AccessDecisionVoter.ACCESS_DENIED;
-		        }
-		        else
-		        {
-		            result = AccessDecisionVoter.ACCESS_GRANTED;
-		        }
-	        }
+        if (transactionCache.containsKey(key))
+        {
+            result = transactionCache.get(key);
+        }
+        else
+        {
+            if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
+                }
+                result = AccessDecisionVoter.ACCESS_DENIED;
+            }
+            else
+            {
+                // Get the file plan for the node
+                NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
+                if (filePlan != null &&
+                        hasViewCapability(filePlan) == AccessStatus.DENIED)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
+                    }
+                    result = AccessDecisionVoter.ACCESS_DENIED;
+                }
+                else if (!caveatConfigComponent.hasAccess(nodeRef))
+                {
+                    result = AccessDecisionVoter.ACCESS_DENIED;
+                }
+                else
+                {
+                    result = AccessDecisionVoter.ACCESS_GRANTED;
+                }
+            }
 
-	        // cache result
-	        transactionCache.put(key, result);
-    	}
+            // cache result
+            transactionCache.put(key, result);
+        }
 
-    	return result;
+        return result;
     }
 
     /**
      * Helper method to determine whether the current user has view capability on the file plan
      *
-     * @param  filePlan	file plan
+     * @param filePlan
+     *            file plan
      * @return {@link AccessStatus}
      */
     private AccessStatus hasViewCapability(NodeRef filePlan)
     {
-    	Map<Pair<String, NodeRef>, AccessStatus> transactionCache = TransactionalResourceHelper.getMap("rm.security.hasViewCapability");
-    	Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), filePlan);
+        Map<Pair<String, NodeRef>, AccessStatus> transactionCache = TransactionalResourceHelper.getMap("rm.security.hasViewCapability");
+        Pair<String, NodeRef> key = new Pair<>(AuthenticationUtil.getRunAsUser(), filePlan);
 
-    	if (transactionCache.containsKey(key))
-    	{
-    		return transactionCache.get(key);
-    	}
-    	else
-    	{
-    		AccessStatus result = permissionService.hasPermission(filePlan, ViewRecordsCapability.NAME);
-    		transactionCache.put(key, result);
-    		return result;
-    	}
+        if (transactionCache.containsKey(key))
+        {
+            return transactionCache.get(key);
+        }
+        else
+        {
+            AccessStatus result = permissionService.hasPermission(filePlan, ViewRecordsCapability.NAME);
+            transactionCache.put(key, result);
+            return result;
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -304,7 +308,7 @@ public class RMSecurityCommon implements ApplicationContextAware
         {
             if (logger.isDebugEnabled())
             {
-            	logger.debug("\tNothing to test permission against.");
+                logger.debug("\tNothing to test permission against.");
             }
             testNodeRef = null;
         }

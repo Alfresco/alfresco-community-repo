@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,11 +34,10 @@ import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-
 /**
  * Records management query DAO
  * 
- * NOTE:  a place holder that can be extended later when we want to enhance performance with canned queries.
+ * NOTE: a place holder that can be extended later when we want to enhance performance with canned queries.
  * 
  * @author Roy Wetherall
  * @since 2.1
@@ -48,48 +47,54 @@ public interface RecordsManagementQueryDAO
     /**
      * Get the number of objects with the given identifier value.
      * 
-     * Note:  this is provided as an example and is not currently used
+     * Note: this is provided as an example and is not currently used
      * 
-     * @param identifierValue   id value
-     * @return int  count
+     * @param identifierValue
+     *            id value
+     * @return int count
      */
     int getCountRmaIdentifier(String identifierValue);
 
     /**
-     * Returns a number of nodeRefs for record folders in the system
-     * that have the property recordSearchHasDispositionSchedule:true
-     * (used for MNT-20864)
-     * @param start long - the first result row to return
-     * @param end long - the last result row to return
+     * Returns a number of nodeRefs for record folders in the system that have the property recordSearchHasDispositionSchedule:true (used for MNT-20864)
+     * 
+     * @param start
+     *            long - the first result row to return
+     * @param end
+     *            long - the last result row to return
      * @return list of node refs
      */
     List<NodeRef> getRecordFoldersWithSchedules(Long start, Long end);
 
     /**
-     * Returns whether a given node contains children with one of the given values for the given property
-     * Returns distinct property values from children for the given property
+     * Returns whether a given node contains children with one of the given values for the given property Returns distinct property values from children for the given property
      *
-     * @param parent         the parent to evaluate
-     * @param property       the QName of the property to evaluate
+     * @param parent
+     *            the parent to evaluate
+     * @param property
+     *            the QName of the property to evaluate
      * @return list of distinct property values
      */
     public Set<String> getChildrenStringPropertyValues(NodeRef parent, QName property);
 
     /**
-     * @param contentUrl the URL of the content url entity
-     * @return Set<NodeRef>  a set of nodes that reference the given content url
+     * @param contentUrl
+     *            the URL of the content url entity
+     * @return Set<NodeRef> a set of nodes that reference the given content url
      */
     Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl);
 
     /**
      * Get the property string value entity with the specified string value
-     * @return PropertyStringValueEntity    the property string value entity with the specified string value
+     * 
+     * @return PropertyStringValueEntity the property string value entity with the specified string value
      */
     PropertyStringValueEntity getPropertyStringValueEntity(String stringValue);
 
     /**
      * Update the property string value entity
-     * @return int      the number of rows updated
+     * 
+     * @return int the number of rows updated
      */
     int updatePropertyStringValueEntity(PropertyStringValueEntity propertyStringValueEntity);
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,11 +34,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Frozen capability condition unit test
@@ -50,7 +51,7 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
 {
     /** evaluator */
     private @InjectMocks FrozenCapabilityCondition condition;
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
@@ -60,11 +61,9 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
     {
         super.before();
     }
-    
+
     /**
-     * Given hold
-     * When evaluate
-     * Then true
+     * Given hold When evaluate Then true
      */
     @Test
     public void evaluateHold()
@@ -72,22 +71,19 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
         // is a hold
         NodeRef nodeRef = generateNodeRef();
         when(mockedHoldService.isHold(nodeRef))
-            .thenReturn(true);        
-        
+                .thenReturn(true);
+
         // evaluate
         assertTrue(condition.evaluate(nodeRef));
-        
+
         // verify
         verify(mockedHoldService, times(1)).isHold(nodeRef);
         verify(mockedFreezeService, never()).isFrozen(nodeRef);
         verify(mockedFreezeService, never()).hasFrozenChildren(nodeRef);
     }
-    
+
     /**
-     * Given is frozen
-     * And no check children
-     * When evaluate
-     * Then true
+     * Given is frozen And no check children When evaluate Then true
      */
     @Test
     public void frozenDontCheckChildren()
@@ -95,29 +91,26 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
         // is not a hold
         NodeRef nodeRef = generateNodeRef();
         when(mockedHoldService.isHold(nodeRef))
-            .thenReturn(false);
-        
+                .thenReturn(false);
+
         // dont check children
         condition.setCheckChildren(false);
-        
+
         // is frozen
         when(mockedFreezeService.isFrozen(nodeRef))
-            .thenReturn(true);
-        
+                .thenReturn(true);
+
         // evaluate
         assertTrue(condition.evaluate(nodeRef));
-        
+
         // verify
         verify(mockedHoldService, times(1)).isHold(nodeRef);
         verify(mockedFreezeService, times(1)).isFrozen(nodeRef);
         verify(mockedFreezeService, never()).hasFrozenChildren(nodeRef);
     }
-    
+
     /**
-     * Given is not frozen
-     * And no check children
-     * When evaluate
-     * Then false
+     * Given is not frozen And no check children When evaluate Then false
      */
     @Test
     public void notFrozenDontCheckChildren()
@@ -125,29 +118,26 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
         // is not a hold
         NodeRef nodeRef = generateNodeRef();
         when(mockedHoldService.isHold(nodeRef))
-            .thenReturn(false);
-        
+                .thenReturn(false);
+
         // dont check children
         condition.setCheckChildren(false);
-        
+
         // is not frozen
         when(mockedFreezeService.isFrozen(nodeRef))
-            .thenReturn(false);
-        
+                .thenReturn(false);
+
         // evaluate
         assertFalse(condition.evaluate(nodeRef));
-        
+
         // verify
         verify(mockedHoldService, times(1)).isHold(nodeRef);
         verify(mockedFreezeService, times(1)).isFrozen(nodeRef);
         verify(mockedFreezeService, never()).hasFrozenChildren(nodeRef);
     }
-    
+
     /**
-     * Given is frozen
-     * And check children
-     * When evaluate
-     * Then true
+     * Given is frozen And check children When evaluate Then true
      */
     @Test
     public void frozenCheckChildren()
@@ -155,30 +145,26 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
         // is not a hold
         NodeRef nodeRef = generateNodeRef();
         when(mockedHoldService.isHold(nodeRef))
-            .thenReturn(false);
-        
+                .thenReturn(false);
+
         // check children
         condition.setCheckChildren(true);
-        
+
         // is frozen
         when(mockedFreezeService.isFrozen(nodeRef))
-            .thenReturn(true);
-        
+                .thenReturn(true);
+
         // evaluate
         assertTrue(condition.evaluate(nodeRef));
-        
+
         // verify
         verify(mockedHoldService, times(1)).isHold(nodeRef);
         verify(mockedFreezeService, times(1)).isFrozen(nodeRef);
         verify(mockedFreezeService, never()).hasFrozenChildren(nodeRef);
     }
-    
+
     /**
-     * Given is not frozen
-     * And check children
-     * And children no frozen
-     * When evaluate
-     * Then false
+     * Given is not frozen And check children And children no frozen When evaluate Then false
      */
     @Test
     public void notFrozenCheckChildrenNotFrozen()
@@ -186,34 +172,30 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
         // is not a hold
         NodeRef nodeRef = generateNodeRef();
         when(mockedHoldService.isHold(nodeRef))
-            .thenReturn(false);
-        
+                .thenReturn(false);
+
         // check children
         condition.setCheckChildren(true);
-        
+
         // is not frozen
         when(mockedFreezeService.isFrozen(nodeRef))
-            .thenReturn(false);
-        
+                .thenReturn(false);
+
         // children not frozen
         when(mockedFreezeService.hasFrozenChildren(nodeRef))
-            .thenReturn(false);
-        
+                .thenReturn(false);
+
         // evaluate
         assertFalse(condition.evaluate(nodeRef));
-        
+
         // verify
         verify(mockedHoldService, times(1)).isHold(nodeRef);
         verify(mockedFreezeService, times(1)).isFrozen(nodeRef);
         verify(mockedFreezeService, times(1)).hasFrozenChildren(nodeRef);
     }
-    
+
     /**
-     * Given is not frozen
-     * And check children
-     * And children frozen
-     * When evaluate
-     * Then true
+     * Given is not frozen And check children And children frozen When evaluate Then true
      */
     @Test
     public void notFrozenCheckChildrenFrozen()
@@ -221,22 +203,22 @@ public class FrozenCapabilityConditionUnitTest extends BaseUnitTest
         // is not a hold
         NodeRef nodeRef = generateNodeRef();
         when(mockedHoldService.isHold(nodeRef))
-            .thenReturn(false);
-     
+                .thenReturn(false);
+
         // check children
         condition.setCheckChildren(true);
-     
+
         // is not frozen
         when(mockedFreezeService.isFrozen(nodeRef))
-            .thenReturn(false);
-     
+                .thenReturn(false);
+
         // children frozen
         when(mockedFreezeService.hasFrozenChildren(nodeRef))
-            .thenReturn(true);
-     
+                .thenReturn(true);
+
         // evaluate
         assertTrue(condition.evaluate(nodeRef));
-     
+
         // verify
         verify(mockedHoldService, times(1)).isHold(nodeRef);
         verify(mockedFreezeService, times(1)).isFrozen(nodeRef);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,12 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Create disposition schedule action
@@ -48,12 +49,13 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     private FilePlanService filePlanService;
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -73,12 +75,10 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     }
 
     /**
-     * Helper method to check the actioned upon node reference to decide to execute the action
-     * The preconditions are:
-     *  - The node must exist
-     *  - The node must not be a record category
+     * Helper method to check the actioned upon node reference to decide to execute the action The preconditions are: - The node must exist - The node must not be a record category
      *
-     * @param actionedUponNodeRef node reference
+     * @param actionedUponNodeRef
+     *            node reference
      * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
      */
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)

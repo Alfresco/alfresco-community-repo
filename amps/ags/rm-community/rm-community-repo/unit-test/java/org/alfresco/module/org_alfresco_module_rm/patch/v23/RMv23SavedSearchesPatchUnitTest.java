@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,15 +28,23 @@
 package org.alfresco.module.org_alfresco_module_rm.patch.v23;
 
 import static java.util.Arrays.asList;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_SAVED_SEARCH;
-import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_SAVED_SEARCH;
+import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+
 import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
@@ -45,11 +53,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 /**
  * patch.v23 unit test
@@ -85,9 +88,7 @@ public class RMv23SavedSearchesPatchUnitTest
     }
 
     /**
-     * Given that I am upgrading an existing repository to v2.3
-     * When I execute the patch
-     * Then any existing rm saved searches will have the saved search aspect applied
+     * Given that I am upgrading an existing repository to v2.3 When I execute the patch Then any existing rm saved searches will have the saved search aspect applied
      */
     @Test
     public void executePatch()

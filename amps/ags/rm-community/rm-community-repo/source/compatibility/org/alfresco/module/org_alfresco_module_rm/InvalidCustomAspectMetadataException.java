@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,8 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm;
 
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import org.alfresco.service.namespace.QName;
 
 /**
  * @deprecated as of 2.1 see {@link org.alfresco.module.org_alfresco_module_rm.admin.InvalidCustomAspectMetadataException}
@@ -37,7 +38,7 @@ public class InvalidCustomAspectMetadataException extends CustomMetadataExceptio
 {
     private static final long serialVersionUID = -6194867814140009959L;
     public static final String MSG_INVALID_CUSTOM_ASPECT = "rm.admin.invalid-custom-aspect";
-    
+
     public InvalidCustomAspectMetadataException(QName customAspect, String aspectName)
     {
         super(I18NUtil.getMessage(MSG_INVALID_CUSTOM_ASPECT, customAspect, aspectName));

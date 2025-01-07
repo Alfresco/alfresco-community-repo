@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,7 +47,8 @@ public interface RecordFolderService
     /**
      * Sets up the a record folder from a standard folder.
      *
-     * @param nodeRef   node reference of the folder to setup
+     * @param nodeRef
+     *            node reference of the folder to setup
      *
      * @since 2.2
      */
@@ -56,8 +57,9 @@ public interface RecordFolderService
     /**
      * Indicates whether the given node is a record folder or not.
      *
-     * @param nodeRef   node reference
-     * @return boolean  true if record folder, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if record folder, false otherwise
      *
      * @since 2.2
      */
@@ -66,8 +68,9 @@ public interface RecordFolderService
     /**
      * Indicates whether the contents of a record folder are all declared.
      *
-     * @param nodeRef   node reference (record folder)
-     * @return boolean  true if record folder contents are declared, false otherwise
+     * @param nodeRef
+     *            node reference (record folder)
+     * @return boolean true if record folder contents are declared, false otherwise
      *
      * @since 2.2
      */
@@ -76,60 +79,69 @@ public interface RecordFolderService
     /**
      * Indicates whether a record folder is closed or not.
      *
-     * @param nodeRef   node reference (record folder)
-     * @return boolean  true if record folder is closed, false otherwise
+     * @param nodeRef
+     *            node reference (record folder)
+     * @return boolean true if record folder is closed, false otherwise
      *
      * @since 2.2
      */
     boolean isRecordFolderClosed(NodeRef nodeRef);
 
     /**
-     * Create a record folder in the rm container.  The record folder will take the name and type
-     * provided.
+     * Create a record folder in the rm container. The record folder will take the name and type provided.
      *
-     * @param  rmContainer   records management container
-     * @param  name          name
-     * @param  type          type
-     * @return NodeRef       node reference of record folder
+     * @param rmContainer
+     *            records management container
+     * @param name
+     *            name
+     * @param type
+     *            type
+     * @return NodeRef node reference of record folder
      *
      * @since 2.2
      */
     NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type);
 
     /**
-     * Create a record folder in the rm container.  The record folder will take the name, type and
-     * properties provided.
+     * Create a record folder in the rm container. The record folder will take the name, type and properties provided.
      *
-     * @param rmContainer   records management container
-     * @param name          name
-     * @param type          type
-     * @param properties    properties
-     * @return NodeRef      node reference of record folder
+     * @param rmContainer
+     *            records management container
+     * @param name
+     *            name
+     * @param type
+     *            type
+     * @param properties
+     *            properties
+     * @return NodeRef node reference of record folder
      *
      * @since 2.2
      */
     NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type, Map<QName, Serializable> properties);
 
     /**
-     * Create a record folder in the rm container.  The record folder will take the name provided.
-     * Type defaults to rm:recordFolder.
+     * Create a record folder in the rm container. The record folder will take the name provided. Type defaults to rm:recordFolder.
      *
-     * @param  rmContainer   records management container
-     * @param  name          name
-     * @return NodeRef       node reference of record folder
+     * @param rmContainer
+     *            records management container
+     * @param name
+     *            name
+     * @return NodeRef node reference of record folder
      *
      * @since 2.2
      */
     NodeRef createRecordFolder(NodeRef rmContainer, String name);
 
     /**
-     * Create a record folder in the rm container.  The record folder will take the name and
-     * properties provided. Type defaults to rm:recordFolder.
+     * Create a record folder in the rm container. The record folder will take the name and properties provided. Type defaults to rm:recordFolder.
      *
-     * @param rmContainer   records management container
-     * @param name          name
-     * @param properties    properties
-     * @return NodeRef      node reference of record folder
+     * @param rmContainer
+     *            records management container
+     * @param name
+     *            name
+     * @param properties
+     *            properties
+     * @return NodeRef node reference of record folder
      *
      * @since 2.2
      */
@@ -138,8 +150,9 @@ public interface RecordFolderService
     /**
      * Get all the record folders that a record is filed into.
      *
-     * @param record        the record node reference
-     * @return List         list of folder record node references
+     * @param record
+     *            the record node reference
+     * @return List list of folder record node references
      *
      * @since 2.2
      */
@@ -161,7 +174,8 @@ public interface RecordFolderService
     /**
      * Closes the record folder. If the given node reference is a record the parent will be retrieved and processed.
      *
-     * @param nodeRef   the record folder node reference
+     * @param nodeRef
+     *            the record folder node reference
      *
      * @since 2.2
      */

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,17 +34,17 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Vector;
 import java.util.function.Supplier;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-
-import jakarta.servlet.http.HttpServletRequest;
 import junit.framework.TestCase;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.DecodedAccessToken;
 import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.TokenDecodingException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 
 /**
  * Tests the Identity Service based authentication subsystem.
@@ -68,7 +68,9 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
 
     public void testWrongTokenWithSilentValidation()
     {
-        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenDecodingException("Expected ");}));
+        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {
+            throw new TokenDecodingException("Expected ");
+        }));
         mapper.setValidationFailureSilent(true);
 
         HttpServletRequest mockRequest = createMockTokenRequest("WrOnG-ToKeN");
@@ -79,7 +81,9 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
 
     public void testWrongTokenWithoutSilentValidation()
     {
-        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {throw new TokenDecodingException("Expected");}));
+        final IdentityServiceRemoteUserMapper mapper = givenMapper(Map.of("WrOnG-ToKeN", () -> {
+            throw new TokenDecodingException("Expected");
+        }));
         mapper.setValidationFailureSilent(false);
 
         HttpServletRequest mockRequest = createMockTokenRequest("WrOnG-ToKeN");
@@ -108,21 +112,21 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         mapper.setActive(true);
         mapper.setBearerTokenResolver(new DefaultBearerTokenResolver());
 
-
         return mapper;
     }
 
     /**
      * Utility method for creating a mocked Servlet request with a token.
      * 
-     * @param token The token to add to the Authorization header
+     * @param token
+     *            The token to add to the Authorization header
      * @return The mocked request object
      */
     private HttpServletRequest createMockTokenRequest(String token)
     {
         // Mock a request with the token in the Authorization header (if supplied)
         HttpServletRequest mockRequest = mock(HttpServletRequest.class);
-        
+
         Vector<String> authHeaderValues = new Vector<>(1);
         if (token != null)
         {
@@ -133,7 +137,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
                 .thenReturn(authHeaderValues.elements());
         when(mockRequest.getHeader(AUTHORIZATION_HEADER))
                 .thenReturn(authHeaderValues.isEmpty() ? null : authHeaderValues.get(0));
-        
+
         return mockRequest;
     }
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -62,7 +62,8 @@ public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvalu
     /**
      * Sets the node service
      *
-     * @param nodeService The node service
+     * @param nodeService
+     *            The node service
      */
     public void setNodeService(NodeService nodeService)
     {

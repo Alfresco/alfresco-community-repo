@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -34,6 +34,9 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -45,9 +48,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
 public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
@@ -61,12 +61,12 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     private IdentityServiceJITProvisioningHandler jitProvisioningHandler;
 
     private final boolean isAuth0Enabled = Optional.ofNullable(System.getProperty("auth0.enabled"))
-        .map(Boolean::valueOf)
-        .orElse(false);
+            .map(Boolean::valueOf)
+            .orElse(false);
 
     private final String userPassword = Optional.ofNullable(System.getProperty("admin.password"))
-        .filter(password -> isAuth0Enabled)
-        .orElse("password");
+            .filter(password -> isAuth0Enabled)
+            .orElse("password");
 
     @Before
     public void setup()
@@ -75,16 +75,16 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
         DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
-            .getBean("Authentication");
+                .getBean("Authentication");
         ChildApplicationContextFactory childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory(
-            "identity-service1");
+                "identity-service1");
 
         identityServiceFacade = (IdentityServiceFacade) childApplicationContextFactory.getApplicationContext()
-            .getBean("identityServiceFacade");
+                .getBean("identityServiceFacade");
         jitProvisioningHandler = (IdentityServiceJITProvisioningHandler) childApplicationContextFactory.getApplicationContext()
-            .getBean("jitProvisioningHandler");
+                .getBean("jitProvisioningHandler");
         IdentityServiceConfig identityServiceConfig = (IdentityServiceConfig) childApplicationContextFactory.getApplicationContext()
-            .getBean("identityServiceConfig");
+                .getBean("identityServiceConfig");
         identityServiceConfig.setAllowAnyHostname(true);
         identityServiceConfig.setClientKeystore(null);
         identityServiceConfig.setDisableTrustManager(true);
@@ -95,12 +95,11 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     {
         assertFalse(personService.personExists(IDS_USERNAME));
 
-        IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-            identityServiceFacade.authorize(
+        IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
                 IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
 
         Optional<OIDCUserInfo> userInfoOptional = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
-            accessTokenAuthorization.getAccessToken().getTokenValue());
+                accessTokenAuthorization.getAccessToken().getTokenValue());
 
         NodeRef person = personService.getPerson(IDS_USERNAME);
 
@@ -125,8 +124,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertFalse(personService.personExists(IDS_USERNAME));
 
         String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
-        IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization =
-            identityServiceFacade.authorize(
+        IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
                 IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
 
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
@@ -136,12 +134,12 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
 
         // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
         Field declaredField = jitProvisioningHandler.getClass()
-            .getDeclaredField("identityServiceFacade");
+                .getDeclaredField("identityServiceFacade");
         declaredField.setAccessible(true);
         declaredField.set(jitProvisioningHandler, idsServiceFacadeMock);
 
         Optional<OIDCUserInfo> userInfoOptional = jitProvisioningHandler.extractUserInfoAndCreateUserIfNeeded(
-            accessToken);
+                accessToken);
 
         declaredField.set(jitProvisioningHandler, identityServiceFacade);
 
@@ -166,16 +164,15 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
     @After
     public void tearDown()
     {
-        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
                 transactionService.getRetryingTransactionHelper()
-                    .doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                        personService.deletePerson(IDS_USERNAME);
-                        return null;
-                    });
+                        .doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                            personService.deletePerson(IDS_USERNAME);
+                            return null;
+                        });
                 return null;
             }
         });

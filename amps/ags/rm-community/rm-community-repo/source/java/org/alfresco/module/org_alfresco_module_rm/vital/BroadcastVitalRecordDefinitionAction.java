@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,16 +46,13 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
- * Action to implement the consequences of a change to the value of the VitalRecordDefinition properties. When the
- * VitalRecordIndicator or the reviewPeriod properties are changed on a record container, then any descendant folders or
- * records must be updated as a consequence. Descendant folders should have their reviewPeriods and/or
- * vitalRecordIndicators updated to match the new value. Descendant records should have their reviewAsOf date updated.
+ * Action to implement the consequences of a change to the value of the VitalRecordDefinition properties. When the VitalRecordIndicator or the reviewPeriod properties are changed on a record container, then any descendant folders or records must be updated as a consequence. Descendant folders should have their reviewPeriods and/or vitalRecordIndicators updated to match the new value. Descendant records should have their reviewAsOf date updated.
  *
  * @author Neil McErlean
  */
 public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstractBase
 {
-	protected FilePlanService filePlanService;
+    protected FilePlanService filePlanService;
 
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -63,14 +60,12 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -83,7 +78,8 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
     /**
      * Propagates the changes to the children of the node specified.
      *
-     * @param actionedUponNodeRef   actioned upon node reference
+     * @param actionedUponNodeRef
+     *            actioned upon node reference
      */
     private void propagateChangeToChildrenOf(NodeRef actionedUponNodeRef)
     {
@@ -105,7 +101,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
             NodeRef nextChild = nextAssoc.getChildRef();
 
             if (filePlanService.isFilePlanComponent(nextChild) &&
-                !getFreezeService().isFrozen(nextChild))
+                    !getFreezeService().isFrozen(nextChild))
             {
                 // If the child is a record, then the VitalRecord aspect needs to be applied or updated
                 if (getRecordService().isRecord(nextChild))

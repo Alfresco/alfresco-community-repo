@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -57,7 +57,8 @@ public abstract class BaseReportGenerator implements ReportGenerator
     protected QName reportType;
 
     /**
-     * @param reportService report service
+     * @param reportService
+     *            report service
      */
     public void setReportService(ReportService reportService)
     {
@@ -65,7 +66,8 @@ public abstract class BaseReportGenerator implements ReportGenerator
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -73,7 +75,8 @@ public abstract class BaseReportGenerator implements ReportGenerator
     }
 
     /**
-     * @param reportType    report type
+     * @param reportType
+     *            report type
      */
     public void setReportType(QName reportType)
     {
@@ -131,7 +134,8 @@ public abstract class BaseReportGenerator implements ReportGenerator
      * <p>
      * Throws AlfrescoRuntimeException if applicability fails, with reason.
      *
-     * @param  reportedUponNodeRef          reported upon node reference
+     * @param reportedUponNodeRef
+     *            reported upon node reference
      */
     protected abstract void checkReportApplicability(NodeRef reportedUponNodeRef);
 

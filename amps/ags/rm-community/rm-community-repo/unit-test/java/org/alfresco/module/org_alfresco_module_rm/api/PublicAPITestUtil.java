@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -51,10 +51,10 @@ import java.util.stream.Collectors;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-
-import org.alfresco.api.AlfrescoPublicApi;
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
+
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * A utility class to help testing the Alfresco public API.
@@ -67,14 +67,12 @@ public class PublicAPITestUtil
     private static final String ALFRESCO_PACKAGE = "org.alfresco";
 
     /**
-     * Check the consistency of the public API exposed from the given package. For each class in the package that is
-     * annotated {@link AlfrescoPublicApi}, check that no exposed methods (or fields, constructors, etc.) use
-     * non-public-API classes from Alfresco.
+     * Check the consistency of the public API exposed from the given package. For each class in the package that is annotated {@link AlfrescoPublicApi}, check that no exposed methods (or fields, constructors, etc.) use non-public-API classes from Alfresco.
      *
-     * @param basePackageName The package to check classes within.
-     * @param knownBadReferences Any references that would cause this test to fail, but which we don't want to change.
-     *            The keys should be public API classes within our code and the values should be the non-public-API
-     *            class that is being referenced.
+     * @param basePackageName
+     *            The package to check classes within.
+     * @param knownBadReferences
+     *            Any references that would cause this test to fail, but which we don't want to change. The keys should be public API classes within our code and the values should be the non-public-API class that is being referenced.
      */
     public static void testPublicAPIConsistency(String basePackageName, SetMultimap<Class<?>, Class<?>> knownBadReferences)
     {
@@ -94,7 +92,7 @@ public class PublicAPITestUtil
                 for (Class<?> clazz : knownBadReferences.get(publicAPIClass))
                 {
                     assertTrue("Supplied knownBadReferences expects " + clazz + " to be referenced by " + publicAPIClass
-                                + ", but no such error was found", referencedClassesFromClass.remove(clazz));
+                            + ", but no such error was found", referencedClassesFromClass.remove(clazz));
                 }
             }
 
@@ -107,7 +105,7 @@ public class PublicAPITestUtil
             if (isInAlfresco(referencedClass) && !isPartOfPublicApi(referencedClass))
             {
                 Set<String> referencerNames = referencedFrom.get(referencedClass).stream().map(c -> c.getName())
-                            .collect(Collectors.toSet());
+                        .collect(Collectors.toSet());
                 errorMessages.add(referencedClass.getName() + " <- " + StringUtils.join(referencerNames, ", "));
             }
         }
@@ -119,13 +117,14 @@ public class PublicAPITestUtil
         }
 
         assertEquals("Found references to non-public API classes from public API classes.", Collections.emptyList(),
-                    errorMessages);
+                errorMessages);
     }
 
     /**
      * Check if the given class is a part of the Alfresco public API.
      *
-     * @param clazz The class to check.
+     * @param clazz
+     *            The class to check.
      * @return {@code true} if the given class is annotated with {@link AlfrescoPublicApi}.
      */
     private static boolean isPartOfPublicApi(Class<?> clazz)
@@ -142,13 +141,12 @@ public class PublicAPITestUtil
     }
 
     /**
-     * Get all the classes referenced by the given class, which might be used by an extension. We consider visible
-     * methods, constructors, fields and inner classes, as well as superclasses and interfaces extended by the class.
+     * Get all the classes referenced by the given class, which might be used by an extension. We consider visible methods, constructors, fields and inner classes, as well as superclasses and interfaces extended by the class.
      *
-     * @param initialClass The class to analyse.
-     * @param consideredClasses Classes that have already been considered, and which should not be considered again. If
-     *            the given class has already been considered then an empty set will be returned. This set will be
-     *            updated with the given class.
+     * @param initialClass
+     *            The class to analyse.
+     * @param consideredClasses
+     *            Classes that have already been considered, and which should not be considered again. If the given class has already been considered then an empty set will be returned. This set will be updated with the given class.
      * @return The set of classes that might be accessible by an extension of this class.
      */
     private static Set<Class<?>> getReferencedClassesFromClass(Class<?> initialClass, Set<Class<?>> consideredClasses)
@@ -188,7 +186,7 @@ public class PublicAPITestUtil
             if (initialClass.getSuperclass() != null)
             {
                 referencedClasses
-                            .addAll(getReferencedClassesFromClass(initialClass.getSuperclass(), consideredClasses));
+                        .addAll(getReferencedClassesFromClass(initialClass.getSuperclass(), consideredClasses));
             }
             for (Class<?> clazz : initialClass.getInterfaces())
             {
@@ -199,11 +197,10 @@ public class PublicAPITestUtil
     }
 
     /**
-     * Check if the supplied {@link Executable#getModifiers() modifiers} indicate that an extension can access the
-     * element. Here we assume that an extension can see public and protected items, but not package protected (or
-     * private).
+     * Check if the supplied {@link Executable#getModifiers() modifiers} indicate that an extension can access the element. Here we assume that an extension can see public and protected items, but not package protected (or private).
      *
-     * @param modifiers The java language modifiers.
+     * @param modifiers
+     *            The java language modifiers.
      * @return {@code true} if the item is visible to an extension.
      */
     private static boolean isVisibleToExtender(int modifiers)
@@ -214,7 +211,8 @@ public class PublicAPITestUtil
     /**
      * Get all classes involved in the signature of the given method.
      *
-     * @param method The method to analyse.
+     * @param method
+     *            The method to analyse.
      * @return The set of classes.
      */
     private static Set<Class<?>> getClassesFromMethod(Method method)
@@ -226,7 +224,8 @@ public class PublicAPITestUtil
     /**
      * Get all classes involved in the signature of the given constructor.
      *
-     * @param constructor The constructor to analyse.
+     * @param constructor
+     *            The constructor to analyse.
      * @return The set of classes.
      */
     private static Set<Class<?>> getClassesFromConstructor(Constructor<?> constructor)
@@ -236,10 +235,10 @@ public class PublicAPITestUtil
     }
 
     /**
-     * Get all classes involved in the type of the supplied field. For example {@code Pair<Set<String>, Integer> foo}
-     * involves four classes.
+     * Get all classes involved in the type of the supplied field. For example {@code Pair<Set<String>, Integer> foo} involves four classes.
      *
-     * @param field The field to look at.
+     * @param field
+     *            The field to look at.
      * @return The set of classes.
      */
     private static Set<Class<?>> getClassesFromField(Field field)
@@ -251,7 +250,8 @@ public class PublicAPITestUtil
     /**
      * Get all types references by the supplied method signature (i.e. the parameters, return type and exceptions).
      *
-     * @param method The method to analyse.
+     * @param method
+     *            The method to analyse.
      * @return The set of types.
      */
     private static Set<Type> getTypesFromMethod(Method method)
@@ -266,7 +266,8 @@ public class PublicAPITestUtil
     /**
      * Get all types referenced by the supplied constructor (i.e. the parameters and exceptions).
      *
-     * @param constructor The constructor to analyse.
+     * @param constructor
+     *            The constructor to analyse.
      * @return The set of types.
      */
     private static Set<Type> getTypesFromConstructor(Constructor<?> constructor)
@@ -278,10 +279,10 @@ public class PublicAPITestUtil
     }
 
     /**
-     * Find all classes that are within the supplied types. For example a {@code Pair<Set<String>, Integer>} contains
-     * references to four classes.
+     * Find all classes that are within the supplied types. For example a {@code Pair<Set<String>, Integer>} contains references to four classes.
      *
-     * @param methodTypes The set of types to examine.
+     * @param methodTypes
+     *            The set of types to examine.
      * @return The set of classes used to form the given types.
      */
     private static Set<Class<?>> getClassesFromTypes(Set<Type> methodTypes)
@@ -295,13 +296,12 @@ public class PublicAPITestUtil
     }
 
     /**
-     * Find all classes that are within the supplied type. For example a {@code Pair<Set<String>, Integer>} contains
-     * references to four classes.
+     * Find all classes that are within the supplied type. For example a {@code Pair<Set<String>, Integer>} contains references to four classes.
      *
-     * @param type The type to examine.
-     * @param processedTypes The set of types which have already been processed. If {@code type} is within this set then
-     *            the method returns an empty set, to prevent analysis of the same type multiple times, and to guard
-     *            against circular references. The underlying set is updated with the given type.
+     * @param type
+     *            The type to examine.
+     * @param processedTypes
+     *            The set of types which have already been processed. If {@code type} is within this set then the method returns an empty set, to prevent analysis of the same type multiple times, and to guard against circular references. The underlying set is updated with the given type.
      * @return The set of classes used to form the given type.
      */
     private static Set<Class<?>> getClassesFromType(Type type, Set<Type> processedTypes)
@@ -357,7 +357,8 @@ public class PublicAPITestUtil
     /**
      * Check if a class is within org.alfresco, and so whether it could potentially be part of the public API.
      *
-     * @param type The class to check.
+     * @param type
+     *            The class to check.
      * @return {@code true} if this is an Alfresco class.
      */
     private static boolean isInAlfresco(Class<?> type)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,11 +25,11 @@
  */
 package org.alfresco.repo.event2;
 
+import java.util.Collection;
+
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-
-import java.util.Collection;
 
 @TestPropertySource(properties = {"repo.event2.queue.skip=true"})
 public class DirectEventGeneratorTest extends EventGeneratorTest
@@ -45,7 +45,6 @@ public class DirectEventGeneratorTest extends EventGeneratorTest
         assertEquals(1, allEventSenderBeans.size());
         assertTrue(allEventSenderBeans.contains(eventSender));
     }
-
 
     @Test
     public void testIfDirectSenderIsSetInEventGenerator()

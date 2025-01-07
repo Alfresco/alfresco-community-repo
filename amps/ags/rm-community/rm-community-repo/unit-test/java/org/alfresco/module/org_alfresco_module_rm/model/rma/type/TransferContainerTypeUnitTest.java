@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,14 +29,15 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.junit.Test;
+import org.mockito.InjectMocks;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.junit.Test;
-import org.mockito.InjectMocks;
 
 /**
  * Unit test for TransferContainerType
@@ -50,8 +51,7 @@ public class TransferContainerTypeUnitTest extends BaseUnitTest
     private @InjectMocks TransferContainerType transferContainerType;
 
     /**
-     * Given that we try to add to transfer container,
-     * Then IntegrityException is thrown.
+     * Given that we try to add to transfer container, Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testAddToTransferContainerTest()

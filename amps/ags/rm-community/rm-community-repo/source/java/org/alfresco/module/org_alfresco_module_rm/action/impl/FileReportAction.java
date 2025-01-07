@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
@@ -42,8 +45,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * File report generic action.
@@ -89,7 +90,8 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     }
 
     /**
-     * @param reportService report service
+     * @param reportService
+     *            report service
      */
     public void setReportService(ReportService reportService)
     {
@@ -97,7 +99,8 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -105,8 +108,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
@@ -131,8 +133,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         final Report report = getReportService().generateReport(reportType, actionedUponNodeRef, mimetype);
 
         // file the report as system
-        NodeRef filedReport = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
+        NodeRef filedReport = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
             @Override
             public NodeRef doWork()
             {
@@ -148,7 +149,8 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     /**
      * Checks if the destination is frozen, closed, cut off or not. In case if it is an exception will be thrown.
      *
-     * @param nodeRef The destination node reference for which the capability should be checked
+     * @param nodeRef
+     *            The destination node reference for which the capability should be checked
      */
     private void checkFilingPermissionOnlyCapability(NodeRef nodeRef)
     {
@@ -159,25 +161,30 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     }
 
     /**
-     * Retrieves the value of the given parameter. If the parameter has not been
-     * passed from the UI an error will be thrown
+     * Retrieves the value of the given parameter. If the parameter has not been passed from the UI an error will be thrown
      *
-     * @param action The action
-     * @param parameter The parameter for which the value should be retrieved
+     * @param action
+     *            The action
+     * @param parameter
+     *            The parameter for which the value should be retrieved
      * @return The value of the given parameter
      */
     private String getParameterValue(Action action, String parameter)
     {
         String paramValue = (String) action.getParameterValue(parameter);
-        if (StringUtils.isBlank(paramValue)) { throw new AlfrescoRuntimeException(I18NUtil.getMessage(
-                MSG_PARAM_NOT_SUPPLIED, parameter)); }
+        if (StringUtils.isBlank(paramValue))
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(
+                    MSG_PARAM_NOT_SUPPLIED, parameter));
+        }
         return paramValue;
     }
 
     /**
      * Helper method for getting the destination.
      *
-     * @param action The action
+     * @param action
+     *            The action
      * @return The file plan node reference
      */
     private NodeRef getDestination(Action action)
@@ -189,7 +196,8 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     /**
      * Helper method for getting the report type.
      *
-     * @param action The action
+     * @param action
+     *            The action
      * @return The report type
      */
     private QName getReportType(Action action)

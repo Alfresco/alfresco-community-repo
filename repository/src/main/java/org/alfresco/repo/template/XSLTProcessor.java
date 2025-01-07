@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -49,12 +48,7 @@ import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.alfresco.repo.processor.BaseProcessor;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.repository.TemplateException;
-import org.alfresco.service.cmr.repository.TemplateProcessor;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.XMLUtil;
+import freemarker.cache.TemplateLoader;
 import org.apache.bsf.BSFManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -65,15 +59,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-import freemarker.cache.TemplateLoader;
+import org.alfresco.repo.processor.BaseProcessor;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateException;
+import org.alfresco.service.cmr.repository.TemplateProcessor;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.XMLUtil;
 
 public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
 {
     private static final Log log = LogFactory.getLog(XSLTProcessor.class);
-    
+
     private static final String LOCALE_SEPARATOR = "_";
 
-    private final static String MSG_ERROR_NO_TEMPLATE   = "error_no_template";
+    private final static String MSG_ERROR_NO_TEMPLATE = "error_no_template";
     private static final String MSG_UNABLE_TO_READ_TEMPLATE = "template.xslt.read_error";
     private static final String MSG_UNABLE_TO_PARSE_TEMPLATE = "template.xslt.parse_error";
 
@@ -98,15 +97,14 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         }
         catch (IOException ex)
         {
-            throw new TemplateException(MSG_UNABLE_TO_READ_TEMPLATE, new Object[] { ex.getMessage() }, ex);
+            throw new TemplateException(MSG_UNABLE_TO_READ_TEMPLATE, new Object[]{ex.getMessage()}, ex);
         }
         process(templateSource, model, out);
     }
 
     public void processString(final String template, Object model, Writer out)
     {
-        TemplateSource stringTemplateSource = new TemplateSource()
-        {
+        TemplateSource stringTemplateSource = new TemplateSource() {
             public long lastModified()
             {
                 return System.currentTimeMillis();
@@ -123,8 +121,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
             }
 
             public void close() throws IOException
-            {
-            }
+            {}
         };
         process(stringTemplateSource, model, out);
     }
@@ -152,11 +149,11 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         }
         catch (IOException ex)
         {
-            throw new TemplateException(MSG_UNABLE_TO_READ_TEMPLATE, new Object[] { ex.getMessage() }, ex);
+            throw new TemplateException(MSG_UNABLE_TO_READ_TEMPLATE, new Object[]{ex.getMessage()}, ex);
         }
         catch (SAXException sax)
         {
-            throw new TemplateException(MSG_UNABLE_TO_PARSE_TEMPLATE, new Object[] { sax.getMessage() }, sax);
+            throw new TemplateException(MSG_UNABLE_TO_PARSE_TEMPLATE, new Object[]{sax.getMessage()}, sax);
         }
         finally
         {
@@ -175,8 +172,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         addParameters(xsltModel, xslTemplate);
 
         final LinkedList<TransformerException> errors = new LinkedList<TransformerException>();
-        final ErrorListener errorListener = new ErrorListener()
-        {
+        final ErrorListener errorListener = new ErrorListener() {
             public void error(final TransformerException te) throws TransformerException
             {
                 log.debug("error " + te.getMessageAndLocation());
@@ -197,8 +193,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         };
 
         final TemplateSource resourceSource = templateSource;
-        final URIResolver uriResolver = new URIResolver()
-        {
+        final URIResolver uriResolver = new URIResolver() {
             public Source resolve(final String href, String base) throws TransformerException
             {
                 if (log.isDebugEnabled())
@@ -284,7 +279,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         }
         finally
         {
-            //Clear out any scripts that were created for this transform
+            // Clear out any scripts that were created for this transform
             if (!scriptIds.isEmpty())
             {
                 XSLTProcessorMethodInvoker.removeMethods(scriptIds);
@@ -429,16 +424,17 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
         return new DOMSource((Document) o);
     }
 
-	@Override
-	public void process(String template, Object model, Writer out, Locale locale) 
-	{
+    @Override
+    public void process(String template, Object model, Writer out, Locale locale)
+    {
         if (template.indexOf(StoreRef.URI_FILLER) != -1)
         {
-    		// If template is a node ref, ignore locale
-        	process(template, model, out);
+            // If template is a node ref, ignore locale
+            process(template, model, out);
         }
-	    else {
-	    	//Otherwise try and locate a locale specific resource.
+        else
+        {
+            // Otherwise try and locate a locale specific resource.
             TemplateSource templateSource = null;
             int lastDot = template.lastIndexOf('.');
             String prefix = lastDot == -1 ? template : template.substring(0, lastDot);
@@ -446,17 +442,17 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
             String localeName = LOCALE_SEPARATOR + locale.toString();
             StringBuffer buf = new StringBuffer(template.length() + localeName.length());
             buf.append(prefix);
-			for (;;)
+            for (;;)
             {
                 buf.setLength(prefix.length());
                 String path = buf.append(localeName).append(suffix).toString();
                 try
                 {
-                	templateSource = (TemplateSource) templateLoader.findTemplateSource(path);
+                    templateSource = (TemplateSource) templateLoader.findTemplateSource(path);
                 }
                 catch (IOException ex)
                 {
-                    throw new TemplateException(MSG_UNABLE_TO_READ_TEMPLATE, new Object[] { ex.getMessage() }, ex);
+                    throw new TemplateException(MSG_UNABLE_TO_READ_TEMPLATE, new Object[]{ex.getMessage()}, ex);
                 }
                 if (templateSource != null)
                 {
@@ -469,12 +465,12 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
                 }
                 localeName = localeName.substring(0, lastUnderscore);
             }
-	        if (templateSource == null)
-	        {
-	            throw new TemplateException(MSG_ERROR_NO_TEMPLATE, new Object[] {template});
-	        }
-	        process(templateSource, model, out);
-	    }
-	}
+            if (templateSource == null)
+            {
+                throw new TemplateException(MSG_ERROR_NO_TEMPLATE, new Object[]{template});
+            }
+            process(templateSource, model, out);
+        }
+    }
 
 }

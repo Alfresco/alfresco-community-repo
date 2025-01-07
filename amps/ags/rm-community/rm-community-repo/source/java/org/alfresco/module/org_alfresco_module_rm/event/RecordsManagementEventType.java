@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,21 +40,21 @@ public interface RecordsManagementEventType
     /**
      * Get the name of the records management event type
      *
-     * @return  String  event type name
+     * @return String event type name
      */
     String getName();
 
     /**
      * Gets the display label of the event type
      *
-     * @return  String  display label
+     * @return String display label
      */
     String getDisplayLabel();
 
     /**
      * Indicates whether the event is automatic or not
      *
-     * @return  boolean     true if automatic, false otherwise
+     * @return boolean true if automatic, false otherwise
      */
     boolean isAutomaticEvent();
 }

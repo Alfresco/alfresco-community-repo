@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -54,7 +54,8 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     private RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent;
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -62,7 +63,8 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     }
 
     /**
-     * @param modulePatchExecuter   module patch executer
+     * @param modulePatchExecuter
+     *            module patch executer
      */
     public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter)
     {
@@ -70,7 +72,8 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     }
 
     /**
-     * @param recordContributorsGroupBootstrapComponent record contributors group bootstrap component
+     * @param recordContributorsGroupBootstrapComponent
+     *            record contributors group bootstrap component
      */
     public void setRecordContributorsGroupBootstrapComponent(RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent)
     {

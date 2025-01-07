@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,8 +31,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -41,26 +47,21 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Capabilities GET web service implementation.
  */
 public class CapabilitiesGet extends DeclarativeWebScript
 {
-	/** File plan service */
+    /** File plan service */
     private FilePlanService filePlanService;
 
     /** Capability service */
     private CapabilityService capabilityService;
 
     /**
-     * @param capabilityService	capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -68,12 +69,13 @@ public class CapabilitiesGet extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @see org.alfresco.repo.web.scripts.content.StreamContent#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
@@ -126,19 +128,19 @@ public class CapabilitiesGet extends DeclarativeWebScript
                     List<Capability> capabilities = capabilityService.getCapabilitiesByGroupId(capabilityGroupId);
                     for (Capability capability : capabilities)
                     {
-                       String capabilityName = capability.getName();
-                       String capabilityTitle = capability.getTitle();
+                        String capabilityName = capability.getName();
+                        String capabilityTitle = capability.getTitle();
 
-                       if (groupedCapabilitiesMap.containsKey(capabilityGroupId))
-                       {
-                           groupedCapabilitiesMap.get(capabilityGroupId).addCapability(capabilityName, capabilityTitle);
-                       }
-                       else
-                       {
-                           GroupedCapabilities groupedCapabilities = new GroupedCapabilities(capabilityGroupId, capabilityGroupTitle, capabilityName, capabilityTitle);
-                           groupedCapabilities.addCapability(capabilityName, capabilityTitle);
-                           groupedCapabilitiesMap.put(capabilityGroupId, groupedCapabilities);
-                       }
+                        if (groupedCapabilitiesMap.containsKey(capabilityGroupId))
+                        {
+                            groupedCapabilitiesMap.get(capabilityGroupId).addCapability(capabilityName, capabilityTitle);
+                        }
+                        else
+                        {
+                            GroupedCapabilities groupedCapabilities = new GroupedCapabilities(capabilityGroupId, capabilityGroupTitle, capabilityName, capabilityTitle);
+                            groupedCapabilities.addCapability(capabilityName, capabilityTitle);
+                            groupedCapabilitiesMap.put(capabilityGroupId, groupedCapabilities);
+                        }
                     }
                 }
             }

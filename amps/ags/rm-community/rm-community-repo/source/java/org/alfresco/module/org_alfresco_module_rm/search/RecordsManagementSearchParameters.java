@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,14 +33,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * @author Roy Wetherall
@@ -50,16 +51,14 @@ import org.json.JSONObject;
 public class RecordsManagementSearchParameters
 {
     /** Default sort order */
-    private static final List<SortItem> DEFAULT_SORT_ORDER = new ArrayList<SortItem>()
-    {
+    private static final List<SortItem> DEFAULT_SORT_ORDER = new ArrayList<SortItem>() {
         {
             add(new SortItem(ContentModel.PROP_NAME, Boolean.TRUE));
         }
     };
 
     /** Default templates */
-    private static final Map<String, String> DEFAULT_TEMPLATES = new HashMap<String, String>()
-    {
+    private static final Map<String, String> DEFAULT_TEMPLATES = new HashMap<String, String>() {
         {
             put("keywords", "%(cm:name cm:title cm:description TEXT)");
             put("name", "%(cm:name)");
@@ -113,27 +112,7 @@ public class RecordsManagementSearchParameters
     private static final String JSON_ASCENDING = "ascending";
 
     /**
-     * {
-     *    "maxItems" : 500,
-     *    "records" : true,
-     *    "undeclaredrecords" : false,
-     *    "vitalrecords" : false,
-     *    "recordfolders" : false,
-     *    "frozen" : false,
-     *    "cutoff" : false,
-     *    "containertypes" :
-     *    [
-     *       "rma:recordSeries",
-     *       "rma:recordCategory"
-     *    ]
-     *    "sort" :
-     *    [
-     *       {
-     *          "field" : "cm:name",
-     *          "ascending" : true
-     *       }
-     *    ]
-     * }
+     * { "maxItems" : 500, "records" : true, "undeclaredrecords" : false, "vitalrecords" : false, "recordfolders" : false, "frozen" : false, "cutoff" : false, "containertypes" : [ "rma:recordSeries", "rma:recordCategory" ] "sort" : [ { "field" : "cm:name", "ascending" : true } ] }
      */
     public static RecordsManagementSearchParameters createFromJSON(String json, NamespaceService namespaceService)
     {
@@ -211,7 +190,7 @@ public class RecordsManagementSearchParameters
                 {
                     JSONObject sortJSONObject = jsonArray.getJSONObject(i);
                     if (sortJSONObject.has(JSON_FIELD) &&
-                        sortJSONObject.has(JSON_ASCENDING))
+                            sortJSONObject.has(JSON_ASCENDING))
                     {
                         sortOrder.add(new SortItem(
                                 QName.createQName(sortJSONObject.getString(JSON_FIELD), namespaceService),
@@ -377,5 +356,5 @@ public class RecordsManagementSearchParameters
     {
         return includedContainerTypes;
     }
-    
+
 }

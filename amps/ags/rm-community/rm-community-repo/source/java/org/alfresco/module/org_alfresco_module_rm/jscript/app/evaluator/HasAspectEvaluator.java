@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,18 +37,18 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 public class HasAspectEvaluator extends BaseEvaluator
-{       
+{
     private String prefixAspectQNameString;
-    
+
     public void setAspect(String aspect)
     {
         prefixAspectQNameString = aspect;
     }
-    
+
     @Override
     protected boolean evaluateImpl(NodeRef nodeRef)
     {
         QName aspect = QName.createQName(prefixAspectQNameString, namespaceService);
-        return nodeService.hasAspect(nodeRef, aspect);        
+        return nodeService.hasAspect(nodeRef, aspect);
     }
 }

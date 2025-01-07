@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,13 +30,14 @@ package org.alfresco.module.org_alfresco_module_rm.jscript;
 import java.util.Collections;
 import java.util.Map;
 
+import org.mozilla.javascript.Scriptable;
+
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.mozilla.javascript.Scriptable;
 
 /**
  * Base records management script node
@@ -67,7 +68,7 @@ public class ScriptRecordsManagmentNode extends ScriptNode
     {
         boolean result = false;
 
-        CapabilityService capabilityService = (CapabilityService)rmServices.getCapabilityService();
+        CapabilityService capabilityService = (CapabilityService) rmServices.getCapabilityService();
         Capability capability = capabilityService.getCapability(capabilityName);
         if (capability != null)
         {

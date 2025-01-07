@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -103,7 +103,7 @@ public class ContentDestructionComponent
     }
 
     /**
-     * @return  true if cleansing is enabled, false otherwise
+     * @return true if cleansing is enabled, false otherwise
      */
     public boolean isCleansingEnabled()
     {
@@ -111,7 +111,8 @@ public class ContentDestructionComponent
     }
 
     /**
-     * @param eagerContentStoreCleaner  eager content store cleaner
+     * @param eagerContentStoreCleaner
+     *            eager content store cleaner
      */
     public void setEagerContentStoreCleaner(EagerContentStoreCleaner eagerContentStoreCleaner)
     {
@@ -119,7 +120,8 @@ public class ContentDestructionComponent
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -127,7 +129,8 @@ public class ContentDestructionComponent
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -135,7 +138,8 @@ public class ContentDestructionComponent
     }
 
     /**
-     * @param behaviourFilter   behaviour filter
+     * @param behaviourFilter
+     *            behaviour filter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -144,7 +148,9 @@ public class ContentDestructionComponent
 
     /**
      * Setter for content duplication utility class
-     * @param contentBinDuplicationUtility ContentBinDuplicationUtility
+     * 
+     * @param contentBinDuplicationUtility
+     *            ContentBinDuplicationUtility
      */
     public void setContentBinDuplicationUtility(ContentBinDuplicationUtility contentBinDuplicationUtility)
     {
@@ -152,7 +158,8 @@ public class ContentDestructionComponent
     }
 
     /**
-     * @param cleansingEnabled  true if cleansing enabled, false otherwise
+     * @param cleansingEnabled
+     *            true if cleansing enabled, false otherwise
      */
     public void setCleansingEnabled(boolean cleansingEnabled)
     {
@@ -190,31 +197,33 @@ public class ContentDestructionComponent
         // We want to remove the rn:renditioned aspect, but due to the possibility
         // that there is Alfresco 3.2-era data with the cm:thumbnailed aspect
         // applied, we must consider removing it too.
-      if (includeRenditions
-              && (getNodeService().hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED)
-                      || getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED)))
-      {
-          // get the rendition assoc types
-          Set<QName> childAssocTypes = dictionaryService.getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();
-          for (ChildAssociationRef child : getNodeService().getChildAssocs(nodeRef))
-          {
-              if (childAssocTypes.contains(child.getTypeQName()))
-              {
-                  // destroy renditions content
-                  destroyContent(child.getChildRef(), false);
-                  
-                  //delete the rendition node
-                  getNodeService().deleteNode(child.getChildRef());
-              }
-          }
-       }
+        if (includeRenditions
+                && (getNodeService().hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED)
+                        || getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED)))
+        {
+            // get the rendition assoc types
+            Set<QName> childAssocTypes = dictionaryService.getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();
+            for (ChildAssociationRef child : getNodeService().getChildAssocs(nodeRef))
+            {
+                if (childAssocTypes.contains(child.getTypeQName()))
+                {
+                    // destroy renditions content
+                    destroyContent(child.getChildRef(), false);
+
+                    // delete the rendition node
+                    getNodeService().deleteNode(child.getChildRef());
+                }
+            }
+        }
     }
 
     /**
      * Registers all content on the given node for destruction.
      *
-     * @param nodeRef               node reference
-     * @param clearContentProperty  if true then clear content property, otherwise false
+     * @param nodeRef
+     *            node reference
+     * @param clearContentProperty
+     *            if true then clear content property, otherwise false
      */
     protected void registerAllContentForDestruction(NodeRef nodeRef, boolean clearContentProperty)
     {
@@ -225,7 +234,7 @@ public class ContentDestructionComponent
             if (entry.getValue() instanceof ContentData)
             {
                 // get content data
-                ContentData dataContent = (ContentData)entry.getValue();
+                ContentData dataContent = (ContentData) entry.getValue();
 
                 if (!contentBinDuplicationUtility.hasAtLeastOneOtherReference(nodeRef))
                 {

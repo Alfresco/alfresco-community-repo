@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -50,8 +50,10 @@ public class Version
     /**
      * Constructor
      *
-     * @param policy The version policy
-     * @param selected Is the version selected
+     * @param policy
+     *            The version policy
+     * @param selected
+     *            Is the version selected
      */
     public Version(String policy, boolean selected)
     {
@@ -75,7 +77,8 @@ public class Version
     /**
      * Sets the version policy
      *
-     * @param policy The version policy
+     * @param policy
+     *            The version policy
      */
     private void setPolicy(String policy)
     {
@@ -95,7 +98,8 @@ public class Version
     /**
      * Sets the version as selected
      *
-     * @param selected <code>true</code> if the version should be selected, <code>false</code> otherwise
+     * @param selected
+     *            <code>true</code> if the version should be selected, <code>false</code> otherwise
      */
     private void setSelected(boolean selected)
     {

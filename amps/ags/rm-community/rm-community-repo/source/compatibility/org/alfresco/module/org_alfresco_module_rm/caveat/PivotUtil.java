@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,7 +46,7 @@ import java.util.Map;
 
         for (Map.Entry<String, List<String>> entry : source.entrySet())
         {
-            List<String>values = entry.getValue();
+            List<String> values = entry.getValue();
             for (String value : values)
             {
                 String authority = entry.getKey();
@@ -54,7 +54,7 @@ import java.util.Map;
                 {
                     // already exists
                     List<String> list = pivot.get(value);
-                    list.add(authority );
+                    list.add(authority);
                 }
                 else
                 {

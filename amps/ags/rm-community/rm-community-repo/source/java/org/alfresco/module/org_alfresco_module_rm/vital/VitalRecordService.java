@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,15 +45,17 @@ public interface VitalRecordService
     /**
      * Setup the vital record definition for the given node.
      *
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      */
     void setupVitalRecordDefinition(NodeRef nodeRef);
 
     /**
      * Gets the vital record definition details for the node.
      *
-     * @param nodeRef                   node reference
-     * @return VitalRecordDefinition    vital record definition details
+     * @param nodeRef
+     *            node reference
+     * @return VitalRecordDefinition vital record definition details
      */
     VitalRecordDefinition getVitalRecordDefinition(NodeRef nodeRef);
 
@@ -70,15 +72,17 @@ public interface VitalRecordService
     /**
      * Indicates whether the record is a vital one or not.
      *
-     * @param nodeRef   node reference
-     * @return boolean  true if this is a vital record, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if this is a vital record, false otherwise
      */
     boolean isVitalRecord(NodeRef nodeRef);
 
     /**
      * Initialises the vital record details.
      *
-     * @param nodeRef   node reference to initialise with vital record details
+     * @param nodeRef
+     *            node reference to initialise with vital record details
      */
-    //void initialiseVitalRecord(NodeRef nodeRef);
+    // void initialiseVitalRecord(NodeRef nodeRef);
 }

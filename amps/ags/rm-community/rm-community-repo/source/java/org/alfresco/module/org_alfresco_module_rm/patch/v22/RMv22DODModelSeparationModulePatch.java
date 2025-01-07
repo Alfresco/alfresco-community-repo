@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,7 +48,7 @@ import org.alfresco.util.Pair;
  * @since 2.2
  */
 public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
-                                           implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     /** query batch size */
     private static final long BATCH_SIZE = 100000L;
@@ -63,28 +63,29 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     private NodeDAO nodeDAO;
 
     /** qnames to update (switch to dod namespace) */
-    private QName[] qnames =
-    {
-        DOD5015Model.PROP_ORIGINATOR,
-        DOD5015Model.PROP_ORIGINATING_ORGANIZATION,
-        DOD5015Model.PROP_PUBLICATION_DATE,
-        DOD5015Model.PROP_MEDIA_TYPE,
-        DOD5015Model.PROP_FORMAT,
-        DOD5015Model.PROP_DATE_RECEIVED,
-        DOD5015Model.PROP_ADDRESS,
-        DOD5015Model.PROP_OTHER_ADDRESS
+    private QName[] qnames = {
+            DOD5015Model.PROP_ORIGINATOR,
+            DOD5015Model.PROP_ORIGINATING_ORGANIZATION,
+            DOD5015Model.PROP_PUBLICATION_DATE,
+            DOD5015Model.PROP_MEDIA_TYPE,
+            DOD5015Model.PROP_FORMAT,
+            DOD5015Model.PROP_DATE_RECEIVED,
+            DOD5015Model.PROP_ADDRESS,
+            DOD5015Model.PROP_OTHER_ADDRESS
     };
 
     /**
-     * @param convertToStandardFilePlan	convert to standard file if true, false otherwise
+     * @param convertToStandardFilePlan
+     *            convert to standard file if true, false otherwise
      */
     public void setConvertToStandardFilePlan(boolean convertToStandardFilePlan)
     {
-		this.convertToStandardFilePlan = convertToStandardFilePlan;
-	}
+        this.convertToStandardFilePlan = convertToStandardFilePlan;
+    }
 
     /**
-     * @param patchDAO  patch DAO
+     * @param patchDAO
+     *            patch DAO
      */
     public void setPatchDAO(PatchDAO patchDAO)
     {
@@ -92,7 +93,8 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     }
 
     /**
-     * @param nodeDAO   node DAO
+     * @param nodeDAO
+     *            node DAO
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -105,73 +107,71 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-    	if (!convertToStandardFilePlan)
-    	{
-	        Long maxNodeId = nodeDAO.getMaxNodeId();
-	        long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
-	        if (LOGGER.isDebugEnabled())
-	        {
-	            LOGGER.debug("   ... updating " + recordCount + " records in batches of " + BATCH_SIZE);
-	        }
+        if (!convertToStandardFilePlan)
+        {
+            Long maxNodeId = nodeDAO.getMaxNodeId();
+            long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("   ... updating " + recordCount + " records in batches of " + BATCH_SIZE);
+            }
 
-	        // apply the DOD record aspect to all exiting records
-	        int completed = 0;
-	        for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
-	        {
-	        	final Long finali = i;
-	        	Integer batchCount = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>()
-	            {
-	        		int batchCount = 0;
+            // apply the DOD record aspect to all exiting records
+            int completed = 0;
+            for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE)
+            {
+                final Long finali = i;
+                Integer batchCount = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>() {
+                    int batchCount = 0;
 
-	        		public Integer execute() throws Throwable
-					{
-						nodeDAO.getNodesWithAspects(Collections.singleton(ASPECT_RECORD), finali, finali + BATCH_SIZE, new NodeDAO.NodeRefQueryCallback()
-				        {
-				            public boolean handle(Pair<Long, NodeRef> nodePair)
-				            {
-				            	 // get the records properties
-				            	 Map<QName, Serializable> properties = nodeDAO.getNodeProperties(nodePair.getFirst());
-				            	 boolean changed = false;
+                    public Integer execute() throws Throwable
+                    {
+                        nodeDAO.getNodesWithAspects(Collections.singleton(ASPECT_RECORD), finali, finali + BATCH_SIZE, new NodeDAO.NodeRefQueryCallback() {
+                            public boolean handle(Pair<Long, NodeRef> nodePair)
+                            {
+                                // get the records properties
+                                Map<QName, Serializable> properties = nodeDAO.getNodeProperties(nodePair.getFirst());
+                                boolean changed = false;
 
-				            	 for (QName qname : qnames)
-				            	 {
-				            	     // if the record has any of the moved properties
-				            	     QName origional = QName.createQName(RecordsManagementModel.RM_URI, qname.getLocalName());
-				            	     if (properties.containsKey(origional))
-				            	     {
-				            	         // move the property value
-				            	         Serializable value = properties.get(origional);
-				            	         properties.put(qname, value);
-				            	         properties.remove(origional);
-				            	         changed = true;
-				            	     }
-				            	 }
+                                for (QName qname : qnames)
+                                {
+                                    // if the record has any of the moved properties
+                                    QName origional = QName.createQName(RecordsManagementModel.RM_URI, qname.getLocalName());
+                                    if (properties.containsKey(origional))
+                                    {
+                                        // move the property value
+                                        Serializable value = properties.get(origional);
+                                        properties.put(qname, value);
+                                        properties.remove(origional);
+                                        changed = true;
+                                    }
+                                }
 
-				            	 // set properties and add aspect
-				            	 if (changed)
-				            	 {
-				            		 nodeDAO.setNodeProperties(nodePair.getFirst(), properties);
-				            	 }
-				            	 nodeDAO.addNodeAspects(nodePair.getFirst(), Collections.singleton(DOD5015Model.ASPECT_DOD_5015_RECORD));
-				            	 batchCount ++;
+                                // set properties and add aspect
+                                if (changed)
+                                {
+                                    nodeDAO.setNodeProperties(nodePair.getFirst(), properties);
+                                }
+                                nodeDAO.addNodeAspects(nodePair.getFirst(), Collections.singleton(DOD5015Model.ASPECT_DOD_5015_RECORD));
+                                batchCount++;
 
-				            	 return true;
-				            }
-				        });
+                                return true;
+                            }
+                        });
 
-						return batchCount;
-					}
-	            } , false, true);
+                        return batchCount;
+                    }
+                }, false, true);
 
-	        	if (batchCount != 0)
-	        	{
-		        	completed = completed + batchCount;
-		            if (LOGGER.isDebugEnabled())
-		            {
-		                LOGGER.debug("   ... completed " + completed + " of " + recordCount);
-		            }
-	        	}
-	        }
-    	}
+                if (batchCount != 0)
+                {
+                    completed = completed + batchCount;
+                    if (LOGGER.isDebugEnabled())
+                    {
+                        LOGGER.debug("   ... completed " + completed + " of " + recordCount);
+                    }
+                }
+            }
+        }
     }
 }

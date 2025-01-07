@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,13 +42,13 @@ public class RMv23EndRetentionCapabilityPatch extends CapabilityPatch
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.common.CapabilityPatch#applyCapabilityPatch(org.alfresco.service.cmr.repository.NodeRef)
      */
-    protected void applyCapabilityPatch(NodeRef filePlan) 
+    protected void applyCapabilityPatch(NodeRef filePlan)
     {
         // add new capability
         addCapability(filePlan,
-                      "EndRetention",
-                      FilePlanRoleService.ROLE_ADMIN,
-                      FilePlanRoleService.ROLE_RECORDS_MANAGER);
-        
+                "EndRetention",
+                FilePlanRoleService.ROLE_ADMIN,
+                FilePlanRoleService.ROLE_RECORDS_MANAGER);
+
     }
 }

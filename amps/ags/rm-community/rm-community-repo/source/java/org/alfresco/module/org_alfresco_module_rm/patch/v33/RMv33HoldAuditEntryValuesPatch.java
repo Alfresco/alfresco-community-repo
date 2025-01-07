@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -54,7 +54,7 @@ public class RMv33HoldAuditEntryValuesPatch extends AbstractModulePatch
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
      *
-     * Updates the property string value entities for addToHold, removeFromHold and deleteHold audit event types
+     *      Updates the property string value entities for addToHold, removeFromHold and deleteHold audit event types
      */
     @Override
     public void applyInternal()

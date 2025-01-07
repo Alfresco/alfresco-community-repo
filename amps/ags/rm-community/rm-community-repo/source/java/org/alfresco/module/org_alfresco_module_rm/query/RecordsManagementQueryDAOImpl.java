@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,6 +34,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.mybatis.spring.SqlSessionTemplate;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
@@ -47,9 +50,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.mybatis.spring.SqlSessionTemplate;
 
 /**
  * Records management query DAO implementation
@@ -89,7 +89,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     protected TenantService tenantService;
 
     /**
-     * @param sqlSessionTemplate SQL session template
+     * @param sqlSessionTemplate
+     *            SQL session template
      */
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate)
     {
@@ -97,7 +98,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     }
 
     /**
-     * @param qnameDAO qname DAO
+     * @param qnameDAO
+     *            qname DAO
      */
     public final void setQnameDAO(QNameDAO qnameDAO)
     {
@@ -173,8 +175,9 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     /**
      * Get a set of node reference which reference the provided content URL
      *
-     * @param String contentUrl	content URL
-     * @return Set<NodeRef>	set of nodes that reference the provided content URL
+     * @param String
+     *            contentUrl content URL
+     * @return Set<NodeRef> set of nodes that reference the provided content URL
      */
     @Override
     public Set<NodeRef> getNodeRefsWhichReferenceContentUrl(String contentUrl)
@@ -224,7 +227,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
                     if (logger.isDebugEnabled())
                     {
                         logMessage.append(nodeRefToAdd)
-                            .append(" (from version)");
+                                .append(" (from version)");
                     }
                 }
 
@@ -232,7 +235,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
                 else
                 {
                     nodeRefToAdd = nodeDAO.getNodeIdStatus(nodeId)
-                        .getNodeRef();
+                            .getNodeRef();
                     if (logger.isDebugEnabled())
                     {
                         logMessage.append(nodeRefToAdd);
@@ -266,9 +269,9 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     {
         Map<String, Object> params = new HashMap<>(2);
         params.put("processed", qnameDAO.getQName(ASPECT_DISPOSITION_PROCESSED)
-            .getFirst());
+                .getFirst());
         params.put("folderQnameId", qnameDAO.getQName(TYPE_RECORD_FOLDER)
-            .getFirst());
+                .getFirst());
         params.put("start", start);
         params.put("end", end);
 
@@ -280,7 +283,7 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         for (NodeRefEntity nodeRefEntity : entities)
         {
             results.add(
-                new NodeRef(nodeRefEntity.getProtocol(), nodeRefEntity.getIdentifier(), nodeRefEntity.getUuid()));
+                    new NodeRef(nodeRefEntity.getProtocol(), nodeRefEntity.getIdentifier(), nodeRefEntity.getUuid()));
         }
 
         return results;
@@ -289,7 +292,8 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getPropertyStringValueEntity(String stringValue)
      */
-    public PropertyStringValueEntity getPropertyStringValueEntity(String stringValue){
+    public PropertyStringValueEntity getPropertyStringValueEntity(String stringValue)
+    {
 
         PropertyStringValueEntity propertyStringValueEntity = new PropertyStringValueEntity();
         propertyStringValueEntity.setValue(stringValue);

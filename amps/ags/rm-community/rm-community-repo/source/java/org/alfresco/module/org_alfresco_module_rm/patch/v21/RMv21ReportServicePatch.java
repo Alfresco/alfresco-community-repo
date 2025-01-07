@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -41,7 +43,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Report service patch, adding report structure in data dictionary and report templates.
@@ -51,7 +52,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class RMv21ReportServicePatch extends RMv21PatchComponent
-                                     implements BeanNameAware
+        implements BeanNameAware
 {
     private static final NodeRef TEMPLATE_ROOT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_report_templates");
     private static final NodeRef RM_CONFIG_FOLDER = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
@@ -65,7 +66,8 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
     private ContentService contentService;
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -86,7 +88,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug(" ... adding template root folder");
-            }            
+            }
 
             NodeRef reportTemplates = createNode(
                     RM_CONFIG_FOLDER,
@@ -97,8 +99,8 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
                     "Records Management Report Templates",
                     "Records Management Report Templates");
             nodeService.addAspect(reportTemplates, ContentModel.ASPECT_TITLED, null);
-            nodeService.addAspect(reportTemplates, ContentModel.ASPECT_AUTHOR, null); 
-            
+            nodeService.addAspect(reportTemplates, ContentModel.ASPECT_AUTHOR, null);
+
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug(" ... adding destruction report template");
@@ -125,7 +127,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
         }
     }
 
-    private NodeRef createNode(NodeRef parent, QName type, String id, String name, String assocName,  String title, String description)
+    private NodeRef createNode(NodeRef parent, QName type, String id, String name, String assocName, String title, String description)
     {
         Map<QName, Serializable> props = new HashMap<>(4);
         props.put(ContentModel.PROP_DESCRIPTION, description);
@@ -139,7 +141,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
                 QName.createValidLocalName(assocName));
 
         // create the node
-       return nodeService.createNode(
+        return nodeService.createNode(
                 parent,
                 ContentModel.ASSOC_CONTAINS,
                 assocQName,

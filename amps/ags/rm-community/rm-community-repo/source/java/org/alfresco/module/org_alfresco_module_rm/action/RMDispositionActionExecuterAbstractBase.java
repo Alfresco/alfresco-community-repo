@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,8 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -38,7 +40,6 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Roy Wetherall
@@ -81,8 +82,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     }
 
     /**
-     * Indicates whether we should validate the next disposition action is the action we are
-     * trying to execute.
+     * Indicates whether we should validate the next disposition action is the action we are trying to execute.
      *
      * @return
      */
@@ -103,21 +103,20 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-    	NodeRef nextDispositionActionNodeRef = getNextDispostionAction(actionedUponNodeRef);
+        NodeRef nextDispositionActionNodeRef = getNextDispostionAction(actionedUponNodeRef);
 
         // determine whether we should be raising errors during state checking or not
-    	boolean checkError = true;
-    	Boolean checkErrorValue = (Boolean)action.getParameterValue(PARAM_NO_ERROR_CHECK);
-    	if (checkErrorValue != null)
-    	{
-    	    checkError = checkErrorValue.booleanValue();
-    	}
+        boolean checkError = true;
+        Boolean checkErrorValue = (Boolean) action.getParameterValue(PARAM_NO_ERROR_CHECK);
+        if (checkErrorValue != null)
+        {
+            checkError = checkErrorValue.booleanValue();
+        }
 
         // Check the validity of the action (is it the next action, are we dealing with the correct type of object for
         // the disposition level?
@@ -144,7 +143,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                             executeRecordLevelDisposition(action, actionedUponNodeRef);
 
                             if (getNodeService().exists(nextDispositionActionNodeRef) &&
-                                getSetDispositionActionComplete())
+                                    getSetDispositionActionComplete())
                             {
                                 getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
                                 getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
@@ -174,7 +173,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
 
                             // Indicate that the disposition action is compelte
                             if (getNodeService().exists(nextDispositionActionNodeRef) &&
-                                getSetDispositionActionComplete())
+                                    getSetDispositionActionComplete())
                             {
                                 getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
                                 getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,10 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -37,9 +41,6 @@ import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 /**
  * Utility class containing helper methods for record
@@ -54,8 +55,7 @@ public class RecordActionUtils
 
     /** Private constructor to prevent instantiation. */
     private RecordActionUtils()
-    {
-    }
+    {}
 
     static class Services
     {
@@ -89,8 +89,10 @@ public class RecordActionUtils
     /**
      * Helper method to get the target record folder node reference from the action path parameter
      *
-     * @param filePlan      The filePlan containing the path
-     * @param pathParameter The path
+     * @param filePlan
+     *            The filePlan containing the path
+     * @param pathParameter
+     *            The path
      * @return The NodeRef of the resolved path
      */
     static NodeRef resolvePath(Services services, NodeRef filePlan, final String pathParameter, String actionName)
@@ -124,8 +126,10 @@ public class RecordActionUtils
     /**
      * Helper method to recursively get the next path element node reference from the action path parameter
      *
-     * @param parent       The parent of the path elements
-     * @param pathElements The path elements still to be resolved
+     * @param parent
+     *            The parent of the path elements
+     * @param pathElements
+     *            The path elements still to be resolved
      * @return The NodeRef of the resolved path element
      */
     static NodeRef resolvePath(NodeService nodeService, NodeRef parent, List<String> pathElements, String actionName)
@@ -165,8 +169,7 @@ public class RecordActionUtils
         // if the file plan is still null, raise an exception
         if (filePlan == null)
         {
-            final String logMessage =
-                    String.format("Unable to execute %s action, because the fileplan path could not be determined. Make sure at least one file plan has been created.", actionName);
+            final String logMessage = String.format("Unable to execute %s action, because the fileplan path could not be determined. Make sure at least one file plan has been created.", actionName);
             LOGGER.debug(logMessage);
             throw new AlfrescoRuntimeException(logMessage);
         }

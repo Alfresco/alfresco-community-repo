@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,6 +31,8 @@ import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteTy
 
 import java.util.List;
 
+import org.springframework.beans.factory.BeanNameAware;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -41,7 +43,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
-import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * RM v2.0 Saved Search Patch
@@ -51,7 +52,7 @@ import org.springframework.beans.factory.BeanNameAware;
  */
 @SuppressWarnings("deprecation")
 public class RMv2SavedSearchPatch extends ModulePatchComponent
-                                  implements BeanNameAware, RecordsManagementModel, DOD5015Model
+        implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Records management search service */
     private RecordsManagementSearchService recordsManagementSearchService;
@@ -63,7 +64,8 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     private ContentService contentService;
 
     /**
-     * @param recordsManagementSearchService    records management search service
+     * @param recordsManagementSearchService
+     *            records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
     {
@@ -71,7 +73,8 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     }
 
     /**
-     * @param siteService   site service
+     * @param siteService
+     *            site service
      */
     public void setSiteService(SiteService siteService)
     {
@@ -79,7 +82,8 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     }
 
     /**
-     * @param contentService    content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -112,7 +116,6 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
                 {
                     ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
                     writer.putContent(refreshedJSON);
-
 
                     if (LOGGER.isDebugEnabled())
                     {

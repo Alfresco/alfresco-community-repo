@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -66,7 +66,8 @@ public class RMv22ReportTemplatePatch extends AbstractModulePatch
     private ContentService contentService;
 
     /**
-     * @param nodeService   node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -74,7 +75,8 @@ public class RMv22ReportTemplatePatch extends AbstractModulePatch
     }
 
     /**
-     * @param contentService    content service
+     * @param contentService
+     *            content service
      */
     public void setContentService(ContentService contentService)
     {

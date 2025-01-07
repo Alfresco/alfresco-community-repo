@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,14 +45,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class DelegateAction extends RMActionExecuterAbstractBase
 {
-    /** Delegate action executer*/
+    /** Delegate action executer */
     private ActionExecuter delegateActionExecuter;
 
     /** should we check whether the node is frozen */
     private boolean checkFrozen = false;
 
     /**
-     * @param delegateActionExecuter    delegate action executer
+     * @param delegateActionExecuter
+     *            delegate action executer
      */
     public void setDelegateAction(ActionExecuter delegateActionExecuter)
     {
@@ -60,7 +61,8 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * @param checkFrozen   true if we check whether the actioned upon node reference is frozen, false otherwise
+     * @param checkFrozen
+     *            true if we check whether the actioned upon node reference is frozen, false otherwise
      */
     public void setCheckFrozen(boolean checkFrozen)
     {
@@ -74,12 +76,12 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (getNodeService().exists(actionedUponNodeRef) &&
-            (!checkFrozen || !getFreezeService().isFrozen(actionedUponNodeRef)))
+                (!checkFrozen || !getFreezeService().isFrozen(actionedUponNodeRef)))
         {
             // do the property subs (if any exist)
             if (isAllowParameterSubstitutions())
             {
-               getParameterProcessorComponent().process(action, delegateActionExecuter.getActionDefinition(), actionedUponNodeRef);
+                getParameterProcessorComponent().process(action, delegateActionExecuter.getActionDefinition(), actionedUponNodeRef);
             }
 
             delegateActionExecuter.execute(action, actionedUponNodeRef);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -55,20 +55,20 @@ public class UnlinkFromAction extends RMActionExecuterAbstractBase
     {
         // check that the actioned upon node reference exists and is of the correct type
         if (getNodeService().exists(actionedUponNodeRef) &&
-            !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
-            getRecordService().isRecord(actionedUponNodeRef))
+                !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
+                getRecordService().isRecord(actionedUponNodeRef))
         {
             // get the record folder we are unlinking from
-            String recordFolderValue = (String)action.getParameterValue(PARAM_RECORD_FOLDER);
+            String recordFolderValue = (String) action.getParameterValue(PARAM_RECORD_FOLDER);
             if (recordFolderValue == null || recordFolderValue.isEmpty())
             {
                 // indicate that the record folder is mandatory
                 throw new AlfrescoRuntimeException("Can't unlink, because no record folder was provided.");
             }
             NodeRef recordFolder = new NodeRef(recordFolderValue);
-            
+
             // unlink record from record folder
             getRecordService().unlink(actionedUponNodeRef, recordFolder);
-        }        
+        }
     }
 }

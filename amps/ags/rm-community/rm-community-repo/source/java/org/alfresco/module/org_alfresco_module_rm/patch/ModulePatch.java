@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,20 +36,20 @@ package org.alfresco.module.org_alfresco_module_rm.patch;
 public interface ModulePatch extends Comparable<ModulePatch>
 {
     /**
-     * @return  module patch id
+     * @return module patch id
      */
     String getId();
-    
+
     /**
-     * @return  module patch description
+     * @return module patch description
      */
     String getDescription();
-    
+
     /**
-     * @return  module id this patch applies to
+     * @return module id this patch applies to
      */
     String getModuleId();
-    
+
     /**
      * @return smallest module schema number that this patch may be applied to
      */
@@ -59,12 +59,12 @@ public interface ModulePatch extends Comparable<ModulePatch>
      * @return largest module schema number that this patch may be applied to
      */
     int getFixesToSchema();
-    
+
     /**
      * @return module schema number that this patch attempts to bring the repo up to
      */
     int getTargetSchema();
-    
+
     /**
      * Apply the module patch
      */

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,14 +43,14 @@ public class VitalRecordDefinitionImpl implements VitalRecordDefinition, Records
 {
     /** Indicates whether the vital record definition is enabled or not */
     private boolean enabled = false;
-    
+
     /** Vital record review period */
     private Period reviewPeriod = new Period("none|0");
-    
+
     /**
      * Constructor.
      * 
-     * @param enabled     
+     * @param enabled
      * @param reviewPeriod
      */
     /* package */ VitalRecordDefinitionImpl(boolean enabled, Period reviewPeriod)
@@ -61,7 +61,7 @@ public class VitalRecordDefinitionImpl implements VitalRecordDefinition, Records
             this.reviewPeriod = reviewPeriod;
         }
     }
-    
+
     /**
      * Helper method to create vital record definition from node reference.
      * 
@@ -71,12 +71,12 @@ public class VitalRecordDefinitionImpl implements VitalRecordDefinition, Records
      */
     /* package */ static VitalRecordDefinition create(NodeService nodeService, NodeRef nodeRef)
     {
-        Boolean enabled = (Boolean)nodeService.getProperty(nodeRef, PROP_VITAL_RECORD_INDICATOR);
+        Boolean enabled = (Boolean) nodeService.getProperty(nodeRef, PROP_VITAL_RECORD_INDICATOR);
         if (enabled == null)
         {
             enabled = Boolean.FALSE;
         }
-        Period reviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
+        Period reviewPeriod = (Period) nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
         return new VitalRecordDefinitionImpl(enabled, reviewPeriod);
     }
 
@@ -88,7 +88,7 @@ public class VitalRecordDefinitionImpl implements VitalRecordDefinition, Records
     {
         return enabled;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordDefinition#getNextReviewDate()
      */

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,10 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.Action;
@@ -36,9 +40,6 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Action to add types to a record
@@ -64,8 +65,7 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     public static final String NAME = "addRecordTypes";
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
@@ -84,14 +84,10 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * Helper method to check the actioned upon node reference to decide to execute the action
-     * The preconditions are:
-     *  - The node must exist
-     *  - The node must not be frozen
-     *  - The node must be record
-     *  - The node must not be declared
+     * Helper method to check the actioned upon node reference to decide to execute the action The preconditions are: - The node must exist - The node must not be frozen - The node must be record - The node must not be declared
      *
-     * @param actionedUponNodeRef node reference
+     * @param actionedUponNodeRef
+     *            node reference
      * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
      */
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)
@@ -110,7 +106,8 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     /**
      * Helper method to get the record types from the action
      *
-     * @param action The action
+     * @param action
+     *            The action
      * @return An array of record types
      */
     private String[] getRecordTypes(Action action)

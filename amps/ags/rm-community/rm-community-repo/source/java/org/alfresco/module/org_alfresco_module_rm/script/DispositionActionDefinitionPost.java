@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,10 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +43,11 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.namespace.QName;
+
 /**
  * Implementation for Java backed webscript to create a new dispositon action definition.
  *
@@ -54,9 +55,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class DispositionActionDefinitionPost extends DispositionAbstractBase
 {
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -64,7 +63,7 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
         DispositionSchedule schedule = parseRequestForSchedule(req);
 
         // retrieve the rest of the post body and create the action
-        //       definition
+        // definition
         JSONObject json = null;
         DispositionActionDefinition actionDef = null;
         try
@@ -80,7 +79,7 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         // create model object with just the action data
@@ -92,12 +91,14 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
     /**
      * Creates a dispositionActionDefinition node in the repo.
      *
-     * @param json The JSON to use to create the action definition
-     * @param schedule The DispositionSchedule the action is for
+     * @param json
+     *            The JSON to use to create the action definition
+     * @param schedule
+     *            The DispositionSchedule the action is for
      * @return The DispositionActionDefinition representing the new action definition
      */
     protected DispositionActionDefinition createActionDefinition(JSONObject json,
-              DispositionSchedule schedule) throws JSONException
+            DispositionSchedule schedule) throws JSONException
     {
         // extract the data from the JSON request
         if (!json.has("name"))
@@ -130,7 +131,7 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
         if (json.has("eligibleOnFirstCompleteEvent"))
         {
             props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
-                        json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
+                    json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
         }
 
         if (json.has(COMBINE_DISPOSITION_STEP_CONDITIONS))
@@ -142,7 +143,7 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
         if (json.has("location"))
         {
             props.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
-                      json.getString("location"));
+                    json.getString("location"));
         }
 
         if (json.has("events"))
@@ -153,7 +154,7 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
             {
                 eventsList.add(events.getString(x));
             }
-            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable)eventsList);
+            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) eventsList);
         }
 
         if (json.has("name") && "destroy".equals(json.getString("name")))

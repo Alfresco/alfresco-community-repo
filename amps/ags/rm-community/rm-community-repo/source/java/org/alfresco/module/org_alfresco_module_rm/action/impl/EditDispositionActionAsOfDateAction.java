@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,12 +29,13 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.util.Date;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Edit review as of date action.
@@ -49,13 +50,12 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
 
     /** Action name */
     public static final String NAME = "editDispositionActionAsOfDate";
-    
+
     /** Action parameters */
     public static final String PARAM_AS_OF_DATE = "asOfDate";
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
@@ -63,7 +63,7 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
         if (this.getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             // Get the action parameter
-            Date asOfDate = (Date)action.getParameterValue(PARAM_AS_OF_DATE);
+            Date asOfDate = (Date) action.getParameterValue(PARAM_AS_OF_DATE);
             if (asOfDate == null)
             {
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_VALID_DATE_DISP_ASOF));

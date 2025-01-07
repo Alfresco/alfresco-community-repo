@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,10 +45,13 @@ public class RMEventBase extends DeclarativeWebScript
     /**
      * Helper method for getting the value for a key from a JSON object
      *
-     * @param json The request content as JSON object
-     * @param key The key for which the value should be retrieved (e.g. "eventName")
+     * @param json
+     *            The request content as JSON object
+     * @param key
+     *            The key for which the value should be retrieved (e.g. "eventName")
      * @return String The value for the provided key if the key exists, null otherwise
-     * @throws JSONException If there is no string value for the key
+     * @throws JSONException
+     *             If there is no string value for the key
      */
     protected String getValue(JSONObject json, String key) throws JSONException
     {
@@ -63,8 +66,10 @@ public class RMEventBase extends DeclarativeWebScript
     /**
      * Helper method for checking the key (e.g. "eventName")
      *
-     * @param key String The key which will be checked
-     * @param msg String The error message to throw if the key doesn't have a value
+     * @param key
+     *            String The key which will be checked
+     * @param msg
+     *            String The error message to throw if the key doesn't have a value
      */
     protected void doCheck(String key, String msg)
     {

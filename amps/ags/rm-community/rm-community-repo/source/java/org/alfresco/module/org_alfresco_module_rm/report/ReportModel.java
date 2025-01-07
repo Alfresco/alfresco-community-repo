@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,15 +43,16 @@ public interface ReportModel
 
     /** base report type */
     QName TYPE_REPORT = QName.createQName(RMR_URI, "report");
-    
+
     /** destruction report type */
     QName TYPE_DESTRUCTION_REPORT = QName.createQName(RMR_URI, "destructionReport");
-    
+
     /** transfer report type */
     QName TYPE_TRANSFER_REPORT = QName.createQName(RMR_URI, "transferReport");
-    
-    /** 
+
+    /**
      * hold report type
+     * 
      * @since 2.2
      */
     QName TYPE_HOLD_REPORT = QName.createQName(RMR_URI, "holdReport");

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,14 +37,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 
 /**
  * Implementation for Java backed webscript to get the relationship labels.
@@ -73,7 +74,8 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
     /**
      * Sets the relationship service
      *
-     * @param relationshipService The relationship service
+     * @param relationshipService
+     *            The relationship service
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -81,9 +83,7 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -142,13 +142,13 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
     /**
      * Helper method to sort the relationship labels by their names
      *
-     * @param relationshipLabels Relationship labels to sort
+     * @param relationshipLabels
+     *            Relationship labels to sort
      * @return Sorted list of relationship labels
      */
     private List<RelationshipLabel> sortRelationshipLabelsByName(List<RelationshipLabel> relationshipLabels)
     {
-        Collections.sort(relationshipLabels, new Comparator<RelationshipLabel>()
-        {
+        Collections.sort(relationshipLabels, new Comparator<RelationshipLabel>() {
             @Override
             public int compare(RelationshipLabel r1, RelationshipLabel r2)
             {
@@ -172,8 +172,10 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
         /**
          * Constructor
          *
-         * @param label Label of the relationship
-         * @param uniqueName Unique name of the relationship
+         * @param label
+         *            Label of the relationship
+         * @param uniqueName
+         *            Unique name of the relationship
          */
         public RelationshipLabel(String label, String uniqueName)
         {
@@ -197,7 +199,8 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
         /**
          * Sets the label of the relationship
          *
-         * @param label The label of the relationship
+         * @param label
+         *            The label of the relationship
          */
         private void setLabel(String label)
         {
@@ -217,7 +220,8 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
         /**
          * Sets the unique name of the relationship
          *
-         * @param uniqueName The unique name of the relationship
+         * @param uniqueName
+         *            The unique name of the relationship
          */
         private void setUniqueName(String uniqueName)
         {

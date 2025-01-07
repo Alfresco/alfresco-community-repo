@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,22 +44,22 @@ import org.alfresco.service.namespace.QName;
 public interface Report
 {
     /**
-     * @return  {@link QName} report type
+     * @return {@link QName} report type
      */
     QName getReportType();
 
     /**
-     * @return  {@link String}  report name
+     * @return {@link String} report name
      */
     String getReportName();
 
     /**
-     * @return  {@link Map}&lt;{@link QName},{@link Serializable}&gt;  report properties
+     * @return {@link Map}&lt;{@link QName},{@link Serializable}&gt; report properties
      */
     Map<QName, Serializable> getReportProperties();
 
     /**
-     * @return {@link ContentReader}  content reader to report content
+     * @return {@link ContentReader} content reader to report content
      */
     ContentReader getReportContent();
 

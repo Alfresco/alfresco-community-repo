@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,6 +34,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -46,15 +51,9 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This webscript patches the RM custom model as fix for MOB-1573. It is only necessary for databases
- * that had their RM amps initialised before the fix went in.
- * There is no side-effect if it is called when it is not needed or if it is called multiple times.
+ * This webscript patches the RM custom model as fix for MOB-1573. It is only necessary for databases that had their RM amps initialised before the fix went in. There is no side-effect if it is called when it is not needed or if it is called multiple times.
  *
  * TODO This webscript should be removed after DOD certification.
  *
@@ -62,7 +61,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 @Deprecated
 public class ApplyFixMob1573Get extends DeclarativeWebScript
-                                  implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef("workspace://SpacesStore/records_management_custom_model");
 
@@ -95,7 +94,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
 
         if (customAssocsAspect == null)
         {
-            throw new AlfrescoRuntimeException("Unknown aspect: "+aspectName);
+            throw new AlfrescoRuntimeException("Unknown aspect: " + aspectName);
         }
 
         for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations())
@@ -107,7 +106,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
         writeCustomContentModel(customModel);
 
         Map<String, Object> model = new HashMap<>(1, 1.0f);
-    	model.put("success", true);
+        model.put("success", true);
 
         return model;
     }
@@ -115,9 +114,12 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
     private M2Model readCustomContentModel()
     {
         ContentReader reader = contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT);
+                ContentModel.TYPE_CONTENT);
 
-        if (!reader.exists()) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
+        if (!reader.exists())
+        {
+            throw new AlfrescoRuntimeException("RM CustomModel has no content.");
+        }
 
         InputStream contentIn = null;
         M2Model deserializedModel = null;
@@ -146,7 +148,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
     private void writeCustomContentModel(M2Model deserializedModel)
     {
         ContentWriter writer = contentService.getWriter(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT, true);
+                ContentModel.TYPE_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");
 
@@ -160,7 +162,8 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
             writer.putContent(updatedModelXml);
             // putContent closes all resources.
             // so we don't have to.
-        } catch (UnsupportedEncodingException uex)
+        }
+        catch (UnsupportedEncodingException uex)
         {
             throw new AlfrescoRuntimeException("Exception when writing custom model xml.", uex);
         }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,12 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+
+import org.json.JSONObject;
 
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.json.JSONObject;
 
 /**
  * Base class for custom reference definition classes
@@ -67,7 +69,8 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
     /**
      * Sets the relationship service instance
      *
-     * @param relationshipService The relationship service instance
+     * @param relationshipService
+     *            The relationship service instance
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -77,7 +80,8 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
     /**
      * Creates the relationship display name from request content
      *
-     * @param requestContent The request content as json object
+     * @param requestContent
+     *            The request content as json object
      * @return The relationship display name
      */
     protected RelationshipDisplayName createDisplayName(JSONObject requestContent)

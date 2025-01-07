@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -54,7 +54,8 @@ public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNod
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -68,7 +69,7 @@ public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNod
     {
         Map<QName, Serializable> auditProperties = new HashMap<>();
         auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
+                nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
 
         recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,7 +47,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 
-
 /**
  * Model security service implementation.
  * <p>
@@ -57,11 +56,11 @@ import org.alfresco.util.EqualsHelper;
  * @since 2.1
  */
 @BehaviourBean
-public class ModelSecurityServiceImpl extends    BaseBehaviourBean
-                                      implements ModelSecurityService,
-                                                 NodeServicePolicies.BeforeAddAspectPolicy,
-                                                 NodeServicePolicies.BeforeRemoveAspectPolicy,
-                                                 NodeServicePolicies.OnUpdatePropertiesPolicy
+public class ModelSecurityServiceImpl extends BaseBehaviourBean
+        implements ModelSecurityService,
+        NodeServicePolicies.BeforeAddAspectPolicy,
+        NodeServicePolicies.BeforeRemoveAspectPolicy,
+        NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Indicates whether model security is enabled or not */
     private boolean enabled = true;
@@ -76,7 +75,7 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     private Map<QName, ProtectedProperty> protectedProperties = new HashMap<>(21);
 
     /** Map of protected aspects keyed by name */
-    private Map<QName, ProtectedAspect> protectedAspects= new HashMap<>(21);
+    private Map<QName, ProtectedAspect> protectedAspects = new HashMap<>(21);
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService#setEnabled(boolean)
@@ -95,7 +94,8 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -103,7 +103,8 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -116,9 +117,9 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     @Override
     public void disable()
     {
-    	getBehaviour("beforeAddAspect").disable();
-    	getBehaviour("beforeRemoveAspect").disable();
-    	getBehaviour("onUpdateProperties").disable();
+        getBehaviour("beforeAddAspect").disable();
+        getBehaviour("beforeRemoveAspect").disable();
+        getBehaviour("onUpdateProperties").disable();
     }
 
     /**
@@ -142,11 +143,11 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
 
         if (artifact instanceof ProtectedProperty)
         {
-            protectedProperties.put(artifact.getQName(), (ProtectedProperty)artifact);
+            protectedProperties.put(artifact.getQName(), (ProtectedProperty) artifact);
         }
         else if (artifact instanceof ProtectedAspect)
         {
-            protectedAspects.put(artifact.getQName(), (ProtectedAspect)artifact);
+            protectedAspects.put(artifact.getQName(), (ProtectedAspect) artifact);
         }
     }
 
@@ -199,12 +200,13 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
     }
 
     /**
-     * Indicates whether the current user can edit protected model artifact in the context
-     * of a given node or not.
+     * Indicates whether the current user can edit protected model artifact in the context of a given node or not.
      *
-     * @param nodeRef   node reference
-     * @param artifact  protected model artifact
-     * @return boolean  true if the current user can edit the protected model artifact, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @param artifact
+     *            protected model artifact
+     * @return boolean true if the current user can edit the protected model artifact, false otherwise
      */
     private boolean canEdit(NodeRef nodeRef, ProtectedModelArtifact artifact)
     {
@@ -278,12 +280,10 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             isService = true,
-            name = "beforeAddAspect"
-    )
+            name = "beforeAddAspect")
     public void beforeAddAspect(NodeRef nodeRef, QName aspect)
     {
         if (enabled &&
@@ -296,8 +296,8 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
             // the user can't edit the protected aspect
             throw new ModelAccessDeniedException(
                     "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                    " does not have the permission to add the protected aspect " + aspect.toPrefixString(namespaceService) +
-                    " to the node " + nodeRef.toString());
+                            " does not have the permission to add the protected aspect " + aspect.toPrefixString(namespaceService) +
+                            " to the node " + nodeRef.toString());
         }
     }
 
@@ -305,12 +305,10 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             isService = true,
-            name = "beforeRemoveAspect"
-    )
+            name = "beforeRemoveAspect")
     public void beforeRemoveAspect(NodeRef nodeRef, QName aspect)
     {
         if (enabled &&
@@ -323,8 +321,8 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
             // the user can't edit the protected aspect
             throw new ModelAccessDeniedException(
                     "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                    " does not have the permission to remove the protected aspect " + aspect.toPrefixString(namespaceService) +
-                    " from the node " + nodeRef.toString());
+                            " does not have the permission to remove the protected aspect " + aspect.toPrefixString(namespaceService) +
+                            " from the node " + nodeRef.toString());
         }
     }
 
@@ -332,12 +330,10 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             isService = true,
-            name = "onUpdateProperties"
-    )
+            name = "onUpdateProperties")
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         if (enabled &&
@@ -362,8 +358,8 @@ public class ModelSecurityServiceImpl extends    BaseBehaviourBean
                         // the user can't edit the protected property
                         throw new ModelAccessDeniedException(
                                 "The user " + AuthenticationUtil.getFullyAuthenticatedUser() +
-                                " does not have the permission to edit the protected property " + property.toPrefixString(namespaceService) +
-                                " on the node " + nodeRef.toString());
+                                        " does not have the permission to edit the protected property " + property.toPrefixString(namespaceService) +
+                                        " on the node " + nodeRef.toString());
                     }
                 }
             }

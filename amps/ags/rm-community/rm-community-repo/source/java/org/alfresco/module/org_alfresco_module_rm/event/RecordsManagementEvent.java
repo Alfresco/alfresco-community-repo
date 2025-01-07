@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -51,9 +51,12 @@ public class RecordsManagementEvent
     /**
      * Constructor
      *
-     * @param type          event type
-     * @param name          event name
-     * @param displayLabel  event display label
+     * @param type
+     *            event type
+     * @param name
+     *            event name
+     * @param displayLabel
+     *            event display label
      */
     public RecordsManagementEvent(RecordsManagementEventType type, String name, String displayLabel)
     {
@@ -61,7 +64,7 @@ public class RecordsManagementEvent
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("displayLabel", displayLabel);
 
-        this.type =  type;
+        this.type = type;
         this.name = name;
         this.displayLabel = displayLabel;
     }
@@ -69,7 +72,7 @@ public class RecordsManagementEvent
     /**
      * Get records management type name
      *
-     * @return  String records management event type name
+     * @return String records management event type name
      */
     public String getType()
     {
@@ -79,7 +82,7 @@ public class RecordsManagementEvent
     /**
      * Get the records management event type.
      *
-     * @return {@link RecordsManagementEventType}   records management event type
+     * @return {@link RecordsManagementEventType} records management event type
      *
      * @since 2.2
      */
@@ -91,7 +94,7 @@ public class RecordsManagementEvent
     /**
      * Event name
      *
-     * @return String   event name
+     * @return String event name
      */
     public String getName()
     {

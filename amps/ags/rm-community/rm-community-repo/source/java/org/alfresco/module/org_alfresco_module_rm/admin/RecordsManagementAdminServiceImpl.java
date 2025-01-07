@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,6 +37,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.Ordered;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.URLDecoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -79,13 +87,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.LockCallback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.Ordered;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.URLDecoder;
 
 /**
  * Records Management AdminService Implementation.
@@ -94,18 +95,18 @@ import org.springframework.extensions.surf.util.URLDecoder;
  */
 @BehaviourBean
 public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBase
-											   implements RecordsManagementAdminService,
-														  RecordsManagementCustomModel,
-														  NodeServicePolicies.OnAddAspectPolicy,
-														  NodeServicePolicies.OnRemoveAspectPolicy,	
-														  NodeServicePolicies.OnCreateNodePolicy,
-														  ApplicationListener<ContextRefreshedEvent>, 
-														  Ordered
+        implements RecordsManagementAdminService,
+        RecordsManagementCustomModel,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.OnCreateNodePolicy,
+        ApplicationListener<ContextRefreshedEvent>,
+        Ordered
 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordsManagementAdminServiceImpl.class);
 
-    /** I18N messages*/
+    /** I18N messages */
     private static final String MSG_SERVICE_NOT_INIT = "rm.admin.service-not-init";
     private static final String MSG_PROP_EXIST = "rm.admin.prop-exist";
     private static final String MSG_CUSTOM_PROP_EXIST = "rm.admin.custom-prop-exist";
@@ -127,7 +128,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
     /** Relationship service */
     private RelationshipService relationshipService;
-    
+
     /** Transaction service */
     private TransactionService transactionService;
 
@@ -137,20 +138,22 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     /** List of types that can be customisable */
     private List<QName> pendingCustomisableTypes;
     private Map<QName, QName> customisableTypes;
-    
+
     /** indicates whether the custom map has been initialised or not */
     private boolean isCustomMapInit = false;
-	
-	/**
-	 * @param transactionService   transaction service
-	 */
-	public void setTransactionService(TransactionService transactionService)
+
+    /**
+     * @param transactionService
+     *            transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
 
     /**
-     * @param relationshipService The relationship service instance
+     * @param relationshipService
+     *            The relationship service instance
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -168,7 +171,8 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     }
 
     /**
-     * @param  jobLockService The Job Lock service
+     * @param jobLockService
+     *            The Job Lock service
      */
     public void setJobLockService(JobLockService jobLockService)
     {
@@ -176,11 +180,10 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     }
 
     /**
-	 * Indicate that this application content listener must be executed with the lowest 
-	 * precedence. (ie last)
-	 * 
-	 * @see Ordered#getOrder()
-	 */
+     * Indicate that this application content listener must be executed with the lowest precedence. (ie last)
+     * 
+     * @see Ordered#getOrder()
+     */
     @Override
     public int getOrder()
     {
@@ -210,11 +213,11 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                     // run as System on bootstrap
                     AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                         transactionService.getRetryingTransactionHelper()
-                                          .doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                            // initialise custom properties
-                            initCustomMap();
-                            return null;
-                        });
+                                .doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                                    // initialise custom properties
+                                    initCustomMap();
+                                    return null;
+                                });
                         return null;
                     });
                 }
@@ -251,44 +254,40 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         }
     }
 
-
     /**
      * Helper method to indicate whether the custom map is initialised or not.
      * 
-     * @return  boolean true if initialised, false otherwise
+     * @return boolean true if initialised, false otherwise
      */
     public boolean isCustomMapInit()
     {
         return isCustomMapInit;
-    }   
+    }
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             isService = true,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         if (isCustomMapInit)
         {
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
                     if (getNodeService().exists(nodeRef) &&
-                        getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL) &&
-                        isCustomisable(aspectTypeQName))
+                            getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL) &&
+                            isCustomisable(aspectTypeQName))
                     {
                         QName customPropertyAspect = getCustomAspect(aspectTypeQName);
                         getNodeService().addAspect(nodeRef, customPropertyAspect, null);
                     }
-    
+
                     return null;
                 }
             }, AuthenticationUtil.getSystemUserName());
@@ -299,28 +298,25 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             isService = true,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onRemoveAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         if (isCustomMapInit)
         {
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
                     if (getNodeService().exists(nodeRef) &&
-                        isCustomisable(aspectTypeQName))
+                            isCustomisable(aspectTypeQName))
                     {
                         QName customPropertyAspect = getCustomAspect(aspectTypeQName);
                         getNodeService().removeAspect(nodeRef, customPropertyAspect);
                     }
-    
+
                     return null;
                 }
             }, AuthenticationUtil.getSystemUserName());
@@ -333,18 +329,15 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             isService = true,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
         if (isCustomMapInit)
-        {            
-            AuthenticationUtil.runAs(new RunAsWork<Void>()
-            {
+        {
+            AuthenticationUtil.runAs(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -359,7 +352,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                                 QName customPropertyAspect = getCustomAspect(type);
                                 getNodeService().addAspect(nodeRef, customPropertyAspect, null);
                             }
-    
+
                             TypeDefinition def = getDictionaryService().getType(type);
                             if (def != null)
                             {
@@ -371,7 +364,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                             }
                         }
                     }
-    
+
                     return null;
                 }
             }, AuthenticationUtil.getSystemUserName());
@@ -379,7 +372,8 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     }
 
     /**
-     * @param customisableTypes		list of string representations of the type qnames that are customisable
+     * @param customisableTypes
+     *            list of string representations of the type qnames that are customisable
      */
     public void setCustomisableTypes(List<String> customisableTypes)
     {
@@ -460,7 +454,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         return result;
     }
-    
+
     /**
      * Initialise custom type map
      */
@@ -492,8 +486,8 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                         type = RecordsManagementModel.TYPE_RECORD_CATEGORY;
                     }
                     else if (CompatibilityModel.NAME_CUSTOM_RECORD_SERIES_PROPERTIES.equals(name) &&
-                            // Only add the deprecated record series type as customisable if
-                            // a v1.0 installation has added custom properties
+                    // Only add the deprecated record series type as customisable if
+                    // a v1.0 installation has added custom properties
                             aspectDef.getProperties().size() != 0)
                     {
                         type = CompatibilityModel.TYPE_RECORD_SERIES;
@@ -542,7 +536,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                 writeCustomContentModel(modelRef, model);
             }
         }
-        
+
         // indicate map is initialised
         isCustomMapInit = true;
     }
@@ -550,15 +544,15 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     /**
      * Gets a map containing all the customisable types
      *
-     * @return  map from the customisable type to its custom aspect
+     * @return map from the customisable type to its custom aspect
      */
     private Map<QName, QName> getCustomisableMap()
     {
-    	if (customisableTypes == null)
-    	{
-    		throw AlfrescoRuntimeException.create("Customisable map has not been initialised correctly.");
-    	}
-    	return customisableTypes;
+        if (customisableTypes == null)
+        {
+            throw AlfrescoRuntimeException.create("Customisable map has not been initialised correctly.");
+        }
+        return customisableTypes;
     }
 
     /**
@@ -735,16 +729,16 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#addCustomPropertyDefinition(org.alfresco.service.namespace.QName, org.alfresco.service.namespace.QName, java.lang.String, org.alfresco.service.namespace.QName, java.lang.String, java.lang.String, java.lang.String, boolean, boolean, boolean, org.alfresco.service.namespace.QName)
      */
     public QName addCustomPropertyDefinition(QName propId,
-                                             QName aspectName,
-                                             String label,
-                                             QName dataType,
-                                             String title,
-                                             String description,
-                                             String defaultValue,
-                                             boolean multiValued,
-                                             boolean mandatory,
-                                             boolean isProtected,
-                                             QName lovConstraint) throws CustomMetadataException
+            QName aspectName,
+            String label,
+            QName dataType,
+            String title,
+            String description,
+            String defaultValue,
+            boolean multiValued,
+            boolean mandatory,
+            boolean isProtected,
+            QName lovConstraint) throws CustomMetadataException
     {
         if (!isCustomisable(aspectName))
         {
@@ -800,7 +794,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (lovConstraint != null)
         {
-            if (! dataType.equals(DataTypeDefinition.TEXT))
+            if (!dataType.equals(DataTypeDefinition.TEXT))
             {
                 throw new CannotApplyConstraintMetadataException(lovConstraint, propIdAsString, dataType);
             }
@@ -813,8 +807,8 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("addCustomPropertyDefinition: "+label+
-                    "=" + propIdAsString + " to aspect: "+aspectName);
+            logger.info("addCustomPropertyDefinition: " + label +
+                    "=" + propIdAsString + " to aspect: " + aspectName);
         }
 
         return propId;
@@ -841,13 +835,13 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         QName newPropQName = getQNameForClientId(newName);
         if (newPropQName != null)
         {
-           PropertyDefinition newPropDefn = getDictionaryService().getProperty(newPropQName);
-           if (newPropDefn != null && !propDefn.equals(newPropDefn))
-           {
-              // The requested QName is already in use
-              String propIdAsString = newPropQName.toPrefixString(getNamespaceService());
-              throw new PropertyAlreadyExistsMetadataException(propIdAsString);
-           }
+            PropertyDefinition newPropDefn = getDictionaryService().getProperty(newPropQName);
+            if (newPropDefn != null && !propDefn.equals(newPropDefn))
+            {
+                // The requested QName is already in use
+                String propIdAsString = newPropQName.toPrefixString(getNamespaceService());
+                throw new PropertyAlreadyExistsMetadataException(propIdAsString);
+            }
         }
 
         NodeRef modelRef = getCustomModelRef(propQName.getNamespaceURI());
@@ -860,7 +854,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("setCustomPropertyDefinitionLabel: "+propQName+
+            logger.info("setCustomPropertyDefinitionLabel: " + propQName +
                     "=" + newName);
         }
 
@@ -895,7 +889,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("setCustomPropertyDefinitionLabel: "+propQName+
+            logger.info("setCustomPropertyDefinitionLabel: " + propQName +
                     "=" + newLabel);
         }
 
@@ -922,7 +916,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         M2Property targetProp = findProperty(propQName, deserializedModel);
         String dataType = targetProp.getType();
 
-        if (! dataType.equals(DataTypeDefinition.TEXT.toPrefixString(getNamespaceService())))
+        if (!dataType.equals(DataTypeDefinition.TEXT.toPrefixString(getNamespaceService())))
         {
 
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(CannotApplyConstraintMetadataException.MSG_CANNOT_APPLY_CONSTRAINT, newLovConstraint, targetProp.getName(), dataType));
@@ -930,9 +924,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         String lovConstraintQNameAsString = newLovConstraint.toPrefixString(getNamespaceService());
 
         // Add the constraint - if it isn't already there (there should only be one constraint).
-        String refOfExistingConstraint = (targetProp.getConstraints().isEmpty() ?
-                    null :
-                    targetProp.getConstraints().get(0).getRef());
+        String refOfExistingConstraint = (targetProp.getConstraints().isEmpty() ? null : targetProp.getConstraints().get(0).getRef());
 
         if (refOfExistingConstraint != null)
         {
@@ -944,7 +936,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("addCustomPropertyDefinitionConstraint: "+lovConstraintQNameAsString);
+            logger.info("addCustomPropertyDefinitionConstraint: " + lovConstraintQNameAsString);
         }
 
         return propQName;
@@ -969,7 +961,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         M2Property targetProperty = findProperty(propQName, deserializedModel);
 
         // Need to count backwards to remove constraints
-        for (int i = targetProperty.getConstraints().size() - 1; i >= 0; i--) 
+        for (int i = targetProperty.getConstraints().size() - 1; i >= 0; i--)
         {
             String ref = targetProperty.getConstraints().get(i).getRef();
             targetProperty.removeConstraintRef(ref);
@@ -979,7 +971,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("removeCustomPropertyDefinitionConstraints: "+propQName);
+            logger.info("removeCustomPropertyDefinitionConstraints: " + propQName);
         }
 
         return propQName;
@@ -1028,7 +1020,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         // attempt to delete the property definition.
         for (QName customisableType : getCustomisable())
         {
-        	aspectName = getCustomAspect(customisableType).toPrefixString(getNamespaceService());
+            aspectName = getCustomAspect(customisableType).toPrefixString(getNamespaceService());
             M2Aspect customPropsAspect = deserializedModel.getAspect(aspectName);
 
             if (customPropsAspect == null)
@@ -1062,13 +1054,13 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("deleteCustomPropertyDefinition: "+propQNameAsString+" from aspect: "+aspectName);
+            logger.info("deleteCustomPropertyDefinition: " + propQNameAsString + " from aspect: " + aspectName);
         }
     }
 
-	/**
-	 * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#getCustomReferenceDefinitions()
-	 */
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#getCustomReferenceDefinitions()
+     */
     public Map<QName, AssociationDefinition> getCustomReferenceDefinitions()
     {
         return getCustomAssociations();
@@ -1093,7 +1085,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     {
         mandatory("fromNode", fromNode);
         mandatory("toNode", toNode);
-        mandatory("assocId",assocId);
+        mandatory("assocId", assocId);
 
         getRelationshipService().removeRelationship(assocId.getLocalName(), fromNode, toNode);
     }
@@ -1141,7 +1133,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#addCustomAssocDefinition(java.lang.String)
      *
-     * note: currently RMC custom assocs only
+     *      note: currently RMC custom assocs only
      */
     public QName addCustomAssocDefinition(String label)
     {
@@ -1153,7 +1145,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#addCustomChildAssocDefinition(java.lang.String, java.lang.String)
      *
-     * note: currently RMC custom assocs only
+     *      note: currently RMC custom assocs only
      */
     public QName addCustomChildAssocDefinition(String source, String target)
     {
@@ -1169,7 +1161,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#updateCustomChildAssocDefinition(org.alfresco.service.namespace.QName, java.lang.String, java.lang.String)
      *
-     * note: currently RMC custom assocs only
+     *      note: currently RMC custom assocs only
      */
     public QName updateCustomChildAssocDefinition(QName refQName, String newSource, String newTarget)
     {
@@ -1186,7 +1178,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#updateCustomAssocDefinition(org.alfresco.service.namespace.QName, java.lang.String)
      *
-     * note: currently RMC custom assocs only
+     *      note: currently RMC custom assocs only
      */
     public QName updateCustomAssocDefinition(QName refQName, String newLabel)
     {
@@ -1228,7 +1220,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("addCustomConstraintDefinition: "+constraintNameAsPrefixString+" (valueCnt: "+allowedValues.size()+")");
+            logger.info("addCustomConstraintDefinition: " + constraintNameAsPrefixString + " (valueCnt: " + allowedValues.size() + ")");
         }
     }
 
@@ -1253,8 +1245,8 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         String type = customConstraint.getType();
         if (type == null ||
-            (!type.equals(CUSTOM_CONSTRAINT_TYPE) &&
-             !type.equals(CAPABILITY_CUSTOM_CONSTRAINT_TYPE)))
+                (!type.equals(CUSTOM_CONSTRAINT_TYPE) &&
+                        !type.equals(CAPABILITY_CUSTOM_CONSTRAINT_TYPE)))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNEXPECTED_TYPE_CONSTRAINT, type, constraintNameAsPrefixString, CUSTOM_CONSTRAINT_TYPE));
         }
@@ -1266,7 +1258,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("changeCustomConstraintValues: "+constraintNameAsPrefixString+" (valueCnt: "+newAllowedValues.size()+")");
+            logger.info("changeCustomConstraintValues: " + constraintNameAsPrefixString + " (valueCnt: " + newAllowedValues.size() + ")");
         }
     }
 
@@ -1290,7 +1282,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         }
 
         String type = customConstraint.getType();
-        if ((type == null) || (! type.equals(CUSTOM_CONSTRAINT_TYPE)))
+        if ((type == null) || (!type.equals(CUSTOM_CONSTRAINT_TYPE)))
         {
 
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNEXPECTED_TYPE_CONSTRAINT, type, constraintNameAsPrefixString, CUSTOM_CONSTRAINT_TYPE));
@@ -1302,7 +1294,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("changeCustomConstraintTitle: "+constraintNameAsPrefixString+" (title: "+title+")");
+            logger.info("changeCustomConstraintTitle: " + constraintNameAsPrefixString + " (title: " + title + ")");
         }
     }
 
@@ -1318,7 +1310,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         for (ConstraintDefinition conDef : conDefs)
         {
             Constraint con = conDef.getConstraint();
-            if (! (con instanceof RMListOfValuesConstraint))
+            if (!(con instanceof RMListOfValuesConstraint))
             {
                 conDefs.remove(conDef);
             }
@@ -1352,7 +1344,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         if (logger.isInfoEnabled())
         {
-            logger.info("deleteCustomConstraintDefinition: "+constraintNameAsPrefixString);
+            logger.info("deleteCustomConstraintDefinition: " + constraintNameAsPrefixString);
         }
     }
 
@@ -1361,10 +1353,10 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
      */
     public QName getQNameForClientId(String localName)
     {
-        //TODO 1. After certification. This implementation currently does not support reference,
+        // TODO 1. After certification. This implementation currently does not support reference,
         // property, constraints definitions with the same names, which is technically allowed by Alfresco.
 
-        //TODO 2. Note the implicit assumption here that all custom references will have
+        // TODO 2. Note the implicit assumption here that all custom references will have
         // unique titles. This is, in fact, not guaranteed.
 
         QName propertyResult = null;

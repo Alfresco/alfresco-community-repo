@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,13 +47,12 @@ import org.alfresco.service.namespace.QName;
 public abstract class AbstractDisposableItem extends BaseBehaviourBean
 {
     /** unwanted aspects */
-    protected QName[] unwantedAspects =
-    {
-        ASPECT_VITAL_RECORD,
-        ASPECT_DISPOSITION_LIFECYCLE,
-        RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH
+    protected QName[] unwantedAspects = {
+            ASPECT_VITAL_RECORD,
+            ASPECT_DISPOSITION_LIFECYCLE,
+            RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH
     };
-    
+
     /** disposition service */
     protected DispositionService dispositionService;
 
@@ -64,7 +63,8 @@ public abstract class AbstractDisposableItem extends BaseBehaviourBean
     protected RecordFolderService recordFolderService;
 
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -72,7 +72,8 @@ public abstract class AbstractDisposableItem extends BaseBehaviourBean
     }
 
     /**
-     * @param recordService    record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -80,13 +81,14 @@ public abstract class AbstractDisposableItem extends BaseBehaviourBean
     }
 
     /**
-     * @param recordFolderService    record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * Removes unwanted aspects
      *
@@ -103,7 +105,7 @@ public abstract class AbstractDisposableItem extends BaseBehaviourBean
                 nodeService.removeAspect(nodeRef, aspect);
             }
         }
-        
+
         // remove the current disposition action (if there is one)
         DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
         if (dispositionAction != null)

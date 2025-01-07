@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,9 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
 /**
- * An extractor that gets a node's {@link RecordsManagementModel#PROP_IDENTIFIER identifier} property.
- * This will only extract data if the node is a
- * {@link RecordsManagementModel#ASPECT_RECORD_COMPONENT_ID Record component identifier}.
+ * An extractor that gets a node's {@link RecordsManagementModel#PROP_IDENTIFIER identifier} property. This will only extract data if the node is a {@link RecordsManagementModel#ASPECT_RECORD_COMPONENT_ID Record component identifier}.
  *
  * @author Derek Hulley
  * @since 3.2
@@ -56,8 +54,7 @@ public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
     }
 
     /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
-     *                      a fileplan component
+     * @return Returns <tt>true</tt> if the data is a NodeRef and it represents a fileplan component
      */
     public boolean isSupported(Serializable data)
     {
@@ -65,7 +62,7 @@ public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
         {
             return false;
         }
-        return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID);
+        return nodeService.hasAspect((NodeRef) data, RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID);
     }
 
     public Serializable extractData(Serializable value)

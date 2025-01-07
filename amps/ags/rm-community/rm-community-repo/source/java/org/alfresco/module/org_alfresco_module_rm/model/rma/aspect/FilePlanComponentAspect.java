@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -59,15 +59,12 @@ import org.alfresco.util.PropertyMap;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:filePlanComponent"
-)
-public class FilePlanComponentAspect extends    BaseBehaviourBean
-                                     implements NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                                NodeServicePolicies.OnAddAspectPolicy,
-                                                NodeServicePolicies.OnMoveNodePolicy
-
+@BehaviourBean(
+        defaultType = "rma:filePlanComponent")
+public class FilePlanComponentAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.OnUpdatePropertiesPolicy,
+        NodeServicePolicies.OnAddAspectPolicy,
+        NodeServicePolicies.OnMoveNodePolicy
 
 {
     /** Well-known location of the scripts folder. */
@@ -83,7 +80,8 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     private FilePlanService filePlanService;
 
     /**
-     * @param scriptService set script service
+     * @param scriptService
+     *            set script service
      */
     public void setScriptService(ScriptService scriptService)
     {
@@ -91,7 +89,8 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     }
 
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -99,7 +98,8 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -110,15 +110,12 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -133,19 +130,20 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     }
 
     /**
-     * This method examines the old and new property sets and for those properties which
-     * have changed, looks for script resources corresponding to those properties.
-     * Those scripts are then called via the ScriptService.
+     * This method examines the old and new property sets and for those properties which have changed, looks for script resources corresponding to those properties. Those scripts are then called via the ScriptService.
      *
-     * @param nodeWithChangedProperties the node whose properties have changed.
-     * @param oldProps the old properties and their values.
-     * @param newProps the new properties and their values.
+     * @param nodeWithChangedProperties
+     *            the node whose properties have changed.
+     * @param oldProps
+     *            the old properties and their values.
+     * @param newProps
+     *            the new properties and their values.
      *
      * @see #lookupScripts(Map, Map)
      */
     private void lookupAndExecuteScripts(NodeRef nodeWithChangedProperties,
-                                         Map<QName, Serializable> oldProps,
-                                         Map<QName, Serializable> newProps)
+            Map<QName, Serializable> oldProps,
+            Map<QName, Serializable> newProps)
     {
         List<NodeRef> scriptRefs = lookupScripts(oldProps, newProps);
 
@@ -160,14 +158,15 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     }
 
     /**
-     * This method determines which properties have changed and for each such property
-     * looks for a script resource in a well-known location.
+     * This method determines which properties have changed and for each such property looks for a script resource in a well-known location.
      *
-     * @param oldProps the old properties and their values.
-     * @param newProps the new properties and their values.
+     * @param oldProps
+     *            the old properties and their values.
+     * @param newProps
+     *            the new properties and their values.
      * @return A list of nodeRefs corresponding to the Script resources.
      *
-     * @see  org.alfresco.util.PropertyMap#getChangedProperties(Map, Map)
+     * @see org.alfresco.util.PropertyMap#getChangedProperties(Map, Map)
      */
     private List<NodeRef> lookupScripts(Map<QName, Serializable> oldProps, Map<QName, Serializable> newProps)
     {
@@ -178,7 +177,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
         {
             QName prefixedQName = propQName.getPrefixedQName(namespaceService);
 
-            String [] splitQName = QName.splitPrefixedQName(prefixedQName.toPrefixString());
+            String[] splitQName = QName.splitPrefixedQName(prefixedQName.toPrefixString());
             final String shortPrefix = splitQName[0];
             final String localName = splitQName[1];
 
@@ -200,15 +199,12 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -228,7 +224,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
                     for (ChildAssociationRef chAssRef : renditions)
                     {
                         rendition = chAssRef.getChildRef();
-                        if (nodeService.exists(rendition)) 
+                        if (nodeService.exists(rendition))
                         {
                             // Apply file plan component aspect to node's renditions
                             nodeService.addAspect(rendition, ASPECT_FILE_PLAN_COMPONENT, null);
@@ -245,20 +241,17 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
                 if (nodeService.exists(newChildAssocRef.getParentRef()) &&
-                    nodeService.exists(newChildAssocRef.getChildRef()))
+                        nodeService.exists(newChildAssocRef.getChildRef()))
                 {
                     // Look up the root and re-set the value currently stored on the aspect
                     NodeRef root = filePlanService.getFilePlan(newChildAssocRef.getParentRef());
@@ -274,19 +267,18 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     /**
      * Copy behaviour call back
      *
-     * @param   classRef    class reference
-     * @param   copyDetails  details of the information being copied
-     * @return  CopyBehaviourCallback
+     * @param classRef
+     *            class reference
+     * @param copyDetails
+     *            details of the information being copied
+     * @return CopyBehaviourCallback
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       policy = "alf:getCopyCallback"
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
-        return new AbstractCopyBehaviourCallback()
-        {
+        return new AbstractCopyBehaviourCallback() {
             /**
              * @see org.alfresco.repo.copy.CopyBehaviourCallback#getChildAssociationCopyAction(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails, org.alfresco.repo.copy.CopyBehaviourCallback.CopyChildAssociationDetails)
              */

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,18 +43,17 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-        defaultType = "rma:scheduled"
-)
-public class ScheduledAspect extends    BaseBehaviourBean
-                             implements NodeServicePolicies.OnAddAspectPolicy
+@BehaviourBean(
+        defaultType = "rma:scheduled")
+public class ScheduledAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.OnAddAspectPolicy
 {
     /** disposition service */
     private DispositionService dispositionService;
 
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -65,17 +64,15 @@ public class ScheduledAspect extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
         if (nodeService.exists(nodeRef) &&
-            dispositionService.getAssociatedDispositionSchedule(nodeRef) == null)
+                dispositionService.getAssociatedDispositionSchedule(nodeRef) == null)
         {
-           dispositionService.createDispositionSchedule(nodeRef, null);
+            dispositionService.createDispositionSchedule(nodeRef, null);
         }
     }
 }

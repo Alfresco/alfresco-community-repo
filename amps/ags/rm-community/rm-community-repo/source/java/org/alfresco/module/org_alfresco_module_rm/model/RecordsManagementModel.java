@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -202,7 +202,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName TYPE_HOLD = QName.createQName(RM_URI, "hold");
     QName PROP_HOLD_REASON = QName.createQName(RM_URI, "holdReason");
     QName PROP_HOLD_DELETION_REASON = QName.createQName(RM_URI, "holdDeletionReason");
-    //since 3.2
+    // since 3.2
     @Deprecated
     QName ASSOC_FROZEN_RECORDS = QName.createQName(RM_URI, "frozenRecords");
     QName ASSOC_FROZEN_CONTENT = QName.createQName(RM_URI, "frozenContent");
@@ -264,9 +264,12 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Extended security aspect
     // @deprecated as of 2.5, because of performance issues
-    @Deprecated QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
-    @Deprecated QName PROP_READERS = QName.createQName(RM_URI, "readers");
-    @Deprecated QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
+    @Deprecated
+    QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
+    @Deprecated
+    QName PROP_READERS = QName.createQName(RM_URI, "readers");
+    @Deprecated
+    QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
 
     // Originating details of a record
     QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");
@@ -290,7 +293,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_COUNT = QName.createQName(RM_URI, "count");
 
     QName ASPECT_SAVED_SEARCH = QName.createQName(RM_URI, "savedSearch");
-    //Workaround for RM-6788
+    // Workaround for RM-6788
     String GL_URI = "http://www.alfresco.org/model/glacier/1.0";
     QName ASPECT_ARCHIVED = QName.createQName(GL_URI, "archived");
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,7 +34,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-
 /**
  * Unit test for RM-1030 .. can't freeze a record folder that already has a frozen record contained within
  *
@@ -51,8 +50,7 @@ public class RM1030Test extends BaseRMTestCase
 
     public void testRM1030() throws Exception
     {
-        final NodeRef recordHold = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef recordHold = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -61,7 +59,7 @@ public class RM1030Test extends BaseRMTestCase
                 {
                     System.out.println(auth);
                 }
-                
+
                 // show there are no holds when we start
                 List<NodeRef> holds = holdService.getHolds(filePlan);
                 assertNotNull(holds);
@@ -89,8 +87,7 @@ public class RM1030Test extends BaseRMTestCase
 
         });
 
-        final NodeRef recordFolderHold = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef recordFolderHold = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -105,7 +102,7 @@ public class RM1030Test extends BaseRMTestCase
             @Override
             public void test(NodeRef hold) throws Exception
             {
-             // show that the record and the record folder are frozen
+                // show that the record and the record folder are frozen
                 assertTrue(freezeService.isFrozen(recordOne));
                 assertTrue(freezeService.isFrozen(rmFolder));
 
@@ -116,8 +113,7 @@ public class RM1030Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -138,8 +134,7 @@ public class RM1030Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

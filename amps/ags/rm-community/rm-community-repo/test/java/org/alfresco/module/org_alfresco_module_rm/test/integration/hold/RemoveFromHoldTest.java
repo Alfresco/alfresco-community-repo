@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeRemoveFromHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy;
@@ -40,7 +42,6 @@ import org.alfresco.repo.policy.BehaviourDefinition;
 import org.alfresco.repo.policy.ClassBehaviourBinding;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Remove From Hold integration tests.
@@ -57,8 +58,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
 
     public void testRemoveRecordsFromHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
@@ -69,7 +69,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
-                // create a record folder that contains records  
+                // create a record folder that contains records
                 recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                 for (int i = 0; i < RECORD_COUNT; i++)
@@ -89,7 +89,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
 
             public void then()
             {
-                // check record state (no longer held)   
+                // check record state (no longer held)
                 for (NodeRef record : records.subList(0, 5))
                 {
                     assertFalse(freezeService.isFrozen(record));
@@ -97,7 +97,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
                     assertFalse(holdService.heldBy(record, true).contains(hold));
                 }
 
-                // check record state (still held)   
+                // check record state (still held)
                 for (NodeRef record : records.subList(5, 10))
                 {
                     assertTrue(freezeService.isFrozen(record));
@@ -122,8 +122,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
 
     public void testRemoveAllRecordsFromHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
@@ -134,7 +133,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
-                // create a record folder that contains records  
+                // create a record folder that contains records
                 recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                 for (int i = 0; i < RECORD_COUNT; i++)
@@ -154,7 +153,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
 
             public void then()
             {
-                // check record state (no longer held)   
+                // check record state (no longer held)
                 for (NodeRef record : records)
                 {
                     assertFalse(freezeService.isFrozen(record));
@@ -179,8 +178,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
 
     public void testRemoveRecordFolderFromHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;
@@ -191,7 +189,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
                 // create a hold
                 hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
 
-                // create a record folder that contains records  
+                // create a record folder that contains records
                 recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                 for (int i = 0; i < RECORD_COUNT; i++)
@@ -211,7 +209,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
 
             public void then()
             {
-                // check record states   
+                // check record states
                 for (NodeRef record : records)
                 {
                     assertFalse(freezeService.isFrozen(record));
@@ -236,8 +234,7 @@ public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFr
 
     public void testPolicyNotificationForRemoveFromHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef hold;
             private NodeRef recordCategory;
             private NodeRef recordFolder;

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,12 +26,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Integration test for RM-3450
@@ -46,17 +47,13 @@ public class RM3450Test extends BaseRMTestCase
 
     public void testRM3450() throws Exception
     {
-        doTestInTransaction(new FailureTest
-                (
-                        I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE),
-                        IntegrityException.class
-                )
-        {
+        doTestInTransaction(new FailureTest(
+                I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE),
+                IntegrityException.class) {
             @Override
             public void run() throws Exception
             {
-                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-                {
+                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>() {
                     public Object execute() throws Exception
                     {
                         fileFolderService.create(unfiledContainer, GUID.generate(), TestModel.NOT_RM_FOLDER_TYPE).getNodeRef();

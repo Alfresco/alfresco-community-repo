@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,8 +43,7 @@ public class RM3341Test extends BaseRMTestCase
 {
     public void testCopyingContentsInHoldandTransfer() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -54,16 +53,15 @@ public class RM3341Test extends BaseRMTestCase
                 assertNotNull(transferContainer);
 
                 assertEquals(AccessStatus.ALLOWED,
-                            permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
+                        permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED,
-                            permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
+                        permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
 
                 return null;
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
 
             public Void run()
@@ -85,8 +83,7 @@ public class RM3341Test extends BaseRMTestCase
             }
 
         });
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
 
             public Void run()

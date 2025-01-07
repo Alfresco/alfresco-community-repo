@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,9 +29,10 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import static org.mockito.Mockito.doReturn;
 
+import org.mockito.Mock;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.action.Action;
-import org.mockito.Mock;
 
 /**
  * Declare as version record action unit test.
@@ -43,21 +44,21 @@ public abstract class BaseActionUnitTest extends BaseUnitTest
 {
     /** mocked action */
     private @Mock Action mockedAction;
-    
+
     /**
-     * @return  mocked action
+     * @return mocked action
      */
     protected Action getMockedAction()
     {
         return mockedAction;
     }
-    
+
     /**
      * Helper to mock an action parameter value
      */
     protected void mockActionParameterValue(String name, Object value)
     {
-        doReturn(value).when(mockedAction).getParameterValue(name);        
+        doReturn(value).when(mockedAction).getParameterValue(name);
     }
-     
+
 }

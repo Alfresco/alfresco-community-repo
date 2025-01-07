@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,7 +40,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 public interface FilePlanAuthenticationService
 {
     /**
-     * @return  rm admin user name
+     * @return rm admin user name
      *
      * @deprecated as of 2.2, use {@link AuthenticationUtil#getAdminUserName()}
      */
@@ -49,14 +49,16 @@ public interface FilePlanAuthenticationService
     /**
      * Run provided work as the global rm admin user.
      *
-     * @param <R>       return type
-     * @param runAsWork work to execute as the rm admin user
-     * @return R        result of work execution
+     * @param <R>
+     *            return type
+     * @param runAsWork
+     *            work to execute as the rm admin user
+     * @return R result of work execution
      *
      * @deprecated as of 2.2, use
      *
      *
-     * {@link AuthenticationUtil#runAs(RunAsWork, String)}
+     *             {@link AuthenticationUtil#runAs(RunAsWork, String)}
      */
     <R> R runAsRmAdmin(RunAsWork<R> runAsWork);
 }

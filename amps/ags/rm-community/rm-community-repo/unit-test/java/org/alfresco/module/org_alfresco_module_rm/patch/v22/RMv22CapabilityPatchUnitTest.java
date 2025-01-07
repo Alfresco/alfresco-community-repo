@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,23 +35,24 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 
+import org.junit.Test;
+import org.mockito.InjectMocks;
+
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.junit.Test;
-import org.mockito.InjectMocks;
 
 /**
  * Unit test for RMv22CapabilityPatch
  * 
  * @author Roy Wetherall
  */
-public class RMv22CapabilityPatchUnitTest extends BaseUnitTest 
+public class RMv22CapabilityPatchUnitTest extends BaseUnitTest
 {
-	/** patch */
-	private @InjectMocks RMv22CapabilityPatch patch;
-	
-	/**
+    /** patch */
+    private @InjectMocks RMv22CapabilityPatch patch;
+
+    /**
 	 * Given that I am upgrading an existing repository to v2.2
 	 * When I execute the patch
 	 * Then the capabilities are updated
@@ -129,5 +130,5 @@ public class RMv22CapabilityPatchUnitTest extends BaseUnitTest
 				"ManageAccessControls", 
 				true);
 	}
-	
+
 }

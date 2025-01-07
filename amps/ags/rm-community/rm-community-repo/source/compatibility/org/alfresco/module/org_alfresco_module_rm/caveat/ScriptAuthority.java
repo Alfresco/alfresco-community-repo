@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.caveat;
 
 import java.io.Serializable;
 
-
 public class ScriptAuthority implements Serializable
 {
     /**
@@ -38,23 +37,25 @@ public class ScriptAuthority implements Serializable
     private static final long serialVersionUID = 1L;
     private String authorityTitle;
     private String authorityName;
-    
+
     public void setAuthorityName(String authorityName)
     {
         this.authorityName = authorityName;
     }
+
     public String getAuthorityName()
     {
         return authorityName;
     }
+
     public void setAuthorityTitle(String authorityName)
     {
         this.authorityTitle = authorityName;
     }
+
     public String getAuthorityTitle()
     {
         return authorityTitle;
     }
 
-                                     
 }

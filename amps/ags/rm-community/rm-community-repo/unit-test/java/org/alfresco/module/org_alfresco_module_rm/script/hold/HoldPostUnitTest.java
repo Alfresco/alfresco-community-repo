@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,12 +35,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Hold ReST API POST implementation unit test.

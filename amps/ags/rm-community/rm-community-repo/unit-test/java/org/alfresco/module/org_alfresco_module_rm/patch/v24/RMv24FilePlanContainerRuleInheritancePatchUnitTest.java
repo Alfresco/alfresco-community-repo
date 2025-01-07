@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,23 +27,25 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v24;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
+
 import java.util.Collections;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 /**
  * RM V2.4 File Plan container rule inheritance patch unit test.
@@ -55,15 +57,15 @@ public class RMv24FilePlanContainerRuleInheritancePatchUnitTest
 {
     private @Mock NodeService mockedNodeService;
     private @Mock FilePlanService mockedFilePlanService;
-  
+
     private @InjectMocks RMv24FilePlanContainerRuleInheritancePatch patch;
-    
+
     @Before
     public void before()
     {
         MockitoAnnotations.initMocks(this);
     }
-    
+
     /**
      * Given there are not file plans,
      * When the patch is executed,
@@ -83,11 +85,9 @@ public class RMv24FilePlanContainerRuleInheritancePatchUnitTest
         // then
         verifyNoInteractions(mockedNodeService);
     }
-    
+
     /**
-     * Given there is a file plan,
-     * When the patch is executed,
-     * Then the file plan containers are updated
+     * Given there is a file plan, When the patch is executed, Then the file plan containers are updated
      */
     @Test
     public void atLeastOneFilePlan()
@@ -96,23 +96,23 @@ public class RMv24FilePlanContainerRuleInheritancePatchUnitTest
         NodeRef holdsContainer = generateNodeRef(mockedNodeService);
         NodeRef transferContainer = generateNodeRef(mockedNodeService);
         NodeRef unfiledRecordsContainer = generateNodeRef(mockedNodeService);
-        
-        // given        
+
+        // given
         when(mockedFilePlanService.getFilePlans())
-            .thenReturn(Collections.singleton(filePlan));
+                .thenReturn(Collections.singleton(filePlan));
         when(mockedFilePlanService.getHoldContainer(filePlan))
-            .thenReturn(holdsContainer);
+                .thenReturn(holdsContainer);
         when(mockedFilePlanService.getTransferContainer(filePlan))
-            .thenReturn(transferContainer);
+                .thenReturn(transferContainer);
         when(mockedFilePlanService.getUnfiledContainer(filePlan))
-            .thenReturn(unfiledRecordsContainer);
-        
+                .thenReturn(unfiledRecordsContainer);
+
         // when
         patch.applyInternal();
-        
+
         // then
         verify(mockedNodeService).addAspect(holdsContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
         verify(mockedNodeService).addAspect(transferContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
-        verify(mockedNodeService).addAspect(unfiledRecordsContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);        
+        verify(mockedNodeService).addAspect(unfiledRecordsContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
     }
 }

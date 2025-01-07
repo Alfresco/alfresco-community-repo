@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,27 +43,29 @@ import org.alfresco.service.namespace.QName;
  */
 @SuppressWarnings("deprecation")
 public class RecordsManagementSecurityServiceImpl implements RecordsManagementSecurityService,
-                                                             RecordsManagementModel
+        RecordsManagementModel
 {
     /** Model security service */
     private ModelSecurityService modelSecurityService;
-    
+
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
-    
+
     /** File plan permission service */
     private FilePlanPermissionService filePlanPermissionService;
 
     /**
-     * @param modelSecurityService  model security service
+     * @param modelSecurityService
+     *            model security service
      */
     public void setModelSecurityService(ModelSecurityService modelSecurityService)
     {
         this.modelSecurityService = modelSecurityService;
     }
-    
+
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -71,13 +73,14 @@ public class RecordsManagementSecurityServiceImpl implements RecordsManagementSe
     }
 
     /**
-     * @param filePlanPermissionService file plan permission service
+     * @param filePlanPermissionService
+     *            file plan permission service
      */
     public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
         this.filePlanPermissionService = filePlanPermissionService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getProtectedAspects()
      */

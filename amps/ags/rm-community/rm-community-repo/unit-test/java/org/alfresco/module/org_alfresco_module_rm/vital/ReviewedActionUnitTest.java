@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,27 +26,28 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.vital;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Date;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.extensions.webscripts.GUID;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.dictionary.types.period.Days;
 import org.alfresco.repo.dictionary.types.period.Immediately;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Date;
+
+import static org.mockito.Mockito.verify;
+
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Unit test for {@link ReviewedAction} class
@@ -69,12 +70,16 @@ public class ReviewedActionUnitTest implements RecordsManagementModel
     }
 
     /**
-     * Given a record having the vital record definition of immediately When I mark the record as reviewed Then review as of date is removed from the record
+     * Given a record having the vital record definition of immediately 
+     * When I mark the record as reviewed 
+     * Then review as of date is removed from the record
      */
     @Test
     public void testReviewRecordWithAdHocReviewPeriod()
     {
-        /* Given */
+        /*
+         * Given
+         */
         NodeRef mockedRecord = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
         when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
 
@@ -86,20 +91,28 @@ public class ReviewedActionUnitTest implements RecordsManagementModel
         when(mockedReviewPeriod.getPeriodType()).thenReturn(Immediately.PERIOD_TYPE);
         when(mockedVRDef.getReviewPeriod()).thenReturn(mockedReviewPeriod);
 
-        /* When */
+        /*
+         * When
+         */
         reviewedAction.executeImpl(null, mockedRecord);
 
-        /* Then */
+        /*
+         * Then
+         */
         verify(mockedNodeService).removeProperty(mockedRecord, PROP_REVIEW_AS_OF);
     }
 
     /**
-     * Given a record having a recurent vital record definition When I mark the record as reviewed Then the review as of date is updated according to the next review period computed by the vital record definition
+     * Given a record having a recurent vital record definition 
+     * When I mark the record as reviewed 
+     * Then the review as of date is updated according to the next review period computed by the vital record definition
      */
     @Test
     public void testReviewRecordWithRecurentReviewPeriod()
     {
-        /* Given */
+        /*
+         * Given
+         */
         NodeRef mockedRecord = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
         when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
 
@@ -114,10 +127,14 @@ public class ReviewedActionUnitTest implements RecordsManagementModel
         when(mockedReviewPeriod.getPeriodType()).thenReturn(Days.PERIOD_TYPE);
         when(mockedVRDef.getReviewPeriod()).thenReturn(mockedReviewPeriod);
 
-        /* When */
+        /*
+         * When
+         */
         reviewedAction.executeImpl(null, mockedRecord);
 
-        /* Then */
+        /*
+         * Then
+         */
         verify(mockedNodeService).setProperty(mockedRecord, PROP_REVIEW_AS_OF, mockedNextReviewDate);
     }
 }

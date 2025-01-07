@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,30 +26,28 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-
 import static org.alfresco.model.ContentModel.ASSOC_CHILDREN;
 import static org.alfresco.model.ContentModel.PROP_NAME;
 import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationReasonsUtil.CLASSIFICATION_REASONS_CONTAINER;
 import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.ClassificationReasonsUtil.PROP_CLASSIFICATION_REASON_CODE;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * @author Ross Gale
@@ -100,7 +98,7 @@ public class ClassificationReasonsUtilUnitTest
     public void testNoChangeMadeToStringIfKeyNotFound()
     {
         String stringToTest = "noChangeMadeToString";
-        assertEquals("Change made to string", stringToTest, classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
+        assertEquals("Change made to string",stringToTest, classificationReasonsUtil.replaceReasonWithNodeRef(stringToTest).trim());
     }
 
     /**

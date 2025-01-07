@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,9 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Test;
-import org.mockito.InjectMocks;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -40,6 +37,8 @@ import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.junit.Test;
+import org.mockito.InjectMocks;
 
 /**
  * Unit test for UnfiledRecordFolderType
@@ -53,7 +52,8 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
     private UnfiledRecordFolderType unfiledRecordFolderType;
 
     /**
-     * Given that we try to add a type that is not one of "rma:unfiledRecordFolder", "cm:content" or "rma:nonElectronicDocument" types to unfiled record folder, Then IntegrityException is thrown.
+     * Given that we try to add a type that is not one of "rma:unfiledRecordFolder", "cm:content" or "rma:nonElectronicDocument" types to unfiled record folder,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testAddNonAcceptedTypeToUnfiledRecordFolder()
@@ -63,7 +63,7 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
         when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
         when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
 
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
@@ -73,7 +73,8 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add "rma:unfiledRecordFolder" sub-type to unfiled record folder, Then the operation is successful.
+     * Given that we try to add "rma:unfiledRecordFolder" sub-type to unfiled record folder,
+     * Then the operation is successful.
      */
     @Test
     public void testAddUnfiledRecordFolderTypeToUnfiledRecordFolder()
@@ -83,7 +84,7 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
         when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
         when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
 
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
@@ -93,7 +94,8 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add "cm:content" sub-type to unfiled record folder, Then the operation is successful.
+     * Given that we try to add "cm:content" sub-type to unfiled record folder,
+     * Then the operation is successful.
      */
     @Test
     public void testAddContentTypeToUnfiledRecordFolder()
@@ -103,7 +105,7 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
         when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
 
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
@@ -113,7 +115,8 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add "rma:nonElectronicDocument" sub-type to unfiled record folder, Then the operation is successful.
+     * Given that we try to add "rma:nonElectronicDocument" sub-type to unfiled record folder,
+     * Then the operation is successful.
      */
     @Test
     public void testNonElectronicDocumentTypeToUnfiledRecordFolder()
@@ -123,7 +126,7 @@ public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
         when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
         when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(true);
 
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);

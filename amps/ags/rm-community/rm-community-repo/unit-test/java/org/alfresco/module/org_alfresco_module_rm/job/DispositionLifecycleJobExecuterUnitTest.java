@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,18 +42,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.stubbing.Answer;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -61,6 +53,12 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
 
 /**
  * Disposition lifecycle job execution unit test.
@@ -80,12 +78,10 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     private static final String QUERY = "\"" + CUTOFF + "\" OR \"" + RETAIN + "\"";
 
     /** mocked result set */
-    @Mock
-    ResultSet mockedResultSet;
+    @Mock ResultSet mockedResultSet;
 
     /** disposition lifecycle job executer */
-    @InjectMocks
-    DispositionLifecycleJobExecuter executer;
+    @InjectMocks DispositionLifecycleJobExecuter executer;
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
@@ -97,11 +93,11 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         super.before();
 
         Answer<Object> doInTransactionAnswer = invocation -> {
-            RetryingTransactionCallback callback = (RetryingTransactionCallback) invocation.getArguments()[0];
+            RetryingTransactionCallback callback = (RetryingTransactionCallback)invocation.getArguments()[0];
             return callback.execute();
         };
         doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).doInTransaction(any(RetryingTransactionCallback.class),
-                anyBoolean(), anyBoolean());
+            anyBoolean(), anyBoolean());
 
         // setup data
         List<String> dispositionActions = buildList(CUTOFF, RETAIN);
@@ -115,9 +111,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
     /**
      * Helper method to verify that the query has been executed and closed
-     * 
-     * @param numberOfInvocation
-     *            number of times the query has been executed and closed
+     * @param numberOfInvocation number of times the query has been executed and closed
      */
     private void verifyQueryTimes(int numberOfInvocation)
     {
@@ -165,12 +159,12 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         doReturn(DESTROY).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
 
         when(mockedResultSet.getNodeRefs())
-                .thenReturn(buildList(node1))
-                .thenReturn(buildList(node2));
+            .thenReturn(buildList(node1))
+            .thenReturn(buildList(node2));
 
         when(mockedResultSet.hasMore())
-                .thenReturn(true)
-                .thenReturn(false);
+            .thenReturn(true)
+            .thenReturn(false);
 
         // when
         executer.executeImpl();
@@ -183,7 +177,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
         verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
-                anyBoolean(), anyBoolean());
+            anyBoolean(), anyBoolean());
 
         // ensure each node is process correctly
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
@@ -245,12 +239,12 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         doReturn(false).when(mockedFreezeService).isFrozen(parentAssoc.getParentRef());
 
         when(mockedResultSet.getNodeRefs())
-                .thenReturn(buildList(node1))
-                .thenReturn(buildList(node2));
+            .thenReturn(buildList(node1))
+            .thenReturn(buildList(node2));
 
         when(mockedResultSet.hasMore())
-                .thenReturn(true)
-                .thenReturn(false);
+            .thenReturn(true)
+            .thenReturn(false);
 
         // when
         executer.executeImpl();
@@ -263,7 +257,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
         verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
-                anyBoolean(), anyBoolean());
+            anyBoolean(), anyBoolean());
 
         // ensure each node is process correctly
         // node1
@@ -280,7 +274,8 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Brittle unit test that simply checks the generated query is an exact string when the supplied disposition actions are "CUTOFF" and "RETAIN" (see {@link #before}).
+     * Brittle unit test that simply checks the generated query is an exact string when the supplied disposition actions
+     * are "CUTOFF" and "RETAIN" (see {@link #before}).
      */
     @Test
     public void testGetQuery()
@@ -296,7 +291,10 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given the maximum page of elements for search service is 2 and search service finds more than one page of elements When the job executer runs Then the executer retrieves both pages and iterates all elements
+     * Given the maximum page of elements for search service is 2
+     *       and search service finds more than one page of elements
+     * When the job executer runs
+     * Then the executer retrieves both pages and iterates all elements
      */
     @Test
     public void testPagination()
@@ -340,7 +338,8 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a batch size < 1 Then the executer use default value instead
+     * Given a batch size < 1
+     * Then the executer use default value instead
      */
     @Test
     public void testInvalidBatchSize()
@@ -349,8 +348,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         executer.executeImpl();
 
         ArgumentCaptor<SearchParameters> paramsCaptor = ArgumentCaptor.forClass(SearchParameters.class);
-        verify(mockedSearchService, times(1)).query(paramsCaptor.capture());
-        ;
+        verify(mockedSearchService, times(1)).query(paramsCaptor.capture());;
         assertEquals(executer.DEFAULT_BATCH_SIZE, paramsCaptor.getValue().getMaxItems());
         verify(mockedResultSet, times(1)).close();
 

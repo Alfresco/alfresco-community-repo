@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,22 +28,17 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import static java.util.Arrays.asList;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import static org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_AS_OF;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.Date;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -54,6 +49,8 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Unit tests for {@link BroadcastDispositionActionDefinitionUpdateAction}.
@@ -91,7 +88,8 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
     }
 
     /**
-     * Check that the disposition service is used to determine the "disposition as of" date when changes are made to the disposition period.
+     * Check that the disposition service is used to determine the "disposition as of" date when changes are made to the
+     * disposition period.
      */
     @Test
     public void testPersistPeriodChanges()
@@ -105,7 +103,7 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
         // Set up the disposition service to return a known "disposition as of" date.
         Date asOfDate = new Date();
         when(mockDispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition))
-                .thenReturn(asOfDate);
+                        .thenReturn(asOfDate);
 
         // Call the method under test.
         action.persistPeriodChanges(DISPOSITION_ACTION_DEF_NODE, mockAction);
@@ -117,7 +115,10 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
     /**
      * Check that changing the period property triggers a recalculation of the "disposition as of" date.
      * <p>
-     * Set up a disposition action definition node under a schedule defintion node, under a category node. Create a record whose next action is an instance of the action definition. Check that if the "period property" of the action definition changes then the "disposition as of" date is recalculated and persisted against the node of the next action.
+     * Set up a disposition action definition node under a schedule defintion node, under a category node. Create a
+     * record whose next action is an instance of the action definition. Check that if the "period property" of the
+     * action definition changes then the "disposition as of" date is recalculated and persisted against the node of the
+     * next action.
      */
     @Test
     public void testChangePeriodProperty()

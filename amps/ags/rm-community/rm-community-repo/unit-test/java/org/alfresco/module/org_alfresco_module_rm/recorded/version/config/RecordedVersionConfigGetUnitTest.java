@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,29 +27,27 @@
 
 package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.MAJOR_ONLY;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.NONE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
-
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.MAJOR_ONLY;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.NONE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet;
+import org.alfresco.module.org_alfresco_module_rm.script.slingshot.Version;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
-
-import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet;
-import org.alfresco.module.org_alfresco_module_rm.script.slingshot.Version;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 
 /**
  * Recorded Version Config REST API GET implementation unit test.

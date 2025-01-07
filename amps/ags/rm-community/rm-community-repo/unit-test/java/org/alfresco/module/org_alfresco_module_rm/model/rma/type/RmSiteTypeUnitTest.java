@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,11 +33,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 
 import com.google.common.collect.Sets;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
@@ -50,6 +45,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit test for RmSiteType
@@ -76,7 +76,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add non allowed type to rm site, Then IntegrityException is thrown.
+     * Given that we try to add non allowed type to rm site,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testAddNonAcceptedTypeToRmSite()
@@ -96,7 +97,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add one cm:folder to rm site, Then operation is successful.
+     * Given that we try to add one cm:folder to rm site,
+     * Then operation is successful.
      */
     @Test
     public void testAddOneFolderTypeToRmSite()
@@ -117,7 +119,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add two cm:folder to rm site, Then operation is successful.
+     * Given that we try to add two cm:folder to rm site,
+     * Then operation is successful.
      */
     @Test
     public void testAddTwoFolderTypeToRmSite()
@@ -129,14 +132,14 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
 
-        // create first folder
+        //create first folder
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
         when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        // create second cm:folder
+        //create second cm:folder
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
@@ -145,7 +148,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add more than two cm:folder to rm site, Then IntegrityException is thrown.
+     * Given that we try to add more than two cm:folder to rm site,
+     * Then IntegrityException is thrown.
      */
     @Test
     public void testAddMoreThanTwhoFolderTypeToRmSite()
@@ -158,21 +162,21 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
         when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(new ArrayList<>());
 
-        // create first folder
+        //create first folder
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
         assocs.add(mockedChildAssoc);
         when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
 
-        // create second cm:folder
+        //create second cm:folder
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
         when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        // create third cm:folder
+        //create third cm:folder
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
@@ -181,7 +185,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add one rma:filePlan to rm site, Then operation is successful.
+     * Given that we try to add one rma:filePlan to rm site,
+     * Then operation is successful.
      */
     @Test
     public void testAddOneFilePlanTypeToRmSite()
@@ -202,7 +207,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add one dod:filePlan to standard rm site, Then IntegrityException is thrown.
+     * Given that we try to add one dod:filePlan to standard rm site,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testAddDODFilePlanTypeToStandardRmSite()
@@ -218,7 +224,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add more than one rma:filePlan to rm site, Then IntegrityException is thrown.
+     * Given that we try to add more than one rma:filePlan to rm site,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testAddMoreThanOneFilePlanTypeToRmSite()
@@ -230,14 +237,14 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
 
-        // first file plan creation
+        //first file plan creation
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
         when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FILE_PLAN))).thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        // second filePlan creation
+        //second filePlan creation
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
@@ -246,7 +253,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add one dod:filePlan to rm site, Then operation is successful.
+     * Given that we try to add one dod:filePlan to rm site,
+     * Then operation is successful.
      */
     @Test
     public void testAddOneDODFilePlanTypeToRmSite()
@@ -272,7 +280,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add more than one dod:filePlan to rm site, Then IntegrityException is thrown.
+     * Given that we try to add more than one dod:filePlan to rm site,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testAddMoreThanOneDODFilePlanTypeToRmSite()
@@ -289,14 +298,14 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_FILE_PLAN, TYPE_FILE_PLAN)).thenReturn(true);
         rmSiteType.registerFilePlanType(TYPE_DOD_5015_SITE, TYPE_DOD_5015_FILE_PLAN);
 
-        // first dod:filePlan creation
+        //first dod:filePlan creation
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_DOD_5015_FILE_PLAN);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
         when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_DOD_5015_FILE_PLAN))).thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        // second dod:filePlan creation
+        //second dod:filePlan creation
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_DOD_5015_FILE_PLAN);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
@@ -305,7 +314,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add one rma:filePlan to DOD rm site, Then IntegrityException is thrown.
+     * Given that we try to add one rma:filePlan to DOD rm site,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testAddStandardFilePlanTypeToDODRmSite()

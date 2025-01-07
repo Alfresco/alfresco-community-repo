@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,14 +28,6 @@ package org.alfresco.repo.imap;
 
 import static org.mockito.Mockito.when;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.extensions.webscripts.GUID;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
@@ -48,10 +40,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Unit test for ExtendedImapServiceImpl
- * 
  * @author Ana Bozianu
  */
 public class ExtendedImapServiceImplUnitTest
@@ -69,9 +67,9 @@ public class ExtendedImapServiceImplUnitTest
     private NodeRef rmSite = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
     private final String RM_SITE_NAME = "RM";
     private NodeRef rmFilePlan = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-    private final String RM_FILEPLAN_NAME = "fileplan";
+    private final String RM_FILEPLAN_NAME = "fileplan"; 
     private NodeRef rmCategory = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-    private final String RM_CATEGORY_NAME = "C1";
+    private final String RM_CATEGORY_NAME = "C1"; 
 
     @Before
     public void setup()
@@ -94,17 +92,18 @@ public class ExtendedImapServiceImplUnitTest
         when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RM_SITE, SiteModel.TYPE_SITE)).thenReturn(true);
         when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_FILE_PLAN, SiteModel.TYPE_SITE)).thenReturn(false);
         when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RECORD_CATEGORY, SiteModel.TYPE_SITE)).thenReturn(false);
-
+        
         // node associations
         ChildAssociationRef filePlanParentAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rmSite, QName.createQName(GUID.generate()), rmFilePlan);
         when(mockedNodeService.getPrimaryParent(rmFilePlan)).thenReturn(filePlanParentAssoc);
-
+        
         ChildAssociationRef categoryParentAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rmFilePlan, QName.createQName(GUID.generate()), rmCategory);
         when(mockedNodeService.getPrimaryParent(rmCategory)).thenReturn(categoryParentAssoc);
     }
 
     /**
-     * given the method is called on the rm site node check if the result is the site name
+     * given the method is called on the rm site node 
+     * check if the result is the site name
      */
     @Test
     public void testGetPathFromRMSite()
@@ -114,7 +113,8 @@ public class ExtendedImapServiceImplUnitTest
     }
 
     /**
-     * given the method is called on a rm category check if the result is the full path relative to the rm site
+     * given the method is called on a rm category
+     * check if the result is the full path relative to the rm site
      */
     @Test
     public void testGetPathFromRMCategory()

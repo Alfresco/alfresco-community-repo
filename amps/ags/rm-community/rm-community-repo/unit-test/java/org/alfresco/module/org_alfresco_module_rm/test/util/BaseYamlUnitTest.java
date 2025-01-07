@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,6 +49,7 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion.VersionFlag;
 import com.networknt.schema.ValidationMessage;
+
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 import org.apache.commons.io.FileUtils;
@@ -74,8 +75,7 @@ public class BaseYamlUnitTest
         Set<String> yamlFilePathNames = new HashSet<>();
         File directory = new File(pathName);
         Collection<File> yamlFiles = FileUtils.listFiles(directory, new WildcardFileFilter("*.yaml"), null);
-        for (File file : yamlFiles)
-        {
+        for (File file : yamlFiles) {
             yamlFilePathNames.add(file.getCanonicalPath());
         }
         return yamlFilePathNames;
@@ -90,25 +90,25 @@ public class BaseYamlUnitTest
 
         final JsonSchema swaggerSchema = getSwaggerSchema();
         assertNotNull("Failed to obtain the Swagger schema", swaggerSchema);
-
+        
         for (String yamlFilePath : yamlFileNames)
         {
             try
             {
                 // check the yaml file is valid against Swagger JSON schema
-                assertTrue("Yaml file is not valid Swagger " + OPEN_API_SPECIFICATION + ": " + yamlFilePath,
+                assertTrue("Yaml file is not valid Swagger " + OPEN_API_SPECIFICATION + ": " + yamlFilePath, 
                         validateYamlFile(yamlFilePath, swaggerSchema));
 
                 // check can read the swagger object to obtain the swagger version
                 Swagger swagger = new SwaggerParser().read(yamlFilePath);
-                assertEquals("Failed to obtain Swagger version from yaml file " + yamlFilePath,
+                assertEquals("Failed to obtain Swagger version from yaml file " + yamlFilePath, 
                         swagger.getSwagger(), OPEN_API_SPECIFICATION);
             }
             catch (ValidationException ex)
             {
                 // ensure the yaml filename is included in the message
                 String context = String.format(yamlFilePath + ": %n" + ex.getMessage());
-                throw new ValidationException(context);
+                throw new ValidationException(context) ;
             }
         }
     }
@@ -142,7 +142,7 @@ public class BaseYamlUnitTest
         final Object obj = yamlReader.readValue(yaml, Object.class);
         final ObjectMapper jsonWriter = new ObjectMapper();
         final String yamlAsJsonString = jsonWriter.writeValueAsString(obj);
-
+        
         return validateJSON(yamlAsJsonString, jsonSchema);
     }
 
@@ -154,8 +154,7 @@ public class BaseYamlUnitTest
         final JsonNode dataNode = new ObjectMapper().readTree(jsonData);
 
         final Iterator<ValidationMessage> errors = schema.validate(dataNode).iterator();
-        if (!errors.hasNext())
-            return true;
+        if (!errors.hasNext()) return true;
 
         final ValidationMessage errorMessage = errors.next();
         throw new ValidationException(errorMessage.toString());

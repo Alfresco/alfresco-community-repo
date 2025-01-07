@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,9 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.PermissionReference;
@@ -42,6 +39,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.util.Pair;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Extended readers dynamic authority implementation.
@@ -51,8 +50,8 @@ import org.alfresco.util.Pair;
  */
 @Deprecated
 public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAuthority,
-        RecordsManagementModel,
-        ApplicationContextAware
+                                                                      RecordsManagementModel,
+                                                                      ApplicationContextAware
 {
     /** Authority service */
     private AuthorityService authorityService;
@@ -73,58 +72,58 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     protected Set<PermissionReference> requiredFor;
 
     // NOTE: we get the services directly from the application context in this way to avoid
-    // cyclic relationships and issues when loading the application context
+    //       cyclic relationships and issues when loading the application context
 
     /**
-     * @return authority service
+     * @return  authority service
      */
     protected AuthorityService getAuthorityService()
     {
         if (authorityService == null)
         {
-            authorityService = (AuthorityService) applicationContext.getBean("authorityService");
+            authorityService = (AuthorityService)applicationContext.getBean("authorityService");
         }
         return authorityService;
     }
 
     /**
-     * @return extended security service
+     * @return  extended security service
      */
     protected ExtendedSecurityService getExtendedSecurityService()
     {
         if (extendedSecurityService == null)
         {
-            extendedSecurityService = (ExtendedSecurityService) applicationContext.getBean("extendedSecurityService");
+            extendedSecurityService = (ExtendedSecurityService)applicationContext.getBean("extendedSecurityService");
         }
         return extendedSecurityService;
     }
 
     /**
-     * @return node service
+     * @return  node service
      */
     protected NodeService getNodeService()
     {
         if (nodeService == null)
         {
-            nodeService = (NodeService) applicationContext.getBean("dbNodeService");
+            nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         }
         return nodeService;
     }
 
     /**
-     * @return model DAO
+     * @return	model DAO
      */
     protected ModelDAO getModelDAO()
     {
-        if (modelDAO == null)
-        {
-            modelDAO = (ModelDAO) applicationContext.getBean("permissionsModelDAO");
-        }
-        return modelDAO;
+    	if (modelDAO == null)
+    	{
+    		modelDAO = (ModelDAO)applicationContext.getBean("permissionsModelDAO");
+    	}
+    	return modelDAO;
     }
 
     /**
-     * @return String transaction cache name
+     * @return	String transaction cache name
      */
     protected abstract String getTransactionCacheName();
 
@@ -138,7 +137,8 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     }
 
     /**
-     * Gets a list of the authorities from the extended security aspect that this dynamic authority is checking against.
+     * Gets a list of the authorities from the extended security aspect that this dynamic
+     * authority is checking against.
      *
      * @param nodeRef
      * @return
@@ -162,29 +162,29 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
         }
         else
         {
-            if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY))
-            {
-                Set<String> authorities = getAuthorites(nodeRef);
-                if (authorities != null)
-                {
-                    // check for everyone or the user
-                    if (authorities.contains("GROUP_EVEYONE") ||
-                            authorities.contains(userName))
-                    {
-                        result = true;
-                    }
-                    else
-                    {
-                        // determine whether any of the users groups are in the extended security
-                        Set<String> contained = getAuthorityService().getAuthoritiesForUser(userName);
-                        authorities.retainAll(contained);
-                        result = (authorities.size() != 0);
-                    }
-                }
-            }
+	        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY))
+	        {
+	            Set<String> authorities = getAuthorites(nodeRef);
+	            if (authorities != null)
+	            {
+	            	// check for everyone or the user
+	            	if (authorities.contains("GROUP_EVEYONE") ||
+	            		authorities.contains(userName))
+	            	{
+	            		result = true;
+	            	}
+	            	else
+	            	{
+	            		// determine whether any of the users groups are in the extended security
+	            		Set<String> contained = getAuthorityService().getAuthoritiesForUser(userName);
+	            		authorities.retainAll(contained);
+	            		result = (authorities.size() != 0);
+	            	}
+	            }
+	        }
 
-            // cache result
-            transactionCache.put(key, result);
+	        // cache result
+	        transactionCache.put(key, result);
         }
 
         return result;

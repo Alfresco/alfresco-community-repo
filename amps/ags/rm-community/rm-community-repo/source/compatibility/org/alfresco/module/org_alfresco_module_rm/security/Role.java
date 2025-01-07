@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,7 +48,7 @@ public class Role extends org.alfresco.module.org_alfresco_module_rm.role.Role
     {
         return new Role(role.getName(), role.getDisplayLabel(), role.getCapabilities(), role.getRoleGroupName());
     }
-
+    
     /**
      * Compatibility method
      */
@@ -61,7 +61,7 @@ public class Role extends org.alfresco.module.org_alfresco_module_rm.role.Role
         }
         return result;
     }
-
+    
     /**
      * Constructor
      */

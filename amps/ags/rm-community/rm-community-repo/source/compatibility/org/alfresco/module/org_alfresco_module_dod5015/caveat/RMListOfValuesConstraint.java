@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,7 +30,8 @@ package org.alfresco.module.org_alfresco_module_dod5015.caveat;
 /**
  * Compatibility Implementation.
  * <p>
- * Used as a compatibility implementation when migrating from V1.0 to V2.0. RMCustom model still references this class implementation, but package has been changed.
+ * Used as a compatibility implementation when migrating from V1.0 to V2.0.  RMCustom model still references
+ * this class implementation, but package has been changed.
  * 
  * @author Roy Wetherall
  */

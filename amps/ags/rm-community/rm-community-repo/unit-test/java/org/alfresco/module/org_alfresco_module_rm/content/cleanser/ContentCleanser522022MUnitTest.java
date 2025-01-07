@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,14 +32,13 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
-
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.repository.ContentIOException;
 
 /**
  * Eager content store cleaner unit test.
@@ -49,17 +48,14 @@ import org.alfresco.service.cmr.repository.ContentIOException;
  */
 public class ContentCleanser522022MUnitTest extends BaseUnitTest
 {
-    @InjectMocks
-    @Spy
-    private ContentCleanser522022M contentCleanser522022M = new ContentCleanser522022M() {
+    @InjectMocks @Spy private ContentCleanser522022M contentCleanser522022M = new ContentCleanser522022M()
+    {
         /** dummy implementations */
-        protected void overwrite(File file, OverwriteOperation overwriteOperation)
-        {}
+        protected void overwrite(File file, OverwriteOperation overwriteOperation) {}
     };
-
-    @Mock
-    private File mockedFile;
-
+    
+    @Mock private File mockedFile;
+   
     /**
      * Given that a file exists
      * When I cleanse it
@@ -84,7 +80,7 @@ public class ContentCleanser522022MUnitTest extends BaseUnitTest
         inOrder.verify(contentCleanser522022M)
             .overwrite(mockedFile, contentCleanser522022M.overwriteRandom);
     }
-
+    
     /**
      * Given that the file does not exist
      * When I cleanse it
@@ -103,7 +99,7 @@ public class ContentCleanser522022MUnitTest extends BaseUnitTest
         
         contentCleanser522022M.cleanse(mockedFile);
     }
-
+    
     /**
      * Given that I can not write to the file
      * When I cleanse it

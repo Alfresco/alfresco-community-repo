@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,22 +27,20 @@
 
 package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 
+import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost.RECORDED_VERSION;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 
-import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost.RECORDED_VERSION;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
-
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
-
-import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 
 /**
  * Recorded Version Config REST API POST implementation unit test.
@@ -98,9 +96,7 @@ public class RecordedVersionConfigPostUnitTest extends BaseRecordedVersionConfig
 
     /**
      * Helper method to build the content for the POST request
-     * 
-     * @param policy
-     *            The recordable version policy
+     * @param policy The recordable version policy
      *
      * @return Content for the build request
      */

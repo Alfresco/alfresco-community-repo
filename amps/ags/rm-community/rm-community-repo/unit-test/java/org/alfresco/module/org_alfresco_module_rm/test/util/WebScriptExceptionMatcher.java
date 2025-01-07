@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,7 +34,8 @@ import org.springframework.extensions.webscripts.WebScriptException;
 /**
  * Web script exception matcher.
  * <p>
- * Allows use to check whether the raised web script exception has the correct status number or not.
+ * Allows use to check whether the raised web script exception has the correct
+ * status number or not.
  * 
  * @author Roy Wetherall
  * @since 2.2
@@ -43,25 +44,27 @@ import org.springframework.extensions.webscripts.WebScriptException;
 public class WebScriptExceptionMatcher extends TypeSafeMatcher<WebScriptException>
 {
     /**
-     * Helper method to create a matcher for the file not found (404) exception status.
+     * Helper method to create a matcher for the file not found (404)
+     * exception status.
      * 
-     * @return {@link WebScriptExceptionMatcher}
+     * @return  {@link WebScriptExceptionMatcher}   
      */
     public static WebScriptExceptionMatcher fileNotFound()
     {
         return new WebScriptExceptionMatcher(Status.STATUS_NOT_FOUND);
     }
-
+    
     /**
-     * Helper method to create a matcher for the bad request status (400) exception status.
+     * Helper method to create a matcher for the bad request status (400)
+     * exception status.
      * 
-     * @return {@link WebScriptExceptionMatcher}
+     * @return  {@link WebScriptExceptionMatcher}
      */
     public static WebScriptExceptionMatcher badRequest()
     {
         return new WebScriptExceptionMatcher(Status.STATUS_BAD_REQUEST);
     }
-
+    
     /** expected status */
     public int expectedStatus;
 
@@ -71,18 +74,18 @@ public class WebScriptExceptionMatcher extends TypeSafeMatcher<WebScriptExceptio
     /**
      * Constructor
      * 
-     * @param expectedStatus
-     *            expected status
+     * @param expectedStatus    expected status
      */
     public WebScriptExceptionMatcher(int expectedStatus)
     {
         this.expectedStatus = expectedStatus;
     }
-
+    
     /**
-     * Determines if the expected outcome matches the actual outcome.
+     * Determines if the expected outcome matches the actual 
+     * outcome.
      * 
-     * @return true if matches, false otherwise
+     * @return  true if matches, false otherwise
      */
     @Override
     public boolean matchesSafely(WebScriptException exception)
@@ -92,13 +95,13 @@ public class WebScriptExceptionMatcher extends TypeSafeMatcher<WebScriptExceptio
     }
 
     /**
-     * Describe unexpected outcome.
+     *  Describe unexpected outcome.
      */
     @Override
     public void describeTo(org.hamcrest.Description description)
     {
         description.appendValue(actualStatus)
-                .appendText(" was found instead of ")
-                .appendValue(expectedStatus);
+                   .appendText(" was found instead of ")
+                   .appendValue(expectedStatus);            
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -52,9 +52,11 @@ public abstract class BaseRecordedVersionConfigTest extends BaseWebScriptUnitTes
     {
         testdoc = generateCmContent("testdoc.txt");
 
-        return buildParameters(
-                "store_type", testdoc.getStoreRef().getProtocol(),
-                "store_id", testdoc.getStoreRef().getIdentifier(),
-                "id", testdoc.getId());
+        return buildParameters
+        (
+                "store_type",       testdoc.getStoreRef().getProtocol(),
+                "store_id",         testdoc.getStoreRef().getIdentifier(),
+                "id",               testdoc.getId()
+        );
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,9 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
@@ -51,6 +48,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * RM Caveat Config Service impl
@@ -66,6 +65,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
 
     private RMCaveatConfigComponent rmCaveatConfigComponent;
     private RecordsManagementAdminService recordsManagementAdminService;
+
 
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -131,9 +131,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
 
     /**
      * add RM constraint list
-     * 
-     * @param listName
-     *            the name of the RMConstraintList
+     * @param listName the name of the RMConstraintList
      */
     public RMConstraintInfo addRMConstraint(String listName, String title, String[] values)
     {
@@ -152,8 +150,8 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
             listName = sb.toString();
         }
 
-        List<String> allowedValues = new ArrayList<>();
-        for (String value : values)
+        List<String>allowedValues = new ArrayList<>();
+        for(String value : values)
         {
             allowedValues.add(value);
         }
@@ -187,8 +185,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     /**
      * delete RM Constraint List
      *
-     * @param listName
-     *            the name of the RMConstraintList
+     * @param listName the name of the RMConstraintList
      */
     public void deleteRMConstraint(String listName)
     {
@@ -200,14 +197,12 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     }
 
     /**
-     * Add a single value to an authority in a list. The existing values of the list remain.
+     * Add a single value to an authority in a list.   The existing values of the list remain.
      *
-     * @param listName
-     *            the name of the RMConstraintList
+     * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param value
-     * @throws AlfrescoRuntimeException
-     *             if either the list or the authority do not already exist.
+     * @throws AlfrescoRuntimeException if either the list or the authority do not already exist.
      */
     public void addRMConstraintListValue(String listName, String authorityName, String value)
     {
@@ -216,7 +211,6 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
 
     /**
      * Get the details of the specified list
-     * 
      * @param listName
      * @return the details of the specified list
      */
@@ -226,16 +220,16 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     }
 
     /**
-     * Replace the values for an authority in a list. The existing values are removed.
+     * Replace the values for an authority in a list.
+     * The existing values are removed.
      *
      * If the authority does not already exist in the list, it will be added
      *
-     * @param listName
-     *            the name of the RMConstraintList
+     * @param listName the name of the RMConstraintList
      * @param authorityName
      * @param values
      */
-    public void updateRMConstraintListAuthority(String listName, String authorityName, List<String> values)
+    public void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values)
     {
         rmCaveatConfigComponent.updateRMConstraintListAuthority(listName, authorityName, values);
     }
@@ -247,7 +241,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
      * @param valueName
      * @param authorities
      */
-    public void updateRMConstraintListValue(String listName, String valueName, List<String> authorities)
+    public void updateRMConstraintListValue(String listName, String valueName, List<String>authorities)
     {
         rmCaveatConfigComponent.updateRMConstraintListValue(listName, valueName, authorities);
     }
@@ -255,8 +249,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     /**
      * Remove an authority from a list
      *
-     * @param listName
-     *            the name of the RMConstraintList
+     * @param listName the name of the RMConstraintList
      * @param authorityName
      */
     public void removeRMConstraintListAuthority(String listName, String authorityName)
@@ -277,18 +270,19 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
             defs.addAll(recordsManagementAdminService.getCustomConstraintDefinitions(caveatModelQName));
         }
 
-        for (ConstraintDefinition dictionaryDef : defs)
+        for(ConstraintDefinition dictionaryDef : defs)
         {
             Constraint con = dictionaryDef.getConstraint();
             if (con instanceof RMListOfValuesConstraint)
             {
-                final RMListOfValuesConstraint def = (RMListOfValuesConstraint) con;
+                final RMListOfValuesConstraint def = (RMListOfValuesConstraint)con;
                 RMConstraintInfo i = new RMConstraintInfo();
                 i.setName(def.getShortName());
                 i.setTitle(def.getTitle());
 
                 // note: assumes only one caveat/LOV against a given property
-                List<String> allowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>() {
+                List<String> allowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>()
+                {
                     public List<String> doWork()
                     {
                         return def.getAllowedValues();
@@ -307,24 +301,24 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
 
     /**
      * Get an RMConstraintInfo
-     * 
      * @param listQName
      * @return the constraint or null if it does not exist
      */
     public RMConstraintInfo getRMConstraint(QName listQName)
     {
         ConstraintDefinition dictionaryDef = dictionaryService.getConstraint(listQName);
-        if (dictionaryDef != null)
+        if(dictionaryDef != null)
         {
             Constraint con = dictionaryDef.getConstraint();
             if (con instanceof RMListOfValuesConstraint)
             {
-                final RMListOfValuesConstraint def = (RMListOfValuesConstraint) con;
+                final RMListOfValuesConstraint def = (RMListOfValuesConstraint)con;
 
                 RMConstraintInfo info = new RMConstraintInfo();
                 info.setName(listQName.toPrefixString());
                 info.setTitle(con.getTitle());
-                List<String> allowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>() {
+                List<String> allowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>()
+                {
                     public List<String> doWork()
                     {
                         return def.getAllowedValues();
@@ -354,20 +348,18 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
     /**
      * Update The allowed values for an RM Constraint.
      *
-     * @param listName
-     *            The name of the list.
-     * @param allowedValues
-     *            the new alowed values
+     * @param listName  The name of the list.
+     * @param allowedValues the new alowed values
      *
      */
     public RMConstraintInfo updateRMConstraintAllowedValues(String listName, String[] allowedValues)
     {
         QName listQName = QName.createQName(listName, namespaceService);
 
-        if (allowedValues != null)
+        if(allowedValues != null)
         {
-            List<String> allowedValueList = new ArrayList<>();
-            for (String value : allowedValues)
+            List<String>allowedValueList = new ArrayList<>();
+            for(String value : allowedValues)
             {
                 allowedValueList.add(value);
             }
@@ -376,20 +368,21 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
             Constraint con = dictionaryDef.getConstraint();
             if (con instanceof RMListOfValuesConstraint)
             {
-                final RMListOfValuesConstraint def = (RMListOfValuesConstraint) con;
-                List<String> oldAllowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>() {
+                final RMListOfValuesConstraint def = (RMListOfValuesConstraint)con;
+                List<String> oldAllowedValues = AuthenticationUtil.runAs(new RunAsWork<List<String>>()
+                {
                     public List<String> doWork()
                     {
-                        return def.getAllowedValues();
+                       return def.getAllowedValues();
                     }
                 }, AuthenticationUtil.getSystemUserName());
 
                 /**
                  * Deal with any additions
                  */
-                for (String newValue : allowedValueList)
+                for(String newValue : allowedValueList)
                 {
-                    if (!oldAllowedValues.contains(newValue) && logger.isDebugEnabled())
+                    if(!oldAllowedValues.contains(newValue) && logger.isDebugEnabled())
                     {
                         // This is an addition
                         logger.debug("value added to list:" + listQName + ":" + newValue);
@@ -399,12 +392,12 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
                 /**
                  * Deal with any deletions
                  */
-                for (String oldValue : oldAllowedValues)
+                for(String oldValue : oldAllowedValues)
                 {
-                    if (!allowedValueList.contains(oldValue))
+                    if(!allowedValueList.contains(oldValue))
                     {
                         // This is a deletion
-                        if (logger.isDebugEnabled())
+                        if(logger.isDebugEnabled())
                         {
                             logger.debug("value removed from list:" + listQName + ":" + oldValue);
                         }
@@ -424,7 +417,7 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
      */
     public void removeRMConstraintListValue(String listName, String valueName)
     {
-        // TODO need to update the rm constraint definition
+        //TODO need to update the rm constraint definition
         // recordsManagementAdminService.
 
         rmCaveatConfigComponent.removeRMConstraintListValue(listName, valueName);

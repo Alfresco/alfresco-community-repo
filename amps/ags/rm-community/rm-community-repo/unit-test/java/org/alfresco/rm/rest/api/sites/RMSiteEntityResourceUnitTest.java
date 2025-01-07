@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,12 +41,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -56,6 +50,11 @@ import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.RMSiteCompliance;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit Test class for RMSiteEntityResource.
@@ -130,7 +129,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.delete(siteId, parameters);
             fail("Expected ecxeption as siteId was different than rm");
         }
-        catch (InvalidParameterException ex)
+        catch(InvalidParameterException ex)
         {
             assertEquals("The Deletion is supported only for siteId = rm.", ex.getMessage());
         }
@@ -148,7 +147,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.delete(siteId, parameters);
             fail("Expected ecxeption as parameter permanent was present in the request.");
         }
-        catch (InvalidArgumentException ex)
+        catch(InvalidArgumentException ex)
         {
             assertEquals("DELETE does not support parameter: permanent", ex.getMsgId());
         }
@@ -174,7 +173,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.readById(siteId, parameters);
             fail("Expected ecxeption as siteId was different than rm");
         }
-        catch (InvalidParameterException ex)
+        catch(InvalidParameterException ex)
         {
             assertEquals("GET is supported only for siteId = rm.", ex.getMessage());
         }
@@ -206,7 +205,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as siteId was different than rm");
         }
-        catch (InvalidParameterException ex)
+        catch(InvalidParameterException ex)
         {
             assertEquals("The Update is supported only for siteId = rm.", ex.getMessage());
         }
@@ -227,7 +226,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site id cannot be changed.");
         }
-        catch (InvalidArgumentException ex)
+        catch(InvalidArgumentException ex)
         {
             assertEquals("Site update does not support field: id", ex.getMsgId());
         }
@@ -248,7 +247,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site guid cannot be changed.");
         }
-        catch (InvalidArgumentException ex)
+        catch(InvalidArgumentException ex)
         {
             assertEquals("Site update does not support field: guid", ex.getMsgId());
         }
@@ -269,7 +268,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site role cannot be changed.");
         }
-        catch (InvalidArgumentException ex)
+        catch(InvalidArgumentException ex)
         {
             assertEquals("Site update does not support field: role", ex.getMsgId());
         }
@@ -290,7 +289,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site compliance cannot be changed.");
         }
-        catch (InvalidArgumentException ex)
+        catch(InvalidArgumentException ex)
         {
             assertEquals("Site update does not support field: compliance", ex.getMsgId());
         }
@@ -311,7 +310,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
             rmSiteEntityResource.update(siteId, site, parameters);
             fail("Expected ecxeption as rm site visibility cannot be changed.");
         }
-        catch (InvalidArgumentException ex)
+        catch(InvalidArgumentException ex)
         {
             assertEquals("Site update does not support field: visibility", ex.getMsgId());
         }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,12 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
@@ -45,6 +39,11 @@ import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit test class for RecordFolderType
@@ -72,7 +71,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add one rma:transfer to a record folder, Then IntegrityException is thrown.
+     * Given that we try to add one rma:transfer to a record folder,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testCreateTransferFolder() throws Exception
@@ -86,7 +86,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add one record folder to a record folder, Then IntegrityException is thrown.
+     * Given that we try to add one record folder to a record folder,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testCreateRecordFolder() throws Exception
@@ -100,7 +101,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add sub-type of rma:recordsManagementContainer to a record folder, Then IntegrityException is thrown.
+     * Given that we try to add sub-type of rma:recordsManagementContainer to a record folder,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testCreateSubTypesOfRecordManagementContainer() throws Exception
@@ -114,7 +116,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add cm:folder sub-type to a record folder, Then the operation is successful.
+     * Given that we try to add cm:folder sub-type to a record folder,
+     * Then the operation is successful.
      */
     @Test
     public void testCreateFolderSubType() throws Exception
@@ -128,7 +131,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add non cm:folder sub-type to a record folder, Then IntegrityException is thrown.
+     * Given that we try to add non cm:folder sub-type to a record folder,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testCreateNonFolderSubType() throws Exception
@@ -142,7 +146,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add cm:content sub-type to a record folder, Then the operation is successful.
+     * Given that we try to add cm:content sub-type to a record folder,
+     * Then the operation is successful.
      */
     public void testCreateContent() throws Exception
     {
@@ -155,7 +160,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add non cm:content or non cm:folder sub-type to a record folder, Then IntegrityException is thrown.
+     * Given that we try to add non cm:content or non cm:folder sub-type to a record folder,
+     * Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
     public void testCreateNonContent() throws Exception
@@ -170,7 +176,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add not hidden cm:folder sub-type to a record folder, Then IntegrityException is thrown on commit.
+     * Given that we try to add not hidden cm:folder sub-type to a record folder,
+     * Then IntegrityException is thrown on commit.
      */
     @Test(expected = IntegrityException.class)
     public void testCreateNotHiddenFolderSubTypeOnCommit() throws Exception
@@ -184,7 +191,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add hidden cm:folder sub-type to a record folder, Then the operation is successful.
+     * Given that we try to add hidden cm:folder sub-type to a record folder,
+     * Then the operation is successful.
      */
     @Test
     public void testCreateHiddenFolderSubTypeOnCommit() throws Exception
@@ -204,7 +212,8 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add non cm:folder sub-type to a record folder, Then the operation is successful.
+     * Given that we try to add non cm:folder sub-type to a record folder,
+     * Then the operation is successful.
      */
     @Test
     public void testCreateNonFolderSubTypeOnCommit() throws Exception

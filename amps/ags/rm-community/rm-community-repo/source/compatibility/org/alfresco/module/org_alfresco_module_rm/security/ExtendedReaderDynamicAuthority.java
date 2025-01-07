@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,7 +46,7 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
 {
     /** Extended reader role */
     public static final String EXTENDED_READER = "ROLE_EXTENDED_READER";
-
+    
     /**
      * @see org.alfresco.repo.security.permissions.DynamicAuthority#getAuthority()
      */
@@ -54,7 +54,7 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     public String getAuthority()
     {
         return EXTENDED_READER;
-    }
+    }    
 
     /**
      * @see org.alfresco.repo.security.permissions.DynamicAuthority#requiredFor()
@@ -62,37 +62,37 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     @Override
     public Set<PermissionReference> requiredFor()
     {
-        if (requiredFor == null)
-        {
-            requiredFor = Collections.singleton(getModelDAO().getPermissionReference(null, RMPermissionModel.READ_RECORDS));
-        }
-
-        return requiredFor;
+    	if (requiredFor == null)
+    	{
+    		requiredFor = Collections.singleton(getModelDAO().getPermissionReference(null, RMPermissionModel.READ_RECORDS));
+    	}
+    	
+    	return requiredFor;
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityBaseDynamicAuthority#getAuthorites(org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unchecked")
-    protected Set<String> getAuthorites(NodeRef nodeRef)
+	protected Set<String> getAuthorites(NodeRef nodeRef) 
     {
         Set<String> result = null;
-
-        Map<String, Integer> readerMap = (Map<String, Integer>) getNodeService().getProperty(nodeRef, PROP_READERS);
+        
+        Map<String, Integer> readerMap = (Map<String, Integer>)getNodeService().getProperty(nodeRef, PROP_READERS);
         if (readerMap != null)
         {
             result = readerMap.keySet();
         }
-
+        
         return result;
     }
-
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityBaseDynamicAuthority#getTransactionCacheName()
      */
     @Override
-    protected String getTransactionCacheName()
+    protected String getTransactionCacheName() 
     {
-        return "rm.extendedreaderdynamicauthority";
+    	return "rm.extendedreaderdynamicauthority";
     }
 }

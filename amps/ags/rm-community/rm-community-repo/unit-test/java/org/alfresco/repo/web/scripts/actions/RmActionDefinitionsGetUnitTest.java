@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,12 +40,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.extensions.webscripts.AbstractWebScript;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
@@ -54,6 +48,13 @@ import org.alfresco.repo.web.scripts.rule.RmActionDefinitionsGet;
 import org.alfresco.repo.web.scripts.rule.WhitelistedDMActions;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+
 
 /**
  * Unit test for {@link RmActionDefinitionsGet} that checks if the whitelisted actions for rm are available.
@@ -94,7 +95,9 @@ public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest
     }
 
     /**
-     * Given the extendedActionService contains all dm actions When retrieving RM Action Definitions Then the whitelisted dm actions are present in the response
+     * Given the extendedActionService contains all dm actions
+     * When retrieving RM Action Definitions
+     * Then the whitelisted dm actions are present in the response
      */
     @Test
     public void getRmActionDefinitionsWithWhitelistedDMActions() throws Exception
@@ -125,7 +128,9 @@ public class RmActionDefinitionsGetUnitTest extends BaseWebScriptUnitTest
     }
 
     /**
-     * Given the extendedActionService only contains non whitelisted actions When retrieving RM Action Definitions Then the response does not contain the non whitelisted actions
+     * Given the extendedActionService only contains non whitelisted actions
+     * When retrieving RM Action Definitions
+     * Then the response does not contain the non whitelisted actions
      */
     @Test
     public void getRmActionDefinitionsWithNonWhitelistedDMActions() throws Exception

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -39,22 +41,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -72,6 +64,12 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.collections.CollectionUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
 
 /**
  * Unit test for RecordServiceImpl
@@ -107,12 +105,10 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     @Mock
     private ChildAssociationRef mockedParentAssoc;
 
-    private static QName TYPE_MY_FILE_PLAN = generateQName();
-    private static QName ASPECT_FOR_FILE_PLAN = generateQName();
+    private static QName TYPE_MY_FILE_PLAN                  = generateQName();
+    private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
 
-    @Spy
-    @InjectMocks
-    private RecordServiceImpl recordService;
+    @Spy @InjectMocks private RecordServiceImpl recordService;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -134,7 +130,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
         // set-up dictionary service
         when(mockedDictionaryService.getAllAspects()).thenReturn(CollectionUtils.EMPTY_COLLECTION);
-
+        
         // mock up getting behaviours
         when(recordService.getBehaviour(any(String.class))).thenReturn(mock(Behaviour.class));
     }
@@ -153,287 +149,304 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         assertEquals(1, types.size());
         assertTrue(types.contains(TYPE_FILE_PLAN));
     }
-
+    
     /**
-     * Given invalid types When linking Then exception thrown
+     * Given invalid types
+     * When linking
+     * Then exception thrown
      */
     @Test
     public void linkNonRecord()
     {
         NodeRef nonRecord = generateNodeRef(TYPE_CONTENT);
         NodeRef recordFolder = generateRecordFolder();
-
+        
         // set expected exception
         exception.expect(RecordLinkRuntimeException.class);
-
+        
         // link
         recordService.link(nonRecord, recordFolder);
-    }
-
+    }    
     @Test
     public void linkNonRecordFolder()
     {
         NodeRef record = generateRecord();
         NodeRef nonRecordFolder = generateNodeRef(TYPE_FOLDER);
-
+        
         // set expected exception
         exception.expect(RecordLinkRuntimeException.class);
-
+        
         // link
         recordService.link(record, nonRecordFolder);
     }
-
+    
     /**
-     * Given that the record is already a child of the record folder When I try to link the record to the same record folder Then an exception is thrown
+     * Given that the record is already a child of the record folder
+     * When I try to link the record to the same record folder
+     * Then an exception is thrown
      */
     @Test
     public void linkRecordToRecordFolderFailsIfAlreadyAChild()
     {
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
-
+        
         // given that the record is already a child of the record folder
         makeChildrenOf(recordFolder, record);
-
+        
         // set expected exception
         exception.expect(RecordLinkRuntimeException.class);
-
+        
         // link
         recordService.link(record, recordFolder);
     }
-
+    
     /**
-     * Given a record that is not a child of a record folder When I link the record to the record folder Then the record is now linked to the record folder
+     * Given a record that is not a child of a record folder
+     * When I link the record to the record folder
+     * Then the record is now linked to the record folder
      */
     @Test
     public void linkRecordToRecordFolder()
     {
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
-
+        
         // given that the record is already a child of the record folder
         makeChildrenOf(generateRecordFolder(), record);
-
+        
         // set the name of the record
-        String name = generateText();
+        String name = generateText(); 
         doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
-
+        
         // link
         recordService.link(record, recordFolder);
-
+        
         // verify link was created
         verify(mockedNodeService, times(1)).addChild(
-                recordFolder,
-                record,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));        
     }
-
+    
     /**
-     * Given that the source record has no disposition schedule When I link Then it is successful
+     * Given that the source record has no disposition schedule
+     * When I link
+     * Then it is successful
      */
-    @Test
-    public void linkNoSourceDisposition()
+    @Test public void linkNoSourceDisposition()    
     {
         // create record and record folder
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
         makeChildrenOf(generateRecordFolder(), record);
-
+    
         // set the name of the record
-        String name = generateText();
+        String name = generateText(); 
         doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
-
+        
         // set dispositions
         when(mockedDispositionService.getDispositionSchedule(record))
-                .thenReturn(null);
-
+            .thenReturn(null);
+        
         // link
         recordService.link(record, recordFolder);
-
+        
         // verify link was created
         verify(mockedNodeService, times(1)).addChild(
-                recordFolder,
-                record,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));          
     }
-
+    
     /**
-     * Given that the target record folder has no disposition schedule When I link Then it is successful
+     * Given that the target record folder has no disposition schedule
+     * When I link
+     * Then it is successful
      */
-    @Test
-    public void linkNoTargetDisposition()
+    @Test public void linkNoTargetDisposition()
     {
         // create record and record folder
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
         makeChildrenOf(generateRecordFolder(), record);
-
+    
         // set the name of the record
-        String name = generateText();
+        String name = generateText(); 
         doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
-
+        
         // set dispositions
         when(mockedDispositionService.getDispositionSchedule(record))
-                .thenReturn(mock(DispositionSchedule.class));
+            .thenReturn(mock(DispositionSchedule.class));
         when(mockedDispositionService.getDispositionSchedule(record))
-                .thenReturn(null);
-
+            .thenReturn(null);
+        
         // link
         recordService.link(record, recordFolder);
-
+        
         // verify link was created
         verify(mockedNodeService, times(1)).addChild(
-                recordFolder,
-                record,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));         
     }
-
+    
     /**
-     * Given that the source record and target record folder have incompatible disposition schedules When I link Then I expect a failure
+     * Given that the source record and target record folder have incompatible disposition schedules
+     * When I link
+     * Then I expect a failure
      */
-    @Test
-    public void linkIncompatibleDispositions()
+    @Test public void linkIncompatibleDispositions()
     {
         // create record and record folder
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
         makeChildrenOf(generateRecordFolder(), record);
-
+    
         // set the name of the record
-        String name = generateText();
+        String name = generateText(); 
         doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
-
+        
         // set dispositions
         DispositionSchedule recordDispositionSchedule = mock(DispositionSchedule.class);
         when(recordDispositionSchedule.isRecordLevelDisposition())
-                .thenReturn(true);
+            .thenReturn(true);
         when(mockedDispositionService.getOriginDispositionSchedule(record))
-                .thenReturn(recordDispositionSchedule);
-
+            .thenReturn(recordDispositionSchedule);
+        
         DispositionSchedule recordFolderDispositionSchedule = mock(DispositionSchedule.class);
         when(recordFolderDispositionSchedule.isRecordLevelDisposition())
-                .thenReturn(false);
+            .thenReturn(false);
         when(mockedDispositionService.getDispositionSchedule(recordFolder))
-                .thenReturn(recordFolderDispositionSchedule);
-
+            .thenReturn(recordFolderDispositionSchedule);
+        
         // expect exception
         exception.expect(RecordLinkRuntimeException.class);
-
+        
         // link
         recordService.link(record, recordFolder);
     }
-
+    
     /**
-     * Given that the source record and target record folder have compatible disposition schedules When I link Then it is successful
+     * Given that the source record and target record folder have compatible disposition schedules
+     * When I link
+     * Then it is successful
      */
-    @Test
-    public void linkCompatibleDispositions()
+    @Test public void linkCompatibleDispositions()
     {
         // create record and record folder
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
         makeChildrenOf(generateRecordFolder(), record);
-
+    
         // set the name of the record
-        String name = generateText();
+        String name = generateText(); 
         doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
-
+        
         // set dispositions
         DispositionSchedule recordDispositionSchedule = mock(DispositionSchedule.class);
         when(recordDispositionSchedule.isRecordLevelDisposition())
-                .thenReturn(true);
+            .thenReturn(true);
         when(mockedDispositionService.getDispositionSchedule(record))
-                .thenReturn(recordDispositionSchedule);
-
+            .thenReturn(recordDispositionSchedule);
+        
         DispositionSchedule recordFolderDispositionSchedule = mock(DispositionSchedule.class);
         when(recordFolderDispositionSchedule.isRecordLevelDisposition())
-                .thenReturn(true);
+            .thenReturn(true);
         when(mockedDispositionService.getDispositionSchedule(recordFolder))
-                .thenReturn(recordFolderDispositionSchedule);
-
+            .thenReturn(recordFolderDispositionSchedule);
+        
         // link
-        recordService.link(record, recordFolder);
-
+        recordService.link(record, recordFolder);  
+        
         // verify link was created
         verify(mockedNodeService, times(1)).addChild(
-                recordFolder,
-                record,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));       
     }
-
+    
     /**
-     * Given invalid types When unlinking Then exception thrown
+     * Given invalid types
+     * When unlinking 
+     * Then exception thrown
      */
     @Test
     public void unlinkNonRecord()
     {
         NodeRef nonRecord = generateNodeRef(TYPE_CONTENT);
         NodeRef recordFolder = generateRecordFolder();
-
+        
         // set expected exception
         exception.expect(RecordLinkRuntimeException.class);
-
+        
         // unlink
-        recordService.unlink(nonRecord, recordFolder);
-    }
-
+        recordService.unlink(nonRecord, recordFolder);        
+    }    
     @Test
     public void unlinkNonRecordFolder()
     {
         NodeRef record = generateRecord();
         NodeRef nonRecordFolder = generateNodeRef(TYPE_FOLDER);
-
+        
         // set expected exception
         exception.expect(RecordLinkRuntimeException.class);
-
+        
         // unlink
         recordService.unlink(record, nonRecordFolder);
     }
-
+    
     /**
-     * Given a record folder is a records primary parent When I try and unlink the record from that record folder Then an exception is thrown
+     * Given a record folder is a records primary parent
+     * When I try and unlink the record from that record folder
+     * Then an exception is thrown
      */
     @Test
     public void unlinkRecordFromPrimaryRecordFolder()
     {
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
-
-        // given that the record is already a child of the record folder
+        
+        // given that the record is already a child of the record folder        
         makePrimaryParentOf(record, recordFolder);
-
+        
         // set expected exception
         exception.expect(RecordLinkRuntimeException.class);
-
+        
         // link
         recordService.unlink(record, recordFolder);
     }
-
+    
     /**
-     * Given a record that is linked to a record And that the record is not the primary parent of the record When I unlink the record to the record folder Then the record is no longer linked to the record folder
+     * Given a record that is linked to a record
+     * And that the record is not the primary parent of the record
+     * When I unlink the record to the record folder
+     * Then the record is no longer linked to the record folder
      */
     @Test
     public void unlinkRecordFromRecordFolder()
     {
         NodeRef record = generateRecord();
         NodeRef recordFolder = generateRecordFolder();
-
+        
         // the records primary parent is another record folder
         makePrimaryParentOf(record, generateRecordFolder());
-
+        
         // unlink
         recordService.unlink(record, recordFolder);
-
+        
         // verify link was created
-        verify(mockedNodeService, times(1)).removeChild(recordFolder, record);
-    }
-
+        verify(mockedNodeService, times(1)).removeChild(recordFolder, record);       
+    }   
+    
     /**
-     * Given that a new record is being created When the behaviour is triggered Then the record is stored for later reference in the transaction
+     * Given that a new record is being created
+     * When the behaviour is triggered
+     * Then the record is stored for later reference in the transaction
      */
     @SuppressWarnings("unchecked")
     @Test
@@ -442,26 +455,28 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         // standard content node
         NodeRef nodeRef = generateCmContent("test.txt");
         ChildAssociationRef assoc = generateChildAssociationRef(generateNodeRef(), nodeRef);
-
+        
         doNothing().when(recordService).file(nodeRef);
-
+        
         // doesn't have no content aspect
         when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
-                .thenReturn(false);
-
+            .thenReturn(false);
+        
         Set<Object> values = mock(HashSet.class);
         when(mockedTransactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS))
-                .thenReturn(values);
-
+            .thenReturn(values);
+        
         // trigger behaviour
         recordService.onCreateChildAssociation(assoc, true);
-
+        
         // verify
         verify(values, times(1)).add(nodeRef);
     }
-
+    
     /**
-     * Given that an existing record is linked When the behaviour is triggered Then the record is not stored for later reference in the transaction
+     * Given that an existing record is linked
+     * When the behaviour is triggered
+     * Then the record is not stored for later reference in the transaction
      */
     @SuppressWarnings("unchecked")
     @Test
@@ -472,24 +487,26 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         ChildAssociationRef assoc = generateChildAssociationRef(generateNodeRef(), nodeRef);
 
         doNothing().when(recordService).file(nodeRef);
-
+        
         // doesn't have no content aspect
         when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
-                .thenReturn(false);
-
+            .thenReturn(false);
+        
         Set<Object> values = mock(HashSet.class);
         when(mockedTransactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS))
-                .thenReturn(values);
-
+            .thenReturn(values);
+        
         // trigger behaviour
         recordService.onCreateChildAssociation(assoc, false);
-
+        
         // verify
-        verify(values, never()).add(nodeRef);
+        verify(values, never()).add(nodeRef);        
     }
 
     /**
-     * Given a file that is not yet a record When I create the record without specifying a location Then the record is created in the unfiled record container
+     * Given a file that is not yet a record
+     * When I create the record without specifying a location
+     * Then the record is created in the unfiled record container
      */
     @Test
     public void createRecordIntoUnfiledRecordContainer()
@@ -508,9 +525,12 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a file that is not yet a record And the unfiled record container can't be found When I create the record without specifying a location Then an exception is thrown
+     * Given a file that is not yet a record
+     * And the unfiled record container can't be found
+     * When I create the record without specifying a location
+     * Then an exception is thrown
      */
-    @Test(expected = AlfrescoRuntimeException.class)
+    @Test (expected = AlfrescoRuntimeException.class)
     public void createRecordWhenUnfiledRecordContainerIsNull()
     {
         mocksForRecordCreation();
@@ -521,7 +541,9 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a file that is not yet a record When I create the record specifying the unfiled record container Then the record is created in the unfiled record container
+     * Given a file that is not yet a record
+     * When I create the record specifying the unfiled record container
+     * Then the record is created in the unfiled record container
      */
     @Test
     public void createRecordIntoSpecifiedUnfiledRecordContainer()
@@ -540,7 +562,9 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a file that is not yet a record When I create the record specifying a location Then the record is created in the specified record folder
+     * Given a file that is not yet a record
+     * When I create the record specifying a location
+     * Then the record is created in the specified record folder
      */
     @Test
     public void createRecordIntoSpecifiedRecordFolder()
@@ -559,9 +583,11 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a file that is not yet a record When I create the record specifying an invalid location Then an exception is thrown
+     * Given a file that is not yet a record
+     * When I create the record specifying an invalid location
+     * Then an exception is thrown
      */
-    @Test(expected = AlfrescoRuntimeException.class)
+    @Test(expected=AlfrescoRuntimeException.class)
     public void createRecordIntoInvalidRecordFolder()
     {
         mocksForRecordCreation();
@@ -572,9 +598,11 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a file that is not yet a record When I create the record specifying a location where I don't have permissions Then an exception is thrown
+     * Given a file that is not yet a record
+     * When I create the record specifying a location where I don't have permissions
+     * Then an exception is thrown
      */
-    @Test(expected = AccessDeniedException.class)
+    @Test (expected = AccessDeniedException.class)
     public void createRecordIntoSpecifiedRecordFolderWithoutFilePermission()
     {
         mocksForRecordCreation();
@@ -585,9 +613,11 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a file that is not yet a record When I create the record specifying a folder which is in a hold Then an exception is thrown
+     * Given a file that is not yet a record
+     * When I create the record specifying a folder which is in a hold
+     * Then an exception is thrown
      */
-    @Test(expected = IntegrityException.class)
+    @Test(expected= IntegrityException.class)
     public void createRecordIntoRecordFolderInHold()
     {
         mocksForRecordCreation();
@@ -597,9 +627,11 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a file that is not yet a record When I create the record specifying a closed destination record folder Then an exception is thrown
+     * Given a file that is not yet a record
+     * When I create the record specifying a closed destination record folder
+     * Then an exception is thrown
      */
-    @Test(expected = IntegrityException.class)
+    @Test(expected= IntegrityException.class)
     public void createRecordIntoClosedRecordFolder()
     {
         mocksForRecordCreation();
@@ -655,7 +687,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         doNothing().when(recordService).invokeBeforeRecordRejection(dmNodeRef);
         doNothing().when(recordService).invokeOnRecordRejection(dmNodeRef);
     }
-
     /**
      * Test for the reject record method
      */
@@ -673,7 +704,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     /**
      * Test for the reject record method throws an error without document owner
      */
-    @Test(expected = AlfrescoRuntimeException.class)
+    @Test (expected = AlfrescoRuntimeException.class)
     public void testRejectRecordThrowsErrorWithoutDocumentOwner()
     {
         Map mockProperties = mock(HashMap.class);

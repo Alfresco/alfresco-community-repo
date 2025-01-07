@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,8 +36,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.mockito.InjectMocks;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
@@ -45,6 +43,8 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.junit.Test;
+import org.mockito.InjectMocks;
 
 /**
  * Unit test for RFC822MetadataExtracter
@@ -68,7 +68,10 @@ public class RFC822MetadataExtracterUnitTest extends BaseUnitTest
             DOD5015Model.PROP_ADDRESS, "Title");
 
     /**
-     * Given a node that is not a record nor a dod record and has record and dod record properties When the method is called Then the record properties and dod properties are filtered out
+     * Given a node that is not a record nor a dod record
+     *       and has record and dod record properties
+     * When the method is called
+     * Then the record properties and dod properties are filtered out
      */
     @Test
     public void testRemoveSensitivePropertiesFromCommonNodes()
@@ -90,7 +93,11 @@ public class RFC822MetadataExtracterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a node that is a record and has record properties and dod properties When the method is called Then the DOD properties are filtered out and common and record properties are preserved
+     * Given a node that is a record
+     *       and has record properties and dod properties
+     * When the method is called
+     * Then the DOD properties are filtered out
+     *      and common and record properties are preserved
      */
     @Test
     public void testRemoveDodPropertiesFromRecordNodes()
@@ -116,7 +123,11 @@ public class RFC822MetadataExtracterUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given a node that is a dod record and has record properties and dod properties When the method is called Then the record properties are filtered out and common and DOD properties are preserved
+     * Given a node that is a dod record
+     * and has record properties and dod properties
+     * When the method is called
+     * Then the record properties are filtered out
+     * and common and DOD properties are preserved
      */
     @Test
     public void testRemoveRecordPropertiesFromDodNodes()
@@ -144,8 +155,7 @@ public class RFC822MetadataExtracterUnitTest extends BaseUnitTest
     /**
      * Helper method that generates target properties such as the given node is retrieved from them
      *
-     * @param node
-     *            the node to represent in the properties
+     * @param node the node to represent in the properties
      * @return the list of properties containing the node's information
      */
     private Map<QName, Serializable> generateTargetProperties(NodeRef node)

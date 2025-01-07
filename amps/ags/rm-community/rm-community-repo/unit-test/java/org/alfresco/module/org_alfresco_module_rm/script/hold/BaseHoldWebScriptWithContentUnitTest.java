@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,18 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.WebScriptExceptionMatcher.badRequest;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-
-import static org.alfresco.module.org_alfresco_module_rm.test.util.WebScriptExceptionMatcher.badRequest;
 
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.WebScriptException;
-
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Base hold web script with content unit test.
@@ -172,7 +170,8 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     }
 
     /**
-     * Test for expected exception when hold information is missing from sent JSON.
+     * Test for expected exception when hold information is missing from
+     * sent JSON.
      */
     @SuppressWarnings("unchecked")
     @Test
@@ -190,7 +189,8 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     }
 
     /**
-     * Test for expected exception when noderef information is missing from send JSON.
+     * Test for expected exception when noderef information is missing
+     * from send JSON.
      */
     @SuppressWarnings("unchecked")
     @Test
@@ -208,7 +208,8 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     }
 
     /**
-     * Test for expected exception when adding an item to something that isn't a hold.
+     * Test for expected exception when adding an item to something
+     * that isn't a hold.
      */
     @SuppressWarnings("unchecked")
     @Test
@@ -227,7 +228,8 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
     }
 
     /**
-     * Test for expected exception when adding an item to a hold that isn't a record, record folder or active content.
+     * Test for expected exception when adding an item to a hold
+     * that isn't a record, record folder or active content.
      */
     @SuppressWarnings("unchecked")
     @Test

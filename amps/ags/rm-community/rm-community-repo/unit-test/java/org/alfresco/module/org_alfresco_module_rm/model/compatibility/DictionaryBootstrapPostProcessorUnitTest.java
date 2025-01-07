@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,15 +30,16 @@ package org.alfresco.module.org_alfresco_module_rm.model.compatibility;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 
 /**
  * Dictionary bootstrap post processor unit test.
@@ -52,14 +53,16 @@ public class DictionaryBootstrapPostProcessorUnitTest extends BaseUnitTest
     private static final String BEAN_SITESERVICE_BOOTSTRAP = "siteService_dictionaryBootstrap";
     private static final String BEAN_RM_DICTIONARY_BOOTSTRAP = "org_alfresco_module_rm_dictionaryBootstrap";
 
-    @Mock private ConfigurableListableBeanFactory mockedBeanFactory;
-    @Mock private BeanDefinition mockedBeanDefinition;
+    @Mock
+    private ConfigurableListableBeanFactory mockedBeanFactory;
+    @Mock
+    private BeanDefinition mockedBeanDefinition;
 
-    @InjectMocks private DictionaryBootstrapPostProcessor postProcessor;
+    @InjectMocks
+    private DictionaryBootstrapPostProcessor postProcessor;
 
     /**
-     * given the bean factory does not contain the site service bootstrap bean then ensure that it is
-     * not added as a dependency
+     * given the bean factory does not contain the site service bootstrap bean then ensure that it is not added as a dependency
      */
     @Test
     public void noSiteServiceBootstrapBeanAvailable()
@@ -77,8 +80,7 @@ public class DictionaryBootstrapPostProcessorUnitTest extends BaseUnitTest
     }
 
     /**
-     * given that the site service bootstrap bean is contained within the bean factory, ensure that
-     * it is added as a dependency
+     * given that the site service bootstrap bean is contained within the bean factory, ensure that it is added as a dependency
      */
     @Test
     public void siteServiceBootstrapBeanAvailable()

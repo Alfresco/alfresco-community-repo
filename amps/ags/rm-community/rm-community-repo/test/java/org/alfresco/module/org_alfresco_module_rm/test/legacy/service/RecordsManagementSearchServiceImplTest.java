@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -59,8 +59,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
     {
         super.setupTestData();
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -80,8 +79,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
     public void testSaveSearch()
     {
         // Add some saved searches (as admin user)
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -96,8 +94,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
         });
 
         // Add some saved searches (as user1)
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -112,8 +109,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
         }, user);
 
         // Get searches (as admin user)
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -141,8 +137,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
         });
 
         // Get searches (as user1)
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -171,8 +166,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
         }, user);
 
         // Update search (as admin user)
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -198,13 +192,13 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
      * Check the details of the saved search.
      */
     private void checkSearchDetails(
-                    SavedSearchDetails details,
-                    String siteid,
-                    String name,
-                    String description,
-                    String query,
-                    RecordsManagementSearchParameters searchParameters,
-                    boolean isPublic)
+            SavedSearchDetails details,
+            String siteid,
+            String name,
+            String description,
+            String query,
+            RecordsManagementSearchParameters searchParameters,
+            boolean isPublic)
     {
         assertNotNull(details);
         assertEquals(siteid, details.getSiteId());

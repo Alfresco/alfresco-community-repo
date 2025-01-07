@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,43 +44,44 @@ public interface RecordsManagementAction
     /**
      * Get the name of the action
      *
-     * @return  String  action name
+     * @return String action name
      */
     String getName();
 
     /**
      * Get the label of the action
      *
-     * @return  String  action label
+     * @return String action label
      */
     String getLabel();
 
     /**
      * Get the description of the action
      *
-     * @return  String  action description
+     * @return String action description
      */
     String getDescription();
 
     /**
      * Indicates whether this is a disposition action or not
      *
-     * @return  boolean     true if a disposition action, false otherwise
+     * @return boolean true if a disposition action, false otherwise
      */
     boolean isDispositionAction();
 
     /**
      * Execution of the action
      *
-     * @param filePlanComponent     file plan component the action is executed upon
-     * @param parameters            action parameters
+     * @param filePlanComponent
+     *            file plan component the action is executed upon
+     * @param parameters
+     *            action parameters
      * @return The result of the executed action
      */
     RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters);
 
     /**
-     * Some admin-related rmActions execute against a target nodeRef which is not provided
-     * by the calling code, but is instead an implementation detail of the action.
+     * Some admin-related rmActions execute against a target nodeRef which is not provided by the calling code, but is instead an implementation detail of the action.
      *
      * @return the target nodeRef
      */

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,10 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import org.springframework.context.ApplicationContext;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.RetryingTransactionHelperTestCase;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Base unit test for a simple retrying transaction helper test case.
@@ -41,13 +42,12 @@ import org.springframework.context.ApplicationContext;
 public class RetryingTransactionHelperBaseTest extends RetryingTransactionHelperTestCase
 {
     /** Application context */
-    protected static final String[] CONFIG_LOCATIONS = new String[]
-    {
-        "classpath:alfresco/application-context.xml",
-        "classpath:test-context.xml"
+    protected static final String[] CONFIG_LOCATIONS = new String[]{
+            "classpath:alfresco/application-context.xml",
+            "classpath:test-context.xml"
     };
     protected ApplicationContext applicationContext;
-    
+
     /** retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;
 
@@ -59,7 +59,7 @@ public class RetryingTransactionHelperBaseTest extends RetryingTransactionHelper
     {
         return retryingTransactionHelper;
     }
-    
+
     /**
      * @see junit.framework.TestCase#setUp()
      */
@@ -68,9 +68,9 @@ public class RetryingTransactionHelperBaseTest extends RetryingTransactionHelper
     {
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
-        
+
         // get the retrying transaction helper
-        retryingTransactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
+        retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
     }
 
 }

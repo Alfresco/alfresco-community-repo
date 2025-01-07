@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,8 +39,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
 /**
- * Test recorded version histories when interacting with cm:versionable aspect
- * and the auto-version behvaiour.
+ * Test recorded version histories when interacting with cm:versionable aspect and the auto-version behvaiour.
  *
  * @author Roy Wetherall
  * @since 2.3.1
@@ -48,15 +47,11 @@ import org.alfresco.util.GUID;
 public class AutoVersionTest extends RecordableVersionsBaseTest
 {
     /**
-     * Given a versionable document
-     * When I specialise the type of the document
-     * Then the version history has only one initial version
-     * And it does not represent the current type of the document
+     * Given a versionable document When I specialise the type of the document Then the version history has only one initial version And it does not represent the current type of the document
      */
     public void testSpecialisedNodeInitialVersionCreated()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private NodeRef myDocument;
 
             public void given() throws Exception
@@ -89,14 +84,11 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given a versionable document with initial version turned off
-     * When I specialise the type of the document
-     * Then the version history remains empty
+     * Given a versionable document with initial version turned off When I specialise the type of the document Then the version history remains empty
      */
     public void testSpecialisedNodeInitialVersionNotCreated()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private NodeRef myDocument;
 
             public void given() throws Exception
@@ -125,22 +117,18 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given a versionable document with initial version turned off
-     * And auto version on type change is set on
-     * When I specialise the type of the document
-     * Then the version history contains the initial version
+     * Given a versionable document with initial version turned off And auto version on type change is set on When I specialise the type of the document Then the version history contains the initial version
      */
     public void testSpecialisedNodeInitialVersionNotCreatedOnTypeChangeOn()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private ExtendedVersionableAspect extendedVersionableAspect;
             private NodeRef myDocument;
 
             public void given() throws Exception
             {
                 // turn auto version on type change on
-                extendedVersionableAspect = (ExtendedVersionableAspect)applicationContext.getBean("rm.extendedVersionableAspect");
+                extendedVersionableAspect = (ExtendedVersionableAspect) applicationContext.getBean("rm.extendedVersionableAspect");
                 assertNotNull(extendedVersionableAspect);
                 extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
@@ -179,22 +167,18 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given a versionable document with initial version turned on
-     * And auto version on type change is set on
-     * When I specialise the type of the document
-     * Then the version history contains the initial version
+     * Given a versionable document with initial version turned on And auto version on type change is set on When I specialise the type of the document Then the version history contains the initial version
      */
     public void testSpecialisedNodeInitialVersionCreatedOnTypeChangeOn()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator) {
             private ExtendedVersionableAspect extendedVersionableAspect;
             private NodeRef myDocument;
 
             public void given() throws Exception
             {
                 // turn auto version on type change on
-                extendedVersionableAspect = (ExtendedVersionableAspect)applicationContext.getBean("rm.extendedVersionableAspect");
+                extendedVersionableAspect = (ExtendedVersionableAspect) applicationContext.getBean("rm.extendedVersionableAspect");
                 assertNotNull(extendedVersionableAspect);
                 extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
@@ -235,6 +219,5 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
             }
         });
     }
-
 
 }

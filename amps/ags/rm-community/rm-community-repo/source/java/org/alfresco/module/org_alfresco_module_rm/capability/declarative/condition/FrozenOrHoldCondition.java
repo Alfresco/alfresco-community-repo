@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,7 +45,7 @@ public class FrozenOrHoldCondition extends AbstractCapabilityCondition
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-        return (freezeService.isFrozen(nodeRef) || 
+        return (freezeService.isFrozen(nodeRef) ||
                 (kind != null && kind.equals(FilePlanComponentKind.HOLD)));
     }
 

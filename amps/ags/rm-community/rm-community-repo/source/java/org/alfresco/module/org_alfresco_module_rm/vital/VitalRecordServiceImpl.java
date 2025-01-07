@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -53,20 +53,21 @@ import org.alfresco.util.ParameterCheck;
  */
 @BehaviourBean
 public class VitalRecordServiceImpl extends ServiceBaseImpl
-                                    implements VitalRecordService,
-                                               RecordsManagementModel,
-                                               RecordsManagementPolicies.OnFileRecord
+        implements VitalRecordService,
+        RecordsManagementModel,
+        RecordsManagementPolicies.OnFileRecord
 {
     /** file plan service */
     private FilePlanService filePlanService;
 
     /**
-     * @param filePlanService	file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * Behavior to initialize vital record.
@@ -75,39 +76,39 @@ public class VitalRecordServiceImpl extends ServiceBaseImpl
      * @since 2.2
      */
     @Override
-    @Behaviour(kind=BehaviourKind.CLASS, type="rma:record")
+    @Behaviour(kind = BehaviourKind.CLASS, type = "rma:record")
     public void onFileRecord(NodeRef nodeRef)
     {
-       // Calculate the review schedule
-       VitalRecordDefinition viDef = getVitalRecordDefinition(nodeRef);
-       if (viDef != null && viDef.isEnabled())
-       {
-          Date reviewAsOf = viDef.getNextReviewDate();
-          if (reviewAsOf != null)
-          {
-              Map<QName, Serializable> reviewProps = new HashMap<>(1);
-              reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
+        // Calculate the review schedule
+        VitalRecordDefinition viDef = getVitalRecordDefinition(nodeRef);
+        if (viDef != null && viDef.isEnabled())
+        {
+            Date reviewAsOf = viDef.getNextReviewDate();
+            if (reviewAsOf != null)
+            {
+                Map<QName, Serializable> reviewProps = new HashMap<>(1);
+                reviewProps.put(RecordsManagementModel.PROP_REVIEW_AS_OF, reviewAsOf);
 
-              if (!nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD))
-              {
-                  nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD, reviewProps);
-              }
-              else
-              {
-                  Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-                  props.putAll(reviewProps);
-                  nodeService.setProperties(nodeRef, props);
-              }
-          }
-       }
-       else
-       {
-          // if we are re-filling then remove the vital aspect if it is not longer a vital record
-          if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD))
-          {
-              nodeService.removeAspect(nodeRef, ASPECT_VITAL_RECORD);
-          }
-       }
+                if (!nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD))
+                {
+                    nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_VITAL_RECORD, reviewProps);
+                }
+                else
+                {
+                    Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                    props.putAll(reviewProps);
+                    nodeService.setProperties(nodeRef, props);
+                }
+            }
+        }
+        else
+        {
+            // if we are re-filling then remove the vital aspect if it is not longer a vital record
+            if (nodeService.hasAspect(nodeRef, ASPECT_VITAL_RECORD))
+            {
+                nodeService.removeAspect(nodeRef, ASPECT_VITAL_RECORD);
+            }
+        }
     }
 
     /**
@@ -117,29 +118,29 @@ public class VitalRecordServiceImpl extends ServiceBaseImpl
     public void setupVitalRecordDefinition(NodeRef nodeRef)
     {
         // get the current review period value
-        Period currentReviewPeriod = (Period)nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
+        Period currentReviewPeriod = (Period) nodeService.getProperty(nodeRef, PROP_REVIEW_PERIOD);
         if (currentReviewPeriod == null ||
-            PERIOD_NONE.equals(currentReviewPeriod))
+                PERIOD_NONE.equals(currentReviewPeriod))
         {
             // get the immediate parent
             NodeRef parentRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
 
             // is the parent a record category
             if (parentRef != null &&
-                FilePlanComponentKind.RECORD_CATEGORY.equals(filePlanService.getFilePlanComponentKind(parentRef)))
+                    FilePlanComponentKind.RECORD_CATEGORY.equals(filePlanService.getFilePlanComponentKind(parentRef)))
             {
                 // is the child a record category or folder
                 FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
                 if (kind.equals(FilePlanComponentKind.RECORD_CATEGORY) ||
-                    kind.equals(FilePlanComponentKind.RECORD_FOLDER))
+                        kind.equals(FilePlanComponentKind.RECORD_FOLDER))
                 {
                     // set the vital record definition values to match that of the parent
                     nodeService.setProperty(nodeRef,
-                                            PROP_VITAL_RECORD_INDICATOR,
-                                            nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
+                            PROP_VITAL_RECORD_INDICATOR,
+                            nodeService.getProperty(parentRef, PROP_VITAL_RECORD_INDICATOR));
                     nodeService.setProperty(nodeRef,
-                                            PROP_REVIEW_PERIOD,
-                                            nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
+                            PROP_REVIEW_PERIOD,
+                            nodeService.getProperty(parentRef, PROP_REVIEW_PERIOD));
                 }
             }
         }
@@ -171,11 +172,9 @@ public class VitalRecordServiceImpl extends ServiceBaseImpl
     /**
      * Resolves the record vital definition.
      * <p>
-     * NOTE:  Currently we only support the resolution of the vital record definition from the
-     * primary record parent.  ie the record folder the record was originally filed within.
+     * NOTE: Currently we only support the resolution of the vital record definition from the primary record parent. ie the record folder the record was originally filed within.
      * <p>
-     * TODO:  Add an algorithm to resolve the correct vital record definition when a record is filed in many
-     * record folders.
+     * TODO: Add an algorithm to resolve the correct vital record definition when a record is filed in many record folders.
      *
      * @param record
      * @return VitalRecordDefinition

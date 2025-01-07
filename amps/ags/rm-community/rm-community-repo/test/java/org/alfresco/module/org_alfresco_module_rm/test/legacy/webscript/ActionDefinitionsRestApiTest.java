@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,13 +32,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 
 /**
  * REST API Tests for Action Definitions
@@ -49,7 +50,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase
 {
     /** URL for the REST APIs */
-    private static final String RM_ACTIONDEFINITIONS_URL = "/api/rm/rm-actiondefinitions";    
+    private static final String RM_ACTIONDEFINITIONS_URL = "/api/rm/rm-actiondefinitions";
 
     /**
      * Test the REST API to retrieve the list of rm action definitions
@@ -93,11 +94,10 @@ public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase
      */
     private List<String> getRmActionDefinitions()
     {
-        return Arrays.asList(new String[]
-        {
-            "reject",
-            "fileTo",
-            "declareRecord"
+        return Arrays.asList(new String[]{
+                "reject",
+                "fileTo",
+                "declareRecord"
         });
     }
 
@@ -108,13 +108,12 @@ public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase
      */
     private List<String> getDmActionDefinitions()
     {
-        return Arrays.asList(new String[]
-        {
-            "check-in",
-            "check-out",
-            "mail",
-            "move",
-            "transform"
+        return Arrays.asList(new String[]{
+                "check-in",
+                "check-out",
+                "mail",
+                "move",
+                "transform"
         });
     }
 }

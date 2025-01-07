@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,6 +41,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -66,8 +69,6 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class DataSetServiceImpl implements DataSetService, RecordsManagementModel
 {
@@ -117,7 +118,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set importer service
      *
-     * @param importerService the importer service
+     * @param importerService
+     *            the importer service
      */
     public void setImporterService(ImporterService importerService)
     {
@@ -127,7 +129,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set search service
      *
-     * @param searchService the search service
+     * @param searchService
+     *            the search service
      */
     public void setSearchService(SearchService searchService)
     {
@@ -137,7 +140,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set node service
      *
-     * @param nodeService the node service
+     * @param nodeService
+     *            the node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -147,7 +151,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set file plan service
      *
-     * @param filePlanService the file plan service
+     * @param filePlanService
+     *            the file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -157,7 +162,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set permission service
      *
-     * @param permissionService the permission service
+     * @param permissionService
+     *            the permission service
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -167,7 +173,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set authority service
      *
-     * @param authorityService the authority service
+     * @param authorityService
+     *            the authority service
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -175,7 +182,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -185,8 +193,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set records management search behaviour
      *
-     * @param recordsManagementSearchBehaviour the records management search
-     *            behaviour
+     * @param recordsManagementSearchBehaviour
+     *            the records management search behaviour
      */
     public void setRecordsManagementSearchBehaviour(RecordsManagementSearchBehaviour recordsManagementSearchBehaviour)
     {
@@ -196,7 +204,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set disposition service
      *
-     * @param dispositionService the disposition service
+     * @param dispositionService
+     *            the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -206,7 +215,8 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     /**
      * Set record folder service
      *
-     * @param recordFolderService the record folder service
+     * @param recordFolderService
+     *            the record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -234,8 +244,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#getDataSets(NodeRef,
-     *      boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#getDataSets(NodeRef, boolean)
      */
     @Override
     public Map<String, DataSet> getDataSets(NodeRef filePlan, boolean excludeLoaded)
@@ -257,8 +266,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#loadDataSet(
-     *org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#loadDataSet( org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
     public void loadDataSet(NodeRef filePlan, String dataSetId)
@@ -275,8 +283,11 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
         try
         {
             is = getClass().getClassLoader().getResourceAsStream(dataSet.getPath());
-            if (is == null) { throw new AlfrescoRuntimeException("The '" + dataSet.getLabel()
-                    + "' import file could not be found!"); }
+            if (is == null)
+            {
+                throw new AlfrescoRuntimeException("The '" + dataSet.getLabel()
+                        + "' import file could not be found!");
+            }
 
             // Import view
             Reader viewReader = new InputStreamReader(is, CHARSET_NAME);
@@ -357,8 +368,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#isLoadedDataSet(org.alfresco.service.cmr.repository.NodeRef,
-     *      java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService#isLoadedDataSet(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
     public boolean isLoadedDataSet(NodeRef filePlan, String dataSetId)
@@ -374,8 +384,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
      */
     private void patchLoadedData()
     {
-        AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>()
-        {
+        AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork()
             {
                 Set<NodeRef> rmRoots = filePlanService.getFilePlans();
@@ -489,11 +498,12 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     }
 
     /**
-     * Helper method for setting the id of the imported data set into the file
-     * plan's aspect
+     * Helper method for setting the id of the imported data set into the file plan's aspect
      *
-     * @param dataSetId The id of the imported data set
-     * @param filePlan The file plan into which the data set has been imported
+     * @param dataSetId
+     *            The id of the imported data set
+     * @param filePlan
+     *            The file plan into which the data set has been imported
      */
     @SuppressWarnings("unchecked")
     private void setDataSetIdIntoFilePlan(String dataSetId, NodeRef filePlan)

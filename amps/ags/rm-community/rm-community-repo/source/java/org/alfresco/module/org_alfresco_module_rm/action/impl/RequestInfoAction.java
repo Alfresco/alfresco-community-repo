@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -45,9 +49,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.workflow.RMWorkflowModel;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Request info action for starting a workflow to request more information for an undeclared record
@@ -75,7 +76,8 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     private WorkflowService workflowService;
 
     /**
-     * @param workflowService   workflow service
+     * @param workflowService
+     *            workflow service
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
@@ -89,9 +91,9 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (getNodeService().exists(actionedUponNodeRef) &&
-            !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
-            getRecordService().isRecord(actionedUponNodeRef) &&
-            !getRecordService().isDeclared(actionedUponNodeRef))
+                !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
+                getRecordService().isRecord(actionedUponNodeRef) &&
+                !getRecordService().isDeclared(actionedUponNodeRef))
         {
             String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
             Map<QName, Serializable> parameters = new HashMap<>();
@@ -123,8 +125,10 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     /**
      * Helper method for creating a workflow package to contain the actioned upon nodeRef
      *
-     * @param action The request info action
-     * @param actionedUponNodeRef The actioned upon nodeRef
+     * @param action
+     *            The request info action
+     * @param actionedUponNodeRef
+     *            The actioned upon nodeRef
      * @return Returns a workflow package containing the actioned upon nodeRef
      */
     private NodeRef getWorkflowPackage(Action action, NodeRef actionedUponNodeRef)
@@ -139,7 +143,8 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     /**
      * Helper method for getting the assignees from the action
      *
-     * @param action The request info action
+     * @param action
+     *            The request info action
      * @return Returns a list of {@link NodeRef}s each representing the assignee
      */
     private Serializable getAssignees(Action action)
@@ -157,7 +162,8 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     /**
      * Helper method for getting the requested information from the action
      *
-     * @param action The request info action
+     * @param action
+     *            The request info action
      * @return Returns the requested information
      */
     private Serializable getRequestedInformation(Action action)
@@ -168,7 +174,8 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     /**
      * Helper method for getting the rule creator
      *
-     * @param action The request info action
+     * @param action
+     *            The request info action
      * @return Returns the rule creator
      */
     private Serializable getRuleCreator(Action action)

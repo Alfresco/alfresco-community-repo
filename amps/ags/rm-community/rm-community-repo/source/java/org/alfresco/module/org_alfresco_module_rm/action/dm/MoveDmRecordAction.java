@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,10 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -37,13 +41,9 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Moves a record within a collaboration site.
- * The record can be moved only within the collaboration site where it was declared.
+ * Moves a record within a collaboration site. The record can be moved only within the collaboration site where it was declared.
  *
  * @author Tuna Aksoy
  * @since 2.3
@@ -78,7 +78,8 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
     /**
      * Sets the node service
      *
-     * @param nodeService Node service
+     * @param nodeService
+     *            Node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -98,7 +99,8 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
     /**
      * Sets the inplace record service
      *
-     * @param inplaceRecordService Inplace record service
+     * @param inplaceRecordService
+     *            Inplace record service
      */
     public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
     {
@@ -126,7 +128,8 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
     /**
      * Helper method to get the target node reference from the action parameter
      *
-     * @param action The action
+     * @param action
+     *            The action
      * @return Node reference of the target
      */
     private NodeRef getTargetNodeRef(Action action)

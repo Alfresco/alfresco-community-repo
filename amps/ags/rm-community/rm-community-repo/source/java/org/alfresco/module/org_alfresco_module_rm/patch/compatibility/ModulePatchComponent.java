@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,6 +31,9 @@ import static org.alfresco.repo.module.ModuleVersionNumber.VERSION_ZERO;
 
 import java.io.Serializable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl;
 import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
@@ -39,9 +42,6 @@ import org.alfresco.repo.module.ModuleComponentHelper;
 import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
  * Module patch component base class.
@@ -55,7 +55,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     private static final String REGISTRY_PATH_MODULES = "modules";
     private static final String REGISTRY_PROPERTY_INSTALLED_VERSION = "installedVersion";
     private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
-    
+
     /** logger */
     protected static final Logger LOGGER = LoggerFactory.getLogger(ModulePatchComponent.class);
 
@@ -70,9 +70,10 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
 
     /** Registry service */
     protected RegistryService registryService;
-    
+
     /**
-     * @param retryingTransactionHelper retrying transaction helper
+     * @param retryingTransactionHelper
+     *            retrying transaction helper
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -80,7 +81,8 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     }
 
     /**
-     * @param behaviourFilter   behaviour filter
+     * @param behaviourFilter
+     *            behaviour filter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -88,7 +90,8 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     }
 
     /**
-     * @param modulePatchExecuter   module patch executer
+     * @param modulePatchExecuter
+     *            module patch executer
      */
     public void setModulePatchExecuter(ModulePatchExecuterImpl modulePatchExecuter)
     {
@@ -96,7 +99,8 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     }
 
     /**
-     * @param registryService   Registry service
+     * @param registryService
+     *            Registry service
      */
     public void setRegistryService(RegistryService registryService)
     {
@@ -119,7 +123,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     @Override
     protected void executeInternal()
     {
-        //Get the new module version
+        // Get the new module version
         String moduleId = modulePatchExecuter.getModuleId();
         ModuleVersionNumber moduleNewVersionNumber = moduleService.getModule(moduleId).getModuleVersionNumber();
 
@@ -129,7 +133,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
         // Get the module patch component name
         String moduleName = getName();
         if (moduleCurrentVersionNumber.equals(VERSION_ZERO) ||
-                moduleCurrentVersionNumber.equals(moduleNewVersionNumber))   // No previous record of it
+                moduleCurrentVersionNumber.equals(moduleNewVersionNumber)) // No previous record of it
         {
             LOGGER.info("Module patch component '{}' is skipped, no previous version found.", moduleName);
         }
@@ -201,12 +205,11 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     }
 
     /**
-     * Helper method to determine if this is an upgrade from a version that already includes the early (v2.0, v2.1)
-     * patches.
+     * Helper method to determine if this is an upgrade from a version that already includes the early (v2.0, v2.1) patches.
      *
      */
     private boolean isVersionLaterThan(ModuleVersionNumber moduleCurrentVersionNumber,
-                                       ModuleVersionNumber moduleNewVersionNumber)
+            ModuleVersionNumber moduleNewVersionNumber)
     {
         // assume that the v2.0 and v2.1 patches should be run
         boolean versionLaterThan = false;
@@ -224,10 +227,10 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
         // v2.0 and v2.1 patches should not be run when both the current and the new version numbers are equals
         else
         {
-            versionLaterThan =true;
+            versionLaterThan = true;
         }
 
-        return  versionLaterThan;
+        return versionLaterThan;
     }
 
     /**

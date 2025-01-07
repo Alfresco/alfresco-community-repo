@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -58,14 +58,12 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:recordCategory"
-)
+@BehaviourBean(
+        defaultType = "rma:recordCategory")
 public class RecordCategoryType extends AbstractDisposableItem
-                                implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                           NodeServicePolicies.OnCreateNodePolicy,
-                                           NodeServicePolicies.OnMoveNodePolicy
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.OnMoveNodePolicy
 {
     private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<>();
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER);
@@ -77,7 +75,8 @@ public class RecordCategoryType extends AbstractDisposableItem
     protected FilePlanPermissionService filePlanPermissionService;
 
     /**
-     * @param vitalRecordService    vital record service
+     * @param vitalRecordService
+     *            vital record service
      */
     public void setVitalRecordService(VitalRecordService vitalRecordService)
     {
@@ -85,7 +84,8 @@ public class RecordCategoryType extends AbstractDisposableItem
     }
 
     /**
-     * @param filePlanPermissionService file plan permission service
+     * @param filePlanPermissionService
+     *            file plan permission service
      */
     public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
@@ -98,10 +98,8 @@ public class RecordCategoryType extends AbstractDisposableItem
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         QName childType = nodeService.getType(childAssocRef.getChildRef());
@@ -128,12 +126,10 @@ public class RecordCategoryType extends AbstractDisposableItem
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION,
-       policy = "alf:onCreateChildAssociation",
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION,
+            policy = "alf:onCreateChildAssociation",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, final boolean bNew)
     {
         final NodeRef child = childAssocRef.getChildRef();
@@ -141,13 +137,12 @@ public class RecordCategoryType extends AbstractDisposableItem
         behaviourFilter.disableBehaviour();
         try
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
                     // setup vital record definition
-                    if(nodeService.exists(child))
+                    if (nodeService.exists(child))
                     {
                         vitalRecordService.setupVitalRecordDefinition(child);
                     }
@@ -166,11 +161,9 @@ public class RecordCategoryType extends AbstractDisposableItem
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
         if (LOGGER.isDebugEnabled())
@@ -179,13 +172,12 @@ public class RecordCategoryType extends AbstractDisposableItem
         }
 
         // execute behaviour code as system user
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
                 // setup record category permissions
-                if(nodeService.exists(childAssocRef.getChildRef()))
+                if (nodeService.exists(childAssocRef.getChildRef()))
                 {
                     filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());
                 }
@@ -202,11 +194,9 @@ public class RecordCategoryType extends AbstractDisposableItem
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    notificationFrequency = NotificationFrequency.FIRST_EVENT
-            )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         // clean the child folders and records only if the old parent category has a disposition schedule set
@@ -220,9 +210,7 @@ public class RecordCategoryType extends AbstractDisposableItem
     }
 
     /**
-     *  Recursively reinitialize each folder in a structure of categories
-     *  Unwanted aspects will be removed from the child records and the records will be re-filed
-     *  Disposition schedule aspects and properties will be inherited from the new parent category
+     * Recursively reinitialize each folder in a structure of categories Unwanted aspects will be removed from the child records and the records will be re-filed Disposition schedule aspects and properties will be inherited from the new parent category
      *
      * @param childAssociationRef
      */
@@ -246,15 +234,12 @@ public class RecordCategoryType extends AbstractDisposableItem
     /**
      * Copy callback for record category
      */
-    @Behaviour
-    (
-        kind = BehaviourKind.CLASS,
-        policy = "alf:getCopyCallback"
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            policy = "alf:getCopyCallback")
     public CopyBehaviourCallback onCopyRecordCategory(final QName classRef, final CopyDetails copyDetails)
     {
-        return new DefaultCopyBehaviourCallback()
-        {
+        return new DefaultCopyBehaviourCallback() {
             /**
              * If the targets parent is a Record Folder -- Do Not Allow Copy
              *

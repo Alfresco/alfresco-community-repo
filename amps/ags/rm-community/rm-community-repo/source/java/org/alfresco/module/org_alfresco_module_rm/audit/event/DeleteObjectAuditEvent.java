@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,11 +46,9 @@ public class DeleteObjectAuditEvent extends AuditEvent implements BeforeDeleteNo
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
-    )
+            type = "rma:filePlanComponent")
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         recordsManagementAuditService.auditEvent(nodeRef, getName(), null, null, true, false);

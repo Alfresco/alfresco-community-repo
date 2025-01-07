@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -42,13 +46,9 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * This class applies the aspect specified in the spring bean property customTypeAspect.
- * It is used to apply one of the 4 "custom type" aspects from the DOD 5015 model.
+ * This class applies the aspect specified in the spring bean property customTypeAspect. It is used to apply one of the 4 "custom type" aspects from the DOD 5015 model.
  *
  * @author Neil McErlean
  */
@@ -106,9 +106,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * This method converts a Map of String, Serializable to a Map of QName, Serializable.
-     * To do this, it assumes that each parameter name is a String representing a qname
-     * of the form prefix:localName.
+     * This method converts a Map of String, Serializable to a Map of QName, Serializable. To do this, it assumes that each parameter name is a String representing a qname of the form prefix:localName.
      */
     private Map<QName, Serializable> getPropertyValues(Action action)
     {

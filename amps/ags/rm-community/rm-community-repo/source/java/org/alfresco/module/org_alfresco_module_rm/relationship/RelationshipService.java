@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -54,7 +54,8 @@ public interface RelationshipService
     /**
      * Gets the relationship definition for the given unique name
      *
-     * @param uniqueName The unique name of the relationship definition
+     * @param uniqueName
+     *            The unique name of the relationship definition
      * @return The relationship definition for the given unique name if it exist, <code>null</code> otherwise
      */
     RelationshipDefinition getRelationshipDefinition(String uniqueName);
@@ -62,7 +63,8 @@ public interface RelationshipService
     /**
      * Creates a relationship definition using the display name
      *
-     * @param displayName The display name of the relationship definition
+     * @param displayName
+     *            The display name of the relationship definition
      * @return The new relationship definition
      */
     RelationshipDefinition createRelationshipDefinition(RelationshipDisplayName displayName);
@@ -70,8 +72,10 @@ public interface RelationshipService
     /**
      * Updates an existing relationship definition
      *
-     * @param uniqueName The unique name of the relationship definition
-     * @param displayName The display name of the relationship definition
+     * @param uniqueName
+     *            The unique name of the relationship definition
+     * @param displayName
+     *            The display name of the relationship definition
      * @return The updated relationship definition
      */
     RelationshipDefinition updateRelationshipDefinition(String uniqueName, RelationshipDisplayName displayName);
@@ -79,7 +83,8 @@ public interface RelationshipService
     /**
      * Removes a relationship definition
      *
-     * @param uniqueName The unique name of the relationship definition
+     * @param uniqueName
+     *            The unique name of the relationship definition
      * @return <code>true</code> if the relationship definition was removed successfully, <code>false</code> otherwise
      */
     boolean removeRelationshipDefinition(String uniqueName);
@@ -87,7 +92,8 @@ public interface RelationshipService
     /**
      * Checks if a relationship exists or not
      *
-     * @param uniqueName The unique name of the relationship definition
+     * @param uniqueName
+     *            The unique name of the relationship definition
      * @return <code>true</code> if the relationship definition exists, <code>false</code> otherwise
      */
     boolean existsRelationshipDefinition(String uniqueName);
@@ -95,19 +101,21 @@ public interface RelationshipService
     /**
      * Gets all the relationships that come out from the given node reference
      *
-     * @param nodeRef The node reference
+     * @param nodeRef
+     *            The node reference
      * @return All relationships that come out from the given node reference
      */
     Set<Relationship> getRelationshipsFrom(NodeRef nodeRef);
 
     /**
-     * Gets all the relationships that come out from the given node reference
-     * that match the a given name filter.
+     * Gets all the relationships that come out from the given node reference that match the a given name filter.
      * <p>
      * Exact match only.
      *
-     * @param nodeRef The node reference
-     * @param nameFilter Name filter for results
+     * @param nodeRef
+     *            The node reference
+     * @param nameFilter
+     *            Name filter for results
      * @return All relationships that come out from the given node reference
      *
      * @since 2.3.1
@@ -117,19 +125,21 @@ public interface RelationshipService
     /**
      * Gets all the relationships that go into the given node reference
      *
-     * @param nodeRef The node reference
+     * @param nodeRef
+     *            The node reference
      * @return All relationships that go into the given node reference
      */
     Set<Relationship> getRelationshipsTo(NodeRef nodeRef);
 
     /**
-     * Gets all the relationships that go into the given node reference
-     * that match the a given name filter.
+     * Gets all the relationships that go into the given node reference that match the a given name filter.
      * <p>
      * Exact match only.
      *
-     * @param nodeRef The node reference
-     * @param nameFilter Name filter for results
+     * @param nodeRef
+     *            The node reference
+     * @param nameFilter
+     *            Name filter for results
      * @return All relationships that go into the given node reference
      *
      * @since 2.3.1
@@ -137,22 +147,26 @@ public interface RelationshipService
     Set<Relationship> getRelationshipsTo(NodeRef nodeRef, String nameFilter);
 
     /**
-     * Adds a relationship from the given node <code>source</code>
-     * to the give node <code>target</code> with the given unique name
+     * Adds a relationship from the given node <code>source</code> to the give node <code>target</code> with the given unique name
      *
-     * @param uniqueName The unique name of the relationship
-     * @param source The node reference which the relationship come from
-     * @param target The node reference which the relationship go to
+     * @param uniqueName
+     *            The unique name of the relationship
+     * @param source
+     *            The node reference which the relationship come from
+     * @param target
+     *            The node reference which the relationship go to
      */
     void addRelationship(String uniqueName, NodeRef source, NodeRef target);
 
     /**
-     * Removes the relationship from the given node <code>source</code>
-     * to the given node <code>target</code> with the given unique name
+     * Removes the relationship from the given node <code>source</code> to the given node <code>target</code> with the given unique name
      *
-     * @param uniqueName The unique name of the relationship
-     * @param source The node reference which the relationship come from
-     * @param target The node reference which the relationship go to
+     * @param uniqueName
+     *            The unique name of the relationship
+     * @param source
+     *            The node reference which the relationship come from
+     * @param target
+     *            The node reference which the relationship go to
      */
     void removeRelationship(String uniqueName, NodeRef source, NodeRef target);
 }

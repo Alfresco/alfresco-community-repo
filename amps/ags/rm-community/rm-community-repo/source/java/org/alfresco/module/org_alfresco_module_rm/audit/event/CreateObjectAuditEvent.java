@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,11 +46,9 @@ public class CreateObjectAuditEvent extends AuditEvent implements OnCreateNodePo
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
-    )
+            type = "rma:filePlanComponent")
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName());

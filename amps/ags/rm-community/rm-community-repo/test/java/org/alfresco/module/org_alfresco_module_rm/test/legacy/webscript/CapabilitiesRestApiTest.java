@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,13 +30,14 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 
 /**
  * REST API Test for Capabilities
@@ -57,11 +58,11 @@ public class CapabilitiesRestApiTest extends BaseRMWebScriptTestCase
      */
     public void testGetCapabilitiesAction() throws IOException, JSONException
     {
-    	String baseURL = MessageFormat.format(GET_CAPABILITIES_URL, 
-    								   	      filePlan.getStoreRef().getProtocol(), 
-    								   	      filePlan.getStoreRef().getIdentifier(),
-    								   	      filePlan.getId());
-    	
+        String baseURL = MessageFormat.format(GET_CAPABILITIES_URL,
+                filePlan.getStoreRef().getProtocol(),
+                filePlan.getStoreRef().getIdentifier(),
+                filePlan.getId());
+
         // Format url and send request
         String getUrl = String.format(baseURL + "includeAll=%s", true);
         Response getResponse = sendRequest(new GetRequest(getUrl), Status.STATUS_OK);
@@ -71,7 +72,7 @@ public class CapabilitiesRestApiTest extends BaseRMWebScriptTestCase
         assertNotNull(getContentAsString);
 
         System.out.println(getContentAsString);
-        
+
         // Convert the response to json and check the data
         JSONObject getContentAsJson = new JSONObject(getContentAsString);
         JSONObject getData = getContentAsJson.getJSONObject("data");

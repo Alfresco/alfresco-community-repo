@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,14 +27,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
+import static org.apache.commons.logging.LogFactory.getLog;
+
 import static org.alfresco.model.ContentModel.ASPECT_VERSIONABLE;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.TEXT;
-import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.util.List;
+
+import org.apache.commons.logging.Log;
 
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -45,7 +48,6 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
 
 /**
  * Sets the recordable version config for a document within a collaboration site.
@@ -85,7 +87,8 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
     /**
      * Sets the node service
      *
-     * @param nodeService The node service
+     * @param nodeService
+     *            The node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -135,7 +138,8 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
     /**
      * Helper method to do checks on the actioned upon node reference
      *
-     * @param actionedUponNodeRef The actioned upon node reference
+     * @param actionedUponNodeRef
+     *            The actioned upon node reference
      * @return <code>true</code> if the actioned upon node reference passes the checks, <code>false</code> otherwise
      */
     private boolean passedChecks(NodeRef actionedUponNodeRef)
@@ -158,7 +162,7 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
             passedChecks = false;
             if (LOGGER.isDebugEnabled())
             {
-                String message = buildLogMessage(actionedUponNodeRef, "' because the type of the node '" + type.getLocalName()  + "' is not supported.");
+                String message = buildLogMessage(actionedUponNodeRef, "' because the type of the node '" + type.getLocalName() + "' is not supported.");
                 LOGGER.debug(message);
             }
         }
@@ -189,8 +193,10 @@ public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
     /**
      * Helper method to construct log message
      *
-     * @param actionedUponNodeRef The actioned upon node reference
-     * @param messagePart The message which should be appended.
+     * @param actionedUponNodeRef
+     *            The actioned upon node reference
+     * @param messagePart
+     *            The message which should be appended.
      * @return The constructed log message
      */
     private String buildLogMessage(NodeRef actionedUponNodeRef, String messagePart)

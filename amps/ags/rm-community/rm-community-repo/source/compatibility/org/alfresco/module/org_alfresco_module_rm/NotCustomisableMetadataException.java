@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,7 +36,7 @@ public class NotCustomisableMetadataException extends CustomMetadataException
 {
     private static final long serialVersionUID = -6194867814140009959L;
     public static final String MSG_NOT_CUSTOMISABLE = "rm.admin.not-customisable";
-    
+
     public NotCustomisableMetadataException(String aspectName)
     {
         super(I18NUtil.getMessage(MSG_NOT_CUSTOMISABLE, aspectName));

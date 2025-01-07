@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,40 +48,36 @@ public class MethodSecurityTest extends BaseRMTestCase implements RMPermissionMo
     {
         return true;
     }
-    
+
     /**
      * Test node service security access
      */
     public void testNodeService()
     {
-        doTestInTransaction(new FailureTest
-        (
-                "We don't have permission to access this node."
-        )
-        {
+        doTestInTransaction(new FailureTest(
+                "We don't have permission to access this node.") {
             @Override
             public void run()
             {
-                nodeService.getProperties(rmContainer);                
+                nodeService.getProperties(rmContainer);
             }
-            
+
         }, rmUserName);
-        
-        doTestInTransaction(new Test<Void>()
-        {
+
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
                 filePlanPermissionService.setPermission(rmContainer, rmUserName, READ_RECORDS);
                 return null;
             }
-            
+
             @Override
             public void test(Void result) throws Exception
             {
                 nodeService.getProperties(rmContainer);
             }
-            
+
         }, rmUserName);
     }
 }

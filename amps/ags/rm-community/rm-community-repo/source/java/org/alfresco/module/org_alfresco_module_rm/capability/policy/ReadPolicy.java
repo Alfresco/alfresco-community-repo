@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,9 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * Read method security policy.
@@ -41,7 +42,7 @@ public class ReadPolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate(
+    public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,31 +37,30 @@ import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
  */
 public enum CustomReferenceType
 {
-	PARENT_CHILD("parentchild"),
-	BIDIRECTIONAL("bidirectional");
+    PARENT_CHILD("parentchild"), BIDIRECTIONAL("bidirectional");
 
-	private final String printableString;
+    private final String printableString;
 
-	private CustomReferenceType(String printableString)
-	{
-		this.printableString = printableString;
-	}
+    private CustomReferenceType(String printableString)
+    {
+        this.printableString = printableString;
+    }
 
-	@Override
-	public String toString()
-	{
-		return this.printableString;
-	}
+    @Override
+    public String toString()
+    {
+        return this.printableString;
+    }
 
-	public static CustomReferenceType getEnumFromString(String stg)
-	{
-		for (CustomReferenceType type : CustomReferenceType.values())
-		{
-			if (type.printableString.equals(stg))
-			{
-				return type;
-			}
-		}
-		throw new IllegalArgumentException("Unrecognised CustomReferenceType: " + stg);
-	}
+    public static CustomReferenceType getEnumFromString(String stg)
+    {
+        for (CustomReferenceType type : CustomReferenceType.values())
+        {
+            if (type.printableString.equals(stg))
+            {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unrecognised CustomReferenceType: " + stg);
+    }
 }

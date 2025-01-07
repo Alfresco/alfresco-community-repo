@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,13 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import java.io.File;
 import java.io.IOException;
 
-import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQueryParameters;
-import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat;
-import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.repo.web.scripts.content.ContentStreamer;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
@@ -44,9 +37,16 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQueryParameters;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.repo.web.scripts.content.ContentStreamer;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+
 /**
- * Implementation for Java backed webscript to return audit
- * log of RM events, optionally scoped to an RM node.
+ * Implementation for Java backed webscript to return audit log of RM events, optionally scoped to an RM node.
  *
  * @author Gavin Cornwell
  */
@@ -61,13 +61,13 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
 
     /** Content Streamer */
     protected ContentStreamer contentStreamer;
-    
+
     /** Capability service */
     protected CapabilityService capabilityService;
 
     /** File plan service */
     protected FilePlanService filePlanService;
-    
+
     /** Maximum number of entries to be displayed in View Audit Log */
     private int viewLogMaxSize;
 
@@ -78,19 +78,21 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
     {
         this.contentStreamer = contentStreamer;
     }
-    
+
     /**
      * 
-     * @param capabilityService Capability Service
+     * @param capabilityService
+     *            Capability Service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * 
-     * @param filePlanService File Plan Service
+     * @param filePlanService
+     *            File Plan Service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -99,11 +101,12 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
 
     /**
      * 
-     * @param viewLogMaxSize Maximum number of entries to be displayed in View Audit Log 
+     * @param viewLogMaxSize
+     *            Maximum number of entries to be displayed in View Audit Log
      */
     public void setViewLogMaxSize(int viewLogMaxSize)
     {
-        this.viewLogMaxSize = (viewLogMaxSize <= 0 ? DEFAULT_VIEW_LOG_MAX_SIZE: viewLogMaxSize);
+        this.viewLogMaxSize = (viewLogMaxSize <= 0 ? DEFAULT_VIEW_LOG_MAX_SIZE : viewLogMaxSize);
     }
 
     @Override
@@ -116,17 +119,17 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
             RecordsManagementAuditQueryParameters queryParams = parseQueryParameters(req);
             ReportFormat reportFormat = parseReportFormat(req);
 
-            if( !userCanAccessAudit(queryParams) )
+            if (!userCanAccessAudit(queryParams))
             {
                 throw new WebScriptException(Status.STATUS_FORBIDDEN, "Access denied because the user does not have the Access Audit capability");
             }
-            
+
             // limit the number of audit log entries to be returned
             if (queryParams.getMaxEntries() <= 0 || queryParams.getMaxEntries() > viewLogMaxSize)
             {
                 queryParams.setMaxEntries(viewLogMaxSize);
             }
-            
+
             // parse the parameters and get a file containing the audit trail
             auditTrail = this.rmAuditService.getAuditTrailFile(queryParams, reportFormat);
 
@@ -160,8 +163,8 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
                 {
                     logger.debug(
                             "Audit results written to file: \n" +
-                            "   File:      " + auditTrail + "\n" +
-                            "   Parameter: " + parseQueryParameters(req));
+                                    "   File:      " + auditTrail + "\n" +
+                                    "   Parameter: " + parseQueryParameters(req));
                 }
                 else
                 {
@@ -171,13 +174,13 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
         }
     }
 
-    private boolean userCanAccessAudit(RecordsManagementAuditQueryParameters queryParams) 
+    private boolean userCanAccessAudit(RecordsManagementAuditQueryParameters queryParams)
     {
         NodeRef targetNode = queryParams.getNodeRef();
-        if( targetNode == null )
+        if (targetNode == null)
         {
             targetNode = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if(targetNode == null)
+            if (targetNode == null)
             {
                 throw new WebScriptException(Status.STATUS_NOT_FOUND, "The default RM site was not found");
             }

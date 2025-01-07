@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -54,7 +54,8 @@ public class NonElectronicRecordType extends BaseBehaviourBean implements NodeSe
     protected RecordService recordService;
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -65,8 +66,7 @@ public class NonElectronicRecordType extends BaseBehaviourBean implements NodeSe
     @Override
     public void onUpdateNode(final NodeRef nodeRef)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>() {
             @Override
             public Void doWork()
             {
@@ -76,9 +76,9 @@ public class NonElectronicRecordType extends BaseBehaviourBean implements NodeSe
                     NodeRef parentRef = nodeService.getPrimaryParent(child).getParentRef();
                     QName parentType = nodeService.getType(parentRef);
                     boolean isUnfiledRecordContainer = parentType
-                                .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+                            .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
                     boolean isUnfiledRecordFolder = parentType
-                                .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
+                            .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
                     if (isUnfiledRecordContainer || isUnfiledRecordFolder)
                     {
                         if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))

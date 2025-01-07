@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,13 +32,14 @@ import static org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServic
 import java.io.IOException;
 import java.text.MessageFormat;
 
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 
 public class AuditRestApiTest extends BaseRMWebScriptTestCase
 {
@@ -52,11 +53,11 @@ public class AuditRestApiTest extends BaseRMWebScriptTestCase
     public void testAuditAccessCapability() throws IOException
     {
 
-        String recordAuditUrl = MessageFormat.format(GET_NODE_AUDITLOG_URL_FORMAT,record.toString().replace("://", "/"));
+        String recordAuditUrl = MessageFormat.format(GET_NODE_AUDITLOG_URL_FORMAT, record.toString().replace("://", "/"));
 
-        sendRequest(new GetRequest(recordAuditUrl), Status.STATUS_OK, AuthenticationUtil.getAdminUserName() );
+        sendRequest(new GetRequest(recordAuditUrl), Status.STATUS_OK, AuthenticationUtil.getAdminUserName());
 
-        sendRequest(new GetRequest(recordAuditUrl), Status.STATUS_FORBIDDEN, USER_WITHOUT_AUDIT_CAPABILITY );
+        sendRequest(new GetRequest(recordAuditUrl), Status.STATUS_FORBIDDEN, USER_WITHOUT_AUDIT_CAPABILITY);
     }
 
     @Override
@@ -64,8 +65,7 @@ public class AuditRestApiTest extends BaseRMWebScriptTestCase
     {
         super.setupTestData();
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
@@ -76,7 +76,6 @@ public class AuditRestApiTest extends BaseRMWebScriptTestCase
                 createUser(USER_WITHOUT_AUDIT_CAPABILITY);
 
                 record = utils.createRecord(recordFolder, GUID.generate());
-
 
                 return null;
             }
@@ -93,8 +92,7 @@ public class AuditRestApiTest extends BaseRMWebScriptTestCase
 
     protected String getRMSiteId()
     {
-    	return DEFAULT_RM_SITE_ID;
+        return DEFAULT_RM_SITE_ID;
     }
-
 
 }

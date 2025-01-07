@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,9 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
@@ -36,8 +39,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Hides a record within a collaboration site.
@@ -48,7 +49,7 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.1
  */
 public class HideRecordAction extends AuditableActionExecuterAbstractBase
-                              implements RecordsManagementModel
+        implements RecordsManagementModel
 {
 
     /** Logger */
@@ -64,7 +65,8 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     private InplaceRecordService inplaceRecordService;
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -72,7 +74,8 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param inplaceRecordService inplace record service
+     * @param inplaceRecordService
+     *            inplace record service
      */
     public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
     {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -65,9 +65,9 @@ import org.alfresco.util.GUID;
  * @since 2.1
  */
 public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecordDeclaration,
-                                                                     OnRecordDeclaration,
-                                                                     BeforeRecordRejection,
-                                                                     OnRecordRejection
+        OnRecordDeclaration,
+        BeforeRecordRejection,
+        OnRecordRejection
 {
     /**
      * This is a user test
@@ -105,8 +105,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
      */
     public void testGetRecordMetaDataAspects() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -125,9 +124,8 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
              */
             private List<QName> getAspectList()
             {
-                QName[] aspects = new QName[]
-                {
-                    ASPECT_RECORD_META_DATA
+                QName[] aspects = new QName[]{
+                        ASPECT_RECORD_META_DATA
                 };
 
                 return Arrays.asList(aspects);
@@ -140,8 +138,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
      */
     public void testIsRecord() throws Exception
     {
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl()
             {
@@ -159,8 +156,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
      */
     public void testIsDeclared() throws Exception
     {
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl()
             {
@@ -175,8 +171,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     public void testUnfiled() throws Exception
     {
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl()
             {
@@ -191,8 +186,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     public void testExtendedWriters() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -203,8 +197,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             }
         }, dmCollaborator);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -217,8 +210,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             }
         }, dmCollaborator);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -233,8 +225,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -252,16 +243,14 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
     }
 
     /**
-     * @see RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     public void testCreateRecord() throws Exception
     {
         // show that users without WRITE can not create a record from a document
         doTestInTransaction(new FailureTest(
                 "Can not create a record from a document if you do not have WRITE permissions.",
-                AccessDeniedException.class)
-        {
+                AccessDeniedException.class) {
             public void run() throws Exception
             {
                 recordService.createRecord(filePlan, dmDocument);
@@ -269,8 +258,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
         }, dmConsumer);
 
         // create record from document
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             private NodeRef originalLocation;
 
             @Override
@@ -303,7 +291,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
             public void test(Void result)
             {
-                checkPermissions(READ_RECORDS, 
+                checkPermissions(READ_RECORDS,
                         AccessStatus.DENIED, // file plan
                         AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
@@ -313,7 +301,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
 
-                checkPermissions(FILING, 
+                checkPermissions(FILING,
                         AccessStatus.DENIED, // file plan
                         AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
@@ -355,8 +343,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
         // check the consumer's permissions are correct for the newly created
         // document
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -396,8 +383,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
         // show that users without WRITE can not create a record from a document
         doTestInTransaction(new FailureTest(
                 "Can not create a record from a document if you do not have WRITE permissions.",
-                AccessDeniedException.class)
-        {
+                AccessDeniedException.class) {
             public void run() throws Exception
             {
                 recordService.createRecord(filePlan, dmDocument, false);
@@ -405,15 +391,14 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
         }, dmConsumer);
 
         // create record from document
-        final NodeRef originalLocation = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef originalLocation = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
                 NodeRef originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
 
-                //assertFalse(recordService.isRecord(dmDocument));
-                //assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
+                // assertFalse(recordService.isRecord(dmDocument));
+                // assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
 
                 checkPermissions(READ_RECORDS, AccessStatus.DENIED, // file plan
                         AccessStatus.DENIED, // unfiled container
@@ -451,8 +436,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             }
         }, dmCollaborator);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -476,8 +460,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     public void testFileNewContent() throws Exception
     {
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -504,8 +487,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     public void xtestFileUnfiledrecord() throws Exception
     {
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -534,9 +516,8 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     public void testFileDirectlyFromCollab() throws Exception
     {
-        
-        doTestInTransaction(new Test<NodeRef>()
-        {
+
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -570,8 +551,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     private String createUserWithCapabilties(final String... capabiltyNames)
     {
-        return doTestInTransaction(new Test<String>()
-        {
+        return doTestInTransaction(new Test<String>() {
             @Override
             public String run() throws Exception
             {
@@ -602,8 +582,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
                 RMPermissionModel.VIEW_RECORDS,
                 RMPermissionModel.EDIT_DECLARED_RECORD_METADATA);
 
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -615,8 +594,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
         });
 
         // test rmadmin
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -628,8 +606,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
         });
 
         // test normal user
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -644,8 +621,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
         // test undeclared record with edit non-record metadata capability
         // test declared record with edit non-record metadata capability
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -658,8 +634,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
         // test undeclared record with edit record metadata capability
         // test declared record with edit record metadata capability
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -672,8 +647,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
         // test undeclared record with edit declared record metadata capability
         // test declared record with edit declared record metadata capability
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -697,8 +671,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
                 RMPermissionModel.VIEW_RECORDS,
                 RMPermissionModel.EDIT_DECLARED_RECORD_METADATA);
 
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -749,8 +722,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
         boolean failure = false;
         try
         {
-            doTestInTransaction(new VoidTest()
-            {
+            doTestInTransaction(new VoidTest() {
                 @Override
                 public void runImpl() throws Exception
                 {
@@ -774,8 +746,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     private void canEditProperty(final NodeRef nodeRef, final QName property, String user) throws Exception
     {
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             @Override
             public void runImpl() throws Exception
             {
@@ -786,16 +757,15 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     /**
      * RM-4611 - integration test for policies for record declaration
-     * @see RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * 
+     * @see RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     private boolean beforeRecordDeclaration = false;
     private boolean onRecordDeclaration = false;
 
     public void testPolicyNotificationForRecordDeclaration() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
 
             @Override
             public Void run()
@@ -843,6 +813,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     /**
      * RM-5180 - integration test for policies for record rejection
+     * 
      * @see RecordService#rejectRecord(org.alfresco.service.cmr.repository.NodeRef)
      */
     private boolean beforeRecordRejection = false;
@@ -864,8 +835,7 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
 
     public void testPolicyNotificationForRecordRejection() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
 
             @Override
             public Void run()

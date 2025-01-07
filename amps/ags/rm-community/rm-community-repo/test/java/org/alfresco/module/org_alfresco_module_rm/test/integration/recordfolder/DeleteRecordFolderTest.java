@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,9 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
@@ -36,7 +39,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Delete record folder test.
@@ -45,14 +47,13 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
  * @since 2.4
  *
  */
-public class DeleteRecordFolderTest extends BaseRMTestCase 
+public class DeleteRecordFolderTest extends BaseRMTestCase
 {
     // delete a destroyed record folder
     public void testDeleteDestroyedRecordFolder() throws Exception
     {
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -66,7 +67,7 @@ public class DeleteRecordFolderTest extends BaseRMTestCase
 
                 // cutoff folder
                 rmActionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
-                
+
                 // destroy folder
                 rmActionService.executeRecordsManagementAction(testFolder, DestroyAction.NAME);
 
@@ -82,8 +83,7 @@ public class DeleteRecordFolderTest extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {

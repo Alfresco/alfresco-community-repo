@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,8 +42,9 @@ public interface TransferService
     /**
      * Indicates whether the given node is a transfer (container) or not.
      *
-     * @param nodeRef   node reference
-     * @return boolean  true if transfer, false otherwise
+     * @param nodeRef
+     *            node reference
+     * @return boolean true if transfer, false otherwise
      *
      * @since 2.0
      */
@@ -52,8 +53,10 @@ public interface TransferService
     /**
      * Create the transfer node and link the disposition lifecycle node beneath it
      *
-     * @param nodeRef       node reference to transfer
-     * @param isAccession   Indicates whether this transfer is an accession or not
+     * @param nodeRef
+     *            node reference to transfer
+     * @param isAccession
+     *            Indicates whether this transfer is an accession or not
      * @return Returns the transfer object node reference
      *
      * @since 2.2
@@ -63,7 +66,8 @@ public interface TransferService
     /**
      * Completes the transfer for the given node.
      *
-     * @param nodeRef       node reference to complete the transfer
+     * @param nodeRef
+     *            node reference to complete the transfer
      *
      * @since 2.2
      */

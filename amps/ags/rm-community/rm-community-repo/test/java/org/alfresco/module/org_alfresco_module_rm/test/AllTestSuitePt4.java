@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,37 +42,36 @@ import org.junit.runner.RunWith;
 @SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
 @ClassnameFilters({
 
-    // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*DispositionServiceImplTest",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*FilePlanPermissionServiceImplTest",
+        // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*DispositionServiceImplTest",
+        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*FilePlanPermissionServiceImplTest",
 
-    // 2 tests from service package are here, they seem to require FileReportActionTest being ran beforehand
-    // and it would take too much time to run them in 1st test suite
+        // 2 tests from service package are here, they seem to require FileReportActionTest being ran beforehand
+        // and it would take too much time to run them in 1st test suite
 
-    // Exclude all UnitTests
-    "!.*UnitTest",
+        // Exclude all UnitTests
+        "!.*UnitTest",
 
-    // Put the test classes you want to exclude here
-    "!.*DataLoadSystemTest",
-    "!.*RM2072Test",
-    "!.*RM2190Test",
-    "!.*RM981SystemTest",
-    "!.*RM3993Test",
-    "!.*RM4163Test",
-    "!.*RecordsManagementEventServiceImplTest",
-    "!.*RmRestApiTest",
-    "!.*NotificationServiceHelperSystemTest",
-    "!.*RetryingTransactionHelperBaseTest",
-    "!.*RMCaveatConfigServiceImplTest",
-    // This test is running successfully locally but not on bamboo (if executed as a single test).
-    // The problem can be reproduced if the whole test suite is run locally as well.
-    // Tests should not be dependant on other test classes and should run in any order without any problems.
-    "!.*EmailMapScriptTest"
+        // Put the test classes you want to exclude here
+        "!.*DataLoadSystemTest",
+        "!.*RM2072Test",
+        "!.*RM2190Test",
+        "!.*RM981SystemTest",
+        "!.*RM3993Test",
+        "!.*RM4163Test",
+        "!.*RecordsManagementEventServiceImplTest",
+        "!.*RmRestApiTest",
+        "!.*NotificationServiceHelperSystemTest",
+        "!.*RetryingTransactionHelperBaseTest",
+        "!.*RMCaveatConfigServiceImplTest",
+        // This test is running successfully locally but not on bamboo (if executed as a single test).
+        // The problem can be reproduced if the whole test suite is run locally as well.
+        // Tests should not be dependant on other test classes and should run in any order without any problems.
+        "!.*EmailMapScriptTest"
 })
 public class AllTestSuitePt4
-{
-}
+{}

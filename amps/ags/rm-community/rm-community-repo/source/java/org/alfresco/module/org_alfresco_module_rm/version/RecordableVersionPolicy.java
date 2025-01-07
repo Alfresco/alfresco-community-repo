@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,7 +33,5 @@ package org.alfresco.module.org_alfresco_module_rm.version;
  */
 public enum RecordableVersionPolicy
 {
-    NONE,
-    MAJOR_ONLY,
-    ALL
+    NONE, MAJOR_ONLY, ALL
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -53,8 +53,7 @@ public class ViewRecordTest extends BaseRMTestCase
      */
     public void testReadIsFiledPropertyWithoutReadPermissionOnParentFolder() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             /** test data */
             String roleName = GUID.generate();
             String user = GUID.generate();
@@ -65,7 +64,7 @@ public class ViewRecordTest extends BaseRMTestCase
 
             public void given()
             {
-             // create role
+                // create role
                 Set<Capability> capabilities = new HashSet<>(2);
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
@@ -88,9 +87,8 @@ public class ViewRecordTest extends BaseRMTestCase
                 permissionService.setInheritParentPermissions(recordFolder, false);
                 filePlanPermissionService.setPermission(record, user, RMPermissionModel.READ_RECORDS);
 
-                //check if the user can read the isFiled property
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                // check if the user can read the isFiled property
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         recordIsFiled = recordService.isFiled(record);
@@ -102,7 +100,7 @@ public class ViewRecordTest extends BaseRMTestCase
 
             public void then()
             {
-                //check if the property is evaluated correctly
+                // check if the property is evaluated correctly
                 assertTrue(recordIsFiled);
             }
 

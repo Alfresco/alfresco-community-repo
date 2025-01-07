@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,6 +39,11 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
@@ -69,10 +74,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 /**
  * Extend JSON conversion component to include RM specifics.
@@ -80,9 +81,9 @@ import org.json.simple.JSONObject;
  * @author Roy Wetherall
  */
 @Slf4j
-public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent
-                                     implements NodeServicePolicies.OnDeleteNodePolicy,
-                                                NodeServicePolicies.OnCreateNodePolicy
+public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent
+        implements NodeServicePolicies.OnDeleteNodePolicy,
+        NodeServicePolicies.OnCreateNodePolicy
 {
     /** JSON values */
     private static final String IS_RM_NODE = "isRmNode";
@@ -141,7 +142,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String RM_SITE_EXISTS = "rmSiteExists";
 
     /**
-     * @param enabled   true if enabled, false otherwise
+     * @param enabled
+     *            true if enabled, false otherwise
      */
     public void setRecordContributorsGroupEnabled(boolean enabled)
     {
@@ -149,7 +151,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param recordContributorsGroupName   record contributors group name
+     * @param recordContributorsGroupName
+     *            record contributors group name
      */
     public void setRecordContributorsGroupName(String recordContributorsGroupName)
     {
@@ -157,7 +160,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -165,7 +169,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -173,7 +178,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param filePlanRoleService file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -181,7 +187,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param capabilityService capability service
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -205,7 +212,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -213,7 +221,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param siteService site service
+     * @param siteService
+     *            site service
      */
     public void setSiteService(SiteService siteService)
     {
@@ -221,7 +230,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param indicator registered indicator
+     * @param indicator
+     *            registered indicator
      */
     public void registerIndicator(BaseEvaluator indicator)
     {
@@ -229,7 +239,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param action registered action
+     * @param action
+     *            registered action
      */
     public void registerAction(BaseEvaluator action)
     {
@@ -237,7 +248,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param policyComponent policy component
+     * @param policyComponent
+     *            policy component
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -257,7 +269,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * Sets the json conversion component cache
      *
-     * @param jsonConversionComponentCache The json conversion component cache
+     * @param jsonConversionComponentCache
+     *            The json conversion component cache
      */
     public void setJsonConversionComponentCache(SimpleCache<String, Object> jsonConversionComponentCache)
     {
@@ -265,7 +278,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @param dispositionService the disposition service
+     * @param dispositionService
+     *            the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -276,7 +290,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
      *
      * @param freezeService
      */
-    public void setFreezeService(FreezeService freezeService) { this.freezeService = freezeService; }
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
+    }
 
     /**
      * The initialise method
@@ -295,8 +312,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @see org.alfresco.repo.jscript.app.JSONConversionComponent#setRootValues(org.alfresco.service.cmr.model.FileInfo,
-     *      org.json.simple.JSONObject, boolean)
+     * @see org.alfresco.repo.jscript.app.JSONConversionComponent#setRootValues(org.alfresco.service.cmr.model.FileInfo, org.json.simple.JSONObject, boolean)
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -350,7 +366,8 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * Checks for the existence of the RM site
      *
-     * @param rootJSONObject    the root JSON object
+     * @param rootJSONObject
+     *            the root JSON object
      */
     @SuppressWarnings("unchecked")
     private void checkRmSiteExistence(JSONObject rootJSONObject)
@@ -378,8 +395,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * Helper method to add information about node
      *
-     * @param nodeInfo          node information
-     * @param rootJSONObject    root JSON object
+     * @param nodeInfo
+     *            node information
+     * @param rootJSONObject
+     *            root JSON object
      */
     @SuppressWarnings("unchecked")
     private void addInfo(final FileInfo nodeInfo, JSONObject rootJSONObject)
@@ -387,8 +406,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         String itemType = (String) rootJSONObject.get("type");
         final QName itemTypeQName = QName.createQName(itemType, namespaceService);
 
-        NodeRef originatingLocation = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
+        NodeRef originatingLocation = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>() {
             public NodeRef doWork()
             {
                 NodeRef originatingLocation = null;
@@ -442,13 +460,13 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * Helper method to get the display path.
      *
-     * @param nodeRef   node reference
-     * @return String   display path
+     * @param nodeRef
+     *            node reference
+     * @return String display path
      */
     private String getDisplayPath(final NodeRef nodeRef)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<String>()
-        {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<String>() {
             public String doWork() throws Exception
             {
                 return PathUtil.getDisplayPath(nodeService.getPath(nodeRef), true);
@@ -459,14 +477,16 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * Helper method to set the RM node values
      *
-     * @param nodeRef               node reference
-     * @param useShortQName         indicates whether the short QName are used or not
-     * @return {@link JSONObject}   JSON object containing values
+     * @param nodeRef
+     *            node reference
+     * @param useShortQName
+     *            indicates whether the short QName are used or not
+     * @return {@link JSONObject} JSON object containing values
      */
     @SuppressWarnings("unchecked")
     private JSONObject setRmNodeValues(final NodeRef nodeRef, final boolean useShortQName)
     {
-    	JSONObject rmNodeValues = new JSONObject();
+        JSONObject rmNodeValues = new JSONObject();
 
         // UI convenience type
         rmNodeValues.put("uiType", getUIType(nodeRef));
@@ -482,8 +502,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             rmNodeValues.put("primaryParentNodeRef", assoc.getParentRef().toString());
         }
 
-        Map<String, Object> values = AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, Object>>()
-        {
+        Map<String, Object> values = AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, Object>>() {
             public Map<String, Object> doWork() throws Exception
             {
                 Map<String, Object> result = new HashMap<>();
@@ -507,7 +526,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
                 return result;
             }
-         });
+        });
 
         rmNodeValues.putAll(values);
 
@@ -518,7 +537,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         setActions(rmNodeValues, nodeRef);
 
         AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            //Add details of the next incomplete event in the disposition schedule
+            // Add details of the next incomplete event in the disposition schedule
             DispositionAction nextDispositionAction = dispositionService.getNextDispositionAction(nodeRef);
             if (nextDispositionAction != null)
             {
@@ -529,9 +548,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                         DispositionActionDefinition dispositionActionDefinition = nextDispositionAction.getDispositionActionDefinition();
                         HashMap properties = (HashMap) rmNodeValues.get("properties");
                         properties.put("incompleteDispositionEvent", details.getEventName());
-                        if(dispositionActionDefinition == null)
+                        if (dispositionActionDefinition == null)
                         {
-                            log.debug("Disposition action definition for disposition action "+ nextDispositionAction.getName() +" has been removed or never exist");
+                            log.debug("Disposition action definition for disposition action " + nextDispositionAction.getName() + " has been removed or never exist");
                         }
                         else
                         {
@@ -621,66 +640,66 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         {
             switch (kind)
             {
-                case FILE_PLAN:
+            case FILE_PLAN:
+            {
+                result = "fileplan";
+                break;
+            }
+            case RECORD_CATEGORY:
+            {
+                result = "record-category";
+                break;
+            }
+            case RECORD_FOLDER:
+            {
+                if (recordService.isMetadataStub(nodeRef))
                 {
-                    result = "fileplan";
-                    break;
+                    result = "metadata-stub-folder";
                 }
-                case RECORD_CATEGORY:
+                else
                 {
-                    result = "record-category";
-                    break;
+                    result = "record-folder";
                 }
-                case RECORD_FOLDER:
+                break;
+            }
+            case RECORD:
+            {
+                if (recordService.isMetadataStub(nodeRef))
                 {
-                    if (recordService.isMetadataStub(nodeRef))
+                    result = "metadata-stub";
+                }
+                else
+                {
+                    if (recordService.isDeclared(nodeRef))
                     {
-                        result = "metadata-stub-folder";
+                        result = "record";
                     }
                     else
                     {
-                        result = "record-folder";
+                        result = "undeclared-record";
                     }
-                    break;
                 }
-                case RECORD:
-                {
-                    if (recordService.isMetadataStub(nodeRef))
-                    {
-                        result = "metadata-stub";
-                    }
-                    else
-                    {
-                        if (recordService.isDeclared(nodeRef))
-                        {
-                            result = "record";
-                        }
-                        else
-                        {
-                            result = "undeclared-record";
-                        }
-                    }
-                    break;
-                }
-                case HOLD:
-                {
-                    result = "hold";
-                    break;
-                }
-                case TRANSFER:
-                {
-                    result = "transfer-container";
-                    break;
-                }
-                case UNFILED_RECORD_FOLDER:
-                {
-                    result = "unfiled-record-folder";
-                    break;
-                }
-                default:
-                {
-                    break;
-                }
+                break;
+            }
+            case HOLD:
+            {
+                result = "hold";
+                break;
+            }
+            case TRANSFER:
+            {
+                result = "transfer-container";
+                break;
+            }
+            case UNFILED_RECORD_FOLDER:
+            {
+                result = "unfiled-record-folder";
+                break;
+            }
+            default:
+            {
+                break;
+            }
             }
         }
         else if (freezeService.isFrozen(nodeRef))

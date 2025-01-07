@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,8 +46,10 @@ public class Hold
     /**
      * Constructor
      *
-     * @param name The name of the hold
-     * @param nodeRef The {@link NodeRef} of the hold
+     * @param name
+     *            The name of the hold
+     * @param nodeRef
+     *            The {@link NodeRef} of the hold
      */
     public Hold(String name, NodeRef nodeRef)
     {

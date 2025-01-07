@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,12 +37,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class VitalRecordEvaluator extends BaseEvaluator
 {
     private VitalRecordService vitalRecordService;
-    
+
     public void setVitalRecordService(VitalRecordService vitalRecordService)
     {
         this.vitalRecordService = vitalRecordService;
     }
-    
+
     @Override
     protected boolean evaluateImpl(NodeRef nodeRef)
     {

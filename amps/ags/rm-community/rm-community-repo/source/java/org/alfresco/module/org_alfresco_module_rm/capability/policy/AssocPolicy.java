@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,18 +28,19 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.aopalliance.intercept.MethodInvocation;
 
 public class AssocPolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate(
+    public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)
@@ -68,8 +69,8 @@ public class AssocPolicy extends AbstractBasePolicy
                 final boolean isFilePlanComponent = nodeService.hasAspect(target, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
                 final boolean hasViewRecordCapability = getCapabilityService().hasCapability(target, ViewRecordsCapability.NAME);
                 // allow association between a source non rm node and an rm node if the user
-                // has ViewRecordsCapability on the RM target node and  write properties on the dm node
-                if ( isFilePlanComponent &&
+                // has ViewRecordsCapability on the RM target node and write properties on the dm node
+                if (isFilePlanComponent &&
                         hasViewRecordCapability &&
                         permissionService.hasPermission(source, PermissionService.WRITE_PROPERTIES).equals(AccessStatus.ALLOWED))
                 {
@@ -88,4 +89,3 @@ public class AssocPolicy extends AbstractBasePolicy
     }
 
 }
-

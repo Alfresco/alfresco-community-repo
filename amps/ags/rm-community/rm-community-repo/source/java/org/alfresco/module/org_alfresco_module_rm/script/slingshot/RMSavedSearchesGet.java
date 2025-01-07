@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,14 +32,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
-import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
-import org.alfresco.service.cmr.site.SiteService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
+import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
+import org.alfresco.service.cmr.site.SiteService;
 
 /**
  * RM saved searches GET web script
@@ -55,7 +56,8 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
     protected SiteService siteService;
 
     /**
-     * @param recordsManagementSearchService    records management search service
+     * @param recordsManagementSearchService
+     *            records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
     {
@@ -63,16 +65,15 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
     }
 
     /**
-     * @param siteService   site service
+     * @param siteService
+     *            site service
      */
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -93,7 +94,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
 
         // Get the saved search details
         List<SavedSearchDetails> details = recordsManagementSearchService.getSavedSearches(siteId);
-        List<Item> items  = new ArrayList<>();
+        List<Item> items = new ArrayList<>();
         for (SavedSearchDetails savedSearchDetails : details)
         {
             String name = savedSearchDetails.getName();

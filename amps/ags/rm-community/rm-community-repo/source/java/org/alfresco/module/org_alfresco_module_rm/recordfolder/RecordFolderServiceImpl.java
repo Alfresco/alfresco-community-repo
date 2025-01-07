@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -49,9 +53,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Record Folder Service Implementation
@@ -59,9 +60,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RecordFolderServiceImpl extends    ServiceBaseImpl
-                                     implements RecordFolderService,
-                                                RecordsManagementModel
+public class RecordFolderServiceImpl extends ServiceBaseImpl
+        implements RecordFolderService,
+        RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordFolderServiceImpl.class);
@@ -83,7 +84,8 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     private FilePlanService filePlanService;
 
     /**
-     * @param dispositionService    disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -91,7 +93,8 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param recordService     record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -99,7 +102,8 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -167,8 +171,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
 
-        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        {
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
             public Boolean doWork() throws Exception
             {
                 return ((Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED));
@@ -208,14 +211,14 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         // Check that the parent is a container
         QName parentType = nodeService.getType(rmContainer);
         if (!TYPE_RECORD_CATEGORY.equals(parentType) &&
-            !dictionaryService.isSubClass(parentType, TYPE_RECORD_CATEGORY))
+                !dictionaryService.isSubClass(parentType, TYPE_RECORD_CATEGORY))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARENT_RECORD_FOLDER_TYPE, parentType.toString()));
         }
 
         // Check that the the provided type is a sub-type of rm:recordFolder
         if (!TYPE_RECORD_FOLDER.equals(type) &&
-            !dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER))
+                !dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_TYPE, type.toString()));
         }

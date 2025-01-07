@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,38 +44,40 @@ public class IsPropertySetCondition extends AbstractCapabilityCondition
     /** property name (eg: rma:location) */
     private String propertyName;
     private QName propertyQName;
-    
+
     /** namespace service */
     private NamespaceService namespaceService;
-    
+
     /**
-     * @param propertyName  property name (eg: rma:location)
+     * @param propertyName
+     *            property name (eg: rma:location)
      */
     public void setPropertyName(String propertyName)
     {
         this.propertyName = propertyName;
     }
-    
+
     /**
-     * @param namespaceService  namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
-     * @return QName    property qname
+     * @return QName property qname
      */
     protected QName getPropertyQName()
     {
-    	if (propertyQName == null)
-    	{
-    		propertyQName = QName.createQName(propertyName, namespaceService);
-    	}
-    	return propertyQName;
+        if (propertyQName == null)
+        {
+            propertyQName = QName.createQName(propertyName, namespaceService);
+        }
+        return propertyQName;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -85,12 +87,12 @@ public class IsPropertySetCondition extends AbstractCapabilityCondition
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         boolean result = false;
-        
+
         if (nodeService.getProperty(nodeRef, getPropertyQName()) != null)
         {
             result = true;
         }
-                
+
         return result;
     }
 

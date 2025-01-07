@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -56,9 +56,8 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
         else if (recordService.isRecord(nodeRef))
         {
             final List<ChildAssociationRef> assocs = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            
-            result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-            {
+
+            result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>() {
                 @Override
                 public Boolean doWork()
                 {
@@ -73,7 +72,7 @@ public class ClosedCapabilityCondition extends AbstractCapabilityCondition
                     return false;
                 }
             });
-          
+
         }
         return result;
     }

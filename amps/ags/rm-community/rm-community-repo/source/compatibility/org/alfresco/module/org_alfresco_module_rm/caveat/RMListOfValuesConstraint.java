@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,18 +33,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * RM Constraint implementation that ensures the value is one of a constrained
- * <i>list of values</i>.  By default, this constraint is case-sensitive.
+ * RM Constraint implementation that ensures the value is one of a constrained <i>list of values</i>. By default, this constraint is case-sensitive.
  *
  * @see #setAllowedValues(List)
  * @see #setCaseSensitive(boolean)
@@ -63,7 +63,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     {
         // closed marking - all values must match
         AND,
-        // open marking   - at least one value must match
+        // open marking - at least one value must match
         OR
     }
 
@@ -75,17 +75,16 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         RMListOfValuesConstraint.caveatConfigService = caveatConfigService;
     }
 
-
     @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append("RMListOfValuesConstraint")
-          .append("[allowedValues=").append(getAllowedValues())
-          .append(", caseSensitive=").append(isCaseSensitive())
-          .append(", sorted=").append(isSorted())
-          .append(", matchLogic=").append(getMatchLogic())
-          .append("]");
+                .append("[allowedValues=").append(getAllowedValues())
+                .append(", caseSensitive=").append(isCaseSensitive())
+                .append(", sorted=").append(isSorted())
+                .append(", matchLogic=").append(getMatchLogic())
+                .append("]");
         return sb.toString();
     }
 
@@ -98,8 +97,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     }
 
     /**
-     * Get the allowed values.  Note that these are <tt>String</tt> instances, but may
-     * represent non-<tt>String</tt> values.  It is up to the caller to distinguish.
+     * Get the allowed values. Note that these are <tt>String</tt> instances, but may represent non-<tt>String</tt> values. It is up to the caller to distinguish.
      *
      * @return Returns the values allowed
      */
@@ -107,7 +105,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     public List<String> getRawAllowedValues()
     {
         String runAsUser = AuthenticationUtil.getRunAsUser();
-        if ((runAsUser != null) && (! runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
+        if ((runAsUser != null) && (!runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
         {
             // get allowed values for current user
             List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getShortName());
@@ -148,7 +146,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     private List<String> getAllowedValuesUpper()
     {
         String runAsUser = AuthenticationUtil.getRunAsUser();
-        if ((runAsUser != null) && (! runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
+        if ((runAsUser != null) && (!runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
         {
             // get allowed values for current user
             List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getType());
@@ -169,12 +167,14 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
             return this.allowedValuesUpper;
         }
     }
+
     /**
      * Set the values that are allowed by the constraint.
      *
-     * @param allowedValues a list of allowed values
+     * @param allowedValues
+     *            a list of allowed values
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void setAllowedValues(List allowedValues)
     {

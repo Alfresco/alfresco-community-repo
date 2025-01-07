@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,7 +33,7 @@ package org.alfresco.module.org_alfresco_module_rm;
 public abstract class CustomMetadataException extends Exception
 {
     private static final long serialVersionUID = -6676112294794381360L;
-    
+
     public CustomMetadataException(String msg)
     {
         super(msg);

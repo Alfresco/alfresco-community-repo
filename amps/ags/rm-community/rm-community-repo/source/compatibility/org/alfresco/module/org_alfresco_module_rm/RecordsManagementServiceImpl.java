@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -53,10 +53,10 @@ import org.alfresco.service.namespace.QName;
  * @deprecated as of 2.2
  */
 public class RecordsManagementServiceImpl extends ServiceBaseImpl
-                                          implements RecordsManagementService,
-                                                     RecordsManagementModel 
+        implements RecordsManagementService,
+        RecordsManagementModel
 {
-   /** Store that the RM roots are contained within */
+    /** Store that the RM roots are contained within */
     @SuppressWarnings("unused")
     @Deprecated
     private StoreRef defaultStoreRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
@@ -67,7 +67,8 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     /**
      * Set the service registry service
      *
-     * @param serviceRegistry   service registry
+     * @param serviceRegistry
+     *            service registry
      */
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
     {
@@ -78,7 +79,9 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
 
     /**
      * Sets the default RM store reference
-     * @param defaultStoreRef    store reference
+     * 
+     * @param defaultStoreRef
+     *            store reference
      */
     @Deprecated
     public void setDefaultStoreRef(StoreRef defaultStoreRef)
@@ -91,7 +94,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
      */
     private FilePlanService getFilePlanService()
     {
-    	return serviceRegistry.getFilePlanService();
+        return serviceRegistry.getFilePlanService();
     }
 
     /**
@@ -425,7 +428,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
      * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String, Map)}
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef parent, String name,  Map<QName, Serializable> properties)
+    public NodeRef createRecordFolder(NodeRef parent, String name, Map<QName, Serializable> properties)
     {
         return getRecordFolderService().createRecordFolder(parent, name, properties);
     }

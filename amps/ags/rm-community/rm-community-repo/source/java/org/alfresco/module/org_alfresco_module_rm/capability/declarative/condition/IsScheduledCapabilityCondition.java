@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,7 +42,8 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
     private String dispositionAction;
 
     /**
-     * @param dispositionAction     disposition action
+     * @param dispositionAction
+     *            disposition action
      */
     public void setDispositionAction(String dispositionAction)
     {
@@ -63,7 +64,7 @@ public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
             // Get the disposition actions name
             String actionName = nextDispositionAction.getName();
             if (actionName.equals(dispositionAction) &&
-                dispositionService.isNextDispositionActionEligible(nodeRef))
+                    dispositionService.isNextDispositionActionEligible(nodeRef))
             {
                 result = true;
             }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,25 +44,24 @@ import junit.framework.TestCase;
 /**
  * See https://issues.alfresco.com/jira/browse/RM-981.
  * 
- * Instance of the repository needs to be running on localhost:8080 before executing this
- * system test.
+ * Instance of the repository needs to be running on localhost:8080 before executing this system test.
  * 
  * @author Roy Wetherall
  */
 public class RM981SystemTest extends TestCase
 {
-    public void testRM981() throws Exception 
+    public void testRM981() throws Exception
     {
         ExecutorService pool = Executors.newFixedThreadPool(2);
         SecureRandom rnd = new SecureRandom();
         List<String> data = new ArrayList<>();
-        for (int i = 0; i < 100; i++) 
+        for (int i = 0; i < 100; i++)
         {
             String definitionname = "test_" + i + "_" + rnd.nextInt(Integer.MAX_VALUE);
             data.add(definitionname);
         }
 
-        for (String definitionname : data) 
+        for (String definitionname : data)
         {
             pool.submit(new SendRequest(definitionname));
         }
@@ -70,21 +69,20 @@ public class RM981SystemTest extends TestCase
         pool.awaitTermination(60L, TimeUnit.SECONDS);
     }
 
-
-    class SendRequest implements Runnable 
+    class SendRequest implements Runnable
     {
 
         private String definitionname;
-    
-        public SendRequest(String definitionname) 
+
+        public SendRequest(String definitionname)
         {
             this.definitionname = definitionname;
         }
-    
+
         @Override
-        public void run() 
+        public void run()
         {
-            try 
+            try
             {
                 URL url = new URL("http://localhost:8080/alfresco/service/api/rma/admin/customreferencedefinitions");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -94,14 +92,14 @@ public class RM981SystemTest extends TestCase
                 conn.setRequestProperty("Authorization", "Basic YWRtaW46YWRtaW4=");
                 String body = "{\"referenceType\":\"bidirectional\",\"label\":\"" + definitionname + "\"}";
                 OutputStream out = conn.getOutputStream();
-    
+
                 out.write(body.getBytes("UTF-8"));
                 out.flush();
                 out.close();
-    
+
                 int status = conn.getResponseCode();
-    
-                if (status != 200) 
+
+                if (status != 200)
                 {
                     System.out.println("Reproduced");
                     System.out.println("---------------------------------");
@@ -114,11 +112,11 @@ public class RM981SystemTest extends TestCase
                     reader.close();
                     System.exit(0);
                 }
-            } 
-            catch (Exception ex) 
+            }
+            catch (Exception ex)
             {
                 ex.printStackTrace();
-    
+
             }
         }
     }

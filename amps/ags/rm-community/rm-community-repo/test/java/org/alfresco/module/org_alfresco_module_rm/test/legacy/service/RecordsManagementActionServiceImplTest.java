@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -57,8 +57,8 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
-                                                    implements BeforeRMActionExecution,
-                                                               OnRMActionExecution
+        implements BeforeRMActionExecution,
+        OnRMActionExecution
 {
     private RetryingTransactionHelper txnHelper;
 
@@ -79,8 +79,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
         // Set the current security context as system
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
-        RetryingTransactionCallback<Void> setUpCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> setUpCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Create a node we can use for the tests
@@ -120,8 +119,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
 
     public void testGetActions()
     {
-        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 getActionsImpl();
@@ -170,8 +168,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
 
     public void testExecution()
     {
-        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 executionImpl();
@@ -241,8 +238,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
 
     public void testBulkExecution()
     {
-        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 bulkExecutionImpl();

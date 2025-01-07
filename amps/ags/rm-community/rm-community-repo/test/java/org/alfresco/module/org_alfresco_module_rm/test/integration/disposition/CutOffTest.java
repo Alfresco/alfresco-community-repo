@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,6 +31,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
@@ -38,7 +40,6 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Cut off integration tests.
@@ -49,19 +50,17 @@ import org.springframework.extensions.webscripts.GUID;
 public class CutOffTest extends BaseRMTestCase
 {
     /**
-     * given we have a record folder that is eligible for cutoff ensure that the
-     * record can be cut off successfully.
+     * given we have a record folder that is eligible for cutoff ensure that the record can be cut off successfully.
      */
     public void testCutOffRecordFolder()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef recordFolder = null;
 
             @Override
             public void given()
             {
-                //create record folder
+                // create record folder
                 recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
 
                 // TODO add some records
@@ -90,21 +89,19 @@ public class CutOffTest extends BaseRMTestCase
     }
 
     /**
-     * given that we have a closed record folder eligible for cut off ensure that it can
-     * be cut off.
+     * given that we have a closed record folder eligible for cut off ensure that it can be cut off.
      * <p>
      * relates to https://issues.alfresco.com/jira/browse/RM-1340
      */
     public void testCutOffClosedRecordFolder()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef recordFolder = null;
 
             @Override
             public void given()
             {
-                //create record folder
+                // create record folder
                 recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
 
                 // TODO add some records
@@ -135,19 +132,17 @@ public class CutOffTest extends BaseRMTestCase
     }
 
     /**
-     * given we have a record folder that is eligible for cutoff ensure that the
-     * record can be cut off successfully.
+     * given we have a record folder that is eligible for cutoff ensure that the record can be cut off successfully.
      */
     public void testCutOffUncutOffRecordFolder()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef recordFolder = null;
 
             @Override
             public void given()
             {
-                //create record folder
+                // create record folder
                 recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
                 nodeService.addAspect(recordFolder, ASPECT_UNCUT_OFF, null);
 
@@ -177,19 +172,17 @@ public class CutOffTest extends BaseRMTestCase
     }
 
     /**
-     * given we have a record folder that is eligible for cutoff ensure that the
-     * record can be cut off successfully.
+     * given we have a record folder that is eligible for cutoff ensure that the record can be cut off successfully.
      */
     public void testCutOffUncutOffRecordFolderFromSchedule()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef recordFolder = null;
 
             @Override
             public void given()
             {
-                //create record folder
+                // create record folder
                 recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
                 nodeService.addAspect(recordFolder, ASPECT_UNCUT_OFF, null);
 
@@ -211,7 +204,8 @@ public class CutOffTest extends BaseRMTestCase
                 {
                     rmActionService.executeRecordsManagementAction(recordFolder, CutOffAction.NAME, params);
                 }
-                catch(AlfrescoRuntimeException e) { } // expected
+                catch (AlfrescoRuntimeException e)
+                {} // expected
             }
 
             @Override

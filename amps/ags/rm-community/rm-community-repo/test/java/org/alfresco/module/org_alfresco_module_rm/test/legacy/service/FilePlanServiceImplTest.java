@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -59,8 +59,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
      */
     public void testIsFilePlan()
     {
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             public void runImpl() throws Exception
             {
                 assertTrue(filePlanService.isFilePlan(filePlan));
@@ -75,8 +74,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
      */
     public void testGetFilePlans()
     {
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             public void runImpl() throws Exception
             {
                 assertEquals(filePlan, filePlanService.getFilePlan(filePlan));
@@ -92,8 +90,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
      */
     public void testGetFilePlanBySiteId()
     {
-        doTestInTransaction(new VoidTest()
-        {
+        doTestInTransaction(new VoidTest() {
             public void runImpl() throws Exception
             {
                 assertEquals(filePlan, filePlanService.getFilePlanBySiteId(siteId));
@@ -112,8 +109,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
      */
     public void testIsFilePlanComponent() throws Exception
     {
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -131,8 +127,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
      */
     public void testGetFilePlanComponentKind() throws Exception
     {
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -157,8 +152,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
      */
     public void testIsRecordCategory() throws Exception
     {
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -178,8 +172,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
     public void testCreateFilePlan() throws Exception
     {
         // Create default type of root
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -196,8 +189,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         });
 
         // Create specific type of root
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -214,22 +206,20 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: creating root in existing hierarchy
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
-            	filePlanService.createFilePlan(rmContainer, GUID.generate());
+                filePlanService.createFilePlan(rmContainer, GUID.generate());
             }
         });
 
         // Failure: type no extended from root container
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
-            	filePlanService.createFilePlan(folder, GUID.generate(), TYPE_FOLDER);
+                filePlanService.createFilePlan(folder, GUID.generate(), TYPE_FOLDER);
             }
         });
     }
@@ -237,9 +227,12 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
     /**
      * A basic test of a records management container
      *
-     * @param nodeRef   node reference
-     * @param name      name of the container
-     * @param type      the type of container
+     * @param nodeRef
+     *            node reference
+     * @param name
+     *            name of the container
+     * @param type
+     *            the type of container
      */
     private void basicRMContainerCheck(NodeRef nodeRef, String name, QName type)
     {
@@ -256,8 +249,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
     public void testCreateRecordCategory() throws Exception
     {
         // Create container (in root)
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -274,8 +266,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         });
 
         // Create container (in container)
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -293,40 +284,38 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
 
         // TODO need a custom type of container!
         // Create container of a given type
-//        doTestInTransaction(new Test<NodeRef>()
-//        {
-//            @Override
-//            public NodeRef run()
-//            {
-//                String id = setString("id", GUID.generate());
-//                return rmService.createRecordCategory(filePlan, id, TYPE_RECORD_SERIES);
-//            }
-//
-//            @Override
-//            public void test(NodeRef result)
-//            {
-//                assertNotNull("Unable to create records management container", result);
-//                basicRMContainerCheck(result, getString("id"), TYPE_RECORD_SERIES);
-//            }
-//        });
+        // doTestInTransaction(new Test<NodeRef>()
+        // {
+        // @Override
+        // public NodeRef run()
+        // {
+        // String id = setString("id", GUID.generate());
+        // return rmService.createRecordCategory(filePlan, id, TYPE_RECORD_SERIES);
+        // }
+        //
+        // @Override
+        // public void test(NodeRef result)
+        // {
+        // assertNotNull("Unable to create records management container", result);
+        // basicRMContainerCheck(result, getString("id"), TYPE_RECORD_SERIES);
+        // }
+        // });
 
         // Fail Test: parent is not a container
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
-            	filePlanService.createRecordCategory(folder, GUID.generate());
+                filePlanService.createRecordCategory(folder, GUID.generate());
             }
         });
 
         // Fail Test: type is not a sub-type of rm:recordsManagementContainer
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
-            	filePlanService.createRecordCategory(filePlan, GUID.generate(), TYPE_FOLDER);
+                filePlanService.createRecordCategory(filePlan, GUID.generate(), TYPE_FOLDER);
             }
         });
     }
@@ -338,8 +327,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
     public void testGetAllContained() throws Exception
     {
         // Get all contained test
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -383,12 +371,11 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: call on record folder
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
-            	filePlanService.getAllContained(rmFolder);
+                filePlanService.getAllContained(rmFolder);
             }
         });
     }
@@ -400,8 +387,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
     public void testGetContainedRecordCategories() throws Exception
     {
         // Test getting all contained containers
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -440,12 +426,11 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: call on record folder
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
-            	filePlanService.getContainedRecordCategories(rmFolder);
+                filePlanService.getContainedRecordCategories(rmFolder);
             }
         });
     }
@@ -457,8 +442,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
     public void testGetContainedRecordFolders() throws Exception
     {
         // Test getting all contained record folders
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -497,12 +481,11 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
         });
 
         // Failure: call on record folder
-        doTestInTransaction(new FailureTest()
-        {
+        doTestInTransaction(new FailureTest() {
             @Override
             public void run()
             {
-            	filePlanService.getContainedRecordFolders(rmFolder);
+                filePlanService.getContainedRecordFolders(rmFolder);
             }
         });
     }
@@ -512,8 +495,7 @@ public class FilePlanServiceImplTest extends BaseRMTestCase
      */
     public void testCreateSimpleHierarchy()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

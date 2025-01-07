@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,9 +26,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Integration test for RM-5225
@@ -38,14 +39,11 @@ import org.springframework.extensions.webscripts.GUID;
 public class RM5225Test extends BaseRMTestCase
 {
     /**
-     * Given the RM site, a record category created in the fileplan, a record folder containing a record
-     * When we create a copy from the existing record
-     * Then the created record name contains both the name of the record from which it was created and the unique identifier of the current record.
+     * Given the RM site, a record category created in the fileplan, a record folder containing a record When we create a copy from the existing record Then the created record name contains both the name of the record from which it was created and the unique identifier of the current record.
      */
     public void testCopyToRecord()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private NodeRef copiedRecord;
 

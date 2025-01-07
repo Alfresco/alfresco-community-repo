@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,7 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-
 /**
  * Unit test for RM-1027 .. can't copy a closed folder
  *
@@ -42,8 +41,7 @@ public class RM1027Test extends BaseRMTestCase
 {
     public void testCopyingAClosedFolder() throws Exception
     {
-        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -51,14 +49,13 @@ public class RM1027Test extends BaseRMTestCase
                 NodeRef recordFolder = recordFolderService.createRecordFolder(rmContainer, "My Closed Record Folder");
                 utils.closeFolder(recordFolder);
 
-                assertTrue((Boolean)nodeService.getProperty(recordFolder, PROP_IS_CLOSED));
+                assertTrue((Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED));
 
                 return recordFolder;
             }
         });
 
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -77,15 +74,14 @@ public class RM1027Test extends BaseRMTestCase
                 assertNotNull(copy);
 
                 assertNotNull(nodeService.getProperty(copy, PROP_IDENTIFIER));
-                assertFalse((Boolean)nodeService.getProperty(copy, PROP_IS_CLOSED));
+                assertFalse((Boolean) nodeService.getProperty(copy, PROP_IS_CLOSED));
             }
         });
     }
 
     public void testCopyingAFolderWithADispositionSchedule() throws Exception
     {
-        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -99,8 +95,7 @@ public class RM1027Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<NodeRef>()
-        {
+        doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {

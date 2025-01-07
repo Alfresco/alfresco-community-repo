@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,19 +41,17 @@ public class TestServiceImpl extends ServiceBaseImpl implements TestService
 {
     @Override
     public void testMethodOne(NodeRef nodeRef)
-    {
-    }
+    {}
 
     @Override
     public void testMethodTwo(NodeRef nodeRef)
-    {
-    }
-    
+    {}
+
     public boolean doInstanceOf(NodeRef nodeRef, QName ofClassName)
     {
         return instanceOf(nodeRef, ofClassName);
     }
-    
+
     public int doGetNextCount(NodeRef nodeRef)
     {
         return getNextCount(nodeRef);

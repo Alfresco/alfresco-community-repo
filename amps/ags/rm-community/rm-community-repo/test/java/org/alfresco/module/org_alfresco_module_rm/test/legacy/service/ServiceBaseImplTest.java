@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,7 +44,7 @@ public class ServiceBaseImplTest extends BaseRMTestCase
 {
     /** test service */
     private TestServiceImpl testService;
-    
+
     /**
      * Init services
      */
@@ -52,8 +52,8 @@ public class ServiceBaseImplTest extends BaseRMTestCase
     protected void initServices()
     {
         super.initServices();
-        
-        testService = (TestServiceImpl)applicationContext.getBean("testService");
+
+        testService = (TestServiceImpl) applicationContext.getBean("testService");
     }
 
     /**
@@ -61,28 +61,26 @@ public class ServiceBaseImplTest extends BaseRMTestCase
      */
     public void testInstanceOf()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
                 assertTrue(testService.doInstanceOf(rmFolder, ContentModel.TYPE_FOLDER));
                 assertTrue(testService.doInstanceOf(rmFolder, TYPE_RECORD_FOLDER));
                 assertFalse(testService.doInstanceOf(rmFolder, TYPE_RECORD_CATEGORY));
-                
+
                 return null;
             }
         });
-        
+
     }
-    
+
     /**
      * test getNextCounter()
      */
     public void testGetNextCounter()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -90,29 +88,28 @@ public class ServiceBaseImplTest extends BaseRMTestCase
                 assertEquals(1, testService.doGetNextCount(rmFolder));
                 assertEquals(2, testService.doGetNextCount(rmFolder));
                 assertEquals(3, testService.doGetNextCount(rmFolder));
-                
+
                 return null;
             }
         });
-        
+
     }
-    
+
     /**
      * test getTypeAndAspects()
      */
     public void testGetTypeAndAspects()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
                 Set<QName> result = testService.doGetTypeAndApsects(rmFolder);
                 assertTrue(result.contains(TYPE_RECORD_FOLDER));
-        
+
                 return null;
             }
-        });        
+        });
     }
 
 }

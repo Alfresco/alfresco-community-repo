@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -84,16 +84,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And a filed record is missing mandatory values
-     * When I try to complete the record
-     * Then the missing properties parameter of the action will be populated
-     * And the record will not be complete
+     * Given the the application is configured to check for mandatory values before complete And a filed record is missing mandatory values When I try to complete the record Then the missing properties parameter of the action will be populated And the record will not be complete
      */
     public void testCheckForMandatoryValuesMissing() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -125,15 +120,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And a filed record has all mandatory values
-     * When I try to complete the record
-     * Then the record is completed
+     * Given the the application is configured to check for mandatory values before complete And a filed record has all mandatory values When I try to complete the record Then the record is completed
      */
     public void testCheckForMandatoryValuePresent() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -167,16 +158,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And a filed record is missing custom mandatory values
-     * When I try to complete the record
-     * Then the missing properties parameter of the action will be populated
-     * And the record will not be complete
+     * Given the the application is configured to check for mandatory values before complete And a filed record is missing custom mandatory values When I try to complete the record Then the missing properties parameter of the action will be populated And the record will not be complete
      */
     public void testCheckForCustomMandatoryValuesMissing() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -214,15 +200,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And a filed record has all custom mandatory values
-     * When I try to complete the record
-     * Then the record is completed
+     * Given the the application is configured to check for mandatory values before complete And a filed record has all custom mandatory values When I try to complete the record Then the record is completed
      */
     public void testCheckForCustomMandatoryValuePresent() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -263,16 +245,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And a non-electronic record is missing custom mandatory values
-     * When I try to complete the record
-     * Then the missing properties parameter of the action will be populated
-     * And the record will not be complete
+     * Given the the application is configured to check for mandatory values before complete And a non-electronic record is missing custom mandatory values When I try to complete the record Then the missing properties parameter of the action will be populated And the record will not be complete
      */
     public void testCheckForCustomMandatoryValuesMissingInNonElectronicRecord() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef nonElectronicRecord;
             private RecordsManagementActionResult result;
 
@@ -311,15 +288,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And a non-electronic record has all custom mandatory values
-     * When I try to complete the record
-     * Then the record is completed
+     * Given the the application is configured to check for mandatory values before complete And a non-electronic record has all custom mandatory values When I try to complete the record Then the record is completed
      */
     public void testCheckForCustomMandatoryValuePresentInNonElectronicRecord() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef nonElectronicRecord;
             private RecordsManagementActionResult result;
 
@@ -360,15 +333,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And a filed record is missing custom non-mandatory values
-     * When I try to complete the record
-     * Then the record is completed
+     * Given the the application is configured to check for mandatory values before complete And a filed record is missing custom non-mandatory values When I try to complete the record Then the record is completed
      */
     public void testCheckForCustomOptionalValuesMissing() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -406,16 +375,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And custom mandatory metadata is required for electronic records
-     * And a non-electronic record has no custom mandatory values
-     * When I try to complete the non-electronic record
-     * Then the record is completed
+     * Given the the application is configured to check for mandatory values before complete And custom mandatory metadata is required for electronic records And a non-electronic record has no custom mandatory values When I try to complete the non-electronic record Then the record is completed
      */
     public void testElectronicRecordCustomMandatoryNotAppliedToNonElectronicRecord() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef nonElectronicRecord;
             private RecordsManagementActionResult result;
 
@@ -453,16 +417,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to check for mandatory values before complete
-     * And custom mandatory metadata is required for non-electronic records
-     * And an electronic record has no custom mandatory values
-     * When I try to complete the electronic record
-     * Then the record is completed
+     * Given the the application is configured to check for mandatory values before complete And custom mandatory metadata is required for non-electronic records And an electronic record has no custom mandatory values When I try to complete the electronic record Then the record is completed
      */
     public void testNonElectronicRecordCustomMandatoryNotAppliedToElectronicRecord() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -500,15 +459,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured not to check for mandatory values before complete
-     * And a filed record is missing mandatory values
-     * When I try to complete the record
-     * Then the record is completed
+     * Given the the application is configured not to check for mandatory values before complete And a filed record is missing mandatory values When I try to complete the record Then the record is completed
      */
     public void testDontCheckForMandatoryValuesMissing() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -540,15 +495,11 @@ public class CompleteRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given the the application is configured to not to check for mandatory values before complete
-     * And a filed record has all mandatory values
-     * When I try to complete the record
-     * Then the record is completed
+     * Given the the application is configured to not to check for mandatory values before complete And a filed record has all mandatory values When I try to complete the record Then the record is completed
      */
     public void testDontCheckForMandatoryValuePresent() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             private NodeRef record;
             private RecordsManagementActionResult result;
 
@@ -584,7 +535,8 @@ public class CompleteRecordTest extends BaseRMTestCase
     /**
      * Helper method to create a Custom Metadata definition in the RM custom model
      *
-     * @param mandatory specifies if metadata is mandatory
+     * @param mandatory
+     *            specifies if metadata is mandatory
      */
     private void defineCustomMetadata(QName propId, QName typeName, boolean mandatory) throws Exception
     {
@@ -599,8 +551,7 @@ public class CompleteRecordTest extends BaseRMTestCase
                 false,
                 mandatory,
                 false,
-                null
-                                                  );
+                null);
     }
 
     /**

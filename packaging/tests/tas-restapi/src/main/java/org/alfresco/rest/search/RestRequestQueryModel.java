@@ -2,7 +2,7 @@
  * #%L
  * alfresco-tas-restapi
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2005 - 2024 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -119,3 +119,4 @@ public class RestRequestQueryModel extends TestModel implements IRestModel<RestR
         return Objects.hash(model, getLanguage(), getUserQuery(), getQuery());
     }
 }
+ 

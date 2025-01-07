@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,8 +37,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import jakarta.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
@@ -60,12 +65,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.DBTests;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ConfigurableApplicationContext;
-
-import junit.framework.TestCase;
 
 /**
  * @see ContentDataDAO
@@ -82,14 +81,14 @@ public class AuditDAOTest extends TestCase
     private RetryingTransactionHelper txnHelper;
     private AuditDAO auditDAO;
     private PropertyValueDAO propertyValueDAO;
-    
+
     @Override
     public void setUp() throws Exception
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();
-        
+
         auditDAO = (AuditDAO) ctx.getBean("auditDAO");
         propertyValueDAO = ctx.getBean(PropertyValueDAO.class);
     }
@@ -99,8 +98,7 @@ public class AuditDAOTest extends TestCase
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
         final URL url = new URL("file:" + file.getAbsolutePath());
-        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>()
-        {
+        RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>() {
             public Pair<Long, ContentData> execute() throws Throwable
             {
                 Pair<Long, ContentData> auditModelPair = auditDAO.getOrCreateAuditModel(url);
@@ -109,7 +107,7 @@ public class AuditDAOTest extends TestCase
         };
         Pair<Long, ContentData> configPair = txnHelper.doInTransaction(callback);
         assertNotNull(configPair);
-        // Now repeat.  The results should be exactly the same.
+        // Now repeat. The results should be exactly the same.
         Pair<Long, ContentData> configPairCheck = txnHelper.doInTransaction(callback);
         assertNotNull(configPairCheck);
         assertEquals(configPair, configPairCheck);
@@ -120,19 +118,17 @@ public class AuditDAOTest extends TestCase
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
         final URL url = new URL("file:" + file.getAbsolutePath());
-        RetryingTransactionCallback<Long> createModelCallback = new RetryingTransactionCallback<Long>()
-        {
+        RetryingTransactionCallback<Long> createModelCallback = new RetryingTransactionCallback<Long>() {
             public Long execute() throws Throwable
             {
                 return auditDAO.getOrCreateAuditModel(url).getFirst();
             }
         };
         final Long modelId = txnHelper.doInTransaction(createModelCallback);
-        
+
         final String appName = getName() + "." + System.currentTimeMillis();
         final int count = 1000;
-        RetryingTransactionCallback<Void> createAppCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> createAppCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 for (int i = 0; i < count; i++)
@@ -151,7 +147,7 @@ public class AuditDAOTest extends TestCase
         long after = System.nanoTime();
         System.out.println(
                 "Time for " + count + " application creations was " +
-                ((double)(after - before)/(10E6)) + "ms");
+                        ((double) (after - before) / (10E6)) + "ms");
     }
 
     public void testAuditEntry() throws Exception
@@ -173,7 +169,7 @@ public class AuditDAOTest extends TestCase
     }
 
     /**
-     * @return              Returns the name of the application
+     * @return Returns the name of the application
      */
     private AuditApplicationInfo doAuditEntryImpl(final int count) throws Exception
     {
@@ -182,8 +178,7 @@ public class AuditDAOTest extends TestCase
         final URL url = new URL("file:" + file.getAbsolutePath());
         final String appName = getName() + "." + System.currentTimeMillis();
 
-        RetryingTransactionCallback<AuditApplicationInfo> createAppCallback = () ->
-        {
+        RetryingTransactionCallback<AuditApplicationInfo> createAppCallback = () -> {
             AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
             if (appInfo == null)
             {
@@ -194,10 +189,9 @@ public class AuditDAOTest extends TestCase
         };
         final AuditApplicationInfo appInfo = txnHelper.doInTransaction(createAppCallback);
         final Long sessionId = appInfo.getId();
-        
+
         final String username = "alexi";
-        RetryingTransactionCallback<Void> createEntryCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> createEntryCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 for (int i = 0; i < count; i++)
@@ -214,7 +208,7 @@ public class AuditDAOTest extends TestCase
         long after = System.nanoTime();
         System.out.println(
                 "Time for " + count + " entry creations was " +
-                ((double)(after - before)/(10E6)) + "ms");
+                        ((double) (after - before) / (10E6)) + "ms");
         // Done
         return appInfo;
     }
@@ -223,12 +217,11 @@ public class AuditDAOTest extends TestCase
     {
         // Some entries
         doAuditEntryImpl(1);
-        
+
         final MutableInt count = new MutableInt(0);
         final LinkedList<Long> timestamps = new LinkedList<Long>();
         // Find everything, but look for a specific key
-        final AuditQueryCallback callback = new AuditQueryCallback()
-        {            
+        final AuditQueryCallback callback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return false;
@@ -251,12 +244,11 @@ public class AuditDAOTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         final AuditQueryParameters params = new AuditQueryParameters();
         params.addSearchKey("/a/b/c", null);
-        
-        RetryingTransactionCallback<Void> findCallback = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 2);
@@ -267,19 +259,18 @@ public class AuditDAOTest extends TestCase
         timestamps.clear();
         txnHelper.doInTransaction(findCallback);
         assertTrue("Expected at least one result", count.intValue() > 0);
-        
-//        // Make sure that the last two entries are in forward order (ascending time)
-//        Long lastTimestamp = timestamps.removeLast();
-//        Long secondLastTimeStamp = timestamps.removeLast();
-//        assertTrue("The timestamps should be in ascending order", lastTimestamp.compareTo(secondLastTimeStamp) > 0);
-//        
+
+        // // Make sure that the last two entries are in forward order (ascending time)
+        // Long lastTimestamp = timestamps.removeLast();
+        // Long secondLastTimeStamp = timestamps.removeLast();
+        // assertTrue("The timestamps should be in ascending order", lastTimestamp.compareTo(secondLastTimeStamp) > 0);
+        //
         // Make sure that the last two entries differ in time
         wait(1000L);
-        
+
         // Search in reverse order
         doAuditEntryImpl(1);
-        RetryingTransactionCallback<Void> findReverseCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> findReverseCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 params.setForward(false);
@@ -290,16 +281,14 @@ public class AuditDAOTest extends TestCase
         };
         timestamps.clear();
         txnHelper.doInTransaction(findReverseCallback);
-//        
-//        // Make sure that the last two entries are in reverse order (descending time)
-//        lastTimestamp = timestamps.removeLast();
-//        secondLastTimeStamp = timestamps.removeLast();
-//        assertTrue("The timestamps should be in descending order", lastTimestamp.compareTo(secondLastTimeStamp) < 0);
+        //
+        // // Make sure that the last two entries are in reverse order (descending time)
+        // lastTimestamp = timestamps.removeLast();
+        // secondLastTimeStamp = timestamps.removeLast();
+        // assertTrue("The timestamps should be in descending order", lastTimestamp.compareTo(secondLastTimeStamp) < 0);
     }
 
-    /*
-     * Test combinations of fromId, toId, fromTime, toTime and maxResults
-     */
+    /* Test combinations of fromId, toId, fromTime, toTime and maxResults */
     public synchronized void testAuditQueryCombos() throws Exception
     {
         // Some entries
@@ -309,8 +298,7 @@ public class AuditDAOTest extends TestCase
         final LinkedList<Long> timestamps = new LinkedList<Long>();
         final List<Long> entryIds = new LinkedList<>();
         // Find everything
-        final AuditQueryCallback callback = new AuditQueryCallback()
-        {            
+        final AuditQueryCallback callback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return false;
@@ -334,13 +322,12 @@ public class AuditDAOTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         final AuditQueryParameters params = new AuditQueryParameters();
         params.addSearchKey("/a/b/c", null);
 
-        //. get them all
-        RetryingTransactionCallback<Void> findCallback = new RetryingTransactionCallback<Void>()
-        {
+        // . get them all
+        RetryingTransactionCallback<Void> findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 10);
@@ -360,8 +347,7 @@ public class AuditDAOTest extends TestCase
         entryIds.clear();
         timestamps.clear();
         params.setFromId(allEntryIds.get(2));
-        findCallback = new RetryingTransactionCallback<Void>()
-        {
+        findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 2);
@@ -378,8 +364,7 @@ public class AuditDAOTest extends TestCase
         params.setFromTime(null);
         params.setToTime(null);
         params.setToId(allEntryIds.get(2));
-        findCallback = new RetryingTransactionCallback<Void>()
-        {
+        findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 2);
@@ -396,8 +381,7 @@ public class AuditDAOTest extends TestCase
         params.setToId(allEntryIds.get(5));
         params.setFromTime(null);
         params.setToTime(null);
-        findCallback = new RetryingTransactionCallback<Void>()
-        {
+        findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 1);
@@ -414,8 +398,7 @@ public class AuditDAOTest extends TestCase
         params.setFromId(null);
         params.setToTime(null);
         params.setToId(null);
-        findCallback = new RetryingTransactionCallback<Void>()
-        {
+        findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 2);
@@ -432,8 +415,7 @@ public class AuditDAOTest extends TestCase
         params.setFromId(null);
         params.setToTime(allTimestamps.get(4));
         params.setToId(null);
-        findCallback = new RetryingTransactionCallback<Void>()
-        {
+        findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 2);
@@ -450,8 +432,7 @@ public class AuditDAOTest extends TestCase
         params.setFromId(null);
         params.setToTime(allTimestamps.get(5));
         params.setToId(null);
-        findCallback = new RetryingTransactionCallback<Void>()
-        {
+        findCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 auditDAO.findAuditEntries(callback, params, 2);
@@ -464,8 +445,7 @@ public class AuditDAOTest extends TestCase
 
     public void testAuditDeleteEntries() throws Exception
     {
-        final AuditQueryCallback noResultsCallback = new AuditQueryCallback()
-        {
+        final AuditQueryCallback noResultsCallback = new AuditQueryCallback() {
             public boolean valuesRequired()
             {
                 return false;
@@ -494,8 +474,7 @@ public class AuditDAOTest extends TestCase
         final AuditQueryParameters params = new AuditQueryParameters();
         params.setApplicationName(appName);
         // Delete the entries
-        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Long appId = auditDAO.getAuditApplication(appName).getId();
@@ -510,17 +489,17 @@ public class AuditDAOTest extends TestCase
 
     /**
      * Ensure that only the correct application's audit entries are deleted.
-     * @throws Exception 
+     * 
+     * @throws Exception
      */
     public void testAuditDeleteEntriesForApplication() throws Exception
     {
         final String app1 = doAuditEntryImpl(6).getName();
         final String app2 = doAuditEntryImpl(18).getName();
-        
+
         final AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
-        
-        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
-        {
+
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Long app1Id = auditDAO.getAuditApplication(app1).getId();
@@ -535,20 +514,18 @@ public class AuditDAOTest extends TestCase
         };
         txnHelper.doInTransaction(deletedCallback);
     }
-    
-    
+
     /**
      * Ensure that an application's audit entries can be deleted between 2 times.
+     * 
      * @throws Exception
      */
     public void testAuditDeleteEntriesForApplicationBetweenTimes() throws Exception
     {
-        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>() {
             AuditQueryCallbackImpl preDeleteCallback = new AuditQueryCallbackImpl();
             AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
-     
-            
+
             public Void execute() throws Throwable
             {
                 AuditApplicationInfo info1 = createAuditApp();
@@ -556,7 +533,7 @@ public class AuditDAOTest extends TestCase
                 Long app1Id = info1.getId();
                 AuditApplicationInfo info2 = createAuditApp();
                 String app2 = info2.getName();
-                
+
                 // Create items 10, 11, 12, 13, 14 for application 1
                 // Create items 21, 22 for application 2
                 createItem(info1, 10);
@@ -576,14 +553,13 @@ public class AuditDAOTest extends TestCase
                 Thread.sleep(10);
                 createItem(info2, 22);
                 createItem(info1, 14);
-                
-                
+
                 auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals(5, preDeleteCallback.numEntries(app1));
                 assertEquals(2, preDeleteCallback.numEntries(app2));
-                
+
                 auditDAO.deleteAuditEntries(app1Id, t1, t2);
-                
+
                 auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals("Two entries should have been deleted from app1", 3, resultsCallback.numEntries(app1));
                 assertEquals("No entries should have been deleted from app2", 2, resultsCallback.numEntries(app2));
@@ -595,23 +571,22 @@ public class AuditDAOTest extends TestCase
 
     /**
      * Ensure audit entries can be deleted between two times - for all applications.
+     * 
      * @throws Exception
      */
     public void testAuditDeleteEntriesBetweenTimes() throws Exception
     {
-        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>() {
             AuditQueryCallbackImpl preDeleteCallback = new AuditQueryCallbackImpl();
             AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
-     
-            
+
             public Void execute() throws Throwable
             {
                 AuditApplicationInfo info1 = createAuditApp();
                 String app1 = info1.getName();
                 AuditApplicationInfo info2 = createAuditApp();
                 String app2 = info2.getName();
-                
+
                 // Create items 10, 11, 12, 13, 14 for application 1
                 // Create items 21, 22 for application 2
                 createItem(info1, 10);
@@ -635,10 +610,10 @@ public class AuditDAOTest extends TestCase
                 auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals(5, preDeleteCallback.numEntries(app1));
                 assertEquals(2, preDeleteCallback.numEntries(app2));
-                
+
                 // Delete audit entries between times - for all applications.
                 auditDAO.deleteAuditEntries(null, t1, t2);
-                
+
                 auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals("Two entries should have been deleted from app1", 3, resultsCallback.numEntries(app1));
                 assertEquals("One entry should have been deleted from app2", 1, resultsCallback.numEntries(app2));
@@ -647,25 +622,28 @@ public class AuditDAOTest extends TestCase
         };
         txnHelper.doInTransaction(deletedCallback);
     }
-    
+
     /**
      * Create an audit item
-     * @param appInfo The audit application to create the item for.
-     * @param value The value that will be stored against the path /a/b/c
+     * 
+     * @param appInfo
+     *            The audit application to create the item for.
+     * @param value
+     *            The value that will be stored against the path /a/b/c
      */
     private void createItem(final AuditApplicationInfo appInfo, final int value)
     {
-        String username = "alexi";    
+        String username = "alexi";
         Map<String, Serializable> values = Collections.singletonMap("/a/b/c", (Serializable) value);
         long now = System.currentTimeMillis();
         auditDAO.createAuditEntry(appInfo.getId(), now, username, values);
     }
 
-    
     /**
      * Create an audit application.
+     * 
      * @return AuditApplicationInfo for the new application.
-     * @throws IOException 
+     * @throws IOException
      */
     private AuditApplicationInfo createAuditApp() throws IOException
     {
@@ -673,7 +651,7 @@ public class AuditDAOTest extends TestCase
         File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
         assertNotNull(file);
         URL url = new URL("file:" + file.getAbsolutePath());
-        
+
         AuditApplicationInfo appInfo = auditDAO.getAuditApplication(appName);
         if (appInfo == null)
         {
@@ -683,11 +661,10 @@ public class AuditDAOTest extends TestCase
         return appInfo;
     }
 
-
     public class AuditQueryCallbackImpl implements AuditQueryCallback
     {
         private Map<String, Integer> countsByApp = new HashMap<String, Integer>();
-        
+
         public boolean valuesRequired()
         {
             return false;
@@ -705,7 +682,7 @@ public class AuditDAOTest extends TestCase
                 countsByApp.put(applicationName, 1);
             else
                 countsByApp.put(applicationName, ++count);
-            
+
             return true;
         }
 
@@ -713,7 +690,7 @@ public class AuditDAOTest extends TestCase
         {
             throw new AlfrescoRuntimeException(errorMsg, error);
         }
-        
+
         public int numEntries(String appName)
         {
             if (countsByApp.containsKey(appName))
@@ -722,10 +699,9 @@ public class AuditDAOTest extends TestCase
                 return 0;
         }
     }
-    
-    
+
     /**
-     * MNT-10067: use a script to delete the orphaned audit data (property values). 
+     * MNT-10067: use a script to delete the orphaned audit data (property values).
      */
     public void testScriptCanDeleteOrphanedProps() throws Exception
     {
@@ -734,7 +710,7 @@ public class AuditDAOTest extends TestCase
         {
             throw new Exception("TODO review this test case with NDB - note: throw exeception here else causes later tests to fail (when running via AllDBTestTestSuite)");
         }
-        
+
         // single test
         scriptCanDeleteOrphanedPropsWork(false);
     }
@@ -747,7 +723,7 @@ public class AuditDAOTest extends TestCase
             auditDAO.findAuditEntries(callback, new AuditQueryParameters(), -1);
             fail("maxResults == -1 should be disallowed");
         }
-        catch(IllegalArgumentException e)
+        catch (IllegalArgumentException e)
         {
             // ok
         }
@@ -766,16 +742,16 @@ public class AuditDAOTest extends TestCase
             iterationStep = 1;
             maxIterations = 1;
         }
-        
+
         UserTransaction txn;
-        
-        for (int i = iterationStep; i <= maxIterations*iterationStep; i+=iterationStep)
+
+        for (int i = iterationStep; i <= maxIterations * iterationStep; i += iterationStep)
         {
             List<String> stringValues = new LinkedList<String>();
             List<Double> doubleValues = new LinkedList<Double>();
             List<Date> dateValues = new LinkedList<Date>();
-       
-            txn  = transactionService.getUserTransaction();
+
+            txn = transactionService.getUserTransaction();
             long startCreate = System.currentTimeMillis();
             txn.begin();
             for (int j = 0; j < i; j++)
@@ -787,14 +763,14 @@ public class AuditDAOTest extends TestCase
                 doubleValues.add(doubleValue);
                 Date dateValue = valueGen.createUniqueDate();
                 dateValues.add(dateValue);
-                
+
                 AuditQueryCallbackImpl preDeleteCallback = new AuditQueryCallbackImpl();
                 AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
-                
+
                 AuditApplicationInfo info1 = createAuditApp();
                 String app1 = info1.getName();
-                
-                String username = "alexi";    
+
+                String username = "alexi";
                 Map<String, Serializable> values = new HashMap<String, Serializable>();
                 values.put("/a/b/string-" + j, stringValue);
                 values.put("/a/b/double-" + j, doubleValue);
@@ -805,10 +781,10 @@ public class AuditDAOTest extends TestCase
 
                 auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals(1, preDeleteCallback.numEntries(app1));
-                
+
                 // Delete audit entries between times - for all applications.
                 auditDAO.deleteAuditEntries(info1.getId(), null, null);
-                
+
                 if (!performance)
                 {
                     auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
@@ -817,7 +793,7 @@ public class AuditDAOTest extends TestCase
             }
             txn.commit();
             System.out.println("Created values for " + i + " entries in " + (System.currentTimeMillis() - startCreate) + " ms.");
-            
+
             if (!performance)
             {
                 // Check there are some persisted values to delete.
@@ -839,8 +815,7 @@ public class AuditDAOTest extends TestCase
                 }
             }
             long startDelete = System.currentTimeMillis();
-            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-            {
+            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
                 public Void execute() throws Throwable
                 {
                     propertyValueDAO.cleanupUnusedValues();
@@ -849,16 +824,16 @@ public class AuditDAOTest extends TestCase
                 }
             };
             // use a new transaction so it will retry in that transaction
-            txnHelper.doInTransaction(callback,false,true);
+            txnHelper.doInTransaction(callback, false, true);
 
             System.out.println("Cleaned values for " + i + " entries in " + (System.currentTimeMillis() - startDelete) + " ms.");
-            
+
             if (!performance)
             {
                 // Check all the properties have been deleted.
-                txn  = transactionService.getUserTransaction();
+                txn = transactionService.getUserTransaction();
                 txn.begin();
-                
+
                 for (String stringValue : stringValues)
                 {
                     assertPropDeleted(propertyValueDAO.getPropertyValue(stringValue));
@@ -871,27 +846,27 @@ public class AuditDAOTest extends TestCase
                 {
                     assertPropDeleted(propertyValueDAO.getPropertyValue(dateValue));
                 }
-                
+
                 txn.commit();
             }
-        }        
+        }
     }
-    
+
     private void assertPropDeleted(Pair<Long, ?> value)
     {
         if (value != null)
         {
             String msg = String.format("Property value [%s=%s] should have been deleted by cleanup script.",
-                        value.getSecond().getClass().getSimpleName(), value.getSecond());
+                    value.getSecond().getClass().getSimpleName(), value.getSecond());
             fail(msg);
         }
     }
-    
+
     public void scriptCanDeleteOrphanedPropsPerformance() throws Exception
     {
         scriptCanDeleteOrphanedPropsWork(true);
     }
-    
+
     public static void main(String[] args)
     {
         try

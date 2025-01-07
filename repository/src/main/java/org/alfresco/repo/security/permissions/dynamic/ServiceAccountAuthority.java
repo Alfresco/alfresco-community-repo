@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -28,12 +28,13 @@ package org.alfresco.repo.security.permissions.dynamic;
 import java.util.Optional;
 import java.util.Set;
 
-import org.alfresco.repo.serviceaccount.ServiceAccountRegistry;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.serviceaccount.ServiceAccountRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * This class represents a dynamic authority for service accounts in the system.

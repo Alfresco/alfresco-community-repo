@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,10 +28,10 @@ package org.alfresco.repo.security.permissions.impl;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.springframework.context.ApplicationContext;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -62,7 +62,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
 
 public abstract class AbstractPermissionTest extends TestCase
 {
@@ -71,11 +70,11 @@ public abstract class AbstractPermissionTest extends TestCase
     protected static final String USER2_LEMUR = "lemur";
 
     protected static final String USER1_ANDY = "andy";
-    
-    protected static final String USER3_PAUL ="paul";
+
+    protected static final String USER3_PAUL = "paul";
 
     protected static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
-    
+
     protected static final String ROLE_AUTHENTICATED = "ROLE_AUTHENTICATED";
 
     protected NodeService nodeService;
@@ -85,7 +84,7 @@ public abstract class AbstractPermissionTest extends TestCase
     protected PermissionServiceSPI permissionService;
 
     protected MutableAuthenticationService authenticationService;
-    
+
     private MutableAuthenticationDao authenticationDAO;
 
     protected StoreRef testStoreRef;
@@ -103,15 +102,15 @@ public abstract class AbstractPermissionTest extends TestCase
     protected AuthenticationComponent authenticationComponent;
 
     protected ModelDAO permissionModelDAO;
-    
+
     protected PersonService personService;
-    
+
     protected AuthorityService authorityService;
-    
+
     protected AuthorityDAO authorityDAO;
 
     protected NodeDAO nodeDAO;
-    
+
     protected AclDAO aclDaoComponent;
 
     protected RetryingTransactionHelper retryingTransactionHelper;
@@ -125,9 +124,9 @@ public abstract class AbstractPermissionTest extends TestCase
     protected PublicServiceAccessService publicServiceAccessService;
 
     protected PolicyComponent policyComponent;
-    
+
     protected SiteService siteService;
-    
+
     public AbstractPermissionTest()
     {
         super();
@@ -140,9 +139,9 @@ public abstract class AbstractPermissionTest extends TestCase
         {
             throw new AlfrescoRuntimeException(
                     "A previous tests did not clean up transaction: " +
-                    AlfrescoTransactionSupport.getTransactionId());
+                            AlfrescoTransactionSupport.getTransactionId());
         }
-        
+
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryService = (DictionaryService) applicationContext.getBean(ServiceRegistry.DICTIONARY_SERVICE
                 .getLocalName());
@@ -158,22 +157,21 @@ public abstract class AbstractPermissionTest extends TestCase
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
         authorityDAO = (AuthorityDAO) applicationContext.getBean("authorityDAO");
         siteService = (SiteService) applicationContext.getBean("SiteService"); // Big 'S'
-        
+
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
         nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         aclDaoComponent = (AclDAO) applicationContext.getBean("aclDAO");
-        
+
         publicServiceAccessService = (PublicServiceAccessService) applicationContext.getBean("publicServiceAccessService");
         policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
-        
+
         retryingTransactionHelper = (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
-        
+
         transactionService = (TransactionService) applicationContext.getBean("transactionComponent");
-        
+
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-
 
         testStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
         rootNodeRef = nodeService.getRootNode(testStoreRef);
@@ -190,35 +188,35 @@ public abstract class AbstractPermissionTest extends TestCase
         props = createPersonProperties(USER2_LEMUR);
         nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
 
-        abstainedNode= nodeService.createNode(rootNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL, system, ContentModel.TYPE_FAILED_THUMBNAIL).getChildRef();
+        abstainedNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL, system, ContentModel.TYPE_FAILED_THUMBNAIL).getChildRef();
 
         // create an authentication object e.g. the user
-        if(authenticationDAO.userExists(USER1_ANDY))
+        if (authenticationDAO.userExists(USER1_ANDY))
         {
             authenticationService.deleteAuthentication(USER1_ANDY);
         }
         authenticationService.createAuthentication(USER1_ANDY, USER1_ANDY.toCharArray());
 
-        if(authenticationDAO.userExists(USER2_LEMUR))
+        if (authenticationDAO.userExists(USER2_LEMUR))
         {
             authenticationService.deleteAuthentication(USER2_LEMUR);
         }
         authenticationService.createAuthentication(USER2_LEMUR, USER2_LEMUR.toCharArray());
-        
-        if(authenticationDAO.userExists(USER3_PAUL))
+
+        if (authenticationDAO.userExists(USER3_PAUL))
         {
             authenticationService.deleteAuthentication(USER3_PAUL);
         }
         authenticationService.createAuthentication(USER3_PAUL, USER3_PAUL.toCharArray());
-        
-        if(authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
+
+        if (authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {
             authenticationService.deleteAuthentication(AuthenticationUtil.getAdminUserName());
         }
         authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
-        
+
         authenticationComponent.clearCurrentSecurityContext();
-        
+
         assertTrue(permissionServiceImpl.getAnyDenyDenies());
     }
 
@@ -236,7 +234,6 @@ public abstract class AbstractPermissionTest extends TestCase
         AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
-
 
     protected void runAs(String userName)
     {

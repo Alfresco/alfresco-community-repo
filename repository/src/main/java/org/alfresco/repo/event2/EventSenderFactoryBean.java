@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,15 +25,16 @@
  */
 package org.alfresco.repo.event2;
 
+import java.util.Optional;
+import java.util.concurrent.Executor;
 import jakarta.annotation.Nonnull;
-import org.alfresco.util.PropertyCheck;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.core.env.PropertyResolver;
 
-import java.util.Optional;
-import java.util.concurrent.Executor;
+import org.alfresco.util.PropertyCheck;
 
 public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
 {
@@ -51,7 +52,7 @@ public class EventSenderFactoryBean extends AbstractFactoryBean<EventSender>
     private boolean legacySkipQueueConfig;
 
     public EventSenderFactoryBean(@Autowired PropertyResolver propertyResolver, Event2MessageProducer event2MessageProducer,
-                                  Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
+            Executor enqueueThreadPoolExecutor, Executor dequeueThreadPoolExecutor)
     {
         super();
         PropertyCheck.mandatory(this, "propertyResolver", propertyResolver);

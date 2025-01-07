@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,12 +38,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Optional;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
-
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.transaction.TransactionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.transaction.TransactionService;
 
 public class IdentityServiceJITProvisioningHandlerUnitTest
 {
@@ -79,7 +79,7 @@ public class IdentityServiceJITProvisioningHandlerUnitTest
         when(identityServiceFacade.decodeToken(JWT_TOKEN)).thenReturn(decodedAccessToken);
         when(personService.createMissingPeople()).thenReturn(true);
         jitProvisioningHandler = new IdentityServiceJITProvisioningHandler(identityServiceFacade,
-            personService, transactionService, identityServiceConfig);
+                personService, transactionService, identityServiceConfig);
     }
 
     @Test

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,18 +38,10 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
-
-import com.nimbusds.oauth2.sdk.Scope;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessToken;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
-import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
+
+import com.nimbusds.oauth2.sdk.Scope;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -57,6 +49,14 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+
+import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceConfig;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessToken;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AccessTokenAuthorization;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationException;
+import org.alfresco.repo.security.authentication.identityservice.IdentityServiceFacade.AuthorizationGrant;
 
 @SuppressWarnings("PMD.AvoidStringBufferField")
 public class IdentityServiceAdminConsoleAuthenticatorUnitTest
@@ -158,7 +158,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn("/alfresco/s/admin/admin-communitysummary");
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-            .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 
@@ -180,7 +180,7 @@ public class IdentityServiceAdminConsoleAuthenticatorUnitTest
         when(identityServiceConfig.getAdminConsoleRedirectPath()).thenReturn(redirectPath);
         ArgumentCaptor<String> authenticationRequest = ArgumentCaptor.forClass(String.class);
         String expectedUri = "http://localhost:8999/auth?client_id=alfresco&redirect_uri=%s%s&response_type=code&scope="
-            .formatted("http://localhost:8080", redirectPath);
+                .formatted("http://localhost:8080", redirectPath);
 
         authenticator.requestAuthentication(request, response);
 

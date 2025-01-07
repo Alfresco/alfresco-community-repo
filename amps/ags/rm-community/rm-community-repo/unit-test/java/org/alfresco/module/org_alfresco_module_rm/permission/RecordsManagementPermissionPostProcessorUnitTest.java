@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,11 +28,19 @@
 package org.alfresco.module.org_alfresco_module_rm.permission;
 
 import static java.util.Arrays.asList;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+
+import com.google.common.collect.Sets;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -43,13 +51,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.google.common.collect.Sets;
 
 /**
  * Unit tests for {@link RecordsManagementPermissionPostProcessor}.
@@ -77,9 +78,7 @@ public class RecordsManagementPermissionPostProcessorUnitTest
     }
 
     /**
-     * Given the configured permissions are set
-     * When process is called
-     * Then access is allowed
+     * Given the configured permissions are set When process is called Then access is allowed
      */
     @Test
     public void configurePermissionsAllowed()
@@ -92,9 +91,9 @@ public class RecordsManagementPermissionPostProcessorUnitTest
         List<String> configuredFilePermissions = asList("WriteProperties", "AddChildren");
 
         when(mockNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-            .thenReturn(true);
+                .thenReturn(true);
         when(mockPermissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
+                .thenReturn(AccessStatus.ALLOWED);
 
         AccessStatus result = recordsManagementPermissionPostProcessor.process(accessStatus, nodeRef, perm, configuredReadPermissions, configuredFilePermissions);
 
@@ -102,9 +101,7 @@ public class RecordsManagementPermissionPostProcessorUnitTest
     }
 
     /**
-     * Given the configured permissions are not set
-     * When process is called
-     * Then access is denied
+     * Given the configured permissions are not set When process is called Then access is denied
      */
     @Test
     public void configurePermissionsDenied()
@@ -117,9 +114,9 @@ public class RecordsManagementPermissionPostProcessorUnitTest
         List<String> configuredFilePermissions = asList("WriteProperties", "AddChildren");
 
         when(mockNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-            .thenReturn(true);
+                .thenReturn(true);
         when(mockPermissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
+                .thenReturn(AccessStatus.ALLOWED);
 
         AccessStatus result = recordsManagementPermissionPostProcessor.process(accessStatus, nodeRef, perm, configuredReadPermissions, configuredFilePermissions);
 
@@ -129,9 +126,7 @@ public class RecordsManagementPermissionPostProcessorUnitTest
     /**
      * Test that the permission groups configured in the global properties file imply descendant permission groups.
      * <p>
-     * Given a configured permission is an ancestor of another permission P
-     * And the post processor checks if the user has P
-     * Then the post processor says that they do.
+     * Given a configured permission is an ancestor of another permission P And the post processor checks if the user has P Then the post processor says that they do.
      */
     @Test
     public void permissionInherittedFromConfiguredGroup()
@@ -142,9 +137,9 @@ public class RecordsManagementPermissionPostProcessorUnitTest
         List<String> configuredFilePermissions = asList("WriteProperties");
 
         when(mockNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-            .thenReturn(true);
+                .thenReturn(true);
         when(mockPermissionService.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
+                .thenReturn(AccessStatus.ALLOWED);
 
         // Set up "WriteProperties" to imply three other permission groups.
         PermissionReference mockWritePropsPermRef = mock(PermissionReference.class);
@@ -159,7 +154,7 @@ public class RecordsManagementPermissionPostProcessorUnitTest
 
         // Call the method under test.
         AccessStatus result = recordsManagementPermissionPostProcessor.process(AccessStatus.DENIED, nodeRef,
-                    "This is the requested permission", configuredReadPermissions, configuredFilePermissions);
+                "This is the requested permission", configuredReadPermissions, configuredFilePermissions);
 
         assertEquals(AccessStatus.ALLOWED, result);
     }

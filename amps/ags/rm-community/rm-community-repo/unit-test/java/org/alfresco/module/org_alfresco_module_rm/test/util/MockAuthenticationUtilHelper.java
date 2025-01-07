@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,10 +32,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.reset;
 
-import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 
 /**
  * A helper to initialise a mock {@link AuthenticationUtil}.
@@ -49,11 +50,10 @@ public class MockAuthenticationUtilHelper
     public static final String GUEST_USER = "guest";
 
     /**
-     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
-     * permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is
-     * "admin".
+     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is "admin".
      *
-     * @param mockAuthenticationUtil The mock to initialise.
+     * @param mockAuthenticationUtil
+     *            The mock to initialise.
      */
     public static void setup(AuthenticationUtil mockAuthenticationUtil)
     {
@@ -61,11 +61,12 @@ public class MockAuthenticationUtilHelper
     }
 
     /**
-     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
-     * permissions.
+     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has permissions.
      *
-     * @param mockAuthenticationUtil The mock to initialise.
-     * @param fullyAuthenticatedUser The name of the user that last authenticated.
+     * @param mockAuthenticationUtil
+     *            The mock to initialise.
+     * @param fullyAuthenticatedUser
+     *            The name of the user that last authenticated.
      */
     @SuppressWarnings("unchecked")
     public static void setup(AuthenticationUtil mockAuthenticationUtil, String fullyAuthenticatedUser)
@@ -73,8 +74,7 @@ public class MockAuthenticationUtilHelper
         reset(mockAuthenticationUtil);
 
         // just do the work
-        lenient().doAnswer(new Answer<Object>()
-        {
+        lenient().doAnswer(new Answer<Object>() {
             @SuppressWarnings("rawtypes")
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
@@ -86,8 +86,7 @@ public class MockAuthenticationUtilHelper
         }).when(mockAuthenticationUtil).<Object> runAsSystem(any(RunAsWork.class));
 
         // just do the work
-        lenient().doAnswer(new Answer<Object>()
-        {
+        lenient().doAnswer(new Answer<Object>() {
             @SuppressWarnings("rawtypes")
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable

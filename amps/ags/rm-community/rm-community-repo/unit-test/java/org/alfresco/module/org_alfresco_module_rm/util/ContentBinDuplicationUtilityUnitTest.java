@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,16 +27,23 @@
 
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_ARCHIVED;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_ARCHIVED;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
@@ -46,14 +53,10 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 /**
  * Test class for the ContentBinDuplicationUtility
+ * 
  * @author Ross Gale
  * @since 2.7.2
  */
@@ -116,10 +119,7 @@ public class ContentBinDuplicationUtilityUnitTest
     }
 
     /**
-     * This is testing the fix for RM-6788 where archived content couldn't be declared as a record
-     * This was caused by attempting to copy the bin file and updating the content url of the
-     * archived piece of content which failed as this is a protected property. This is done if
-     * the node is/has a copy but the same duplication already happens during archive.
+     * This is testing the fix for RM-6788 where archived content couldn't be declared as a record This was caused by attempting to copy the bin file and updating the content url of the archived piece of content which failed as this is a protected property. This is done if the node is/has a copy but the same duplication already happens during archive.
      */
     @Test
     public void testBinFileNotDuplicatedForArchivedContent()
@@ -130,6 +130,7 @@ public class ContentBinDuplicationUtilityUnitTest
         verify(mockContentReader, times(0)).getReader();
         checkBehaviours(0);
     }
+
     /**
      * Test hasAtLeastOneOtherReference returns true when node has another reference to it
      */
@@ -178,7 +179,9 @@ public class ContentBinDuplicationUtilityUnitTest
 
     /**
      * Check that the behaviours are disabled and re-enabled the correct number of times
-     * @param times the times the behaviours should be called
+     * 
+     * @param times
+     *            the times the behaviours should be called
      */
     private void checkBehaviours(int times)
     {

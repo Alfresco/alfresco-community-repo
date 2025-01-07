@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,6 +26,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
@@ -34,12 +41,6 @@ import org.alfresco.rm.rest.api.model.RetentionScheduleActionDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
 /**
  * Retention schedule model unit test
@@ -73,7 +74,7 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         // Call the method
         RetentionSchedule actualResult = apiNodesModelFactory.mapRetentionScheduleData(dispositionSchedule);
 
-        //Expected Result
+        // Expected Result
         RetentionSchedule expectedResult = new RetentionSchedule();
         expectedResult.setId(nodeRef.getId());
         expectedResult.setParentId(filePlan.getId());
@@ -103,7 +104,7 @@ public class RetentionScheduleModelUnitTest extends BaseUnitTest
         // Call the method
         RetentionScheduleActionDefinition actualResult = apiNodesModelFactory.mapRetentionScheduleActionDefData(dispositionActionDefinition);
 
-        //Expected Result
+        // Expected Result
         RetentionScheduleActionDefinition expectedResult = getRetentionScheduleActionDefinition(nodeRef);
 
         // Assertion

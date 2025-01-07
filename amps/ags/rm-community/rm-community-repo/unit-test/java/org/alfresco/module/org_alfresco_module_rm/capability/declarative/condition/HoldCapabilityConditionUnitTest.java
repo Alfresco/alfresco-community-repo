@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,16 +42,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
  * Freeze evaluator unit test.
@@ -64,13 +65,13 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
     private NodeRef hold1;
     private NodeRef hold2;
     private List<NodeRef> holds;
-    
+
     /** mocked objects */
-    private @Mock(name="kinds") Set<FilePlanComponentKind> mockedKinds;
-    
+    private @Mock(name = "kinds") Set<FilePlanComponentKind> mockedKinds;
+
     /** evaluator */
     private @Spy @InjectMocks HoldCapabilityCondition evaluator;
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
@@ -79,14 +80,14 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
     public void before() throws Exception
     {
         super.before();
-        
+
         // setup test data
         hold1 = generateNodeRef(TYPE_HOLD);
         hold2 = generateNodeRef(TYPE_HOLD);
         holds = new ArrayList<>(2);
         holds.add(hold1);
         holds.add(hold2);
-        
+
         // setup interactions
         doReturn(false).when(mockedKinds).contains(FilePlanComponentKind.RECORD_CATEGORY);
         doReturn(true).when(mockedKinds).contains(FilePlanComponentKind.RECORD_FOLDER);
@@ -94,7 +95,7 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
     }
 
     /**
-     * Test given there are no holds 
+     * Test given there are no holds
      */
     @Test
     public void noHolds()
@@ -108,9 +109,9 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
         // then
         assertFalse(result);
         verify(mockedPermissionService, never()).hasPermission(any(NodeRef.class), eq(RMPermissionModel.FILING));
-        
+
     }
-    
+
     /**
      * Test given the user has no filling permissions on any of the available holds
      */
@@ -120,17 +121,17 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
         // given
         doReturn(holds).when(mockedHoldService).heldBy(eq(recordFolder), anyBoolean());
         doReturn(AccessStatus.DENIED).when(mockedPermissionService).hasPermission(hold1, RMPermissionModel.FILING);
-        doReturn(AccessStatus.DENIED).when(mockedPermissionService).hasPermission(hold2, RMPermissionModel.FILING);  
+        doReturn(AccessStatus.DENIED).when(mockedPermissionService).hasPermission(hold2, RMPermissionModel.FILING);
 
         // when
         boolean result = evaluator.evaluateImpl(recordFolder);
 
         // then
         assertFalse(result);
-        verify(mockedPermissionService, times(2)).hasPermission(any(NodeRef.class), eq(RMPermissionModel.FILING));  
-        
+        verify(mockedPermissionService, times(2)).hasPermission(any(NodeRef.class), eq(RMPermissionModel.FILING));
+
     }
-    
+
     /**
      * Test given the user has filling on one of the available holds
      */
@@ -140,13 +141,13 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
         // given
         doReturn(holds).when(mockedHoldService).heldBy(eq(recordFolder), anyBoolean());
         doReturn(AccessStatus.DENIED).when(mockedPermissionService).hasPermission(hold1, RMPermissionModel.FILING);
-        doReturn(AccessStatus.ALLOWED).when(mockedPermissionService).hasPermission(hold2, RMPermissionModel.FILING);  
+        doReturn(AccessStatus.ALLOWED).when(mockedPermissionService).hasPermission(hold2, RMPermissionModel.FILING);
 
         // when
         boolean result = evaluator.evaluateImpl(recordFolder);
 
         // then
         assertTrue(result);
-        verify(mockedPermissionService, times(2)).hasPermission(any(NodeRef.class), eq(RMPermissionModel.FILING));          
+        verify(mockedPermissionService, times(2)).hasPermission(any(NodeRef.class), eq(RMPermissionModel.FILING));
     }
 }

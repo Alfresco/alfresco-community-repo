@@ -3637,7 +3637,7 @@ definitions:
         type: string
         pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
         description: |
-          The name must not contain spaces or the following special characters: * " gt; lt; \ / ? : and |.
+          The name must not contain spaces or the following special character: * " gt; lt; \ / ? : and |.
           The character . must not be used at the end of the name.
       nodeType:
         type: string

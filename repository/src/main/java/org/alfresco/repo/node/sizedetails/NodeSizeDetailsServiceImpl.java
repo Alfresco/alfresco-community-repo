@@ -191,9 +191,8 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             Date calculationDate = new Date(System.currentTimeMillis());
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), totalSizeFromFacet, calculationDate,
-                    results.getNodeRefs()
-                            .size(),
-                    STATUS.COMPLETED, jobId);
+                    (int) results.getNumberFound(), STATUS.COMPLETED,
+                    jobId);
             return nodeSizeDetails;
         }
         catch (Exception e)
@@ -396,5 +395,4 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         }
 
     }
-
 }

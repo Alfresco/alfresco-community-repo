@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -37,6 +37,12 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -51,22 +57,16 @@ import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
  * Handler for exporting node content to a ZIP file
- * 
+ *
  * @author Alex Miller
  */
 public class ZipDownloadExporter extends BaseExporter
 {
     private static Logger log = LoggerFactory.getLogger(ZipDownloadExporter.class);
-    
+
     private static final String PATH_SEPARATOR = "/";
 
     protected ZipArchiveOutputStream zipStream;
@@ -77,7 +77,7 @@ public class ZipDownloadExporter extends BaseExporter
     private long done;
     private long totalFileCount;
     private long filesAddedCount;
-    
+
     private RetryingTransactionHelper transactionHelper;
     private DownloadStorage downloadStorage;
     private DictionaryService dictionaryService;
@@ -93,18 +93,31 @@ public class ZipDownloadExporter extends BaseExporter
     /**
      * Construct
      *
-     * @param zipFile File
-     * @param checkOutCheckInService CheckOutCheckInService
-     * @param nodeService NodeService
-     * @param transactionHelper RetryingTransactionHelper
-     * @param updateService DownloadStatusUpdateService
-     * @param downloadStorage DownloadStorage
-     * @param dictionaryService DictionaryService
-     * @param downloadNodeRef NodeRef
-     * @param total long
-     * @param totalFileCount long
+     * @param zipFile
+     *            File
+     * @param checkOutCheckInService
+     *            CheckOutCheckInService
+     * @param nodeService
+     *            NodeService
+     * @param transactionHelper
+     *            RetryingTransactionHelper
+     * @param updateService
+     *            DownloadStatusUpdateService
+     * @param downloadStorage
+     *            DownloadStorage
+     * @param dictionaryService
+     *            DictionaryService
+     * @param downloadNodeRef
+     *            NodeRef
+     * @param total
+     *            long
+     * @param totalFileCount
+     *            long
      */
-    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService, RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService, DownloadStorage downloadStorage, DictionaryService dictionaryService, NodeRef downloadNodeRef, long total, long totalFileCount)
+    public ZipDownloadExporter(File zipFile, CheckOutCheckInService checkOutCheckInService, NodeService nodeService,
+            RetryingTransactionHelper transactionHelper, DownloadStatusUpdateService updateService,
+            DownloadStorage downloadStorage, DictionaryService dictionaryService,
+            NodeRef downloadNodeRef, long total, long totalFileCount)
     {
         super(checkOutCheckInService, nodeService);
         try
@@ -114,7 +127,7 @@ public class ZipDownloadExporter extends BaseExporter
             this.transactionHelper = transactionHelper;
             this.downloadStorage = downloadStorage;
             this.dictionaryService = dictionaryService;
-            
+
             this.downloadNodeRef = downloadNodeRef;
             this.total = total;
             this.totalFileCount = totalFileCount;
@@ -130,7 +143,7 @@ public class ZipDownloadExporter extends BaseExporter
     {
         zipStream = new ZipArchiveOutputStream(outputStream);
         // NOTE: This encoding allows us to workaround bug...
-        //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
+        // http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
         zipStream.setEncoding("UTF-8");
         zipStream.setCreateUnicodeExtraFields(UnicodeExtraFieldPolicy.ALWAYS);
         zipStream.setUseLanguageEncodingFlag(true);
@@ -140,9 +153,9 @@ public class ZipDownloadExporter extends BaseExporter
     @Override
     public void startNode(NodeRef nodeRef)
     {
-        this.currentName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        this.zipTimestampCreated = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
-        this.zipTimestampModified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        this.currentName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        this.zipTimestampCreated = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
+        this.zipTimestampModified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
         path.push(new Pair<String, NodeRef>(currentName, nodeRef));
         if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER))
         {
@@ -162,32 +175,35 @@ public class ZipDownloadExporter extends BaseExporter
             }
         }
     }
-    
+
     @Override
     public void contentImpl(NodeRef nodeRef, QName property, InputStream content, ContentData contentData, int index)
     {
         // if the content stream to output is empty, then just return content descriptor as is
         if (content == null)
         {
+            log.info("Archiving content has been removed or modified for the specified NodeReference: " + nodeRef
+                    + ", and the size of the content is " + contentData.getSize());
             return;
         }
-        
+
         try
         {
             if (log.isDebugEnabled())
             {
-                log.debug("Archiving content for nodeRef: "+nodeRef+" with contentURL: "+contentData.getContentUrl());
+                log.debug("Archiving content for nodeRef: " + nodeRef + " with contentURL: "
+                        + contentData.getContentUrl());
             }
             // ALF-2016
-            ZipArchiveEntry zipEntry=new ZipArchiveEntry(getPath());
+            ZipArchiveEntry zipEntry = new ZipArchiveEntry(getPath());
             zipEntry.setTime(zipTimestampCreated.getTime());
             zipEntry.setCreationTime(FileTime.fromMillis(zipTimestampCreated.getTime()));
             zipEntry.setLastModifiedTime(FileTime.fromMillis(zipTimestampModified.getTime()));
             zipStream.putArchiveEntry(zipEntry);
-            
+
             // copy export stream to zip
             copyStream(zipStream, content);
-            
+
             zipStream.closeArchiveEntry();
             filesAddedCount = filesAddedCount + 1;
         }
@@ -196,7 +212,7 @@ public class ZipDownloadExporter extends BaseExporter
             throw new ExporterException("Failed to zip export stream", e);
         }
     }
-    
+
     @Override
     public void endNode(NodeRef nodeRef)
     {
@@ -218,69 +234,69 @@ public class ZipDownloadExporter extends BaseExporter
 
     private String getPath()
     {
-        if (path.size() < 1) 
+        if (path.size() < 1)
         {
-            throw new IllegalStateException("No elements in path!");    
+            throw new IllegalStateException("No elements in path!");
         }
-        
+
         Iterator<Pair<String, NodeRef>> iter = path.descendingIterator();
         StringBuilder pathBuilder = new StringBuilder();
-        
+
         while (iter.hasNext())
         {
             Pair<String, NodeRef> element = iter.next();
-            
+
             pathBuilder.append(element.getFirst());
             if (iter.hasNext())
             {
                 pathBuilder.append(PATH_SEPARATOR);
             }
         }
-        
+
         return pathBuilder.toString();
     }
 
     /**
      * Copy input stream to output stream
-     * 
-     * @param output  output stream
-     * @param in  input stream
+     *
+     * @param output
+     *            output stream
+     * @param in
+     *            input stream
      * @throws IOException
      */
-    private void copyStream(OutputStream output, InputStream in)
-        throws IOException
+    private void copyStream(OutputStream output, InputStream in) throws IOException
     {
         byte[] buffer = new byte[2048 * 10];
-        int read = in.read(buffer, 0, 2048 *10);
+        int read = in.read(buffer, 0, 2048 * 10);
         int i = 0;
         while (read != -1)
         {
             output.write(buffer, 0, read);
             done = done + read;
-            
+
             // ALF-16289 - only update the status every 10MB
-            if (i++%500 == 0)
+            if (i++ % 500 == 0)
             {
                 updateStatus();
                 checkCancelled();
             }
-            
-            read = in.read(buffer, 0, 2048 *10);
+
+            read = in.read(buffer, 0, 2048 * 10);
         }
     }
-    
+
     private void checkCancelled()
     {
-        boolean downloadCancelled = transactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>()
-        {
+        boolean downloadCancelled = transactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>() {
             @Override
             public Boolean execute() throws Throwable
             {
-                return downloadStorage.isCancelled(downloadNodeRef);                
+                return downloadStorage.isCancelled(downloadNodeRef);
             }
         }, true, true);
 
-        if ( downloadCancelled == true)
+        if (downloadCancelled == true)
         {
             log.debug("Download cancelled");
             throw new DownloadCancelledException();
@@ -289,13 +305,12 @@ public class ZipDownloadExporter extends BaseExporter
 
     private void updateStatus()
     {
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Object>() {
             @Override
             public Object execute() throws Throwable
             {
                 DownloadStatus status = new DownloadStatus(Status.IN_PROGRESS, done, total, filesAddedCount, totalFileCount);
-                
+
                 updateService.update(downloadNodeRef, status, getNextSequenceNumber());
                 return null;
             }

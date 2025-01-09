@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -191,8 +191,8 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
             }
             Date calculationDate = new Date(System.currentTimeMillis());
             NodeSizeDetails nodeSizeDetails = new NodeSizeDetails(nodeRef.getId(), totalSizeFromFacet, calculationDate,
-                    (int) results.getNumberFound(),
-                    STATUS.COMPLETED, jobId);
+                    (int) results.getNumberFound(), STATUS.COMPLETED,
+                    jobId);
             return nodeSizeDetails;
         }
         catch (Exception e)
@@ -395,5 +395,4 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
         }
 
     }
-
 }

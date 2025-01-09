@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,4 +47,3 @@ public class RMYamlUnitTest extends BaseYamlUnitTest
         validateYamlFiles(getYamlFilesList(RM_COMMUNITY_YAML_FILES_PATH));
     }
 }
-

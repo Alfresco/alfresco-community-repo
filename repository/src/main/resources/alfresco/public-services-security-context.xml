@@ -37,7 +37,7 @@
     <!-- Support for permissions -->
     <!-- ========================-->
 
-    <bean id='permissionService' class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+    <bean id="permissionService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean" depends-on="transactionManager, permissionServiceImpl">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.security.permissions.PermissionServiceSPI</value>
         </property>

@@ -763,7 +763,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             {
                 logger.debug("Cleared rendition hashcode");
             }
-            nodeService.removeProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2);
+            nodeService.setProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2, false);
             if (logger.isDebugEnabled())
             {
                 logger.debug("Cleared rendition2 property");
@@ -841,9 +841,9 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         boolean available = true;
         if (nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
         {
-            Serializable rendition2Property = nodeService.getProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2);
+            boolean rendition2Property = (Boolean) nodeService.getProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2);
 
-            if (rendition2Property == null)
+            if (!rendition2Property)
             {
                 return true;
             }

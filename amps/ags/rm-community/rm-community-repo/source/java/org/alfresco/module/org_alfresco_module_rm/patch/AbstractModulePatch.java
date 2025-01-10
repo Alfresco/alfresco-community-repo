@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,11 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.patch;
 
 import java.util.concurrent.TimeUnit;
 
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanNameAware;
+
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
 
 /**
  * Abstract module patch implementation.
@@ -69,10 +70,10 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
 
     /** module patch target module schema number */
     private int targetSchema;
-    
+
     /** if it should use a read only transaction */
     private boolean txnReadOnly = true;
-    
+
     /** if it should use a new transaction */
     private boolean txnRequiresNew = false;
 
@@ -83,19 +84,20 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     {
         modulePatchExecuter.register(this);
     }
-    
-    public void setTxnReadOnly(boolean txnReadOnly) 
+
+    public void setTxnReadOnly(boolean txnReadOnly)
     {
         this.txnReadOnly = txnReadOnly;
     }
 
-    public void setTxnRequiresNew(boolean txnRequiresNew) 
+    public void setTxnRequiresNew(boolean txnRequiresNew)
     {
         this.txnRequiresNew = txnRequiresNew;
     }
 
     /**
-     * @param modulePatchExecuter   module patch executer
+     * @param modulePatchExecuter
+     *            module patch executer
      */
     public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter)
     {
@@ -103,7 +105,8 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     }
 
     /**
-     * @param transactionService    transaction service
+     * @param transactionService
+     *            transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -111,7 +114,8 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     }
 
     /**
-     * @param id    module patch id
+     * @param id
+     *            module patch id
      */
     public void setId(String id)
     {
@@ -140,7 +144,8 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     }
 
     /**
-     * @param description   module patch description
+     * @param description
+     *            module patch description
      */
     public void setDescription(String description)
     {
@@ -157,7 +162,8 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     }
 
     /**
-     * @param moduleId  module id
+     * @param moduleId
+     *            module id
      */
     public void setModuleId(String moduleId)
     {
@@ -174,7 +180,8 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     }
 
     /**
-     * @param fixesFromSchema   fixes from schema value
+     * @param fixesFromSchema
+     *            fixes from schema value
      */
     public void setFixesFromSchema(int fixesFromSchema)
     {
@@ -191,7 +198,8 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     }
 
     /**
-     * @param fixesToSchema fixes to schema value
+     * @param fixesToSchema
+     *            fixes to schema value
      */
     public void setFixesToSchema(int fixesToSchema)
     {
@@ -234,14 +242,14 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
         if (LOGGER.isDebugEnabled())
         {
             LOGGER.debug("   ... id=" + id +
-                               ",moduleId=" + moduleId +
-                               ",from=" + fixesFromSchema +
-                               ",to=" + fixesToSchema +
-                               ",target=" + targetSchema);
+                    ",moduleId=" + moduleId +
+                    ",from=" + fixesFromSchema +
+                    ",to=" + fixesToSchema +
+                    ",target=" + targetSchema);
         }
-               
+
         long startTime = System.nanoTime();
-        
+
         // do patch in transaction
         transactionService.getRetryingTransactionHelper().doInTransaction(
                 new ApplyCallback(),
@@ -249,7 +257,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
                 txnRequiresNew);
 
         long elapsedTime = System.nanoTime() - startTime;
-        
+
         if (LOGGER.isInfoEnabled())
         {
             LOGGER.info("   ... module patch applied in " + TimeUnit.NANOSECONDS.toMillis(elapsedTime) + "ms");
@@ -257,8 +265,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     }
 
     /**
-     * Apply patch internal method.  Implementations can assume a transaction has
-     * been started.
+     * Apply patch internal method. Implementations can assume a transaction has been started.
      */
     public abstract void applyInternal();
 

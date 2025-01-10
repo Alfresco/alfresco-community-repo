@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -53,8 +53,7 @@ public class HideInplaceRecordTest extends BaseRMTestCase
      */
     public void testHideInplaceRecord()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // Check that the document is not a record
@@ -64,8 +63,7 @@ public class HideInplaceRecordTest extends BaseRMTestCase
                 assertEquals(1, nodeService.getParentAssocs(dmDocument).size());
 
                 // Declare the document as a record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Declare record
@@ -73,7 +71,7 @@ public class HideInplaceRecordTest extends BaseRMTestCase
 
                         return null;
                     }
-                 }, dmCollaborator);
+                }, dmCollaborator);
 
                 // Check that the document is a record
                 assertTrue(recordService.isRecord(dmDocument));
@@ -85,8 +83,7 @@ public class HideInplaceRecordTest extends BaseRMTestCase
             public void when()
             {
                 // Hide the document
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Hide record
@@ -94,7 +91,7 @@ public class HideInplaceRecordTest extends BaseRMTestCase
 
                         return null;
                     }
-                 }, dmCollaborator);
+                }, dmCollaborator);
             }
 
             public void then()

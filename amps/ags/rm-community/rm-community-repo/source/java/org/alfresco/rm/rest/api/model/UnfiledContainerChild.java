@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,5 +33,4 @@ package org.alfresco.rm.rest.api.model;
  * @since 2.6
  */
 public class UnfiledContainerChild extends UnfiledChild
-{
-}
+{}

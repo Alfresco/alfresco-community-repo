@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,8 @@ package org.alfresco.rm.rest.api.fileplans;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
@@ -46,7 +48,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * File plan entity resource
@@ -56,8 +57,8 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @EntityResource(name = "file-plans", title = "File plans")
 public class FilePlanEntityResource implements EntityResourceAction.ReadById<FilePlan>,
-                                                EntityResourceAction.Update<FilePlan>,
-                                                InitializingBean
+        EntityResourceAction.Update<FilePlan>,
+        InitializingBean
 {
 
     private FilePlanComponentsApiUtils apiUtils;
@@ -101,7 +102,7 @@ public class FilePlanEntityResource implements EntityResourceAction.ReadById<Fil
         mandatory("parameters", parameters);
 
         QName filePlanType = apiUtils.getFilePlanType();
-        if(filePlanType == null)// rm site not created
+        if (filePlanType == null)// rm site not created
         {
             throw new EntityNotFoundException(filePlanId);
         }
@@ -121,14 +122,13 @@ public class FilePlanEntityResource implements EntityResourceAction.ReadById<Fil
         mandatory("parameters", parameters);
 
         QName filePlanType = apiUtils.getFilePlanType();
-        if(filePlanType == null)// rm site not created
+        if (filePlanType == null)// rm site not created
         {
             throw new EntityNotFoundException(filePlanId);
         }
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
 
-        RetryingTransactionCallback<Void> updateCallback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> updateCallback = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 apiUtils.updateNode(nodeRef, filePlanInfo, parameters);
@@ -137,8 +137,7 @@ public class FilePlanEntityResource implements EntityResourceAction.ReadById<Fil
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(updateCallback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
             public FileInfo execute()
             {
                 return fileFolderService.getFileInfo(nodeRef);

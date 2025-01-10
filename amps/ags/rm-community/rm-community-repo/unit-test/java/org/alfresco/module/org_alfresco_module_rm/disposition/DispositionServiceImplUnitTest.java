@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,12 +34,13 @@ import static org.mockito.Mockito.when;
 
 import java.util.Date;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit tests for {@link DispositionServiceImpl}.
@@ -64,8 +65,7 @@ public class DispositionServiceImplUnitTest
     }
 
     /**
-     * Check that the relevant information is retrieved from the DispositionActionDefinition in order to determine the
-     * "disposition as of" date.
+     * Check that the relevant information is retrieved from the DispositionActionDefinition in order to determine the "disposition as of" date.
      */
     @Test
     public void testCalculateAsOfDate()

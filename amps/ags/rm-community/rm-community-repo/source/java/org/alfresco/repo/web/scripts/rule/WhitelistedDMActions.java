@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,8 +35,7 @@ import java.util.stream.Stream;
  */
 public enum WhitelistedDMActions
 {
-    ARCHIVE("archive"),
-    RESTORE("restore");
+    ARCHIVE("archive"), RESTORE("restore");
 
     private final String value;
 
@@ -53,7 +52,7 @@ public enum WhitelistedDMActions
     public static List<String> getActionsList()
     {
         return Stream.of(WhitelistedDMActions.values())
-                     .map(WhitelistedDMActions::getValue)
-                     .collect(Collectors.toList());
+                .map(WhitelistedDMActions::getValue)
+                .collect(Collectors.toList());
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -63,8 +63,7 @@ public class RM4101Test extends BaseRMTestCase
     public void testRunRuleNotInBackground() throws Exception
     {
         final String categoryName = "category1" + UUID.randomUUID().toString();
-        final NodeRef category1 = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef category1 = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -72,8 +71,7 @@ public class RM4101Test extends BaseRMTestCase
             }
         });
 
-        final NodeRef folder1 = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef folder1 = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -82,8 +80,7 @@ public class RM4101Test extends BaseRMTestCase
         });
 
         final String folder2Name = "folder2FolderToLinkTo" + UUID.randomUUID().toString();
-        final NodeRef folder2 = doTestInTransaction(new Test<NodeRef>()
-        {
+        final NodeRef folder2 = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run()
             {
@@ -91,8 +88,7 @@ public class RM4101Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {
@@ -110,8 +106,7 @@ public class RM4101Test extends BaseRMTestCase
             }
         });
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run()
             {

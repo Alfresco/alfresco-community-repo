@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,8 +30,13 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.bulk.BulkOperation;
 import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkService;
+import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -46,15 +51,12 @@ import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.HoldBulkOperation;
 import org.alfresco.rm.rest.api.model.HoldBulkOperationEntry;
-import org.alfresco.module.org_alfresco_module_rm.bulk.hold.HoldBulkStatus;
 import org.alfresco.rm.rest.api.model.HoldDeletionReason;
 import org.alfresco.rm.rest.api.model.HoldModel;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Hold entity resource
@@ -63,10 +65,10 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @EntityResource(name = "holds", title = "Holds")
 public class HoldsEntityResource implements
-    EntityResourceAction.ReadById<HoldModel>,
-    EntityResourceAction.Update<HoldModel>,
-    EntityResourceAction.Delete,
-    InitializingBean
+        EntityResourceAction.ReadById<HoldModel>,
+        EntityResourceAction.Update<HoldModel>,
+        EntityResourceAction.Delete,
+        InitializingBean
 {
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
@@ -139,9 +141,9 @@ public class HoldsEntityResource implements
 
     @Operation("delete")
     @WebApiDescription(title = "Delete hold with a reason",
-        successStatus = HttpServletResponse.SC_OK)
+            successStatus = HttpServletResponse.SC_OK)
     public HoldDeletionReason deleteHoldWithReason(String holdId, HoldDeletionReason reason, Parameters parameters,
-        WithResponse withResponse)
+            WithResponse withResponse)
     {
         checkNotBlank("holdId", holdId);
         mandatory("reason", reason);
@@ -165,9 +167,9 @@ public class HoldsEntityResource implements
 
     @Operation("bulk")
     @WebApiDescription(title = "Start the hold bulk operation",
-        successStatus = HttpServletResponse.SC_ACCEPTED)
+            successStatus = HttpServletResponse.SC_ACCEPTED)
     public HoldBulkOperationEntry bulk(String holdId, HoldBulkOperation holdBulkOperation, Parameters parameters,
-        WithResponse withResponse)
+            WithResponse withResponse)
     {
         // validate parameters
         checkNotBlank("holdId", holdId);
@@ -176,7 +178,7 @@ public class HoldsEntityResource implements
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(holdId, RecordsManagementModel.TYPE_HOLD);
 
         HoldBulkStatus holdBulkStatus = holdBulkService.execute(parentNodeRef,
-            new BulkOperation(holdBulkOperation.query(), holdBulkOperation.op().name()));
+                new BulkOperation(holdBulkOperation.query(), holdBulkOperation.op().name()));
         return new HoldBulkOperationEntry(holdBulkStatus.bulkStatusId(), holdBulkStatus.totalItems());
     }
 

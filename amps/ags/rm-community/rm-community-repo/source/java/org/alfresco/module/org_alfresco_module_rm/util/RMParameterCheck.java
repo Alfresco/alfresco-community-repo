@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,16 +37,20 @@ import org.apache.commons.lang3.StringUtils;
 public class RMParameterCheck
 {
     /**
-     * Checks that the string parameter with the given name is not blank i.e. it is not null, zero length or entirely
-     * composed of whitespace.
+     * Checks that the string parameter with the given name is not blank i.e. it is not null, zero length or entirely composed of whitespace.
      * 
-     * @param strParamName Name of parameter to check
-     * @param strParamValue Value of the parameter to check
+     * @param strParamName
+     *            Name of parameter to check
+     * @param strParamValue
+     *            Value of the parameter to check
      */
     public static void checkNotBlank(final String strParamName, final String strParamValue)
-                throws IllegalArgumentException
+            throws IllegalArgumentException
     {
-        if (StringUtils.isBlank(strParamValue)) { throw new IllegalArgumentException(strParamName
-                    + " is a mandatory parameter"); }
+        if (StringUtils.isBlank(strParamValue))
+        {
+            throw new IllegalArgumentException(strParamName
+                    + " is a mandatory parameter");
+        }
     }
 }

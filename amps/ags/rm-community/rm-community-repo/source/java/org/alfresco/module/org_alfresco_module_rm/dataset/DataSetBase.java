@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -48,7 +48,8 @@ public class DataSetBase implements DataSet
     /**
      * Sets the data set service
      *
-     * @param dataSetService the data set service
+     * @param dataSetService
+     *            the data set service
      */
     public void setDataSetService(DataSetService dataSetService)
     {
@@ -76,7 +77,8 @@ public class DataSetBase implements DataSet
     /**
      * Sets the label of the data set service
      *
-     * @param label the label
+     * @param label
+     *            the label
      */
     public void setLabel(String label)
     {
@@ -94,7 +96,8 @@ public class DataSetBase implements DataSet
     /**
      * Sets the id of the data set service
      *
-     * @param id the id
+     * @param id
+     *            the id
      */
     public void setId(String id)
     {
@@ -112,7 +115,8 @@ public class DataSetBase implements DataSet
     /**
      * Sets the path of the data set service
      *
-     * @param path the path
+     * @param path
+     *            the path
      */
     public void setPath(String path)
     {

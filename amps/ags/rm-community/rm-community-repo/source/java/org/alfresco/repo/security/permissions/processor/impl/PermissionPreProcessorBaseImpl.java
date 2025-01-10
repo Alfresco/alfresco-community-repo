@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,20 +32,19 @@ import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 /**
  * Permission pre-processor base implementation.
  * <p>
- * Helper class that can be extended when providing a custom permission
- * pre-processor implementation.
+ * Helper class that can be extended when providing a custom permission pre-processor implementation.
  * 
  * @author Roy Wetherall
  * @since 2.4.a
  */
 public abstract class PermissionPreProcessorBaseImpl extends PermissionProcessorBaseImpl
-													 implements PermissionPreProcessor 
+        implements PermissionPreProcessor
 {
-	/**
-	 * Init method to add this permission extensions to the registry
-	 */
-	public void init()
-	{
-		getPermissionProcessorRegistry().addPermissionPreProcessor(this);
-	}
+    /**
+     * Init method to add this permission extensions to the registry
+     */
+    public void init()
+    {
+        getPermissionProcessorRegistry().addPermissionPreProcessor(this);
+    }
 }

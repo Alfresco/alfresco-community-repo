@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -99,8 +99,7 @@ public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPo
 
     public void testFilingPermissionOnCreatedHold()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser) {
             // Hold
             private NodeRef hold;
 
@@ -111,8 +110,7 @@ public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPo
             public void given() throws Exception
             {
                 // Give test user filing permissions on hold container
-                runAs(new RunAsWork<Void>()
-                {
+                runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // ensure the user has the correct permission to create the hold
@@ -147,20 +145,19 @@ public class CreateHoldTest extends BaseRMTestCase implements BeforeCreateHoldPo
 
     public void testPolicyNotificationForCreateHold() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             BehaviourDefinition<ClassBehaviourBinding> beforeCreateHoldBehaviour;
             BehaviourDefinition<ClassBehaviourBinding> onCreateHoldBehaviour;
 
             public void given()
             {
                 beforeCreateHoldBehaviour = policyComponent.bindClassBehaviour(BeforeCreateHoldPolicy.QNAME,
-                            RecordsManagementModel.TYPE_HOLD_CONTAINER,
-                            new JavaBehaviour(CreateHoldTest.this, "beforeCreateHold", NotificationFrequency.EVERY_EVENT));
+                        RecordsManagementModel.TYPE_HOLD_CONTAINER,
+                        new JavaBehaviour(CreateHoldTest.this, "beforeCreateHold", NotificationFrequency.EVERY_EVENT));
 
                 onCreateHoldBehaviour = policyComponent.bindClassBehaviour(OnCreateHoldPolicy.QNAME,
-                            RecordsManagementModel.TYPE_HOLD,
-                            new JavaBehaviour(CreateHoldTest.this, "onCreateHold", NotificationFrequency.EVERY_EVENT));
+                        RecordsManagementModel.TYPE_HOLD,
+                        new JavaBehaviour(CreateHoldTest.this, "onCreateHold", NotificationFrequency.EVERY_EVENT));
 
                 assertFalse(beforeCreateHoldFlag);
                 assertFalse(onCreateHoldFlag);

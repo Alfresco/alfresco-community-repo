@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,11 +33,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
-import org.alfresco.service.namespace.QName;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -47,9 +42,14 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Implementation for Java backed webscript to add RM custom property definitions
- * to the custom model.
+ * Implementation for Java backed webscript to add RM custom property definitions to the custom model.
  *
  * @author Neil McErlean
  */
@@ -103,13 +103,14 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
         return ftlModel;
     }
 
     /**
      * Applies custom properties.
+     * 
      * @throws CustomMetadataException
      */
     protected Map<String, Object> createPropertyDefinition(WebScriptRequest req, JSONObject json)
@@ -137,9 +138,9 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         params = new HashMap<>();
         params.put(PARAM_ELEMENT, req.getParameter(PARAM_ELEMENT));
 
-        for (Iterator iter = json.keys(); iter.hasNext(); )
+        for (Iterator iter = json.keys(); iter.hasNext();)
         {
-            String nextKeyString = (String)iter.next();
+            String nextKeyString = (String) iter.next();
             Serializable nextValue = (Serializable) json.get(nextKeyString);
             params.put(nextKeyString, nextValue);
         }
@@ -150,42 +151,43 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
     /**
      * Create a property definition based on the parameter values provided
      *
-     * @param params parameter values
+     * @param params
+     *            parameter values
      * @return {@link QName} qname of the newly created custom property
      * @throws CustomMetadataException
      */
     protected QName createNewPropertyDefinition(Map<String, Serializable> params) throws CustomMetadataException
     {
-    	// Get the customisable type name
-        String customisableElement = (String)params.get(PARAM_ELEMENT);
+        // Get the customisable type name
+        String customisableElement = (String) params.get(PARAM_ELEMENT);
         QName customisableType = mapToTypeQName(customisableElement);
 
-        String label = URLDecoder.decode((String)params.get(PARAM_LABEL));
+        String label = URLDecoder.decode((String) params.get(PARAM_LABEL));
 
-        //According to the wireframes, type here can only be date|text|number
+        // According to the wireframes, type here can only be date|text|number
         Serializable serializableParam = params.get(PARAM_DATATYPE);
         QName type = null;
         if (serializableParam != null)
         {
             if (serializableParam instanceof String)
             {
-                type = QName.createQName((String)serializableParam, getNamespaceService());
+                type = QName.createQName((String) serializableParam, getNamespaceService());
             }
             else if (serializableParam instanceof QName)
             {
-                type = (QName)serializableParam;
+                type = (QName) serializableParam;
             }
             else
             {
-                throw new AlfrescoRuntimeException("Unexpected type of dataType param: "+serializableParam+" (expected String or QName)");
+                throw new AlfrescoRuntimeException("Unexpected type of dataType param: " + serializableParam + " (expected String or QName)");
             }
         }
 
         // The title is actually generated, so this parameter will be ignored
         // by the RMAdminService
-        String title = (String)params.get(PARAM_TITLE);
-        String description = (String)params.get(PARAM_DESCRIPTION);
-        String defaultValue = (String)params.get(PARAM_DEFAULT_VALUE);
+        String title = (String) params.get(PARAM_TITLE);
+        String description = (String) params.get(PARAM_DESCRIPTION);
+        String defaultValue = (String) params.get(PARAM_DEFAULT_VALUE);
 
         boolean mandatory = false;
         serializableParam = params.get(PARAM_MANDATORY);
@@ -214,40 +216,38 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         {
             if (serializableParam instanceof String)
             {
-                constraintRef = QName.createQName((String)serializableParam, getNamespaceService());
+                constraintRef = QName.createQName((String) serializableParam, getNamespaceService());
             }
             else if (serializableParam instanceof QName)
             {
-                constraintRef = (QName)serializableParam;
+                constraintRef = (QName) serializableParam;
             }
             else
             {
-                throw new AlfrescoRuntimeException("Unexpected type of constraintRef param: "+serializableParam+" (expected String or QName)");
+                throw new AlfrescoRuntimeException("Unexpected type of constraintRef param: " + serializableParam + " (expected String or QName)");
             }
         }
 
         // if propId is specified, use it.
         QName proposedQName = null;
-        String propId = (String)params.get(PROP_ID);
+        String propId = (String) params.get(PROP_ID);
         if (propId != null)
         {
             proposedQName = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_PREFIX, propId, getNamespaceService());
         }
 
         return rmAdminService.addCustomPropertyDefinition(
-        			proposedQName,
-        			customisableType,
-        			label,
-        			type,
-        			title,
-        			description,
-        			defaultValue,
-        			multiValued,
-        			mandatory,
-        			isProtected,
-        			constraintRef);
+                proposedQName,
+                customisableType,
+                label,
+                type,
+                title,
+                description,
+                defaultValue,
+                multiValued,
+                mandatory,
+                isProtected,
+                constraintRef);
     }
-
-
 
 }

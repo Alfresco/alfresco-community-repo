@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,23 +47,23 @@ public class FillingOnHoldContainerCapabilityCondition extends AbstractCapabilit
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
-        NodeRef holdContainer = nodeRef;      
-        
+        NodeRef holdContainer = nodeRef;
+
         // if we have a file plan, go get the hold container
         if (filePlanService.isFilePlan(nodeRef) == true)
         {
             holdContainer = filePlanService.getHoldContainer(nodeRef);
         }
-        
+
         // ensure we are dealing with a hold container
         if (TYPE_HOLD_CONTAINER.equals(nodeService.getType(holdContainer)))
-        {        
+        {
             if (permissionService.hasPermission(holdContainer, RMPermissionModel.FILE_RECORDS) != AccessStatus.DENIED)
             {
                 result = true;
             }
         }
-        
-        return result;     
+
+        return result;
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,15 +33,12 @@ import java.util.Date;
  * An immutable POJO that contains the status of a hold bulk operation
  */
 public record HoldBulkStatus(String bulkStatusId, Date startTime, Date endTime, long processedItems, long errorsCount,
-                             long totalItems, String lastError, boolean isCancelled, String cancellationReason)
-    implements Serializable
+        long totalItems, String lastError, boolean isCancelled, String cancellationReason)
+        implements Serializable
 {
     public enum Status
     {
-        PENDING("PENDING"),
-        IN_PROGRESS("IN PROGRESS"),
-        DONE("DONE"),
-        CANCELLED("CANCELLED");
+        PENDING("PENDING"), IN_PROGRESS("IN PROGRESS"), DONE("DONE"), CANCELLED("CANCELLED");
 
         private final String value;
 

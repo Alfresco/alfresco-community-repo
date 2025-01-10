@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,14 +32,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+
 import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 /**
  * Bootstrap importer module component unit test
@@ -53,18 +54,19 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
     private static final NodeRef configNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
 
     /** mocks */
-    @Mock(name="importer")                                  private ImporterBootstrap                         mockedImporter;
-    @Mock(name="modulePatchExecuter")                       private ModulePatchExecuter                       mockedModulePatchExecuter;
-    @Mock(name="recordContributorsGroupBootstrapComponent") private RecordContributorsGroupBootstrapComponent mockedRecordContributorsGroupBootstrapComponent;
+    @Mock(name = "importer")
+    private ImporterBootstrap mockedImporter;
+    @Mock(name = "modulePatchExecuter")
+    private ModulePatchExecuter mockedModulePatchExecuter;
+    @Mock(name = "recordContributorsGroupBootstrapComponent")
+    private RecordContributorsGroupBootstrapComponent mockedRecordContributorsGroupBootstrapComponent;
 
     /** importer */
     @InjectMocks
     private BootstrapImporterModuleComponent importer;
 
     /**
-     * Given that the system has already been bootstraped
-     * When I try and boostrap the system
-     * Then the system is not bootstraped again
+     * Given that the system has already been bootstraped When I try and boostrap the system Then the system is not bootstraped again
      */
     @Test
     public void alreadyBootstraped() throws Throwable
@@ -82,9 +84,7 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that the system has not been bootstraped
-     * When I try and bootstrap the system
-     * Then the system is bootstraped
+     * Given that the system has not been bootstraped When I try and bootstrap the system Then the system is bootstraped
      */
     @Test
     public void boostrap() throws Throwable

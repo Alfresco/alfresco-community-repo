@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,49 +44,49 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest.Wo
 public class ExpectedFailure
 {
     private static final String MESSAGE = "Expected failure \"{0}\" was not observed.";
-    
+
     private BehaviourTest test;
     private Set<Class<? extends Exception>> exceptionClasses;
     private Work work;
-    
+
     @SafeVarargs
-    public ExpectedFailure(BehaviourTest test, Class<? extends Exception> ...exceptionClasses)
+    public ExpectedFailure(BehaviourTest test, Class<? extends Exception>... exceptionClasses)
     {
         this.test = test;
         this.exceptionClasses = Arrays.stream(exceptionClasses).collect(Collectors.toSet());
     }
-    
+
     public ExpectedFailure from(Work work)
     {
         this.work = work;
         return this;
     }
-    
+
     public BehaviourTest because(String message)
     {
         try
         {
             test.perform(work);
         }
-        catch(Exception actualException)
+        catch (Exception actualException)
         {
             boolean found = false;
-            
+
             for (Class<? extends Exception> exceptionClass : exceptionClasses)
-            {   
+            {
                 if (exceptionClass.isAssignableFrom(actualException.getClass()))
                 {
                     found = true;
                 }
             }
-            
+
             if (!found)
             {
                 fail(MessageFormat.format(MESSAGE, message));
             }
         }
-        
+
         return test;
     }
-    
+
 }

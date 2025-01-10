@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,6 +37,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -57,13 +65,6 @@ import org.alfresco.service.cmr.view.ImporterBinding;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit Test class for RMSitesImpl.
@@ -73,7 +74,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  *
  */
 @RunWith(MockitoJUnitRunner.class)
-public class RMSitesImplUnitTest  extends BaseUnitTest
+public class RMSitesImplUnitTest extends BaseUnitTest
 {
     private static final String RM_SITE_TITLE_AFTER_UPDATE = "Updated Title";
     private static final String RM_SITE_DESCRIPTION_AFTER_UPDATE = "Updated Description";
@@ -94,8 +95,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
 
     @Before
     public void before()
-    {
-    }
+    {}
 
     @Test
     public void createRMStandardSite() throws Exception
@@ -104,7 +104,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         toCreate.setTitle(RM_SITE_TITLE);
         toCreate.setDescription(RM_SITE_DESCRIPTION);
 
-        //mocked SiteInfo
+        // mocked SiteInfo
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedSiteInfo.getShortName()).thenReturn(RM_SITE_ID);
@@ -115,12 +115,12 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
 
         when(mockedSiteService.createSite(any(String.class), any(String.class), any(String.class), any(String.class), any(SiteVisibility.class), any(QName.class))).thenReturn(mockedSiteInfo);
 
-        //mock Parameters
+        // mock Parameters
         Parameters mockedParameters = mock(Parameters.class);
-        //call createRMSite method
+        // call createRMSite method
         RMSite createdRMSite = rmSitesImpl.createRMSite(toCreate, mockedParameters);
 
-        //check siteService.createSite parameters
+        // check siteService.createSite parameters
         ArgumentCaptor<String> sitePresetCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> idCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
@@ -139,7 +139,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         verify(mockedSiteService, times(1)).createContainer(RM_SITE_ID, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
         verify(mockedFavouritesService, times(1)).addFavourite(nullable(String.class), any(NodeRef.class));
 
-        //verify returned values for RM site are the right ones
+        // verify returned values for RM site are the right ones
         assertEquals(RMSiteCompliance.STANDARD, createdRMSite.getCompliance());
         assertEquals(null, createdRMSite.getRole());
         assertEquals(RM_SITE_ID, createdRMSite.getId());
@@ -157,7 +157,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         toCreate.setDescription(RM_SITE_DESCRIPTION);
         toCreate.setCompliance(RMSiteCompliance.DOD5015);
 
-        //mocked SiteInfo
+        // mocked SiteInfo
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedSiteInfo.getShortName()).thenReturn(RM_SITE_ID);
@@ -168,12 +168,12 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
 
         when(mockedSiteService.createSite(any(String.class), any(String.class), any(String.class), any(String.class), any(SiteVisibility.class), any(QName.class))).thenReturn(mockedSiteInfo);
 
-        //mock Parameters
+        // mock Parameters
         Parameters mockedParameters = mock(Parameters.class);
-        //call createRMSite method
+        // call createRMSite method
         RMSite createdRMSite = rmSitesImpl.createRMSite(toCreate, mockedParameters);
 
-        //check siteService.createSite parameters
+        // check siteService.createSite parameters
         ArgumentCaptor<String> sitePresetCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> idCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
@@ -192,7 +192,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         verify(mockedSiteService, times(1)).createContainer(RM_SITE_ID, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
         verify(mockedFavouritesService, times(1)).addFavourite(nullable(String.class), any(NodeRef.class));
 
-        //verify returned values for RM site are the right ones
+        // verify returned values for RM site are the right ones
         assertEquals(RMSiteCompliance.DOD5015, createdRMSite.getCompliance());
         assertEquals(null, createdRMSite.getRole());
         assertEquals(RM_SITE_ID, createdRMSite.getId());
@@ -209,7 +209,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         toCreate.setTitle(RM_SITE_TITLE);
         toCreate.setDescription(RM_SITE_DESCRIPTION);
 
-        //mocked SiteInfo
+        // mocked SiteInfo
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedSiteInfo.getShortName()).thenReturn(RM_SITE_ID);
@@ -220,11 +220,11 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
 
         when(mockedSiteService.createSite(any(String.class), any(String.class), any(String.class), any(String.class), any(SiteVisibility.class), any(QName.class))).thenReturn(mockedSiteInfo);
 
-        //mock Parameters
+        // mock Parameters
         Parameters mockedParameters = mock(Parameters.class);
         when(mockedParameters.getParameter(PARAM_SKIP_ADDTOFAVORITES)).thenReturn(Boolean.toString(true));
 
-        //call createRMSite method
+        // call createRMSite method
         rmSitesImpl.createRMSite(toCreate, mockedParameters);
 
         verify(mockedSiteService, times(1)).createSite(RM_SITE_PRESET, RM_SITE_ID, RM_SITE_TITLE, RM_SITE_DESCRIPTION, SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
@@ -240,13 +240,13 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
 
-        //mock SiteInfo
+        // mock SiteInfo
         when(mockedSiteInfo.getShortName()).thenReturn(siteId);
         when(mockedSiteInfo.getNodeRef()).thenReturn(siteNodeRef);
         when(mockedSiteInfo.getDescription()).thenReturn(RM_SITE_DESCRIPTION)
-                                             .thenReturn(RM_SITE_DESCRIPTION_AFTER_UPDATE);
+                .thenReturn(RM_SITE_DESCRIPTION_AFTER_UPDATE);
         when(mockedSiteInfo.getTitle()).thenReturn(RM_SITE_TITLE)
-                                       .thenReturn(RM_SITE_TITLE_AFTER_UPDATE);
+                .thenReturn(RM_SITE_TITLE_AFTER_UPDATE);
         when(mockedSiteInfo.getVisibility()).thenReturn(SiteVisibility.PUBLIC);
 
         when(mockedNodeService.getType(siteNodeRef)).thenReturn(RecordsManagementModel.TYPE_RM_SITE);
@@ -254,36 +254,36 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         when(mockedSiteService.getSite(siteId)).thenReturn(mockedSiteInfo);
         when(mockedSiteService.getMembersRole(eq(siteId), nullable(String.class))).thenReturn(RM_SITE_MANAGER_ROLE);
 
-        //mock UpdateSite
-        SiteUpdate mockedSiteUpdate= mock(SiteUpdate.class);
+        // mock UpdateSite
+        SiteUpdate mockedSiteUpdate = mock(SiteUpdate.class);
         when(mockedSiteUpdate.getDescription()).thenReturn(RM_SITE_DESCRIPTION_AFTER_UPDATE);
         when(mockedSiteUpdate.getTitle()).thenReturn(RM_SITE_TITLE_AFTER_UPDATE);
         when(mockedSiteUpdate.wasSet(Site.TITLE)).thenReturn(true);
         when(mockedSiteUpdate.wasSet(Site.DESCRIPTION)).thenReturn(true);
 
-        //mock Parameters
+        // mock Parameters
         Parameters mockedParameters = mock(Parameters.class);
 
-        //call updateRMSite method
+        // call updateRMSite method
         RMSite updatedRMSite = rmSitesImpl.updateRMSite(siteId, mockedSiteUpdate, mockedParameters);
 
-        //check if the new title is set to siteInfo
+        // check if the new title is set to siteInfo
         ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockedSiteInfo, times(1)).setTitle(titleCaptor.capture());
         assertEquals(RM_SITE_TITLE_AFTER_UPDATE, titleCaptor.getValue());
 
-        //check that new description is set to siteInfo
+        // check that new description is set to siteInfo
         ArgumentCaptor<String> descriptionCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockedSiteInfo, times(1)).setDescription(descriptionCaptor.capture());
         assertEquals(RM_SITE_DESCRIPTION_AFTER_UPDATE, descriptionCaptor.getValue());
 
-        //check that site visibility is not changed
+        // check that site visibility is not changed
         verify(mockedSiteInfo, never()).setVisibility(any(SiteVisibility.class));
 
-        //check that updateSite is called
+        // check that updateSite is called
         verify(mockedSiteService, times(1)).updateSite(any(SiteInfo.class));
 
-        //verify returned values for RM site are the right ones
+        // verify returned values for RM site are the right ones
         assertEquals(RMSiteCompliance.STANDARD, updatedRMSite.getCompliance());
         assertEquals(RM_SITE_MANAGER_ROLE, updatedRMSite.getRole());
         assertEquals(siteId, updatedRMSite.getId());
@@ -309,7 +309,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         when(mockedSiteService.getSite(siteId)).thenReturn(mockedSiteInfo);
         when(mockedSiteService.getMembersRole(eq(siteId), nullable(String.class))).thenReturn(RM_SITE_MANAGER_ROLE);
 
-        //STANDARD compliance
+        // STANDARD compliance
         RMSite rmSite = rmSitesImpl.getRMSite(siteId);
         assertEquals(RMSiteCompliance.STANDARD, rmSite.getCompliance());
         assertEquals(RM_SITE_MANAGER_ROLE, rmSite.getRole());
@@ -319,7 +319,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         assertEquals(RM_SITE_TITLE, rmSite.getTitle());
         assertEquals(SiteVisibility.PUBLIC, rmSite.getVisibility());
 
-        //DOD5015 compliance
+        // DOD5015 compliance
         when(mockedNodeService.getType(siteNodeRef)).thenReturn(DOD5015Model.TYPE_DOD_5015_SITE);
         rmSite = rmSitesImpl.getRMSite(siteId);
         assertEquals(RMSiteCompliance.DOD5015, rmSite.getCompliance());

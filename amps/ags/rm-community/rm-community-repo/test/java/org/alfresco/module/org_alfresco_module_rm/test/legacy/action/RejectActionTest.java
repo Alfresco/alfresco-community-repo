@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -57,8 +57,7 @@ public class RejectActionTest extends BaseRMTestCase
 
     public void testRejectAction()
     {
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 // Create a record from the document
@@ -78,10 +77,9 @@ public class RejectActionTest extends BaseRMTestCase
                 return null;
             }
         },
-        dmCollaborator);
+                dmCollaborator);
 
-        doTestInTransaction(new FailureTest("Cannot reject a record without a reason.", IllegalArgumentException.class)
-        {
+        doTestInTransaction(new FailureTest("Cannot reject a record without a reason.", IllegalArgumentException.class) {
             public void run()
             {
                 // The test should fail if the reject reason is not supplied
@@ -89,10 +87,9 @@ public class RejectActionTest extends BaseRMTestCase
                 actionService.executeAction(rejectAction, dmDocument);
             }
         },
-        dmCollaborator);
+                dmCollaborator);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             public Void run()
             {
                 // Create the reject action and add the reject reason
@@ -119,6 +116,6 @@ public class RejectActionTest extends BaseRMTestCase
                 return null;
             }
         },
-        dmCollaborator);
+                dmCollaborator);
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,6 +36,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
@@ -56,9 +60,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Base class for RM admin services
@@ -149,7 +150,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Sets the dictionary service instance
      *
-     * @param dictionaryService The dictionary service instance
+     * @param dictionaryService
+     *            The dictionary service instance
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -159,7 +161,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Sets the node service instance
      *
-     * @param nodeService The node service instance
+     * @param nodeService
+     *            The node service instance
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -169,7 +172,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Sets the content service instance
      *
-     * @param contentService The content service instance
+     * @param contentService
+     *            The content service instance
      */
     public void setContentService(ContentService contentService)
     {
@@ -179,7 +183,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Sets the namespace service instance
      *
-     * @param namespaceService The namespace service instance
+     * @param namespaceService
+     *            The namespace service instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -189,7 +194,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Sets the dictionary repository bootstrap instance
      *
-     * @param dictionaryRepositoryBootstrap The dictionary repository bootstrap instance
+     * @param dictionaryRepositoryBootstrap
+     *            The dictionary repository bootstrap instance
      */
     public void setDictionaryRepositoryBootstrap(DictionaryRepositoryBootstrap dictionaryRepositoryBootstrap)
     {
@@ -217,7 +223,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Gets the node reference of the custom model
      *
-     * @param uri The URI of the model namespace
+     * @param uri
+     *            The URI of the model namespace
      * @return The node reference of the custom model
      */
     protected NodeRef getCustomModelRef(String uri)
@@ -248,7 +255,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
                 }
                 catch (DictionaryException de)
                 {
-                    logger.warn("readCustomContentModel: skip model ("+modelRef+") whilst searching for uri ("+uri+"): ", de);
+                    logger.warn("readCustomContentModel: skip model (" + modelRef + ") whilst searching for uri (" + uri + "): ", de);
                 }
             }
 
@@ -259,7 +266,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Gets the deserialized model
      *
-     * @param modelNodeRef The node reference of the model
+     * @param modelNodeRef
+     *            The node reference of the model
      * @return The deserialized model
      */
     protected M2Model readCustomContentModel(NodeRef modelNodeRef)
@@ -299,8 +307,10 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Updates the content of the custom model
      *
-     * @param modelRef The node reference of the model
-     * @param deserializedModel The deserialized model
+     * @param modelRef
+     *            The node reference of the model
+     * @param deserializedModel
+     *            The deserialized model
      */
     protected void writeCustomContentModel(NodeRef modelRef, M2Model deserializedModel)
     {
@@ -328,7 +338,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Checks if the given association definition title exists
      *
-     * @param associationDefinitionTitle The association definition title
+     * @param associationDefinitionTitle
+     *            The association definition title
      * @return <code>true</code> if the association definition title exists, <code>false</code> otherwise
      */
     protected boolean existsTitle(String associationDefinitionTitle)
@@ -348,7 +359,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Splits the association definition title into source text and target text
      *
-     * @param sourceTargetText The text to split into source text and target text
+     * @param sourceTargetText
+     *            The text to split into source text and target text
      * @return Splited association definition title which includes source text and target text
      */
     protected String[] splitAssociationDefinitionTitle(String sourceTargetText)
@@ -364,8 +376,10 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
     /**
      * Creates the association definition title form the source text and target text
      *
-     * @param sourceText The source text
-     * @param targetText The target text
+     * @param sourceText
+     *            The source text
+     * @param targetText
+     *            The target text
      * @return The association definition title created from the source text and target text
      */
     protected String composeAssociationDefinitionTitle(String sourceText, String targetText)
@@ -377,8 +391,8 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
 
         StringBuilder sb = new StringBuilder();
         sb.append(sourceText)
-            .append(SOURCE_TARGET_ID_SEPARATOR)
-            .append(targetText);
+                .append(SOURCE_TARGET_ID_SEPARATOR)
+                .append(targetText);
 
         return sb.toString();
     }

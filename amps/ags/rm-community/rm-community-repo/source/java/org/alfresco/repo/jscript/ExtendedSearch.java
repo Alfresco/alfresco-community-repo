@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,10 +49,10 @@ public class ExtendedSearch extends Search
     @Override
     public ScriptNode findNode(NodeRef ref)
     {
-        ParameterCheck.mandatory("ref", ref);       
+        ParameterCheck.mandatory("ref", ref);
         if (this.services.getNodeService().exists(ref) &&
-            (this.services.getPermissionService().hasPermission(ref, PermissionService.READ) == AccessStatus.ALLOWED ||
-             this.services.getPermissionService().hasPermission(ref, RMPermissionModel.READ_RECORDS) == AccessStatus.ALLOWED))
+                (this.services.getPermissionService().hasPermission(ref, PermissionService.READ) == AccessStatus.ALLOWED ||
+                        this.services.getPermissionService().hasPermission(ref, RMPermissionModel.READ_RECORDS) == AccessStatus.ALLOWED))
         {
             return new ScriptNode(ref, this.services, getScope());
         }

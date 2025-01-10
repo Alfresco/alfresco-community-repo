@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -53,8 +56,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Hold children relation
@@ -63,10 +64,10 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 @RelationshipResource(name = "children", entityResource = HoldsEntityResource.class, title = "Children of a hold")
 public class HoldsChildrenRelation implements
-    RelationshipResourceAction.Create<HoldChild>,
-    RelationshipResourceAction.Read<HoldChild>,
-    RelationshipResourceAction.Delete,
-    InitializingBean
+        RelationshipResourceAction.Create<HoldChild>,
+        RelationshipResourceAction.Read<HoldChild>,
+        RelationshipResourceAction.Delete,
+        InitializingBean
 {
     private HoldService holdService;
     private FilePlanComponentsApiUtils apiUtils;
@@ -98,8 +99,8 @@ public class HoldsChildrenRelation implements
 
         RetryingTransactionCallback<List<NodeRef>> callback = () -> {
             List<NodeRef> createdNodes = children.stream()
-                .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.id()))
-                .collect(Collectors.toList());
+                    .map(holdChild -> new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, holdChild.id()))
+                    .collect(Collectors.toList());
             try
             {
                 holdService.addToHold(parentNodeRef, createdNodes);
@@ -113,11 +114,11 @@ public class HoldsChildrenRelation implements
         };
 
         List<NodeRef> nodeInfos = transactionService.getRetryingTransactionHelper()
-            .doInTransaction(callback, false, true);
+                .doInTransaction(callback, false, true);
 
         return nodeInfos.stream()
-            .map(nodeRef -> new HoldChild(nodeRef.getId()))
-            .collect(Collectors.toCollection(LinkedList::new));
+                .map(nodeRef -> new HoldChild(nodeRef.getId()))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
@@ -131,11 +132,11 @@ public class HoldsChildrenRelation implements
         List<NodeRef> children = holdService.getHeld(parentNodeRef);
 
         List<HoldChild> page = children.stream()
-            .map(NodeRef::getId)
-            .map(HoldChild::new)
-            .skip(parameters.getPaging().getSkipCount())
-            .limit(parameters.getPaging().getMaxItems())
-            .collect(Collectors.toCollection(LinkedList::new));
+                .map(NodeRef::getId)
+                .map(HoldChild::new)
+                .skip(parameters.getPaging().getSkipCount())
+                .limit(parameters.getPaging().getMaxItems())
+                .collect(Collectors.toCollection(LinkedList::new));
 
         int totalItems = children.size();
         boolean hasMore = parameters.getPaging().getSkipCount() + parameters.getPaging().getMaxItems() < totalItems;

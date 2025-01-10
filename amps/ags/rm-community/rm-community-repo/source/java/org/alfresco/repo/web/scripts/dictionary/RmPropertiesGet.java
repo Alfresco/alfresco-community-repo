@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,19 +34,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.QName;
+
 /**
  * Webscript to get the Propertydefinitions for a given classname eg. =&gt;cm_person
  *
  * This class makes it possible to get only RM related property definitions
+ * 
  * @see PropertiesGet for the original implementation
  *
  * @author Tuna Aksoy
@@ -59,11 +61,12 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
     private static final String PARAM_NAME = "name";
     private static final String REQ_URL_TEMPL_VAR_NAMESPACE_PREFIX = "nsp";
 
-    /** Site service*/
+    /** Site service */
     private SiteService siteService;
 
     /**
-     * @param siteService the site service to set
+     * @param siteService
+     *            the site service to set
      */
     public void setSiteService(SiteService siteService)
     {
@@ -81,8 +84,10 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
     /**
      * Execute custom Java logic
      *
-     * @param req  Web Script request
-     * @param isRM  indicates whether the request comes from an RM site or not
+     * @param req
+     *            Web Script request
+     * @param isRM
+     *            indicates whether the request comes from an RM site or not
      * @return custom service model
      */
     private Map<String, Object> executeImpl(WebScriptRequest req, boolean isRM)
@@ -146,8 +151,8 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
         for (Map.Entry<QName, PropertyDefinition> entry : propMap.entrySet())
         {
             if ((namespaceURI != null &&
-                 namespaceURI.equals(entry.getKey().getNamespaceURI())) ||
-                namespaceURI == null)
+                    namespaceURI.equals(entry.getKey().getNamespaceURI())) ||
+                    namespaceURI == null)
             {
                 props.add(entry.getValue());
             }
@@ -167,7 +172,8 @@ public class RmPropertiesGet extends DictionaryWebServiceBase implements Records
     /**
      * Returns the names of the properties depending on {@link isRM} parameter
      *
-     * @param isRM if true only RM related properties will be retrieved
+     * @param isRM
+     *            if true only RM related properties will be retrieved
      * @return The names of the properties defined within the specified model or all of them depending on {@link isRM} parameter
      */
     private Collection<QName> getProperties(boolean isRM)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,7 +42,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class RelationshipImpl implements Relationship, Serializable
 {
-        /** serial UID */
+    /** serial UID */
     private static final long serialVersionUID = 9120649510198344978L;
 
     /** The unique name of the relationship */
@@ -57,9 +57,12 @@ public class RelationshipImpl implements Relationship, Serializable
     /**
      * Constructor for creating a relationship
      *
-     * @param uniqueName The unique name of the relationship
-     * @param source The source of the relationship
-     * @param target The target of the relationship
+     * @param uniqueName
+     *            The unique name of the relationship
+     * @param source
+     *            The source of the relationship
+     * @param target
+     *            The target of the relationship
      */
     public RelationshipImpl(String uniqueName, NodeRef source, NodeRef target)
     {
@@ -84,7 +87,8 @@ public class RelationshipImpl implements Relationship, Serializable
     /**
      * Sets the unique name of the relationship
      *
-     * @param uniqueName The unique name of the relationship
+     * @param uniqueName
+     *            The unique name of the relationship
      */
     private void setUniqueName(String uniqueName)
     {
@@ -103,7 +107,8 @@ public class RelationshipImpl implements Relationship, Serializable
     /**
      * Sets the source of the relationship
      *
-     * @param source The source of the relationship
+     * @param source
+     *            The source of the relationship
      */
     private void setSource(NodeRef source)
     {
@@ -122,13 +127,14 @@ public class RelationshipImpl implements Relationship, Serializable
     /**
      * Sets the target of the relationship
      *
-     * @param target The target of the relationship
+     * @param target
+     *            The target of the relationship
      */
     private void setTarget(NodeRef target)
     {
         this.target = target;
     }
-    
+
     /**
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -151,7 +157,7 @@ public class RelationshipImpl implements Relationship, Serializable
             return false;
         }
     }
-    
+
     /**
      * @see java.lang.Object#hashCode()
      */
@@ -160,7 +166,7 @@ public class RelationshipImpl implements Relationship, Serializable
     {
         int prime = 31;
         int result = prime + uniqueName.hashCode();
-        result = (prime*result) + source.hashCode();
-        return (prime*result) + target.hashCode();
+        result = (prime * result) + source.hashCode();
+        return (prime * result) + target.hashCode();
     }
 }

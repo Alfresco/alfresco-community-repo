@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,7 +46,8 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
     protected RepositoryState repositoryState;
 
     /**
-     * @param retryingTransactionHelper retrying transaction helper
+     * @param retryingTransactionHelper
+     *            retrying transaction helper
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -54,7 +55,8 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
     }
 
     /**
-     * @param repositoryState   repository state helper component
+     * @param repositoryState
+     *            repository state helper component
      */
     public void setRepositoryState(RepositoryState repositoryState)
     {

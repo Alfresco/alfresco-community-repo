@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,7 +30,6 @@ package org.alfresco.repo.security.permissions.processor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
-
 /**
  * Permission Veto Interface
  * 
@@ -39,13 +38,15 @@ import org.alfresco.service.cmr.security.AccessStatus;
  */
 public interface PermissionPreProcessor
 {
-	/**
-	 * Process permission.
-	 *
-	 * @param  nodeRef				node reference
-	 * @param  perm					permission
-	 * @return {@link AccessStatus}
-	 */
-	AccessStatus process(NodeRef nodeRef, String perm);
+    /**
+     * Process permission.
+     *
+     * @param nodeRef
+     *            node reference
+     * @param perm
+     *            permission
+     * @return {@link AccessStatus}
+     */
+    AccessStatus process(NodeRef nodeRef, String perm);
 
 }

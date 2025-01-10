@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -38,8 +38,10 @@ public interface HoldBulkService
     /**
      * Initiates a bulk operation on a hold.
      *
-     * @param holdRef       The hold reference
-     * @param bulkOperation The bulk operation
+     * @param holdRef
+     *            The hold reference
+     * @param bulkOperation
+     *            The bulk operation
      * @return The initial status of the bulk operation
      */
     HoldBulkStatus execute(NodeRef holdRef, BulkOperation bulkOperation);
@@ -47,9 +49,12 @@ public interface HoldBulkService
     /**
      * Cancels a bulk operation.
      *
-     * @param holdRef                 The hold reference
-     * @param bulkStatusId            The bulk status id
-     * @param bulkCancellationRequest The bulk cancellation request
+     * @param holdRef
+     *            The hold reference
+     * @param bulkStatusId
+     *            The bulk status id
+     * @param bulkCancellationRequest
+     *            The bulk cancellation request
      */
     void cancelBulkOperation(NodeRef holdRef, String bulkStatusId, BulkCancellationRequest bulkCancellationRequest);
 }

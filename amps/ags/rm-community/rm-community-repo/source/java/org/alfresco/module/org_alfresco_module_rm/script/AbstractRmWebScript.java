@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,20 +29,20 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getTemplateVars;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Abstract base class for all RM webscript classes.
- * Includes utility methods for processing the webscript request.
+ * Abstract base class for all RM webscript classes. Includes utility methods for processing the webscript request.
  *
  * @author Neil McErlean
  * @author Tuna Aksoy
@@ -80,7 +80,8 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
     /**
      * Sets the disposition service instance
      *
-     * @param dispositionService The disposition service instance
+     * @param dispositionService
+     *            The disposition service instance
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -100,7 +101,8 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
     /**
      * Sets the namespace service instance
      *
-     * @param namespaceService The namespace service instance
+     * @param namespaceService
+     *            The namespace service instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -120,7 +122,8 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
     /**
      * Sets the node service instance
      *
-     * @param nodeService The node service instance
+     * @param nodeService
+     *            The node service instance
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -130,7 +133,8 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
     /**
      * Parses the request and providing it's valid returns the NodeRef.
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The NodeRef passed in the request
      *
      */
@@ -149,7 +153,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
         if (!getNodeService().exists(nodeRef))
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find node: '" +
-                        nodeRef.toString() + "'.");
+                    nodeRef.toString() + "'.");
         }
 
         return nodeRef;

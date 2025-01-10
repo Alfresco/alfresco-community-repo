@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -60,7 +60,8 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     private SiteService siteService;
 
     /**
-     * @param recordsManagementSearchService records management search service
+     * @param recordsManagementSearchService
+     *            records management search service
      */
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
     {
@@ -68,7 +69,8 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     }
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -77,7 +79,9 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
 
     /**
      * Setter for siteService
-     * @param siteService Site service fundamental API.
+     * 
+     * @param siteService
+     *            Site service fundamental API.
      */
     public void setSiteService(SiteService siteService)
     {
@@ -90,7 +94,7 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-        if(siteService.getSite(DEFAULT_SITE_NAME) != null)
+        if (siteService.getSite(DEFAULT_SITE_NAME) != null)
         {
             for (SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME))
             {
@@ -103,4 +107,3 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
         }
     }
 }
-

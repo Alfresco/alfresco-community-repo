@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,7 +44,7 @@ public abstract class UnfiledChild extends RMNode
     protected Boolean isUnfiledRecordFolder;
     protected Boolean isRecord;
 
-    @JsonProperty (PARAM_IS_UNFILED_RECORD_FOLDER)
+    @JsonProperty(PARAM_IS_UNFILED_RECORD_FOLDER)
     public Boolean getIsUnfiledRecordFolder()
     {
         return isUnfiledRecordFolder;
@@ -56,7 +56,7 @@ public abstract class UnfiledChild extends RMNode
         this.isUnfiledRecordFolder = isUnfiledRecordFolder;
     }
 
-    @JsonProperty (PARAM_IS_RECORD)
+    @JsonProperty(PARAM_IS_RECORD)
     public Boolean getIsRecord()
     {
         return isRecord;
@@ -67,6 +67,5 @@ public abstract class UnfiledChild extends RMNode
     {
         this.isRecord = isRecord;
     }
-
 
 }

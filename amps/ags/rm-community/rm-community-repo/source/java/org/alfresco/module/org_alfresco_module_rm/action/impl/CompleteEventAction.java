@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -50,7 +50,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     public static final String NAME = "completeEvent";
 
     /** action parameter names */
-	public static final String PARAM_EVENT_NAME = "eventName";
+    public static final String PARAM_EVENT_NAME = "eventName";
     public static final String PARAM_EVENT_COMPLETED_BY = "eventCompletedBy";
     public static final String PARAM_EVENT_COMPLETED_AT = "eventCompletedAt";
 
@@ -61,27 +61,26 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_EVENT_NAME,
-                                                  DataTypeDefinition.TEXT,
-                                                  true,
-                                                  getParamDisplayLabel(PARAM_EVENT_NAME),
-                                                  false,
-                                                  "rm-ac-manual-events"));
+                DataTypeDefinition.TEXT,
+                true,
+                getParamDisplayLabel(PARAM_EVENT_NAME),
+                false,
+                "rm-ac-manual-events"));
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (getNodeService().exists(actionedUponNodeRef) &&
-            !getFreezeService().isFrozen(actionedUponNodeRef))
+                !getFreezeService().isFrozen(actionedUponNodeRef))
         {
             /** get parameter values */
-            String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
-            String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
-            Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
+            String eventName = (String) action.getParameterValue(PARAM_EVENT_NAME);
+            String eventCompletedBy = (String) action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
+            Date eventCompletedAt = (Date) action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
 
             if (this.getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
             {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -51,17 +51,15 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.3.1
  */
-@BehaviourBean
-(
-   defaultType = "rmv:versionRecord"
-)
-public class VersionRecordAspect extends    BaseBehaviourBean
-                                 implements NodeServicePolicies.BeforeAddAspectPolicy,
-                                            NodeServicePolicies.BeforeDeleteNodePolicy
+@BehaviourBean(
+        defaultType = "rmv:versionRecord")
+public class VersionRecordAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.BeforeAddAspectPolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
-    
+
     /** relationship service */
     private RelationshipService relationshipService;
 
@@ -71,15 +69,17 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     private ContentBinDuplicationUtility contentBinDuplicationUtility;
 
     /**
-     * @param recordableVersionService  recordable version service
+     * @param recordableVersionService
+     *            recordable version service
      */
     public void setRecordableVersionService(RecordableVersionService recordableVersionService)
     {
         this.recordableVersionService = recordableVersionService;
-    }    
-    
+    }
+
     /**
-     * @param relationshipService relationship service
+     * @param relationshipService
+     *            relationship service
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -89,7 +89,8 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     /**
      * Setter for content duplication utility class
      *
-     * @param contentBinDuplicationUtility ContentBinDuplicationUtility
+     * @param contentBinDuplicationUtility
+     *            ContentBinDuplicationUtility
      */
     public void setContentBinDuplicationUtility(ContentBinDuplicationUtility contentBinDuplicationUtility)
     {
@@ -102,14 +103,13 @@ public class VersionRecordAspect extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour (kind = BehaviourKind.CLASS)
+    @Behaviour(kind = BehaviourKind.CLASS)
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
         final Version version = recordableVersionService.getRecordedVersion(nodeRef);
         if (version != null)
         {
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+            authenticationUtil.runAsSystem(new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
@@ -118,7 +118,7 @@ public class VersionRecordAspect extends    BaseBehaviourBean
                     {
                         // mark the associated version as destroyed
                         recordableVersionService.destroyRecordedVersion(version);
-                                                            
+
                         // re-organise the versions relationships ...
                         // if there is only one "to" reference since a version can only have one predecessor
                         Set<Relationship> tos = relationshipService.getRelationshipsTo(nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
@@ -130,7 +130,7 @@ public class VersionRecordAspect extends    BaseBehaviourBean
                             {
                                 // get predecessor version relationship
                                 Relationship to = tos.iterator().next();
-                                
+
                                 for (Relationship from : froms)
                                 {
                                     // point the "to" the all the "from's"
@@ -147,14 +147,13 @@ public class VersionRecordAspect extends    BaseBehaviourBean
                     return null;
                 }
             });
-        }         
+        }
     }
 
     /**
      * Behaviour to duplicate the bin before declaring a version record
      *
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.namespace.QName)
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
     @Override
     @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
@@ -163,7 +162,7 @@ public class VersionRecordAspect extends    BaseBehaviourBean
         // if the node is the originating one the behaviour shouldn't be triggered
         if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD_ORIGINATING_DETAILS))
         {
-            //create a new content URL for the version record
+            // create a new content URL for the version record
             contentBinDuplicationUtility.duplicate(nodeRef);
         }
     }

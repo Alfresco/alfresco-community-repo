@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,11 +33,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.module.AbstractModuleComponent;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Module patch executer base implementation
@@ -45,8 +46,8 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class ModulePatchExecuterImpl extends   AbstractModuleComponent
-                                    implements ModulePatchExecuter
+public class ModulePatchExecuterImpl extends AbstractModuleComponent
+        implements ModulePatchExecuter
 {
     /** logger */
     protected static final Log LOGGER = LogFactory.getLog(ModulePatchExecuterImpl.class);
@@ -67,7 +68,8 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     protected Map<String, ModulePatch> modulePatches = new HashMap<>(21);
 
     /**
-     * @param attributeService  attribute service
+     * @param attributeService
+     *            attribute service
      */
     public void setAttributeService(AttributeService attributeService)
     {
@@ -75,7 +77,8 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     }
 
     /**
-     * @param moduleSchema  configured module schema version
+     * @param moduleSchema
+     *            configured module schema version
      */
     public void setModuleSchema(int moduleSchema)
     {
@@ -123,7 +126,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
             for (ModulePatch modulePatch : modulePatches.values())
             {
                 if (modulePatch.getFixesFromSchema() <= currentSchema &&
-                    modulePatch.getFixesToSchema() >= currentSchema)
+                        modulePatch.getFixesToSchema() >= currentSchema)
                 {
                     patchesToApply.add(modulePatch);
                 }
@@ -144,14 +147,14 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     /**
      * Get the currently recorded schema version for the module
      *
-     * @return  int currently recorded schema version
+     * @return int currently recorded schema version
      */
     protected int getCurrentSchema()
     {
         Integer result = START_SCHEMA;
         if (attributeService.exists(KEY_MODULE_SCHEMA, getModuleId()))
         {
-            result = (Integer)attributeService.getAttribute(KEY_MODULE_SCHEMA, getModuleId());
+            result = (Integer) attributeService.getAttribute(KEY_MODULE_SCHEMA, getModuleId());
         }
         return result;
     }
@@ -159,11 +162,12 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     /**
      * Update the recorded schema version for the module.
      *
-     * @param newSchema new schema version
+     * @param newSchema
+     *            new schema version
      */
     protected void updateSchema(int newSchema)
     {
-        attributeService.setAttribute(Integer.valueOf(newSchema), KEY_MODULE_SCHEMA,  getModuleId());
+        attributeService.setAttribute(Integer.valueOf(newSchema), KEY_MODULE_SCHEMA, getModuleId());
     }
 
     /**

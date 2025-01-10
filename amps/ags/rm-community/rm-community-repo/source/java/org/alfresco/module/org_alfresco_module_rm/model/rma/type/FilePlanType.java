@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -56,15 +56,13 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:filePlan"
-)
-public class FilePlanType extends    BaseBehaviourBean
-                          implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                     NodeServicePolicies.OnCreateNodePolicy,
-                                     NodeServicePolicies.OnDeleteNodePolicy,
-                                     NodeServicePolicies.BeforeDeleteNodePolicy
+@BehaviourBean(
+        defaultType = "rma:filePlan")
+public class FilePlanType extends BaseBehaviourBean
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+        NodeServicePolicies.OnCreateNodePolicy,
+        NodeServicePolicies.OnDeleteNodePolicy,
+        NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
@@ -130,7 +128,8 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -138,7 +137,8 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param recordFolderService   record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -146,7 +146,8 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param identifierService identifier service
+     * @param identifierService
+     *            identifier service
      */
     public void setIdentifierService(IdentifierService identifierService)
     {
@@ -154,7 +155,8 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -162,7 +164,8 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param unfiledRecordContainerType - unfiled record container type behaviour bean
+     * @param unfiledRecordContainerType
+     *            - unfiled record container type behaviour bean
      */
     public void setUnfiledRecordContainerType(UnfiledRecordContainerType unfiledRecordContainerType)
     {
@@ -170,7 +173,8 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param transferContainerType - transfer container type behaviour bean
+     * @param transferContainerType
+     *            - transfer container type behaviour bean
      */
     public void setTransferContainerType(TransferContainerType transferContainerType)
     {
@@ -178,7 +182,8 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param holdContainerType - hold container type behaviour bean
+     * @param holdContainerType
+     *            - hold container type behaviour bean
      */
     public void setHoldContainerType(HoldContainerType holdContainerType)
     {
@@ -203,14 +208,11 @@ public class FilePlanType extends    BaseBehaviourBean
         getBehaviour(BEHAVIOUR_NAME).enable();
     }
 
-
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION
-    )
+    @Behaviour(
+            kind = BehaviourKind.ASSOCIATION)
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
@@ -229,18 +231,15 @@ public class FilePlanType extends    BaseBehaviourBean
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     @Override
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
         final NodeRef filePlan = childAssocRef.getChildRef();
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
-        {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Object>() {
             public Object doWork()
             {
                 // ensure rules are not inherited
@@ -265,12 +264,10 @@ public class FilePlanType extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.FIRST_EVENT,
-       name = BEHAVIOUR_NAME
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT,
+            name = BEHAVIOUR_NAME)
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean archived)
     {
         unfiledRecordContainerType.enable();
@@ -283,11 +280,9 @@ public class FilePlanType extends    BaseBehaviourBean
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         unfiledRecordContainerType.disable();
@@ -295,12 +290,10 @@ public class FilePlanType extends    BaseBehaviourBean
         holdContainerType.disable();
     }
 
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       policy = "alf:onDeleteNode",
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            policy = "alf:onDeleteNode",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
     public void onDeleteNodeOnCommit(ChildAssociationRef childAssocRef, boolean archived)
     {
         // tear down the file plan roles

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,8 +32,7 @@ import java.lang.reflect.Method;
 import org.alfresco.service.cmr.security.OwnableService;
 
 /**
- * This is a workaround to make RM 2.1 backwards compatible with the Community version 4.2.d.
- * This class will be removed after Community 4.2.e has been released.
+ * This is a workaround to make RM 2.1 backwards compatible with the Community version 4.2.d. This class will be removed after Community 4.2.e has been released.
  *
  * @author Tuna Aksoy
  * @since 2.1

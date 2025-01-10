@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,6 +26,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
@@ -34,8 +37,6 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Prevent Updating Held Active Content Integration Tests
@@ -52,14 +53,11 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
     }
 
     /**
-     * Given active content on hold
-     * When I try to delete the content
-     * Then I am not successful
+     * Given active content on hold When I try to delete the content Then I am not successful
      */
     public void testDeleteHeldDocument()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // create a hold
@@ -85,14 +83,11 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
     }
 
     /**
-     * Given active content on hold
-     * When I try to copy the content
-     * Then I am not successful
+     * Given active content on hold When I try to copy the content Then I am not successful
      */
     public void testCopyHeldDocument()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class) {
             public void given()
             {
                 // create a hold
@@ -110,14 +105,11 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
     }
 
     /**
-     * Given active content on hold
-     * When I try to move the content
-     * Then I am not successful
+     * Given active content on hold When I try to move the content Then I am not successful
      */
     public void testMoveHeldDocument()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // create a hold
@@ -143,15 +135,11 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
     }
 
     /**
-     * Given active content on hold
-     * When I try to edit the properties
-     * Or perform an action that edits the properties
-     * Then I am not successful
+     * Given active content on hold When I try to edit the properties Or perform an action that edits the properties Then I am not successful
      */
     public void testUpdateHeldDocumentProperties()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // create a hold
@@ -177,14 +165,11 @@ public class UpdateHeldActiveContentTest extends BaseRMTestCase
     }
 
     /**
-     * Given active content on hold
-     * When I try to update the content
-     * Then I am not successful
+     * Given active content on hold When I try to update the content Then I am not successful
      */
     public void testUpdateHeldDocumentContent()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // create a hold

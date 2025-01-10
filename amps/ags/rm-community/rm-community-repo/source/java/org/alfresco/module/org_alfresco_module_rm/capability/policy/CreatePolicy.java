@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,16 +27,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.aopalliance.intercept.MethodInvocation;
 
 public class CreatePolicy extends AbstractBasePolicy
 {
     @SuppressWarnings("rawtypes")
-	public int evaluate(
+    public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)
@@ -48,9 +49,11 @@ public class CreatePolicy extends AbstractBasePolicy
         // get the destination node
         NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
 
-        //get the recordType
-        for (Object qname : invocation.getArguments()) {
-            if (qname != null && (qname.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) || qname.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))) {
+        // get the recordType
+        for (Object qname : invocation.getArguments())
+        {
+            if (qname != null && (qname.equals(RecordsManagementModel.TYPE_RECORD_FOLDER) || qname.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY)))
+            {
                 recordType = (QName) qname;
             }
         }
@@ -61,7 +64,7 @@ public class CreatePolicy extends AbstractBasePolicy
             linkee = getTestNode(invocation, params, cad.getParameters().get(1), cad.isParent());
 
             // get the assoc type
-            if(cad.getParameters().size() > 2)
+            if (cad.getParameters().size() > 2)
             {
                 assocType = getType(invocation, params, cad.getParameters().get(2), cad.isParent());
             }

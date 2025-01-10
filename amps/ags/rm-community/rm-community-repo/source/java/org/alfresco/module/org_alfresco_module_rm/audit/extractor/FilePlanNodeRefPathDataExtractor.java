@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -39,9 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 
 /**
- * An extractor that extracts the NodeRef path from the RM root down to
- * - and including - the node itself.  This will only extract data if the
- * node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}.
+ * An extractor that extracts the NodeRef path from the RM root down to - and including - the node itself. This will only extract data if the node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}.
  *
  * @see FilePlanService#getNodeRefPath(NodeRef)
  *
@@ -63,15 +61,17 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @param ruleService the ruleService to set
+     * @param ruleService
+     *            the ruleService to set
      */
     public void setRuleService(RuleService ruleService)
     {
@@ -79,8 +79,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
     }
 
     /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
-     *                      a fileplan component
+     * @return Returns <tt>true</tt> if the data is a NodeRef and it represents a fileplan component
      */
     public boolean isSupported(Serializable data)
     {
@@ -88,7 +87,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
         {
             return false;
         }
-        return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
+        return nodeService.hasAspect((NodeRef) data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
     }
 
     public Serializable extractData(Serializable value)
@@ -131,7 +130,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
         }
         FilePlanNodeRefPathDataExtractor that = (FilePlanNodeRefPathDataExtractor) o;
         return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
-            && Objects.equals(ruleService, that.ruleService);
+                && Objects.equals(ruleService, that.ruleService);
     }
 
     @Override

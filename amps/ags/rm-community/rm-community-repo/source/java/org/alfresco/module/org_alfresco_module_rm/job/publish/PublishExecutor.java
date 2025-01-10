@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -37,14 +37,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface PublishExecutor
 {
     /**
-     * @return  publish exector name
+     * @return publish exector name
      */
     String getName();
-    
+
     /**
      * Publish changes to node.
      * 
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      */
     void publish(NodeRef nodeRef);
 }

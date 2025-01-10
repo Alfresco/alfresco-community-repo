@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,12 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +42,13 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
+import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.util.NodeTypeUtility;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 
 /**
  * Base class for the hold webscripts
@@ -72,7 +73,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     /**
      * Set the hold service
      *
-     * @param holdService the hold service
+     * @param holdService
+     *            the hold service
      */
     public void setHoldService(HoldService holdService)
     {
@@ -80,7 +82,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * @param recordFolderService   record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -88,7 +91,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * @param nodeService node service
+     * @param nodeService
+     *            node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -96,7 +100,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * @param nodeTypeUtility node type utility
+     * @param nodeTypeUtility
+     *            node type utility
      */
     public void setNodeTypeUtility(NodeTypeUtility nodeTypeUtility)
     {
@@ -127,19 +132,20 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * Abstract method which will be implemented in the subclasses.
-     * It will either add the item(s) to the hold(s) or remove it/them from the hold(s)
+     * Abstract method which will be implemented in the subclasses. It will either add the item(s) to the hold(s) or remove it/them from the hold(s)
      *
-     * @param holds List of hold {@link NodeRef}(s)
-     * @param nodeRefs List of item {@link NodeRef}(s) (record(s) / record folder(s) / active content(s)) which will be
-     *                 either added to the hold(s) or removed from the hold(s)
+     * @param holds
+     *            List of hold {@link NodeRef}(s)
+     * @param nodeRefs
+     *            List of item {@link NodeRef}(s) (record(s) / record folder(s) / active content(s)) which will be either added to the hold(s) or removed from the hold(s)
      */
     abstract void doAction(List<NodeRef> holds, List<NodeRef> nodeRefs);
 
     /**
      * Helper method the get the json object from the request
      *
-     * @param req The webscript request
+     * @param req
+     *            The webscript request
      * @return The json object which was sent in the request body
      */
     protected JSONObject getJSONFromContent(WebScriptRequest req)
@@ -165,10 +171,10 @@ public abstract class BaseHold extends DeclarativeWebScript
     }
 
     /**
-     * Helper method to get the {@link NodeRef}s for the items(s) (record(s) / record folder(s) / active content(s))
-     * which will be added to the hold(s)
+     * Helper method to get the {@link NodeRef}s for the items(s) (record(s) / record folder(s) / active content(s)) which will be added to the hold(s)
      *
-     * @param json The request content as JSON object
+     * @param json
+     *            The request content as JSON object
      * @return List of item {@link NodeRef}s which will be added to the hold(s)
      */
     protected List<NodeRef> getItemNodeRefs(JSONObject json)
@@ -196,7 +202,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     /**
      * Helper method for checking the node reference for an item
      *
-     * @param nodeRef The {@link NodeRef} of an item (record / record folder / active content)
+     * @param nodeRef
+     *            The {@link NodeRef} of an item (record / record folder / active content)
      */
     private void checkItemNodeRef(NodeRef nodeRef)
     {
@@ -217,7 +224,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     /**
      * Helper method to get the list of {@link NodeRef}(s) for the hold(s) which will contain the item (record / record folder / active content)
      *
-     * @param json The request content as JSON object
+     * @param json
+     *            The request content as JSON object
      * @return List of {@link NodeRef}(s) of the hold(s)
      */
     protected List<NodeRef> getHolds(JSONObject json)
@@ -245,7 +253,8 @@ public abstract class BaseHold extends DeclarativeWebScript
     /**
      * Helper method for checking the node reference for a hold
      *
-     * @param nodeRef The {@link NodeRef} of a hold
+     * @param nodeRef
+     *            The {@link NodeRef} of a hold
      */
     private void checkHoldNodeRef(NodeRef nodeRef)
     {

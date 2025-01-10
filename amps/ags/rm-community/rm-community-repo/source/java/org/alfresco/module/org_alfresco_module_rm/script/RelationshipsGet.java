@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,17 +33,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONObject;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.WebScriptUtils;
-import org.json.JSONObject;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Implementation for Java backed webscript to get the relationships for a node.
@@ -93,7 +94,8 @@ public class RelationshipsGet extends AbstractRmWebScript
     /**
      * Sets the relationship service
      *
-     * @param relationshipService The relationship service
+     * @param relationshipService
+     *            The relationship service
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
@@ -103,7 +105,8 @@ public class RelationshipsGet extends AbstractRmWebScript
     /**
      * Sets the JSON conversion component
      *
-     * @param jsonConversionComponent The JSON conversion component
+     * @param jsonConversionComponent
+     *            The JSON conversion component
      */
     public void setJsonConversionComponent(JSONConversionComponent jsonConversionComponent)
     {
@@ -111,9 +114,7 @@ public class RelationshipsGet extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -127,7 +128,8 @@ public class RelationshipsGet extends AbstractRmWebScript
     /**
      * Gets the relationships of a node
      *
-     * @param nodeRef The node reference
+     * @param nodeRef
+     *            The node reference
      *
      * @return The list of relationships of a node
      */
@@ -147,8 +149,10 @@ public class RelationshipsGet extends AbstractRmWebScript
     /**
      * Creates the relationship data
      *
-     * @param relationships The {@link Set} of relationships
-     * @param relationshipEndPoint The end point of the relationship, which is either {@link RelationshipEndpoint#SOURCE} or {@link RelationshipEndpoint#TARGET}
+     * @param relationships
+     *            The {@link Set} of relationships
+     * @param relationshipEndPoint
+     *            The end point of the relationship, which is either {@link RelationshipEndpoint#SOURCE} or {@link RelationshipEndpoint#TARGET}
      * @return The relationship data as {@link List}
      */
     private List<String> buildRelationshipData(Set<Relationship> relationships, RelationshipEndPoint relationshipEndPoint)

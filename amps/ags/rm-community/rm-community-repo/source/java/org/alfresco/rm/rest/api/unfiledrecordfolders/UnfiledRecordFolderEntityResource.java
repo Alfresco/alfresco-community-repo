@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,6 +30,8 @@ package org.alfresco.rm.rest.api.unfiledrecordfolders;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -46,7 +48,6 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Unfiled record folder entity resource
@@ -56,15 +57,15 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @EntityResource(name = "unfiled-record-folders", title = "Unfiled Record Folders")
 public class UnfiledRecordFolderEntityResource implements EntityResourceAction.ReadById<UnfiledRecordFolder>,
-                                                          EntityResourceAction.Delete,
-                                                          EntityResourceAction.Update<UnfiledRecordFolder>, InitializingBean
+        EntityResourceAction.Delete,
+        EntityResourceAction.Update<UnfiledRecordFolder>, InitializingBean
 
 {
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
-    
+
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
         this.apiUtils = apiUtils;
@@ -120,8 +121,7 @@ public class UnfiledRecordFolderEntityResource implements EntityResourceAction.R
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
             public Void execute()
             {
                 apiUtils.updateNode(nodeRef, unfiledRecordFolderInfo, parameters);
@@ -130,8 +130,7 @@ public class UnfiledRecordFolderEntityResource implements EntityResourceAction.R
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
             public FileInfo execute()
             {
                 return fileFolderService.getFileInfo(nodeRef);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -52,11 +52,9 @@ public class RecordableVersionPolicyAuditEvent extends AuditEvent implements OnU
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       type = "cm:cmobject"
-    )
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            type = "cm:cmobject")
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         if (before.get(PROP_RECORDABLE_VERSION_POLICY) != after.get(PROP_RECORDABLE_VERSION_POLICY))

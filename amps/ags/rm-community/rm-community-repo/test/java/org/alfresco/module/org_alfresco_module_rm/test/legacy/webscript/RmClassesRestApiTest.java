@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,12 +32,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 
 /**
  * REST API Tests for Class Definitions
@@ -128,11 +129,10 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
      */
     private List<String> getRmAspects()
     {
-        return Arrays.asList(new String[]
-        {
-            "rma:ascended",
-            "rma:recordMetaData",
-            "rma:vitalRecordDefinition"
+        return Arrays.asList(new String[]{
+                "rma:ascended",
+                "rma:recordMetaData",
+                "rma:vitalRecordDefinition"
         });
     }
 
@@ -143,13 +143,12 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
      */
     private List<String> getDmAspects()
     {
-        return Arrays.asList(new String[]
-        {
-            "emailserver:attached",
-            "bpm:assignees",
-            "cm:likesRatingSchemeRollups",
-            "wf:parallelReviewStats",
-            "sys:localized"
+        return Arrays.asList(new String[]{
+                "emailserver:attached",
+                "bpm:assignees",
+                "cm:likesRatingSchemeRollups",
+                "wf:parallelReviewStats",
+                "sys:localized"
         });
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,7 +41,7 @@ import org.alfresco.scripts.ScriptException;
  * @author Roy Wetherall
  */
 public class ScriptRecordsManagmentService extends BaseScopableProcessorExtension
-                                           implements RecordsManagementModel
+        implements RecordsManagementModel
 {
     /** Records management service registry */
     private RecordsManagementServiceRegistry rmServices;
@@ -52,7 +52,8 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
     /**
      * Set records management service registry
      *
-     * @param rmServices    records management service registry
+     * @param rmServices
+     *            records management service registry
      */
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry rmServices)
     {
@@ -62,7 +63,8 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
     /**
      * Sets the notification helper
      *
-     * @param notificationHelper    notification helper
+     * @param notificationHelper
+     *            notification helper
      */
     public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
     {
@@ -72,8 +74,9 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
     /**
      * Get records management node
      *
-     * @param node                          script node
-     * @return ScriptRecordsManagementNode  records management script node
+     * @param node
+     *            script node
+     * @return ScriptRecordsManagementNode records management script node
      */
     public ScriptRecordsManagmentNode getRecordsManagementNode(ScriptNode node)
     {
@@ -82,7 +85,7 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
         if (rmServices.getNodeService().hasAspect(node.getNodeRef(), ASPECT_FILE_PLAN_COMPONENT))
         {
             // TODO .. at this point determine what type of records management node is it and
-            //         create the appropriate sub-type
+            // create the appropriate sub-type
             result = new ScriptRecordsManagmentNode(node.getNodeRef(), rmServices);
         }
         else
@@ -122,7 +125,8 @@ public class ScriptRecordsManagmentService extends BaseScopableProcessorExtensio
     /**
      * Send superseded notification
      *
-     * @param record    superseded record
+     * @param record
+     *            superseded record
      */
     public void sendSupersededNotification(ScriptNode record)
     {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,10 +33,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
-import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.role.Role;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,6 +41,11 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  *
@@ -100,7 +101,7 @@ public class RmRolePut extends RoleDeclarativeWebScript
             if (!filePlanRoleService.existsRole(filePlan, roleParam))
             {
                 throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                                             "The role " + roleParam + " does not exist on the records managment root " + filePlan);
+                        "The role " + roleParam + " does not exist on the records managment root " + filePlan);
             }
 
             Role role = filePlanRoleService.updateRole(filePlan, name, displayLabel, capabilites);
@@ -115,7 +116,7 @@ public class RmRolePut extends RoleDeclarativeWebScript
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         return model;

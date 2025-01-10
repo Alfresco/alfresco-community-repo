@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -44,15 +50,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Implementation for Java backed webscript to get substitution suggestions
- * given a text fragment (e.g. date.month for 'mon').
+ * Implementation for Java backed webscript to get substitution suggestions given a text fragment (e.g. date.month for 'mon').
  *
  * @author Mark Hibbins
  * @since 2.2
@@ -101,7 +101,8 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -109,7 +110,8 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     }
 
     /**
-     * @param capabilityService   file plan service
+     * @param capabilityService
+     *            file plan service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -133,15 +135,13 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      */
     public void setPathSubstitutionMaximumNumberSuggestions(int pathSubstitutionMaximumNumberSuggestions)
     {
-        this.pathSubstitutionMaximumNumberSuggestions = (pathSubstitutionMaximumNumberSuggestions <= 0 ? DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS: pathSubstitutionMaximumNumberSuggestions);
+        this.pathSubstitutionMaximumNumberSuggestions = (pathSubstitutionMaximumNumberSuggestions <= 0 ? DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS : pathSubstitutionMaximumNumberSuggestions);
     }
 
     /**
      * Return a list of substitutions for the given fragment.
      *
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -153,7 +153,7 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
 
         List<String> substitutionSuggestions = new ArrayList<>();
 
-        if((fragment != null) && (fragment.length() >= this.substitutionMinimumFragmentSize))
+        if ((fragment != null) && (fragment.length() >= this.substitutionMinimumFragmentSize))
         {
             substitutionSuggestions.addAll(getSubPathSuggestions(req, path, fragment, unfiled));
             substitutionSuggestions.addAll(this.parameterProcessorComponent.getSubstitutionSuggestions(fragment));
@@ -172,33 +172,33 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      * @param fragment
      * @return
      */
-    private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment, boolean unfiled) 
+    private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment, boolean unfiled)
     {
         List<String> pathSuggestions = new ArrayList<>();
-        if((path != null) && path.startsWith("/") && (fragment != null))
+        if ((path != null) && path.startsWith("/") && (fragment != null))
         {
             String[] pathFragments = path.split("/");
 
             NodeRef currentNode = getFilePlan(req, unfiled);
-            for(String pathFragment : pathFragments)
+            for (String pathFragment : pathFragments)
             {
                 // ignore empty elements of the path produced by split
-                if(!pathFragment.isEmpty())
+                if (!pathFragment.isEmpty())
                 {
                     boolean foundThisPathFragment = false;
                     List<ChildAssociationRef> children = nodeService.getChildAssocs(currentNode);
-                    for (ChildAssociationRef childAssoc : children) 
+                    for (ChildAssociationRef childAssoc : children)
                     {
                         NodeRef childNodeRef = childAssoc.getChildRef();
                         String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                        if(fileName.equals(pathFragment) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))
+                        if (fileName.equals(pathFragment) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))
                         {
                             foundThisPathFragment = true;
                             currentNode = childNodeRef;
                             break;
                         }
                     }
-                    if(!foundThisPathFragment)
+                    if (!foundThisPathFragment)
                     {
                         currentNode = null;
                         break;
@@ -206,18 +206,18 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
                 }
             }
 
-            if(currentNode != null)
+            if (currentNode != null)
             {
                 String lowerCaseFragment = fragment.toLowerCase();
                 List<ChildAssociationRef> children = nodeService.getChildAssocs(currentNode);
-                for (ChildAssociationRef childAssoc : children) 
+                for (ChildAssociationRef childAssoc : children)
                 {
                     NodeRef childNodeRef = childAssoc.getChildRef();
                     String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                    if((fragment.isEmpty() || fileName.toLowerCase().startsWith(lowerCaseFragment)) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))
+                    if ((fragment.isEmpty() || fileName.toLowerCase().startsWith(lowerCaseFragment)) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))
                     {
                         pathSuggestions.add("/" + fileName);
-                        if(pathSuggestions.size() >= pathSubstitutionMaximumNumberSuggestions)
+                        if (pathSuggestions.size() >= pathSubstitutionMaximumNumberSuggestions)
                         {
                             break;
                         }
@@ -252,8 +252,8 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
             String id = templateVars.get("id");
 
             if (!StringUtils.isEmpty(storeType) &&
-                !StringUtils.isEmpty(storeId) &&
-                !StringUtils.isEmpty(id))
+                    !StringUtils.isEmpty(storeId) &&
+                    !StringUtils.isEmpty(id))
             {
                 StoreRef storeRef = new StoreRef(storeType, storeId);
                 NodeRef nodeRef = new NodeRef(storeRef, id);
@@ -276,7 +276,8 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
     /**
      * Identifies record category and record folder types of nodeRef
      *
-     * @param nodeRef  Instance of NodeRef to be tested
+     * @param nodeRef
+     *            Instance of NodeRef to be tested
      * @return True if the passed NodeRef instance is a record category or record folder
      */
     private boolean isNodeRefAppropriateForPathSuggestion(NodeRef nodeRef, boolean unfiled)
@@ -285,11 +286,12 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
         QName type = nodeService.getType(nodeRef);
         boolean isCorrectType = (!unfiled
                 && (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(type) || RecordsManagementModel.TYPE_RECORD_CATEGORY
-                        .equals(type)) || (unfiled && RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(type)));
+                        .equals(type))
+                || (unfiled && RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(type)));
 
         // check permissions
         boolean canView = false;
-        if(isCorrectType)
+        if (isCorrectType)
         {
             Capability createCapability = capabilityService.getCapability(CREATE_CAPABILITY);
             Capability viewCapability = capabilityService.getCapability(VIEW_CAPABILITY);

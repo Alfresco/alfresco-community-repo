@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -77,15 +77,14 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     @Deprecated
     QName RECORDS_MANAGEMENT_SECURITY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "RecordsManagementSecurityService");
 
-
     /**
-     * @return  records management service
+     * @return records management service
      */
     @NotAuditable
     RecordsManagementService getRecordsManagementService();
 
     /**
-     * @return  record service
+     * @return record service
      */
     @NotAuditable
     RecordService getRecordService();
@@ -97,25 +96,25 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     DispositionService getDispositionService();
 
     /**
-     * @return  records management admin service
+     * @return records management admin service
      */
     @NotAuditable
     RecordsManagementAdminService getRecordsManagementAdminService();
 
     /**
-     * @return  records management action service
+     * @return records management action service
      */
     @NotAuditable
     RecordsManagementActionService getRecordsManagementActionService();
 
     /**
-     * @return  records management event service
+     * @return records management event service
      */
     @NotAuditable
     RecordsManagementEventService getRecordsManagementEventService();
 
     /**
-     * @return  records management security service
+     * @return records management security service
      *
      * @deprecated As of release 2.1, replaced with {@link FilePlanRoleService}, {@link FilePlanPermissionService} and {@link ModelSecurityService}
      */
@@ -124,20 +123,20 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     RecordsManagementSecurityService getRecordsManagementSecurityService();
 
     /**
-     * @return  records management audit service
+     * @return records management audit service
      */
     @NotAuditable
     RecordsManagementAuditService getRecordsManagementAuditService();
 
     /**
-     * @return  capability service
+     * @return capability service
      * @since 2.0
      */
     @NotAuditable
     CapabilityService getCapabilityService();
 
     /**
-     * @return  freeze service
+     * @return freeze service
      * @since 2.1
      */
     @NotAuditable
@@ -151,21 +150,21 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     ExtendedSecurityService getExtendedSecurityService();
 
     /**
-     * @return  file plan service
+     * @return file plan service
      * @since 2.1
      */
     @NotAuditable
     FilePlanService getFilePlanService();
 
     /**
-     * @return  file plan role service
+     * @return file plan role service
      * @since 2.1
      */
     @NotAuditable
     FilePlanRoleService getFilePlanRoleService();
 
     /**
-     * @return  file plan permission service
+     * @return file plan permission service
      * @since 2.1
      */
     @NotAuditable
@@ -178,14 +177,14 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
     IdentifierService getIdentifierService();
 
     /**
-     * @return  record folder service
+     * @return record folder service
      * @since 2.2
      */
     @NotAuditable
     RecordFolderService getRecordFolderService();
 
     /**
-     * @return  transfer service
+     * @return transfer service
      * @since 2.2
      */
     @NotAuditable

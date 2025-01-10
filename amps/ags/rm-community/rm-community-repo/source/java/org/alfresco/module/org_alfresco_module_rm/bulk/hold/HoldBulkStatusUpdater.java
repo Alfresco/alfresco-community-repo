@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,17 +44,17 @@ public class HoldBulkStatusUpdater implements BulkStatusUpdater
     public HoldBulkStatusUpdater(HoldBulkMonitor holdBulkMonitor)
     {
         this.task = () -> holdBulkMonitor.updateBulkStatus(
-            new HoldBulkStatus(batchMonitor.getProcessName(),
-                batchMonitor.getStartTime(),
-                batchMonitor.getEndTime(),
-                batchMonitor.getSuccessfullyProcessedEntriesLong() + batchMonitor.getTotalErrorsLong(),
-                batchMonitor.getTotalErrorsLong(),
-                batchMonitor.getTotalResultsLong(),
-                batchMonitor.getLastError(),
-                holdBulkMonitor.isCancelled(batchMonitor.getProcessName()),
-                Optional.ofNullable(holdBulkMonitor.getBulkCancellationRequest(batchMonitor.getProcessName()))
-                    .map(BulkCancellationRequest::reason)
-                    .orElse(null)));
+                new HoldBulkStatus(batchMonitor.getProcessName(),
+                        batchMonitor.getStartTime(),
+                        batchMonitor.getEndTime(),
+                        batchMonitor.getSuccessfullyProcessedEntriesLong() + batchMonitor.getTotalErrorsLong(),
+                        batchMonitor.getTotalErrorsLong(),
+                        batchMonitor.getTotalResultsLong(),
+                        batchMonitor.getLastError(),
+                        holdBulkMonitor.isCancelled(batchMonitor.getProcessName()),
+                        Optional.ofNullable(holdBulkMonitor.getBulkCancellationRequest(batchMonitor.getProcessName()))
+                                .map(BulkCancellationRequest::reason)
+                                .orElse(null)));
     }
 
     @Override

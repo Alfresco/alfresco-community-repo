@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,8 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.declarative.Abstrac
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Helper condition that always fails.  Useful for deprecation of 
- * old capabilities.
+ * Helper condition that always fails. Useful for deprecation of old capabilities.
  * 
  * @author Roy Wetherall
  */

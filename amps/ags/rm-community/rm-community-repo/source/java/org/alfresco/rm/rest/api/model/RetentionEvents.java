@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,21 +31,7 @@ package org.alfresco.rm.rest.api.model;
  */
 public enum RetentionEvents
 {
-    CASE_CLOSED("case_closed"),
-    ABOLISHED("abolished"),
-    RE_DESIGNATED("re_designated"),
-    NO_LONGER_NEEDED("no_longer_needed"),
-    SUPERSEDED("superseded"),
-    VERSIONED("versioned"),
-    STUDY_COMPLETE("study_complete"),
-    TRAINING_COMPLETE("training_complete"),
-    TRANSFERRED_INACTIVE_STORAGE("related_record_trasfered_inactive_storage"),
-    OBSOLETE("obsolete"),
-    ALLOWANCES_GRANTED_TERMINATED("all_allowances_granted_are_terminated"),
-    WGI_ACTION_COMPLETE("WGI_action_complete"),
-    SEPARATION("separation"),
-    CASE_COMPLETE("case_complete"),
-    DECLASSIFICATION_REVIEW("declassification_review");
+    CASE_CLOSED("case_closed"), ABOLISHED("abolished"), RE_DESIGNATED("re_designated"), NO_LONGER_NEEDED("no_longer_needed"), SUPERSEDED("superseded"), VERSIONED("versioned"), STUDY_COMPLETE("study_complete"), TRAINING_COMPLETE("training_complete"), TRANSFERRED_INACTIVE_STORAGE("related_record_trasfered_inactive_storage"), OBSOLETE("obsolete"), ALLOWANCES_GRANTED_TERMINATED("all_allowances_granted_are_terminated"), WGI_ACTION_COMPLETE("WGI_action_complete"), SEPARATION("separation"), CASE_COMPLETE("case_complete"), DECLASSIFICATION_REVIEW("declassification_review");
 
     public final String eventName;
 

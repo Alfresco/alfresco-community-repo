@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,8 +33,19 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
+import org.springframework.extensions.webscripts.servlet.FormData.FormField;
+import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
+import org.springframework.util.FileCopyUtils;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -50,17 +61,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.util.TempFileProvider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
-import org.springframework.extensions.webscripts.servlet.FormData.FormField;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
-import org.springframework.util.FileCopyUtils;
 
 /**
  * Imports an ACP file into a records management container.
@@ -95,7 +95,8 @@ public class ImportPost extends DeclarativeWebScript
     /**
      * Sets the data dictionary service
      *
-     * @param dictionaryService The DictionaryService instance
+     * @param dictionaryService
+     *            The DictionaryService instance
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -105,7 +106,8 @@ public class ImportPost extends DeclarativeWebScript
     /**
      * Sets the ImporterService to use
      *
-     * @param importerService The ImporterService
+     * @param importerService
+     *            The ImporterService
      */
     public void setImporterService(ImporterService importerService)
     {
@@ -113,7 +115,8 @@ public class ImportPost extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanRoleService   file plan role service
+     * @param filePlanRoleService
+     *            file plan role service
      */
     public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
@@ -121,7 +124,8 @@ public class ImportPost extends DeclarativeWebScript
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -149,8 +153,7 @@ public class ImportPost extends DeclarativeWebScript
             {
                 current = null;
             }
-        }
-        while (current != null);
+        } while (current != null);
 
         // get the content type of request and ensure it's multipart/form-data
         String contentType = req.getContentType();
@@ -161,7 +164,7 @@ public class ImportPost extends DeclarativeWebScript
             if (nodeRef == null || nodeRef.length() == 0)
             {
                 throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                            "Mandatory 'destination' parameter was not provided in form data");
+                        "Mandatory 'destination' parameter was not provided in form data");
             }
 
             // create and check noderef
@@ -170,24 +173,24 @@ public class ImportPost extends DeclarativeWebScript
             {
                 // check the destination is an RM container
                 if (!nodeService.hasAspect(destination, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) ||
-                    !dictionaryService.isSubClass(nodeService.getType(destination), ContentModel.TYPE_FOLDER))
+                        !dictionaryService.isSubClass(nodeService.getType(destination), ContentModel.TYPE_FOLDER))
                 {
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                                "NodeRef '" + destination + "' does not represent an Records Management container node.");
+                            "NodeRef '" + destination + "' does not represent an Records Management container node.");
                 }
             }
             else
             {
                 status.setCode(HttpServletResponse.SC_NOT_FOUND,
-                            "NodeRef '" + destination + "' does not exist.");
+                        "NodeRef '" + destination + "' does not exist.");
             }
 
             // as there is no 'import capability' and the RM admin user is different from
             // the DM admin user (meaning the webscript 'admin' authentication can't be used)
             // perform a manual check here to ensure the current user has the RM admin role.
             boolean isAdmin = filePlanRoleService.hasRMAdminRole(
-                        filePlanService.getFilePlan(destination),
-                        AuthenticationUtil.getRunAsUser());
+                    filePlanService.getFilePlan(destination),
+                    AuthenticationUtil.getRunAsUser());
             if (!isAdmin)
             {
                 throw new WebScriptException(Status.STATUS_FORBIDDEN, "Access Denied");
@@ -224,13 +227,12 @@ public class ImportPost extends DeclarativeWebScript
                 final ACPImportPackageHandler importHandler = new ACPImportPackageHandler(acpFile, "UTF-8");
 
                 // import the ACP file as the system user
-                AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
-                {
-                     public NodeRef doWork()
-                     {
-                         importerService.importView(importHandler, new Location(destination), null, null);
-                         return null;
-                     }
+                AuthenticationUtil.runAs(new RunAsWork<NodeRef>() {
+                    public NodeRef doWork()
+                    {
+                        importerService.importView(importHandler, new Location(destination), null, null);
+                        return null;
+                    }
                 }, AuthenticationUtil.getSystemUserName());
 
                 // create and return model
@@ -241,12 +243,12 @@ public class ImportPost extends DeclarativeWebScript
             catch (FileNotFoundException fnfe)
             {
                 throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                            "Failed to import ACP file", fnfe);
+                        "Failed to import ACP file", fnfe);
             }
             catch (IOException ioe)
             {
                 throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR,
-                            "Failed to import ACP file", ioe);
+                        "Failed to import ACP file", ioe);
             }
             finally
             {
@@ -259,7 +261,7 @@ public class ImportPost extends DeclarativeWebScript
         else
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Request is not " + MULTIPART_FORMDATA + " encoded");
+                    "Request is not " + MULTIPART_FORMDATA + " encoded");
         }
     }
 }

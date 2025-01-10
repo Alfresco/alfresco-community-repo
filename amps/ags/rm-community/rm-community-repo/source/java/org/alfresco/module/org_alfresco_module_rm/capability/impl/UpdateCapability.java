@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,9 +44,12 @@ public class UpdateCapability extends DeclarativeCompositeCapability
     /**
      * Evaluate capability
      *
-     * @param nodeRef       node reference
-     * @param aspectQName   aspect qname
-     * @param properties    property values
+     * @param nodeRef
+     *            node reference
+     * @param aspectQName
+     *            aspect qname
+     * @param properties
+     *            property values
      * @return
      */
     public int evaluate(NodeRef nodeRef, QName aspectQName, Map<QName, Serializable> properties)

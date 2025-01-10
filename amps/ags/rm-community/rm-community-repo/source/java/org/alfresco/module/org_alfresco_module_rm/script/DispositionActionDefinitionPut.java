@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,10 +34,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,17 +43,19 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.namespace.QName;
+
 /**
- * Implementation for Java backed webscript to update an existing dispositon
- * action definition.
+ * Implementation for Java backed webscript to update an existing dispositon action definition.
  *
  * @author Gavin Cornwell
  */
 public class DispositionActionDefinitionPut extends DispositionAbstractBase
 {
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
+    /* @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache) */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -82,7 +80,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
         catch (JSONException je)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+                    "Could not parse JSON from req.", je);
         }
 
         // create model object with just the action data
@@ -94,12 +92,14 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
     /**
      * Updates a dispositionActionDefinition node in the repo.
      *
-     * @param actionDef The action definition to update
-     * @param json The JSON to use to create the action definition
+     * @param actionDef
+     *            The action definition to update
+     * @param json
+     *            The JSON to use to create the action definition
      * @return The updated DispositionActionDefinition
      */
     protected DispositionActionDefinition updateActionDefinition(DispositionActionDefinition actionDef,
-              JSONObject json) throws JSONException
+            JSONObject json) throws JSONException
     {
         // create the properties for the action definition
         Map<QName, Serializable> props = new HashMap<>(8);
@@ -128,7 +128,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
         if (json.has("eligibleOnFirstCompleteEvent"))
         {
             props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
-                        json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
+                    json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
         }
 
         if (json.has(COMBINE_DISPOSITION_STEP_CONDITIONS))
@@ -140,7 +140,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
         if (json.has("location"))
         {
             props.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
-                      json.getString("location"));
+                    json.getString("location"));
         }
 
         if (json.has("events"))
@@ -151,7 +151,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
             {
                 eventsList.add(events.getString(x));
             }
-            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable)eventsList);
+            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable) eventsList);
         }
 
         if (json.has("name") && "destroy".equals(json.getString("name")))

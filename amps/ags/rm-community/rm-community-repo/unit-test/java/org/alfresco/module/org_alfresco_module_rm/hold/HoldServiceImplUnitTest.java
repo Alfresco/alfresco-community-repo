@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.hold;
 
 import static java.util.Arrays.asList;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -46,11 +45,22 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -67,14 +77,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 /**
  * Hold service implementation unit test
@@ -102,7 +104,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Mock
     private ChildAssociationRef mockChildAssociationRef;
 
-    @Spy @InjectMocks HoldServiceImpl holdService;
+    @Spy
+    @InjectMocks
+    HoldServiceImpl holdService;
 
     @Before
     @Override
@@ -149,7 +153,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holds.add(new ChildAssociationRef(ASSOC_FROZEN_CONTENT, hold2, ASSOC_FROZEN_CONTENT, activeContent, true, 2));
         doReturn(holds).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
-        //setup active content in multiple holds
+        // setup active content in multiple holds
         doReturn(holds).when(mockedNodeService).getParentAssocs(activeContent, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
 
         doReturn(Collections.singleton(filePlan)).when(mockedFilePlanService).getFilePlans();
@@ -194,7 +198,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.getHold(filePlan, "notHold");
     }
 
-    @Test (expected=RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void testGetHeldNotAHold()
     {
         holdService.getHeld(recordFolder);
@@ -381,7 +385,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService).setProperty(hold, PROP_HOLD_REASON, HOLD_REASON);
     }
 
-    @Test (expected=AlfrescoRuntimeException.class)
+    @Test(expected = AlfrescoRuntimeException.class)
     public void deleteHoldNotAHold()
     {
         holdService.deleteHold(recordFolder);
@@ -400,14 +404,14 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         // TODO check interactions with policy component!!!
     }
 
-    @Test (expected = AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void deleteHoldNoPermissionsOnContent()
     {
         mockPoliciesForDeleteHold();
 
         ChildAssociationRef childAssociationRef = generateChildAssociationRef(hold, record);
         when(mockedNodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL))
-            .thenReturn(Collections.singletonList(childAssociationRef));
+                .thenReturn(Collections.singletonList(childAssociationRef));
 
         when(mockedPermissionService.hasPermission(record, RMPermissionModel.FILING)).thenReturn(AccessStatus.DENIED);
         when(mockedNodeService.getProperty(record, ContentModel.PROP_NAME)).thenThrow(new AccessDeniedException(GENERIC_ERROR_MSG));
@@ -415,13 +419,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holdService.beforeDeleteNode(hold);
     }
 
-    @Test (expected = IntegrityException.class)
+    @Test(expected = IntegrityException.class)
     public void addToHoldNotAHold()
     {
         holdService.addToHold(recordFolder, recordFolder);
     }
 
-    @Test (expected = IntegrityException.class)
+    @Test(expected = IntegrityException.class)
     public void addToHoldNotARecordFolderOrRecordOrActiveContent()
     {
         NodeRef anotherThing = generateNodeRef(TYPE_RECORD_CATEGORY);
@@ -527,11 +531,10 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     public void addToHolds()
     {
         // ensure the interaction indicates that a node has the frozen aspect applied if it has
-        doAnswer(new Answer<Void>()
-        {
+        doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation)
             {
-                NodeRef nodeRef = (NodeRef)invocation.getArguments()[0];
+                NodeRef nodeRef = (NodeRef) invocation.getArguments()[0];
                 doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ASPECT_FROZEN);
                 return null;
             }
@@ -555,7 +558,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
     }
 
-    @Test (expected = IntegrityException.class)
+    @Test(expected = IntegrityException.class)
     public void removeFromHoldNotAHold()
     {
         holdService.removeFromHold(recordFolder, recordFolder);
@@ -620,8 +623,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         holds.add(hold);
         holds.add(hold2);
 
-        doAnswer(new Answer<Void>()
-        {
+        doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation)
             {
                 doReturn(Collections.singletonList(hold2)).when(holdService).heldBy(recordFolder, true);
@@ -632,8 +634,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         mockPoliciesForRemoveFromHold();
 
-        doAnswer(new Answer<Void>()
-        {
+        doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation)
             {
                 doReturn(new ArrayList<NodeRef>()).when(holdService).heldBy(recordFolder, true);
@@ -659,7 +660,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
     }
 
-     @Test (expected = AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void removeActiveContentFromHoldsNoPermissionsOnHold()
     {
         doReturn(Collections.singletonList(activeContent)).when(holdService).getHeld(hold);
@@ -676,7 +677,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     /**
      * test before delete node throws exception for failed read permission check for content
      */
-    @Test (expected = AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void testBeforeDeleteNodeThrowsExceptionForActiveContentWithoutReadPermission()
     {
         NodeRef heldContent = generateNodeRef(TYPE_CONTENT);
@@ -694,7 +695,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     /**
      * test before delete node throws exception for failed read permission check for records
      */
-    @Test (expected = AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void testBeforeDeleteNodeThrowsExceptionForARecordWithoutReadPermission()
     {
         NodeRef heldContent = generateNodeRef();
@@ -708,7 +709,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     /**
      * test before delete node throws exception for failed file permission check for records
      */
-    @Test (expected = AccessDeniedException.class)
+    @Test(expected = AccessDeniedException.class)
     public void testBeforeDeleteNodeThrowsExceptionForARecordWithoutFilePermission()
     {
         NodeRef heldContent = generateNodeRef();

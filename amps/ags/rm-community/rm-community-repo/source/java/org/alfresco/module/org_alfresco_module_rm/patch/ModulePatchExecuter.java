@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -38,10 +38,11 @@ public interface ModulePatchExecuter
     /**
      * Register module patch with the module patch executer
      * 
-     * @param modulePatch   module patch
+     * @param modulePatch
+     *            module patch
      */
-    void register(ModulePatch modulePatch); 
-    
+    void register(ModulePatch modulePatch);
+
     /**
      * Init the schema version number
      */

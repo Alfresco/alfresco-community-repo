@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
@@ -68,8 +71,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * Record category children relation
@@ -78,14 +79,14 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  * @author Tuna Aksoy
  * @since 2.6
  */
-@RelationshipResource(name="children", entityResource = RecordCategoriesEntityResource.class, title = "Children of a record category")
+@RelationshipResource(name = "children", entityResource = RecordCategoriesEntityResource.class, title = "Children of a record category")
 public class RecordCategoryChildrenRelation implements RelationshipResourceAction.Read<RecordCategoryChild>,
-                                                    RelationshipResourceAction.Create<RecordCategoryChild>,
-                                                    MultiPartRelationshipResourceAction.Create<RecordCategoryChild>
+        RelationshipResourceAction.Create<RecordCategoryChild>,
+        MultiPartRelationshipResourceAction.Create<RecordCategoryChild>
 {
     private final static Set<String> LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays
-            .asList(new String[] { RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
-                                   RecordCategoryChild.PARAM_IS_CLOSED, RecordCategoryChild.PARAM_HAS_RETENTION_SCHEDULE, RMNode.PARAM_NODE_TYPE }));
+            .asList(new String[]{RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
+                    RecordCategoryChild.PARAM_IS_CLOSED, RecordCategoryChild.PARAM_HAS_RETENTION_SCHEDULE, RMNode.PARAM_NODE_TYPE}));
 
     private FilePlanComponentsApiUtils apiUtils;
     private SearchTypesFactory searchTypesFactory;
@@ -143,8 +144,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<RecordCategoryChild> nodes = new AbstractList<RecordCategoryChild>()
-        {
+        List<RecordCategoryChild> nodes = new AbstractList<RecordCategoryChild>() {
             @Override
             public RecordCategoryChild get(int index)
             {
@@ -170,7 +170,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
     }
 
     @Override
-    @WebApiDescription(title="Create one (or more) nodes as children of a record category identified by 'recordCategoryId'")
+    @WebApiDescription(title = "Create one (or more) nodes as children of a record category identified by 'recordCategoryId'")
     public List<RecordCategoryChild> create(String recordCategoryId, List<RecordCategoryChild> nodeInfos, Parameters parameters)
     {
         checkNotBlank("recordCategoryId", recordCategoryId);
@@ -182,8 +182,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
         List<RecordCategoryChild> result = new ArrayList<>(nodeInfos.size());
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
 
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
+        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>() {
             public List<NodeRef> execute()
             {
                 List<NodeRef> createdNodes = new LinkedList<>();
@@ -197,7 +196,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
                                 RecordsManagementModel.TYPE_RECORD_CATEGORY);
                     }
                     // Create the node
-                    NodeRef newNode =  apiUtils.createRMNode(nodeParent, nodeInfo, parameters);
+                    NodeRef newNode = apiUtils.createRMNode(nodeParent, nodeInfo, parameters);
                     createdNodes.add(newNode);
                 }
                 return createdNodes;

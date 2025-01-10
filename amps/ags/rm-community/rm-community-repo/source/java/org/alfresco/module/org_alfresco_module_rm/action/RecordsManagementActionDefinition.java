@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.action.ActionDefinition;
 public interface RecordsManagementActionDefinition extends ActionDefinition
 {
     /**
-     * @return  list of applicable file plan component kinds
+     * @return list of applicable file plan component kinds
      */
     Set<FilePlanComponentKind> getApplicableKinds();
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQueryParameters;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat;
@@ -42,12 +49,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Base class for all audit retrieval webscripts.
@@ -73,7 +74,8 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     /**
      * Sets the RecordsManagementAuditService instance
      *
-     * @param rmAuditService The RecordsManagementAuditService instance
+     * @param rmAuditService
+     *            The RecordsManagementAuditService instance
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
     {
@@ -83,7 +85,8 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     /**
      * Sets the NamespaceService instance
      *
-     * @param namespaceService The NamespaceService instance
+     * @param namespaceService
+     *            The NamespaceService instance
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -91,10 +94,10 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     }
 
     /**
-     * Parses the given request and builds an instance of
-     * RecordsManagementAuditQueryParameters to retrieve the relevant audit entries
+     * Parses the given request and builds an instance of RecordsManagementAuditQueryParameters to retrieve the relevant audit entries
      *
-     * @param req The request
+     * @param req
+     *            The request
      * @return RecordsManagementAuditQueryParameters instance
      */
     protected RecordsManagementAuditQueryParameters parseQueryParameters(WebScriptRequest req)
@@ -255,10 +258,10 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     }
 
     /**
-     * Parses the given request for the format the audit report
-     * should be returned in
+     * Parses the given request for the format the audit report should be returned in
      *
-     * @param req The request
+     * @param req
+     *            The request
      * @return The format for the report
      */
     protected ReportFormat parseReportFormat(WebScriptRequest req)

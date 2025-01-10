@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,24 +47,21 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
-* Update next disposition step integration tests.
-*
-* @author Roxana Lucanu
-* @since 2.3.1
-*/
+ * Update next disposition step integration tests.
+ *
+ * @author Roxana Lucanu
+ * @since 2.3.1
+ */
 public class UpdateNextDispositionActionTest extends BaseRMTestCase
 {
     /**
-     * Given a record with multiple dispositions
-     * When updating the next step
-     * Then the action is available
+     * Given a record with multiple dispositions When updating the next step Then the action is available
      * <p>
      * relates to https://issues.alfresco.com/jira/browse/RM-3060
      */
     public void testUpdateNextDispositionAction_RM3060() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             NodeRef record;
             NodeRef folder2;
 
@@ -93,6 +90,7 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
                 record = utils.createRecord(folder1, generate(), generate());
 
             }
+
             @Override
             public void when() throws Exception
             {
@@ -103,7 +101,7 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
                 utils.completeRecord(record);
 
                 // cut off
-                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null); 
+                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null);
             }
 
             @Override
@@ -129,7 +127,7 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
         Map<QName, Serializable> transfer = new HashMap<>(3);
         transfer.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
         transfer.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        transfer.put(PROP_DISPOSITION_EVENT, (Serializable)Collections.singletonList(DEFAULT_EVENT_NAME));
+        transfer.put(PROP_DISPOSITION_EVENT, (Serializable) Collections.singletonList(DEFAULT_EVENT_NAME));
         dispositionService.addDispositionActionDefinition(ds, transfer);
 
         // create the properties for DESTROY action and add it to the disposition action definition

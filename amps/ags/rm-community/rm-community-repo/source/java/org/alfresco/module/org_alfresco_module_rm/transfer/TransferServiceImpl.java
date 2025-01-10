@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,6 +33,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.ParameterCheck;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
@@ -55,9 +59,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Transfer service implementation
@@ -66,7 +67,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @since 2.2
  */
 public class TransferServiceImpl extends ServiceBaseImpl
-                                 implements TransferService, RecordsManagementModel
+        implements TransferService, RecordsManagementModel
 {
     /** Transfer node reference key */
     public static final String KEY_TRANSFER_NODEREF = "transferNodeRef";
@@ -94,7 +95,8 @@ public class TransferServiceImpl extends ServiceBaseImpl
     protected TransferType transferType;
 
     /**
-     * @param filePlanService file plan service
+     * @param filePlanService
+     *            file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -102,7 +104,8 @@ public class TransferServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param dispositionService disposition service
+     * @param dispositionService
+     *            disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
@@ -110,7 +113,8 @@ public class TransferServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param recordService record service
+     * @param recordService
+     *            record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -118,7 +122,8 @@ public class TransferServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param recordFolderService record folder service
+     * @param recordFolderService
+     *            record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -126,7 +131,8 @@ public class TransferServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @param freezeService freeze service
+     * @param freezeService
+     *            freeze service
      */
     public void setFreezeService(FreezeService freezeService)
     {
@@ -155,7 +161,7 @@ public class TransferServiceImpl extends ServiceBaseImpl
         NodeRef root = filePlanService.getFilePlan(nodeRef);
 
         // Get the transfer object
-        NodeRef transferNodeRef = (NodeRef)AlfrescoTransactionSupport.getResource(KEY_TRANSFER_NODEREF);
+        NodeRef transferNodeRef = (NodeRef) AlfrescoTransactionSupport.getResource(KEY_TRANSFER_NODEREF);
         if (transferNodeRef == null)
         {
             // Calculate a transfer name
@@ -186,10 +192,10 @@ public class TransferServiceImpl extends ServiceBaseImpl
             try
             {
                 transferNodeRef = nodeService.createNode(transferContainer,
-                                                          ContentModel.ASSOC_CONTAINS,
-                                                          QName.createQName(RM_URI, transferName),
-                                                          TYPE_TRANSFER,
-                                                          transferProps).getChildRef();
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(RM_URI, transferName),
+                        TYPE_TRANSFER,
+                        transferProps).getChildRef();
 
             }
             finally
@@ -204,9 +210,9 @@ public class TransferServiceImpl extends ServiceBaseImpl
         {
             // ensure this node has not already in the process of being transferred
             List<ChildAssociationRef> transferredAlready = nodeService.getChildAssocs(transferNodeRef, ASSOC_TRANSFERRED, ASSOC_TRANSFERRED);
-            for(ChildAssociationRef car : transferredAlready)
+            for (ChildAssociationRef car : transferredAlready)
             {
-                if(car.getChildRef().equals(nodeRef))
+                if (car.getChildRef().equals(nodeRef))
                 {
                     throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_ALREADY_TRANSFER, nodeRef.toString()));
 
@@ -219,9 +225,9 @@ public class TransferServiceImpl extends ServiceBaseImpl
         try
         {
             nodeService.addChild(transferNodeRef,
-                        nodeRef,
-                        ASSOC_TRANSFERRED,
-                        ASSOC_TRANSFERRED);
+                    nodeRef,
+                    ASSOC_TRANSFERRED,
+                    ASSOC_TRANSFERRED);
             // Set PDF indicator flag
             setPDFIndicationFlag(transferNodeRef, nodeRef);
         }
@@ -249,46 +255,46 @@ public class TransferServiceImpl extends ServiceBaseImpl
      * @param transferNodeRef
      * @param dispositionLifeCycleNodeRef
      */
-   private void setPDFIndicationFlag(NodeRef transferNodeRef, NodeRef dispositionLifeCycleNodeRef)
-   {
-      if (recordFolderService.isRecordFolder(dispositionLifeCycleNodeRef))
-      {
-          List<NodeRef> records = recordService.getRecords(dispositionLifeCycleNodeRef);
-          for (NodeRef record : records)
-          {
-              setPDFIndicationFlag(transferNodeRef, record);
-          }
-      }
-      else
-      {
-          ContentData contentData = (ContentData)nodeService.getProperty(dispositionLifeCycleNodeRef, ContentModel.PROP_CONTENT);
-          if (contentData != null &&
-              MimetypeMap.MIMETYPE_PDF.equals(contentData.getMimetype()))
-          {
-              // Set the property indicator
-              nodeService.setProperty(transferNodeRef, PROP_TRANSFER_PDF_INDICATOR, true);
-          }
-      }
-   }
+    private void setPDFIndicationFlag(NodeRef transferNodeRef, NodeRef dispositionLifeCycleNodeRef)
+    {
+        if (recordFolderService.isRecordFolder(dispositionLifeCycleNodeRef))
+        {
+            List<NodeRef> records = recordService.getRecords(dispositionLifeCycleNodeRef);
+            for (NodeRef record : records)
+            {
+                setPDFIndicationFlag(transferNodeRef, record);
+            }
+        }
+        else
+        {
+            ContentData contentData = (ContentData) nodeService.getProperty(dispositionLifeCycleNodeRef, ContentModel.PROP_CONTENT);
+            if (contentData != null &&
+                    MimetypeMap.MIMETYPE_PDF.equals(contentData.getMimetype()))
+            {
+                // Set the property indicator
+                nodeService.setProperty(transferNodeRef, PROP_TRANSFER_PDF_INDICATOR, true);
+            }
+        }
+    }
 
-   /**
-    * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#completeTransfer(NodeRef)
-    */
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#completeTransfer(NodeRef)
+     */
     @Override
     public void completeTransfer(NodeRef nodeRef)
     {
-        boolean accessionIndicator = ((Boolean)nodeService.getProperty(nodeRef, PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
+        boolean accessionIndicator = ((Boolean) nodeService.getProperty(nodeRef, PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
         String transferLocation = nodeService.getProperty(nodeRef, PROP_TRANSFER_LOCATION).toString();
 
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {
-            if(freezeService.isFrozen(assoc.getChildRef()))
+            if (freezeService.isFrozen(assoc.getChildRef()))
             {
                 throw new AlfrescoRuntimeException("Could not complete a transfer that contains held folders");
             }
 
-            if(freezeService.hasFrozenChildren(assoc.getChildRef()))
+            if (freezeService.hasFrozenChildren(assoc.getChildRef()))
             {
                 throw new AlfrescoRuntimeException("Cound not complete a transfer that contains folders with held children");
             }

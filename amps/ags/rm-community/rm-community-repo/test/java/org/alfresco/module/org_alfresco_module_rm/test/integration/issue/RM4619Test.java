@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,16 +26,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Unit test for RM-4619
  * 
- * When creating regular folders through clients that are not RM aware 
- * the folders must be converted to the appropriate RM container
+ * When creating regular folders through clients that are not RM aware the folders must be converted to the appropriate RM container
  * 
  * @author Ana Bozianu
  * @since 2.6
@@ -44,17 +44,12 @@ public class RM4619Test extends BaseRMTestCase
 {
 
     /**
-     * Given the RM site is created
-     * When we create a regular folder in the fileplan
-     * Then the folder is immediately converted to a record category
+     * Given the RM site is created When we create a regular folder in the fileplan Then the folder is immediately converted to a record category
      */
     public void testConvertFolderToCategory() throws Exception
     {
-        /*
-         * Create a folder in the unfiled record container and check it is immediately converted
-         */
-        final NodeRef recordCategory = doTestInTransaction(new Test<NodeRef>()
-        {
+        /* Create a folder in the unfiled record container and check it is immediately converted */
+        final NodeRef recordCategory = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -63,8 +58,7 @@ public class RM4619Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -76,17 +70,12 @@ public class RM4619Test extends BaseRMTestCase
     }
 
     /**
-     * Given an existing category
-     * When we create a regular folder in the category
-     * Then the folder is immediately converted to a record folder
+     * Given an existing category When we create a regular folder in the category Then the folder is immediately converted to a record folder
      */
     public void testConvertFolderToRecordFolder() throws Exception
     {
-        /*
-         * Create a folder in a record category and check it is converted
-         */
-        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>()
-        {
+        /* Create a folder in a record category and check it is converted */
+        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -95,8 +84,7 @@ public class RM4619Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -106,37 +94,27 @@ public class RM4619Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        /*
-         * Check that when the transaction ends the identifier is no longer editable
-         * And the record folder has the ASPECT_RM_SEARCH aspect
-         */
-        doTestInTransaction(new Test<Void>()
-        {
+        /* Check that when the transaction ends the identifier is no longer editable And the record folder has the ASPECT_RM_SEARCH aspect */
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
                 assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
                 return null;
             }
-            
+
         }, ADMIN_USER);
     }
 
     /**
-     * Given the RM site is created
-     * When we create a regular folder in the unfiled record container
-     * Then the folder is converted to a unfiled record folder
+     * Given the RM site is created When we create a regular folder in the unfiled record container Then the folder is converted to a unfiled record folder
      * 
-     * And when we create another regular folder in that unfiled record folder
-     * Then the folder is also converted to a unfiled record folder
+     * And when we create another regular folder in that unfiled record folder Then the folder is also converted to a unfiled record folder
      */
     public void testConvertFolderToUnfiledRecordFolder() throws Exception
     {
-        /*
-         * Create a folder in the unfiled record container and check it is converted
-         */
-        final NodeRef folder1 = doTestInTransaction(new Test<NodeRef>()
-        {
+        /* Create a folder in the unfiled record container and check it is converted */
+        final NodeRef folder1 = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -145,8 +123,7 @@ public class RM4619Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {
@@ -156,11 +133,8 @@ public class RM4619Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        /*
-         * Create a folder in the unfiled record folder and check it is immediately converted
-         */
-        final NodeRef folder2 = doTestInTransaction(new Test<NodeRef>()
-        {
+        /* Create a folder in the unfiled record folder and check it is immediately converted */
+        final NodeRef folder2 = doTestInTransaction(new Test<NodeRef>() {
             @Override
             public NodeRef run() throws Exception
             {
@@ -169,8 +143,7 @@ public class RM4619Test extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        doTestInTransaction(new Test<Void>()
-        {
+        doTestInTransaction(new Test<Void>() {
             @Override
             public Void run() throws Exception
             {

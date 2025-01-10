@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -65,26 +65,21 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given a document in a collaboration site
-     * When the document is declared by a site collaborator
-     * Then the document becomes a record
-     * And the site users have the appropriate in-place permissions on the record
+     * Given a document in a collaboration site When the document is declared by a site collaborator Then the document becomes a record And the site users have the appropriate in-place permissions on the record
      */
     public void testCreateInplaceRecordFromCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));            
+                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
             }
 
             public void when()
             {
                 // Declare the document as a record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Declare record
@@ -92,57 +87,52 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
 
                         return null;
                     }
-                 }, dmCollaborator);
+                }, dmCollaborator);
             }
 
             public void then()
             {
                 // Check that the document is a record now
-                assertTrue("The document should now be a record", recordService.isRecord(dmDocument));    
-                
+                assertTrue("The document should now be a record", recordService.isRecord(dmDocument));
+
                 // Check that the record is in the unfiled container
-                
+
                 // Check that the record is still a child of the collaboration folder
-                
-                // Check that the collaborator has filling permissions on the record                
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+
+                // Check that the collaborator has filling permissions on the record
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.FILING));
                         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                         return null;
                     }
-                 }, dmCollaborator);
-                                
-                
+                }, dmCollaborator);
+
                 // Check that the consumer has read permissions on the record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(dmDocument, RMPermissionModel.FILING));
                         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                         return null;
                     }
-                 }, dmConsumer);
-                
+                }, dmConsumer);
+
             }
         });
     }
-    
+
     public void testFileInplaceRecordFromCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // Check that the document is not a record
-                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));  
-                
+                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
+
                 // Declare the document as a record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Declare record
@@ -150,8 +140,8 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
 
                         return null;
                     }
-                 }, dmCollaborator);
-                
+                }, dmCollaborator);
+
                 // Check that the document is a record
                 assertTrue("The document should be a record", recordService.isRecord(dmDocument));
                 assertFalse("The record should not be filed", recordService.isFiled(dmDocument));
@@ -167,50 +157,44 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
             {
                 // Check that the document is a record now
                 assertTrue("The document should be a record", recordService.isRecord(dmDocument));
-                assertTrue("The record hsould be filed", recordService.isFiled(dmDocument));  
-                
+                assertTrue("The record hsould be filed", recordService.isFiled(dmDocument));
+
                 // Check that the record is in the unfiled container
                 // TODO
-                
+
                 // Check that the record is still a child of the collaboration folder
                 // TODO
-                
-                // Check that the collaborator has filling permissions on the record                
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+
+                // Check that the collaborator has filling permissions on the record
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.FILING));
                         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                         return null;
                     }
-                 }, dmCollaborator);
-                                
-                
+                }, dmCollaborator);
+
                 // Check that the consumer has read permissions on the record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(dmDocument, RMPermissionModel.FILING));
                         assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
                         return null;
                     }
-                 }, dmConsumer);
-                
+                }, dmConsumer);
+
             }
         });
     }
 
     /**
-     * Given a shared document in a collaboration site 
-     * When the document is declared as record by a site collaborator 
-     * Then the document becomes a record and is not shared anymore
+     * Given a shared document in a collaboration site When the document is declared as record by a site collaborator Then the document becomes a record and is not shared anymore
      */
     public void testCreateInplaceRecordFromCollabSiteRemovesSharedLink()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // Check that the document is not a record
@@ -224,8 +208,7 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
             public void when()
             {
                 // Declare the document as a record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Declare record
@@ -248,22 +231,18 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
     }
 
     /**
-     * Given a document in a collaboration site declared as record 
-     * When I try to share the document 
-     * Then it fails
+     * Given a document in a collaboration site declared as record When I try to share the document Then it fails
      */
     public void testRecordsFromCollabSiteCannotBeShared()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(IntegrityException.class)
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(IntegrityException.class) {
             public void given()
             {
                 // Check that the document is not a record
                 assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
 
                 // Declare the document as a record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
+                AuthenticationUtil.runAs(new RunAsWork<Void>() {
                     public Void doWork() throws Exception
                     {
                         // Declare record

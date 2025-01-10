@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,24 +27,26 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
+
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_IDENTIFIER;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RECORD_CATEGORY;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RECORD_FOLDER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 /**
  * Tests for methods in the RecordsCategoryUtil class
@@ -99,7 +101,7 @@ public class RecordCategoryUtilUnitTest
     @Test
     public void testGetIdFromNodeRef()
     {
-        assertEquals("RecordCategoryId",recordCategoryUtil.getCategoryIdFromNodeId(recordNodeRef,false));
+        assertEquals("RecordCategoryId", recordCategoryUtil.getCategoryIdFromNodeId(recordNodeRef, false));
     }
 
     /**
@@ -117,7 +119,7 @@ public class RecordCategoryUtilUnitTest
     @Test
     public void testGetIdFromNodeRefReturnsNullForNonRecordWhenOptionSelected()
     {
-        assertNull(recordCategoryUtil.getCategoryIdFromNodeId(recordFolderNodeRef,false));
+        assertNull(recordCategoryUtil.getCategoryIdFromNodeId(recordFolderNodeRef, false));
     }
 
     /**

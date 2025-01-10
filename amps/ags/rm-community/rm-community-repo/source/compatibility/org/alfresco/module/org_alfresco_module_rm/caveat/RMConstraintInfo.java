@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,30 +40,37 @@ public class RMConstraintInfo
     {
         this.name = name;
     }
+
     public String getName()
     {
         return name;
     }
+
     public void setTitle(String title)
     {
         this.title = title;
     }
+
     public String getTitle()
     {
         return title;
     }
+
     public void setCaseSensitive(boolean caseSensitive)
     {
         this.caseSensitive = caseSensitive;
     }
+
     public boolean isCaseSensitive()
     {
         return caseSensitive;
     }
+
     public void setAllowedValues(String[] values)
     {
         this.allowedValues = values.clone();
     }
+
     public String[] getAllowedValues()
     {
         return allowedValues;

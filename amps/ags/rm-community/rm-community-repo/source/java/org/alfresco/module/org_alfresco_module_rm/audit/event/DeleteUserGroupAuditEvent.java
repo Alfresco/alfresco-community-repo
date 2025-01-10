@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -55,7 +55,8 @@ public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDelet
     /**
      * Sets the node service
      *
-     * @param nodeService nodeService to set
+     * @param nodeService
+     *            nodeService to set
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -65,7 +66,8 @@ public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDelet
     /**
      * Behaviour that will audit user group deletion
      *
-     * @param nodeRef the node to be deleted
+     * @param nodeRef
+     *            the node to be deleted
      */
     @Override
     @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
@@ -74,9 +76,9 @@ public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDelet
         // Retrieve the authority name property to be audited
         Map<QName, Serializable> auditProperties = new HashMap<>();
         auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
-                    nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
+                nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
 
-        //audit the property values before the delete event
+        // audit the property values before the delete event
         recordsManagementAuditService.auditEvent(nodeRef, getName(), auditProperties, null, true, false);
     }
 }

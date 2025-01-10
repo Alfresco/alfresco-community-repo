@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -54,13 +54,11 @@ public final class PoliciesUtil
      *
      * @param nodeRef
      *            the node we are interested in
-     * @return Returns a set of qualified names containing the node type and all
-     *         the node aspects, or null if the node no longer exists
+     * @return Returns a set of qualified names containing the node type and all the node aspects, or null if the node no longer exists
      */
     public static Set<QName> getTypeAndAspectQNames(final NodeService nodeService, final NodeRef nodeRef)
     {
-        return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Set<QName>>()
-        {
+        return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Set<QName>>() {
             public Set<QName> doWork()
             {
                 Set<QName> qnames = null;

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -28,14 +28,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit;
 
 import static java.util.Collections.emptyList;
 
-import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat.JSON;
-import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.DOD5015_AUDIT_APPLICATION_NAME;
-import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.RM_AUDIT_APPLICATION_NAME;
-import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.RM_AUDIT_PATH_ROOT;
-import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
-import static org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.DEFAULT_RM_SITE_ID;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RM_SITE;
-import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +36,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat.JSON;
+import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.DOD5015_AUDIT_APPLICATION_NAME;
+import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.RM_AUDIT_APPLICATION_NAME;
+import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.RM_AUDIT_PATH_ROOT;
+import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
+import static org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.DEFAULT_RM_SITE_ID;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RM_SITE;
+import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -56,6 +57,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.audit.AuditComponent;
@@ -65,12 +72,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 
 /**
  * Unit tests for {@link RecordsManagementAuditServiceImpl}.
@@ -122,7 +123,8 @@ public class RecordsManagementAuditServiceImplUnitTest
     /**
      * Check that if the RM site is not a DOD site then the audit trail doesn't make a query for DOD events.
      *
-     * @throws IOException Unexpected.
+     * @throws IOException
+     *             Unexpected.
      */
     @Test
     public void testAuditWithoutDOD() throws IOException
@@ -138,11 +140,11 @@ public class RecordsManagementAuditServiceImplUnitTest
 
         // Check that exactly one audit query was performed.
         verify(mockAuditService, times(1))
-                    .auditQuery(any(AuditService.AuditQueryCallback.class), queryParamsCaptor.capture(),
-                                eq(MAX_ENTRIES));
+                .auditQuery(any(AuditService.AuditQueryCallback.class), queryParamsCaptor.capture(),
+                        eq(MAX_ENTRIES));
         // We always need to make the standard query - regardless of the type of RM site (to get events like RM site created).
         assertEquals("The application name should be the standard RM application", RM_AUDIT_APPLICATION_NAME,
-                    queryParamsCaptor.getValue().getApplicationName());
+                queryParamsCaptor.getValue().getApplicationName());
         // Check that the event of viewing the audit log was itself audited.
         verify(mockAuditComponent).recordAuditValues(eq(RM_AUDIT_PATH_ROOT), any(Map.class));
     }
@@ -150,7 +152,8 @@ public class RecordsManagementAuditServiceImplUnitTest
     /**
      * Check that if the RM site is a DOD site then the audit trail makes a query for DOD events and the standard events.
      *
-     * @throws IOException Unexpected.
+     * @throws IOException
+     *             Unexpected.
      */
     @Test
     public void testAuditWithDOD() throws IOException
@@ -166,13 +169,13 @@ public class RecordsManagementAuditServiceImplUnitTest
 
         // Check that two audit queries were performed (one for DOD events and one for standard events).
         verify(mockAuditService, times(2))
-                    .auditQuery(any(AuditService.AuditQueryCallback.class), queryParamsCaptor.capture(),
-                                eq(MAX_ENTRIES));
+                .auditQuery(any(AuditService.AuditQueryCallback.class), queryParamsCaptor.capture(),
+                        eq(MAX_ENTRIES));
         Set<String> apps = queryParamsCaptor.getAllValues().stream().map(AuditQueryParameters::getApplicationName)
-                    .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
         // We always need to make the standard query - regardless of the type of RM site (to get events like RM site created).
         assertEquals("Expected the standard audit query and the DOD audit query.",
-                    Sets.newHashSet(RM_AUDIT_APPLICATION_NAME, DOD5015_AUDIT_APPLICATION_NAME), apps);
+                Sets.newHashSet(RM_AUDIT_APPLICATION_NAME, DOD5015_AUDIT_APPLICATION_NAME), apps);
         // Check that the event of viewing the audit log was itself audited.
         verify(mockAuditComponent).recordAuditValues(eq(RM_AUDIT_PATH_ROOT), any(Map.class));
     }

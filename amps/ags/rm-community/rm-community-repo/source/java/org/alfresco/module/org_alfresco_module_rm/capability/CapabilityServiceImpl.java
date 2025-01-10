@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -195,8 +195,7 @@ public class CapabilityServiceImpl implements CapabilityService
             groups.add(entry.getValue());
         }
 
-        Collections.sort(groups, new Comparator<Group>()
-        {
+        Collections.sort(groups, new Comparator<Group>() {
             @Override
             public int compare(Group g1, Group g2)
             {
@@ -227,8 +226,7 @@ public class CapabilityServiceImpl implements CapabilityService
             }
         }
 
-        Collections.sort(capabilities, new Comparator<Capability>()
-        {
+        Collections.sort(capabilities, new Comparator<Capability>() {
             @Override
             public int compare(Capability c1, Capability c2)
             {

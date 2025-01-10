@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,15 +34,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class provides the implementation for the customisable.get webscript.
@@ -61,7 +62,8 @@ public class CustomisableGet extends DeclarativeWebScript
     private NamespaceService namespaceService;
 
     /**
-     * @param rmAdminService	records management admin service
+     * @param rmAdminService
+     *            records management admin service
      */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
@@ -69,20 +71,23 @@ public class CustomisableGet extends DeclarativeWebScript
     }
 
     /**
-     * @param namespaceService	namespace service
+     * @param namespaceService
+     *            namespace service
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
-		this.namespaceService = namespaceService;
-	}
+        this.namespaceService = namespaceService;
+    }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService
+     *            dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
-		this.dictionaryService = dictionaryService;
-	}
+        this.dictionaryService = dictionaryService;
+    }
+
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
@@ -111,13 +116,13 @@ public class CustomisableGet extends DeclarativeWebScript
         }
 
         // Sort the customisable types and aspects by title
-        Collections.sort(items, new Comparator<Item>()
-        {
+        Collections.sort(items, new Comparator<Item>() {
             @Override
             public int compare(Item o1, Item o2)
             {
                 return o1.title.compareToIgnoreCase(o2.title);
-            }});
+            }
+        });
 
         model.put("items", items);
         return model;
@@ -170,7 +175,7 @@ public class CustomisableGet extends DeclarativeWebScript
             }
             else
             {
-                return this.name.equals(((Item)obj).name);
+                return this.name.equals(((Item) obj).name);
             }
         }
     }

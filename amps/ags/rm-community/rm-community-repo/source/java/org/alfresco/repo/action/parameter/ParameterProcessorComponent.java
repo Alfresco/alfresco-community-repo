@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -64,9 +64,9 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
     public void register(ParameterProcessor processor)
     {
         this.processors.put(processor.getName(), processor);
-        if(processor instanceof ParameterSubstitutionSuggester)
+        if (processor instanceof ParameterSubstitutionSuggester)
         {
-            this.subtitutionSuggesterProcessors.add((ParameterSubstitutionSuggester)processor);
+            this.subtitutionSuggesterProcessors.add((ParameterSubstitutionSuggester) processor);
         }
     }
 
@@ -87,7 +87,7 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
             if (parameterValue instanceof String)
             {
                 // set the updated parameter value
-                ruleItem.setParameterValue(parameterName, process((String)parameterValue, actionedUponNodeRef));
+                ruleItem.setParameterValue(parameterName, process((String) parameterValue, actionedUponNodeRef));
             }
         }
     }
@@ -95,9 +95,11 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
     /**
      * Process the value for substitution within the context of the provided node.
      *
-     * @param value     value
-     * @param nodeRef   node reference
-     * @return String   resulting value
+     * @param value
+     *            value
+     * @param nodeRef
+     *            node reference
+     * @return String resulting value
      */
     public String process(String value, NodeRef nodeRef)
     {
@@ -113,22 +115,22 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
 
         while (m.find())
         {
-          String text = m.group(1);
+            String text = m.group(1);
 
-          // lookup parameter processor to use
-          ParameterProcessor processor = lookupProcessor(text);
-          if (processor == null)
-          {
-              throw new AlfrescoRuntimeException("A parameter processor has not been found for the substitution string " + text);
-          }
-          else
-          {
-              // process each substitution value
-              text = processor.process(text, nodeRef);
-          }
+            // lookup parameter processor to use
+            ParameterProcessor processor = lookupProcessor(text);
+            if (processor == null)
+            {
+                throw new AlfrescoRuntimeException("A parameter processor has not been found for the substitution string " + text);
+            }
+            else
+            {
+                // process each substitution value
+                text = processor.process(text, nodeRef);
+            }
 
-          // append new value
-          m.appendReplacement(sb, Matcher.quoteReplacement(text));
+            // append new value
+            m.appendReplacement(sb, Matcher.quoteReplacement(text));
         }
         m.appendTail(sb);
         return sb.toString();
@@ -137,7 +139,8 @@ public class ParameterProcessorComponent implements ParameterSubstitutionSuggest
     /**
      * Return a list of substitution suggestions for the passed string fragment.
      *
-     * @param substitutionFragment  Text fragment to search on.
+     * @param substitutionFragment
+     *            Text fragment to search on.
      * @return A list of substitutions that match the substitution fragment.
      */
     public List<String> getSubstitutionSuggestions(final String substitutionFragment)

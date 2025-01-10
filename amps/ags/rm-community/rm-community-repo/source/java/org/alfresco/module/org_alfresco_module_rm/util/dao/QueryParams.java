@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -52,7 +52,8 @@ public class QueryParams<T extends QueryField>
     /**
      * Constructor that takes the sort order.
      *
-     * @param sortProps A list of fields to sort on, and the direction to sort in.
+     * @param sortProps
+     *            A list of fields to sort on, and the direction to sort in.
      */
     public QueryParams(List<Pair<T, Boolean>> sortProps)
     {
@@ -76,7 +77,8 @@ public class QueryParams<T extends QueryField>
     /**
      * Sets the sort properties required.
      *
-     * @param sortProps A list of pairs of properties and sort directions.
+     * @param sortProps
+     *            A list of pairs of properties and sort directions.
      * @return The updated QueryParams object.
      */
     public QueryParams<T> withSortProps(List<Pair<T, Boolean>> sortProps)
@@ -88,16 +90,17 @@ public class QueryParams<T extends QueryField>
     /**
      * Sets the sort properties required and validates the list.
      *
-     * @param sortProps A list of pairs of properties and sort directions.
+     * @param sortProps
+     *            A list of pairs of properties and sort directions.
      */
     public void setSortProps(List<Pair<T, Boolean>> sortProps)
     {
         this.sortProps = ImmutableList.copyOf(sortProps);
 
-        //validate the list
-        for(Pair<T, Boolean> sortPair : sortProps)
+        // validate the list
+        for (Pair<T, Boolean> sortPair : sortProps)
         {
-            if(sortPair == null || sortPair.getFirst() == null || sortPair.getSecond() == null)
+            if (sortPair == null || sortPair.getFirst() == null || sortPair.getSecond() == null)
             {
                 throw new IllegalArgumentException("Unexpected null or null containing element in list: " + sortProps);
             }

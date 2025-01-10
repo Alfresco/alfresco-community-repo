@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -35,7 +35,8 @@ package org.alfresco.util;
 public class StringUtils
 {
     /** Private constructor for the helper class. */
-    private StringUtils() {}
+    private StringUtils()
+    {}
 
     /**
      * Convert the given object to string with each line indented by 4 spaces (except the first line).

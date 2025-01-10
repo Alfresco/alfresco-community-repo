@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,21 +30,22 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+
 /**
- * Test of GET RM Constraint  (User facing scripts)
+ * Test of GET RM Constraint (User facing scripts)
  *
  * @author Mark Rogers
  */
 public class RMConstraintScriptTest extends BaseRMWebScriptTestCase
 {
-    protected final static String RM_LIST          = "rmc:smListTest";
+    protected final static String RM_LIST = "rmc:smListTest";
     protected final static String RM_LIST_URI_ELEM = "rmc_smListTest";
 
     private static final String URL_RM_CONSTRAINTS = "/api/rma/rmconstraints";
@@ -67,11 +68,9 @@ public class RMConstraintScriptTest extends BaseRMWebScriptTestCase
         }
         caveatConfigService.addRMConstraint(RM_LIST, "my title", new String[0]);
 
-
         createUser("fbloggs");
         createUser("jrogers");
         createUser("jdoe");
-
 
         List<String> values = new ArrayList<>();
         values.add("NOFORN");
@@ -96,7 +95,6 @@ public class RMConstraintScriptTest extends BaseRMWebScriptTestCase
 
         }
 
-
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         deleteUser("fbloggs");
         deleteUser("jrogers");
@@ -105,5 +103,3 @@ public class RMConstraintScriptTest extends BaseRMWebScriptTestCase
     }
 
 }
-
-

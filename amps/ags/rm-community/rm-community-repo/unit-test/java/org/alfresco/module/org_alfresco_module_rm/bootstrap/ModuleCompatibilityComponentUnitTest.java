@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,11 +32,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
-import org.alfresco.service.cmr.module.ModuleDetails;
-import org.alfresco.service.cmr.module.ModuleService;
-import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.service.license.LicenseDescriptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -45,40 +40,53 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
+
 /**
  * Module compatibility component unit test
  * 
  * @author Roy Wetherall
  * @since 2.4
  */
-public class ModuleCompatibilityComponentUnitTest 
+public class ModuleCompatibilityComponentUnitTest
 {
-	/** mocks */
-	@Mock private DescriptorService mockedDescriptorService;
-	@Mock private ModuleService mockedModuleService;
-	@Mock private ContextRefreshedEvent mockedContextRefreshedEvent;
-	@Mock private ConfigurableApplicationContext mockedApplicationContext;
-	@Mock private ModuleDetails mockedModuleDetails;
-	@Mock private LicenseDescriptor mockedDescriptor;
-	
-	/** object under test */
-	@InjectMocks private ModuleCompatibilityComponent moduleCompatibilityComponent;
-	
-	/**
-	 * Before test execution
-	 */
-	@Before
-	public void before()
-	{
-		MockitoAnnotations.initMocks(this);
-		
-		when(mockedContextRefreshedEvent.getApplicationContext())
-			.thenReturn(mockedApplicationContext);
-		when(mockedDescriptorService.getLicenseDescriptor())
-			.thenReturn(mockedDescriptor);		
-	}
-	
-	/**
+    /** mocks */
+    @Mock
+    private DescriptorService mockedDescriptorService;
+    @Mock
+    private ModuleService mockedModuleService;
+    @Mock
+    private ContextRefreshedEvent mockedContextRefreshedEvent;
+    @Mock
+    private ConfigurableApplicationContext mockedApplicationContext;
+    @Mock
+    private ModuleDetails mockedModuleDetails;
+    @Mock
+    private LicenseDescriptor mockedDescriptor;
+
+    /** object under test */
+    @InjectMocks
+    private ModuleCompatibilityComponent moduleCompatibilityComponent;
+
+    /**
+     * Before test execution
+     */
+    @Before
+    public void before()
+    {
+        MockitoAnnotations.initMocks(this);
+
+        when(mockedContextRefreshedEvent.getApplicationContext())
+                .thenReturn(mockedApplicationContext);
+        when(mockedDescriptorService.getLicenseDescriptor())
+                .thenReturn(mockedDescriptor);
+    }
+
+    /**
 	 * Given that core community is installed
 	 * And that RM community is installed
 	 * When the application context is loaded
@@ -102,8 +110,8 @@ public class ModuleCompatibilityComponentUnitTest
 		verify(mockedApplicationContext, never()).close();
 		
 	}
-	
-	/**
+
+    /**
 	 * Given that core community is installed
 	 * And that RM enterprise is installed
 	 * When the application context is loaded
@@ -127,8 +135,8 @@ public class ModuleCompatibilityComponentUnitTest
 		verify(mockedApplicationContext).close();
 		
 	}
-	
-	/**
+
+    /**
 	 * Given that core enterprise is installed
 	 * And that RM community is installed
 	 * When the application context is loaded
@@ -151,8 +159,8 @@ public class ModuleCompatibilityComponentUnitTest
 		// verify close is called
 		verify(mockedApplicationContext).close();		
 	}
-	
-	/**
+
+    /**
 	 * Given that core enterprise is installed
 	 * And that RM enterprise is installed
 	 * When the application context is loaded

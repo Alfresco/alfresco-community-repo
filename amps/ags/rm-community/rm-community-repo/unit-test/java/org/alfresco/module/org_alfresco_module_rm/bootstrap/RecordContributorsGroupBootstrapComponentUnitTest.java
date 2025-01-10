@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,10 +32,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.security.AuthorityType;
 
 /**
  * Record contributors group bootstrap component unit test
@@ -47,41 +48,36 @@ public class RecordContributorsGroupBootstrapComponentUnitTest extends BaseUnitT
 {
     @InjectMocks
     private RecordContributorsGroupBootstrapComponent component;
-    
+
     /**
-     * Given that the record contributors group already exists
-     * When I try and create the group
-     * Then nothing happens
+     * Given that the record contributors group already exists When I try and create the group Then nothing happens
      */
     @Test
     public void groupAlreadyExists()
     {
         // group already exists
         doReturn(true).when(mockedAuthorityService).authorityExists(RecordContributorsGroupBootstrapComponent.GROUP_RECORD_CONTRIBUTORS);
-        
+
         // create group
         component.createRecordContributorsGroup();
-        
+
         // group not created
         verify(mockedAuthorityService, times(1)).authorityExists(RecordContributorsGroupBootstrapComponent.GROUP_RECORD_CONTRIBUTORS);
         verifyNoMoreInteractions(mockedAuthorityService);
     }
-    
+
     /**
-     * Given that the record contributors group does not exist
-     * When I try and create the group
-     * Then the group is successfully created
-     * And 'everyone' is added to the new group
+     * Given that the record contributors group does not exist When I try and create the group Then the group is successfully created And 'everyone' is added to the new group
      */
     @Test
     public void createGroup()
     {
         // group does not exists
         doReturn(false).when(mockedAuthorityService).authorityExists(RecordContributorsGroupBootstrapComponent.GROUP_RECORD_CONTRIBUTORS);
-        
+
         // create group
         component.createRecordContributorsGroup();
-        
+
         // group not created
         verify(mockedAuthorityService, times(1)).createAuthority(AuthorityType.GROUP, RecordContributorsGroupBootstrapComponent.RECORD_CONTRIBUTORS);
         verify(mockedAuthorityService, times(1)).addAuthority(RecordContributorsGroupBootstrapComponent.GROUP_RECORD_CONTRIBUTORS, "admin");

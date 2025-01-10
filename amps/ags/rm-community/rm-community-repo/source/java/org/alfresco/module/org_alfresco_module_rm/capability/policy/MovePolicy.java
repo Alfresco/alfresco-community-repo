@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,19 +27,19 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import org.aopalliance.intercept.MethodInvocation;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.aopalliance.intercept.MethodInvocation;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 public class MovePolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate(
+    public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)
@@ -67,7 +67,7 @@ public class MovePolicy extends AbstractBasePolicy
             else
             {
                 if (nodeService.hasAspect(destination, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) &&
-                    permissionService.hasPermission(destination, RMPermissionModel.FILING).equals(AccessStatus.ALLOWED))
+                        permissionService.hasPermission(destination, RMPermissionModel.FILING).equals(AccessStatus.ALLOWED))
                 {
                     return AccessDecisionVoter.ACCESS_GRANTED;
                 }

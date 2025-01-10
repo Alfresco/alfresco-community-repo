@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -61,15 +61,15 @@ public abstract class RMNode
     public static final String PARAM_PATH = "path";
     public static final String PARAM_ALLOWABLE_OPERATIONS = "allowableOperations";
     public static final String PARAM_AUTO_RENAME = "autoRename";
-    
+
     public static final String PARAM_ISPRIMARY = "isPrimary";
-    
+
     public static final String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
-    
+
     public static final String PARAM_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
     public static final String PARAM_IS_CLOSED = "isClosed";
     public static final String PARAM_INCLUDE_ASSOCIATION = "association";
-    
+
     public static final String FILE_PLAN_TYPE = "rma:filePlan";
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
     public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
@@ -105,7 +105,7 @@ public abstract class RMNode
 
     }
 
-    @JsonProperty ("id")
+    @JsonProperty("id")
     @UniqueId
     public NodeRef getNodeRef()
     {

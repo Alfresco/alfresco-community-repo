@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -38,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.servlet.FormData;
+
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -63,8 +66,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * File plan children relation
@@ -72,11 +73,11 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  * @author Ramona Popa
  * @since 2.6
  */
-@RelationshipResource(name="categories", entityResource = FilePlanEntityResource.class, title = "Category children of file plan")
+@RelationshipResource(name = "categories", entityResource = FilePlanEntityResource.class, title = "Category children of file plan")
 public class FilePlanChildrenRelation implements RelationshipResourceAction.Read<RecordCategory>,
-                                                 RelationshipResourceAction.Create<RecordCategory>,
-                                                 MultiPartRelationshipResourceAction.Create<RecordCategory>,
-                                                 InitializingBean
+        RelationshipResourceAction.Create<RecordCategory>,
+        MultiPartRelationshipResourceAction.Create<RecordCategory>,
+        InitializingBean
 {
     /** Record category type */
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
@@ -130,7 +131,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
         mandatory("parameters", parameters);
 
         QName filePlanType = apiUtils.getFilePlanType();
-        if(filePlanType == null)// rm site not created
+        if (filePlanType == null)// rm site not created
         {
             throw new EntityNotFoundException(filePlanId);
         }
@@ -139,7 +140,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
         // list record categories
         Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesForFilePlanEndpoint();
 
-        //FIXME this param null
+        // FIXME this param null
         List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(parameters, null);
 
         final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef,
@@ -152,8 +153,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
 
         final List<FileInfo> page = pagingResults.getPage();
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<RecordCategory> nodes = new AbstractList<RecordCategory>()
-        {
+        List<RecordCategory> nodes = new AbstractList<RecordCategory>() {
             @Override
             public RecordCategory get(int index)
             {
@@ -180,7 +180,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
     }
 
     @Override
-    @WebApiDescription(title="Create one (or more) record categories as children of container identified by 'filePlanId'")
+    @WebApiDescription(title = "Create one (or more) record categories as children of container identified by 'filePlanId'")
     public List<RecordCategory> create(String filePlanId, List<RecordCategory> nodeInfos, Parameters parameters)
     {
         checkNotBlank("filePlanId", filePlanId);
@@ -194,8 +194,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
         }
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
 
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
+        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>() {
             public List<NodeRef> execute()
             {
                 List<NodeRef> createdNodes = new LinkedList<>();

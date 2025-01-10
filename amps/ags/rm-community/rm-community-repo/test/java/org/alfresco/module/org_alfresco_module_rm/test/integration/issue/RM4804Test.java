@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -32,6 +32,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.GUID;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
@@ -42,10 +46,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.extensions.webscripts.GUID;
-
 
 /**
  * Integration test for RM-4804
@@ -57,21 +57,17 @@ import org.springframework.extensions.webscripts.GUID;
  */
 public class RM4804Test extends BaseRMTestCase
 {
-    //Fields required across transactions
+    // Fields required across transactions
     NodeRef record;
     NodeRef transferFolder;
 
     /**
-     * Given a category with disposition schedule applied on folder with Cut Of and Transfer, a record folder and a file PDF document
-     * to folder, complete the record
-     * When execute disposition schedule steps 
-     * Then the Transfer step is successfully finished
+     * Given a category with disposition schedule applied on folder with Cut Of and Transfer, a record folder and a file PDF document to folder, complete the record When execute disposition schedule steps Then the Transfer step is successfully finished
      */
     @org.junit.Test
     public void testTransferCompletedRecordOfTypePDF() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        doBehaviourDrivenTest(new BehaviourDrivenTest() {
             public void given()
             {
                 // category is created
@@ -84,7 +80,7 @@ public class RM4804Test extends BaseRMTestCase
                 dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, false);
 
                 DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(recordCategory,
-                    dsProps);
+                        dsProps);
 
                 // cutoff immediately
                 Map<QName, Serializable> dispositionActionCutOff = new HashMap<>(3);
@@ -116,8 +112,8 @@ public class RM4804Test extends BaseRMTestCase
                 // cut off and transfer record
                 rmActionService.executeRecordsManagementAction(recordFolder, CutOffAction.NAME, null);
                 transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordFolder,
-                    TransferAction.NAME)
-                    .getValue();
+                        TransferAction.NAME)
+                        .getValue();
             }
 
             public void when()

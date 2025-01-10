@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,13 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
 import java.text.MessageFormat;
 
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
-import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Period;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.GUID;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -44,6 +37,14 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
+import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.Period;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.GUID;
 
 /**
  * This class tests the Rest API for disposition related operations
@@ -61,7 +62,6 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
     protected static final String GET_LIST_URL = "/api/rma/admin/listofvalues";
     protected static final String SERVICE_URL_PREFIX = "/alfresco/service";
     protected static final String APPLICATION_JSON = "application/json";
-
 
     public void testGetDispositionSchedule() throws Exception
     {
@@ -91,7 +91,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         // check JSON data
         JSONObject dataObj = jsonParsedObject.getJSONObject("data");
         assertNotNull(dataObj);
-        JSONObject rootDataObject = (JSONObject)dataObj;
+        JSONObject rootDataObject = (JSONObject) dataObj;
         assertEquals(10, rootDataObject.length());
 
         // check individual data items
@@ -117,7 +117,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONArray actions = rootDataObject.getJSONArray("actions");
         assertNotNull(actions);
         assertEquals(2, actions.length());
-        JSONObject action1 = (JSONObject)actions.get(0);
+        JSONObject action1 = (JSONObject) actions.get(0);
         assertEquals(9, action1.length());
         assertNotNull(action1.get("id"));
         assertNotNull(action1.get("url"));
@@ -125,7 +125,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         assertEquals("cutoff", action1.getString("name"));
         assertTrue(action1.getBoolean("eligibleOnFirstCompleteEvent"));
 
-        JSONObject action2 = (JSONObject)actions.get(1);
+        JSONObject action2 = (JSONObject) actions.get(1);
         assertEquals(8, action2.length());
 
         // make sure the disposition schedule node ref is present and valid
@@ -140,7 +140,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
 
         categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
         requestUrl = MessageFormat.format(GET_SCHEDULE_URL_FORMAT, categoryNodeUrl);
-        //System.out.println("GET response: " + rsp.getContentAsString());
+        // System.out.println("GET response: " + rsp.getContentAsString());
         rsp = sendRequest(new GetRequest(requestUrl), expectedStatus);
 
         // get response as JSON
@@ -151,7 +151,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         // check JSON data
         dataObj = jsonParsedObject.getJSONObject("data");
         assertNotNull(dataObj);
-        rootDataObject = (JSONObject)dataObj;
+        rootDataObject = (JSONObject) dataObj;
         assertEquals(8, rootDataObject.length());
         actions = rootDataObject.getJSONArray("actions");
         assertNotNull(actions);
@@ -194,7 +194,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         // check the returned data is what was expected
         JSONObject jsonResponse = new JSONObject(new JSONTokener(rsp.getContentAsString()));
         JSONObject dataObj = jsonResponse.getJSONObject("data");
-        JSONObject rootDataObject = (JSONObject)dataObj;
+        JSONObject rootDataObject = (JSONObject) dataObj;
         assertNotNull(rootDataObject.getString("id"));
         assertNotNull(rootDataObject.getString("url"));
         assertEquals(0, rootDataObject.getInt("index"));
@@ -353,7 +353,6 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
 
         NodeRef newRecordFolder = recordFolderService.createRecordFolder(recordCategory, "recordFolder");
 
-
         // there should now be a disposition lifecycle for the record
         requestUrl = MessageFormat.format(GET_LIFECYCLE_URL_FORMAT, newRecordFolder.toString().replace("://", "/"));
         rsp = sendRequest(new GetRequest(requestUrl), 200);
@@ -426,7 +425,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONObject periodTypes = data.getJSONObject("periodTypes");
         assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/periodtypes", periodTypes.getString("url"));
         items = periodTypes.getJSONArray("items");
-        assertEquals(Period.getProviderNames().size()-1, items.length());
+        assertEquals(Period.getProviderNames().size() - 1, items.length());
         assertTrue(items.length() > 0);
         item = items.getJSONObject(0);
         assertTrue(item.length() == 2);

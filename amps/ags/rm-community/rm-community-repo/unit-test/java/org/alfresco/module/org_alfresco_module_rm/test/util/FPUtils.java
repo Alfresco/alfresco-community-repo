@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -46,11 +46,12 @@ import java.util.stream.Stream;
 public class FPUtils
 {
     /**
-     * This method is intended to work exactly like {@code java.util.Arrays.asList()} but it takes
-     * a vararg of {@code Supplier}s instead of actual objects.
+     * This method is intended to work exactly like {@code java.util.Arrays.asList()} but it takes a vararg of {@code Supplier}s instead of actual objects.
      *
-     * @param suppliers a vararg of {@link Supplier}s giving a sequence of values for the list.
-     * @param <T> the type of elements in the list.
+     * @param suppliers
+     *            a vararg of {@link Supplier}s giving a sequence of values for the list.
+     * @param <T>
+     *            the type of elements in the list.
      * @return the list with each element being the first retrieved from a {@code Supplier}.
      */
     @SafeVarargs
@@ -63,17 +64,18 @@ public class FPUtils
         else
         {
             return Stream.of(suppliers)
-                         .map(s -> s.get())
-                         .collect(toList());
+                    .map(s -> s.get())
+                    .collect(toList());
         }
     }
 
     /**
-     * This method is intended to work exactly like {@link #asSet(Object[])}} but it takes
-     * a vararg of {@code Supplier}s instead of actual objects.
+     * This method is intended to work exactly like {@link #asSet(Object[])}} but it takes a vararg of {@code Supplier}s instead of actual objects.
      *
-     * @param suppliers a vararg of {@link Supplier}s giving a sequence of values for the set.
-     * @param <T> the type of elements in the set.
+     * @param suppliers
+     *            a vararg of {@link Supplier}s giving a sequence of values for the set.
+     * @param <T>
+     *            the type of elements in the set.
      * @return the set with each element being the first retrieved from a {@code Supplier} (duplicates removed).
      */
     @SafeVarargs
@@ -86,7 +88,8 @@ public class FPUtils
     /**
      * This utility method converts a vararg of objects into a Set<T>.
      *
-     * @param objects the objects to be added to the set
+     * @param objects
+     *            the objects to be added to the set
      * @return a Set of objects (any equal objects will of course not be duplicated)
      */
     @SafeVarargs

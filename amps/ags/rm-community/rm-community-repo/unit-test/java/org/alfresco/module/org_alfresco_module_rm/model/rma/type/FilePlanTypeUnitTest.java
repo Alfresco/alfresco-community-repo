@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,23 +27,21 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
+import com.google.common.collect.Sets;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-
-import com.google.common.collect.Sets;
 
 /**
  * Unit test that test the conditions enforced by FilePlanType behavior bean
@@ -67,11 +65,9 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container
-     * When adding a child of type TYPE_FILE_PLAN
-     * Then an error should be thrown
+     * Having the Fileplan container When adding a child of type TYPE_FILE_PLAN Then an error should be thrown
      */
-    @Test (expected = IntegrityException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddFileplanToFileplan()
     {
         ChildAssociationRef childAssoc = createFileplanContainerChild(TYPE_FILE_PLAN);
@@ -79,9 +75,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container
-     * When adding multiple child of type TYPE_RECORD_CATEGORY
-     * Then child associations should be created
+     * Having the Fileplan container When adding multiple child of type TYPE_RECORD_CATEGORY Then child associations should be created
      */
     @Test
     public void testAddCategoriesToFileplan()
@@ -96,9 +90,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container
-     * When creating the first child of type TYPE_HOLD_CONTAINER
-     * Then the fileplan behavior bean shouldn't complain
+     * Having the Fileplan container When creating the first child of type TYPE_HOLD_CONTAINER Then the fileplan behavior bean shouldn't complain
      */
     @Test
     public void testCreateHoldContainers()
@@ -110,11 +102,9 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container with a child of type TYPE_HOLD_CONTAINER
-     * When adding another child of type TYPE_HOLD_CONTAINER
-     * Then an error should be thrown
+     * Having the Fileplan container with a child of type TYPE_HOLD_CONTAINER When adding another child of type TYPE_HOLD_CONTAINER Then an error should be thrown
      */
-    @Test (expected = IntegrityException.class)
+    @Test(expected = IntegrityException.class)
     public void testCreateMultipleHoldContainers()
     {
         ChildAssociationRef existingHoldAssoc = createFileplanContainerChild(TYPE_HOLD_CONTAINER);
@@ -125,9 +115,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container
-     * When creating the first child of type TYPE_TRANSFER_CONTAINER
-     * Then the fileplan behavior bean shouldn't complain
+     * Having the Fileplan container When creating the first child of type TYPE_TRANSFER_CONTAINER Then the fileplan behavior bean shouldn't complain
      */
     @Test
     public void testCreateTransferContainers()
@@ -139,11 +127,9 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container with a child of type TYPE_TRANSFER_CONTAINER
-     * When adding another child of type TYPE_TRANSFER_CONTAINER
-     * Then an error should be thrown
+     * Having the Fileplan container with a child of type TYPE_TRANSFER_CONTAINER When adding another child of type TYPE_TRANSFER_CONTAINER Then an error should be thrown
      */
-    @Test (expected = IntegrityException.class)
+    @Test(expected = IntegrityException.class)
     public void testCreateMultipleTransferContainers()
     {
         ChildAssociationRef existingHoldAssoc = createFileplanContainerChild(TYPE_TRANSFER_CONTAINER);
@@ -154,9 +140,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container
-     * When creating the first child of type TYPE_UNFILED_RECORD_CONTAINER
-     * Then the fileplan behavior bean shouldn't complain
+     * Having the Fileplan container When creating the first child of type TYPE_UNFILED_RECORD_CONTAINER Then the fileplan behavior bean shouldn't complain
      */
     @Test
     public void testCreateUnfiledRecordsContainers()
@@ -168,11 +152,9 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Having the Fileplan container with a child of type TYPE_UNFILED_RECORD_CONTAINER
-     * When adding another child of type TYPE_UNFILED_RECORD_CONTAINER
-     * Then an error should be thrown
+     * Having the Fileplan container with a child of type TYPE_UNFILED_RECORD_CONTAINER When adding another child of type TYPE_UNFILED_RECORD_CONTAINER Then an error should be thrown
      */
-    @Test (expected = IntegrityException.class)
+    @Test(expected = IntegrityException.class)
     public void testCreateMultipleUnfiledRecordsContainers()
     {
         ChildAssociationRef existingHoldAssoc = createFileplanContainerChild(TYPE_UNFILED_RECORD_CONTAINER);
@@ -184,12 +166,14 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
 
     /**
      * Helper method that creates a child of the fileplan container with the provided type
-     * @param childType the node type of the child to be created
+     * 
+     * @param childType
+     *            the node type of the child to be created
      * @return the child association between the fileplan and the created node
      */
     private ChildAssociationRef createFileplanContainerChild(QName childType)
     {
         NodeRef child = generateNodeRef(childType);
-        return new ChildAssociationRef( ContentModel.ASSOC_CONTAINS, filePlanContainer, childType, child);
+        return new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, filePlanContainer, childType, child);
     }
 }

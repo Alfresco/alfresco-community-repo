@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -43,6 +43,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -79,11 +85,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Hold service implementation
@@ -93,9 +94,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 @BehaviourBean
 public class HoldServiceImpl extends ServiceBaseImpl
-                             implements HoldService,
-                                        NodeServicePolicies.BeforeDeleteNodePolicy,
-                                        RecordsManagementModel
+        implements HoldService,
+        NodeServicePolicies.BeforeDeleteNodePolicy,
+        RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(HoldServiceImpl.class);
@@ -129,7 +130,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Set the file plan service
      *
-     * @param filePlanService the file plan service
+     * @param filePlanService
+     *            the file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
@@ -139,7 +141,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Set the record service
      *
-     * @param recordService the record service
+     * @param recordService
+     *            the record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -149,7 +152,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Set the record folder service
      *
-     * @param recordFolderService   the record folder service
+     * @param recordFolderService
+     *            the record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
@@ -159,15 +163,17 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Set the permission service
      *
-     * @param permissionService the permission services
+     * @param permissionService
+     *            the permission services
      */
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
     }
 
-     /**
-     * @param capabilityService capability service
+    /**
+     * @param capabilityService
+     *            capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -187,7 +193,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Sets the policy component instance
      *
-     * @param policyComponent The policy component instance
+     * @param policyComponent
+     *            The policy component instance
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -228,7 +235,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
-    @Behaviour(kind=BehaviourKind.CLASS, type="rma:hold", notificationFrequency=NotificationFrequency.EVERY_EVENT)
+    @Behaviour(kind = BehaviourKind.CLASS, type = "rma:hold", notificationFrequency = NotificationFrequency.EVERY_EVENT)
     @Override
     public void beforeDeleteNode(final NodeRef hold)
     {
@@ -236,15 +243,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
         {
             checkPermissionsForDeleteHold(hold);
 
-            RunAsWork<Void> work = new RunAsWork<Void>()
-            {
+            RunAsWork<Void> work = new RunAsWork<Void>() {
                 @Override
                 public Void doWork()
                 {
                     List<NodeRef> frozenNodes = getHeld(hold);
                     for (NodeRef frozenNode : frozenNodes)
                     {
-                        //set in transaction cache in order not to trigger update policy when removing the child association
+                        // set in transaction cache in order not to trigger update policy when removing the child association
                         transactionalResourceHelper.getSet("frozen").add(frozenNode);
                         removeFreezeAspect(frozenNode, 1);
                     }
@@ -258,8 +264,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * Helper method removes the freeze aspect from the record and record folder if it is no longer
-     * in a hold.
+     * Helper method removes the freeze aspect from the record and record folder if it is no longer in a hold.
      *
      * @param nodeRef
      */
@@ -271,7 +276,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
             {
                 // remove the freeze aspect from the node
-                //set in transaction cache in order not to trigger update policy when removing the aspect
+                // set in transaction cache in order not to trigger update policy when removing the aspect
                 transactionalResourceHelper.getSet("frozen").add(nodeRef);
                 nodeService.removeAspect(nodeRef, ASPECT_FROZEN);
             }
@@ -287,7 +292,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         if (recordsOtherHolds.size() == index)
                         {
                             // remove the freeze aspect from the node
-                            //set in transaction cache in order not to trigger update policy when removing the aspect
+                            // set in transaction cache in order not to trigger update policy when removing the aspect
                             transactionalResourceHelper.getSet("frozen").add(record);
                             nodeService.removeAspect(record, ASPECT_FROZEN);
                         }
@@ -359,8 +364,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (!CollectionUtils.isEmpty(filePlans))
             {
                 final List<NodeRef> holdsNotIncludingNodeRef = new ArrayList<>();
-                filePlans.forEach(filePlan ->
-                {
+                filePlans.forEach(filePlan -> {
                     // invert list to get list of holds that do not contain this node
                     final List<NodeRef> allHolds = getHolds(filePlan);
                     holdsNotIncludingNodeRef.addAll(ListUtils.subtract(allHolds, new ArrayList<>(holdsIncludingNodeRef)));
@@ -379,7 +383,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Helper method to get holds that are direct parents of the given node.
      *
-     * @param nodeRef   node reference
+     * @param nodeRef
+     *            node reference
      * @return Set<{@link NodeRef}> set of parent holds
      */
     private Set<NodeRef> getParentHolds(NodeRef nodeRef)
@@ -492,7 +497,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
         if (nodeService.exists(hold) && isHold(hold))
         {
             // get the reason
-            reason = (String)nodeService.getProperty(hold, PROP_HOLD_REASON);
+            reason = (String) nodeService.getProperty(hold, PROP_HOLD_REASON);
         }
 
         return reason;
@@ -573,7 +578,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Helper method to check if user has correct permissions to delete hold
      *
-     * @param hold hold to be deleted
+     * @param hold
+     *            hold to be deleted
      */
     private void checkPermissionsForDeleteHold(NodeRef hold)
     {
@@ -592,7 +598,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 }
                 else
                 {
-                    permission =  PermissionService.READ;
+                    permission = PermissionService.READ;
                 }
 
                 if (permissionService.hasPermission(nodeRef, permission) == AccessStatus.DENIED)
@@ -669,7 +675,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
 
             if (!AccessStatus.ALLOWED.equals(
-                            capabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)))
+                    capabilityService.getCapabilityAccessState(hold, RMPermissionModel.ADD_TO_HOLD)))
             {
                 throw new AccessDeniedException(I18NUtil.getMessage(MSG_ERR_ACCESS_DENIED));
             }
@@ -680,8 +686,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 // fire before add to hold policy
                 invokeBeforeAddToHold(hold, nodeRef);
                 // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
-                authenticationUtil.runAsSystem((RunAsWork<Void>) () ->
-                {
+                authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                     // gather freeze properties
                     final Map<QName, Serializable> props = new HashMap<>(2);
                     props.put(PROP_FROZEN_AT, new Date());
@@ -690,7 +695,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     addFrozenAspect(nodeRef, props);
 
                     // Link the record to the hold
-                    //set in transaction cache in order not to trigger update policy when adding the association
+                    // set in transaction cache in order not to trigger update policy when adding the association
                     transactionalResourceHelper.getSet("frozen").add(nodeRef);
                     nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_CONTENT);
                     // get the documents primary parent assoc
@@ -716,7 +721,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Check if the given node is eligible to be added into a hold
      *
-     * @param nodeRef the node to be checked
+     * @param nodeRef
+     *            the node to be checked
      */
     private void checkNodeCanBeAddedToHold(NodeRef nodeRef)
     {
@@ -748,14 +754,16 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Add Frozen aspect only if node isn't already frozen
      *
-     * @param nodeRef node on which aspect will be added
-     * @param props aspect properties map
+     * @param nodeRef
+     *            node on which aspect will be added
+     * @param props
+     *            aspect properties map
      */
     private void addFrozenAspect(NodeRef nodeRef, Map<QName, Serializable> props)
     {
         if (!nodeService.hasAspect(nodeRef, ASPECT_FROZEN))
         {
-            //set in transaction cache in order not to trigger update policy when adding the aspect
+            // set in transaction cache in order not to trigger update policy when adding the aspect
             transactionalResourceHelper.getSet("frozen").add(nodeRef);
             // add freeze aspect
             nodeService.addAspect(nodeRef, ASPECT_FROZEN, props);
@@ -845,10 +853,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     invokeBeforeRemoveFromHold(hold, nodeRef);
                     // run as system so we don't run into further permission issues
                     // we already know we have to have the correct capability to get here
-                    authenticationUtil.runAsSystem((RunAsWork<Void>) () ->
-                    {
+                    authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                         // remove from hold
-                        //set in transaction cache in order not to trigger update policy when removing the child association
+                        // set in transaction cache in order not to trigger update policy when removing the child association
                         transactionalResourceHelper.getSet("frozen").add(nodeRef);
                         nodeService.removeChild(hold, nodeRef);
 
@@ -859,8 +866,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
 
             // run as system as we can't be sure if have remove aspect rights on node
-            authenticationUtil.runAsSystem((RunAsWork<Void>) () ->
-            {
+            authenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
                 removeFreezeAspect(nodeRef, 0);
                 return null;
             });
@@ -921,9 +927,12 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke beforeCreateHold policy
      *
-     * @param nodeRef node reference
-     * @param name    hold name
-     * @param reason  hold reason
+     * @param nodeRef
+     *            node reference
+     * @param name
+     *            hold name
+     * @param reason
+     *            hold reason
      */
     protected void invokeBeforeCreateHold(NodeRef nodeRef, String name, String reason)
     {
@@ -935,7 +944,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onCreateHold policy
      *
-     * @param nodeRef node reference
+     * @param nodeRef
+     *            node reference
      */
     protected void invokeOnCreateHold(NodeRef nodeRef)
     {
@@ -946,7 +956,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke beforeDeleteHold policy
      *
-     * @param nodeRef node reference
+     * @param nodeRef
+     *            node reference
      */
     protected void invokeBeforeDeleteHold(NodeRef nodeRef)
     {
@@ -957,8 +968,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onDeleteHold policy
      *
-     * @param holdName name of the hold
-     * @param classQNames hold types and aspects
+     * @param holdName
+     *            name of the hold
+     * @param classQNames
+     *            hold types and aspects
      */
     protected void invokeOnDeleteHold(String holdName, Set<QName> classQNames)
     {
@@ -971,8 +984,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke beforeAddToHold policy
      *
-     * @param hold           hold node reference
-     * @param contentNodeRef content node reference
+     * @param hold
+     *            hold node reference
+     * @param contentNodeRef
+     *            content node reference
      */
     protected void invokeBeforeAddToHold(NodeRef hold, NodeRef contentNodeRef)
     {
@@ -983,8 +998,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onAddToHold policy
      *
-     * @param hold           hold node reference
-     * @param contentNodeRef content node reference
+     * @param hold
+     *            hold node reference
+     * @param contentNodeRef
+     *            content node reference
      */
     protected void invokeOnAddToHold(NodeRef hold, NodeRef contentNodeRef)
     {
@@ -995,8 +1012,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke beforeRemoveFromHold policy
      *
-     * @param hold           hold node reference
-     * @param contentNodeRef content node reference
+     * @param hold
+     *            hold node reference
+     * @param contentNodeRef
+     *            content node reference
      */
     protected void invokeBeforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
     {
@@ -1007,8 +1026,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /**
      * Invoke onRemoveFromHold policy
      *
-     * @param hold           hold node reference
-     * @param contentNodeRef content node reference
+     * @param hold
+     *            hold node reference
+     * @param contentNodeRef
+     *            content node reference
      */
     protected void invokeOnRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
     {

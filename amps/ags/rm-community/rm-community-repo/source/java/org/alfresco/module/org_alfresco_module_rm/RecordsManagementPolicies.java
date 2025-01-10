@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -92,9 +92,12 @@ public interface RecordsManagementPolicies
     interface OnRemoveReference extends ClassPolicy
     {
         /**
-         * @param fromNodeRef   from node reference
-         * @param toNodeRef     to node reference
-         * @param reference     name of reference
+         * @param fromNodeRef
+         *            from node reference
+         * @param toNodeRef
+         *            to node reference
+         * @param reference
+         *            name of reference
          */
         void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference);
     }
@@ -110,7 +113,8 @@ public interface RecordsManagementPolicies
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordFile");
 
         /**
-         * @param nodeRef   node reference
+         * @param nodeRef
+         *            node reference
          */
         void beforeFileRecord(NodeRef nodeRef);
     }
@@ -126,13 +130,15 @@ public interface RecordsManagementPolicies
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordFile");
 
         /**
-         * @param nodeRef   node reference
+         * @param nodeRef
+         *            node reference
          */
         void onFileRecord(NodeRef nodeRef);
     }
 
     /**
      * Before record declaration
+     * 
      * @since 2.5
      */
     interface BeforeRecordDeclaration extends ClassPolicy
@@ -142,6 +148,7 @@ public interface RecordsManagementPolicies
 
     /**
      * On record declaration
+     * 
      * @since 2.5
      */
     interface OnRecordDeclaration extends ClassPolicy
@@ -151,6 +158,7 @@ public interface RecordsManagementPolicies
 
     /**
      * Before record rejection
+     * 
      * @since 2.5
      */
     interface BeforeRecordRejection extends ClassPolicy
@@ -160,6 +168,7 @@ public interface RecordsManagementPolicies
 
     /**
      * On record rejection
+     * 
      * @since 2.5
      */
     interface OnRecordRejection extends ClassPolicy

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,8 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.junit.Test;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 
 /**
  * Unit tests for the {@link RMParameter} utility class.

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,11 +30,12 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
+import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
 
 /**
  * Implementation for Java backed webscript to return email mapping keys
@@ -50,7 +51,8 @@ public class EmailMapKeysGet extends DeclarativeWebScript
     /**
      * Custom email mapping service
      *
-     * @param customEmailMappingService the custom email mapping service
+     * @param customEmailMappingService
+     *            the custom email mapping service
      */
     public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
     {

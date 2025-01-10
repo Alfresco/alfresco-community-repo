@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -51,7 +51,7 @@ import org.alfresco.repo.service.ServiceDescriptorRegistry;
  */
 @SuppressWarnings("deprecation")
 public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegistry
-                                                  implements RecordsManagementServiceRegistry
+        implements RecordsManagementServiceRegistry
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementActionService()

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2024 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -41,41 +41,39 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 public class ExpectedValue<T>
 {
     private static final String MESSAGE = "Expected value outcome \"{0}\" was not observed.";
-    
+
     private T expectedValue;
     private Evaluation<T> evaluation;
     private BehaviourTest test;
-    
+
     public ExpectedValue(BehaviourTest test, T value)
     {
         this.expectedValue = value;
         this.test = test;
     }
-    
+
     public ExpectedValue<T> from(Evaluation<T> evaluation)
     {
         this.evaluation = evaluation;
         return this;
     }
-    
+
     public BehaviourTest because(String message)
     {
-        T actualValue = (T)AuthenticationUtil.runAs(() -> 
-        {
-            return test.getRetryingTransactionHelper().doInTransaction(() -> 
-            {
+        T actualValue = (T) AuthenticationUtil.runAs(() -> {
+            return test.getRetryingTransactionHelper().doInTransaction(() -> {
                 return evaluation.eval();
             });
-        }, 
-        test.getAsUser());        
-        
+        },
+                test.getAsUser());
+
         if (message != null)
         {
             message = MessageFormat.format(MESSAGE, message);
         }
-        
+
         assertEquals(message, expectedValue, actualValue);
-        
+
         return test;
     }
 

@@ -427,7 +427,7 @@
                   <configuration>
                      <images>
                         <image>
-                           <name>postgres:15.4</name>
+                           <name>postgres:16.6</name>
                            <run>
                               <ports>
                                  <port>${postgresql.tests.port}:${postgresql.port}</port>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -35,10 +35,11 @@ import org.alfresco.service.namespace.QName;
  */
 public interface TransferModel
 {
+    static final String TRANSFER_MODEL_PREFIX = "trx";
     static final String TRANSFER_MODEL_1_0_URI = "http://www.alfresco.org/model/transfer/1.0";
 
     static final QName ASPECT_ENABLEABLE = QName.createQName(TRANSFER_MODEL_1_0_URI, "enableable");
-//  static final QName ASSOC_IMAP_ATTACHMENTS_FOLDER = QName.createQName(IMAP_MODEL_1_0_URI, "attachmentsFolder");
+    // static final QName ASSOC_IMAP_ATTACHMENTS_FOLDER = QName.createQName(IMAP_MODEL_1_0_URI, "attachmentsFolder");
 
     /**
      * Aspect : transferred
@@ -60,14 +61,10 @@ public interface TransferModel
     static final QName TYPE_FILE_TRANSFER_TARGET = QName.createQName(TRANSFER_MODEL_1_0_URI, "fileTransferTarget");
     static final QName ASSOC_ROOT_FILE_TRANSFER = QName.createQName(TRANSFER_MODEL_1_0_URI, "fileTransferRootNode");
 
-    /*
-     * Type : Transfer Group
-     */
+    /* Type : Transfer Group */
     static final QName TYPE_TRANSFER_GROUP = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferGroup");
 
-    /*
-     * Type : Transfer Target
-     */
+    /* Type : Transfer Target */
     static final QName TYPE_TRANSFER_TARGET = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferTarget");
     static final QName PROP_ENDPOINT_PROTOCOL = QName.createQName(TRANSFER_MODEL_1_0_URI, "endpointprotocol");
     static final QName PROP_ENDPOINT_HOST = QName.createQName(TRANSFER_MODEL_1_0_URI, "endpointhost");
@@ -78,32 +75,23 @@ public interface TransferModel
 
     static final QName PROP_ENABLED = QName.createQName(TRANSFER_MODEL_1_0_URI, "enabled");
 
-    /*
-     * Type : Transfer Lock
-     */
+    /* Type : Transfer Lock */
     static final QName TYPE_TRANSFER_LOCK = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferLock");
     static final QName PROP_TRANSFER_ID = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferId");
 
-    /*
-     * Type : Transfer Record
-     */
+    /* Type : Transfer Record */
     static final QName TYPE_TRANSFER_RECORD = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferRecord");
     static final QName PROP_PROGRESS_POSITION = QName.createQName(TRANSFER_MODEL_1_0_URI, "progressPosition");
     static final QName PROP_PROGRESS_ENDPOINT = QName.createQName(TRANSFER_MODEL_1_0_URI, "progressEndpoint");
     static final QName PROP_TRANSFER_STATUS = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferStatus");
     static final QName PROP_TRANSFER_ERROR = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferError");
 
-    /*
-     * Type : Transfer report
-     */
+    /* Type : Transfer report */
     static final QName TYPE_TRANSFER_REPORT = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferReport");
     static final QName TYPE_TRANSFER_REPORT_DEST = QName.createQName(TRANSFER_MODEL_1_0_URI, "transferReportDest");
 
-    /*
-     * Type : Temp Transfer Storage
-     */
+    /* Type : Temp Transfer Storage */
     static final QName TYPE_TEMP_TRANSFER_STORE = QName.createQName(TRANSFER_MODEL_1_0_URI, "tempTransferStore");
     static final QName ASSOC_TRANSFER_ORPHAN = QName.createQName(TRANSFER_MODEL_1_0_URI, "orphan");
-
 
 }

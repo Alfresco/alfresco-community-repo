@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,6 +35,10 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.stubbing.Answer;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.model.RenditionModel;
@@ -43,14 +47,12 @@ import org.alfresco.repo.event2.filter.EventUserFilter;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
 import org.alfresco.repo.event2.filter.NodeTypeFilter;
+import org.alfresco.repo.transfer.TransferModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.OneToManyHashBiMap;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.stubbing.Answer;
 
 /**
  * Tests event filters.
@@ -78,13 +80,17 @@ public class EventFilterUnitTest
 
         namespaceService = new MockNamespaceServiceImpl();
         namespaceService.registerNamespace(NamespaceService.SYSTEM_MODEL_PREFIX,
-                                           NamespaceService.SYSTEM_MODEL_1_0_URI);
+                NamespaceService.SYSTEM_MODEL_1_0_URI);
         namespaceService.registerNamespace(NamespaceService.CONTENT_MODEL_PREFIX,
-                                           NamespaceService.CONTENT_MODEL_1_0_URI);
+                NamespaceService.CONTENT_MODEL_1_0_URI);
         namespaceService.registerNamespace(NamespaceService.FORUMS_MODEL_PREFIX,
-                                           NamespaceService.FORUMS_MODEL_1_0_URI);
+                NamespaceService.FORUMS_MODEL_1_0_URI);
         namespaceService.registerNamespace(NamespaceService.RENDITION_MODEL_PREFIX,
-                                           NamespaceService.RENDITION_MODEL_1_0_URI);
+                NamespaceService.RENDITION_MODEL_1_0_URI);
+        namespaceService.registerNamespace(ContentModel.USER_MODEL_PREFIX,
+                ContentModel.USER_MODEL_URI);
+        namespaceService.registerNamespace(TransferModel.TRANSFER_MODEL_PREFIX,
+                TransferModel.TRANSFER_MODEL_1_0_URI);
 
         propertyFilter = new NodePropertyFilter();
         propertyFilter.setNamespaceService(namespaceService);
@@ -114,31 +120,37 @@ public class EventFilterUnitTest
     public void nodePropertyFilter()
     {
         assertTrue("System properties are excluded by default.",
-                   propertyFilter.isExcluded(ContentModel.PROP_NODE_UUID));
+                propertyFilter.isExcluded(ContentModel.PROP_NODE_UUID));
 
         assertTrue("System properties are excluded by default.",
-                   propertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
+                propertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
+
+        assertTrue(propertyFilter.isExcluded(ContentModel.PROP_PASSWORD));
+        assertTrue(propertyFilter.isExcluded(ContentModel.PROP_SALT));
+        assertTrue(propertyFilter.isExcluded(ContentModel.PROP_PASSWORD_HASH));
+        assertTrue(propertyFilter.isExcluded(TransferModel.PROP_PASSWORD));
 
         assertFalse("Property cascadeTx is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_TX));
         assertFalse("Property cascadeCRC is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_CRC));
 
         assertFalse(propertyFilter.isExcluded(ContentModel.PROP_TITLE));
+
     }
 
     @Test
     public void nodeTypeFilter()
     {
         assertTrue("Thumbnail node type should have been filtered.",
-                   typeFilter.isExcluded(ContentModel.TYPE_THUMBNAIL));
+                typeFilter.isExcluded(ContentModel.TYPE_THUMBNAIL));
 
         assertTrue("System folder node types are excluded by default.",
-                   typeFilter.isExcluded(ContentModel.TYPE_SYSTEM_FOLDER));
+                typeFilter.isExcluded(ContentModel.TYPE_SYSTEM_FOLDER));
 
         assertTrue("System node type should have been filtered (sys:*).",
-                   typeFilter.isExcluded(QName.createQName("sys:testSomeSystemType", namespaceService)));
+                typeFilter.isExcluded(QName.createQName("sys:testSomeSystemType", namespaceService)));
 
         assertTrue("Forum node type should have been filtered (fm:*).",
-                   typeFilter.isExcluded(ForumModel.TYPE_POST));
+                typeFilter.isExcluded(ForumModel.TYPE_POST));
 
         assertFalse(typeFilter.isExcluded(ContentModel.TYPE_FOLDER));
     }
@@ -147,7 +159,7 @@ public class EventFilterUnitTest
     public void nodeAspectFilter()
     {
         assertTrue("Working copy aspect should have been filtered.",
-                   aspectFilter.isExcluded(ContentModel.ASPECT_WORKING_COPY));
+                aspectFilter.isExcluded(ContentModel.ASPECT_WORKING_COPY));
 
         assertFalse(aspectFilter.isExcluded(ContentModel.ASPECT_TITLED));
     }
@@ -160,41 +172,41 @@ public class EventFilterUnitTest
 
         assertFalse(childAssociationTypeFilter.isExcluded(ContentModel.ASSOC_CONTAINS));
     }
-    
+
     @Test
     public void userFilter_case_insensitive()
     {
         assertTrue("System user should have been filtered.",
-                   caseInsensitive_userFilter.isExcluded("System"));
+                caseInsensitive_userFilter.isExcluded("System"));
 
         assertTrue("System user should have been filtered (case-insensitive).",
-                   caseInsensitive_userFilter.isExcluded("SYSTEM"));
+                caseInsensitive_userFilter.isExcluded("SYSTEM"));
 
         assertTrue("'null' user should have been filtered.",
-                   caseInsensitive_userFilter.isExcluded("null"));
+                caseInsensitive_userFilter.isExcluded("null"));
 
         assertTrue("john.doe user should have been filtered.",
-                   caseInsensitive_userFilter.isExcluded("John.Doe"));
+                caseInsensitive_userFilter.isExcluded("John.Doe"));
 
         assertFalse("'jane.doe' user should not have been filtered.",
-                    caseInsensitive_userFilter.isExcluded("jane.doe"));
+                caseInsensitive_userFilter.isExcluded("jane.doe"));
     }
 
     @Test
     public void userFilter_case_sensitive()
     {
         assertFalse("'system' user should not have been filtered.",
-                    caseSensitive_userFilter.isExcluded("system"));
+                caseSensitive_userFilter.isExcluded("system"));
         assertTrue("'System' user should have been filtered.",
-                   caseSensitive_userFilter.isExcluded("System"));
+                caseSensitive_userFilter.isExcluded("System"));
 
         assertFalse("'John.Doe' user should not have been filtered.",
-                    caseSensitive_userFilter.isExcluded("John.Doe"));
+                caseSensitive_userFilter.isExcluded("John.Doe"));
         assertTrue("'john.doe' user should have been filtered.",
-                   caseSensitive_userFilter.isExcluded("john.doe"));
+                caseSensitive_userFilter.isExcluded("john.doe"));
 
         assertFalse("'jane.doe' user should not have been filtered.",
-                    caseSensitive_userFilter.isExcluded("jane.doe"));
+                caseSensitive_userFilter.isExcluded("jane.doe"));
     }
 
     /**

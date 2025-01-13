@@ -25,9 +25,12 @@
  */
 package org.alfresco.repo.event2.filter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.namespace.QName;
@@ -39,7 +42,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class NodePropertyFilter extends AbstractNodeEventFilter
 {
-    private static final String FILTERED_PROPERTIES = "sys:*,usr:password,usr:salt,usr:passwordHash,trx:password";
+    private static final String MANDATORY_FILTERED_PROPERTIES = "sys:*";
+    private static final String DEFAULT_SECURITY_FILTERED_PROPERTIES = "usr:password,usr:salt,usr:passwordHash,trx:password";
     // These properties are included as top-level info,
     // so exclude them from the properties object
     private static final Set<QName> EXCLUDED_TOP_LEVEL_PROPS = Set.of(ContentModel.PROP_NAME,
@@ -52,11 +56,16 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_CASCADE_TX,
             ContentModel.PROP_CASCADE_CRC);
 
-    private final List<String> nodePropertiesBlackList;
+    private final List<String> nodePropertiesBlackList = new ArrayList<>();
 
-    public NodePropertyFilter()
+    public NodePropertyFilter(String userConfiguredFilteredNodeProperties)
     {
-        this.nodePropertiesBlackList = parseFilterList(FILTERED_PROPERTIES);
+        nodePropertiesBlackList.add(MANDATORY_FILTERED_PROPERTIES);
+
+        String filteredNodeProperties = Optional.ofNullable(userConfiguredFilteredNodeProperties)
+                .filter(Predicate.not(String::isEmpty))
+                .orElse(DEFAULT_SECURITY_FILTERED_PROPERTIES);
+        nodePropertiesBlackList.addAll(parseFilterList(filteredNodeProperties));
     }
 
     @Override

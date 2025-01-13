@@ -62,7 +62,8 @@ import org.alfresco.util.OneToManyHashBiMap;
 public class EventFilterUnitTest
 {
     private static NamespaceService namespaceService;
-    private static NodePropertyFilter propertyFilter;
+    private static NodePropertyFilter defaultPropertyFilter;
+    private static NodePropertyFilter userConfiguredPropertyFilter;
     private static NodeTypeFilter typeFilter;
     private static NodeAspectFilter aspectFilter;
     private static ChildAssociationTypeFilter childAssociationTypeFilter;
@@ -92,10 +93,15 @@ public class EventFilterUnitTest
         namespaceService.registerNamespace(TransferModel.TRANSFER_MODEL_PREFIX,
                 TransferModel.TRANSFER_MODEL_1_0_URI);
 
-        propertyFilter = new NodePropertyFilter();
-        propertyFilter.setNamespaceService(namespaceService);
-        propertyFilter.setDictionaryService(dictionaryService);
-        propertyFilter.init();
+        defaultPropertyFilter = new NodePropertyFilter(null);
+        defaultPropertyFilter.setNamespaceService(namespaceService);
+        defaultPropertyFilter.setDictionaryService(dictionaryService);
+        defaultPropertyFilter.init();
+
+        userConfiguredPropertyFilter = new NodePropertyFilter("usr:username,trx:username");
+        userConfiguredPropertyFilter.setNamespaceService(namespaceService);
+        userConfiguredPropertyFilter.setDictionaryService(dictionaryService);
+        userConfiguredPropertyFilter.init();
 
         typeFilter = new NodeTypeFilter("sys:*, fm:*, cm:thumbnail");
         typeFilter.setNamespaceService(namespaceService);
@@ -117,24 +123,37 @@ public class EventFilterUnitTest
     }
 
     @Test
-    public void nodePropertyFilter()
+    public void defaultNodePropertyFilter()
     {
-        assertTrue("System properties are excluded by default.",
-                propertyFilter.isExcluded(ContentModel.PROP_NODE_UUID));
+        assertTrue("System property node-uuid should be excluded by default.", defaultPropertyFilter.isExcluded(ContentModel.PROP_NODE_UUID));
+        assertTrue("System property node-dbid should be excluded by default.", defaultPropertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
+        assertTrue("User property password should be excluded by config.", defaultPropertyFilter.isExcluded(ContentModel.PROP_PASSWORD));
+        assertTrue("User property salt should be excluded by config.", defaultPropertyFilter.isExcluded(ContentModel.PROP_SALT));
+        assertTrue("User property passwordHash should be excluded by config.", defaultPropertyFilter.isExcluded(ContentModel.PROP_PASSWORD_HASH));
+        assertTrue("Transfer property password should be excluded by config.", defaultPropertyFilter.isExcluded(TransferModel.PROP_PASSWORD));
 
-        assertTrue("System properties are excluded by default.",
-                propertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
+        assertFalse("Property cascadeTx should not be excluded by default.", defaultPropertyFilter.isExcluded(ContentModel.PROP_CASCADE_TX));
+        assertFalse("Property cascadeCRC should not not excluded by default.", defaultPropertyFilter.isExcluded(ContentModel.PROP_CASCADE_CRC));
+        assertFalse("Property title should not not excluded by config.", defaultPropertyFilter.isExcluded(ContentModel.PROP_TITLE));
+        assertFalse("User property username should not be excluded by config.", defaultPropertyFilter.isExcluded(ContentModel.PROP_USER_USERNAME));
+        assertFalse("Transfer property username should not be excluded by config.", defaultPropertyFilter.isExcluded(TransferModel.PROP_USERNAME));
+    }
 
-        assertTrue(propertyFilter.isExcluded(ContentModel.PROP_PASSWORD));
-        assertTrue(propertyFilter.isExcluded(ContentModel.PROP_SALT));
-        assertTrue(propertyFilter.isExcluded(ContentModel.PROP_PASSWORD_HASH));
-        assertTrue(propertyFilter.isExcluded(TransferModel.PROP_PASSWORD));
+    @Test
+    public void userConfiguredNodePropertyFilter()
+    {
+        assertTrue("System property node-uuid should be excluded by default.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_NODE_UUID));
+        assertTrue("System property node-dbid should be excluded by default.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
+        assertTrue("User property username should be excluded by config.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_USER_USERNAME));
+        assertTrue("Transfer property username should be excluded by config.", userConfiguredPropertyFilter.isExcluded(TransferModel.PROP_USERNAME));
 
-        assertFalse("Property cascadeTx is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_TX));
-        assertFalse("Property cascadeCRC is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_CRC));
-
-        assertFalse(propertyFilter.isExcluded(ContentModel.PROP_TITLE));
-
+        assertFalse("Property cascadeTx should not be excluded by default.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_CASCADE_TX));
+        assertFalse("Property cascadeCRC should not not excluded by default.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_CASCADE_CRC));
+        assertFalse("Property title should not not excluded by config.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_TITLE));
+        assertFalse("User property password should not be excluded by config.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_PASSWORD));
+        assertFalse("User property salt should not be excluded by config.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_SALT));
+        assertFalse("User property passwordHash should not be excluded by config.", userConfiguredPropertyFilter.isExcluded(ContentModel.PROP_PASSWORD_HASH));
+        assertFalse("Transfer property password should not be excluded by config.", userConfiguredPropertyFilter.isExcluded(TransferModel.PROP_PASSWORD));
     }
 
     @Test

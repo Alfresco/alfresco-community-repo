@@ -19,7 +19,9 @@
         <constructor-arg value="${repo.event2.filter.nodeAspects}"/>
     </bean>
 
-    <bean id="event2NodePropertyFilter" class="org.alfresco.repo.event2.filter.NodePropertyFilter" parent="abstractNodeEventFilter"/>
+    <bean id="event2NodePropertyFilter" class="org.alfresco.repo.event2.filter.NodePropertyFilter" parent="abstractNodeEventFilter">
+        <constructor-arg value="${repo.event2.filter.nodeProperties}"/>
+    </bean>
 
     <bean id="event2UserFilter" class="org.alfresco.repo.event2.filter.EventUserFilter">
         <constructor-arg value="${repo.event2.filter.users}"/>

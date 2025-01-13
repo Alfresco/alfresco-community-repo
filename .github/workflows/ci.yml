@@ -540,8 +540,8 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_13_12_tests:
-    name: "Repository - PostgreSQL 13.12 tests"
+  repository_postgresql_14_15_tests:
+    name: "Repository - PostgreSQL 14.15 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -557,10 +557,10 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.2.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 13.12 database"
+      - name: "Run PostgreSQL 14.15 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
-          POSTGRES_VERSION: 13.12
+          POSTGRES_VERSION: 14.15
       - name: "Prepare Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v8.2.0
@@ -610,16 +610,16 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_14_9_tests:
-    name: "Repository - PostgreSQL 14.9 tests"
+  repository_postgresql_15_10_tests:
+    name: "Repository - PostgreSQL 15.10 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
       (((github.ref_name == 'master' || startsWith(github.ref_name, 'release/')) && github.event_name != 'pull_request' &&
-      !contains(github.event.head_commit.message, '[skip db]')) ||
-      contains(github.event.head_commit.message, '[db]')) &&
-      !contains(github.event.head_commit.message, '[skip tests]') &&
-      !contains(github.event.head_commit.message, '[force')
+            !contains(github.event.head_commit.message, '[skip db]')) ||
+            contains(github.event.head_commit.message, '[db]')) &&
+            !contains(github.event.head_commit.message, '[skip tests]') &&
+            !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v4
       - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.2.0
@@ -627,10 +627,10 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.2.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 14.9 database"
+      - name: "Run PostgreSQL 15.10 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
-          POSTGRES_VERSION: 14.9
+          POSTGRES_VERSION: 15.10
       - name: "Prepare Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v8.2.0
@@ -680,8 +680,8 @@ jobs:
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
 
-  repository_postgresql_15_4_tests:
-    name: "Repository - PostgreSQL 15.4 tests"
+  repository_postgresql_16_6_tests:
+    name: "Repository - PostgreSQL 16.6 tests"
     runs-on: ubuntu-latest
     needs: [prepare]
     if: >
@@ -697,10 +697,10 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.2.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run PostgreSQL 15.4 database"
+      - name: "Run PostgreSQL 16.6 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose-db.yaml --profile postgres up -d
         env:
-          POSTGRES_VERSION: 15.4
+          POSTGRES_VERSION: 16.6
       - name: "Prepare Report Portal"
         if: github.ref_name == 'master'
         uses: Alfresco/alfresco-build-tools/.github/actions/reportportal-prepare@v8.2.0
@@ -1061,7 +1061,7 @@ jobs:
       - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.2.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
-      - name: "Run Postgres 15.4 database"
+      - name: "Run Postgres 16.6 database"
         run: docker compose -f ./scripts/ci/docker-compose/docker-compose.yaml --profile postgres up -d
       - name: "Prepare Report Portal"
         if: github.ref_name == 'master'

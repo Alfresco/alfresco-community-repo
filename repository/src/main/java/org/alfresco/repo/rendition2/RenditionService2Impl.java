@@ -517,7 +517,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                     }
                     else if (!nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
                     {
-                        Map<QName, Serializable> rendition2NodeProps = new HashMap<QName, Serializable>();
+                        Map<QName, Serializable> rendition2NodeProps = new HashMap<>();
                         rendition2NodeProps.put(RenditionModel.ASPECT_VISIBLE_RENDITION2, true);
 
                         nodeService.addAspect(renditionNode, RenditionModel.ASPECT_RENDITION2, rendition2NodeProps);
@@ -609,7 +609,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         ChildAssociationRef childAssoc = nodeService.createNode(sourceNode, assocType, assocName, nodeType, nodeProps);
         NodeRef renditionNode = childAssoc.getChildRef();
 
-        Map<QName, Serializable> rendition2NodeProps = new HashMap<QName, Serializable>();
+        Map<QName, Serializable> rendition2NodeProps = new HashMap<>();
         rendition2NodeProps.put(RenditionModel.ASPECT_VISIBLE_RENDITION2, true);
 
         nodeService.addAspect(renditionNode, RenditionModel.ASPECT_RENDITION2, rendition2NodeProps);
@@ -763,7 +763,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             {
                 logger.debug("Cleared rendition hashcode");
             }
-            nodeService.setProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2, false);
+            nodeService.removeProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2);
             if (logger.isDebugEnabled())
             {
                 logger.debug("Cleared rendition2 property");
@@ -841,18 +841,12 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
         boolean available = true;
         if (nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
         {
-            Serializable rendition2Property = nodeService.getProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2);
-
-            if (Boolean.FALSE.equals(rendition2Property))
-            {
-                return true;
-            }
-
             Serializable contentUrl = nodeService.getProperty(renditionNode, ContentModel.PROP_CONTENT);
+            Serializable rendition2Property = nodeService.getProperty(renditionNode, RenditionModel.ASPECT_VISIBLE_RENDITION2);
 
             if (contentUrl == null)
             {
-                available = false;
+                available = (rendition2Property == null);
             }
             else
             {

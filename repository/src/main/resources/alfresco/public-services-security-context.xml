@@ -32,12 +32,12 @@
             <ref bean="dictionaryService" />
         </property>
     </bean>
-
+    
     <!-- ======================= -->
     <!-- Support for permissions -->
     <!-- ========================-->
 
-    <bean id="permissionService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean" depends-on="transactionManager, permissionServiceImpl">
+    <bean id='permissionService' class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.security.permissions.PermissionServiceSPI</value>
         </property>
@@ -57,7 +57,7 @@
     <!--
       <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.noop.PermissionServiceNOOPImpl" />
     -->
-
+    
     <bean id="permissionServiceImpl" class="org.alfresco.repo.security.permissions.impl.PermissionServiceImpl" init-method="init">
         <property name="nodeService">
             <ref bean="mtAwareNodeService"/>
@@ -112,7 +112,7 @@
         </property>
         <property name="policyIgnoreUtil" ref="policyIgnoreUtil"/>
     </bean>
-
+    
     <bean id="fixedAclUpdater" class="org.alfresco.repo.domain.permissions.FixedAclUpdater" init-method="init">
         <property name="jobLockService" ref="jobLockService"/>
         <property name="transactionService" ref="transactionService"/>
@@ -127,7 +127,7 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="policyIgnoreUtil" ref="policyIgnoreUtil"/>
     </bean>
-
+    
     <!-- =================== -->
     <!-- Dynamic Authorities -->
     <!-- =================== -->
@@ -172,9 +172,9 @@
     <!-- =========================== -->
     <!-- Permissions Model Bootstrap -->
     <!-- =========================== -->
-
+    
     <bean id="permissionModelBootstrap" class="org.alfresco.repo.security.permissions.impl.model.PermissionModelBootstrap" abstract="true" init-method="init">
-        <property name="permissionModel" ref="permissionsModelDAO"/>
+        <property name="permissionModel" ref="permissionsModelDAO"/>    
     </bean>
 
     <!-- ====== -->
@@ -284,7 +284,7 @@
             <value>${security.postProcessDenies}</value>
         </property>
     </bean>
-
+    
     <bean id="afterAclMarking" class="org.alfresco.repo.security.permissions.impl.acegi.MarkingAfterInvocationProvider" />
 
     <!-- Link up after method call security -->
@@ -492,7 +492,7 @@
             </value>
         </property>
     </bean>
-
+    
     <bean id="FileFolderService_security_list" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
         <property name="methodSecurityInterceptor" ref="FileFolderService_security" />
         <property name="service" value="org.alfresco.service.cmr.model.FileFolderService" />
@@ -576,7 +576,7 @@
 
     <!-- Category queries are filtered for nodes that are visible to the current user    -->
     <!-- Other methods are unrestricted at the moment                                    -->
-
+    
     <!-- Uses the public node service for all mutations -  access is allowed here and enforced by the public node service -->
 
     <bean id="CategoryService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
@@ -1005,11 +1005,11 @@
             </value>
         </property>
     </bean>
-
+    
     <!-- ============ -->
     <!-- Blog Service -->
     <!-- ============ -->
-
+    
     <bean id="BlogService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
@@ -1023,12 +1023,12 @@
             </value>
         </property>
     </bean>
-
-
+    
+    
     <!-- ============ -->
     <!-- Site Service -->
     <!-- ============ -->
-
+    
     <bean id="SiteService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
@@ -1072,13 +1072,13 @@
             </value>
         </property>
     </bean>
-
+    
     <bean id="SiteService_security_listSites" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">
         <property name="methodSecurityInterceptor" ref="SiteService_security" />
         <property name="service" value="org.alfresco.service.cmr.site.SiteService" />
         <property name="methodName" value="listSites" />
     </bean>
-
+    
 
     <!-- ==================== -->
     <!-- The Calendar Service -->
@@ -1132,7 +1132,7 @@
         <property name="service" value="org.alfresco.service.cmr.download.DownloadService" />
         <property name="methodName" value="deleteDownloads" />
     </bean>
-
+    
     <!-- ==================== -->
     <!-- The Links Service    -->
     <!-- ==================== -->
@@ -1140,7 +1140,7 @@
     <!-- The links service itself does not require any security restrictions, -->
     <!--  they are imposed by the node and site services it uses to do its work. -->
     <bean id="LinksService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-
+    
     <!-- The canned queries that the links service uses do however need to check -->
     <bean id="LinksService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
@@ -1166,7 +1166,7 @@
     <!-- The discussion service itself does not require any security restrictions, -->
     <!--  they are imposed by the node and site services it uses to do its work. -->
     <bean id="DiscussionService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-
+    
     <!-- The canned queries that the discussion services use do however need to check -->
     <bean id="DiscussionService_CannedQuery_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
@@ -1198,9 +1198,9 @@
     <!-- ======================== -->
     <!-- Repository Admin Service -->
     <!-- ======================== -->
-
+    
     <!-- TODO: Add repository admin security -->
-
+    
     <bean id="RepoAdminService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
@@ -1217,10 +1217,10 @@
     <!-- ===================== -->
     <!-- Content Usage Service -->
     <!-- ===================== -->
-
+    
     <!-- TODO: Add content usage security -->
     <bean id="ContentUsageService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
-
+    
     <bean id="PublicServiceAccessService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
@@ -1236,14 +1236,14 @@
             </value>
         </property>
     </bean>
-
-
+    
+    
     <!-- ==================== -->
     <!-- The Archived Nodes service -->
     <!-- ==================== -->
-
+    
     <!-- This service currently has no restrictions. -->
-
+        
     <bean id="ArchivedNodes_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
 
     <bean id="ArchivedNodes_security_listArchivedNodes" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityBean">

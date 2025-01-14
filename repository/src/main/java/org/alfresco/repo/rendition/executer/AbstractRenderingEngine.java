@@ -37,6 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
@@ -76,13 +80,9 @@ import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * This class adds some new behaviour to the standard ActionExecuterAbstractBase
- * in order to support the RenditionService.
+ * This class adds some new behaviour to the standard ActionExecuterAbstractBase in order to support the RenditionService.
  * 
  * @author Neil McErlean
  * @author Nick Smith
@@ -112,28 +112,24 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     // for the two params
 
     /**
-     * This is the default default node type for renditions - used if no value
-     * is injected from spring.
+     * This is the default default node type for renditions - used if no value is injected from spring.
      */
     private static final QName DEFAULT_DEFAULT_RENDITION_NODE_TYPE = ContentModel.TYPE_CONTENT;
 
     /**
-     * This is the default default property used to specify where rendition
-     * content is stored - used if no value is injected from spring.
+     * This is the default default property used to specify where rendition content is stored - used if no value is injected from spring.
      */
     private static final QName DEFAULT_DEFAULT_RENDITION_CONTENT_PROP = RenditionService2Impl.DEFAULT_RENDITION_CONTENT_PROP;
     private static final String DEFAULT_MIMETYPE = RenditionService2Impl.DEFAULT_MIMETYPE;
     private static final String DEFAULT_ENCODING = RenditionService2Impl.DEFAULT_ENCODING;
 
     /**
-     * This is the default node type that is used when creating rendition
-     * objects.
+     * This is the default node type that is used when creating rendition objects.
      */
     private QName defaultRenditionNodeType = DEFAULT_DEFAULT_RENDITION_NODE_TYPE;
 
     /**
-     * This is the default property that is used to store rendition objects'
-     * content.
+     * This is the default property that is used to store rendition objects' content.
      */
     private QName defaultRenditionContentProp = DEFAULT_DEFAULT_RENDITION_CONTENT_PROP;
 
@@ -150,55 +146,39 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /* Parameter names common to all Rendering Actions */
     /**
-     * This optional {@link String} parameter specifies the location of a
-     * classpath resource which can be used as a placeholder while a rendition
-     * is being generated. For example, this might be a simple icon to indicate
-     * a rendition is not yet available. This is intended to be used in
-     * conjunction with asynchronous generation of renditions.
+     * This optional {@link String} parameter specifies the location of a classpath resource which can be used as a placeholder while a rendition is being generated. For example, this might be a simple icon to indicate a rendition is not yet available. This is intended to be used in conjunction with asynchronous generation of renditions.
      */
     public static final String PARAM_PLACEHOLDER_RESOURCE_PATH = "placeHolderResourcePath";
 
     /**
-     * This optional {@link QName} parameter specifies which property the
-     * Rendering Engine uses to read content from the source node in order to
-     * create a rendition. By default this property will be cm:content.
+     * This optional {@link QName} parameter specifies which property the Rendering Engine uses to read content from the source node in order to create a rendition. By default this property will be cm:content.
      */
     public static final String PARAM_SOURCE_CONTENT_PROPERTY = "sourceContentProperty";
 
     /**
-     * This optional {@link QName} parameter specifies which property the
-     * Rendering Engine uses to write content to the rendition node. By default
-     * the property used is cm:content.
+     * This optional {@link QName} parameter specifies which property the Rendering Engine uses to write content to the rendition node. By default the property used is cm:content.
      */
     public static final String PARAM_TARGET_CONTENT_PROPERTY = "targetContentProperty";
 
     /**
-     * This optional {@link Boolean} flag property specifies whether a rendition
-     * should be updated automatically if the source node changes. If set to
-     * <code>true</code> then the rendition will be re-rendered any time any
-     * property changes occur on the source node. This parameter defaults to
-     * <code>false</code>.
+     * This optional {@link Boolean} flag property specifies whether a rendition should be updated automatically if the source node changes. If set to <code>true</code> then the rendition will be re-rendered any time any property changes occur on the source node. This parameter defaults to <code>false</code>.
      */
     public static final String PARAM_UPDATE_RENDITIONS_ON_ANY_PROPERTY_CHANGE = "update-renditions-on-any-property-change";
 
     /**
-     * This optional {@link String} parameter specifies what user permissions
-     * are used when creating a rendition. By default the system user is used.
+     * This optional {@link String} parameter specifies what user permissions are used when creating a rendition. By default the system user is used.
      */
     public static final String PARAM_RUN_AS = "runAs";
 
     // mime-type is not a common parameter on all Rendering Actions, but it is
     // common to many and is used in some common handling code in this class.
     /**
-     * This optional {@link String} parameter specifies the mime type of the
-     * rendition content. This defaults to the mime type of the source node
-     * content.
+     * This optional {@link String} parameter specifies the mime type of the rendition content. This defaults to the mime type of the source node content.
      */
     public static final String PARAM_MIME_TYPE = "mime-type";
 
     /**
-     * This optional {@link String} paramter specifies the encoding used to
-     * create the rendition content. The derfault encoding is UTF-8.
+     * This optional {@link String} paramter specifies the encoding used to create the rendition content. The derfault encoding is UTF-8.
      */
     public static final String PARAM_ENCODING = "encoding";
 
@@ -206,15 +186,13 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * Default {@link NodeLocator} simply returns the source node.
      */
     private final static NodeLocator defaultNodeLocator = new SelfNodeLocator();
-    
-    /*
-     * Injected beans
-     */
+
+    /* Injected beans */
     private RenditionLocationResolver renditionLocationResolver;
     protected NodeService nodeService;
     private RenditionService renditionService;
     private BehaviourFilter behaviourFilter;
-    
+
     private final NodeLocator temporaryParentNodeLocator;
     private final QName temporaryRenditionLinkType;
 
@@ -232,7 +210,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Injects the renditionService bean.
      * 
-     * @param renditionService RenditionService
+     * @param renditionService
+     *            RenditionService
      */
     public void setRenditionService(RenditionService renditionService)
     {
@@ -240,7 +219,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param behaviourFilter  policy behaviour filter 
+     * @param behaviourFilter
+     *            policy behaviour filter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -261,9 +241,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     {
         this.publicAction = false;
         this.temporaryParentNodeLocator = temporaryParentNodeLocator != null ? temporaryParentNodeLocator
-                    : defaultNodeLocator;
+                : defaultNodeLocator;
         this.temporaryRenditionLinkType = temporaryRenditionLinkType != null ? temporaryRenditionLinkType
-                    : RenditionModel.ASSOC_RENDITION;
+                : RenditionModel.ASSOC_RENDITION;
     }
 
     public AbstractRenderingEngine()
@@ -271,12 +251,11 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         this(null, null);
     }
 
-
-    
     /**
      * Sets the default rendition-node type.
      * 
-     * @param type String
+     * @param type
+     *            String
      */
     public void setDefaultRenditionNodeType(String type)
     {
@@ -304,8 +283,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * This method returns the type of the default rendition node type.
      * 
-     * @return the QName representing the type of the default rendition node
-     *         type.
+     * @return the QName representing the type of the default rendition node type.
      */
     protected QName getDefaultRenditionNodeType()
     {
@@ -325,7 +303,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Sets the default rendition content property.
      * 
-     * @param prop String
+     * @param prop
+     *            String
      */
     public void setDefaultRenditionContentProp(String prop)
     {
@@ -351,11 +330,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * This method returns the QName of the property that defines the location
-     * of the rendition content. An example would be cm:content.
+     * This method returns the QName of the property that defines the location of the rendition content. An example would be cm:content.
      * 
-     * @return the QName the property defining the location of the rendition
-     *         content.
+     * @return the QName the property defining the location of the rendition content.
      */
     protected QName getDefaultRenditionContentProp()
     {
@@ -365,7 +342,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Set the content service
      * 
-     * @param contentService the content service
+     * @param contentService
+     *            the content service
      */
     public void setContentService(ContentService contentService)
     {
@@ -391,9 +369,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef sourceNode)
     {
-        executeImpl( (RenditionDefinition)action, sourceNode );
+        executeImpl((RenditionDefinition) action, sourceNode);
     }
-        
+
     protected void executeImpl(final RenditionDefinition renditionDef, final NodeRef sourceNode)
     {
         // Don't render the nodes without content.
@@ -448,8 +426,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         // permissions to create content under that node.
         // For that reason, we execute all rendition actions as system
         // by default.
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
             @Override
             public Void doWork() throws Exception
             {
@@ -461,7 +438,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                     if (isComponentRendition == false)
                     {
                         // Request that the rendition is initially created
-                        //  as a child of the source node
+                        // as a child of the source node
                         setTemporaryRenditionProperties(sourceNode, renditionDef);
                     }
 
@@ -475,16 +452,17 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                         tagSourceNodeAsRenditioned(renditionDef, sourceNode);
 
                         // Currently the rendition is on a temporary node, which may
-                        //  have the wrong name on it, and for path based renditions is
-                        //  in the wrong place
+                        // have the wrong name on it, and for path based renditions is
+                        // in the wrong place
                         // So, have the correct node created, and switch everything to use it
                         switchToFinalRenditionNode(renditionDef, sourceNode);
                     }
 
                     // Grab a link to the rendition node - it's been saved as a parameter for us
                     // (Wait until now to fetch in case it was moved)
-                    result = (ChildAssociationRef)renditionDef.getParameterValue(PARAM_RESULT);
-                } catch (Throwable t)
+                    result = (ChildAssociationRef) renditionDef.getParameterValue(PARAM_RESULT);
+                }
+                catch (Throwable t)
                 {
                     notifyCallbackOfException(renditionDef, t);
                     throwWrappedException(t);
@@ -499,41 +477,39 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * Is this a standalone rendition, or is it a sub-component of
-     *  a composite rendition?
-     * This is false for standalone renditions, AND ALSO false for
-     *  the main part of a composite rendition.
-     * This only returns true if we're currently processing a
-     *  component of a composite rendition.
-     * @param action Action
+     * Is this a standalone rendition, or is it a sub-component of a composite rendition? This is false for standalone renditions, AND ALSO false for the main part of a composite rendition. This only returns true if we're currently processing a component of a composite rendition.
+     * 
+     * @param action
+     *            Action
      * @return boolean
      */
-    private boolean isComponentRendition(Action action) {
+    private boolean isComponentRendition(Action action)
+    {
         Serializable s = action.getParameterValue(PARAM_IS_COMPONENT_RENDITION);
-        boolean result = s == null ? false : (Boolean)s;
+        boolean result = s == null ? false : (Boolean) s;
         return result;
     }
-    
+
     protected void executeRenditionImpl(Action action, NodeRef sourceNode)
     {
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Executing rendering engine; name:")
-               .append(this.name).append(", class:")
-               .append(this.getClass().getName());
+                    .append(this.name).append(", class:")
+                    .append(this.getClass().getName());
             logger.debug(msg.toString());
         }
-        
+
         checkParameterValues(action);
         RenditionDefinition renditionDefinition = checkActionIsRenditionDefinition(action);
         checkSourceNodeExists(sourceNode);
-        
+
         QName targetContentProp = getRenditionContentProperty(renditionDefinition);
 
         RenderingContext context = new RenderingContext(sourceNode,
-                    renditionDefinition,
-                    targetContentProp);
+                renditionDefinition,
+                targetContentProp);
         render(context);
         // This is a workaround for the fact that actions don't have return
         // values.
@@ -541,10 +517,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * This method can be overridden by subclasses to provide checking of parameter
-     * values.
-     * If a parameter value is illegal or inappropriate, an exception
-     * should be thrown.
+     * This method can be overridden by subclasses to provide checking of parameter values. If a parameter value is illegal or inappropriate, an exception should be thrown.
      */
     protected void checkParameterValues(Action action)
     {
@@ -552,7 +525,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param renditionDefinition RenditionDefinition
+     * @param renditionDefinition
+     *            RenditionDefinition
      * @return QName
      */
     protected QName getRenditionContentProperty(RenditionDefinition renditionDefinition)
@@ -563,7 +537,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected abstract void render(RenderingContext context);
 
     /**
-     * @param actionedUponNodeRef NodeRef
+     * @param actionedUponNodeRef
+     *            NodeRef
      */
     protected void checkSourceNodeExists(NodeRef actionedUponNodeRef)
     {
@@ -576,13 +551,14 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param action Action
+     * @param action
+     *            Action
      */
     protected RenditionDefinition checkActionIsRenditionDefinition(Action action)
     {
         if (action instanceof RenditionDefinition)
         {
-            return (RenditionDefinition)action;
+            return (RenditionDefinition) action;
         }
         else
         {
@@ -593,7 +569,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * If no rendition node type is specified, then the default is used
      * 
-     * @param renditionDefinition RenditionDefinition
+     * @param renditionDefinition
+     *            RenditionDefinition
      * @return QName
      */
     private QName getRenditionNodeType(RenditionDefinition renditionDefinition)
@@ -608,13 +585,11 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * This method gets the parameter definition display label from the properties file.
-     * It looks first for a property whose key has a fixed rendition service-specific
-     * prefix and if that gets null, it then delegates to the standard bean name-based
-     * approach.
+     * This method gets the parameter definition display label from the properties file. It looks first for a property whose key has a fixed rendition service-specific prefix and if that gets null, it then delegates to the standard bean name-based approach.
      * 
-     * @param paramName  the name of the parameter
-     * @return           the display label of the parameter
+     * @param paramName
+     *            the name of the parameter
+     * @return the display label of the parameter
      */
     @Override
     protected String getParamDisplayLabel(String paramName)
@@ -622,7 +597,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         // First we try to get the message using a common prefix for all rendering engines.
         final String commonPropertiesPrefix = "baseRenderingAction";
         String message = I18NUtil.getMessage(commonPropertiesPrefix + "." + paramName + "." + DISPLAY_LABEL);
-        
+
         // And if that doesn't work we delegate to the standard bean name-based approach.
         if (message == null)
         {
@@ -638,7 +613,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
         List<ParameterDefinition> paramList = new ArrayList<ParameterDefinition>();
-        
+
         paramList.add(new ParameterDefinitionImpl(RenditionDefinitionImpl.RENDITION_DEFINITION_NAME, DataTypeDefinition.QNAME, true,
                 getParamDisplayLabel(RenditionDefinitionImpl.RENDITION_DEFINITION_NAME)));
 
@@ -649,19 +624,19 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                 getParamDisplayLabel(PARAM_UPDATE_RENDITIONS_ON_ANY_PROPERTY_CHANGE)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_RENDITION_NODETYPE, DataTypeDefinition.QNAME, false,
-                    getParamDisplayLabel(PARAM_RENDITION_NODETYPE)));
+                getParamDisplayLabel(PARAM_RENDITION_NODETYPE)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_PLACEHOLDER_RESOURCE_PATH, DataTypeDefinition.TEXT, false,
-                    getParamDisplayLabel(PARAM_PLACEHOLDER_RESOURCE_PATH)));
+                getParamDisplayLabel(PARAM_PLACEHOLDER_RESOURCE_PATH)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_SOURCE_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false,
-                    getParamDisplayLabel(PARAM_SOURCE_CONTENT_PROPERTY)));
+                getParamDisplayLabel(PARAM_SOURCE_CONTENT_PROPERTY)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_TARGET_CONTENT_PROPERTY, DataTypeDefinition.QNAME, false,
-                    getParamDisplayLabel(PARAM_TARGET_CONTENT_PROPERTY)));
+                getParamDisplayLabel(PARAM_TARGET_CONTENT_PROPERTY)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_PATH_TEMPLATE, DataTypeDefinition.TEXT, false,
-                    getParamDisplayLabel(PARAM_DESTINATION_PATH_TEMPLATE)));
+                getParamDisplayLabel(PARAM_DESTINATION_PATH_TEMPLATE)));
 
         paramList.add(new ParameterDefinitionImpl(PARAM_ORPHAN_EXISTING_RENDITION, DataTypeDefinition.BOOLEAN, false,
                 getParamDisplayLabel(PARAM_ORPHAN_EXISTING_RENDITION)));
@@ -686,7 +661,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         NodeRef parentNode = renditionDefinition.getRenditionParent();
         QName assocType = renditionDefinition.getRenditionAssociationType();
         QName nodeType = getRenditionNodeType(renditionDefinition);
-        
+
         // Ensure that the creation of rendition children does not cause updates
         // to the modified, modifier properties on the source node
         behaviourFilter.disableBehaviour(parentNode, ContentModel.ASPECT_AUDITABLE);
@@ -712,14 +687,14 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * Gets the value for the named parameter. Checks the type of the parameter
-     * is correct and throws a {@link RenditionServiceException} if it isn't.
-     * Returns <code>null</code> if the parameter value is <code>null</code>
+     * Gets the value for the named parameter. Checks the type of the parameter is correct and throws a {@link RenditionServiceException} if it isn't. Returns <code>null</code> if the parameter value is <code>null</code>
      * 
-     * @param paramName the name of the parameter being checked.
-     * @param clazz the expected {@link Class} of the parameter value.
-     * @param definition the {@link RenditionDefinition} containing the
-     *            parameters.
+     * @param paramName
+     *            the name of the parameter being checked.
+     * @param clazz
+     *            the expected {@link Class} of the parameter value.
+     * @param definition
+     *            the {@link RenditionDefinition} containing the parameters.
      * @return the parameter value or <code>null</code>.
      */
     @SuppressWarnings("unchecked")
@@ -730,13 +705,13 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             return null;
         else
         {
-            if(clazz == null)
+            if (clazz == null)
                 throw new RenditionServiceException("The class must not be null!", new NullPointerException());
             Class<? extends Serializable> valueClass = value.getClass();
-            if ( !clazz.isAssignableFrom(valueClass))
+            if (!clazz.isAssignableFrom(valueClass))
             {
                 throw new RenditionServiceException("The parameter: " + paramName + " must be of type: "
-                            + clazz.getName() + "but was of type: " + valueClass.getName());
+                        + clazz.getName() + "but was of type: " + valueClass.getName());
             }
             else
                 return (T) value;
@@ -744,21 +719,22 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * Gets the value for the named parameter. Checks the type of the parameter
-     * is the same as the type of <code>defaultValue</code> and throws a
-     * {@link RenditionServiceException} if it isn't. Returns
-     * <code>defaultValue</code> if the parameter value is <code>null</code>
+     * Gets the value for the named parameter. Checks the type of the parameter is the same as the type of <code>defaultValue</code> and throws a {@link RenditionServiceException} if it isn't. Returns <code>defaultValue</code> if the parameter value is <code>null</code>
      *
-     * @param paramName String
-     * @param defaultValue T
-     * @param definition RenditionDefinition
-     * @param <T> T
+     * @param paramName
+     *            String
+     * @param defaultValue
+     *            T
+     * @param definition
+     *            RenditionDefinition
+     * @param <T>
+     *            T
      * @return T
      */
     @SuppressWarnings("unchecked")
     public static <T> T getParamWithDefault(String paramName, T defaultValue, RenditionDefinition definition)
     {
-        if(defaultValue == null)
+        if (defaultValue == null)
             throw new RenditionServiceException("The defaultValue cannot be null!", new NullPointerException());
         Class<? extends T> clazz = (Class<? extends T>) defaultValue.getClass();
         T result = getCheckedParam(paramName, clazz, definition);
@@ -772,17 +748,20 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         private final NodeRef sourceNode;
         private final RenditionDefinition definition;
         private final QName renditionContentProperty;
-        
+
         private ChildAssociationRef caNodeRef;
 
         /**
-         * @param sourceNode NodeRef
-         * @param definition RenditionDefinition
-         * @param renditionContentProperty QName
+         * @param sourceNode
+         *            NodeRef
+         * @param definition
+         *            RenditionDefinition
+         * @param renditionContentProperty
+         *            QName
          */
-        public RenderingContext(NodeRef sourceNode,//
-                    RenditionDefinition definition,//
-                    QName renditionContentProperty)
+        public RenderingContext(NodeRef sourceNode, //
+                RenditionDefinition definition, //
+                QName renditionContentProperty)
         {
             this.sourceNode = sourceNode;
             this.definition = definition;
@@ -796,9 +775,10 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         {
             return this.sourceNode;
         }
-        
+
         /**
          * Lazily instantiation of the ChildAssociationRef
+         * 
          * @return ChildAssociationRef
          */
         public synchronized ChildAssociationRef getChildAssociationRef()
@@ -830,7 +810,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         {
             return AbstractRenderingEngine.getCheckedParam(paramName, clazz, definition);
         }
-        
+
         public <T> T getParamWithDefault(String paramName, T defaultValue)
         {
             return AbstractRenderingEngine.getParamWithDefault(paramName, defaultValue, definition);
@@ -869,8 +849,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             }
         }
     }
-    
-    
+
     protected void tagSourceNodeAsRenditioned(final RenditionDefinition renditionDef, final NodeRef actionedUponNodeRef)
     {
         // Adds the 'Renditioned' aspect to the source node if it
@@ -896,7 +875,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     protected void switchToFinalRenditionNode(final RenditionDefinition renditionDef, final NodeRef actionedUponNodeRef)
     {
-        ChildAssociationRef tempRendAssoc = (ChildAssociationRef)renditionDef.getParameterValue(PARAM_RESULT);
+        ChildAssociationRef tempRendAssoc = (ChildAssociationRef) renditionDef.getParameterValue(PARAM_RESULT);
         if (logger.isDebugEnabled())
         {
             logger.debug("Switching temporary rendition: " + tempRendAssoc);
@@ -924,7 +903,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         if (t instanceof AlfrescoRuntimeException)
         {
             throw (AlfrescoRuntimeException) t;
-        } else
+        }
+        else
         {
             throw new RenditionServiceException(t.getMessage(), t);
         }
@@ -944,11 +924,12 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * This method sets the temporary rendition parent node and the rendition assocType on the
-     * rendition definition.
+     * This method sets the temporary rendition parent node and the rendition assocType on the rendition definition.
      * 
-     * @param sourceNode NodeRef
-     * @param definition the rendition definition.
+     * @param sourceNode
+     *            NodeRef
+     * @param definition
+     *            the rendition definition.
      */
     private void setTemporaryRenditionProperties(NodeRef sourceNode, RenditionDefinition definition)
     {
@@ -957,27 +938,28 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         NodeRef parent = temporaryParentNodeLocator.getNode(sourceNode, definition.getParameterValues());
         definition.setRenditionParent(parent);
         definition.setRenditionAssociationType(temporaryRenditionLinkType);
-        
+
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Temporary rendition will have parent=").append(parent)
-               .append(" and assoc-type=").append(temporaryRenditionLinkType);
+                    .append(" and assoc-type=").append(temporaryRenditionLinkType);
             logger.debug(msg.toString());
         }
     }
 
     /**
      * 
-     * @param sourceNode The node that has been rendered
-     * @param tempRendition The relationship between the node and its rendition
-     * @param renditionDefinition The definition of the rendition that has just been performed.
-     *                            In the case of a composite rendition, this parameter refers
-     *                            to that CompositeRendition and not to any of its component renditions.
+     * @param sourceNode
+     *            The node that has been rendered
+     * @param tempRendition
+     *            The relationship between the node and its rendition
+     * @param renditionDefinition
+     *            The definition of the rendition that has just been performed. In the case of a composite rendition, this parameter refers to that CompositeRendition and not to any of its component renditions.
      * @return ChildAssociationRef
      */
     private ChildAssociationRef createOrUpdateRendition(NodeRef sourceNode, ChildAssociationRef tempRendition,
-                RenditionDefinition renditionDefinition)
+            RenditionDefinition renditionDefinition)
     {
         NodeRef tempRenditionNode = tempRendition.getChildRef();
         RenditionLocation renditionLocation = resolveRenditionLocation(sourceNode, renditionDefinition, tempRenditionNode);
@@ -1005,23 +987,24 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
         // Handle the rendition aspects
         manageRenditionAspects(sourceNode, renditionNode);
-        
+
         // Verify that everything has gone to plan, and nothing got lost on the way!
         ChildAssociationRef renditionAssoc = renditionService.getRenditionByName(sourceNode, renditionQName);
         if (renditionAssoc == null)
         {
             String msg = "A rendition of name: " + renditionQName + " should have been created for source node: "
-                        + sourceNode;
-            throw new RenditionServiceException(msg);
+                    + sourceNode;
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
         }
         // Return the link between the source and the new, final rendition
         return renditionAssoc;
     }
 
     /**
-     * This method manages the <code>rn:rendition</code> aspects on the rendition node. It applies the
-     * correct rendition aspect based on the rendition node's location and removes any out-of-date rendition
-     * aspect.
+     * This method manages the <code>rn:rendition</code> aspects on the rendition node. It applies the correct rendition aspect based on the rendition node's location and removes any out-of-date rendition aspect.
      */
     private void manageRenditionAspects(NodeRef sourceNode, ChildAssociationRef renditionParentAssoc)
     {
@@ -1046,7 +1029,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             // We remove the other aspect to cover the potential case where a
             // rendition
             // has been updated in a different location.
-        } else
+        }
+        else
         {
             // Renditions stored underneath any node other than their source are
             // 'visible'.
@@ -1064,21 +1048,23 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * This method calculates the name for a rendition node. The following approaches are attempted in
-     * the order given below.
+     * This method calculates the name for a rendition node. The following approaches are attempted in the order given below.
      * <ol>
-     *    <li>If a name is defined in the {@link RenditionLocation} then that is used.</li>
-     *    <li>If the temporary rendition has a <code>cm:name</code> value, then that is used.</li>
-     *    <li>Otherwise use the rendition definition's rendition name.</li>
+     * <li>If a name is defined in the {@link RenditionLocation} then that is used.</li>
+     * <li>If the temporary rendition has a <code>cm:name</code> value, then that is used.</li>
+     * <li>Otherwise use the rendition definition's rendition name.</li>
      * </ol>
      * 
-     * @param tempRenditionNode the temporary rendition node.
-     * @param location a RenditionLocation struct.
-     * @param renditionDefinition the rendition definition.
+     * @param tempRenditionNode
+     *            the temporary rendition node.
+     * @param location
+     *            a RenditionLocation struct.
+     * @param renditionDefinition
+     *            the rendition definition.
      * @return the name for the rendition.
      */
     private String getRenditionName(NodeRef tempRenditionNode, RenditionLocation location,
-                RenditionDefinition renditionDefinition)
+            RenditionDefinition renditionDefinition)
     {
         // If a location name is set then use it.
         String locName = location.getChildName();
@@ -1097,22 +1083,22 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * Given a rendition definition, a source node and a temporary rendition node, this method uses a
-     * {@link RenditionLocationResolver} to calculate the {@link RenditionLocation} of the rendition.
+     * Given a rendition definition, a source node and a temporary rendition node, this method uses a {@link RenditionLocationResolver} to calculate the {@link RenditionLocation} of the rendition.
      */
     protected RenditionLocation resolveRenditionLocation(NodeRef sourceNode, RenditionDefinition definition,
-                NodeRef tempRendition)
+            NodeRef tempRendition)
     {
         return renditionLocationResolver.getRenditionLocation(sourceNode, definition, tempRendition);
     }
-    
+
     /**
-     * Gets the <code>ExecutionSummary</code> for the given <code>renderingContext</code>
-     * from the {@link ActionTrackingService}.
+     * Gets the <code>ExecutionSummary</code> for the given <code>renderingContext</code> from the {@link ActionTrackingService}.
      * <p>
      * Note that multiple summaries of the same action instance are not currently supported.
-     * @param renderingContext      the rendering context
-     * @return                      the found summary or null
+     * 
+     * @param renderingContext
+     *            the rendering context
+     * @return the found summary or null
      */
     protected ExecutionSummary getExecutionSummary(RenderingContext renderingContext)
     {

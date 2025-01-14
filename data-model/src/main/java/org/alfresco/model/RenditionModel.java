@@ -71,6 +71,4 @@ public interface RenditionModel
      */
     static final QName ASPECT_PREVENT_RENDITIONS = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "preventRenditions");
 
-    static final QName ASPECT_VISIBLE_RENDITION2 = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, "visibleRendition2");
-
 }

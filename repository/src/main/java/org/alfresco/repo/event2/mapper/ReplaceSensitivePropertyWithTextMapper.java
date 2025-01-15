@@ -26,11 +26,15 @@
 package org.alfresco.repo.event2.mapper;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.event2.shared.QNameMatcher;
 import org.alfresco.repo.transfer.TransferModel;
 import org.alfresco.service.namespace.QName;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class ReplaceSensitivePropertyWithTextMapper implements PropertyMapper
 {
@@ -42,12 +46,25 @@ public class ReplaceSensitivePropertyWithTextMapper implements PropertyMapper
     );
     private static final String DEFAULT_REPLACEMENT_TEXT = "SENSITIVE_DATA_REMOVED";
 
+    private final QNameMatcher qNameMatcher;
+    private final String replacementText;
+
+    public ReplaceSensitivePropertyWithTextMapper(Set<QName> userConfiguredSensitiveProperties, String userConfiguredReplacementText)
+    {
+        Set<QName> sensitiveProperties = Optional.ofNullable(userConfiguredSensitiveProperties)
+                .filter(Predicate.not(Collection::isEmpty))
+                .orElse(DEFAULT_SENSITIVE_PROPERTIES);
+        qNameMatcher = new QNameMatcher(sensitiveProperties);
+        replacementText = Optional.ofNullable(userConfiguredReplacementText)
+                .filter(Predicate.not(String::isEmpty))
+                .orElse(DEFAULT_REPLACEMENT_TEXT);
+    }
     @Override
     public Serializable map(QName propertyQName, Serializable value)
     {
-        if (DEFAULT_SENSITIVE_PROPERTIES.contains(propertyQName))
+        if (qNameMatcher.isMatching(propertyQName))
         {
-            return DEFAULT_REPLACEMENT_TEXT;
+            return replacementText;
         }
         return value;
     }

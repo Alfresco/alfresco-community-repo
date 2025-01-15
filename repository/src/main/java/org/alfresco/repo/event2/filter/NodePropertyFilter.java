@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.event2.filter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,11 +53,12 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_CASCADE_TX,
                                                                 ContentModel.PROP_CASCADE_CRC);
 
-    private final List<String> nodePropertiesBlackList;
+    private final List<String> nodePropertiesBlackList = new ArrayList<>();
 
-    public NodePropertyFilter()
+    public NodePropertyFilter(String userConfiguredFilteredNodeProperties)
     {
-        this.nodePropertiesBlackList = parseFilterList(FILTERED_PROPERTIES);
+        nodePropertiesBlackList.addAll(parseFilterList(FILTERED_PROPERTIES));
+        nodePropertiesBlackList.addAll(parseFilterList(userConfiguredFilteredNodeProperties));
     }
 
     @Override

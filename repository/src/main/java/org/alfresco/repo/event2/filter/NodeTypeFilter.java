@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -41,10 +42,12 @@ import org.alfresco.service.namespace.QName;
 public class NodeTypeFilter extends AbstractNodeEventFilter
 {
     private final List<String> nodeTypesBlackList;
+    private final DictionaryService dictionaryService;
 
-    public NodeTypeFilter(String filteredNodeTypes)
+    public NodeTypeFilter(String filteredNodeTypes, DictionaryService dictionaryService)
     {
         this.nodeTypesBlackList = parseFilterList(filteredNodeTypes);
+        this.dictionaryService = dictionaryService;
     }
 
     @Override

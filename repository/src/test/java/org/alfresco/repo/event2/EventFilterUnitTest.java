@@ -43,6 +43,7 @@ import org.alfresco.repo.event2.filter.EventUserFilter;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
 import org.alfresco.repo.event2.filter.NodeTypeFilter;
+import org.alfresco.repo.event2.shared.TypeDefExpander;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -60,6 +61,7 @@ import org.mockito.stubbing.Answer;
 public class EventFilterUnitTest
 {
     private static NamespaceService namespaceService;
+    private static TypeDefExpander typeDefExpander;
     private static NodePropertyFilter propertyFilter;
     private static NodeTypeFilter typeFilter;
     private static NodeAspectFilter aspectFilter;
@@ -85,25 +87,25 @@ public class EventFilterUnitTest
                                            NamespaceService.FORUMS_MODEL_1_0_URI);
         namespaceService.registerNamespace(NamespaceService.RENDITION_MODEL_PREFIX,
                                            NamespaceService.RENDITION_MODEL_1_0_URI);
+        namespaceService.registerNamespace(ContentModel.USER_MODEL_PREFIX,
+                                           ContentModel.USER_MODEL_URI);
 
-        propertyFilter = new NodePropertyFilter();
-        propertyFilter.setNamespaceService(namespaceService);
-        propertyFilter.setDictionaryService(dictionaryService);
+        typeDefExpander = new TypeDefExpander(dictionaryService, namespaceService);
+
+        propertyFilter = new NodePropertyFilter("usr:password");
+        propertyFilter.setTypeDefExpander(typeDefExpander);
         propertyFilter.init();
 
-        typeFilter = new NodeTypeFilter("sys:*, fm:*, cm:thumbnail");
-        typeFilter.setNamespaceService(namespaceService);
-        typeFilter.setDictionaryService(dictionaryService);
+        typeFilter = new NodeTypeFilter("sys:*, fm:*, cm:thumbnail", dictionaryService);
+        typeFilter.setTypeDefExpander(typeDefExpander);
         typeFilter.init();
 
         aspectFilter = new NodeAspectFilter("cm:workingcopy");
-        aspectFilter.setNamespaceService(namespaceService);
-        aspectFilter.setDictionaryService(dictionaryService);
+        aspectFilter.setTypeDefExpander(typeDefExpander);
         aspectFilter.init();
 
         childAssociationTypeFilter = new ChildAssociationTypeFilter("rn:rendition");
-        childAssociationTypeFilter.setNamespaceService(namespaceService);
-        childAssociationTypeFilter.setDictionaryService(dictionaryService);
+        childAssociationTypeFilter.setTypeDefExpander(typeDefExpander);
         childAssociationTypeFilter.init();
 
         caseInsensitive_userFilter = new EventUserFilter("System, john.doe, null", false);
@@ -118,6 +120,9 @@ public class EventFilterUnitTest
 
         assertTrue("System properties are excluded by default.",
                    propertyFilter.isExcluded(ContentModel.PROP_NODE_DBID));
+
+        assertTrue("User configured properties are excluded.",
+                propertyFilter.isExcluded(ContentModel.PROP_PASSWORD));
 
         assertFalse("Property cascadeTx is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_TX));
         assertFalse("Property cascadeCRC is not excluded", propertyFilter.isExcluded(ContentModel.PROP_CASCADE_CRC));

@@ -27,6 +27,7 @@ package org.alfresco.repo.event2;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -38,22 +39,43 @@ import org.alfresco.repo.transfer.TransferModel;
 
 public class PropertyMapperUnitTest
 {
-    @Test
-    public void shouldReplacePropertyValueWhenItsOneOfTheDefaultSensitiveProperties()
-    {
-        PropertyMapper propertyMapper = new ReplaceSensitivePropertyWithTextMapper();
+    private static final String DEFAULT_REPLACEMENT_TEXT = "SENSITIVE_DATA_REMOVED";
+    private static final String USER_CONFIGURED_REPLACEMENT_TEXT = "HIDDEN_BY_SECURITY_CONFIG";
 
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyMapper.map(ContentModel.PROP_PASSWORD, "test_pass"));
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyMapper.map(ContentModel.PROP_SALT, UUID.randomUUID().toString()));
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyMapper.map(ContentModel.PROP_PASSWORD_HASH, "r4nD0M_h4sH"));
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyMapper.map(TransferModel.PROP_PASSWORD, "pyramid"));
+    private final PropertyMapper defaultPropertyMapper = new ReplaceSensitivePropertyWithTextMapper(null,null);
+    private final PropertyMapper userConfiguredpropertyMapper = new ReplaceSensitivePropertyWithTextMapper(
+            Set.of(ContentModel.PROP_PASSWORD, TransferModel.PROP_PASSWORD),
+            USER_CONFIGURED_REPLACEMENT_TEXT
+    );
+
+    @Test
+    public void shouldReplacePropertyValueWhenItsOneOfTheDefaultSensitivePropertiesWhenUsingDefaultConfig()
+    {
+        assertEquals(DEFAULT_REPLACEMENT_TEXT, defaultPropertyMapper.map(ContentModel.PROP_PASSWORD, "test_pass"));
+        assertEquals(DEFAULT_REPLACEMENT_TEXT, defaultPropertyMapper.map(ContentModel.PROP_SALT, UUID.randomUUID().toString()));
+        assertEquals(DEFAULT_REPLACEMENT_TEXT, defaultPropertyMapper.map(ContentModel.PROP_PASSWORD_HASH, "r4nD0M_h4sH"));
+        assertEquals(DEFAULT_REPLACEMENT_TEXT, defaultPropertyMapper.map(TransferModel.PROP_PASSWORD, "pyramid"));
     }
 
     @Test
-    public void shouldNotReplacePropertyValueWhenItsNotOneOfTheDefaultSensitiveProperties()
+    public void shouldNotReplacePropertyValueWhenItsNotOneOfTheDefaultSensitivePropertiesWhenUsingDefaultConfig()
     {
-        PropertyMapper propertyMapper = new ReplaceSensitivePropertyWithTextMapper();
+        assertEquals("Bob", defaultPropertyMapper.map(ContentModel.PROP_USERNAME, "Bob"));
+    }
 
-        assertEquals("Bob", propertyMapper.map(ContentModel.PROP_USERNAME, "Bob"));
+    @Test
+    public void shouldReplacePropertyValueWhenItsOneOfTheDefaultSensitivePropertiesWhenUsingUserConfig()
+    {
+        assertEquals(USER_CONFIGURED_REPLACEMENT_TEXT, userConfiguredpropertyMapper.map(ContentModel.PROP_PASSWORD, "test_pass"));
+
+        assertEquals(USER_CONFIGURED_REPLACEMENT_TEXT, userConfiguredpropertyMapper.map(TransferModel.PROP_PASSWORD, "pyramid"));
+    }
+
+    @Test
+    public void shouldNotReplacePropertyValueWhenItsNotOneOfTheDefaultSensitivePropertiesWhenUsingUserConfig()
+    {
+        String randomUuid = UUID.randomUUID().toString();
+        assertEquals(randomUuid, userConfiguredpropertyMapper.map(ContentModel.PROP_SALT, randomUuid));
+        assertEquals("r4nD0M_h4sH", userConfiguredpropertyMapper.map(ContentModel.PROP_PASSWORD_HASH, "r4nD0M_h4sH"));
     }
 }

@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.event2.replacer;
+package org.alfresco.repo.event2;
 
 import static org.junit.Assert.assertEquals;
 
@@ -32,6 +32,7 @@ import java.util.UUID;
 import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.event2.replacer.PropertyReplacer;
 import org.alfresco.repo.transfer.TransferModel;
 
 public class PropertyReplacerUnitTest

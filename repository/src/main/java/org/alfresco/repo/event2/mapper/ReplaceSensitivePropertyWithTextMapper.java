@@ -23,34 +23,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.event2;
-
-import static org.junit.Assert.assertEquals;
-
-import java.util.UUID;
-
-import org.junit.Test;
+package org.alfresco.repo.event2.mapper;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.event2.replacer.PropertyReplacer;
 import org.alfresco.repo.transfer.TransferModel;
+import org.alfresco.service.namespace.QName;
 
-public class PropertyReplacerUnitTest
+import java.io.Serializable;
+import java.util.Set;
+
+public class ReplaceSensitivePropertyWithTextMapper implements PropertyMapper
 {
-    private final PropertyReplacer propertyReplacer = new PropertyReplacer();
+    private static final Set<QName> DEFAULT_SENSITIVE_PROPERTIES = Set.of(
+            ContentModel.PROP_PASSWORD,
+            ContentModel.PROP_SALT,
+            ContentModel.PROP_PASSWORD_HASH,
+            TransferModel.PROP_PASSWORD
+    );
+    private static final String DEFAULT_REPLACEMENT_TEXT = "SENSITIVE_DATA_REMOVED";
 
-    @Test
-    public void shouldReplacePropertyValueWhenItsOneOfTheDefaultSensitiveProperties()
+    @Override
+    public Serializable map(QName propertyQName, Serializable value)
     {
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyReplacer.replace(ContentModel.PROP_PASSWORD, "test_pass"));
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyReplacer.replace(ContentModel.PROP_SALT, UUID.randomUUID().toString()));
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyReplacer.replace(ContentModel.PROP_PASSWORD_HASH, "r4nD0M_h4sH"));
-        assertEquals("SENSITIVE_DATA_REMOVED", propertyReplacer.replace(TransferModel.PROP_PASSWORD, "pyramid"));
-    }
-
-    @Test
-    public void shouldNotReplacePropertyValueWhenItsNotOneOfTheDefaultSensitiveProperties()
-    {
-        assertEquals("Bob", propertyReplacer.replace(ContentModel.PROP_USERNAME, "Bob"));
+        if (DEFAULT_SENSITIVE_PROPERTIES.contains(propertyQName))
+        {
+            return DEFAULT_REPLACEMENT_TEXT;
+        }
+        return value;
     }
 }

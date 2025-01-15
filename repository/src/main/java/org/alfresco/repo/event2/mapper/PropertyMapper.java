@@ -23,31 +23,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.event2.replacer;
+package org.alfresco.repo.event2.mapper;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.transfer.TransferModel;
 import org.alfresco.service.namespace.QName;
 
 import java.io.Serializable;
-import java.util.Set;
 
-public class PropertyReplacer
+public interface PropertyMapper
 {
-    private static final Set<QName> DEFAULT_SENSITIVE_PROPERTIES = Set.of(
-            ContentModel.PROP_PASSWORD,
-            ContentModel.PROP_SALT,
-            ContentModel.PROP_PASSWORD_HASH,
-            TransferModel.PROP_PASSWORD
-    );
-    private static final String DEFAULT_REPLACEMENT_TEXT = "SENSITIVE_DATA_REMOVED";
-
-    public Serializable replace(QName propertyQName, Serializable value)
-    {
-        if (DEFAULT_SENSITIVE_PROPERTIES.contains(propertyQName))
-        {
-            return DEFAULT_REPLACEMENT_TEXT;
-        }
-        return value;
-    }
+    Serializable map(QName propertyQName, Serializable value);
 }

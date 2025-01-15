@@ -30,13 +30,12 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-                EventConsolidatorUnitTest.class,
-                EventJSONSchemaUnitTest.class,
-                EnqueuingEventSenderUnitTest.class,
-                NodeResourceHelperUnitTest.class,
-                PropertyReplacerUnitTest.class
+@SuiteClasses({EventFilterUnitTest.class,
+        EventConsolidatorUnitTest.class,
+        EventJSONSchemaUnitTest.class,
+        EnqueuingEventSenderUnitTest.class,
+        NodeResourceHelperUnitTest.class,
+        PropertyMapperUnitTest.class
 })
 public class RepoEvent2UnitSuite
-{
-}
+{}

@@ -50,7 +50,7 @@ import org.alfresco.repo.event.v1.model.UserInfo;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
-import org.alfresco.repo.event2.replacer.PropertyReplacer;
+import org.alfresco.repo.event2.mapper.PropertyMapper;
 import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -88,7 +88,7 @@ public class NodeResourceHelper implements InitializingBean
     protected EventFilterRegistry eventFilterRegistry;
     protected NamespaceService    namespaceService;
     protected PermissionService   permissionService;
-    protected PropertyReplacer    propertyReplacer;
+    protected PropertyMapper      propertyMapper;
 
     private NodeAspectFilter   nodeAspectFilter;
     private NodePropertyFilter nodePropertyFilter;
@@ -102,7 +102,7 @@ public class NodeResourceHelper implements InitializingBean
         PropertyCheck.mandatory(this, "eventFilterRegistry", eventFilterRegistry);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
-        PropertyCheck.mandatory(this, "propertyReplacer", propertyReplacer);
+        PropertyCheck.mandatory(this, "propertyMapper", propertyMapper);
 
         this.nodeAspectFilter = eventFilterRegistry.getNodeAspectFilter();
         this.nodePropertyFilter = eventFilterRegistry.getNodePropertyFilter();
@@ -140,9 +140,9 @@ public class NodeResourceHelper implements InitializingBean
         this.namespaceService = namespaceService;
     }
 
-    public void setPropertyReplacer(PropertyReplacer propertyReplacer)
+    public void setPropertyMapper(PropertyMapper propertyMapper)
     {
-        this.propertyReplacer = propertyReplacer;
+        this.propertyMapper = propertyMapper;
     }
 
     public NodeResource.Builder createNodeResourceBuilder(NodeRef nodeRef)
@@ -223,8 +223,8 @@ public class NodeResourceHelper implements InitializingBean
                 {
                     v = ((MLText) v).getDefaultValue();
                 }
-                Serializable replacedValue = propertyReplacer.replace(k, v);
-                filteredProps.put(getQNamePrefixString(k), replacedValue);
+                Serializable mappedValue = propertyMapper.map(k, v);
+                filteredProps.put(getQNamePrefixString(k), mappedValue);
             }
         });
 
@@ -241,8 +241,8 @@ public class NodeResourceHelper implements InitializingBean
                 final MLText mlTextValue = (MLText) v;
                 final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
                 mlTextValue.forEach((locale, text) -> {
-                    Serializable replacedValue = propertyReplacer.replace(k, text);
-                    localizedValues.put(locale.toString(), replacedValue.toString());
+                    Serializable mappedValue = propertyMapper.map(k, text);
+                    localizedValues.put(locale.toString(), mappedValue.toString());
                 });
                 filteredProps.put(getQNamePrefixString(k), localizedValues);
             }

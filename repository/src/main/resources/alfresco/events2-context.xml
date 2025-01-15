@@ -31,6 +31,8 @@
     </bean>
     <!-- End of Event2 Filters -->
 
+    <bean id="event2PropertyReplacer" class="org.alfresco.repo.event2.replacer.PropertyReplacer"/>
+
     <bean id="baseEventGeneratorV2" abstract="true">
         <property name="policyComponent" ref="policyComponent"/>
         <property name="nodeService" ref="nodeService"/>
@@ -53,6 +55,7 @@
         <property name="eventFilterRegistry" ref="event2FilterRegistry"/>
         <property name="namespaceService" ref="namespaceService"/>
         <property name="permissionService" ref="permissionService"/>
+        <property name="propertyReplacer" ref="event2PropertyReplacer"/>
     </bean>
 
     <bean id="baseEventSender" abstract="true">

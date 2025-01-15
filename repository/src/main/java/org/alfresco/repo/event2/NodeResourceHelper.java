@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -50,6 +50,7 @@ import org.alfresco.repo.event.v1.model.UserInfo;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
+import org.alfresco.repo.event2.replacer.PropertyReplacer;
 import org.alfresco.repo.node.MLPropertyInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -87,6 +88,7 @@ public class NodeResourceHelper implements InitializingBean
     protected EventFilterRegistry eventFilterRegistry;
     protected NamespaceService    namespaceService;
     protected PermissionService   permissionService;
+    protected PropertyReplacer    propertyReplacer;
 
     private NodeAspectFilter   nodeAspectFilter;
     private NodePropertyFilter nodePropertyFilter;
@@ -100,6 +102,7 @@ public class NodeResourceHelper implements InitializingBean
         PropertyCheck.mandatory(this, "eventFilterRegistry", eventFilterRegistry);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
+        PropertyCheck.mandatory(this, "propertyReplacer", propertyReplacer);
 
         this.nodeAspectFilter = eventFilterRegistry.getNodeAspectFilter();
         this.nodePropertyFilter = eventFilterRegistry.getNodePropertyFilter();
@@ -135,6 +138,11 @@ public class NodeResourceHelper implements InitializingBean
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+
+    public void setPropertyReplacer(PropertyReplacer propertyReplacer)
+    {
+        this.propertyReplacer = propertyReplacer;
     }
 
     public NodeResource.Builder createNodeResourceBuilder(NodeRef nodeRef)
@@ -215,8 +223,8 @@ public class NodeResourceHelper implements InitializingBean
                 {
                     v = ((MLText) v).getDefaultValue();
                 }
-
-                filteredProps.put(getQNamePrefixString(k), v);
+                Serializable replacedValue = propertyReplacer.replace(k, v);
+                filteredProps.put(getQNamePrefixString(k), replacedValue);
             }
         });
 
@@ -232,7 +240,10 @@ public class NodeResourceHelper implements InitializingBean
             {
                 final MLText mlTextValue = (MLText) v;
                 final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
-                mlTextValue.forEach((locale, text) -> localizedValues.put(locale.toString(), text));
+                mlTextValue.forEach((locale, text) -> {
+                    Serializable replacedValue = propertyReplacer.replace(k, v);
+                    localizedValues.put(locale.toString(), replacedValue.toString());
+                });
                 filteredProps.put(getQNamePrefixString(k), localizedValues);
             }
         });

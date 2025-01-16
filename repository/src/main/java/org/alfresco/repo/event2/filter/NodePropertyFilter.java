@@ -55,10 +55,10 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
 
     private final List<String> nodePropertiesBlackList = new ArrayList<>();
 
-    public NodePropertyFilter(String userConfiguredFilteredNodeProperties)
+    public NodePropertyFilter(String userConfiguredProperties)
     {
         nodePropertiesBlackList.addAll(parseFilterList(FILTERED_PROPERTIES));
-        nodePropertiesBlackList.addAll(parseFilterList(userConfiguredFilteredNodeProperties));
+        nodePropertiesBlackList.addAll(parseFilterList(userConfiguredProperties));
     }
 
     @Override

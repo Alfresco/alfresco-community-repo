@@ -61,7 +61,6 @@ import org.mockito.stubbing.Answer;
 public class EventFilterUnitTest
 {
     private static NamespaceService namespaceService;
-    private static TypeDefExpander typeDefExpander;
     private static NodePropertyFilter propertyFilter;
     private static NodeTypeFilter typeFilter;
     private static NodeAspectFilter aspectFilter;
@@ -90,7 +89,7 @@ public class EventFilterUnitTest
         namespaceService.registerNamespace(ContentModel.USER_MODEL_PREFIX,
                                            ContentModel.USER_MODEL_URI);
 
-        typeDefExpander = new TypeDefExpander(dictionaryService, namespaceService);
+        TypeDefExpander typeDefExpander = new TypeDefExpander(dictionaryService, namespaceService);
 
         propertyFilter = new NodePropertyFilter("usr:password");
         propertyFilter.setTypeDefExpander(typeDefExpander);

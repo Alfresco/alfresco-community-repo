@@ -242,7 +242,7 @@ public class NodeResourceHelper implements InitializingBean
                 final HashMap<String, String> localizedValues = new HashMap<>(mlTextValue.size());
                 mlTextValue.forEach((locale, text) -> {
                     Serializable mappedValue = propertyMapper.map(k, text);
-                    localizedValues.put(locale.toString(), mappedValue.toString());
+                    localizedValues.put(locale.toString(), (String) mappedValue);
                 });
                 filteredProps.put(getQNamePrefixString(k), localizedValues);
             }

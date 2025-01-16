@@ -43,8 +43,8 @@
     </bean>
 
     <bean id="event2PropertyMapper" factory-bean="event2PropertyMapperFactory" factory-method="createReplaceSensitivePropertyWithTextMapper">
-        <constructor-arg value="${repo.event2.mapper.sensitiveProperties}"/>
-        <constructor-arg value="${repo.event2.mapper.replacementText}"/>
+        <constructor-arg value="${repo.event2.mapper.overrideDefaultProperties}"/>
+        <constructor-arg value="${repo.event2.mapper.overrideReplacementText}"/>
     </bean>
 
     <bean id="baseEventGeneratorV2" abstract="true">

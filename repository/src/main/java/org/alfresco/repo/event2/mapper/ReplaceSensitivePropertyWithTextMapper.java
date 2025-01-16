@@ -57,6 +57,7 @@ public class ReplaceSensitivePropertyWithTextMapper implements PropertyMapper
         qNameMatcher = new QNameMatcher(sensitiveProperties);
         replacementText = Optional.ofNullable(userConfiguredReplacementText)
                 .filter(Predicate.not(String::isEmpty))
+                .filter(userInput -> !userInput.contains("${"))
                 .orElse(DEFAULT_REPLACEMENT_TEXT);
     }
     @Override

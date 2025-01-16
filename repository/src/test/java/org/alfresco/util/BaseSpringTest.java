@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextCustomizerFactories;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -46,6 +47,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration({"classpath:alfresco/application-context.xml"})
+@ContextCustomizerFactories(factories = {}, mergeMode = ContextCustomizerFactories.MergeMode.REPLACE_DEFAULTS)
 public abstract class BaseSpringTest extends TestCase
 {
     public Log logger = LogFactory.getLog(getClass().getName());

@@ -64,7 +64,7 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
             final TransactionAttribute txnAttr = getTransactionAttributeSource().getTransactionAttribute(
                     method, invocation.getThis().getClass());
 
-            final TransactionManager tm = determineTransactionManager(txnAttr);
+            final TransactionManager tm = determineTransactionManager(txnAttr, null);
 
             if (tm != null && !(tm instanceof PlatformTransactionManager))
             {

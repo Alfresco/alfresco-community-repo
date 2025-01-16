@@ -44,19 +44,20 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     // These properties are included as top-level info,
     // so exclude them from the properties object
     private static final Set<QName> EXCLUDED_TOP_LEVEL_PROPS = Set.of(ContentModel.PROP_NAME,
-                                                                      ContentModel.PROP_MODIFIER,
-                                                                      ContentModel.PROP_MODIFIED,
-                                                                      ContentModel.PROP_CREATOR,
-                                                                      ContentModel.PROP_CREATED,
-                                                                      ContentModel.PROP_CONTENT);
+            ContentModel.PROP_MODIFIER,
+            ContentModel.PROP_MODIFIED,
+            ContentModel.PROP_CREATOR,
+            ContentModel.PROP_CREATED,
+            ContentModel.PROP_CONTENT);
     // These properties should not be excluded from the properties object
     private static final Set<QName> ALLOWED_PROPERTIES = Set.of(ContentModel.PROP_CASCADE_TX,
-                                                                ContentModel.PROP_CASCADE_CRC);
+            ContentModel.PROP_CASCADE_CRC);
 
     private final List<String> nodePropertiesBlackList = new ArrayList<>();
 
     public NodePropertyFilter(String userConfiguredProperties)
     {
+        super();
         nodePropertiesBlackList.addAll(parseFilterList(FILTERED_PROPERTIES));
         nodePropertiesBlackList.addAll(parseFilterList(userConfiguredProperties));
     }
@@ -65,14 +66,15 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     public Set<QName> getExcludedTypes()
     {
         Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
-        nodePropertiesBlackList.forEach(nodeProperty-> result.addAll(expandTypeDef(nodeProperty)));
+        nodePropertiesBlackList.forEach(nodeProperty -> result.addAll(expandTypeDef(nodeProperty)));
         return result;
     }
 
     @Override
     public boolean isExcluded(QName qName)
     {
-        if(qName != null && ALLOWED_PROPERTIES.contains(qName)){
+        if (qName != null && ALLOWED_PROPERTIES.contains(qName))
+        {
             return false;
         }
         return super.isExcluded(qName);

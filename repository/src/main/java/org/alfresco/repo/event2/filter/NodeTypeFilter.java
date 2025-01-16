@@ -46,6 +46,7 @@ public class NodeTypeFilter extends AbstractNodeEventFilter
 
     public NodeTypeFilter(String filteredNodeTypes, DictionaryService dictionaryService)
     {
+        super();
         this.nodeTypesBlackList = parseFilterList(filteredNodeTypes);
         this.dictionaryService = dictionaryService;
     }

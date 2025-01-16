@@ -32,8 +32,7 @@ import java.util.StringTokenizer;
 public final class CSVStringToListParser
 {
     private CSVStringToListParser()
-    {
-    }
+    {}
 
     public static List<String> parse(String userInputCSV)
     {
@@ -43,12 +42,9 @@ public final class CSVStringToListParser
         while (st.hasMoreTokens())
         {
             String entry = st.nextToken().trim();
-            if (!entry.isEmpty())
+            if (!entry.isEmpty() && !entry.equals("none") && !entry.contains("${"))
             {
-                if (!entry.equals("none") && !entry.contains("${"))
-                {
-                    list.add(entry);
-                }
+                list.add(entry);
             }
         }
         return list;

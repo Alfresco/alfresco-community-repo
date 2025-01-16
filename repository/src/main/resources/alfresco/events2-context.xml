@@ -42,7 +42,8 @@
         <constructor-arg ref="event2TypeDefExpander"/>
     </bean>
 
-    <bean id="event2PropertyMapper" factory-bean="event2PropertyMapperFactory" factory-method="createReplaceSensitivePropertyWithTextMapper">
+    <bean id="event2PropertyMapper" factory-bean="event2PropertyMapperFactory" factory-method="createPropertyMapper">
+        <constructor-arg value="${repo.event2.mapper.enabled}"/>
         <constructor-arg value="${repo.event2.mapper.overrideDefaultProperties}"/>
         <constructor-arg value="${repo.event2.mapper.overrideReplacementText}"/>
     </bean>

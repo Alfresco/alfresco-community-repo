@@ -32,4 +32,6 @@ import java.io.Serializable;
 public interface PropertyMapper
 {
     Serializable map(QName propertyQName, Serializable value);
+
+    PropertyMapper NO_OP = (propertyQName, value) -> value;
 }

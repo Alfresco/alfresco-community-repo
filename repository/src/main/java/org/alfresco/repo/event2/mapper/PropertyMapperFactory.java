@@ -42,8 +42,12 @@ public class PropertyMapperFactory
         this.typeDefExpander = typeDefExpander;
     }
 
-    public PropertyMapper createReplaceSensitivePropertyWithTextMapper(String userConfiguredSensitiveProperties, String userConfiguredReplacementText)
+    public PropertyMapper createPropertyMapper(String enabled, String userConfiguredSensitiveProperties, String userConfiguredReplacementText)
     {
+        if ("false".equalsIgnoreCase(enabled))
+        {
+            return PropertyMapper.NO_OP;
+        }
         Set<QName> sensitiveProperties = Optional.ofNullable(userConfiguredSensitiveProperties)
                 .filter(Predicate.not(String::isEmpty))
                 .map(CSVStringToListParser::parse)

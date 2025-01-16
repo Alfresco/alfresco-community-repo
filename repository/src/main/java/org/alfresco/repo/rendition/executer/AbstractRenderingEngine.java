@@ -998,8 +998,21 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             {
                 logger.debug(msg);
             }
-            List<ChildAssociationRef> renditions = nodeService.getChildAssocs(sourceNode, RenditionModel.ASSOC_RENDITION, renditionQName);
-            renditionAssoc = renditions.get(0);
+            // Check if the node has the applied renditioned aspect, and if it does,
+            // remove the existing rendition node and assign the newly created rendition node.
+            if (nodeService.hasAspect(sourceNode, RenditionModel.ASPECT_RENDITIONED) == true)
+            {
+                List<ChildAssociationRef> renditions = nodeService.getChildAssocs(sourceNode, RenditionModel.ASSOC_RENDITION, renditionQName);
+                if (!renditions.isEmpty())
+                {
+                    nodeService.removeChild(sourceNode, renditions.get(0).getChildRef());
+                    renditionAssoc = renditionNode;
+                }
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Returning the existing rendition node with name " + renditionQName);
+            }
         }
         // Return the link between the source and the new, final rendition
         return renditionAssoc;

@@ -25,12 +25,13 @@
  */
 package org.alfresco.repo.event2.shared;
 
-import org.alfresco.service.namespace.QName;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Set;
+import org.alfresco.service.namespace.QName;
 
 public class QNameMatcher
 {
@@ -45,10 +46,6 @@ public class QNameMatcher
         matchingTypes = new HashSet<>();
         matchingNamespaceURIs = new HashSet<>();
 
-        /*
-         * Processes the user-defined list of types into valid QNames. It
-         * validates them against the dictionary and also supports wildcards
-         */
         qNamesToMatch.forEach(qName -> {
             if (WILDCARD.equals(qName.getLocalName()))
             {

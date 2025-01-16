@@ -25,13 +25,13 @@
  */
 package org.alfresco.repo.event2.mapper;
 
-import org.alfresco.service.namespace.QName;
-
 import java.io.Serializable;
+
+import org.alfresco.service.namespace.QName;
 
 public interface PropertyMapper
 {
-    Serializable map(QName propertyQName, Serializable value);
-
     PropertyMapper NO_OP = (propertyQName, value) -> value;
+
+    Serializable map(QName propertyQName, Serializable value);
 }

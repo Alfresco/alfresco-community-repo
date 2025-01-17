@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2025 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,22 +23,15 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.event2;
+package org.alfresco.repo.event2.mapper;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.io.Serializable;
 
-@RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-        EventConsolidatorUnitTest.class,
-        EventJSONSchemaUnitTest.class,
-        EventGeneratorQueueUnitTest.class,
-        NodeResourceHelperUnitTest.class,
-        PropertyMapperUnitTest.class,
-        QNameMatcherUnitTest.class,
-        CSVStringToListParserUnitTest.class,
-        TypeDefExpanderUnitTest.class
-})
-public class RepoEvent2UnitSuite
-{}
+import org.alfresco.service.namespace.QName;
+
+public interface PropertyMapper
+{
+    PropertyMapper NO_OP = (propertyQName, value) -> value;
+
+    Serializable map(QName propertyQName, Serializable value);
+}

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2025 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,20 +25,24 @@
  */
 package org.alfresco.repo.event2;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.junit.Assert.assertEquals;
 
-@RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-        EventConsolidatorUnitTest.class,
-        EventJSONSchemaUnitTest.class,
-        EventGeneratorQueueUnitTest.class,
-        NodeResourceHelperUnitTest.class,
-        PropertyMapperUnitTest.class,
-        QNameMatcherUnitTest.class,
-        CSVStringToListParserUnitTest.class,
-        TypeDefExpanderUnitTest.class
-})
-public class RepoEvent2UnitSuite
-{}
+import java.util.List;
+
+import org.junit.Test;
+
+import org.alfresco.repo.event2.shared.CSVStringToListParser;
+
+public class CSVStringToListParserUnitTest
+{
+    @Test
+    public void shouldIgnoreEmptySpacesAndNoneValueAndTemplateStringsAndParseTheRest()
+    {
+        String userInputCSV = "a,,none,2,${test}, ,*";
+
+        List<String> result = CSVStringToListParser.parse(userInputCSV);
+
+        List<String> expected = List.of("a", "2", "*");
+        assertEquals(expected, result);
+    }
+}

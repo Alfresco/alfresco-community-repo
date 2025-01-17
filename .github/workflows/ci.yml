@@ -51,9 +51,9 @@ jobs:
         uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v7.1.0
         with:
           write-list-to-env: true
-#      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v7.1.0
-#      - name: "Init"
-#        run: bash ./scripts/ci/init.sh
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v7.1.0
+      - name: "Init"
+        run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
         run: bash ./scripts/ci/prepare.sh
       - name: "Clean Maven cache"

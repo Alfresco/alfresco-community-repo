@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,6 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.event.v1.model.ContentInfo;
 import org.alfresco.repo.event.v1.model.NodeResource;
@@ -43,6 +47,7 @@ import org.alfresco.repo.event.v1.model.UserInfo;
 import org.alfresco.repo.event2.filter.EventFilterRegistry;
 import org.alfresco.repo.event2.filter.NodeAspectFilter;
 import org.alfresco.repo.event2.filter.NodePropertyFilter;
+import org.alfresco.repo.event2.mapper.PropertyMapper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -60,9 +65,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Helper for {@link NodeResource} objects.
@@ -79,6 +81,7 @@ public class NodeResourceHelper implements InitializingBean
     protected EventFilterRegistry eventFilterRegistry;
     protected NamespaceService    namespaceService;
     protected PermissionService   permissionService;
+    protected PropertyMapper propertyMapper;
 
     private NodeAspectFilter   nodeAspectFilter;
     private NodePropertyFilter nodePropertyFilter;
@@ -92,6 +95,7 @@ public class NodeResourceHelper implements InitializingBean
         PropertyCheck.mandatory(this, "eventFilterRegistry", eventFilterRegistry);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "permissionService", permissionService);
+        PropertyCheck.mandatory(this, "propertyMapper", propertyMapper);
 
         this.nodeAspectFilter = eventFilterRegistry.getNodeAspectFilter();
         this.nodePropertyFilter = eventFilterRegistry.getNodePropertyFilter();
@@ -127,6 +131,11 @@ public class NodeResourceHelper implements InitializingBean
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+
+    public void setPropertyMapper(PropertyMapper propertyMapper)
+    {
+        this.propertyMapper = propertyMapper;
     }
 
     public NodeResource.Builder createNodeResourceBuilder(NodeRef nodeRef)
@@ -170,7 +179,8 @@ public class NodeResourceHelper implements InitializingBean
             {
                 result = primaryParent.getQName().getPrefixedQName(namespaceService).getPrefixString();
             }
-        } catch (NamespaceException namespaceException) 
+        }
+        catch (NamespaceException namespaceException)
         {
             LOGGER.error("Cannot return a valid primary association QName: " + namespaceException.getMessage());
         }
@@ -205,8 +215,8 @@ public class NodeResourceHelper implements InitializingBean
                     //TODO - should we send all of the values if multiple locales exist?
                     v = ((MLText) v).getDefaultValue();
                 }
-
-                filteredProps.put(getQNamePrefixString(k), v);
+                Serializable mappedValue = propertyMapper.map(k, v);
+                filteredProps.put(getQNamePrefixString(k), mappedValue);
             }
         });
 
@@ -279,10 +289,10 @@ public class NodeResourceHelper implements InitializingBean
     }
 
     /**
-     * Returns the QName in the format prefix:local, but in the exceptional case where there is no registered prefix
-     * returns it in the form {uri}local.
+     * Returns the QName in the format prefix:local, but in the exceptional case where there is no registered prefix returns it in the form {uri}local.
      *
-     * @param   k QName
+     * @param k
+     *            QName
      * @return  a String representing the QName in the format prefix:local or {uri}local.
      */
     public String getQNamePrefixString(QName k)
@@ -311,11 +321,6 @@ public class NodeResourceHelper implements InitializingBean
         });
 
         return filteredAspects;
-    }
-
-    private boolean isNotEmptyString(Serializable ser)
-    {
-        return !(ser instanceof String) || !((String) ser).isEmpty();
     }
 
     public QName getNodeType(NodeRef nodeRef)

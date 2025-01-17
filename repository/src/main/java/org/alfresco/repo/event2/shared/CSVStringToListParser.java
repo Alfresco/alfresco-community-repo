@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2025 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,22 +23,30 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.repo.event2.shared;
 
-package org.alfresco.repo.event2;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.StringTokenizer;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+public final class CSVStringToListParser
+{
+    private CSVStringToListParser()
+    {}
 
-@RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-        EventConsolidatorUnitTest.class,
-        EventJSONSchemaUnitTest.class,
-        EventGeneratorQueueUnitTest.class,
-        PropertyMapperUnitTest.class,
-        QNameMatcherUnitTest.class,
-        CSVStringToListParserUnitTest.class,
-        TypeDefExpanderUnitTest.class
-})
-public class RepoEvent2UnitSuite
-{}
+    public static List<String> parse(String userInputCSV)
+    {
+        List<String> list = new LinkedList<>();
+
+        StringTokenizer st = new StringTokenizer(userInputCSV, ",");
+        while (st.hasMoreTokens())
+        {
+            String entry = st.nextToken().trim();
+            if (!entry.isEmpty() && !entry.equals("none") && !entry.contains("${"))
+            {
+                list.add(entry);
+            }
+        }
+        return list;
+    }
+}

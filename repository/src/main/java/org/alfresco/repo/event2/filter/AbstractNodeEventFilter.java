@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -35,8 +35,7 @@ import org.alfresco.repo.event2.shared.TypeDefExpander;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Abstract {@link EventFilter} implementation, containing common event filtering
- * functionality for the {@link QName} type.
+ * Abstract {@link EventFilter} implementation, containing common event filtering functionality for the {@link QName} type.
  *
  * @author Jamal Kaabi-Mofrad
  */

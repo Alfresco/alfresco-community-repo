@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,8 +28,11 @@ package org.alfresco.rest.api.people;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.People;
@@ -53,9 +56,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * An implementation of an Entity Resource for a Person
@@ -63,14 +63,14 @@ import org.springframework.beans.factory.InitializingBean;
  * @author sglover
  * @author Gethin James
  */
-@EntityResource(name="people", title = "People")
+@EntityResource(name = "people", title = "People")
 public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>,
-        EntityResourceAction.Update<Person>,EntityResourceAction.Read<Person>,
+        EntityResourceAction.Update<Person>, EntityResourceAction.Read<Person>,
 
         BinaryResourceAction.Read, BinaryResourceAction.Update<Person>, BinaryResourceAction.Delete, InitializingBean
 {
     private static Log logger = LogFactory.getLog(PeopleEntityResource.class);
-    
+
     private People people;
 
     public void setPeople(People people)
@@ -99,9 +99,9 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     }
 
     @Override
-    @WebApiDescription(title="Create person", description="Create a person")
-    @WebApiParam(name="persons", title="A single person", description="A single person, multiple people are not supported.",
-            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false, required = true)
+    @WebApiDescription(title = "Create person", description = "Create a person")
+    @WebApiParam(name = "persons", title = "A single person", description = "A single person, multiple people are not supported.",
+            kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false, required = true)
     public List<Person> create(List<Person> persons, Parameters parameters)
     {
         Person p = persons.get(0);
@@ -114,7 +114,7 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     }
 
     @Override
-    @WebApiDescription(title="Update person", description="Update the given person's details")
+    @WebApiDescription(title = "Update person", description = "Update the given person's details")
     public Person update(String personId, Person person, Parameters parameters)
     {
         if (person.wasSet(ContentModel.PROP_USERNAME))
@@ -166,7 +166,7 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     @Deprecated
     @Operation("request-password-reset")
     @WebApiDescription(title = "Request Password Reset", description = "Request password reset",
-                       successStatus = HttpServletResponse.SC_ACCEPTED)
+            successStatus = HttpServletResponse.SC_ACCEPTED)
     @WebApiNoAuth
     public void requestPasswordReset(String personId, Client client, Parameters parameters, WithResponse withResponse)
     {
@@ -186,7 +186,8 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
      * Download avatar image content
      *
      * @param personId
-     * @param parameters {@link Parameters}
+     * @param parameters
+     *            {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
@@ -202,8 +203,10 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
      * Upload avatar image content
      *
      * @param personId
-     * @param contentInfo Basic information about the content stream
-     * @param stream An inputstream
+     * @param contentInfo
+     *            Basic information about the content stream
+     * @param stream
+     *            An inputstream
      * @param parameters
      * @return
      */
@@ -224,11 +227,24 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
      */
     @Override
     @WebApiDescription(title = "Delete avatar image", description = "Delete avatar image")
-    @BinaryProperties({ "avatar" })
+    @BinaryProperties({"avatar"})
     public void deleteProperty(String personId, Parameters parameters)
     {
         people.deleteAvatarContent(personId);
     }
 
-
+    /**
+     * De-authorize user
+     *
+     * Not currently supported in community edition.
+     * 
+     * @param personId
+     * @param body
+     * @param parameters
+     * @param withResponse
+     */
+    @Operation("deauthorize")
+    @WebApiDescription(title = "De-authorize user", description = "Performs user de-authorization", successStatus = HttpServletResponse.SC_NOT_IMPLEMENTED)
+    public void deauthorizeUser(String personId, Void body, Parameters parameters, WithResponse withResponse)
+    {}
 }

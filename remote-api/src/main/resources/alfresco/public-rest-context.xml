@@ -1116,7 +1116,7 @@
         <property name="siteMembershipRequests" ref="SiteMembershipRequests" />
     </bean>
 
-    <bean class="org.alfresco.rest.api.people.PeopleEntityResource">
+    <bean id="peopleEntityResource" class="org.alfresco.rest.api.people.PeopleEntityResource">
         <property name="people" ref="People" />
     </bean>
 

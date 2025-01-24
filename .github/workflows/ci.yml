@@ -36,22 +36,23 @@ jobs:
       !contains(github.event.head_commit.message, '[force')
     steps:
       - uses: actions/checkout@v4
-      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v7.0.0
-      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v7.0.0
-      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v8.2.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/free-hosted-runner-disk-space@v8.2.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v8.2.0
       - id: changed-files
-        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v6.1.0
+        uses: Alfresco/alfresco-build-tools/.github/actions/github-list-changes@v8.2.0
         with:
           write-list-to-env: true
-      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v6.1.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@v8.2.0
       - name: "Init"
         run: bash ./scripts/ci/init.sh
       - name: "Prepare maven cache and check compilation"
         run: bash ./scripts/ci/prepare.sh
       - name: "Clean Maven cache"
         run: bash ./scripts/ci/cleanup_cache.sh
+
 
   veracode:
     name: "Source Clear Scan (SCA)"

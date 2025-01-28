@@ -25,13 +25,23 @@
  */
 package org.alfresco.repo.exporter;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -49,7 +59,9 @@ import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream.UnicodeExtraFieldPolicy;
-
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Handler for exporting Repository to ACP (Alfresco Content Package) file
@@ -61,6 +73,7 @@ public class ACPExportPackageHandler
 {
     /** ACP File Extension */
     public final static String ACP_EXTENSION = "acp";
+    protected static final String TEMP_FILE_PREFIX = "export_";
     
     protected MimetypeService mimetypeService;
     protected NodeService nodeService;
@@ -252,6 +265,21 @@ public class ACPExportPackageHandler
      */
     public void endExport()
     {
+        // Create a CSV file containing metadata headers
+        File csvFile = null;
+        try
+        {
+            csvFile = createCSVFileWithMetadataHeaders(tempDataFile);
+            addCSVFileToDir(csvFile, contentDir);
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+
+        // Optionally add the CSV file to the ACP package
+        addFilesToACP(contentDir);
+
         // ensure data file has .xml extension
         String dataFilePath = dataFile.getPath();
         if (!dataFilePath.endsWith(".xml"))
@@ -346,5 +374,128 @@ public class ACPExportPackageHandler
         }
         return displayPath.toString();
     }
-    
+
+    public File getTempDataFile()
+    {
+        return this.tempDataFile;
+    }
+
+    public void addFilesToACP(File contentDir)
+    {
+        // Add all files from contentDir to the ACP archive
+        File[] files = contentDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    try {
+                        // Create a Zip entry for each file in contentDir
+                        ZipArchiveEntry contentEntry = new ZipArchiveEntry(file.getName());
+                        zipStream.putArchiveEntry(contentEntry);
+
+                        // Copy content from the file into the zip stream
+                        InputStream contentStream = new FileInputStream(file);
+                        copyStream(zipStream, contentStream);
+                        zipStream.closeArchiveEntry();
+                        contentStream.close();
+                    } catch (IOException e) {
+                        throw new ExporterException("Failed to add content file to zip", e);
+                    }
+                }
+            }
+        }
+    }
+
+    // Method to create CSV with metadata and properties from XML
+    public static File createCSVFileWithMetadataHeaders(File xmlFile) throws IOException {
+        List<String> headers = new ArrayList<>();
+        List<String> values = new ArrayList<>();
+
+        try {
+            if (xmlFile.exists())
+            {
+                // Parse XML file
+                Document doc = parseXMLFile(xmlFile);
+
+                // Extract metadata and properties
+                extractMetadataAndProperties(doc, headers, values);
+            }
+
+        } catch (Exception e) {
+            throw new IOException("Error parsing XML to extract metadata", e);
+        }
+
+        // Create and write to CSV file
+        File csvFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ".csv");
+        writeCSV(csvFile, headers, values);
+
+        return csvFile;
+    }
+
+    // Helper method to parse XML file
+    private static Document parseXMLFile(File xmlFile) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        return builder.parse(xmlFile);
+    }
+
+    // Helper method to extract metadata and properties from XML document
+    private static void extractMetadataAndProperties(Document doc, List<String> headers, List<String> values) {
+        // Extract metadata
+        extractNodesToCSV(doc, "view:metadata", headers, values);
+
+        // Extract properties
+        extractNodesToCSV(doc, "view:properties", headers, values);
+    }
+
+    // Helper method to extract XML nodes and add to CSV
+    private static void extractNodesToCSV(Document doc, String tagName, List<String> headers, List<String> values) {
+        NodeList nodes = doc.getElementsByTagName(tagName);
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Node node = nodes.item(i);
+            NodeList children = node.getChildNodes();
+            for (int j = 0; j < children.getLength(); j++) {
+                Node child = children.item(j);
+                if (child.getNodeType() == Node.ELEMENT_NODE) {
+                    headers.add(child.getNodeName());
+                    values.add(child.getTextContent().trim());
+                }
+            }
+        }
+    }
+
+    // Helper method to write headers and values to CSV file
+    private static void writeCSV(File csvFile, List<String> headers, List<String> values) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile))) {
+            // Write headers
+            writer.write(String.join(",", headers));
+            writer.newLine();
+
+            // Write values
+            writer.write(String.join(",", values));
+            writer.newLine();
+        }
+    }
+
+    public static void addCSVFileToDir(File csvFile, File contentDir) throws IOException
+    {
+        System.out.println("CSV File Path: " + csvFile.getAbsolutePath());
+        System.out.println("Content Directory Path: " + contentDir.getAbsolutePath());
+
+        // Ensure the contentDir exists
+        if (!contentDir.exists())
+        {
+            if (!contentDir.mkdirs())
+            {
+                throw new IOException("Failed to create directory: " + contentDir.getAbsolutePath());
+            }
+        }
+
+        // Copy the CSV file into the content directory of the ACP package
+        java.nio.file.Path destination = contentDir.toPath()
+                    .resolve(csvFile.getName());
+        Files.copy(csvFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+
+        // Optionally, delete the CSV file after it's added to the ACP (or you can leave it as is)
+        csvFile.deleteOnExit();
+    }
 }

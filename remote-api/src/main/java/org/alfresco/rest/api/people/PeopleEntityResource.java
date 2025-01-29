@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.model.ContentModel;
@@ -63,15 +61,12 @@ import org.alfresco.util.PropertyCheck;
  * @author sglover
  * @author Gethin James
  */
-@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
 @EntityResource(name = "people", title = "People")
 public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>,
         EntityResourceAction.Update<Person>, EntityResourceAction.Read<Person>,
 
         BinaryResourceAction.Read, BinaryResourceAction.Update<Person>, BinaryResourceAction.Delete, InitializingBean
 {
-    private static final Log logger = LogFactory.getLog(PeopleEntityResource.class);
-
     private People people;
 
     public void setPeople(People people)
@@ -247,5 +242,7 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     @Operation("deauthorize")
     @WebApiDescription(title = "De-authorize user", description = "Performs user de-authorization", successStatus = HttpServletResponse.SC_NOT_IMPLEMENTED)
     public void deauthorizeUser(String personId, Void body, Parameters parameters, WithResponse withResponse)
-    {}
+    {
+        // functionality is not implemented in community edition
+    }
 }

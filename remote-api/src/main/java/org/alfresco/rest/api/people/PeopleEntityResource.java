@@ -63,13 +63,14 @@ import org.alfresco.util.PropertyCheck;
  * @author sglover
  * @author Gethin James
  */
+@SuppressWarnings("PMD.UncommentedEmptyMethodBody")
 @EntityResource(name = "people", title = "People")
 public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>,
         EntityResourceAction.Update<Person>, EntityResourceAction.Read<Person>,
 
         BinaryResourceAction.Read, BinaryResourceAction.Update<Person>, BinaryResourceAction.Delete, InitializingBean
 {
-    private static Log logger = LogFactory.getLog(PeopleEntityResource.class);
+    private static final Log logger = LogFactory.getLog(PeopleEntityResource.class);
 
     private People people;
 

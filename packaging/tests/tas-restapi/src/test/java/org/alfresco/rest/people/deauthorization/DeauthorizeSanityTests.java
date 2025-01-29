@@ -13,7 +13,8 @@ import org.alfresco.utility.testrail.annotation.TestRail;
 @Test
 public class DeauthorizeSanityTests extends RestTest
 {
-    private UserModel userModel, adminUser;
+    private UserModel userModel;
+    private UserModel adminUser;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()

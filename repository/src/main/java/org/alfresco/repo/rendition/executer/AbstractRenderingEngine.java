@@ -1005,16 +1005,17 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                 List<ChildAssociationRef> renditions = nodeService.getChildAssocs(sourceNode, RenditionModel.ASSOC_RENDITION, renditionQName);
                 if (!renditions.isEmpty())
                 {
-                    nodeService.removeChild(sourceNode, renditions.get(0)
-                            .getChildRef());
+                    ChildAssociationRef existingRendition = renditions.get(0);
+                    nodeService.removeChild(sourceNode, existingRendition.getChildRef());
                     renditionAssoc = renditionNode;
-                }
-            }
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Removing the existing rendition node that doesn't have contentData and "
-                        + "assigning the newly created rendition node: " + renditionNode);
 
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Removing the existing rendition node that doesn't have contentData and "
+                                + "assigning the newly created rendition node: " + renditionNode);
+
+                    }
+                }
             }
         }
         // Return the link between the source and the new, final rendition

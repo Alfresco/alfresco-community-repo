@@ -1,4 +1,4 @@
-package org.alfresco.rest.people.deauthorization;
+package org.alfresco.rest.people.deauthorization.community;
 
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -10,6 +10,9 @@ import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.testrail.ExecutionType;
 import org.alfresco.utility.testrail.annotation.TestRail;
 
+/**
+ * Verifies API behavior in community edition. Should be excluded in enterprise edition.
+ */
 @Test
 public class DeauthorizeSanityTests extends RestTest
 {

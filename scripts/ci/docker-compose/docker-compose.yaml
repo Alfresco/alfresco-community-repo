@@ -59,7 +59,7 @@ services:
       CLIENT_SSL_TRUST_STORE_TYPE: "JCEKS"
   keycloak:
     profiles: ["with-sso"]
-    image: quay.io/keycloak/keycloak:25.0.6
+    image: quay.io/keycloak/keycloak:26.1.0
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin

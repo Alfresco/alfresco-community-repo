@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.event2.filter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,24 +44,26 @@ public class NodePropertyFilter extends AbstractNodeEventFilter
     // These properties are included as top-level info,
     // so exclude them from the properties object
     private static final Set<QName> EXCLUDED_TOP_LEVEL_PROPS = Set.of(ContentModel.PROP_NAME,
-                                                                      ContentModel.PROP_MODIFIER,
-                                                                      ContentModel.PROP_MODIFIED,
-                                                                      ContentModel.PROP_CREATOR,
-                                                                      ContentModel.PROP_CREATED,
-                                                                      ContentModel.PROP_CONTENT);
+            ContentModel.PROP_MODIFIER,
+            ContentModel.PROP_MODIFIED,
+            ContentModel.PROP_CREATOR,
+            ContentModel.PROP_CREATED,
+            ContentModel.PROP_CONTENT);
 
-    private final List<String> nodeAspectsBlackList;
+    private final List<String> nodePropertiesBlackList = new ArrayList<>();
 
-    public NodePropertyFilter()
+    public NodePropertyFilter(String userConfiguredProperties)
     {
-        this.nodeAspectsBlackList = parseFilterList(FILTERED_PROPERTIES);
+        super();
+        nodePropertiesBlackList.addAll(parseFilterList(FILTERED_PROPERTIES));
+        nodePropertiesBlackList.addAll(parseFilterList(userConfiguredProperties));
     }
 
     @Override
     public Set<QName> getExcludedTypes()
     {
         Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
-        nodeAspectsBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
+        nodePropertiesBlackList.forEach(nodeProperty -> result.addAll(expandTypeDef(nodeProperty)));
         return result;
     }
 }

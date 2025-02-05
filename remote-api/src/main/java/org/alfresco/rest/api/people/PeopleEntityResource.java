@@ -34,6 +34,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.model.AuthCode;
 import org.alfresco.rest.api.model.AuthKey;
 import org.alfresco.rest.api.model.Client;
 import org.alfresco.rest.api.model.PasswordReset;
@@ -245,6 +246,19 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     public void deauthorizeUser(String personId, Void body, Parameters parameters, WithResponse withResponse)
     {
         // functionality is not implemented in community edition
+    }
+
+    /**
+     * Get the authorization code.
+     *
+     * Not supported in community edition.
+     */
+    @Operation("reauthorization-code")
+    @WebApiDescription(title = "Get the reauthorization code", description = "Get the reauthorization code", successStatus = HttpServletResponse.SC_NOT_IMPLEMENTED)
+    public AuthCode getReauthorizationCode(String personId, Void body, Parameters parameters, WithResponse withResponse)
+    {
+        // functionality is not implemented in community edition
+        return null;
     }
 
     /**

@@ -46,4 +46,20 @@ public class ReauthorizeSanityTests extends RestTest
         // then
         restClient.assertStatusCodeIs(HttpStatus.NOT_IMPLEMENTED);
     }
+
+    @Test(groups = {TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.SANITY})
+    @TestRail(section = {TestGroup.REST_API, TestGroup.PEOPLE}, executionType = ExecutionType.SANITY,
+            description = "Check if the reauthorization code is not implemented in Community Edition")
+    public void reauthorizationCodeIsNotImplementedInCommunityEdition()
+    {
+        // when admin invokes API
+        restClient.authenticateUser(adminUser).withCoreAPI().usingUser(userModel).getReauthorizationCode();
+        // then
+        restClient.assertStatusCodeIs(HttpStatus.NOT_IMPLEMENTED);
+
+        // when user invokes API
+        restClient.authenticateUser(userModel).withCoreAPI().usingUser(userModel).getReauthorizationCode();
+        // then
+        restClient.assertStatusCodeIs(HttpStatus.NOT_IMPLEMENTED);
+    }
 }

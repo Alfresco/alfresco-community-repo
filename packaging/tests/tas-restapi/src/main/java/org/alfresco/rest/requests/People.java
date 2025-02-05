@@ -42,6 +42,7 @@ import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestActivityModelsCollection;
+import org.alfresco.rest.model.RestAuthCodeModel;
 import org.alfresco.rest.model.RestAuthKeyModel;
 import org.alfresco.rest.model.RestFavoriteSiteModel;
 import org.alfresco.rest.model.RestGroupsModelsCollection;
@@ -454,6 +455,22 @@ public class People extends ModelRequest<People>
     {
         var request = RestRequest.requestWithBody(HttpMethod.POST, authKey.toJson(), "people/{personId}/reauthorize", this.person.getUsername());
         restWrapper.process(request);
+    }
+
+    /**
+     * Get the reauthorization code.
+     */
+    public RestAuthCodeModel getReauthorizationCode()
+    {
+        var request = RestRequest.simpleRequest(HttpMethod.POST, "people/{personId}/reauthorization-code", this.person.getUsername());
+        try
+        {
+            return restWrapper.processModel(RestAuthCodeModel.class, request);
+        }
+        catch (JsonToModelConversionException | EmptyJsonResponseException e)
+        {
+            return null;
+        }
     }
 
     /**

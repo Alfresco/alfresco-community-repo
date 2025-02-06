@@ -454,7 +454,7 @@ public class People extends ModelRequest<People>
     public void reauthorizeUser(RestAuthKeyModel authKey)
     {
         var request = RestRequest.requestWithBody(HttpMethod.POST, authKey.toJson(), "people/{personId}/reauthorize", this.person.getUsername());
-        restWrapper.process(request);
+        restWrapper.processEmptyModel(request);
     }
 
     /**

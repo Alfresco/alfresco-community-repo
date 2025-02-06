@@ -28,28 +28,5 @@ package org.alfresco.rest.api.model;
 /**
  * An object representing user authorization code.
  */
-public class AuthCode
-{
-    private String authorizationCode;
-
-    public AuthCode()
-    {}
-
-    public AuthCode(String authorizationCode)
-    {
-        this.authorizationCode = authorizationCode;
-    }
-
-    public String getAuthorizationCode()
-    {
-        return authorizationCode;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "AuthCode[" +
-                "authorizationCode='" + authorizationCode + '\'' +
-                ']';
-    }
-}
+public record AuthCode(String authorizationCode)
+{}

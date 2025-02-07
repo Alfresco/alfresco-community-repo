@@ -438,6 +438,15 @@ public class People extends ModelRequest<People>
     }
 
     /**
+     * Deauthorize a user
+     */
+    public void deauthorizeUser()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, "people/{personId}/deauthorize", this.person.getUsername(), restWrapper.getParameters());
+        restWrapper.processEmptyModel(request);
+    }
+
+    /**
      * Update avatar image PUT call on 'people/{nodeId}/children
      */
     public ValidatableResponse uploadAvatarContent(String fullServerUrL, File avatarFile)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -757,6 +757,14 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
             if (logger.isDebugEnabled())
             {
                 logger.debug("Cleared rendition hashcode");
+            }
+            if (nodeService.hasAspect(renditionNode, RenditionModel.ASPECT_RENDITION2))
+            {
+                nodeService.removeAspect(renditionNode, RenditionModel.ASPECT_RENDITION2);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Cleared rendition2 aspect");
+                }
             }
 
         }

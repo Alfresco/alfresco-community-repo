@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2025 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,53 +23,36 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.event2.filter;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+package org.alfresco.repo.event2.mapper;
 
 import org.alfresco.repo.event2.shared.CSVStringToListParser;
-import org.alfresco.repo.event2.shared.QNameMatcher;
 import org.alfresco.repo.event2.shared.TypeDefExpander;
 import org.alfresco.service.namespace.QName;
 
-/**
- * Abstract {@link EventFilter} implementation, containing common event filtering functionality for the {@link QName} type.
- *
- * @author Jamal Kaabi-Mofrad
- */
-public abstract class AbstractNodeEventFilter implements EventFilter<QName>
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+
+public class PropertyMapperFactory
 {
-    protected TypeDefExpander typeDefExpander;
+    private final TypeDefExpander typeDefExpander;
 
-    private QNameMatcher qNameMatcher;
-
-    public final void init()
-    {
-        qNameMatcher = new QNameMatcher(getExcludedTypes());
-    }
-
-    public void setTypeDefExpander(TypeDefExpander typeDefExpander)
+    public PropertyMapperFactory(TypeDefExpander typeDefExpander)
     {
         this.typeDefExpander = typeDefExpander;
     }
 
-    @Override
-    public boolean isExcluded(QName qName)
+    public PropertyMapper createPropertyMapper(String enabled, String userConfiguredSensitiveProperties, String userConfiguredReplacementText)
     {
-        return qNameMatcher.isMatching(qName);
-    }
-
-    protected abstract Set<QName> getExcludedTypes();
-
-    protected List<String> parseFilterList(String unparsedFilterList)
-    {
-        return CSVStringToListParser.parse(unparsedFilterList);
-    }
-
-    protected Collection<QName> expandTypeDef(String typeDef)
-    {
-        return typeDefExpander.expand(typeDef);
+        if ("false".equalsIgnoreCase(enabled))
+        {
+            return PropertyMapper.NO_OP;
+        }
+        Set<QName> sensitiveProperties = Optional.ofNullable(userConfiguredSensitiveProperties)
+                .filter(Predicate.not(String::isEmpty))
+                .map(CSVStringToListParser::parse)
+                .map(typeDefExpander::expand)
+                .orElse(Set.of());
+        return new ReplaceSensitivePropertyWithTextMapper(sensitiveProperties, userConfiguredReplacementText);
     }
 }

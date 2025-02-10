@@ -200,7 +200,7 @@ public class IdentityServiceRemoteUserMapperTest extends AbstractChainedSubsyste
         assertEquals("identity-service.client-connection-timeout", 3000,
                 this.identityServiceConfig.getClientConnectionTimeout());
 
-        assertEquals("identity-service.client-socket-timeout", 1000,
+        assertEquals("identity-service.client-socket-timeout", 3000,
                 this.identityServiceConfig.getClientSocketTimeout());
 
         // check boolean overrides

@@ -34,6 +34,8 @@ import org.springframework.beans.factory.InitializingBean;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.model.AuthCode;
+import org.alfresco.rest.api.model.AuthKey;
 import org.alfresco.rest.api.model.Client;
 import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
@@ -242,6 +244,31 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     @Operation("deauthorize")
     @WebApiDescription(title = "De-authorize user", description = "Performs user de-authorization", successStatus = HttpServletResponse.SC_NOT_IMPLEMENTED)
     public void deauthorizeUser(String personId, Void body, Parameters parameters, WithResponse withResponse)
+    {
+        // functionality is not implemented in community edition
+    }
+
+    /**
+     * Get the authorization code.
+     *
+     * Not supported in community edition.
+     */
+    @Operation("reauthorization-code")
+    @WebApiDescription(title = "Get the reauthorization code", description = "Get the reauthorization code", successStatus = HttpServletResponse.SC_NOT_IMPLEMENTED)
+    public AuthCode getReauthorizationCode(String personId, Void body, Parameters parameters, WithResponse withResponse)
+    {
+        // functionality is not implemented in community edition
+        return null;
+    }
+
+    /**
+     * Reauthorize user.
+     *
+     * Not supported in community edition.
+     */
+    @Operation("reauthorize")
+    @WebApiDescription(title = "Reauthorize user", description = "Performs user reauthorization", successStatus = HttpServletResponse.SC_NOT_IMPLEMENTED)
+    public void reauthorizeUser(String personId, AuthKey authKey, Parameters parameters, WithResponse withResponse)
     {
         // functionality is not implemented in community edition
     }

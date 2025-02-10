@@ -997,17 +997,19 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
+        String folderId = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
 
         // Create multipart request.
         String renditionName = "pdf";
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
-        MultiPartRequest reqBody = multiPartBuilder.build();
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .setRenditions(Collections.singletonList(renditionName))
+                .build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(folderId), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
@@ -1027,7 +1029,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         Thread.sleep(DELAY_IN_MS);
 
-        response = getSingle(getNodeRenditionsUrl(contentNodeId), (renditionName + "/content"), params, 200);
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), renditionName + "/content", params, 200);
         assertNotNull(response.getResponseAsBytes());
     }
 

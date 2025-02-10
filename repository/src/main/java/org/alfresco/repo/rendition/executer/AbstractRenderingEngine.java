@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -83,7 +83,7 @@ import org.alfresco.util.GUID;
 
 /**
  * This class adds some new behaviour to the standard ActionExecuterAbstractBase in order to support the RenditionService.
- * 
+ *
  * @author Neil McErlean
  * @author Nick Smith
  * @since 3.3
@@ -198,7 +198,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * Injects the nodeService bean.
-     * 
+     *
      * @param nodeService
      *            the nodeService.
      */
@@ -209,7 +209,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * Injects the renditionService bean.
-     * 
+     *
      * @param renditionService
      *            RenditionService
      */
@@ -253,7 +253,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * Sets the default rendition-node type.
-     * 
+     *
      * @param type
      *            String
      */
@@ -282,7 +282,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * This method returns the type of the default rendition node type.
-     * 
+     *
      * @return the QName representing the type of the default rendition node type.
      */
     protected QName getDefaultRenditionNodeType()
@@ -302,7 +302,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * Sets the default rendition content property.
-     * 
+     *
      * @param prop
      *            String
      */
@@ -331,7 +331,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * This method returns the QName of the property that defines the location of the rendition content. An example would be cm:content.
-     * 
+     *
      * @return the QName the property defining the location of the rendition content.
      */
     protected QName getDefaultRenditionContentProp()
@@ -341,7 +341,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * Set the content service
-     * 
+     *
      * @param contentService
      *            the content service
      */
@@ -568,7 +568,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * If no rendition node type is specified, then the default is used
-     * 
+     *
      * @param renditionDefinition
      *            RenditionDefinition
      * @return QName
@@ -586,7 +586,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * This method gets the parameter definition display label from the properties file. It looks first for a property whose key has a fixed rendition service-specific prefix and if that gets null, it then delegates to the standard bean name-based approach.
-     * 
+     *
      * @param paramName
      *            the name of the parameter
      * @return the display label of the parameter
@@ -608,7 +608,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * Supplies the list of parameters required by this rendering engine.
-     * 
+     *
      */
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
@@ -688,7 +688,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * Gets the value for the named parameter. Checks the type of the parameter is correct and throws a {@link RenditionServiceException} if it isn't. Returns <code>null</code> if the parameter value is <code>null</code>
-     * 
+     *
      * @param paramName
      *            the name of the parameter being checked.
      * @param clazz
@@ -925,7 +925,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 
     /**
      * This method sets the temporary rendition parent node and the rendition assocType on the rendition definition.
-     * 
+     *
      * @param sourceNode
      *            NodeRef
      * @param definition
@@ -949,7 +949,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * 
+     *
      * @param sourceNode
      *            The node that has been rendered
      * @param tempRendition
@@ -1073,7 +1073,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * <li>If the temporary rendition has a <code>cm:name</code> value, then that is used.</li>
      * <li>Otherwise use the rendition definition's rendition name.</li>
      * </ol>
-     * 
+     *
      * @param tempRenditionNode
      *            the temporary rendition node.
      * @param location

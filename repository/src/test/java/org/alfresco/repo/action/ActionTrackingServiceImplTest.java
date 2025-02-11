@@ -2,37 +2,48 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.action;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+
+import static org.awaitility.Awaitility.await;
+
 import static org.alfresco.repo.action.ActionServiceImplTest.assertBefore;
 
 import java.net.InetAddress;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.Objects;
 import jakarta.transaction.UserTransaction;
+
+import junit.framework.TestCase;
+import org.apache.commons.collections4.CollectionUtils;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionServiceImplTest.CancellableSleepAction;
@@ -65,26 +76,21 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ConfigurableApplicationContext;
-
-import junit.framework.TestCase;
 
 /**
- * Action tracking service tests. These mostly need
- *  careful control over the transactions they use.
- * 
+ * Action tracking service tests. These mostly need careful control over the transactions they use.
+ *
  * @author Nick Burch
  */
 @Category(OwnJVMTestsCategory.class)
 public class ActionTrackingServiceImplTest extends TestCase
 {
-    private static ConfigurableApplicationContext ctx = 
-       (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
-    
+    private static final Duration MAX_WAIT_TIMEOUT = Duration.ofSeconds(10);
+    private static ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
+
     private StoreRef storeRef;
     private NodeRef rootNodeRef;
-    
+
     private NodeRef nodeRef;
     @SuppressWarnings("unused")
     private NodeRef folder;
@@ -95,9 +101,9 @@ public class ActionTrackingServiceImplTest extends TestCase
     private RuntimeActionService runtimeActionService;
     private ActionTrackingService actionTrackingService;
     private SimpleCache<String, ExecutionDetails> executingActionsCache;
-    
+
     private AsyncOccurs asyncOccurs;
-    
+
     @Override
     @SuppressWarnings("unchecked")
     protected void setUp() throws Exception
@@ -105,30 +111,30 @@ public class ActionTrackingServiceImplTest extends TestCase
         // Detect any dangling transactions as there is a lot of direct UserTransaction manipulation
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
-           throw new IllegalStateException(
-                   "There should not be any transactions when starting test: " +
-                   AlfrescoTransactionSupport.getTransactionId() + " started at " +
-                   new Date(AlfrescoTransactionSupport.getTransactionStartTime()));
+            throw new IllegalStateException(
+                    "There should not be any transactions when starting test: " +
+                            AlfrescoTransactionSupport.getTransactionId() + " started at " +
+                            new Date(AlfrescoTransactionSupport.getTransactionStartTime()));
         }
-    
+
         // Grab our beans
-        this.nodeService = (NodeService)ctx.getBean("nodeService");
-        this.scriptService = (ScriptService)ctx.getBean("scriptService");
-        this.actionService = (ActionService)ctx.getBean("actionService");
-        this.runtimeActionService = (RuntimeActionService)ctx.getBean("actionService");
-        this.actionTrackingService = (ActionTrackingService)ctx.getBean("actionTrackingService");
-        this.transactionService = (TransactionService)ctx.getBean("transactionService");
-        this.executingActionsCache = (SimpleCache<String, ExecutionDetails>)ctx.getBean("executingActionsCache");
+        this.nodeService = (NodeService) ctx.getBean("nodeService");
+        this.scriptService = (ScriptService) ctx.getBean("scriptService");
+        this.actionService = (ActionService) ctx.getBean("actionService");
+        this.runtimeActionService = (RuntimeActionService) ctx.getBean("actionService");
+        this.actionTrackingService = (ActionTrackingService) ctx.getBean("actionTrackingService");
+        this.transactionService = (TransactionService) ctx.getBean("transactionService");
+        this.executingActionsCache = (SimpleCache<String, ExecutionDetails>) ctx.getBean("executingActionsCache");
 
         AuthenticationUtil.setRunAsUserSystem();
-        
+
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // Where to put things
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
-        
+
         // Create the node used for tests
         this.nodeRef = this.nodeService.createNode(
                 this.rootNodeRef,
@@ -144,278 +150,266 @@ public class ActionTrackingServiceImplTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}testFolder"),
                 ContentModel.TYPE_FOLDER).getChildRef();
-        
+
         txn.commit();
-        
+
         // Cache should start empty each time
         executingActionsCache.clear();
-        
+
         // Reset the execution instance IDs, so we
-        //  can predict what they'll be
-        ((ActionTrackingServiceImpl)actionTrackingService).resetNextExecutionId();
-        
+        // can predict what they'll be
+        ((ActionTrackingServiceImpl) actionTrackingService).resetNextExecutionId();
+
         // Register the test executor, if needed
         SleepActionExecuter.registerIfNeeded(ctx);
-        
+
         // We want to know when async actions occur
         asyncOccurs = new AsyncOccurs();
-        ((PolicyComponent)ctx.getBean("policyComponent")).bindClassBehaviour(
-              AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute.QNAME,
-              ActionModel.TYPE_ACTION,
-              new JavaBehaviour(asyncOccurs, "onAsyncActionExecute", NotificationFrequency.EVERY_EVENT)
-        );
+        ((PolicyComponent) ctx.getBean("policyComponent")).bindClassBehaviour(
+                AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute.QNAME,
+                ActionModel.TYPE_ACTION,
+                new JavaBehaviour(asyncOccurs, "onAsyncActionExecute", NotificationFrequency.EVERY_EVENT));
     }
 
     /** Creating cache keys */
     public void testCreateCacheKeys() throws Exception
     {
-       ActionImpl action = (ActionImpl)createWorkingSleepAction("1234");
-       assertEquals("sleep-action", action.getActionDefinitionName());
-       assertEquals("1234", action.getId());
-       assertEquals(-1, action.getExecutionInstance());
-       
-       // Give it a predictable execution instance
-       action.setExecutionInstance(1);
-       
-       // From an action
-       String key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals("sleep-action=1234=1", key);
-       
-       // From an ExecutionSummary
-       ExecutionSummary s = new ExecutionSummary("sleep-action", "1234", 1);
-       key = ActionTrackingServiceImpl.generateCacheKey(s);
-       assertEquals("sleep-action=1234=1", key);
+        ActionImpl action = (ActionImpl) createWorkingSleepAction("1234");
+        assertEquals("sleep-action", action.getActionDefinitionName());
+        assertEquals("1234", action.getId());
+        assertEquals(-1, action.getExecutionInstance());
+
+        // Give it a predictable execution instance
+        action.setExecutionInstance(1);
+
+        // From an action
+        String key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals("sleep-action=1234=1", key);
+
+        // From an ExecutionSummary
+        ExecutionSummary s = new ExecutionSummary("sleep-action", "1234", 1);
+        key = ActionTrackingServiceImpl.generateCacheKey(s);
+        assertEquals("sleep-action=1234=1", key);
     }
-    
+
     /** Creating ExecutionDetails and ExecutionSummary */
     public void testExecutionDetailsSummary() throws Exception
     {
-       // Create an action with a known execution instance
-       Action action = createWorkingSleepAction("1234");
-       ((ActionImpl)action).setExecutionInstance(1);
-       
-       // Create the ExecutionSummary from an action
-       String key = ActionTrackingServiceImpl.generateCacheKey(action);
-       
-       ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
-       assertEquals("sleep-action", s.getActionType());
-       assertEquals("1234", s.getActionId());
-       assertEquals(1, s.getExecutionInstance());
-       
-       // Create the ExecutionSummery from a key
-       s = ActionTrackingServiceImpl.buildExecutionSummary(key);
-       assertEquals("sleep-action", s.getActionType());
-       assertEquals("1234", s.getActionId());
-       assertEquals(1, s.getExecutionInstance());
-       
-       // Now create ExecutionDetails
-       ExecutionDetails d = ActionTrackingServiceImpl.buildExecutionDetails(action);
-       assertNotNull(d.getExecutionSummary());
-       assertEquals("sleep-action", d.getActionType());
-       assertEquals("1234", d.getActionId());
-       assertEquals(1, d.getExecutionInstance());
-       assertEquals(null, d.getPersistedActionRef());
-       assertEquals(null, d.getStartedAt());
-       
-       // Check the machine details
-       // Should be "IP : Name"
-       InetAddress localhost = InetAddress.getLocalHost();
-       String machineName = localhost.getHostAddress() + " : " + 
+        // Create an action with a known execution instance
+        Action action = createWorkingSleepAction("1234");
+        ((ActionImpl) action).setExecutionInstance(1);
+
+        // Create the ExecutionSummary from an action
+        String key = ActionTrackingServiceImpl.generateCacheKey(action);
+
+        ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
+        assertEquals("sleep-action", s.getActionType());
+        assertEquals("1234", s.getActionId());
+        assertEquals(1, s.getExecutionInstance());
+
+        // Create the ExecutionSummery from a key
+        s = ActionTrackingServiceImpl.buildExecutionSummary(key);
+        assertEquals("sleep-action", s.getActionType());
+        assertEquals("1234", s.getActionId());
+        assertEquals(1, s.getExecutionInstance());
+
+        // Now create ExecutionDetails
+        ExecutionDetails d = ActionTrackingServiceImpl.buildExecutionDetails(action);
+        assertNotNull(d.getExecutionSummary());
+        assertEquals("sleep-action", d.getActionType());
+        assertEquals("1234", d.getActionId());
+        assertEquals(1, d.getExecutionInstance());
+        assertEquals(null, d.getPersistedActionRef());
+        assertEquals(null, d.getStartedAt());
+
+        // Check the machine details
+        // Should be "IP : Name"
+        InetAddress localhost = InetAddress.getLocalHost();
+        String machineName = localhost.getHostAddress() + " : " +
                 localhost.getHostName();
-       assertEquals(machineName, d.getRunningOn());
+        assertEquals(machineName, d.getRunningOn());
     }
-    
+
     /** Running an action gives it an execution ID */
     public void testExecutionInstanceAssignment() throws Exception
     {
-       ActionImpl action = (ActionImpl)createWorkingSleepAction("1234");
-       assertEquals(-1, action.getExecutionInstance());
-       
-       // Have it run, will get the ID of 1
-       actionTrackingService.recordActionExecuting(action);
-       assertEquals(1, action.getExecutionInstance());
-       
-       // And again, gets 2
-       actionTrackingService.recordActionExecuting(action);
-       assertEquals(2, action.getExecutionInstance());
-       
-       // And again, gets 3
-       actionTrackingService.recordActionExecuting(action);
-       assertEquals(3, action.getExecutionInstance());
+        ActionImpl action = (ActionImpl) createWorkingSleepAction("1234");
+        assertEquals(-1, action.getExecutionInstance());
+
+        // Have it run, will get the ID of 1
+        actionTrackingService.recordActionExecuting(action);
+        assertEquals(1, action.getExecutionInstance());
+
+        // And again, gets 2
+        actionTrackingService.recordActionExecuting(action);
+        assertEquals(2, action.getExecutionInstance());
+
+        // And again, gets 3
+        actionTrackingService.recordActionExecuting(action);
+        assertEquals(3, action.getExecutionInstance());
     }
-    
-    /** 
-     * The correct things happen with the cache
-     *  when you mark things as working / failed / etc 
+
+    /**
+     * The correct things happen with the cache when you mark things as working / failed / etc
      */
     public void testInOutCache() throws Exception
     {
-       Action action = createWorkingSleepAction("1234");
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       String key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(null, executingActionsCache.get(key));
-       
-       
-       // Can complete or fail, won't be there
-       actionTrackingService.recordActionComplete(action);
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       assertEquals(null, executingActionsCache.get(key));
-       
-       actionTrackingService.recordActionFailure(action, new Exception("Testing"));
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
-       assertEquals("Testing", action.getExecutionFailureMessage());
-       assertEquals(null, executingActionsCache.get(key));
-       
-       
-       // Pending will add it, but with no start date
-       actionTrackingService.recordActionPending(action);
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(ActionStatus.Pending, action.getExecutionStatus());
-       assertNotNull(null, executingActionsCache.get(key));
-       
-       ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
-       ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
-       assertNotNull(d.getExecutionSummary());
-       assertEquals("sleep-action", d.getActionType());
-       assertEquals("1234", d.getActionId());
-       assertEquals(1, d.getExecutionInstance());
-       assertEquals(null, d.getPersistedActionRef());
-       assertNull(null, d.getStartedAt());
-       
-       
-       // Run it, will be updated in the cache
-       actionTrackingService.recordActionExecuting(action);
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(ActionStatus.Running, action.getExecutionStatus());
-       assertNotNull(null, executingActionsCache.get(key));
-       
-       s = ActionTrackingServiceImpl.buildExecutionSummary(action);
-       d = actionTrackingService.getExecutionDetails(s);
-       assertNotNull(d.getExecutionSummary());
-       assertEquals("sleep-action", d.getActionType());
-       assertEquals("1234", d.getActionId());
-       assertEquals(1, d.getExecutionInstance());
-       assertEquals(null, d.getPersistedActionRef());
-       assertNotNull(null, d.getStartedAt());
-       
-       
-       // Completion removes it
-       actionTrackingService.recordActionComplete(action);
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       assertEquals(null, executingActionsCache.get(key));
-       
-       // Failure removes it
-       actionTrackingService.recordActionExecuting(action);
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertNotNull(null, executingActionsCache.get(key));
-       
-       actionTrackingService.recordActionFailure(action, new Exception("Testing"));
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
-       assertEquals("Testing", action.getExecutionFailureMessage());
-       assertEquals(null, executingActionsCache.get(key));
-       
-       
-       // If run from new, i.e. not via pending, goes into the cache
-       ((ActionImpl)action).setExecutionStatus(ActionStatus.New);
-       ((ActionImpl)action).setExecutionStartDate(null);
-       ((ActionImpl)action).setExecutionEndDate(null);
-       ((ActionImpl)action).setExecutionFailureMessage(null);
-       ((ActionImpl)action).setExecutionInstance(-1);
-       
-       actionTrackingService.recordActionExecuting(action);
-       assertEquals(ActionStatus.Running, action.getExecutionStatus());
-       assertTrue( ((ActionImpl)action).getExecutionInstance() != -1 );
-       
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertNotNull(null, executingActionsCache.get(key));
-       
-       actionTrackingService.recordActionComplete(action);
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       assertEquals(null, executingActionsCache.get(key));
+        Action action = createWorkingSleepAction("1234");
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+        String key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(null, executingActionsCache.get(key));
+
+        // Can complete or fail, won't be there
+        actionTrackingService.recordActionComplete(action);
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+        assertEquals(null, executingActionsCache.get(key));
+
+        actionTrackingService.recordActionFailure(action, new Exception("Testing"));
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+        assertEquals("Testing", action.getExecutionFailureMessage());
+        assertEquals(null, executingActionsCache.get(key));
+
+        // Pending will add it, but with no start date
+        actionTrackingService.recordActionPending(action);
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
+        assertNotNull(null, executingActionsCache.get(key));
+
+        ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
+        ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
+        assertNotNull(d.getExecutionSummary());
+        assertEquals("sleep-action", d.getActionType());
+        assertEquals("1234", d.getActionId());
+        assertEquals(1, d.getExecutionInstance());
+        assertEquals(null, d.getPersistedActionRef());
+        assertNull(null, d.getStartedAt());
+
+        // Run it, will be updated in the cache
+        actionTrackingService.recordActionExecuting(action);
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(ActionStatus.Running, action.getExecutionStatus());
+        assertNotNull(null, executingActionsCache.get(key));
+
+        s = ActionTrackingServiceImpl.buildExecutionSummary(action);
+        d = actionTrackingService.getExecutionDetails(s);
+        assertNotNull(d.getExecutionSummary());
+        assertEquals("sleep-action", d.getActionType());
+        assertEquals("1234", d.getActionId());
+        assertEquals(1, d.getExecutionInstance());
+        assertEquals(null, d.getPersistedActionRef());
+        assertNotNull(null, d.getStartedAt());
+
+        // Completion removes it
+        actionTrackingService.recordActionComplete(action);
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+        assertEquals(null, executingActionsCache.get(key));
+
+        // Failure removes it
+        actionTrackingService.recordActionExecuting(action);
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertNotNull(null, executingActionsCache.get(key));
+
+        actionTrackingService.recordActionFailure(action, new Exception("Testing"));
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+        assertEquals("Testing", action.getExecutionFailureMessage());
+        assertEquals(null, executingActionsCache.get(key));
+
+        // If run from new, i.e. not via pending, goes into the cache
+        ((ActionImpl) action).setExecutionStatus(ActionStatus.New);
+        ((ActionImpl) action).setExecutionStartDate(null);
+        ((ActionImpl) action).setExecutionEndDate(null);
+        ((ActionImpl) action).setExecutionFailureMessage(null);
+        ((ActionImpl) action).setExecutionInstance(-1);
+
+        actionTrackingService.recordActionExecuting(action);
+        assertEquals(ActionStatus.Running, action.getExecutionStatus());
+        assertTrue(((ActionImpl) action).getExecutionInstance() != -1);
+
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertNotNull(null, executingActionsCache.get(key));
+
+        actionTrackingService.recordActionComplete(action);
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+        assertEquals(null, executingActionsCache.get(key));
     }
-    
+
     /** Working actions go into the cache, then out */
-    public void testWorkingActions() throws Exception 
+    public void testWorkingActions() throws Exception
     {
-       final SleepActionExecuter sleepActionExec = 
-          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
-       sleepActionExec.resetTimesExecuted();
-       sleepActionExec.setSleepMs(10000);
+        final SleepActionExecuter sleepActionExec = (SleepActionExecuter) ctx.getBean(SleepActionExecuter.NAME);
+        sleepActionExec.resetTimesExecuted();
+        sleepActionExec.setSleepMs(10000);
 
-       // Have it run asynchronously
-       UserTransaction txn = transactionService.getUserTransaction();
-       txn.begin();
-       Action action = createWorkingSleepAction("54321");
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       String key = ActionTrackingServiceImpl.generateCacheKey(action);
-       assertEquals(null, executingActionsCache.get(key));
-       
-       this.actionService.executeAction(action, this.nodeRef, false, true);
-       
-       
-       // End the transaction. Should allow the async action
-       //  to start up, and begin sleeping
-       txn.commit();
-       Thread.sleep(150);
-       
-       // The action should now be running 
-       // It will have got an execution instance id, so a new key
-       key = ActionTrackingServiceImpl.generateCacheKey(action);
-       
-       
-       // Check it's in the cache
-       System.out.println("Checking the cache for " + key);
-       assertNotNull(executingActionsCache.get(key));
-       
-       ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
-       ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
-       assertNotNull(d.getExecutionSummary());
-       assertEquals("sleep-action", d.getActionType());
-       assertEquals("54321", d.getActionId());
-       assertEquals(1, d.getExecutionInstance());
-       assertEquals(null, d.getPersistedActionRef());
-       assertNotNull(null, d.getStartedAt());
+        // Have it run asynchronously
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        Action action = createWorkingSleepAction("54321");
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
 
-       
-       // Tell it to stop sleeping
-       // Then wait for it to finish
-       asyncOccurs.awaitExecution(null, sleepActionExec.getExecutingThread(), action.getActionDefinitionName()); 
-       
-       
-       // Ensure it went away again
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       assertEquals(null, executingActionsCache.get(key));
-       
-       d = actionTrackingService.getExecutionDetails(s);
-       assertEquals(null, d);
+        String key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(null, executingActionsCache.get(key));
+
+        this.actionService.executeAction(action, this.nodeRef, false, true);
+
+        // End the transaction. Should allow the async action
+        // to start up, and begin sleeping
+        txn.commit();
+        waitUntilActionHasStarted(action);
+
+        // The action should now be running
+        // It will have got an execution instance id, so a new key
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+
+        // Check it's in the cache
+        System.out.println("Checking the cache for " + key);
+        assertNotNull(executingActionsCache.get(key));
+
+        ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
+        ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
+        assertNotNull(d.getExecutionSummary());
+        assertEquals("sleep-action", d.getActionType());
+        assertEquals("54321", d.getActionId());
+        assertEquals(1, d.getExecutionInstance());
+        assertEquals(null, d.getPersistedActionRef());
+        assertNotNull(null, d.getStartedAt());
+
+        // Tell it to stop sleeping
+        // Then wait for it to finish
+        asyncOccurs.awaitExecution(null, sleepActionExec.getExecutingThread(), action.getActionDefinitionName());
+
+        // Ensure it went away again
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+        assertEquals(null, executingActionsCache.get(key));
+
+        d = actionTrackingService.getExecutionDetails(s);
+        assertEquals(null, d);
     }
-    
+
     /** Failing actions go into the cache, then out */
     public void testFatallyFailingActions() throws Exception
     {
-       Action failedAction = performFailingActionImpl(true, "54321");
-       
-       assertEquals(ActionStatus.Failed, failedAction.getExecutionStatus());
-       assertEquals("Bang!", failedAction.getExecutionFailureMessage());
+        Action failedAction = performFailingActionImpl(true, "54321");
+
+        assertEquals(ActionStatus.Failed, failedAction.getExecutionStatus());
+        assertEquals("Bang!", failedAction.getExecutionFailureMessage());
     }
-    
+
     /** Failing actions go into the cache, then out */
     public void testTransientlyFailingActions() throws Exception
     {
-       Action failedAction = performFailingActionImpl(false, "654321");
-       
-       assertEquals(ActionStatus.Declined, failedAction.getExecutionStatus());
-       assertTrue(failedAction.getExecutionFailureMessage().endsWith("Pop!"));
+        Action failedAction = performFailingActionImpl(false, "654321");
+
+        assertEquals(ActionStatus.Declined, failedAction.getExecutionStatus());
+        assertTrue(failedAction.getExecutionFailureMessage().endsWith("Pop!"));
     }
 
     private Action performFailingActionImpl(boolean fatalFailure, String actionId) throws Exception
@@ -432,18 +426,18 @@ public class ActionTrackingServiceImplTest extends TestCase
         assertNull(action.getExecutionFailureMessage());
         assertEquals(ActionStatus.New, action.getExecutionStatus());
 
-        String key = ActionTrackingServiceImpl.generateCacheKey(action);
-        assertEquals(null, executingActionsCache.get(key));
+        var beforeExecKey = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertNull(executingActionsCache.get(beforeExecKey));
 
         this.actionService.executeAction(action, this.nodeRef, false, true);
 
         // End the transaction. Should allow the async action
         // to be started, and move into its sleeping phase
         txn.commit();
-        Thread.sleep(150);
+        waitUntilActionHasStarted(action);
 
         // Will get an execution instance id, so a new key
-        key = ActionTrackingServiceImpl.generateCacheKey(action);
+        var key = ActionTrackingServiceImpl.generateCacheKey(action);
 
         // Check it's in the cache
         System.out.println("Checking the cache for " + key);
@@ -455,77 +449,57 @@ public class ActionTrackingServiceImplTest extends TestCase
         assertEquals("sleep-action", d.getActionType());
         assertEquals(actionId, d.getActionId());
         assertEquals(1, d.getExecutionInstance());
-        assertEquals(null, d.getPersistedActionRef());
+        assertNull(d.getPersistedActionRef());
 
         // let's be more resilient and try a number of times with a delay
-        long start = System.currentTimeMillis();
-        int sleepTime = 1000; // 1s
-        for (int i = 0; i < 10; i++)
-        {
-            if (d.getStartedAt() == null)
-            {
-                Thread.sleep(sleepTime);
-                sleepTime += 100; // increase by 100ms
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
-        long end = System.currentTimeMillis();
-        assertNotNull("Started at time is null, the action has not yet started after " + (end - start) + "ms",
-                d.getStartedAt());
+        await().atMost(MAX_WAIT_TIMEOUT).until(() -> nonNull(d.getStartedAt()));
+        assertNotNull("Started at time is null, the action has not yet started after 10s", d.getStartedAt());
 
         // Tell it to stop sleeping
         // Then wait for it to finish and go bang
         // (Need to do it by hand, as it won't fire the complete policy
         // as the action has failed)
         sleepActionExec.getExecutingThread().interrupt();
-        Thread.sleep(150);
+        await().atMost(MAX_WAIT_TIMEOUT).until(() -> isNull(executingActionsCache.get(key)));
 
         // Ensure it went away again
-        assertEquals(null, executingActionsCache.get(key));
-
-        d = actionTrackingService.getExecutionDetails(s);
-        assertEquals(null, d);
+        assertNull(executingActionsCache.get(key));
+        assertNull(actionTrackingService.getExecutionDetails(s));
 
         return action;
     }
-    
+
     /** Ensure that pending actions behave properly */
     public void testPendingActions() throws Exception
     {
         // New ones won't be in the cache
         Action action = createWorkingSleepAction("1234");
         assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
+
         String key = ActionTrackingServiceImpl.generateCacheKey(action);
-        assertEquals(null, executingActionsCache.get(key));
-        
-       
+        assertNull(executingActionsCache.get(key));
+
         // Ask for it to be pending, will go in
         actionTrackingService.recordActionPending(action);
         key = ActionTrackingServiceImpl.generateCacheKey(action);
         assertEquals(ActionStatus.Pending, action.getExecutionStatus());
         assertNotNull(null, executingActionsCache.get(key));
-        
+
         ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
         ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
         assertNotNull(d.getExecutionSummary());
         assertEquals("sleep-action", d.getActionType());
         assertEquals("1234", d.getActionId());
         assertEquals(1, d.getExecutionInstance());
-        assertEquals(null, d.getPersistedActionRef());
-        assertNull(null, d.getStartedAt());
+        assertNull(d.getPersistedActionRef());
+        assertNull(d.getStartedAt());
 
-        
         // Run it, will stay
         actionTrackingService.recordActionExecuting(action);
         key = ActionTrackingServiceImpl.generateCacheKey(action);
         assertEquals(ActionStatus.Running, action.getExecutionStatus());
         assertNotNull(null, executingActionsCache.get(key));
-        
+
         s = ActionTrackingServiceImpl.buildExecutionSummary(action);
         d = actionTrackingService.getExecutionDetails(s);
         assertNotNull(d.getExecutionSummary());
@@ -534,38 +508,33 @@ public class ActionTrackingServiceImplTest extends TestCase
         assertEquals(1, d.getExecutionInstance());
         assertEquals(null, d.getPersistedActionRef());
         assertNotNull(d.getStartedAt());
-       
-        
+
         // Finish, goes
         actionTrackingService.recordActionComplete(action);
         key = ActionTrackingServiceImpl.generateCacheKey(action);
         assertEquals(ActionStatus.Completed, action.getExecutionStatus());
         assertEquals(null, executingActionsCache.get(key));
-       
-       
+
         // Put another pending one in
         action = createWorkingSleepAction("1234");
         actionTrackingService.recordActionPending(action);
         key = ActionTrackingServiceImpl.generateCacheKey(action);
         assertEquals(ActionStatus.Pending, action.getExecutionStatus());
         assertNotNull(null, executingActionsCache.get(key));
-        
-       
+
         // Remove it by hand
         executingActionsCache.remove(key);
         assertNull(null, executingActionsCache.get(key));
-        int instanceId = ((ActionImpl)action).getExecutionInstance();
-        
-       
+        int instanceId = ((ActionImpl) action).getExecutionInstance();
+
         // Run it, will go back in again, ID unchanged
         actionTrackingService.recordActionExecuting(action);
         assertEquals(key, ActionTrackingServiceImpl.generateCacheKey(action));
-        assertEquals(instanceId, ((ActionImpl)action).getExecutionInstance());
-        
+        assertEquals(instanceId, ((ActionImpl) action).getExecutionInstance());
+
         assertEquals(ActionStatus.Running, action.getExecutionStatus());
         assertNotNull(null, executingActionsCache.get(key));
-       
-       
+
         // Finish, will go again
         actionTrackingService.recordActionComplete(action);
         key = ActionTrackingServiceImpl.generateCacheKey(action);
@@ -663,7 +632,7 @@ public class ActionTrackingServiceImplTest extends TestCase
         actionTrackingService.recordActionComplete(moveAction);
 
         txn.commit();
-        Thread.sleep(50);
+        await().atMost(MAX_WAIT_TIMEOUT).until(() -> actionTrackingService.getAllExecutingActions(), n -> CollectionUtils.size(n) == 2);
 
         // Check
         assertEquals(2, actionTrackingService.getAllExecutingActions().size());
@@ -728,7 +697,7 @@ public class ActionTrackingServiceImplTest extends TestCase
         // End the transaction. Should allow the async action
         // to be started
         txn.commit();
-        Thread.sleep(150);
+        waitUntilActionHasStarted(sleepAction3);
 
         // Get the updated key, and check
         key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
@@ -747,7 +716,7 @@ public class ActionTrackingServiceImplTest extends TestCase
         // Have it finish sleeping, will have been cancelled
         // (Can't use the policy, as cancel is counted as a failure)
         sleepActionExec.getExecutingThread().interrupt();
-        Thread.sleep(150);
+        await().atMost(MAX_WAIT_TIMEOUT).until(sleepAction3::getExecutionStatus, ActionStatus.Cancelled::equals);
 
         // Ensure the proper cancelled tracking
         assertEquals(ActionStatus.Cancelled, sleepAction3.getExecutionStatus());
@@ -757,8 +726,7 @@ public class ActionTrackingServiceImplTest extends TestCase
     // =================================================================== //
 
     /**
-     * Tests that when we run an action, either synchronously or asynchronously, with it working or failing, that the
-     * action execution service correctly sets the flags
+     * Tests that when we run an action, either synchronously or asynchronously, with it working or failing, that the action execution service correctly sets the flags
      */
     public void xtestExecutionTrackingOnExecution() throws Exception
     {
@@ -806,8 +774,7 @@ public class ActionTrackingServiceImplTest extends TestCase
             fail("Action should have failed, and the error been thrown");
         }
         catch (Exception e)
-        {
-        }
+        {}
 
         assertNotNull(action.getExecutionStartDate());
         assertNotNull(action.getExecutionEndDate());
@@ -886,8 +853,7 @@ public class ActionTrackingServiceImplTest extends TestCase
             fail("Action should have failed, and the error been thrown");
         }
         catch (Exception e)
-        {
-        }
+        {}
 
         // Check our copy
         assertNotNull(action.getExecutionStartDate());
@@ -1168,8 +1134,7 @@ public class ActionTrackingServiceImplTest extends TestCase
                     }
                 }
                 catch (InterruptedException e)
-                {
-                }
+                {}
             }
         }
     }
@@ -1188,8 +1153,7 @@ public class ActionTrackingServiceImplTest extends TestCase
 
     /**
      * @param isFatal
-     *            <tt>true</tt> means the sleep action will fail with a RuntimeException, <tt>false</tt> means it will
-     *            fail with a {@link ActionServiceTransientException}.
+     *            <tt>true</tt> means the sleep action will fail with a RuntimeException, <tt>false</tt> means it will fail with a {@link ActionServiceTransientException}.
      */
     private Action createFailingSleepAction(String id, boolean isFatal) throws Exception
     {
@@ -1199,5 +1163,10 @@ public class ActionTrackingServiceImplTest extends TestCase
     private Action createWorkingSleepAction(String id) throws Exception
     {
         return ActionServiceImplTest.createWorkingSleepAction(id, actionService);
+    }
+
+    private void waitUntilActionHasStarted(Action action)
+    {
+        await().atMost(MAX_WAIT_TIMEOUT).until(action::getExecutionStartDate, Objects::nonNull);
     }
 }

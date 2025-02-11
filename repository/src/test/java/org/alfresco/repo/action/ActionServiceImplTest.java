@@ -803,69 +803,6 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      */
 
     /**
-     * This test checks that a series of "equivalent" actions submitted for asynchronous execution will be correctly filtered so that no 2 equivalent actions are executed at the same time.
-     */
-    public void offtestAsyncLongRunningActionsFilter()
-    {
-        TestTransaction.flagForCommit();
-        TestTransaction.end();
-
-        final SleepActionExecuter sleepAction = (SleepActionExecuter) applicationContext.getBean("sleep-action");
-        assertNotNull(sleepAction);
-        sleepAction.setSleepMs(10);
-
-        final int actionSubmissonCount = 4; // Rather arbitrary count.
-        for (int i = 0; i < actionSubmissonCount; i++)
-        {
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
-                public Void execute() throws Throwable
-                {
-                    Action action = actionService.createAction(SleepActionExecuter.NAME);
-                    action.setExecuteAsynchronously(true);
-
-                    actionService.executeAction(action, nodeRef);
-
-                    return null;
-                }
-            });
-
-        }
-
-        // Wait long enough for previous action(s) to have executed and then submit another
-        try
-        {
-            Thread.sleep(sleepAction.getSleepMs() * actionSubmissonCount + 1000); // Enough time for all actions and an extra second for luck.
-        }
-        catch (InterruptedException ignored)
-        {
-            // intentionally empty
-        }
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
-            public Void execute() throws Throwable
-            {
-                Action action = actionService.createAction(SleepActionExecuter.NAME);
-                action.setExecuteAsynchronously(true);
-
-                actionService.executeAction(action, nodeRef);
-
-                return null;
-            }
-        });
-        try
-        {
-            Thread.sleep(sleepAction.getSleepMs() + 2000); // Enough time for latest action and an extra 2 seconds for luck.
-        }
-        catch (InterruptedException ignored)
-        {
-            // intentionally empty
-        }
-
-        assertThat(sleepAction.getTimesExecuted())
-                .as("Expected timesExecuted == 2")
-                .isEqualTo(2);
-    }
-
-    /**
      * Test asynchronous execute action
      */
     @Test

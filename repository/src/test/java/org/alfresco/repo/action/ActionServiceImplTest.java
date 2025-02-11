@@ -32,7 +32,6 @@ import static org.awaitility.Awaitility.await;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -95,7 +94,6 @@ import org.alfresco.util.GUID;
 public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 {
     private static final String BAD_NAME = "badName";
-    private static final Duration MAX_WAIT_TIMEOUT = Duration.ofSeconds(10);
 
     private NodeRef nodeRef;
     private NodeRef folder;
@@ -886,7 +884,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 
         final NodeRef finalNodeRef = this.nodeRef;
 
-        await().atMost(MAX_WAIT_TIMEOUT).until(() -> nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+        await().atMost(MAX_ASYNC_TIMEOUT).until(() -> nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_CLASSIFIABLE));
 
         assertThat(nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_CLASSIFIABLE))
                 .as("Expected aspect classifiable")
@@ -919,8 +917,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
 
         final NodeRef finalNodeRef = this.nodeRef;
 
-        await().atMost(MAX_WAIT_TIMEOUT).until(() -> nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE));
-        await().atMost(MAX_WAIT_TIMEOUT).until(() -> nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_LOCKABLE));
+        await().atMost(MAX_ASYNC_TIMEOUT).until(() -> nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        await().atMost(MAX_ASYNC_TIMEOUT).until(() -> nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_LOCKABLE));
 
         assertThat(nodeService.hasAspect(finalNodeRef, ContentModel.ASPECT_VERSIONABLE))
                 .as("Expected aspect versionable")
@@ -1024,8 +1022,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
-        await().atMost(MAX_WAIT_TIMEOUT).until(() -> nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
-        await().pollDelay(ofMillis(500)).atMost(MAX_WAIT_TIMEOUT).until(() -> !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY));
+        await().atMost(MAX_ASYNC_TIMEOUT).until(() -> nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+        await().pollDelay(ofMillis(500)).atMost(MAX_ASYNC_TIMEOUT).until(() -> !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY));
 
         assertThat(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE))
                 .as("Expected aspect Classifiable")

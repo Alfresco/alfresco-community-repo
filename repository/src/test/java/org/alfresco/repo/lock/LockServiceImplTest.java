@@ -85,7 +85,6 @@ import org.alfresco.util.testing.category.RedundantTests;
 @Transactional
 public class LockServiceImplTest extends BaseSpringTest
 {
-    private static final Duration MAX_WAIT_TIMEOUT = Duration.ofSeconds(10);
     /**
      * Services used in tests
      */
@@ -612,7 +611,7 @@ public class LockServiceImplTest extends BaseSpringTest
 
         // Wait to give the ephemeral lock time to expire
         await().pollInSameThread()
-                .atMost(MAX_WAIT_TIMEOUT)
+                .atMost(MAX_ASYNC_TIMEOUT)
                 .until(() -> !securedLockService.isLocked(noAspectNode));
 
         assertFalse("noAspectNode should not be locked", securedLockService.isLocked(noAspectNode));
@@ -951,7 +950,7 @@ public class LockServiceImplTest extends BaseSpringTest
         // Wait for lock to expire before re-testing the status
         await().pollInSameThread()
                 .pollDelay(Duration.ofMillis(500))
-                .atMost(MAX_WAIT_TIMEOUT).until(() -> lockService.getLockStatus(parentNode), LockStatus.LOCK_EXPIRED::equals);
+                .atMost(MAX_ASYNC_TIMEOUT).until(() -> lockService.getLockStatus(parentNode), LockStatus.LOCK_EXPIRED::equals);
 
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         assertEquals("lock status should be expired", LockStatus.LOCK_EXPIRED, this.lockService.getLockStatus(this.parentNode));
@@ -987,7 +986,7 @@ public class LockServiceImplTest extends BaseSpringTest
         // Wait for lock to expire before re-testing the status
         await().pollInSameThread()
                 .pollDelay(Duration.ofMillis(500))
-                .atMost(MAX_WAIT_TIMEOUT)
+                .atMost(MAX_ASYNC_TIMEOUT)
                 .until(() -> lockService.getLockStatus(parentNode), LockStatus.LOCK_EXPIRED::equals);
 
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);

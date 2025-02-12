@@ -112,7 +112,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
-    private HttpClient httpClient = null;
+    private HttpClient httpClient;
 
     @Before
     public void setup() throws Exception
@@ -1046,15 +1046,15 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getUserName());
 
-        String URL_DOCUMENT = "/context/mine/document-details";
+        String urlDocument = "/context/mine/document-details";
 
-        StringBuilder pageParamsBuilder = new StringBuilder();
-        pageParamsBuilder.append("\"nodeRef\" : \"");
-        pageParamsBuilder.append(getFolderNodeRef(folderId));
-        pageParamsBuilder.append("\", ");
-        String pageParams = pageParamsBuilder.toString();
+        String pageParams = new StringBuilder()
+                .append("\"nodeRef\" : \"")
+                .append(getFolderNodeRef(folderId))
+                .append("\", ")
+                .toString();
 
-        Response responseDocument = sendRequest(new GetRequest(URL_DOCUMENT + "?" + pageParams), 200);
+        Response responseDocument = sendRequest(new GetRequest(urlDocument + "?" + pageParams), 200);
         assertNotNull(responseDocument.getContentLength());
 
         Thread.sleep(DELAY_IN_MS);

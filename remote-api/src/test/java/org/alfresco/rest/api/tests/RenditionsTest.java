@@ -1049,7 +1049,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String urlDocument = "/context/mine/document-details";
 
         String pageParams = new StringBuilder()
-                .append("nodeRef : ")
+                .append("nodeRef=")
                 .append(getFolderNodeRef(folderId))
                 .toString();
 

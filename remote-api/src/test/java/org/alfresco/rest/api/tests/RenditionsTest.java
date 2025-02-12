@@ -1048,11 +1048,10 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         String URL_DOCUMENT = "/context/mine/document-details";
 
-        StringBuilder pageParamsBuilder = new StringBuilder("{");
+        StringBuilder pageParamsBuilder = new StringBuilder();
         pageParamsBuilder.append("\"nodeRef\" : \"");
         pageParamsBuilder.append(getFolderNodeRef(folderId));
         pageParamsBuilder.append("\", ");
-        pageParamsBuilder.append("}");
         String pageParams = pageParamsBuilder.toString();
 
         Response responseDocument = sendRequest(new GetRequest(URL_DOCUMENT + "?" + pageParams), 200);

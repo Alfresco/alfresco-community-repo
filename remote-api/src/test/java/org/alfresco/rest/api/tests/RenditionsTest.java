@@ -37,6 +37,7 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,13 +48,23 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.collect.Ordering;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpClientParams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.web.scripts.BaseWebScriptTest.HttpMethodResponse;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -101,6 +112,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
+    private HttpClient httpClient = null;
 
     @Before
     public void setup() throws Exception
@@ -115,6 +127,9 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
+        httpClient = new HttpClient();
+        httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
+
     }
 
     @After
@@ -1029,8 +1044,57 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         Thread.sleep(DELAY_IN_MS);
 
-        response = getSingle(getNodeRenditionsUrl(contentNodeId), renditionName + "/content", params, 200);
+        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getUserName());
+
+        String URL_DOCUMENT = "/context/mine/document-details";
+
+        StringBuilder pageParamsBuilder = new StringBuilder("{");
+        pageParamsBuilder.append("\"nodeRef\" : \"");
+        pageParamsBuilder.append(getFolderNodeRef(folderId));
+        pageParamsBuilder.append("\", ");
+        pageParamsBuilder.append("}");
+        String pageParams = pageParamsBuilder.toString();
+
+        Response responseDocument = sendRequest(new GetRequest(URL_DOCUMENT + "?" + pageParams), 200);
+        assertNotNull(responseDocument.getContentLength());
+
+        Thread.sleep(DELAY_IN_MS);
+
+        Rendition rendition2 = waitAndGetRendition(contentNodeId, null, renditionName);
         assertNotNull(response.getResponseAsBytes());
+        assertNotEquals("Both, we are getting same rendition Id's", rendition.getId(), rendition2.getId());
+
+    }
+
+    private String getFolderNodeRef(String folderId)
+    {
+        return "workspace://SpacesStore/" + folderId;
+    }
+
+    protected Response sendRequest(Request req, int expectedStatus)
+            throws IOException
+    {
+        HttpMethod httpMethod;
+        String method = req.getMethod();
+        if (method.equalsIgnoreCase("GET"))
+        {
+            GetMethod get = new GetMethod(req.getFullUri());
+            httpMethod = get;
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("Http Method " + method + " not supported");
+        }
+        if (req.getHeaders() != null)
+        {
+            for (Map.Entry<String, String> header : req.getHeaders().entrySet())
+            {
+                httpMethod.setRequestHeader(header.getKey(), header.getValue());
+            }
+        }
+
+        httpClient.executeMethod(httpMethod);
+        return new HttpMethodResponse(httpMethod);
     }
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception

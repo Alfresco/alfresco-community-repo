@@ -32,62 +32,65 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.ContentIOException;
+
 /**
  * Eager content store cleaner unit test.
  * 
  */
-public class ContentCleanserSevenPassUnitTest extends BaseUnitTest {
-	@InjectMocks
-	@Spy
-	private ContentCleanserSevenPass contentCleanserSevenPass = new ContentCleanserSevenPass() {
-		/** dummy implementations */
-		protected void overwrite(File file, OverwriteOperation overwriteOperation) {
-		}
-	};
+public class ContentCleanserSevenPassUnitTest extends BaseUnitTest
+{
+    @InjectMocks
+    @Spy
+    private ContentCleanserSevenPass contentCleanserSevenPass = new ContentCleanserSevenPass() {
+        /** dummy implementations */
+        protected void overwrite(File file, OverwriteOperation overwriteOperation)
+        {}
+    };
 
-	@Mock
-	private File mockedFile;
+    @Mock
+    private File mockedFile;
 
-	/**
-	 * Given that a file exists When I cleanse it Then the content is overwritten
-	 */
-	@Test
-	public void cleanseFile() {
-		when(mockedFile.exists()).thenReturn(true) ;
-		when(mockedFile.canWrite()).thenReturn(true);
-		contentCleanserSevenPass.cleanse(mockedFile);
-		verify(contentCleanserSevenPass, times(2)).overwrite(mockedFile, contentCleanserSevenPass.overwriteOnes);
-		verify(contentCleanserSevenPass, times(3)).overwrite(mockedFile, contentCleanserSevenPass.overwriteZeros);
-		verify(contentCleanserSevenPass, times(2)).overwrite(mockedFile, contentCleanserSevenPass.overwriteRandom);
+    /**
+     * Given that a file exists When I cleanse it Then the content is overwritten
+     */
+    @Test
+    public void cleanseFile()
+    {
+        when(mockedFile.exists()).thenReturn(true);
+        when(mockedFile.canWrite()).thenReturn(true);
+        contentCleanserSevenPass.cleanse(mockedFile);
+        verify(contentCleanserSevenPass, times(2)).overwrite(mockedFile, contentCleanserSevenPass.overwriteOnes);
+        verify(contentCleanserSevenPass, times(3)).overwrite(mockedFile, contentCleanserSevenPass.overwriteZeros);
+        verify(contentCleanserSevenPass, times(2)).overwrite(mockedFile, contentCleanserSevenPass.overwriteRandom);
 
-	}
+    }
 
-	/**
-	 * Given that the file does not exist When I cleanse it Then an exception is
-	 * thrown
-	 */
-	@Test(expected = ContentIOException.class)
-	public void fileDoesNotExist() {
-		when(mockedFile.exists()).thenReturn(false);
-		when(mockedFile.canWrite()).thenReturn(true);
-		contentCleanserSevenPass.cleanse(mockedFile);
-	}
+    /**
+     * Given that the file does not exist When I cleanse it Then an exception is thrown
+     */
+    @Test(expected = ContentIOException.class)
+    public void fileDoesNotExist()
+    {
+        when(mockedFile.exists()).thenReturn(false);
+        when(mockedFile.canWrite()).thenReturn(true);
+        contentCleanserSevenPass.cleanse(mockedFile);
+    }
 
-	/**
-	 * Given that I can not write to the file When I cleanse it Then an exception is
-	 * thrown
-	 */
-	@Test(expected = ContentIOException.class)
-	public void cantWriteToFile() {
-		when(mockedFile.exists()).thenReturn(true);
-		when(mockedFile.canWrite()).thenReturn(false);
-		contentCleanserSevenPass.cleanse(mockedFile);
-	}
+    /**
+     * Given that I can not write to the file When I cleanse it Then an exception is thrown
+     */
+    @Test(expected = ContentIOException.class)
+    public void cantWriteToFile()
+    {
+        when(mockedFile.exists()).thenReturn(true);
+        when(mockedFile.canWrite()).thenReturn(false);
+        contentCleanserSevenPass.cleanse(mockedFile);
+    }
 }

@@ -38,7 +38,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 public class ContentCleanserSevenPass extends ContentCleanser
 {
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser#cleanse(java.io.File)
+     * @ see org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser#cleanse(java.io.File)
      */
     @Override
     public void cleanse(File file)
@@ -48,8 +48,8 @@ public class ContentCleanserSevenPass extends ContentCleanser
         {
             throw new ContentIOException("Unable to write to file: " + file);
         }
-        
-        //Overwite file
+
+        // Overwite file
         overwrite(file, overwriteOnes);
         overwrite(file, overwriteZeros);
         overwrite(file, overwriteRandom);
@@ -57,8 +57,6 @@ public class ContentCleanserSevenPass extends ContentCleanser
         overwrite(file, overwriteZeros);
         overwrite(file, overwriteOnes);
         overwrite(file, overwriteRandom);
-        
-        
-        
+
     }
 }

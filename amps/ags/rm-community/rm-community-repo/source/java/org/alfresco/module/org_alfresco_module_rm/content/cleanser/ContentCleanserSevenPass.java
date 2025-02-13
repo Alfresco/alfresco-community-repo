@@ -38,7 +38,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 public class ContentCleanserSevenPass extends ContentCleanser
 {
     /**
-     * @ see org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser#cleanse(java.io.File)
+     * @see org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser#cleanse(java.io.File)
      */
     @Override
     public void cleanse(File file)

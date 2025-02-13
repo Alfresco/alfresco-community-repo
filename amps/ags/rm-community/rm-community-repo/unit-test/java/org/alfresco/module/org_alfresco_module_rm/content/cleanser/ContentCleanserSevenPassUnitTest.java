@@ -37,7 +37,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 
-import org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser.OverwriteOperation;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ContentIOException;
 
@@ -51,9 +50,10 @@ public class ContentCleanserSevenPassUnitTest extends BaseUnitTest
     @Spy
     private ContentCleanserSevenPass contentCleanserSevenPass = new ContentCleanserSevenPass() {
         /** dummy implementations */
-        @Override
         protected void overwrite(File file, OverwriteOperation overwriteOperation)
-        {}
+        {
+            // Intentionally left empty
+        }
     };
 
     @Mock

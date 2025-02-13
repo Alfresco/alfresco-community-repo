@@ -39,6 +39,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +57,6 @@ import org.apache.commons.httpclient.params.HttpClientParams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
@@ -1046,15 +1047,24 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getUserName());
 
-        String urlDocument = "http://localhost:8080/share/page/context/mine/document-details";
+        String urlDocument = "http://localhost:8080/share/page/context/mine/document-details?";
 
         String pageParams = new StringBuilder()
                 .append("nodeRef=")
                 .append(getFolderNodeRef(folderId))
                 .toString();
 
-        Response responseDocument = sendRequest(new GetRequest(urlDocument + "?" + pageParams), 200);
-        assertNotNull(responseDocument.getContentLength());
+        URL url = new URL(urlDocument + pageParams);
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-Type", "text/html; charset=UTF-8");
+
+        int status = conn.getResponseCode();
+        assertEquals(200, status);
+
+        // Response responseDocument = sendRequest(new GetRequest(urlDocument + "?" + pageParams), 200);
+        // assertNotNull(responseDocument.getContentLength());
 
         Thread.sleep(DELAY_IN_MS);
 

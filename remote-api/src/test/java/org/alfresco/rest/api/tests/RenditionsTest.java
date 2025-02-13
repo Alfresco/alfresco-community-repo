@@ -48,10 +48,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.collect.Ordering;
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -113,6 +113,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
     private HttpClient httpClient;
+    private HostConfiguration hostConfig;
 
     @Before
     public void setup() throws Exception
@@ -128,8 +129,8 @@ public class RenditionsTest extends AbstractBaseApiTest
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
         httpClient = new HttpClient();
-        httpClient.getParams().setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
-
+        hostConfig = new HostConfiguration();
+        hostConfig.setHost("localhost", 80, "http");
     }
 
     @After
@@ -1091,6 +1092,7 @@ public class RenditionsTest extends AbstractBaseApiTest
             }
         }
 
+        httpClient.setHostConfiguration(hostConfig);
         httpClient.executeMethod(httpMethod);
         return new HttpMethodResponse(httpMethod);
     }

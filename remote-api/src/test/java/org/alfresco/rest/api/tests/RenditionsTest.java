@@ -1046,7 +1046,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getUserName());
 
-        String urlDocument = "/context/mine/document-details";
+        String urlDocument = "http://localhost:8080/share/page/context/mine/document-details";
 
         String pageParams = new StringBuilder()
                 .append("nodeRef=")

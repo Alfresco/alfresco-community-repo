@@ -49,7 +49,7 @@ public class ContentCleanserSevenPass extends ContentCleanser
             throw new ContentIOException("Unable to write to file: " + file);
         }
         
-        // Overwite file
+        //Overwite file
         overwrite(file, overwriteOnes);
         overwrite(file, overwriteZeros);
         overwrite(file, overwriteRandom);

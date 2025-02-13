@@ -24,7 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.module.org_alfresco_module_rm.content.cleanser;
 
 import static org.mockito.Mockito.times;
@@ -61,7 +60,7 @@ public class ContentCleanserSevenPassUnitTest extends BaseUnitTest {
 	 */
 	@Test
 	public void cleanseFile() {
-		when(mockedFile.exists()).thenReturn(true);
+		when(mockedFile.exists()).thenReturn(true) ;
 		when(mockedFile.canWrite()).thenReturn(true);
 		contentCleanserSevenPass.cleanse(mockedFile);
 		verify(contentCleanserSevenPass, times(2)).overwrite(mockedFile, contentCleanserSevenPass.overwriteOnes);

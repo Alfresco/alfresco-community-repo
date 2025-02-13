@@ -50,6 +50,7 @@ public class ContentCleanserSevenPassUnitTest extends BaseUnitTest
     @Spy
     private ContentCleanserSevenPass contentCleanserSevenPass = new ContentCleanserSevenPass() {
         /** dummy implementations */
+        @Override
         protected void overwrite(File file, OverwriteOperation overwriteOperation)
         {
             // Intentionally left empty

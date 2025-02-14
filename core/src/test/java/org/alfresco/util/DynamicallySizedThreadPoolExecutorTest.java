@@ -29,14 +29,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import junit.framework.TestCase;
-
 /**
  * Tests for our instance of {@link java.util.concurrent.ThreadPoolExecutor}
- * 
+ *
  * @author Nick Burch
  */
 public class DynamicallySizedThreadPoolExecutorTest extends TestCase
@@ -54,7 +53,7 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
 
     public void testUpToCore()
     {
-        DynamicallySizedThreadPoolExecutor exec = createInstance(5,10, DEFAULT_KEEP_ALIVE_TIME);
+        DynamicallySizedThreadPoolExecutor exec = createInstance(5, 10, DEFAULT_KEEP_ALIVE_TIME);
 
         assertEquals(0, exec.getPoolSize());
         exec.execute(new SleepUntilAllWake());
@@ -65,7 +64,7 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
         assertEquals(4, exec.getPoolSize());
         exec.execute(new SleepUntilAllWake());
         assertEquals(5, exec.getPoolSize());
-        
+
         SleepUntilAllWake.wakeAll();
         waitForPoolSizeEquals(exec, 5);
         assertEquals(5, exec.getPoolSize());
@@ -73,7 +72,7 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
 
     public void testPastCoreButNotHugeQueue()
     {
-        DynamicallySizedThreadPoolExecutor exec = createInstance(5,10, DEFAULT_KEEP_ALIVE_TIME);
+        DynamicallySizedThreadPoolExecutor exec = createInstance(5, 10, DEFAULT_KEEP_ALIVE_TIME);
 
         assertEquals(0, exec.getPoolSize());
         assertEquals(0, exec.getQueue().size());
@@ -84,7 +83,7 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
         exec.execute(new SleepUntilAllWake());
         assertEquals(5, exec.getPoolSize());
         assertEquals(0, exec.getQueue().size());
-        
+
         // Need to hit max pool size before it adds more
         exec.execute(new SleepUntilAllWake());
         exec.execute(new SleepUntilAllWake());
@@ -93,20 +92,20 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
         exec.execute(new SleepUntilAllWake());
         assertEquals(5, exec.getPoolSize());
         assertEquals(5, exec.getQueue().size());
-        
+
         exec.execute(new SleepUntilAllWake());
         exec.execute(new SleepUntilAllWake());
         assertEquals(5, exec.getPoolSize());
         assertEquals(7, exec.getQueue().size());
-        
+
         SleepUntilAllWake.wakeAll();
         waitForPoolSizeEquals(exec, 5);
         assertEquals(5, exec.getPoolSize());
     }
-    
+
     public void testToExpandQueue() throws Exception
     {
-        DynamicallySizedThreadPoolExecutor exec = createInstance(2,4,5);
+        DynamicallySizedThreadPoolExecutor exec = createInstance(2, 4, 5);
 
         assertEquals(0, exec.getPoolSize());
         assertEquals(0, exec.getQueue().size());
@@ -114,13 +113,13 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
         exec.execute(new SleepUntilAllWake());
         assertEquals(2, exec.getPoolSize());
         assertEquals(0, exec.getQueue().size());
-        
+
         exec.execute(new SleepUntilAllWake());
         exec.execute(new SleepUntilAllWake());
         exec.execute(new SleepUntilAllWake());
         assertEquals(2, exec.getPoolSize());
         assertEquals(3, exec.getQueue().size());
-        
+
         // Next should add one
         exec.execute(new SleepUntilAllWake());
         waitForPoolSizeEquals(exec, 3); // Let the new thread spin up
@@ -132,14 +131,14 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
         waitForPoolSizeEquals(exec, 4); // Let the new thread spin up
         assertEquals(4, exec.getPoolSize());
         assertEquals(3, exec.getQueue().size());
-        
+
         // But no more will be added, as we're at max
         exec.execute(new SleepUntilAllWake());
         exec.execute(new SleepUntilAllWake());
         exec.execute(new SleepUntilAllWake());
         assertEquals(4, exec.getPoolSize());
         assertEquals(6, exec.getQueue().size());
-        
+
         SleepUntilAllWake.wakeAll();
         Thread.sleep(100);
 
@@ -179,31 +178,33 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
         @Override
         public void run()
         {
-            if(allAwake) return;
-            
+            if (allAwake)
+                return;
+
             // Track us, and wait for the bang
             logger.debug("Adding thread: " + Thread.currentThread().getName());
             sleeping.put(Thread.currentThread().getName(), Thread.currentThread());
             try
             {
-                Thread.sleep(30*1000);
+                Thread.sleep(30 * 1000);
                 System.err.println("Warning - Thread finished sleeping without wake!");
             }
-            catch(InterruptedException e)
+            catch (InterruptedException e)
             {
                 logger.debug("Interrupted thread: " + Thread.currentThread().getName());
             }
         }
-        
+
         public static void wakeAll()
         {
             allAwake = true;
-            for(Entry<String, Thread> t : sleeping.entrySet())
+            for (Entry<String, Thread> t : sleeping.entrySet())
             {
                 logger.debug("Interrupting thread: " + t.getKey());
                 t.getValue().interrupt();
             }
         }
+
         public static void reset()
         {
             logger.debug("Resetting.");

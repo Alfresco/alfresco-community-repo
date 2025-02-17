@@ -14,6 +14,7 @@
         <module>war</module>
         <module>distribution</module>
         <module>docker-alfresco</module>
+        <module>tests</module>
     </modules>
 
     <profiles>

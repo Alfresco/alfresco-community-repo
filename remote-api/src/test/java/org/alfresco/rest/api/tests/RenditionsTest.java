@@ -130,7 +130,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
         httpClient = new HttpClient();
         hostConfig = new HostConfiguration();
-        hostConfig.setHost("localhost", 80, "http");
+        hostConfig.setHost("localhost", 8080, "http");
     }
 
     @After
@@ -1047,7 +1047,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getUserName());
 
-        String urlDocument = "/share/page/context/mine/document-details?";
+        String urlDocument = "/share/page/site/" + userOneN1Site.getId() + "/document-details?";
 
         String nodeParams = new StringBuilder()
                 .append("nodeRef=")

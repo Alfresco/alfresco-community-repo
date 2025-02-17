@@ -9,7 +9,7 @@ services:
     ports:
       - "8090:8090"
   postgres:
-    image: postgres:15.4
+    image: postgres:16.6
     profiles: ["default", "with-transform-core-aio", "postgres", "with-mtls-transform-core-aio", "with-sso"]
     environment:
       - POSTGRES_PASSWORD=alfresco

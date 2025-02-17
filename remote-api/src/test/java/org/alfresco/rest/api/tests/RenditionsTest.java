@@ -1092,8 +1092,8 @@ public class RenditionsTest extends AbstractBaseApiTest
             }
         }
 
-        httpClient.setHostConfiguration(hostConfig);
-        httpClient.executeMethod(httpMethod);
+        // httpClient.setHostConfiguration(hostConfig);
+        httpClient.executeMethod(hostConfig, httpMethod);
         return new HttpMethodResponse(httpMethod);
     }
 

@@ -130,7 +130,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
         httpClient = new HttpClient();
         hostConfig = new HostConfiguration();
-        hostConfig.setHost("localhost", 8080, "http");
+        hostConfig.setHost("localhost", 8081, "http");
     }
 
     @After

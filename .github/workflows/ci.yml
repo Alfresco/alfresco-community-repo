@@ -515,7 +515,7 @@ jobs:
           RP_OPTS: ${{ github.ref_name == 'master' && steps.rp-prepare.outputs.mvn-opts || '' }}
         run: |
           eval "args=($RP_OPTS)"
-          mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
+          mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.driver=com.mysql.cj.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "${args[@]}"
         continue-on-error: true
       - name: "Update GitHub Step Summary"
         if: github.ref_name == 'master'

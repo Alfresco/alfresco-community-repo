@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,8 @@
  */
 package org.alfresco.util;
 
+import java.time.Duration;
+
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,10 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 /**
  * Base test class providing Hibernate sessions.
  * <p>
- * By default this is auto-wired by type. If a this is going to 
- * result in a conlict the use auto-wire by name.  This can be done by
- * setting populateProtectedVariables to true in the constructor and 
- * then adding protected members with the same name as the bean you require.
+ * By default this is auto-wired by type. If a this is going to result in a conlict the use auto-wire by name. This can be done by setting populateProtectedVariables to true in the constructor and then adding protected members with the same name as the bean you require.
  * 
  * @author Derek Hulley
  */
@@ -50,6 +49,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextCustomizerFactories(factories = {}, mergeMode = ContextCustomizerFactories.MergeMode.REPLACE_DEFAULTS)
 public abstract class BaseSpringTest extends TestCase
 {
+    protected static final Duration MAX_ASYNC_TIMEOUT = Duration.ofSeconds(10);
     public Log logger = LogFactory.getLog(getClass().getName());
 
     @Autowired

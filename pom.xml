@@ -97,6 +97,7 @@
         <dependency.jdom2.version>2.0.6.1</dependency.jdom2.version>
         <dependency.pooled-jms.version>3.1.6</dependency.pooled-jms.version>
         <dependency.kxml2.version>2.3.0</dependency.kxml2.version>
+        <dependency.angus-mail.version>2.0.3</dependency.angus-mail.version>
 
         <dependency.jakarta-ee-jaxb-api.version>4.0.2</dependency.jakarta-ee-jaxb-api.version>
         <dependency.jakarta-ee-jaxb-impl.version>4.0.5</dependency.jakarta-ee-jaxb-impl.version>
@@ -219,9 +220,9 @@
             </dependency>
 
             <dependency>
-                <groupId>com.sun.mail</groupId>
-                <artifactId>jakarta.mail</artifactId>
-                <version>${dependency.jakarta-ee-mail.version}</version>
+                <groupId>org.eclipse.angus</groupId>
+                <artifactId>angus-mail</artifactId>
+                <version>${dependency.angus-mail.version}</version>
             </dependency>
             <dependency>
                 <groupId>jakarta.mail</groupId>

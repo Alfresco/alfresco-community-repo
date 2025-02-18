@@ -228,7 +228,6 @@
                 <groupId>jakarta.mail</groupId>
                 <artifactId>jakarta.mail-api</artifactId>
                 <version>${dependency.jakarta-ee-mail.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>com.sun.activation</groupId>

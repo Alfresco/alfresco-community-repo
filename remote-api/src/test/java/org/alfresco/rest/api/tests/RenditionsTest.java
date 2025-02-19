@@ -37,10 +37,7 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,20 +49,15 @@ import java.util.UUID;
 import com.google.common.collect.Ordering;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
-import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
+import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.web.scripts.BaseWebScriptTest.HttpMethodResponse;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -82,9 +74,15 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.rendition.RenditionDefinition;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -116,10 +114,15 @@ public class RenditionsTest extends AbstractBaseApiTest
     private HttpClient httpClient;
     private HostConfiguration hostConfig;
 
+    private AbstractRenderingEngine abstractRenderingEngine;
+    private RenditionService renditionService;
+
     @Before
     public void setup() throws Exception
     {
         contentService = applicationContext.getBean("contentService", ContentService.class);
+        abstractRenderingEngine = applicationContext.getBean("abstractRenderingEngine", AbstractRenderingEngine.class);
+        renditionService = applicationContext.getBean("RenditionService", RenditionService.class);
         synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
@@ -1041,72 +1044,25 @@ public class RenditionsTest extends AbstractBaseApiTest
         // retry to double-check deletion
         delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
 
-        Map<String, String> params = new HashMap<>();
-        params.put("attachment", "false");
-
         Thread.sleep(DELAY_IN_MS);
 
-        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getUserName());
+        QName qName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                ReformatRenderingEngine.NAME + System.currentTimeMillis());
+        RenditionDefinition renditionDefinition = renditionService.createRenditionDefinition(qName,
+                ReformatRenderingEngine.NAME);
 
-        String urlDocument = "http://localhost:8081/share/page/site/" + userOneN1Site.getId() + "/document-details?";
-
-        String nodeParams = new StringBuilder()
-                .append("nodeRef=")
-                .append(getFolderNodeRef(folderId))
-                .toString();
-
-        URL url = new URL(urlDocument + nodeParams);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Accept", "text/html");
-
-        int responseCode = conn.getResponseCode();
-        if (responseCode != 200)
-        {
-            throw new RuntimeException("Failed with HTTP error code : " + responseCode);
-        }
-
-        // Response responseDocument = sendRequest(new GetRequest(urlDocument + nodeParams), 200);
-        // assertNotNull(responseDocument.getContentLength());
+        abstractRenderingEngine.execute(renditionDefinition, getFolderNodeRef(contentNodeId));
 
         Thread.sleep(DELAY_IN_MS);
 
         Rendition rendition2 = waitAndGetRendition(contentNodeId, null, renditionName);
-        assertNotNull(response.getResponseAsBytes());
         assertNotEquals("Both, we are getting same rendition Id's", rendition.getId(), rendition2.getId());
 
     }
 
-    private String getFolderNodeRef(String folderId)
+    private NodeRef getFolderNodeRef(String folderId)
     {
-        return "workspace://SpacesStore/" + folderId;
-    }
-
-    protected Response sendRequest(Request req, int expectedStatus)
-            throws IOException
-    {
-        HttpMethod httpMethod;
-        String method = req.getMethod();
-        if (method.equalsIgnoreCase("GET"))
-        {
-            GetMethod get = new GetMethod(req.getFullUri());
-            httpMethod = get;
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("Http Method " + method + " not supported");
-        }
-        if (req.getHeaders() != null)
-        {
-            for (Map.Entry<String, String> header : req.getHeaders().entrySet())
-            {
-                httpMethod.setRequestHeader(header.getKey(), header.getValue());
-            }
-        }
-
-        // httpClient.setHostConfiguration(hostConfig);
-        httpClient.executeMethod(hostConfig, httpMethod);
-        return new HttpMethodResponse(httpMethod);
+        return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderId);
     }
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception

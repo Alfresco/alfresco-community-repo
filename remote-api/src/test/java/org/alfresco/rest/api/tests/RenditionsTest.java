@@ -51,9 +51,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
-import org.alfresco.repo.rendition.executer.ReformatRenderingEngine;
+import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
 import org.alfresco.rest.api.model.Site;
@@ -72,15 +72,11 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.rendition.RenditionDefinition;
-import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 
 /**
@@ -109,15 +105,11 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
-    private AbstractRenderingEngine abstractRenderingEngine;
-    private RenditionService renditionService;
 
     @Before
     public void setup() throws Exception
     {
         contentService = applicationContext.getBean("contentService", ContentService.class);
-        abstractRenderingEngine = applicationContext.getBean("abstractRenderingEngine", AbstractRenderingEngine.class);
-        renditionService = applicationContext.getBean("RenditionService", RenditionService.class);
         synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
@@ -1038,17 +1030,16 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         Thread.sleep(DELAY_IN_MS);
 
-        QName qName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                ReformatRenderingEngine.NAME + System.currentTimeMillis());
-        RenditionDefinition renditionDefinition = renditionService.createRenditionDefinition(qName,
-                ReformatRenderingEngine.NAME);
+        ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
 
-        abstractRenderingEngine.execute(renditionDefinition, getFolderNodeRef(contentNodeId));
-
+        SWFTransformationOptions swfTransformationOptions = new SWFTransformationOptions();
+        swfTransformationOptions.setUse("pdf");
+        NodeRef thumbNode = thumbnailService.createThumbnail(getFolderNodeRef(contentNodeId), ContentModel.PROP_CONTENT,
+                MimetypeMap.MIMETYPE_PDF, swfTransformationOptions, "pdf");
         Thread.sleep(DELAY_IN_MS);
 
-        Rendition rendition2 = waitAndGetRendition(contentNodeId, null, renditionName);
-        assertNotEquals("Both, we are getting same rendition Id's", rendition.getId(), rendition2.getId());
+        assertNotNull(thumbNode);
+        assertNotEquals("Both, we are getting same rendition Id's", rendition.getId(), thumbNode.getId());
 
     }
 

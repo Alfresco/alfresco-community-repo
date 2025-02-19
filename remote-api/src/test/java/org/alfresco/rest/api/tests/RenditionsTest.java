@@ -39,6 +39,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,7 +57,6 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
@@ -1047,15 +1048,26 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getUserName());
 
-        String urlDocument = "/share/page/site/" + userOneN1Site.getId() + "/document-details?";
+        String urlDocument = "http://localhost:8081/share/page/site/" + userOneN1Site.getId() + "/document-details?";
 
         String nodeParams = new StringBuilder()
                 .append("nodeRef=")
                 .append(getFolderNodeRef(folderId))
                 .toString();
 
-        Response responseDocument = sendRequest(new GetRequest(urlDocument + nodeParams), 200);
-        assertNotNull(responseDocument.getContentLength());
+        URL url = new URL(urlDocument + nodeParams);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "text/html");
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode != 200)
+        {
+            throw new RuntimeException("Failed with HTTP error code : " + responseCode);
+        }
+
+        // Response responseDocument = sendRequest(new GetRequest(urlDocument + nodeParams), 200);
+        // assertNotNull(responseDocument.getContentLength());
 
         Thread.sleep(DELAY_IN_MS);
 

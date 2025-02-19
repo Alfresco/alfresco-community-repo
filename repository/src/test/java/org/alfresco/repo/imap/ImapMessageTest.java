@@ -2,28 +2,30 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.imap;
+
+import static org.alfresco.model.ContentModel.PROP_MODIFIED;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -37,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-
 import jakarta.mail.Address;
 import jakarta.mail.Folder;
 import jakarta.mail.Message;
@@ -51,6 +52,23 @@ import jakarta.mail.internet.MimeUtility;
 import jakarta.transaction.UserTransaction;
 
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.angus.mail.iap.ProtocolException;
+import org.eclipse.angus.mail.iap.Response;
+import org.eclipse.angus.mail.imap.IMAPFolder;
+import org.eclipse.angus.mail.imap.protocol.BODY;
+import org.eclipse.angus.mail.imap.protocol.FetchResponse;
+import org.eclipse.angus.mail.imap.protocol.IMAPProtocol;
+import org.eclipse.angus.mail.imap.protocol.IMAPResponse;
+import org.eclipse.angus.mail.imap.protocol.RFC822DATA;
+import org.eclipse.angus.mail.imap.protocol.UID;
+import org.eclipse.angus.mail.util.ASCIIUtility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
@@ -83,26 +101,6 @@ import org.alfresco.util.PropertyMap;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.javamail.MimeMessageHelper;
-
-import com.sun.mail.iap.ProtocolException;
-import com.sun.mail.iap.Response;
-import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.protocol.BODY;
-import com.sun.mail.imap.protocol.FetchResponse;
-import com.sun.mail.imap.protocol.IMAPProtocol;
-import com.sun.mail.imap.protocol.IMAPResponse;
-import com.sun.mail.imap.protocol.RFC822DATA;
-import com.sun.mail.imap.protocol.UID;
-import com.sun.mail.util.ASCIIUtility;
-
-import static org.alfresco.model.ContentModel.PROP_MODIFIED;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class ImapMessageTest extends TestCase
@@ -159,7 +157,6 @@ public class ImapMessageTest extends TestCase
         namespaceService = serviceRegistry.getNamespaceService();
         fileFolderService = serviceRegistry.getFileFolderService();
 
-
         // start the transaction
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
@@ -199,8 +196,8 @@ public class ImapMessageTest extends TestCase
         ApplicationContext imapCtx = imap.getApplicationContext();
         ImapServiceImpl imapServiceImpl = (ImapServiceImpl) imapCtx.getBean("imapService");
         imapServer = (AlfrescoImapServer) imapCtx.getBean("imapServer");
-        
-        if(!imapServer.isImapServerEnabled())
+
+        if (!imapServer.isImapServerEnabled())
         {
             imapServer.setImapServerEnabled(true);
             imapServer.setHost(HOST);
@@ -220,7 +217,6 @@ public class ImapMessageTest extends TestCase
         imapHome.setFolderPath(NamespaceService.CONTENT_MODEL_PREFIX + ":" + IMAP_FOLDER_NAME);
         imapServiceImpl.setImapHome(imapHome);
 
-
         // Starting IMAP
         imapServiceImpl.startupInTxn(true);
 
@@ -228,10 +224,7 @@ public class ImapMessageTest extends TestCase
                 namespaceService, false);
         testImapFolderNodeRef = nodeRefs.get(0);
 
-        /*
-         * Importing test folders: Test folder contains: "___-___folder_a" "___-___folder_a" contains: "___-___folder_a_a", "___-___file_a", "Message_485.eml" (this is IMAP
-         * Message) "___-___folder_a_a" contains: "____-____file_a_a"
-         */
+        /* Importing test folders: Test folder contains: "___-___folder_a" "___-___folder_a" contains: "___-___folder_a_a", "___-___file_a", "Message_485.eml" (this is IMAP Message) "___-___folder_a_a" contains: "____-____file_a_a" */
         importInternal("imap/imapservice_test_folder_a.acp", testImapFolderNodeRef);
 
         txn.commit();
@@ -243,13 +236,13 @@ public class ImapMessageTest extends TestCase
 
         // Get the store
         this.store = session.getStore(PROTOCOL);
-        //this.store.connect(HOST, PORT, anotherUserName, anotherUserName);
+        // this.store.connect(HOST, PORT, anotherUserName, anotherUserName);
         this.store.connect(imapServer.getHost(), imapServer.getPort(), anotherUserName, anotherUserName);
 
         // Get folder
         folder = (IMAPFolder) store.getFolder(TEST_FOLDER);
         folder.open(Folder.READ_ONLY);
-        
+
         logger.debug("End SetUp");
 
     }
@@ -296,7 +289,7 @@ public class ImapMessageTest extends TestCase
 
         // Read updated message part
         BODY bodyNew = getMessageBody(folder, uid);
-        
+
         // The body should be updated
         assertFalse(Arrays.equals(bodyNew.getByteArray().getBytes(), body.getByteArray().getBytes()));
 
@@ -349,8 +342,7 @@ public class ImapMessageTest extends TestCase
             fail("Should raise an IOException");
         }
         catch (IOException e)
-        {
-        }
+        {}
     }
 
     public void dontTestMessageCache() throws Exception
@@ -411,8 +403,7 @@ public class ImapMessageTest extends TestCase
         {
             Locale.setDefault(Locale.FRENCH);
             String dateStr = "12-Jul-2020";
-            final IMAPFolder.ProtocolCommand uid_search_since = new IMAPFolder.ProtocolCommand()
-            {
+            final IMAPFolder.ProtocolCommand uid_search_since = new IMAPFolder.ProtocolCommand() {
                 @Override
                 public Object doCommand(IMAPProtocol protocol)
                 {
@@ -445,8 +436,7 @@ public class ImapMessageTest extends TestCase
 
             Locale.setDefault(Locale.FRENCH);
             String dateStr = "12-juil.-2020";
-            final IMAPFolder.ProtocolCommand uid_search_since = new IMAPFolder.ProtocolCommand()
-            {
+            final IMAPFolder.ProtocolCommand uid_search_since = new IMAPFolder.ProtocolCommand() {
                 @Override
                 public Object doCommand(IMAPProtocol protocol)
                 {
@@ -503,27 +493,27 @@ public class ImapMessageTest extends TestCase
         String addressString = "ars.kov@gmail.com";
         String personalString = "�?р�?ений Ковальчук";
         InternetAddress address = new InternetAddress(addressString, personalString, "UTF-8");
-        
+
         // Following method returns the address with quoted personal aka <["�?р�?ений Ковальчук"] <ars.kov@gmail.com>>
-        // NOTE! This should be coincided with RFC822MetadataExtracter. Would 'addresses' be quoted or not? 
+        // NOTE! This should be coincided with RFC822MetadataExtracter. Would 'addresses' be quoted or not?
         // String decodedAddress = address.toUnicodeString();
         // Starting from javax.mail 1.5.6 the address is folded at linear whitespace so that each line is no longer than 76 characters, if possible.
         String decodedAddress = MimeUtility.decodeText(MimeUtility.fold(6, address.toString()));
-        
+
         // InternetAddress.toString(new Address[] {address}) - is used in the RFC822MetadataExtracter
         // So, compare with that
-        assertFalse("Non ASCII characters in the address should be encoded", decodedAddress.equals(InternetAddress.toString(new Address[] {address})));
-        
+        assertFalse("Non ASCII characters in the address should be encoded", decodedAddress.equals(InternetAddress.toString(new Address[]{address})));
+
         MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()));
-        
+
         MimeMessageHelper messageHelper = new MimeMessageHelper(message, false, "UTF-8");
-        
+
         messageHelper.setText("This is a sample message for ALF-5647");
         messageHelper.setSubject("This is a sample message for ALF-5647");
         messageHelper.setFrom(address);
         messageHelper.addTo(address);
         messageHelper.addCc(address);
-        
+
         // Creating the message node in the repository
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
@@ -540,7 +530,7 @@ public class ImapMessageTest extends TestCase
         // triggers a metadata extract to take place in a post commit method. Previously this would have been a
         // synchronous process. This is no longer true as it may now take place in a T-Engine. So, we need to wait
         // for the extract to take place. There does not
-        long end = System.currentTimeMillis()+10000;
+        long end = System.currentTimeMillis() + 10000;
         while (System.currentTimeMillis() <= end && origModified.equals(getModified(nodeRef)))
         {
             Thread.currentThread().sleep(1000);
@@ -556,7 +546,7 @@ public class ImapMessageTest extends TestCase
         String imapMessageFrom = (String) properties.get(ImapModel.PROP_MESSAGE_FROM);
         String imapMessageTo = (String) properties.get(ImapModel.PROP_MESSAGE_TO);
         String imapMessageCc = (String) properties.get(ImapModel.PROP_MESSAGE_CC);
-        
+
         assertNotNull(cmOriginator);
         assertEquals(decodedAddress, cmOriginator);
         assertNotNull(cmAddressee);
@@ -586,7 +576,7 @@ public class ImapMessageTest extends TestCase
         lstore.connect(imapServer.getHost(), imapServer.getPort(), ADMIN_USER_NAME, ADMIN_USER_PASSWORD);
 
         String folderName = "Alfresco IMAP/" + IMAP_FOLDER_NAME;
-        
+
         IMAPFolder lfolder = (IMAPFolder) lstore.getFolder(folderName);
         lfolder.open(Folder.READ_WRITE);
 
@@ -598,69 +588,66 @@ public class ImapMessageTest extends TestCase
             messageFileInputStream1 = new FileInputStream(fileResource.getFile());
             Message message = new MimeMessage(Session.getDefaultInstance(new Properties()), messageFileInputStream1);
             String subject = message.getSubject();
-            
+
             // get original bytes for further comparation
             messageFileInputStream2 = new FileInputStream(fileResource.getFile());
             byte[] original = ASCIIUtility.getBytes(messageFileInputStream2);
-            
+
             Message[] messages = {message};
-            
+
             lfolder.appendMessages(messages);
-            
-            
-            
-            // The search is not implemented. 
+
+            // The search is not implemented.
             // SearchTerm term = new HeaderTerm("X-Alfresco-Unique", "test8bit");
             // messages = folder.search(term);
-            
+
             // So wee need to get our test message's UID from the repo
-            
+
             String messageXPath = companyHomePathInStore + "/" + NamespaceService.CONTENT_MODEL_PREFIX + ":" + IMAP_FOLDER_NAME + "/*[like(@cm:title, $cm:title, true)]";
-            
+
             QueryParameterDefinition[] params = new QueryParameterDefinition[1];
             params[0] = new QueryParameterDefImpl(
-                  ContentModel.PROP_TITLE,
-                  serviceRegistry.getDictionaryService().getDataType(DataTypeDefinition.TEXT),
-                  true,
-                  subject);
+                    ContentModel.PROP_TITLE,
+                    serviceRegistry.getDictionaryService().getDataType(DataTypeDefinition.TEXT),
+                    true,
+                    subject);
 
             List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, messageXPath, params, namespaceService, true);
-            
-            
+
             // does the message exist
             assertEquals(1, nodeRefs.size());
-            
+
             NodeRef messageNodeRef = nodeRefs.get(0);
-            
+
             // get message UID
             Long dbid = (Long) nodeService.getProperty(messageNodeRef, ContentModel.PROP_NODE_DBID);
-            
+
             // fetch the massage
             RFC822DATA data = getRFC822Message(lfolder, dbid);
-            
+
             assertNotNull("Can't fetch a message from the repositiry", data);
-            
+
             byte[] processed = ASCIIUtility.getBytes(data.getByteArrayInputStream());
-            
+
             assertTrue("Original message doesn't coincide to the message processed by the repository", Arrays.equals(original, processed));
         }
         finally
         {
-            if (messageFileInputStream1 != null) messageFileInputStream1.close();
-            if (messageFileInputStream2 != null) messageFileInputStream2.close();
+            if (messageFileInputStream1 != null)
+                messageFileInputStream1.close();
+            if (messageFileInputStream2 != null)
+                messageFileInputStream2.close();
         }
-            
+
         // close connection
         lfolder.close(true);
         lstore.close();
-        
+
     }
 
-    
     private static RFC822DATA getRFC822Message(final IMAPFolder folder, final long uid) throws MessagingException
     {
-        return (RFC822DATA) folder.doCommand(new IMAPFolder.ProtocolCommand()
-        {
+        return (RFC822DATA) folder.doCommand(new IMAPFolder.ProtocolCommand() {
             public Object doCommand(IMAPProtocol p) throws ProtocolException
             {
                 Response[] r = p.command("UID FETCH " + uid + " (RFC822)", null);
@@ -675,23 +662,26 @@ public class ImapMessageTest extends TestCase
                 return fetchResponse.getItem(RFC822DATA.class);
             }
         });
-       
+
     }
 
     /**
      * Returns BODY object containing desired message fragment
-     * 
-     * @param folder Folder containing the message
-     * @param uid Message UID
-     * @param from starting byte
-     * @param count bytes to read
+     *
+     * @param folder
+     *            Folder containing the message
+     * @param uid
+     *            Message UID
+     * @param from
+     *            starting byte
+     * @param count
+     *            bytes to read
      * @return BODY containing desired message fragment
      * @throws MessagingException
      */
     private static BODY getMessageBodyPart(IMAPFolder folder, final Long uid, final Integer from, final Integer count) throws MessagingException
     {
-        return (BODY) folder.doCommand(new IMAPFolder.ProtocolCommand()
-        {
+        return (BODY) folder.doCommand(new IMAPFolder.ProtocolCommand() {
             public Object doCommand(IMAPProtocol p) throws ProtocolException
             {
                 Response[] r = p.command("UID FETCH " + uid + " (FLAGS BODY.PEEK[]<" + from + "." + count + ">)", null);
@@ -705,7 +695,7 @@ public class ImapMessageTest extends TestCase
                 }
 
                 FetchResponse fetchResponse = (FetchResponse) r[0];
-                BODY body = (BODY) fetchResponse.getItem(com.sun.mail.imap.protocol.BODY.class);
+                BODY body = (BODY) fetchResponse.getItem(BODY.class);
                 return body;
             }
         });
@@ -714,8 +704,9 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Finds node by its path
-     * 
-     * @param path String
+     *
+     * @param path
+     *            String
      * @return NodeRef
      */
     private NodeRef findNode(String path)
@@ -726,16 +717,17 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Returns the UID of the first message in folder
-     * 
-     * @param folder Folder containing the message
-     * @param msn message sequence number
+     *
+     * @param folder
+     *            Folder containing the message
+     * @param msn
+     *            message sequence number
      * @return UID of the first message
      * @throws MessagingException
      */
     private static Long getMessageUid(IMAPFolder folder, final int msn) throws MessagingException
     {
-        return (Long) folder.doCommand(new IMAPFolder.ProtocolCommand()
-        {
+        return (Long) folder.doCommand(new IMAPFolder.ProtocolCommand() {
             public Object doCommand(IMAPProtocol p) throws ProtocolException
             {
                 String command = "FETCH " + msn + " (UID)";
@@ -748,48 +740,49 @@ public class ImapMessageTest extends TestCase
                 {
                     throw new ProtocolException("Unable to retrieve message UID");
                 }
-                
-                for(int i = 0 ; i < r.length; i++)
+
+                for (int i = 0; i < r.length; i++)
                 {
-                    if(r[i] instanceof FetchResponse)
+                    if (r[i] instanceof FetchResponse)
                     {
                         FetchResponse fetchResponse = (FetchResponse) r[0];
                         UID uid = (UID) fetchResponse.getItem(UID.class);
-                        logger.debug("SECNUM=" + uid.seqnum + ", UID="+uid.uid);
+                        logger.debug("SECNUM=" + uid.seqnum + ", UID=" + uid.uid);
                         return uid.uid;
                     }
                 }
-                
+
                 /**
-                  * Uh-oh - this is where we would intermittently fall over with a class cast exception.
-                  * The following code probes why we don't have a FetchResponse
-                  */
+                 * Uh-oh - this is where we would intermittently fall over with a class cast exception. The following code probes why we don't have a FetchResponse
+                 */
                 StringBuffer sb = new StringBuffer();
-                sb.append("command="+command);
+                sb.append("command=" + command);
                 sb.append('\n');
                 sb.append("resp length=" + r.length);
                 sb.append('\n');
-                for(int i = 0 ; i < r.length; i++)
+                for (int i = 0; i < r.length; i++)
                 {
                     logger.error(r[i]);
                     sb.append("class=" + r[i].getClass().getName());
-                    IMAPResponse unexpected = (IMAPResponse)r[i];
+                    IMAPResponse unexpected = (IMAPResponse) r[i];
                     sb.append("key=" + unexpected.getKey());
                     sb.append("number=" + unexpected.getNumber());
                     sb.append("rest=" + unexpected.getRest());
-                 
+
                     sb.append("r[" + i + "]=" + r[i] + '\n');
                 }
-                throw new ProtocolException("getMessageUid: "+ sb.toString());
+                throw new ProtocolException("getMessageUid: " + sb.toString());
             }
         });
     }
 
     /**
      * Returns size of the message
-     * 
-     * @param folder Folder containing the message
-     * @param uid Message UID
+     *
+     * @param folder
+     *            Folder containing the message
+     * @param uid
+     *            Message UID
      * @return Returns size of the message
      * @throws MessagingException
      */
@@ -800,16 +793,17 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Returns a full message body
-     * 
-     * @param folder Folder containing the message
-     * @param uid Message UID
+     *
+     * @param folder
+     *            Folder containing the message
+     * @param uid
+     *            Message UID
      * @return Returns size of the message
      * @throws MessagingException
      */
     private static BODY getMessageBody(IMAPFolder folder, final Long uid) throws MessagingException
     {
-        return (BODY) folder.doCommand(new IMAPFolder.ProtocolCommand()
-        {
+        return (BODY) folder.doCommand(new IMAPFolder.ProtocolCommand() {
             public Object doCommand(IMAPProtocol p) throws ProtocolException
             {
                 Response[] r = p.command("UID FETCH " + uid + " (FLAGS BODY.PEEK[])", null);
@@ -830,8 +824,9 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Simple util for logging response
-     * 
-     * @param r response
+     *
+     * @param r
+     *            response
      */
     private static void logResponse(Response[] r)
     {

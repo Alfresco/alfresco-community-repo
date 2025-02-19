@@ -56,6 +56,8 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
 import org.alfresco.repo.rendition2.RenditionService2Impl;
 import org.alfresco.repo.rendition2.SynchronousTransformClient;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -72,7 +74,6 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -106,14 +107,15 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
-    private RenditionService renditionService;
+    private RetryingTransactionHelper transactionHelper;
 
     @Before
     public void setup() throws Exception
     {
         contentService = applicationContext.getBean("contentService", ContentService.class);
         synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
-        renditionService = (RenditionService) this.applicationContext.getBean("renditionService");
+        transactionHelper = (RetryingTransactionHelper) this.applicationContext
+                .getBean("retryingTransactionHelper");
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();
@@ -1031,12 +1033,17 @@ public class RenditionsTest extends AbstractBaseApiTest
         // retry to double-check deletion
         delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
 
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
         ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
 
         SWFTransformationOptions swfTransformationOptions = new SWFTransformationOptions();
         swfTransformationOptions.setUse("pdf");
-        NodeRef thumbNode = thumbnailService.createThumbnail(getFolderNodeRef(contentNodeId), ContentModel.PROP_CONTENT,
-                MimetypeMap.MIMETYPE_PDF, swfTransformationOptions, "pdf");
+
+        NodeRef thumbNode = transactionHelper
+                .doInTransaction(
+                        () -> thumbnailService.createThumbnail(getFolderNodeRef(contentNodeId), ContentModel.PROP_CONTENT,
+                                MimetypeMap.MIMETYPE_PDF, swfTransformationOptions, "pdf"));
 
         assertNotNull(thumbNode);
         assertNotEquals("Both, we are getting same rendition Id's", rendition.getId(), thumbNode.getId());

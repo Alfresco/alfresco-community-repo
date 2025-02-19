@@ -308,8 +308,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> aclReaders = readersCache.get((Serializable) acl.getProperties());
         if (aclReaders != null) { return aclReaders; }
 
-        HashSet<String> assigned = new HashSet<>();
-        HashSet<String> readers = new HashSet<>();
+        Set<String> assigned = new LinkedHashSet<>();
+        Set<String> readers = new LinkedHashSet<>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
@@ -383,8 +383,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> aclWriters = writersCache.get((Serializable) acl.getProperties());
         if (aclWriters != null) { return aclWriters; }
 
-        HashSet<String> assigned = new HashSet<>();
-        HashSet<String> readers = new HashSet<>();
+        Set<String> assigned = new LinkedHashSet<>();
+        Set<String> readers = new LinkedHashSet<>();
 
         for (AccessControlEntry ace : acl.getEntries())
         {
@@ -456,7 +456,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> writers = getWriters(aclId);
 
         // add the current owner to the list of extended writers
-        Set<String> modifiedWrtiers = new HashSet<>(writers);
+        Set<String> modifiedWrtiers = new LinkedHashSet<>(writers);
         String owner = ownableService.getOwner(nodeRef);
         if (StringUtils.isNotBlank(owner) &&
             !owner.equals(OwnableService.NO_OWNER) &&

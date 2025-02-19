@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -229,7 +230,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      */
     private Set<String> getAuthorities(String group)
     {
-        Set<String> result = new HashSet<>();
+        Set<String> result = new LinkedHashSet<>();
         result.addAll(authorityService.getContainedAuthorities(null, group, true));
         return result;
     }

@@ -72,6 +72,7 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -105,12 +106,14 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
+    private RenditionService renditionService;
 
     @Before
     public void setup() throws Exception
     {
         contentService = applicationContext.getBean("contentService", ContentService.class);
         synchronousTransformClient = applicationContext.getBean("synchronousTransformClient", SynchronousTransformClient.class);
+        renditionService = (RenditionService) this.applicationContext.getBean("renditionService");
         networkN1 = repoService.createNetworkWithAlias("ping", true);
         networkN1.create();
         userOneN1 = networkN1.createUser();
@@ -1028,17 +1031,12 @@ public class RenditionsTest extends AbstractBaseApiTest
         // retry to double-check deletion
         delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
 
-        Thread.sleep(DELAY_IN_MS);
-
-        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
-
         ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
 
         SWFTransformationOptions swfTransformationOptions = new SWFTransformationOptions();
         swfTransformationOptions.setUse("pdf");
         NodeRef thumbNode = thumbnailService.createThumbnail(getFolderNodeRef(contentNodeId), ContentModel.PROP_CONTENT,
                 MimetypeMap.MIMETYPE_PDF, swfTransformationOptions, "pdf");
-        Thread.sleep(DELAY_IN_MS);
 
         assertNotNull(thumbNode);
         assertNotEquals("Both, we are getting same rendition Id's", rendition.getId(), thumbNode.getId());

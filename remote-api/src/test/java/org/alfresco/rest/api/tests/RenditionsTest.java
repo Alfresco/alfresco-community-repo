@@ -47,8 +47,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.collect.Ordering;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,9 +109,6 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     protected static ContentService contentService;
     private static SynchronousTransformClient synchronousTransformClient;
-    private HttpClient httpClient;
-    private HostConfiguration hostConfig;
-
     private AbstractRenderingEngine abstractRenderingEngine;
     private RenditionService renditionService;
 
@@ -132,9 +127,6 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
-        httpClient = new HttpClient();
-        hostConfig = new HostConfiguration();
-        hostConfig.setHost("localhost", 8081, "http");
     }
 
     @After

@@ -1030,6 +1030,8 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         Thread.sleep(DELAY_IN_MS);
 
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
         ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
 
         SWFTransformationOptions swfTransformationOptions = new SWFTransformationOptions();

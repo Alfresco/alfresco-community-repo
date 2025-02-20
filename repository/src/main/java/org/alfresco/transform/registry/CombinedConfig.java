@@ -51,12 +51,13 @@ import java.util.List;
 import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
 
 /**
- * This class reads multiple T-Engine config and local files and registers as if they were all
- * in one file. Transform options are shared between all sources.<p>
+ * This class reads multiple T-Engine config and local files and registers as if they were all in one file. Transform
+ options are shared between all sources.
+ * <p>
  *
- * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or
- * {@link CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)}
- * followed by a call to {@link #register(TransformServiceRegistryImpl)}.
+ * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or {@link
+ CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)} followed by a
+ call to {@link #register(TransformServiceRegistryImpl)}.
  *
  * @author adavis
  */

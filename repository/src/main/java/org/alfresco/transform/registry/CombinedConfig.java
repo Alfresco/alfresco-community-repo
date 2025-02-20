@@ -53,14 +53,15 @@ import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_C
 /**
  * This class reads multiple T-Engine config and local files and registers as if they were all
  * in one file. Transform options are shared between all sources.<p>
- * <p>
+ *
  * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or
  * {@link CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)}
  * followed by a call to {@link #register(TransformServiceRegistryImpl)}.
  *
  * @author adavis
  */
-public class CombinedConfig extends CombinedTransformConfig {
+public class CombinedConfig extends CombinedTransformConfig
+{
     public static final String X_ALFRESCO_RETRY_NEEDED_HEADER = "X-Alfresco-Retry-Needed";
     private final Log log;
 
@@ -70,30 +71,39 @@ public class CombinedConfig extends CombinedTransformConfig {
 
     private final HttpClientConfig httpClientConfig;
 
-    public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClientConfig httpClientConfig) {
+    public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClientConfig httpClientConfig)
+    {
         this.httpClientConfig = httpClientConfig;
         this.log = log;
 
-        configFileFinder = new ConfigFileFinder(jsonObjectMapper) {
+        configFileFinder = new ConfigFileFinder(jsonObjectMapper)
+        {
             @Override
-            protected void readJson(JsonNode jsonNode, String readFrom, String baseUrl) {
+            protected void readJson(JsonNode jsonNode, String readFrom, String baseUrl)
+            {
                 TransformConfig transformConfig = jsonObjectMapper.convertValue(jsonNode, TransformConfig.class);
                 addTransformConfig(transformConfig, readFrom, baseUrl, registry);
             }
         };
     }
 
-    public boolean addLocalConfig(String path) {
+    public boolean addLocalConfig(String path)
+    {
         return configFileFinder.readFiles(path, log);
     }
 
-    public boolean addRemoteConfig(List<String> urls, String remoteType) throws IOException {
-        try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig)) {
+    public boolean addRemoteConfig(List<String> urls, String remoteType) throws IOException
+    {
+        try(CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
+        {
             boolean successReadingConfig = true;
-            for (String url : urls) {
-                if (addRemoteConfig(httpclient, url, remoteType)) {
+            for (String url : urls)
+            {
+                if (addRemoteConfig(httpclient, url, remoteType))
+                {
                     tEngineCount++;
-                } else {
+                } else
+                {
                     successReadingConfig = false;
                 }
             }
@@ -101,49 +111,68 @@ public class CombinedConfig extends CombinedTransformConfig {
         }
     }
 
-    private boolean addRemoteConfig(CloseableHttpClient httpclient, String baseUrl, String remoteType) {
+    private boolean addRemoteConfig(CloseableHttpClient httpclient, String baseUrl, String remoteType)
+    {
         String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
-        try {
-            try (CloseableHttpResponse response = execute(httpclient, httpGet)) {
+        try
+        {
+            try (CloseableHttpResponse response = execute(httpclient, httpGet))
+            {
                 StatusLine statusLine = response.getStatusLine();
-                if (statusLine == null) {
-                    throw new AlfrescoRuntimeException(remoteType + " on " + url + " returned no status ");
+                if (statusLine == null)
+                {
+                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned no status ");
                 }
                 HttpEntity resEntity = response.getEntity();
-                if (resEntity != null) {
+                if (resEntity != null)
+                {
                     int statusCode = statusLine.getStatusCode();
-                    if (statusCode == 200) {
-                        try {
+                    if (statusCode == 200)
+                    {
+                        try
+                        {
                             String content = getContent(resEntity);
-                            try (StringReader reader = new StringReader(content)) {
+                            try (StringReader reader = new StringReader(content))
+                            {
                                 int transformCount = transformerCount();
-                                configFileFinder.readFile(reader, remoteType + " on " + baseUrl, "json", baseUrl, log);
-                                if (transformCount == transformerCount() || response.containsHeader(X_ALFRESCO_RETRY_NEEDED_HEADER)) {
+                                configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
+                                if (transformCount == transformerCount() || response.containsHeader(X_ALFRESCO_RETRY_NEEDED_HEADER))
+                                {
                                     successReadingConfig = false;
                                 }
                             }
 
                             EntityUtils.consume(resEntity);
-                        } catch (IOException e) {
-                            throw new AlfrescoRuntimeException("Failed to read the returned content from " +
-                                    remoteType + " on " + url, e);
                         }
-                    } else {
+                        catch (IOException e)
+                        {
+                            throw new AlfrescoRuntimeException("Failed to read the returned content from "+
+                                    remoteType+" on " + url, e);
+                        }
+                    }
+                    else
+                    {
                         String message = getErrorMessage(resEntity);
-                        throw new AlfrescoRuntimeException(remoteType + " on " + url + " returned a " + statusCode +
+                        throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned a " + statusCode +
                                 " status " + message);
                     }
-                } else {
-                    throw new AlfrescoRuntimeException(remoteType + " on " + url + " did not return an entity " + url);
                 }
-            } catch (IOException e) {
-                throw new AlfrescoRuntimeException("This error was generated because the engine requires Transform AIO but it is not being used " + remoteType +
+                else
+                {
+                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" did not return an entity " + url);
+                }
+            }
+            catch (IOException e)
+            {
+                throw new AlfrescoRuntimeException("This error was generated because the engine requires Transform AIO but it is not being used "+remoteType+
                         " on " + url, e);
             }
 
-        } catch (AlfrescoRuntimeException e) {
+        }
+        catch (AlfrescoRuntimeException e)
+        {
             log.error(e.getMsgId());
             successReadingConfig = false;
         }
@@ -151,31 +180,37 @@ public class CombinedConfig extends CombinedTransformConfig {
     }
 
     // Tests mock the return values
-    CloseableHttpResponse execute(CloseableHttpClient httpclient, HttpGet httpGet) throws IOException {
+    CloseableHttpResponse execute(CloseableHttpClient httpclient, HttpGet httpGet) throws IOException
+    {
         return httpclient.execute(httpGet);
     }
 
     // Tests mock the return values
-    String getContent(HttpEntity resEntity) throws IOException {
+    String getContent(HttpEntity resEntity) throws IOException
+    {
         return EntityUtils.toString(resEntity);
     }
 
     // Strip out just the error message in the response
-    private String getErrorMessage(HttpEntity resEntity) throws IOException {
+    private String getErrorMessage(HttpEntity resEntity) throws IOException
+    {
         String message = "";
         String content = getContent(resEntity);
         int i = content.indexOf("\"message\":\"");
-        if (i != -1) {
+        if (i != -1)
+        {
             int j = content.indexOf("\",\"path\":", i);
-            if (j != -1) {
-                message = content.substring(i + 11, j);
+            if (j != -1)
+            {
+                message = content.substring(i+11, j);
             }
         }
         return message;
     }
 
     @Override
-    protected boolean isPassThroughTransformName(String name) {
+    protected boolean isPassThroughTransformName(String name)
+    {
         return name.equals(LocalPassThroughTransform.NAME);
     }
 
@@ -185,7 +220,8 @@ public class CombinedConfig extends CombinedTransformConfig {
      *
      * @param mimetypeService to find all the mimetypes
      */
-    public void addPassThroughTransformer(MimetypeService mimetypeService, AbstractTransformRegistry registry) {
+    public void addPassThroughTransformer(MimetypeService mimetypeService, AbstractTransformRegistry registry)
+    {
         List<String> mimetypes = mimetypeService.getMimetypes();
         Transformer transformer = LocalPassThroughTransform.getConfig(mimetypes);
         TransformConfig transformConfig = TransformConfig.builder()
@@ -194,7 +230,8 @@ public class CombinedConfig extends CombinedTransformConfig {
         addTransformConfig(transformConfig, "based on mimetype list", null, registry);
     }
 
-    public void register(TransformServiceRegistryImpl registry) {
+    public void register(TransformServiceRegistryImpl registry)
+    {
         TransformServiceRegistryImpl.Data data = registry.getData();
         data.setTEngineCount(tEngineCount);
         data.setFileCount(configFileFinder.getFileCount());

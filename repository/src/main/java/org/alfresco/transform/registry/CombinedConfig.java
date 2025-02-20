@@ -166,14 +166,13 @@ public class CombinedConfig extends CombinedTransformConfig
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
+                throw new AlfrescoRuntimeException("This error was generated because the engine requires Transform AIO, but it is not being used " +remoteType+
                         " on " + url, e);
             }
-
         }
         catch (AlfrescoRuntimeException e)
         {
-            log.error(e.getMessage());
+            log.error(e.getMsgId());
             successReadingConfig = false;
         }
         return successReadingConfig;

@@ -63,12 +63,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CombinedConfig extends CombinedTransformConfig
 {
-    public static final String X_ALFRESCO_RETRY_NEEDED_HEADER = "X-Alfresco-Retry-Needed";
-    private final       Log    log;
-    private final HttpClientConfig httpClientConfig;
-    private final ObjectMapper     jsonObjectMapper = new ObjectMapper();
-    private final ConfigFileFinder configFileFinder;
-    private       int              tEngineCount;
+    public static final String           X_ALFRESCO_RETRY_NEEDED_HEADER = "X-Alfresco-Retry-Needed";
+    private final       Log              log;
+    private final       HttpClientConfig httpClientConfig;
+    private final       ObjectMapper     jsonObjectMapper               = new ObjectMapper();
+    private final       ConfigFileFinder configFileFinder;
+    private             int              tEngineCount;
 
     public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClientConfig httpClientConfig)
     {

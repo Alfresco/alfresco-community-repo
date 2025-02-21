@@ -242,3 +242,4 @@ public class CombinedConfig extends CombinedTransformConfig
         registerCombinedTransformers(registry);
     }
 }
+

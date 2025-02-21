@@ -25,8 +25,13 @@
  */
 package org.alfresco.transform.registry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Collections;
+import java.util.List;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.httpclient.HttpClient4Factory;
 import org.alfresco.httpclient.HttpClientConfig;
@@ -43,34 +48,27 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Collections;
-import java.util.List;
-
-import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * This class reads multiple T-Engine config and local files and registers as if they were all in one file. Transform
- options are shared between all sources.
+ * options are shared between all sources.
  * <p>
- *
  * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or {@link
- CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)} followed by a
- call to {@link #register(TransformServiceRegistryImpl)}.
+ * CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)} followed by a
+ * call to {@link #register(TransformServiceRegistryImpl)}.
  *
  * @author adavis
  */
 public class CombinedConfig extends CombinedTransformConfig
 {
     public static final String X_ALFRESCO_RETRY_NEEDED_HEADER = "X-Alfresco-Retry-Needed";
-    private final Log log;
-
-    private ObjectMapper jsonObjectMapper = new ObjectMapper();
-    private ConfigFileFinder configFileFinder;
-    private int tEngineCount;
-
+    private final       Log    log;
     private final HttpClientConfig httpClientConfig;
+    private final ObjectMapper     jsonObjectMapper = new ObjectMapper();
+    private final ConfigFileFinder configFileFinder;
+    private       int              tEngineCount;
 
     public CombinedConfig(Log log, AbstractTransformRegistry registry, HttpClientConfig httpClientConfig)
     {
@@ -95,7 +93,7 @@ public class CombinedConfig extends CombinedTransformConfig
 
     public boolean addRemoteConfig(List<String> urls, String remoteType) throws IOException
     {
-        try(CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
+        try (CloseableHttpClient httpclient = HttpClient4Factory.createHttpClient(httpClientConfig))
         {
             boolean successReadingConfig = true;
             for (String url : urls)
@@ -103,7 +101,8 @@ public class CombinedConfig extends CombinedTransformConfig
                 if (addRemoteConfig(httpclient, url, remoteType))
                 {
                     tEngineCount++;
-                } else
+                }
+                else
                 {
                     successReadingConfig = false;
                 }
@@ -124,7 +123,7 @@ public class CombinedConfig extends CombinedTransformConfig
                 StatusLine statusLine = response.getStatusLine();
                 if (statusLine == null)
                 {
-                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned no status ");
+                    throw new AlfrescoRuntimeException(remoteType + " on " + url + " returned no status ");
                 }
                 HttpEntity resEntity = response.getEntity();
                 if (resEntity != null)
@@ -138,8 +137,9 @@ public class CombinedConfig extends CombinedTransformConfig
                             try (StringReader reader = new StringReader(content))
                             {
                                 int transformCount = transformerCount();
-                                configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
-                                if (transformCount == transformerCount() || response.containsHeader(X_ALFRESCO_RETRY_NEEDED_HEADER))
+                                configFileFinder.readFile(reader, remoteType + " on " + baseUrl, "json", baseUrl, log);
+                                if (transformCount == transformerCount() || response.containsHeader(
+                                            X_ALFRESCO_RETRY_NEEDED_HEADER))
                                 {
                                     successReadingConfig = false;
                                 }
@@ -149,26 +149,27 @@ public class CombinedConfig extends CombinedTransformConfig
                         }
                         catch (IOException e)
                         {
-                            throw new AlfrescoRuntimeException("Failed to read the returned content from "+
-                                    remoteType+" on " + url, e);
+                            throw new AlfrescoRuntimeException(
+                                        "Failed to read the returned content from " + remoteType + " on " + url, e);
                         }
                     }
                     else
                     {
                         String message = getErrorMessage(resEntity);
-                        throw new AlfrescoRuntimeException(remoteType+" on " + url+" returned a " + statusCode +
-                                " status " + message);
+                        throw new AlfrescoRuntimeException(
+                                    remoteType + " on " + url + " returned a " + statusCode + " status " + message);
                     }
                 }
                 else
                 {
-                    throw new AlfrescoRuntimeException(remoteType+" on " + url+" did not return an entity " + url);
+                    throw new AlfrescoRuntimeException(remoteType + " on " + url + " did not return an entity " + url);
                 }
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException("This error was generated because the engine requires Transform AIO but it is not being used  "+remoteType+
-                        " on " + url, e);
+                throw new AlfrescoRuntimeException(
+                            "This error was generated because the engine requires Transform AIO but it is not being used  "
+                                        + remoteType + " on " + url, e);
             }
 
         }
@@ -203,7 +204,7 @@ public class CombinedConfig extends CombinedTransformConfig
             int j = content.indexOf("\",\"path\":", i);
             if (j != -1)
             {
-                message = content.substring(i+11, j);
+                message = content.substring(i + 11, j);
             }
         }
         return message;
@@ -218,6 +219,7 @@ public class CombinedConfig extends CombinedTransformConfig
     /**
      * Adds a PassThrough transform where the source and target mimetypes are identical, or transforms to "text/plain"
      * from selected text based types.
+     *
      * @param mimetypeService to find all the mimetypes
      */
     public void addPassThroughTransformer(MimetypeService mimetypeService, AbstractTransformRegistry registry)
@@ -225,8 +227,8 @@ public class CombinedConfig extends CombinedTransformConfig
         List<String> mimetypes = mimetypeService.getMimetypes();
         Transformer transformer = LocalPassThroughTransform.getConfig(mimetypes);
         TransformConfig transformConfig = TransformConfig.builder()
-                .withTransformers(Collections.singletonList(transformer))
-                .build();
+                    .withTransformers(Collections.singletonList(transformer))
+                    .build();
         addTransformConfig(transformConfig, "based on mimetype list", null, registry);
     }
 

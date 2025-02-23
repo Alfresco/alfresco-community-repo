@@ -180,12 +180,12 @@ Lightbox JS http://lokeshdhakar.com/projects/lightbox/
 
 
 === Eclipse Public License 1.0 ===
+Angus Mail Provider https://eclipse-ee4j.github.io/angus-mail/
 AspectJ http://eclipse.org/aspectj/
 Bliki   http://code.google.com/p/gwtwiki/
 JUnit   http://junit.org/
 TrueLicense     http://truelicense.java.net/
 truezip http://truezip.java.net/
-
 
 === ICU License ===
 icu4j   http://icu-project.org/ 

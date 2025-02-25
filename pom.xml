@@ -61,7 +61,7 @@
         <dependency.spring-security.version>6.3.4</dependency.spring-security.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.17.2</dependency.jackson.version>
-        <dependency.cxf.version>4.0.5</dependency.cxf.version>
+        <dependency.cxf.version>4.1.0</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0-jakarta-1</dependency.opencmis.version>
         <dependency.webscripts.version>9.4</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.78.1</dependency.bouncycastle.version>
@@ -86,7 +86,7 @@
         <dependency.poi.version>5.3.0</dependency.poi.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>4.6.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
-        <dependency.netty.version>4.1.113.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
+        <dependency.netty.version>4.1.117.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies, e.g.: netty-common -->
         <dependency.activemq.version>5.18.3</dependency.activemq.version>
         <dependency.apache-compress.version>1.27.1</dependency.apache-compress.version>
         <dependency.awaitility.version>4.2.2</dependency.awaitility.version>

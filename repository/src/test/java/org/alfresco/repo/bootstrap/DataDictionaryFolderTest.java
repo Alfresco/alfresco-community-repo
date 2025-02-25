@@ -25,6 +25,12 @@
  */
 package org.alfresco.repo.bootstrap;
 
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -36,22 +42,16 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.util.List;
 
 public class DataDictionaryFolderTest extends BaseSpringTest
 {
     @ClassRule
-    private static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
+    public static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
 
     private static final String DATA_DICTIONARY = "Data Dictionary";
 
     @Rule
-    private WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
+    public WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
 
     private NodeService nodeService;
 
@@ -109,8 +109,7 @@ public class DataDictionaryFolderTest extends BaseSpringTest
                             companyHomeRef,
                             ContentModel.ASSOC_CONTAINS,
                             QName.createQName("testDeleteAndRestore-folder2-" + System.currentTimeMillis()),
-                            ContentModel.TYPE_FOLDER
-                    ).getChildRef();
+                            ContentModel.TYPE_FOLDER).getChildRef();
                     try
                     {
                         nodeService.moveNode(childNodeRef, folderRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);

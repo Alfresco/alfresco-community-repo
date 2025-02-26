@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
- *
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -39,11 +39,11 @@ import jakarta.mail.Message;
 import jakarta.mail.Session;
 import jakarta.mail.internet.InternetAddress;
 
+import com.sun.mail.smtp.SMTPMessage;
 import junit.framework.TestCase;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.angus.mail.smtp.SMTPMessage;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -73,7 +73,7 @@ import org.alfresco.util.ApplicationContextHelper;
 
 /**
  * Unit test of EmailServiceImplTest
- *
+ * 
  * @author mrogers
  *
  */
@@ -136,9 +136,9 @@ public class EmailServiceImplTest extends TestCase
 
     /**
      * Test the from name.
-     *
+     * 
      * Step 1: User admin will map to the "unknownUser" which out of the box is "anonymous" Sending email From "admin" will fail.
-     *
+     * 
      * Step 2: Send from the test user to the test' user's home folder.
      */
     public void testFromName() throws Exception
@@ -222,7 +222,7 @@ public class EmailServiceImplTest extends TestCase
 
         /**
          * Step 2
-         *
+         * 
          * Send From the test user TEST_EMAIL to the test user's home
          */
         {
@@ -257,9 +257,9 @@ public class EmailServiceImplTest extends TestCase
 
         /**
          * Step 3
-         *
+         * 
          * message.from From with "name" < name@ domain > format SMTP.FROM="dummy"
-         *
+         * 
          * Send From the test user <TEST_EMAIL> to the test user's home
          */
         {
@@ -295,9 +295,9 @@ public class EmailServiceImplTest extends TestCase
 
         /**
          * Step 4
-         *
+         * 
          * From with "name" < name@ domain > format
-         *
+         * 
          * Send From the test user <TEST_EMAIL> to the test user's home
          */
         {
@@ -375,9 +375,9 @@ public class EmailServiceImplTest extends TestCase
 
     /**
      * ALF-9544 ALF-751
-     *
+     * 
      * Inbound email to a folder restricts file name to 86 characters or less.
-     *
+     * 
      * Also has tests for other variations of subject
      */
     public void testFolderSubject() throws Exception
@@ -598,7 +598,7 @@ public class EmailServiceImplTest extends TestCase
 
     /**
      * ALF-1878
-     *
+     * 
      * Duplicate incoming email Subjects over-write each other
      */
     public void testMultipleMessagesToFolder() throws Exception
@@ -813,7 +813,7 @@ public class EmailServiceImplTest extends TestCase
 
     /**
      * MNT-9289
-     *
+     * 
      * Change in case in email Subject causes DuplicateChildNodeNameException
      */
     public void testCaseSensitivity() throws Exception
@@ -894,7 +894,7 @@ public class EmailServiceImplTest extends TestCase
 
     /**
      * ALF-12297
-     *
+     * 
      * Test messages being sent to a cm:content node
      */
     public void testMessagesToDocument() throws Exception
@@ -1090,7 +1090,7 @@ public class EmailServiceImplTest extends TestCase
 
     /**
      * The Email contributors authority controls who can add email.
-     *
+     * 
      * This test switches between the EMAIL_CONTRIBUTORS group and EVERYONE
      */
     public void testEmailContributorsAuthority() throws Exception
@@ -1137,7 +1137,7 @@ public class EmailServiceImplTest extends TestCase
 
         /**
          * Step 1 Set the email contributors authority to EVERYONE
-         *
+         * 
          * Test that TEST_USER is allowed to send email - so even though TEST_USER is not a contributor
          */
         emailServiceImpl.setEmailContributorsAuthority("EVERYONE");
@@ -1170,7 +1170,7 @@ public class EmailServiceImplTest extends TestCase
 
         /**
          * Step 2 Negative test
-         *
+         * 
          * Send From the test user TEST_EMAIL to the test user's home
          */
         try

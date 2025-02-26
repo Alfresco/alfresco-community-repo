@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
- *
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -51,19 +51,19 @@ import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.MimeUtility;
 import jakarta.transaction.UserTransaction;
 
+import com.sun.mail.iap.ProtocolException;
+import com.sun.mail.iap.Response;
+import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.protocol.BODY;
+import com.sun.mail.imap.protocol.FetchResponse;
+import com.sun.mail.imap.protocol.IMAPProtocol;
+import com.sun.mail.imap.protocol.IMAPResponse;
+import com.sun.mail.imap.protocol.RFC822DATA;
+import com.sun.mail.imap.protocol.UID;
+import com.sun.mail.util.ASCIIUtility;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.angus.mail.iap.ProtocolException;
-import org.eclipse.angus.mail.iap.Response;
-import org.eclipse.angus.mail.imap.IMAPFolder;
-import org.eclipse.angus.mail.imap.protocol.BODY;
-import org.eclipse.angus.mail.imap.protocol.FetchResponse;
-import org.eclipse.angus.mail.imap.protocol.IMAPProtocol;
-import org.eclipse.angus.mail.imap.protocol.IMAPResponse;
-import org.eclipse.angus.mail.imap.protocol.RFC822DATA;
-import org.eclipse.angus.mail.imap.protocol.UID;
-import org.eclipse.angus.mail.util.ASCIIUtility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
@@ -667,7 +667,7 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Returns BODY object containing desired message fragment
-     *
+     * 
      * @param folder
      *            Folder containing the message
      * @param uid
@@ -695,7 +695,7 @@ public class ImapMessageTest extends TestCase
                 }
 
                 FetchResponse fetchResponse = (FetchResponse) r[0];
-                BODY body = (BODY) fetchResponse.getItem(BODY.class);
+                BODY body = (BODY) fetchResponse.getItem(com.sun.mail.imap.protocol.BODY.class);
                 return body;
             }
         });
@@ -704,7 +704,7 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Finds node by its path
-     *
+     * 
      * @param path
      *            String
      * @return NodeRef
@@ -717,7 +717,7 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Returns the UID of the first message in folder
-     *
+     * 
      * @param folder
      *            Folder containing the message
      * @param msn
@@ -778,7 +778,7 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Returns size of the message
-     *
+     * 
      * @param folder
      *            Folder containing the message
      * @param uid
@@ -793,7 +793,7 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Returns a full message body
-     *
+     * 
      * @param folder
      *            Folder containing the message
      * @param uid
@@ -824,7 +824,7 @@ public class ImapMessageTest extends TestCase
 
     /**
      * Simple util for logging response
-     *
+     * 
      * @param r
      *            response
      */

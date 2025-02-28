@@ -551,10 +551,10 @@ Admin.addEventListener(window, 'load', function() {
        Template for a full page view
    -->
    <div class="sticky-wrapper">
-      
+
       <div class="header">
          <span><a href="${url.serviceContext}${DEFAULT_CONTROLLER!"/admin"}">${msg("admin-console.header")}</a></span><#if metadata??><span class="meta">${HOSTNAME}</span><span class="meta">${HOSTADDR}</span></#if>
-         <div style="float:right"><a href="${msg("admin-console.help-link", docsEdition)}" target="_blank">${msg("admin-console.help")}</a></div>
+         <div style="float:right"><a href="${documentationUrl("admin-console.help-link")}" target="_blank">${msg("admin-console.help")}</a></div>
       </div>
       
       <div class="navigation-wrapper">

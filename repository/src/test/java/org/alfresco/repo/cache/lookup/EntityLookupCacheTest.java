@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2023 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,7 +31,6 @@ import java.sql.Savepoint;
 import java.util.Map;
 import java.util.TreeMap;
 
-import junit.framework.AssertionFailedError;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -61,7 +60,7 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
     private ControlDAO controlDAO;
 
     @Before
-    protected void setUp() throws Exception
+    public void setUp() throws Exception
     {
         cache = new MemoryCache<Long, Object>();
         entityLookupCacheA = new EntityLookupCache<Long, Object, String>(cache, "A", this);
@@ -80,7 +79,7 @@ public class EntityLookupCacheTest implements EntityLookupCallbackDAO<Long, Obje
             // Keep the "database" empty
             entityLookupCacheA.getByValue(this);
         }
-        catch (AssertionFailedError e)
+        catch (AssertionError e)
         {
             // Expected
         }

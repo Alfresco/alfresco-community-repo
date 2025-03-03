@@ -166,14 +166,14 @@ public class CombinedConfig extends CombinedTransformConfig
             }
             catch (IOException e)
             {
-                throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
+                throw new AlfrescoRuntimeException("This error was generated because the engine requires Transform AIO but it is not being used "+remoteType+
                         " on " + url, e);
             }
 
         }
         catch (AlfrescoRuntimeException e)
         {
-            log.error(e.getMessage());
+            log.error(e.getMsgId());
             successReadingConfig = false;
         }
         return successReadingConfig;
@@ -217,6 +217,7 @@ public class CombinedConfig extends CombinedTransformConfig
     /**
      * Adds a PassThrough transform where the source and target mimetypes are identical, or transforms to "text/plain"
      * from selected text based types.
+     *
      * @param mimetypeService to find all the mimetypes
      */
     public void addPassThroughTransformer(MimetypeService mimetypeService, AbstractTransformRegistry registry)

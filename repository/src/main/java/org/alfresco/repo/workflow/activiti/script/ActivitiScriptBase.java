@@ -98,7 +98,7 @@ public class ActivitiScriptBase
     protected Object executeScriptAsUser(final String theScript, final Map<String, Object> model, final String scriptProcessorName, final String runAsUser)
     {
         // execute as specified runAsUser
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<>() {
             public Object doWork() throws Exception
             {
                 return executeScript(theScript, model, scriptProcessorName);
@@ -183,14 +183,11 @@ public class ActivitiScriptBase
             String deploymentId = null;
             String processDefinitionId = null;
 
-            if (model != null && model.containsKey(EXECUTION_BINDING_NAME))
+            if (model != null && model.containsKey(EXECUTION_BINDING_NAME) && model.get(EXECUTION_BINDING_NAME) instanceof ExecutionEntity)
             {
-                if (model.get(EXECUTION_BINDING_NAME) instanceof ExecutionEntity)
-                {
-                    ExecutionEntity executionEntity = (ExecutionEntity) model.get(EXECUTION_BINDING_NAME);
-                    deploymentId = executionEntity.getDeploymentId();
-                    processDefinitionId = executionEntity.getProcessDefinitionId();
-                }
+                ExecutionEntity executionEntity = (ExecutionEntity) model.get(EXECUTION_BINDING_NAME);
+                deploymentId = executionEntity.getDeploymentId();
+                processDefinitionId = executionEntity.getProcessDefinitionId();
             }
 
             category = getDeploymentCategoryFromQuery(deploymentId, processDefinitionId);
@@ -215,12 +212,18 @@ public class ActivitiScriptBase
             }
             else
             {
-                LOGGER.debug("No execution context available");
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug("No execution context available");
+                }
             }
         }
         catch (Exception e)
         {
-            LOGGER.debug("Could not obtain deployment category from execution context: {}", e.getMessage());
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Could not obtain deployment category from execution context: {}", e.getMessage());
+            }
         }
 
         return category;
@@ -263,7 +266,10 @@ public class ActivitiScriptBase
         }
         catch (Exception e)
         {
-            LOGGER.debug("Could not obtain deployment category through a query: {}", e.getMessage());
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Could not obtain deployment category through a query: {}", e.getMessage());
+            }
         }
 
         return category;
@@ -274,9 +280,10 @@ public class ActivitiScriptBase
      */
     private void validateRunAsUser(final String runAsUser)
     {
-        Boolean runAsExists = AuthenticationUtil.runAs(new RunAsWork<Boolean>() {
+        Boolean runAsExists = AuthenticationUtil.runAs(new RunAsWork<>() {
             // Validate using System user to ensure sufficient permissions available to access person node.
 
+            @Override
             public Boolean doWork() throws Exception
             {
                 return getServiceRegistry().getPersonService().personExists(runAsUser);

@@ -38,6 +38,7 @@ import java.util.Set;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -264,5 +265,43 @@ public class ClientRegistrationProviderUnitTest
             assertThat(requestEntityCaptor.getValue().getUrl().toASCIIString()).isEqualTo(
                     "https://login.serviceonline.alfresco/alfresco/v2.0" + DISCOVERY_PATH_SEGMENTS);
         }
+    }
+
+    @Test
+    public void shouldUseIssuerFromOIDCDiscovery()
+    {
+        config.setIssuerUrl(null);
+        try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
+        {
+            providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
+
+            ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
+                    restTemplate);
+            assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isEqualTo("https://login.serviceonline.alfresco/alfresco/v2.0");
+
+        }
+    }
+
+    @Test
+    public void shouldUseIssuerFromCustomProperty()
+    {
+        try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
+        {
+            config.setCustomIssuerParameter("access_token_issuer");
+            when(oidcResponse.getCustomParameters()).thenReturn(createJSONObject("access_token_issuer", "https://login.serviceonline.alfresco/alfresco/v2.0/at_trust"));
+            providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
+
+            ClientRegistration clientRegistration = new ClientRegistrationProvider(config).createClientRegistration(
+                    restTemplate);
+            assertThat(clientRegistration.getProviderDetails().getIssuerUri()).isEqualTo("https://login.serviceonline.alfresco/alfresco/v2.0/at_trust");
+
+        }
+    }
+
+    private static JSONObject createJSONObject(String fieldName, String fieldValue)
+    {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.appendField(fieldName, fieldValue);
+        return jsonObject;
     }
 }

@@ -69,6 +69,9 @@ public class IdentityServiceConfig
     private boolean clientIdValidationDisabled;
     private String adminConsoleRedirectPath;
     private String signatureAlgorithms;
+    private String adminConsoleScopes;
+    private String passwordGrantScopes;
+    private String customIssuerParameter;
 
     /**
      *
@@ -326,5 +329,39 @@ public class IdentityServiceConfig
     public void setSignatureAlgorithms(String signatureAlgorithms)
     {
         this.signatureAlgorithms = signatureAlgorithms;
+    }
+
+    public String getCustomIssuerParameter()
+    {
+        return customIssuerParameter;
+    }
+
+    public void setCustomIssuerParameter(String customIssuerParameter)
+    {
+        this.customIssuerParameter = customIssuerParameter;
+    }
+
+    public Set<String> getAdminConsoleScopes()
+    {
+        return Stream.of(adminConsoleScopes.split(","))
+            .map(String::trim)
+            .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setAdminConsoleScopes(String adminConsoleScopes)
+    {
+        this.adminConsoleScopes = adminConsoleScopes;
+    }
+
+    public Set<String> getPasswordGrantScopes()
+    {
+        return Stream.of(passwordGrantScopes.split(","))
+            .map(String::trim)
+            .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public void setPasswordGrantScopes(String passwordGrantScopes)
+    {
+        this.passwordGrantScopes = passwordGrantScopes;
     }
 }

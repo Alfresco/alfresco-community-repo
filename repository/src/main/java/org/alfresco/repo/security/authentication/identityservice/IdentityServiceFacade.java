@@ -59,10 +59,9 @@ public interface IdentityServiceFacade
      * Gets claims about the authenticated user,
      * such as name and email address, via the UserInfo endpoint of the OpenID provider.
      * @param token {@link String} with encoded access token value.
-     * @param principalAttribute {@link String} the attribute name used to access the user's name from the user info response.
      * @return {@link OIDCUserInfo} containing user claims.
      */
-    Optional<OIDCUserInfo> getUserInfo(String token, String principalAttribute);
+    Optional<OIDCUserInfo> getUserInfo(String token);
 
     /**
      * Gets a client registration

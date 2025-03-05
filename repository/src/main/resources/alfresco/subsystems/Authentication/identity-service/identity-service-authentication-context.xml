@@ -158,6 +158,15 @@
       <property name="signatureAlgorithms">
          <value>${identity-service.signature-algorithms:RS256,PS256}</value>
       </property>
+       <property name="adminConsoleScopes">
+           <value>${identity-service.admin-console.scopes:openid,profile,email,offline_access}</value>
+       </property>
+       <property name="passwordGrantScopes">
+           <value>${identity-service.password-grant.scopes:openid,profile,email}</value>
+       </property>
+       <property name="customIssuerParameter">
+           <value>${identity-service.custom-issuer-parameter:#{null}}</value>
+       </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->
@@ -203,7 +212,6 @@
       <constructor-arg ref="PersonService"/>
       <constructor-arg ref="identityServiceFacade"/>
       <constructor-arg ref="transactionService"/>
-      <constructor-arg ref="identityServiceConfig"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

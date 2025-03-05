@@ -71,7 +71,6 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private static final String ALFRESCO_ACCESS_TOKEN = "ALFRESCO_ACCESS_TOKEN";
     private static final String ALFRESCO_REFRESH_TOKEN = "ALFRESCO_REFRESH_TOKEN";
     private static final String ALFRESCO_TOKEN_EXPIRATION = "ALFRESCO_TOKEN_EXPIRATION";
-    private static final Set<String> SCOPES = Set.of("openid", "profile", "email", "offline_access");
 
     private IdentityServiceConfig identityServiceConfig;
     private IdentityServiceFacade identityServiceFacade;
@@ -226,7 +225,7 @@ public class IdentityServiceAdminConsoleAuthenticator implements AdminConsoleAut
     private Set<String> getSupportedScopes(Scope scopes)
     {
         return scopes.stream()
-            .filter(scope -> SCOPES.contains(scope.getValue()))
+            .filter(scope -> identityServiceConfig.getAdminConsoleScopes().contains(scope.getValue()))
             .map(Identifier::getValue)
             .collect(Collectors.toSet());
     }

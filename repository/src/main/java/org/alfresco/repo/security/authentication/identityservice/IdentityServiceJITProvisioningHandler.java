@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 
 /**
  * This class handles Just in Time user provisioning. It extracts {@link OIDCUserInfo}
@@ -51,10 +52,10 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class IdentityServiceJITProvisioningHandler
 {
-    private final IdentityServiceConfig identityServiceConfig;
     private final IdentityServiceFacade identityServiceFacade;
     private final PersonService personService;
     private final TransactionService transactionService;
+    private final ClientRegistration clientRegistration;
 
     private final BiFunction<DecodedAccessToken, String, Optional<? extends OIDCUserInfo>> mapTokenToUserInfoResponse = (token, usernameMappingClaim) -> {
         Optional<String> firstName = Optional.ofNullable(token)
@@ -81,13 +82,12 @@ public class IdentityServiceJITProvisioningHandler
 
     public IdentityServiceJITProvisioningHandler(IdentityServiceFacade identityServiceFacade,
         PersonService personService,
-        TransactionService transactionService,
-        IdentityServiceConfig identityServiceConfig)
+        TransactionService transactionService)
     {
         this.identityServiceFacade = identityServiceFacade;
         this.personService = personService;
         this.transactionService = transactionService;
-        this.identityServiceConfig = identityServiceConfig;
+        this.clientRegistration = identityServiceFacade.getClientRegistration();
     }
 
     public Optional<OIDCUserInfo> extractUserInfoAndCreateUserIfNeeded(String bearerToken)
@@ -140,14 +140,12 @@ public class IdentityServiceJITProvisioningHandler
         return Optional.ofNullable(bearerToken)
             .map(identityServiceFacade::decodeToken)
             .flatMap(decodedToken -> mapTokenToUserInfoResponse.apply(decodedToken,
-                identityServiceConfig.getPrincipalAttribute()));
+                clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()));
     }
 
     private Optional<OIDCUserInfo> extractUserInfoResponseFromEndpoint(String bearerToken)
     {
-        return identityServiceFacade.getUserInfo(bearerToken,
-                StringUtils.isNotBlank(identityServiceConfig.getPrincipalAttribute()) ?
-                    identityServiceConfig.getPrincipalAttribute() : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME)
+        return identityServiceFacade.getUserInfo(bearerToken)
             .filter(userInfo -> userInfo.username() != null && !userInfo.username().isEmpty())
             .map(userInfo -> new OIDCUserInfo(normalizeUserId(userInfo.username()),
                 Optional.ofNullable(userInfo.firstName()).orElse(""),

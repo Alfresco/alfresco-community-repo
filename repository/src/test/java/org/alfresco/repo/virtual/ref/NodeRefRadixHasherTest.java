@@ -27,6 +27,9 @@
 package org.alfresco.repo.virtual.ref;
 
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
 
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
@@ -34,9 +37,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.junit.Test;
 
 public class NodeRefRadixHasherTest extends TestCase
 {
@@ -46,23 +46,23 @@ public class NodeRefRadixHasherTest extends TestCase
     public void testSupportedStores() throws Exception
     {
         NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
-        
-        String[] storeProtocols = new String[] { StoreRef.PROTOCOL_WORKSPACE, StoreRef.PROTOCOL_ARCHIVE,
-                    StoreRef.PROTOCOL_AVM, StoreRef.PROTOCOL_DELETED, VersionService.VERSION_STORE_PROTOCOL };
-        String[] storeIds = new String[] { "SpacesStore", VersionModel.STORE_ID, Version2Model.STORE_ID };
+
+        String[] storeProtocols = new String[]{StoreRef.PROTOCOL_WORKSPACE, StoreRef.PROTOCOL_ARCHIVE,
+                StoreRef.PROTOCOL_AVM, StoreRef.PROTOCOL_DELETED, VersionService.VERSION_STORE_PROTOCOL};
+        String[] storeIds = new String[]{"SpacesStore", VersionModel.STORE_ID, Version2Model.STORE_ID};
 
         for (int i = 0; i < storeProtocols.length; i++)
         {
             for (int j = 0; j < storeIds.length; j++)
             {
                 NodeRef nr = new NodeRef(storeProtocols[i],
-                                         storeIds[j],
-                                         "0d3b26ff-c4c1-4680-8622-8608ea7ab4b2");
+                        storeIds[j],
+                        "0d3b26ff-c4c1-4680-8622-8608ea7ab4b2");
                 Pair<String, String> nh = h.hash(nr);
                 NodeRef nr2 = h.lookup(nh);
                 assertEquals("Could match hash-lookup " + nr,
-                             nr,
-                             nr2);
+                        nr,
+                        nr2);
             }
         }
     }
@@ -74,8 +74,7 @@ public class NodeRefRadixHasherTest extends TestCase
         NodeRef nr = new NodeRef("workspace://SpacesStore/0d3b26ff-c4c1-4680-8622-8608ea7ab4b2");
         Pair<String, String> nh = h.hash(nr);
         NodeRef nr2 = h.lookup(nh);
-        assertEquals(nr,
-                     nr2);
+        assertEquals(nr, nr2);
     }
 
     @Test
@@ -111,30 +110,54 @@ public class NodeRefRadixHasherTest extends TestCase
     }
 
     @Test
-    public void testInvalidNodeId1() throws Exception
+    public void testValidNodeId1() throws Exception
     {
         NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
         NodeRef nr = new NodeRef("workspace://SpacesStore/0d3b26ff-c4c1-4680-8622-8608ea7ab4");
-        try
-        {
-            h.hash(nr);
-            fail("Should not be able to hash invalid id (length) NodeRef " + nr);
-        }
-        catch (RuntimeException e)
-        {
-            logger.info("Caught invalid NodeRef " + e.getMessage());
-        }
+        Pair<String, String> nh = h.hash(nr); // no longer invalid
+        NodeRef nr2 = h.lookup(nh);
+        assertEquals(nr, nr2);
     }
 
     @Test
-    public void testInvalidNodeId2() throws Exception
+    public void testValidNodeId2() throws Exception
     {
         NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
         NodeRef nr = new NodeRef("workspace://SpacesStore/0d3b26ff-c4c14680-8622-8608ea7ab4b29");
+        Pair<String, String> nh = h.hash(nr); // no longer invalid
+        NodeRef nr2 = h.lookup(nh);
+        assertEquals(nr, nr2);
+    }
+
+    @Test
+    public void testValidNodeId3() throws Exception
+    {
+        NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
+        NodeRef nr = new NodeRef("workspace://SpacesStore/wf-email-html-ftl");
+        Pair<String, String> nh = h.hash(nr);
+        NodeRef nr2 = h.lookup(nh);
+        assertEquals(nr, nr2);
+    }
+
+    @Test
+    public void testValidNodeId4() throws Exception
+    {
+        NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
+        NodeRef nr = new NodeRef("workspace://SpacesStore/a");
+        Pair<String, String> nh = h.hash(nr);
+        NodeRef nr2 = h.lookup(nh);
+        assertEquals(nr, nr2);
+    }
+
+    @Test
+    public void testEmptyNodeId() throws Exception
+    {
+        NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
+        NodeRef nr = new NodeRef("workspace://SpacesStore/");
         try
         {
             h.hash(nr);
-            fail("Should not be able to hash invalid id (format) NodeRef " + nr);
+            fail("Should not be able to hash invalid store NodeRef " + nr);
         }
         catch (RuntimeException e)
         {

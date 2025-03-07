@@ -160,6 +160,16 @@ public class NodeRefRadixHasherTest extends TestCase
     }
 
     @Test
+    public void testValidNodeId6() throws Exception
+    {
+        NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
+        NodeRef nr = new NodeRef("workspace://SpacesStore/defrobldkfoeirjtuy79dfwwqperfiidoelb");
+        Pair<String, String> nh = h.hash(nr);
+        NodeRef nr2 = h.lookup(nh);
+        assertEquals(nr, nr2);
+    }
+
+    @Test
     public void testEmptyNodeId() throws Exception
     {
         NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;

@@ -38,6 +38,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import com.nimbusds.openid.connect.sdk.claims.PersonClaims;
 import junit.framework.TestCase;
+import org.mockito.Mockito;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -96,11 +97,13 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
     private IdentityServiceRemoteUserMapper givenMapper(Map<String, Supplier<String>> tokenToUser)
     {
         final TransactionService transactionService = mock(TransactionService.class);
-        final IdentityServiceFacade facade = mock(IdentityServiceFacade.class);
+        final IdentityServiceFacade facade = mock(IdentityServiceFacade.class, Mockito.RETURNS_DEEP_STUBS);
         final PersonService personService = mock(PersonService.class);
         when(transactionService.isReadOnly()).thenReturn(true);
         when(facade.decodeToken(anyString()))
                 .thenAnswer(i -> new TestDecodedToken(tokenToUser.get(i.getArgument(0, String.class))));
+        when(facade.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName())
+                .thenReturn(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME);
 
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
 

@@ -153,7 +153,7 @@ public class NodeRefRadixHasherTest extends TestCase
     public void testValidNodeId5() throws Exception
     {
         NodeRefRadixHasher h = NodeRefRadixHasher.RADIX_36_HASHER;
-        NodeRef nr = new NodeRef("workspace://SpacesStore/X-");
+        NodeRef nr = new NodeRef("workspace://SpacesStore/X");
         Pair<String, String> nh = h.hash(nr);
         NodeRef nr2 = h.lookup(nh);
         assertEquals(nr, nr2);

@@ -42,7 +42,7 @@ public class NodeRefRadixHasher implements NodeRefHasher
 {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-    private static final String NOT_UUID_FORMAT_MARKER = "X-";
+    private static final String NOT_UUID_FORMAT_MARKER = "X";
     public static final NodeRefRadixHasher RADIX_36_HASHER = new NodeRefRadixHasher(36);
 
     private HashStore storeProtocolStore;
@@ -87,8 +87,8 @@ public class NodeRefRadixHasher implements NodeRefHasher
 
     private String uuidToIdHash(String uuid)
     {
-        String bigInt16String = uuid.replaceAll("-", "");
-        BigInteger bigIntId = new BigInteger(bigInt16String, 16);
+        String uuidWithoutDashes = uuid.replaceAll("-", "");
+        BigInteger bigIntId = new BigInteger(uuidWithoutDashes, 16);
         return bigIntId.toString(radix);
     }
 
@@ -134,7 +134,7 @@ public class NodeRefRadixHasher implements NodeRefHasher
     {
         if (hashId.startsWith(NOT_UUID_FORMAT_MARKER))
         {
-            String hashIdWithoutMarker = hashId.substring(2);
+            String hashIdWithoutMarker = hashId.substring(NOT_UUID_FORMAT_MARKER.length());
             BigInteger hashIdBigInt = new BigInteger(hashIdWithoutMarker, radix);
             return new String(hashIdBigInt.toByteArray());
         }

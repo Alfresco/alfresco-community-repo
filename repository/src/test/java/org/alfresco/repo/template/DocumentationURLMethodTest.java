@@ -46,13 +46,13 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void getDocumentationUrl_shouldReturnBaseUrl()
+    public void testGetDocumentationUrl_shouldReturnBaseUrl()
     {
         assertThat(documentationURLMethod.getDocumentationUrl()).startsWith(BASE_URL);
     }
 
     @Test
-    public void getDocumentationUrl_whenCommunityEditionIsSet_shouldReturnCommunityBaseUrl()
+    public void testGetDocumentationUrl_whenCommunityEditionIsSet_shouldReturnCommunityBaseUrl()
     {
         documentationURLMethod.setEdition(COMMUNITY_EDITION);
 
@@ -62,7 +62,7 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void getDocumentationUrl_whenEnterpriseEditionIsSet_shouldReturnEnterpriseBaseUrl() {
+    public void testGetDocumentationUrl_whenEnterpriseEditionIsSet_shouldReturnEnterpriseBaseUrl() {
         documentationURLMethod.setEdition(ENTERPRISE_EDITION);
 
         String actual = documentationURLMethod.getDocumentationUrl();
@@ -71,14 +71,14 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void getDocumentationUrl_whenGivenNullArgument_shouldReturnBaseUrl() {
+    public void testGetDocumentationUrl_whenGivenNullArgument_shouldReturnBaseUrl() {
         String actual = documentationURLMethod.getDocumentationUrl(null);
 
         assertThat(actual).isEqualTo(BASE_URL + COMMUNITY_EDITION_PATH + "/" + VERSION + COMMUNITY_EDITION_PATH);
     }
 
     @Test
-    public void getDocumentationUrl_whenUnknownEditionIsSet_shouldReturnBaseUrl() {
+    public void testGetDocumentationUrl_whenUnknownEditionIsSet_shouldReturnBaseUrl() {
         documentationURLMethod.setEdition("director's cut");
 
         String actual = documentationURLMethod.getDocumentationUrl();
@@ -87,7 +87,7 @@ public class DocumentationURLMethodTest
     }
 
     @Test
-    public void getDocumentationUrl_whenGivenPath_shouldReturnUrlToThatPath() {
+    public void testGetDocumentationUrl_whenGivenPath_shouldReturnUrlToThatPath() {
         String actual = documentationURLMethod.getDocumentationUrl("/road/to/rome");
 
         assertThat(actual).isEqualTo(BASE_URL + COMMUNITY_EDITION_PATH + "/" + VERSION + COMMUNITY_EDITION_PATH + "/road/to/rome");

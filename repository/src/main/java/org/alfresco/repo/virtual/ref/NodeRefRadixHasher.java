@@ -31,12 +31,9 @@ import java.math.BigInteger;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
-import org.apache.commons.lang3.StringUtils;
 
 /**
- * Creates string-pair hashes of {@link NodeRef}s where the first string is a
- * stored hash combination for {@link NodeRef} store elements (protocol and id)
- * and the second is a radix 36 encoded {@link NodeRef} id.
+ * Creates string-pair hashes of {@link NodeRef}s where the first string is a stored hash combination for {@link NodeRef} store elements (protocol and id) and the second is a radix 36 encoded {@link NodeRef} id.
  */
 public class NodeRefRadixHasher implements NodeRefHasher
 {
@@ -64,22 +61,6 @@ public class NodeRefRadixHasher implements NodeRefHasher
     @Override
     public Pair<String, String> hash(NodeRef nodeRef)
     {
-        String uuid = nodeRef.getId();
-
-        if (uuid.length() != 36)
-        {
-            throw new RuntimeException("Invalid noderf id length " + uuid);
-        }
-
-        String bigInt16String = uuid.replaceAll("-",
-                                                "");
-        if (bigInt16String.length() != 32)
-        {
-            throw new RuntimeException("Invalid noderf id format " + uuid);
-        }
-
-        BigInteger bigIntId = new BigInteger(bigInt16String,
-                                             16);
         StoreRef storeRef = nodeRef.getStoreRef();
         String storeProtocolHash = storeProtocolStore.hash(storeRef.getProtocol());
         String storeIdHash = storeIdStore.hash(storeRef.getIdentifier());
@@ -88,19 +69,18 @@ public class NodeRefRadixHasher implements NodeRefHasher
             throw new RuntimeException("Missing hash for " + storeRef);
         }
         String storeHash = storeProtocolHash + storeIdHash;
-        return new Pair<String, String>(storeHash,
-                                        bigIntId.toString(radix));
 
+        String id = nodeRef.getId();
+        BigInteger bigIntId = new BigInteger(id.getBytes());
+        return new Pair<>(storeHash, bigIntId.toString(radix));
     }
 
     @Override
     public NodeRef lookup(Pair<String, String> hash)
     {
         String storeHash = hash.getFirst();
-        String storeProtocolHash = storeHash.substring(0,
-                                                       1);
-        String storeIdHash = storeHash.substring(1,
-                                                 2);
+        String storeProtocolHash = storeHash.substring(0, 1);
+        String storeIdHash = storeHash.substring(1, 2);
 
         String storeProtocol = storeProtocolStore.lookup(storeProtocolHash);
         String storeId = storeIdStore.lookup(storeIdHash);
@@ -108,35 +88,10 @@ public class NodeRefRadixHasher implements NodeRefHasher
         {
             throw new RuntimeException("Lookup found no protocol or id for " + storeHash);
         }
-        BigInteger nodeId = new BigInteger(hash.getSecond(),
-                                           radix);
-        String nodeIdHexa = nodeId.toString(16);
-        nodeIdHexa = StringUtils.leftPad(nodeIdHexa,
-                                         32,
-                                         "0");
-        int leadZeros = 32 - nodeIdHexa.length();
-        if (leadZeros > 0)
-        {
-        }
-        String groups[] = new String[5];
-        groups[0] = nodeIdHexa.substring(0,
-                                         8);
-        groups[1] = nodeIdHexa.substring(8,
-                                         12);
-        groups[2] = nodeIdHexa.substring(12,
-                                         16);
-        groups[3] = nodeIdHexa.substring(16,
-                                         20);
-        groups[4] = nodeIdHexa.substring(20,
-                                         32);
-        StringBuilder idBuilder = new StringBuilder(groups[0]);
-        for (int i = 1; i < groups.length; i++)
-        {
-            idBuilder.append("-");
-            idBuilder.append(groups[i]);
-        }
-        return new NodeRef(storeProtocol,
-                           storeId,
-                           idBuilder.toString());
+
+        BigInteger nodeId = new BigInteger(hash.getSecond(), radix);
+        String nodeIdString = new String(nodeId.toByteArray());
+
+        return new NodeRef(storeProtocol, storeId, nodeIdString);
     }
 }

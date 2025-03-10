@@ -2,23 +2,23 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2025 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,7 +26,12 @@
 
 package org.alfresco.repo.action;
 
+import static java.time.Duration.ofSeconds;
+import static java.util.Objects.nonNull;
+
 import static junit.framework.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -37,6 +42,13 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
@@ -64,12 +76,6 @@ import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
 import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
 
 /**
  * @author Jamal Kaabi-Mofrad
@@ -77,20 +83,20 @@ import org.junit.Test;
  */
 public class ActionServiceImpl2Test
 {
+    private static final int MAX_WAIT_TIMEOUT = 10;
     // Rule to initialise the default Alfresco spring configuration
     @ClassRule
     public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
 
     /**
-     * This JUnit rule will allow us to create Share sites and users and have
-     * them automatically cleaned up for us.
+     * This JUnit rule will allow us to create Share sites and users and have them automatically cleaned up for us.
      */
     @Rule
     public TemporarySites temporarySites = new TemporarySites(APP_CONTEXT_INIT);
 
     @Rule
     public WellKnownNodes wellKnownNodes = new WellKnownNodes(APP_CONTEXT_INIT);
-    
+
     @Rule
     public TemporaryNodes tempNodes = new TemporaryNodes(APP_CONTEXT_INIT);
 
@@ -106,8 +112,6 @@ public class ActionServiceImpl2Test
     private TestSiteAndMemberInfo testSiteAndMemberInfo;
 
     private NodeRef testNode;
-
-
 
     @BeforeClass
     public static void initStaticData() throws Exception
@@ -132,8 +136,7 @@ public class ActionServiceImpl2Test
                 SiteVisibility.PUBLIC, AuthenticationUtil.getAdminUserName());
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        testNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        testNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // get the Document Library NodeRef
@@ -150,8 +153,7 @@ public class ActionServiceImpl2Test
     @Test
     public void testIncrementCounterOnDeletedNode() throws Exception
     {
-        final NodeRef deletedNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        final NodeRef deletedNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
                 // get the Document Library NodeRef
@@ -165,8 +167,7 @@ public class ActionServiceImpl2Test
         });
 
         // before the fix that would thrown an error
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Action incrementAction = actionService.createAction(CounterIncrementActionExecuter.NAME);
@@ -182,8 +183,7 @@ public class ActionServiceImpl2Test
     {
         // Set authentication to SiteManager.
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // add the cm:countable aspect and set the value to 1
@@ -200,8 +200,7 @@ public class ActionServiceImpl2Test
 
         // Set authentication to SiteConsumer.
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteConsumer);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Action incrementAction = actionService.createAction(CounterIncrementActionExecuter.NAME);
@@ -217,7 +216,7 @@ public class ActionServiceImpl2Test
         assertEquals(2, afterIncrement);
     }
 
-    @Test//(expected = AccessDeniedException.class)
+    @Test // (expected = AccessDeniedException.class)
     public void testTransform() throws Exception
     {
         final File file = loadAndAddQuickFileAsManager(testNode, "quick.txt", MimetypeMap.MIMETYPE_TEXT_PLAIN);
@@ -225,8 +224,7 @@ public class ActionServiceImpl2Test
 
         // Set authentication to SiteConsumer.
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 Action action = actionService.createAction(TransformActionExecuter.NAME);
@@ -269,8 +267,7 @@ public class ActionServiceImpl2Test
 
         // Set authentication to SiteConsumer
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteConsumer);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Create the action
@@ -295,8 +292,7 @@ public class ActionServiceImpl2Test
 
         // Set authentication to SiteManager
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Create the action
@@ -311,17 +307,16 @@ public class ActionServiceImpl2Test
                 return null;
             }
         });
-        
-        //Execute script not in Data Dictionary > Scripts
+
+        // Execute script not in Data Dictionary > Scripts
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
         NodeRef companyHomeRef = wellKnownNodes.getCompanyHome();
         NodeRef sharedFolderRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS,
                 "Shared");
         final NodeRef invalidScriptRef = addTempScript("changeFileNameTest.js",
-                "document.properties.name = \"Invalid_Change.pdf\";\ndocument.save();",sharedFolderRef);
+                "document.properties.name = \"Invalid_Change.pdf\";\ndocument.save();", sharedFolderRef);
         assertNotNull("Failed to add the test script.", scriptToBeExecuted);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Create the action
@@ -344,13 +339,12 @@ public class ActionServiceImpl2Test
             }
         });
     }
-    
+
     @Test
     public void testActionResult() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 try
@@ -389,8 +383,7 @@ public class ActionServiceImpl2Test
 
         // Set authentication to SiteConsumer
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteConsumer);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Create the action
@@ -412,8 +405,7 @@ public class ActionServiceImpl2Test
 
         // Set authentication to SiteCollaborator
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteCollaborator);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 // Create the action
@@ -424,24 +416,23 @@ public class ActionServiceImpl2Test
             }
         });
 
-        Thread.sleep(3000); // Need to wait for the async extract
+        // Need to wait for the async extract
+        await().atMost(ofSeconds(MAX_WAIT_TIMEOUT))
+                .until(() -> nonNull(getProperty(testNode, ContentModel.PROP_DESCRIPTION)));
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                assertEquals("Pangram, fox, dog, Gym class featuring a brown fox and lazy dog",
-                        nodeService.getProperty(testNode, ContentModel.PROP_DESCRIPTION));
-                return null;
-            }
-        });
+        assertThat(getProperty(testNode, ContentModel.PROP_DESCRIPTION))
+                .isEqualTo("Pangram, fox, dog, Gym class featuring a brown fox and lazy dog");
+    }
+
+    private Serializable getProperty(NodeRef nodeRef, QName propertyName)
+    {
+        return transactionHelper.doInTransaction(() -> nodeService.getProperty(nodeRef, propertyName));
     }
 
     private NodeRef addTempScript(final String scriptFileName, final String javaScript, final NodeRef parentRef)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
 
@@ -457,7 +448,7 @@ public class ActionServiceImpl2Test
                 contentWriter.setEncoding("UTF-8");
                 contentWriter.putContent(javaScript);
 
-                tempNodes.addNodeRef(script);              
+                tempNodes.addNodeRef(script);
                 return script;
             }
         });
@@ -466,8 +457,7 @@ public class ActionServiceImpl2Test
     private NodeRef addTempScript(final String scriptFileName, final String javaScript)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>() {
             public NodeRef execute() throws Throwable
             {
 
@@ -490,12 +480,14 @@ public class ActionServiceImpl2Test
     {
         final File file = AbstractContentTransformerTest.loadNamedQuickTestFile(quickFileName);
 
-        if (file == null) { return null; }
+        if (file == null)
+        {
+            return null;
+        }
 
         // Set authentication to SiteManager and add a file
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteManager);
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
             public Void execute() throws Throwable
             {
                 nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, quickFileName);

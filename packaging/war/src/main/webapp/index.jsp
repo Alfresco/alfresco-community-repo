@@ -74,7 +74,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
          <div class="index-list">
             <h4><%=descriptorService.getServerDescriptor().getEdition()%></h4>
             <p></p>
-            <p><a href="<%=context.getEnvironment().getProperty("alfresco.documentation.baseurl")%>">Online Documentation</a></p>
+            <p><a href="https://support.hyland.com/r/Alfresco/Alfresco-Content-Services-Community-Edition/23.3/Alfresco-Content-Services-Community-Edition">Online Documentation</a></p>
             <p></p>
              <%
                  if (shareServicesModule != null && ModuleInstallState.INSTALLED.equals(shareServicesModule.getInstallState()))

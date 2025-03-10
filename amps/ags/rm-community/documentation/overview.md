@@ -28,7 +28,7 @@ RM is split into two main parts - a repository integration and a Share integrati
 *** 
 
 ### Prerequisite Knowledge
-An understanding of Alfresco Content Services is assumed. The following pages from the [developer documentation](http://docs.alfresco.com/5.2/concepts/dev-for-developers.html) give useful background information:
+An understanding of Alfresco Content Services is assumed. The following pages from the [developer documentation](https://support.hyland.com/r/Alfresco/Alfresco-Content-Services-Community-Edition/23.3/Alfresco-Content-Services-Community-Edition/Develop) give useful background information:
 
 * [ACS Architecture](http://docs.alfresco.com/5.2/concepts/dev-arch-overview.html)
 * [Platform Extensions](http://docs.alfresco.com/5.2/concepts/dev-platform-extensions.html)

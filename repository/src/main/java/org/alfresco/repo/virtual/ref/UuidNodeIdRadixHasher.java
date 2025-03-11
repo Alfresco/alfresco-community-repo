@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2025 Alfresco Software Limited
+ * Copyright (C) 2025 - 2025 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -43,21 +43,14 @@ public class UuidNodeIdRadixHasher implements NodeIdHasher
     public String lookup(String hashUuid)
     {
         BigInteger nodeId = new BigInteger(hashUuid, radix);
-        String nodeIdHexa = nodeId.toString(16);
-        nodeIdHexa = StringUtils.leftPad(nodeIdHexa, 32, "0");
-        String[] groups = new String[5];
-        groups[0] = nodeIdHexa.substring(0, 8);
-        groups[1] = nodeIdHexa.substring(8, 12);
-        groups[2] = nodeIdHexa.substring(12, 16);
-        groups[3] = nodeIdHexa.substring(16, 20);
-        groups[4] = nodeIdHexa.substring(20, 32);
-        StringBuilder idBuilder = new StringBuilder(groups[0]);
-        for (int i = 1; i < groups.length; i++)
-        {
-            idBuilder.append("-");
-            idBuilder.append(groups[i]);
-        }
-        return idBuilder.toString();
+        String nodeIdHex = nodeId.toString(16);
+        String paddedNodeIdHex = StringUtils.leftPad(nodeIdHex, 32, "0");
+        return String.join("-",
+                paddedNodeIdHex.substring(0, 8),
+                paddedNodeIdHex.substring(8, 12),
+                paddedNodeIdHex.substring(12, 16),
+                paddedNodeIdHex.substring(16, 20),
+                paddedNodeIdHex.substring(20, 32));
     }
 
     @Override

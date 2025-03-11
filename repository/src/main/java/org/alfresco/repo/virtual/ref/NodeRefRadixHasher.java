@@ -37,9 +37,10 @@ import org.alfresco.util.Pair;
  */
 public class NodeRefRadixHasher implements NodeRefHasher
 {
-    private static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-    private static final String NOT_UUID_FORMAT_MARKER = "X";
     public static final NodeRefRadixHasher RADIX_36_HASHER = new NodeRefRadixHasher(36);
+
+    static final Pattern UUID_PATTERN = Pattern.compile("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+    static final String NOT_UUID_FORMAT_MARKER = "X";
 
     private final StoreRefHasher storeRefHasher;
     private final NodeIdHasher uuidNodeIdHasher;

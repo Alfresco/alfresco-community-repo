@@ -26,9 +26,13 @@
 
 package org.alfresco.repo.virtual.ref;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 
-public interface StoreRefHasher
+/**
+ * Creates and looks up string hash codes of {@link StoreRef} part of {@link NodeRef}s.<br>
+ */
+interface StoreRefHasher
 {
     StoreRef lookup(String storeHash);
 

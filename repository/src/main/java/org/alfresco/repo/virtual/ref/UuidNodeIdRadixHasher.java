@@ -57,7 +57,7 @@ public class UuidNodeIdRadixHasher implements NodeIdHasher
     public String hash(String uuid)
     {
         String uuidWithoutDashes = uuid.replaceAll("-", "");
-        BigInteger bigIntId = new BigInteger(uuidWithoutDashes, 16);
-        return bigIntId.toString(radix);
+        BigInteger bigIntUuidWithoutDashesHex = new BigInteger(uuidWithoutDashes, 16);
+        return bigIntUuidWithoutDashesHex.toString(radix);
     }
 }

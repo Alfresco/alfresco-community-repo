@@ -26,7 +26,12 @@
 
 package org.alfresco.repo.virtual.ref;
 
-public interface NodeIdHasher
+import org.alfresco.service.cmr.repository.NodeRef;
+
+/**
+ * Creates and looks up string hash codes of id part of {@link NodeRef}s.<br>
+ */
+interface NodeIdHasher
 {
     String lookup(String idHash);
 

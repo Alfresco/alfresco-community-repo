@@ -27,7 +27,7 @@
 
 ## Synopsis
 
-**TAS**( **T**est **A**utomation **S**ystem)- **CMIS** is the project that handles the automated tests related only to CMIS API integrated with Alfresco One [Alfresco CMIS API](http://docs.alfresco.com/5.1/pra/1/topics/cmis-welcome.html). 
+**TAS**( **T**est **A**utomation **S**ystem)- **CMIS** is the project that handles the automated tests related only to CMIS API integrated with Alfresco One [Alfresco CMIS API](https://support.hyland.com/r/Alfresco/Alfresco-Content-Services/23.3/Alfresco-Content-Services/Develop/Reference/CMIS-API). 
 
 It is based on Apache Maven, compatible with major IDEs and is using also Spring capabilities for dependency injection.
 

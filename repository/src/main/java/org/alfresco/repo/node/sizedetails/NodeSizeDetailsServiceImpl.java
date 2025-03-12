@@ -57,7 +57,7 @@ public class NodeSizeDetailsServiceImpl implements NodeSizeDetailsService, Initi
 {
     private static final Logger LOG = LoggerFactory.getLogger(NodeSizeDetailsServiceImpl.class);
     private static final String FIELD_FACET = "content.size";
-    private static final String FACET_QUERY = "{!afts}content.size:[0 TO " + Integer.MAX_VALUE + "]";
+    private static final String FACET_QUERY = "{!afts key='extra large'}content.size:[0 TO " + Integer.MAX_VALUE + "]";
     private SearchService searchService;
     private SimpleCache<Serializable, NodeSizeDetails> simpleCache;
     private TransactionService transactionService;

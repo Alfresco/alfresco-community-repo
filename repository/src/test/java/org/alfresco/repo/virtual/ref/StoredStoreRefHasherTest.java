@@ -62,7 +62,7 @@ public class StoredStoreRefHasherTest
     }
 
     @Test(expected = RuntimeException.class)
-    public void testInvalidStoreId()
+    public void testHashInvalidStoreId()
     {
         StoreRef storeRef = new StoreRef(PROTOCOL_WORKSPACE, "ASpacesStore");
 
@@ -70,10 +70,22 @@ public class StoredStoreRefHasherTest
     }
 
     @Test(expected = RuntimeException.class)
-    public void testInvalidStoreProtocol()
+    public void testHashInvalidStoreProtocol()
     {
         StoreRef storeRef = new StoreRef("Xworkspace", STORE_ID);
 
         storeRefHasher.hash(storeRef);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testLookupInvalidStoreId()
+    {
+        storeRefHasher.lookup("91");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testLookupInvalidStoreProtocol()
+    {
+        storeRefHasher.lookup("19");
     }
 }

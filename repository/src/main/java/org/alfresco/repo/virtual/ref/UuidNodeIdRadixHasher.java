@@ -30,7 +30,7 @@ import java.math.BigInteger;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class UuidNodeIdRadixHasher implements NodeIdHasher
+class UuidNodeIdRadixHasher implements NodeIdHasher
 {
     private final int radix;
 

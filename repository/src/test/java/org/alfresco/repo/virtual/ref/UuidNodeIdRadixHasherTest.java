@@ -81,4 +81,22 @@ public class UuidNodeIdRadixHasherTest
         String expected = "0d3b26ff-c4c1-4680-8622-8608ea7ab4b2";
         assertEquals(expected, uuid);
     }
+
+    @Test(expected = RuntimeException.class)
+    public void testHashForEmptyUuid()
+    {
+        NodeIdHasher nodeIdHasher = new UuidNodeIdRadixHasher(36);
+        String uuid = "";
+
+        nodeIdHasher.hash(uuid);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testLookupForEmptyUuid()
+    {
+        NodeIdHasher nodeIdHasher = new UuidNodeIdRadixHasher(36);
+        String hashedUuid = "";
+
+        nodeIdHasher.lookup(hashedUuid);
+    }
 }

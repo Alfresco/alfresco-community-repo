@@ -27,26 +27,45 @@
 package org.alfresco.repo.virtual.ref;
 
 import static org.junit.Assert.*;
+import static org.junit.runners.Parameterized.*;
 
 import static org.alfresco.repo.version.VersionModel.STORE_ID;
 import static org.alfresco.service.cmr.repository.StoreRef.*;
 import static org.alfresco.service.cmr.repository.StoreRef.PROTOCOL_DELETED;
 import static org.alfresco.service.cmr.version.VersionService.VERSION_STORE_PROTOCOL;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 
+@RunWith(Parameterized.class)
 public class NodeRefRadixHasherTest
 {
-    private final NodeRefRadixHasher nodeRefRadixHasher = NodeRefRadixHasher.RADIX_36_HASHER;
+    private final NodeRefRadixHasher nodeRefRadixHasher;
+
+    @Parameters(name = "radix: {0}")
+    public static Collection<Object[]> data()
+    {
+        return List.of(
+                new Object[]{NodeRefRadixHasher.RADIX_36_HASHER},
+                new Object[]{new NodeRefRadixHasher()},
+                new Object[]{new NodeRefRadixHasher(32)});
+    }
+
+    public NodeRefRadixHasherTest(NodeRefRadixHasher nodeRefRadixHasher)
+    {
+        this.nodeRefRadixHasher = nodeRefRadixHasher;
+    }
 
     @Test
     public void testSupportedStoresWithRandomUuids()

@@ -35,7 +35,7 @@ import org.alfresco.util.Pair;
 /**
  * Creates string-pair hashes of {@link NodeRef}s where the first string is a stored hash combination for {@link NodeRef} store elements (protocol and id) and the second is a radix 36 encoded {@link NodeRef} id.
  */
-public class NodeRefRadixHasher implements NodeRefHasher
+class NodeRefRadixHasher implements NodeRefHasher
 {
     public static final NodeRefRadixHasher RADIX_36_HASHER = new NodeRefRadixHasher(36);
 

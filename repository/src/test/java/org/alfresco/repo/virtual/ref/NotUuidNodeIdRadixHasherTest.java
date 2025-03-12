@@ -79,4 +79,22 @@ public class NotUuidNodeIdRadixHasherTest
         String expected = "wf-email-html-ftl";
         assertEquals(expected, id);
     }
+
+    @Test(expected = RuntimeException.class)
+    public void testHashForEmptyUuid()
+    {
+        NodeIdHasher nodeIdHasher = new NotUuidNodeIdRadixHasher(36);
+        String uuid = "";
+
+        nodeIdHasher.hash(uuid);
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testLookupForEmptyUuid()
+    {
+        NodeIdHasher nodeIdHasher = new NotUuidNodeIdRadixHasher(36);
+        String hashedUuid = "";
+
+        nodeIdHasher.lookup(hashedUuid);
+    }
 }

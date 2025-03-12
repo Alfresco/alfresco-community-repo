@@ -26,9 +26,11 @@
 
 package org.alfresco.repo.virtual.ref;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.math.BigInteger;
 
-public class NotUuidNodeIdRadixHasher implements NodeIdHasher
+class NotUuidNodeIdRadixHasher implements NodeIdHasher
 {
     private final int radix;
 
@@ -48,7 +50,7 @@ public class NotUuidNodeIdRadixHasher implements NodeIdHasher
     @Override
     public String hash(String id)
     {
-        byte[] bytes = id.getBytes();
+        byte[] bytes = id.getBytes(UTF_8);
         BigInteger bigIntegerBytes = new BigInteger(bytes);
         return bigIntegerBytes.toString(radix);
     }

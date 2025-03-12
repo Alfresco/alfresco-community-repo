@@ -28,7 +28,7 @@ package org.alfresco.repo.virtual.ref;
 
 import org.alfresco.service.cmr.repository.StoreRef;
 
-public class StoredStoreRefHasher implements StoreRefHasher
+class StoredStoreRefHasher implements StoreRefHasher
 {
     private final HashStore storeProtocolStore;
     private final HashStore storeIdStore;

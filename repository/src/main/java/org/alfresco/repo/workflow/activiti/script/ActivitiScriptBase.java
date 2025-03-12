@@ -98,7 +98,7 @@ public class ActivitiScriptBase
     protected Object executeScriptAsUser(final String theScript, final Map<String, Object> model, final String scriptProcessorName, final String runAsUser)
     {
         // execute as specified runAsUser
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<>() {
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
             public Object doWork() throws Exception
             {
                 return executeScript(theScript, model, scriptProcessorName);
@@ -280,7 +280,7 @@ public class ActivitiScriptBase
      */
     private void validateRunAsUser(final String runAsUser)
     {
-        Boolean runAsExists = AuthenticationUtil.runAs(new RunAsWork<>() {
+        Boolean runAsExists = AuthenticationUtil.runAs(new RunAsWork<Boolean>() {
             // Validate using System user to ensure sufficient permissions available to access person node.
 
             @Override

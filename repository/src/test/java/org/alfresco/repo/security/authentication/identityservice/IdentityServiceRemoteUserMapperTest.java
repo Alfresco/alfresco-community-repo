@@ -99,6 +99,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
         final TransactionService transactionService = mock(TransactionService.class);
         final IdentityServiceFacade facade = mock(IdentityServiceFacade.class, Mockito.RETURNS_DEEP_STUBS);
         final PersonService personService = mock(PersonService.class);
+        final IdentityServiceConfig identityServiceConfig = mock(IdentityServiceConfig.class);
         when(transactionService.isReadOnly()).thenReturn(true);
         when(facade.decodeToken(anyString()))
                 .thenAnswer(i -> new TestDecodedToken(tokenToUser.get(i.getArgument(0, String.class))));
@@ -107,7 +108,7 @@ public class IdentityServiceRemoteUserMapperTest extends TestCase
 
         when(personService.getUserIdentifier(anyString())).thenAnswer(i -> i.getArgument(0, String.class));
 
-        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService, transactionService);
+        final IdentityServiceJITProvisioningHandler jitProvisioning = new IdentityServiceJITProvisioningHandler(facade, personService, transactionService, identityServiceConfig);
 
         final IdentityServiceRemoteUserMapper mapper = new IdentityServiceRemoteUserMapper();
         mapper.setJitProvisioningHandler(jitProvisioning);

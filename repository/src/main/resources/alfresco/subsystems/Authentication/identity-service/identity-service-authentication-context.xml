@@ -149,6 +149,15 @@
       <property name="principalAttribute">
          <value>${identity-service.principal-attribute:preferred_username}</value>
       </property>
+      <property name="firstNameAttribute">
+          <value>${identity-service.first-name-attribute:given_name}</value>
+      </property>
+       <property name="lastNameAttribute">
+           <value>${identity-service.last-name-attribute:family_name}</value>
+       </property>
+       <property name="emailAttribute">
+           <value>${identity-service.email-attribute:email}</value>
+       </property>
       <property name="clientIdValidationDisabled">
          <value>${identity-service.client-id.validation.disabled:true}</value>
       </property>
@@ -164,8 +173,8 @@
        <property name="passwordGrantScopes">
            <value>${identity-service.password-grant.scopes:openid,profile,email}</value>
        </property>
-       <property name="customIssuerParameter">
-           <value>${identity-service.custom-issuer-parameter:#{null}}</value>
+       <property name="customIssuerAttribute">
+           <value>${identity-service.custom-issuer-attribute:#{null}}</value>
        </property>
    </bean>
 
@@ -212,6 +221,7 @@
       <constructor-arg ref="PersonService"/>
       <constructor-arg ref="identityServiceFacade"/>
       <constructor-arg ref="transactionService"/>
+      <constructor-arg ref="identityServiceConfig"/>
    </bean>
 
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">

@@ -208,9 +208,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
         }
 
         @Override
-        public Optional<OIDCUserInfo> getUserInfo(String token)
+        public Optional<OIDCUserInfo> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
         {
-            return getTargetFacade().getUserInfo(token);
+            return getTargetFacade().getUserInfo(token, userInfoAttrMapping);
         }
 
         @Override
@@ -556,9 +556,9 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
     private static Optional<String> getMetadataIssuer(OIDCProviderMetadata metadata, IdentityServiceConfig config)
     {
-        return StringUtils.isNotBlank(config.getCustomIssuerParameter()) ? Optional.of(metadata)
+        return StringUtils.isNotBlank(config.getCustomIssuerAttribute()) ? Optional.of(metadata)
                 .map(OIDCProviderMetadata::getCustomParameters)
-                .map(map -> map.get(config.getCustomIssuerParameter()))
+                .map(map -> map.get(config.getCustomIssuerAttribute()))
                 .filter(String.class::isInstance)
                 .map(String.class::cast)
                 : Optional.of(metadata)

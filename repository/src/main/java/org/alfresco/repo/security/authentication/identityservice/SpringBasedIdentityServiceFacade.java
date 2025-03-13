@@ -117,7 +117,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
     }
 
     @Override
-    public Optional<OIDCUserInfo> getUserInfo(String token)
+    public Optional<OIDCUserInfo> getUserInfo(String token, UserInfoAttrMapping userInfoAttrMapping)
     {
         try
         {
@@ -126,7 +126,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                     token,
                     SOME_INSIGNIFICANT_DATE_IN_THE_PAST,
                     SOME_INSIGNIFICANT_DATE_IN_THE_PAST.plusSeconds(1)))))
-                    .flatMap(this::mapOAuth2UserToOIDCUserInfo);
+                    .flatMap(oidcUser -> mapOAuth2UserToOIDCUserInfo(oidcUser, userInfoAttrMapping));
         }
         catch (OAuth2AuthenticationException exception)
         {
@@ -231,7 +231,7 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
         return userService;
     }
 
-    private Optional<OIDCUserInfo> mapOAuth2UserToOIDCUserInfo(OAuth2User oAuth2User)
+    private Optional<OIDCUserInfo> mapOAuth2UserToOIDCUserInfo(OAuth2User oAuth2User, UserInfoAttrMapping userInfoAttrMapping)
     {
         var preferredUsername = Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.PREFERRED_USERNAME_CLAIM_NAME))
                 .filter(String.class::isInstance)
@@ -239,9 +239,9 @@ class SpringBasedIdentityServiceFacade implements IdentityServiceFacade
                 .filter(username -> !username.isEmpty());
         var userName = Optional.ofNullable(oAuth2User.getName()).filter(username -> !username.isEmpty()).or(() -> preferredUsername);
         return userName.map(name -> new OIDCUserInfo(name,
-                Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.GIVEN_NAME_CLAIM_NAME)).filter(String.class::isInstance).map(String.class::cast).orElse(""),
-                Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.FAMILY_NAME_CLAIM_NAME)).filter(String.class::isInstance).map(String.class::cast).orElse(""),
-                Optional.ofNullable(oAuth2User.getAttribute(PersonClaims.EMAIL_CLAIM_NAME)).filter(String.class::isInstance).map(String.class::cast).orElse("")));
+                Optional.ofNullable(oAuth2User.getAttribute(userInfoAttrMapping.firstNameClaim())).filter(String.class::isInstance).map(String.class::cast).orElse(""),
+                Optional.ofNullable(oAuth2User.getAttribute(userInfoAttrMapping.lastNameClaim())).filter(String.class::isInstance).map(String.class::cast).orElse(""),
+                Optional.ofNullable(oAuth2User.getAttribute(userInfoAttrMapping.emailClaim())).filter(String.class::isInstance).map(String.class::cast).orElse("")));
     }
 
     private static OAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> createPasswordClient(RestOperations rest,

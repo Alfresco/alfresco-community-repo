@@ -124,13 +124,14 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         String principalAttribute = isAuth0Enabled ? PersonClaims.NICKNAME_CLAIM_NAME : PersonClaims.PREFERRED_USERNAME_CLAIM_NAME;
         IdentityServiceFacade.AccessTokenAuthorization accessTokenAuthorization = identityServiceFacade.authorize(
                 IdentityServiceFacade.AuthorizationGrant.password(IDS_USERNAME, userPassword));
+        UserInfoAttrMapping userInfoAttrMapping = new UserInfoAttrMapping(principalAttribute, "given_name", "family_name", "email");
 
         String accessToken = accessTokenAuthorization.getAccessToken().getTokenValue();
         ClientRegistration clientRegistration = mock(ClientRegistration.class, RETURNS_DEEP_STUBS);
         when(clientRegistration.getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName()).thenReturn(principalAttribute);
         IdentityServiceFacade idsServiceFacadeMock = mock(IdentityServiceFacade.class);
         when(idsServiceFacadeMock.decodeToken(accessToken)).thenReturn(null);
-        when(idsServiceFacadeMock.getUserInfo(accessToken)).thenReturn(identityServiceFacade.getUserInfo(accessToken));
+        when(idsServiceFacadeMock.getUserInfo(accessToken, userInfoAttrMapping)).thenReturn(identityServiceFacade.getUserInfo(accessToken, userInfoAttrMapping));
         when(idsServiceFacadeMock.getClientRegistration()).thenReturn(clientRegistration);
 
         // Replace the original facade with a mocked one to prevent user information from being extracted from the access token.
@@ -152,7 +153,7 @@ public class IdentityServiceJITProvisioningHandlerTest extends BaseSpringTest
         assertEquals("johndoe123@alfresco.com", userInfoOptional.get().email());
         assertEquals("johndoe123@alfresco.com", nodeService.getProperty(person, ContentModel.PROP_EMAIL));
         verify(idsServiceFacadeMock).decodeToken(accessToken);
-        verify(idsServiceFacadeMock, atLeast(1)).getUserInfo(accessToken);
+        verify(idsServiceFacadeMock, atLeast(1)).getUserInfo(accessToken, userInfoAttrMapping);
         if (!isAuth0Enabled)
         {
             assertEquals("John", userInfoOptional.get().firstName());

@@ -287,7 +287,7 @@ public class ClientRegistrationProviderUnitTest
     {
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
         {
-            config.setCustomIssuerParameter("access_token_issuer");
+            config.setCustomIssuerAttribute("access_token_issuer");
             when(oidcResponse.getCustomParameters()).thenReturn(createJSONObject("access_token_issuer", "https://login.serviceonline.alfresco/alfresco/v2.0/at_trust"));
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 

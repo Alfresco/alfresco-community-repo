@@ -173,8 +173,8 @@
        <property name="passwordGrantScopes">
            <value>${identity-service.password-grant.scopes:openid,profile,email}</value>
        </property>
-       <property name="customIssuerAttribute">
-           <value>${identity-service.custom-issuer-attribute:#{null}}</value>
+       <property name="issuerAttribute">
+           <value>${identity-service.issuer-attribute:issuer}</value>
        </property>
    </bean>
 

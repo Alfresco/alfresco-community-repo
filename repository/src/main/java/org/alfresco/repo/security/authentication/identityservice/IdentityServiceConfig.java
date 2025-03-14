@@ -71,7 +71,7 @@ public class IdentityServiceConfig
     private String signatureAlgorithms;
     private String adminConsoleScopes;
     private String passwordGrantScopes;
-    private String customIssuerAttribute;
+    private String issuerAttribute;
     private String firstNameAttribute;
     private String lastNameAttribute;
     private String emailAttribute;
@@ -334,14 +334,14 @@ public class IdentityServiceConfig
         this.signatureAlgorithms = signatureAlgorithms;
     }
 
-    public String getCustomIssuerAttribute()
+    public String getIssuerAttribute()
     {
-        return customIssuerAttribute;
+        return issuerAttribute;
     }
 
-    public void setCustomIssuerAttribute(String customIssuerAttribute)
+    public void setIssuerAttribute(String issuerAttribute)
     {
-        this.customIssuerAttribute = customIssuerAttribute;
+        this.issuerAttribute = issuerAttribute;
     }
 
     public Set<String> getAdminConsoleScopes()

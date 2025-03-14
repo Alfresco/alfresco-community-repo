@@ -73,6 +73,7 @@ public class ClientRegistrationProviderUnitTest
         config.setResource(CLIENT_ID);
         config.setAdminConsoleScopes("openid,email,profile,offline_access");
         config.setPasswordGrantScopes("openid,email,profile");
+        config.setIssuerAttribute("issuer");
 
         restTemplate = mock(RestTemplate.class);
         ResponseEntity responseEntity = mock(ResponseEntity.class);
@@ -268,7 +269,7 @@ public class ClientRegistrationProviderUnitTest
     }
 
     @Test
-    public void shouldUseIssuerFromOIDCDiscovery()
+    public void shouldUseDefaultIssuerAttribute()
     {
         config.setIssuerUrl(null);
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
@@ -283,11 +284,11 @@ public class ClientRegistrationProviderUnitTest
     }
 
     @Test
-    public void shouldUseIssuerFromCustomProperty()
+    public void shouldUseCustomIssuerAttribute()
     {
         try (MockedStatic<OIDCProviderMetadata> providerMetadata = Mockito.mockStatic(OIDCProviderMetadata.class))
         {
-            config.setCustomIssuerAttribute("access_token_issuer");
+            config.setIssuerAttribute("access_token_issuer");
             when(oidcResponse.getCustomParameters()).thenReturn(createJSONObject("access_token_issuer", "https://login.serviceonline.alfresco/alfresco/v2.0/at_trust"));
             providerMetadata.when(() -> OIDCProviderMetadata.parse(any(String.class))).thenReturn(oidcResponse);
 

@@ -136,6 +136,7 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
     private static final Log LOGGER = LogFactory.getLog(IdentityServiceFacadeFactoryBean.class);
 
     private static final JOSEObjectType AT_JWT = new JOSEObjectType("at+jwt");
+    private static final String DEFAULT_ISSUER_ATTR = "issuer";
 
     private boolean enabled;
     private SpringBasedIdentityServiceFacadeFactory factory;
@@ -556,14 +557,14 @@ public class IdentityServiceFacadeFactoryBean implements FactoryBean<IdentitySer
 
     private static Optional<String> getMetadataIssuer(OIDCProviderMetadata metadata, IdentityServiceConfig config)
     {
-        return StringUtils.isNotBlank(config.getCustomIssuerAttribute()) ? Optional.of(metadata)
-                .map(OIDCProviderMetadata::getCustomParameters)
-                .map(map -> map.get(config.getCustomIssuerAttribute()))
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                : Optional.of(metadata)
+        return DEFAULT_ISSUER_ATTR.equals(config.getIssuerAttribute()) ? Optional.of(metadata)
                         .map(OIDCProviderMetadata::getIssuer)
-                        .map(Issuer::getValue);
+                        .map(Issuer::getValue)
+                : Optional.of(metadata)
+                        .map(OIDCProviderMetadata::getCustomParameters)
+                        .map(map -> map.get(config.getIssuerAttribute()))
+                        .filter(String.class::isInstance)
+                        .map(String.class::cast);
     }
 
     static class JwtDecoderProvider
